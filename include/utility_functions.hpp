@@ -91,6 +91,12 @@ PyObject* intptr_array_as_tuple(int size, const intptr_t *array);
 int pyarg_axis_argument(PyObject *axis, int ndim, dnd::dnd_bool *reduce_axes);
 
 /**
+ * Parses the error_mode argument. If it is None, returns
+ * assign_error_default.
+ */
+dnd::assign_error_mode pyarg_error_mode(PyObject *error_mode_obj);
+
+/**
  * Matches the input object against one of several
  * strings, returning the corresponding integer.
  */
@@ -109,6 +115,12 @@ int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string0, int value0,
                 const char *string1, int value1,
                 const char *string2, int value2);
+
+int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+                const char *string0, int value0,
+                const char *string1, int value1,
+                const char *string2, int value2,
+                const char *string3, int value3);
 
 bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
 

@@ -93,6 +93,7 @@ cdef extern from "dnd/dtypes/convert_dtype.hpp" namespace "dnd":
 
 cdef extern from "dnd/dtypes/categorical_dtype.hpp" namespace "dnd":
     dtype dnd_make_categorical_dtype "dnd::make_categorical_dtype" (ndarray&) except +
+    dtype dnd_factor_categorical_dtype "dnd::factor_categorical_dtype" (ndarray&) except +
 
 cdef extern from "dnd/dtypes/dtype_alignment.hpp" namespace "dnd":
     dtype dnd_make_unaligned_dtype "dnd::make_unaligned_dtype" (dtype&) except +

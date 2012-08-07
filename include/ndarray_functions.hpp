@@ -86,6 +86,8 @@ inline std::string ndarray_debug_dump(const dnd::ndarray& n)
     return ss.str();
 }
 
+dnd::ndarray ndarray_as_dtype(const dnd::ndarray& n, const dnd::dtype& dt, PyObject *assign_error_obj);
+
 /**
  * Implementation of __getitem__ for the wrapped ndarray object.
  */

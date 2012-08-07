@@ -174,6 +174,12 @@ def make_categorical_dtype(values):
     SET(result.v, dnd_make_categorical_dtype(GET(w_ndarray(values).v)))
     return result
 
+def factor_categorical_dtype(values):
+    """Constructs a categorical dtype by factoring and sorting the unique values from the provided array."""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_factor_categorical_dtype(GET(w_ndarray(values).v)))
+    return result
+
 ##############################################################################
 
 # NOTE: This is a possible alternative to the init_w_ndarray_typeobject() call
@@ -235,10 +241,10 @@ cdef class w_ndarray:
         """Evaluates the values, and converts them into native Python types."""
         return ndarray_as_py(GET(self.v))
 
-    def as_dtype(self, dtype):
+    def as_dtype(self, dtype, error_mode=None):
         """Converts the ndarray to the requested dtype. If dtype is an expression dtype, its expression gets applied on top of the existing data."""
         cdef w_ndarray result = w_ndarray()
-        SET(result.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_default))
+        SET(result.v, ndarray_as_dtype(GET(self.v), GET(w_dtype(dtype).v), error_mode))
         return result
 
     def view_as_dtype(self, dtype):

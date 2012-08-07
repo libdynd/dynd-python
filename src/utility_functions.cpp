@@ -104,10 +104,19 @@ int pydnd::pyarg_axis_argument(PyObject *axis, int ndim, dnd_bool *reduce_axes)
     return axis_count;
 }
 
+assign_error_mode pydnd::pyarg_error_mode(PyObject *error_mode_obj)
+{
+    return (assign_error_mode)pyarg_strings_to_int(error_mode_obj, "error_mode", assign_error_default,
+                    "none", assign_error_none,
+                    "overflow", assign_error_overflow,
+                    "fractional", assign_error_fractional,
+                    "inexact", assign_error_inexact);
+}
+
 int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string0, int value0)
 {
-    if (obj == NULL) {
+    if (obj == NULL || obj == Py_None) {
         return default_value;
     }
 
@@ -131,7 +140,7 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
                 const char *string0, int value0,
                 const char *string1, int value1)
 {
-    if (obj == NULL) {
+    if (obj == NULL || obj == Py_None) {
         return default_value;
     }
 
@@ -158,7 +167,7 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
                 const char *string1, int value1,
                 const char *string2, int value2)
 {
-    if (obj == NULL) {
+    if (obj == NULL || obj == Py_None) {
         return default_value;
     }
 
@@ -182,9 +191,41 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
     throw runtime_error(ss.str());
 }
 
+int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+                const char *string0, int value0,
+                const char *string1, int value1,
+                const char *string2, int value2,
+                const char *string3, int value3)
+{
+    if (obj == NULL || obj == Py_None) {
+        return default_value;
+    }
+
+    if (!PyString_Check(obj)) {
+        stringstream ss;
+        ss << "argument " << argname << " must be a string";
+        throw runtime_error(ss.str());
+    }
+
+    char *obj_str = PyString_AsString(obj);
+    if (strcmp(obj_str, string0) == 0) {
+        return value0;
+    } else if (strcmp(obj_str, string1) == 0) {
+        return value1;
+    } else if (strcmp(obj_str, string2) == 0) {
+        return value2;
+    } else if (strcmp(obj_str, string3) == 0) {
+        return value3;
+    }
+
+    stringstream ss;
+    ss << "argument " << argname << " was given the invalid argument value \"" << obj_str << "\"";
+    throw runtime_error(ss.str());
+}
+
 bool pydnd::pyarg_bool(PyObject *obj, const char *argname, bool default_value)
 {
-    if (obj == NULL) {
+    if (obj == NULL || obj == Py_None) {
         return default_value;
     }
 

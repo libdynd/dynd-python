@@ -41,6 +41,11 @@ dnd::ndarray pydnd::ndarray_eval_copy(const dnd::ndarray& n, PyObject* access_fl
     }
 }
 
+dnd::ndarray pydnd::ndarray_as_dtype(const dnd::ndarray& n, const dtype& dt, PyObject *assign_error_obj)
+{
+    return n.as_dtype(dt, pyarg_error_mode(assign_error_obj));
+}
+
 static irange pyobject_as_irange(PyObject *index)
 {
     if (PySlice_Check(index)) {

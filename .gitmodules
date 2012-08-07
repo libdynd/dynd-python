@@ -1,0 +1,3 @@
+[submodule "libraries/dynamicndarray"]
+	path = libraries/dynamicndarray
+	url = git@github.com:ContinuumIO/dynamicndarray.git

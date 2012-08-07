@@ -82,6 +82,7 @@ cdef extern from "dnd/dtype_assign.hpp" namespace "dnd":
         assign_error_overflow
         assign_error_fractional
         assign_error_inexact
+        assign_error_default
 
 cdef extern from "dnd/dtypes/byteswap_dtype.hpp" namespace "dnd":
     dtype dnd_make_byteswap_dtype "dnd::make_byteswap_dtype" (dtype&) except +

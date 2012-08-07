@@ -81,7 +81,7 @@ dnd::ndarray pydnd::ndarray_getitem(const dnd::ndarray& n, PyObject *subscript)
     }
 
     // Do an indexing operation
-    return n.index(size, indices.get());
+    return n.index((int)size, indices.get());
 }
 
 ndarray pydnd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)

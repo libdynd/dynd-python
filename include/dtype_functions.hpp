@@ -49,9 +49,9 @@ inline std::string dtype_repr(const dnd::dtype& d)
     if (d.type_id() < dnd::builtin_type_id_count &&
                     d.type_id() != dnd::complex_float32_type_id &&
                     d.type_id() != dnd::complex_float64_type_id) {
-        ss << "pydnd." << d;
+        ss << "nd." << d;
     } else {
-        ss << "pydnd.dtype('" << d << "')";
+        ss << "nd.dtype('" << d << "')";
     }
     return ss.str();
 }

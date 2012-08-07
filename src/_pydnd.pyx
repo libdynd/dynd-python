@@ -141,7 +141,7 @@ def make_fixedbytes_dtype(int element_size, int alignment):
 def make_convert_dtype(to_dtype, from_dtype):
     """Constructs a conversion dtype from the given source and destination dtypes."""
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), assign_error_fractional))
+    SET(result.v, dnd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), assign_error_default))
     return result
 
 def make_unaligned_dtype(aligned_dtype):
@@ -196,7 +196,7 @@ cdef class w_ndarray:
 
             # If a specific dtype is requested, use as_dtype to switch types
             if dtype is not None:
-                SET(self.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_fractional))
+                SET(self.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_default))
     def __dealloc__(self):
         ndarray_placement_delete(self.v)
 
@@ -229,7 +229,7 @@ cdef class w_ndarray:
     def val_assign(self, obj):
         """Assigns to the ndarray by value instead of by reference."""
         cdef w_ndarray n = w_ndarray(obj)
-        GET(self.v).val_assign(GET(n.v), assign_error_fractional)
+        GET(self.v).val_assign(GET(n.v), assign_error_default)
 
     def as_py(self):
         """Evaluates the values, and converts them into native Python types."""
@@ -238,7 +238,7 @@ cdef class w_ndarray:
     def as_dtype(self, dtype):
         """Converts the ndarray to the requested dtype. If dtype is an expression dtype, its expression gets applied on top of the existing data."""
         cdef w_ndarray result = w_ndarray()
-        SET(result.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_fractional))
+        SET(result.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_default))
         return result
 
     def view_as_dtype(self, dtype):

@@ -75,7 +75,7 @@ inline std::string ndarray_str(const dnd::ndarray& n)
 inline std::string ndarray_repr(const dnd::ndarray& n)
 {
     std::stringstream ss;
-    ss << n;
+    ss << "nd." << n;
     return ss.str();
 }
 

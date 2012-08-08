@@ -3,6 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
+#include <Python.h>
+
 #include <dnd/dtypes/string_dtype.hpp>
 #include <dnd/memblock/external_memory_block.hpp>
 #include <dnd/nodes/scalar_node.hpp>

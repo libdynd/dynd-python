@@ -25,8 +25,8 @@ find_package(NumPy REQUIRED)
 include(UseCython)
 
 # Default install location for Python packages
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${PYTHON_SITE_PACKAGES}" CACHE STRING
+if (NOT PYTHON_PACKAGE_INSTALL_PREFIX)
+    set(PYTHON_PACKAGE_INSTALL_PREFIX "${PYTHON_SITE_PACKAGES}" CACHE STRING
       "Choose the Python module directory (default site-packages)" FORCE)
 endif()
 
@@ -34,6 +34,10 @@ endif()
 if(NUMPY_VERSION_DECIMAL LESS 10500)
     message(FATAL_ERROR,
         "Blaze requires NumPy >= 1.5")
+endif()
+
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynamicndarray/include/dnd/ndarray.hpp")
+message(FATAL_ERROR "The dynamicndarray C++ library must be placed in libraries/dynamicndarray. If you're using git, run 'git submodule init' and 'git submodule update' to clone it as a submodule.")
 endif()
 
 # For now, we include dynamicndarray as a submodule.
@@ -110,18 +114,19 @@ endif()
 target_link_libraries(_pydnd dynamicndarray)
 
 # Install all the Python scripts
-install(DIRECTORY blaze DESTINATION "${CMAKE_INSTALL_PREFIX}"
+install(DIRECTORY blaze DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
-install(TARGETS _pydnd DESTINATION "${CMAKE_INSTALL_PREFIX}/blaze/nd")
+install(TARGETS _pydnd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blaze/nd")
 # Install the basic_kernels .dll/.so
 get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 # NOTE: This only uses one configuration for the whole Visual Studio
 #       solution, so CMAKE_BUILD_TYPE must match the build target
 #       you want to install with.
 string(REPLACE "$(Configuration)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
-install(FILES ${basic_kernels_loc} DESTINATION "${CMAKE_INSTALL_PREFIX}/blaze/nd")
+install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blaze/nd")
 # Install the dynamicndarray lib
 if(NOT WIN32)
-    install(TARGETS dynamicndarray DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+    get_property(dynamicndarray_loc TARGET dynamicndarray PROPERTY LOCATION)
+    install(FILES ${dynamicndarray_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()

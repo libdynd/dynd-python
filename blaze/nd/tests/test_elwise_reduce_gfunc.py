@@ -80,6 +80,14 @@ class TestElwiseReduceGFunc(unittest.TestCase):
         self.assertEqual(x.dtype, nd.int32)
         self.assertEqual(x.as_py(), [[8],[6]])
 
+    def test_repeated_creation(self):
+        """Tests that repeated creation/destruction of the gfunc is ok"""
+        for i in range(10):
+            gf = nd.gfunc.elwise_reduce('test_repeated_creation_gf')
+            gf.add_kernel(nd.elwise_kernels.add_int32, commutative=True,
+                                associative=True)
+            self.assertEqual(gf([3,4]).as_py(), 7)
+
 if __name__ == '__main__':
     unittest.main()
 

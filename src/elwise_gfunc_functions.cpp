@@ -32,6 +32,7 @@ static void create_elwise_gfunc_kernel_from_ctypes(dnd::codegen_cache& cgcache, 
     }
 
     memory_block_ptr ctypes_memblock = make_external_memory_block(cfunc, &py_decref_function);
+    Py_INCREF(cfunc);
 
     if (paramtypes.size() == 1) {
         cgcache.codegen_unary_function_adapter(returntype, paramtypes[0], get_ctypes_calling_convention(cfunc),

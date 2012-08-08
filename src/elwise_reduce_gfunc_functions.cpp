@@ -31,6 +31,7 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dnd::codegen_cache& cg
     out_kernel.m_commutative = commutative;
 
     memory_block_ptr ctypes_memblock = make_external_memory_block(cfunc, &py_decref_function);
+    Py_INCREF(cfunc);
 
     if (returntype.type_id() == void_type_id) {
         // TODO: Should support this if the kernel is flagged as commutative,

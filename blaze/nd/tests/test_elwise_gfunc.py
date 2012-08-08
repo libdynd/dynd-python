@@ -50,6 +50,13 @@ class TestElwiseGFunc(unittest.TestCase):
         self.assertEqual(x.vals().dtype, nd.int16)
         self.assertEqual(x.as_py(), [0,2,4,6])
 
+    def test_repeated_creation(self):
+        """Tests that repeated creation/destruction of the gfunc is ok"""
+        for i in range(10):
+            gf = nd.gfunc.elwise('test_repeated_creation_gf')
+            gf.add_kernel(nd.elwise_kernels.add_int32)
+            self.assertEqual(gf(3,4).as_py(), 7)
+
 if __name__ == '__main__':
     unittest.main()
 

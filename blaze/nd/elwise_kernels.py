@@ -32,28 +32,11 @@ add_basic_kernels('minimum2', types, 2)
 add_basic_kernels('maximum3', types, 3)
 add_basic_kernels('minimum3', types, 3)
 add_basic_kernels('square', types, 1)
+add_basic_kernels('abs', types, 1)
+add_basic_kernels('floor', types, 1)
+add_basic_kernels('ceil', types, 1)
 
 if sys.platform == 'win32':
-    # integer absolute value
-    abs = ctypes.cdll.msvcrt.abs
-    abs.restype = ctypes.c_int
-    abs.argtypes = [ctypes.c_int]
-
-    # float absolute value
-    fabs = ctypes.cdll.msvcrt.fabs
-    fabs.restype = ctypes.c_double
-    fabs.argtypes = [ctypes.c_double]
-
-    # floor
-    floor = ctypes.cdll.msvcrt.floor
-    floor.restype = ctypes.c_double
-    floor.argtypes = [ctypes.c_double]
-
-    # ceil
-    ceil = ctypes.cdll.msvcrt.ceil
-    ceil.restype = ctypes.c_double
-    ceil.argtypes = [ctypes.c_double]
-
     # fmod
     fmod = ctypes.cdll.msvcrt.fmod
     fmod.restype = ctypes.c_double

@@ -37,7 +37,12 @@ if(NUMPY_VERSION_DECIMAL LESS 10500)
 endif()
 
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynamicndarray/include/dnd/ndarray.hpp")
-message(FATAL_ERROR "The dynamicndarray C++ library must be placed in libraries/dynamicndarray. If you're using git, run 'git submodule init' and 'git submodule update' to clone it as a submodule.")
+message(FATAL_ERROR
+    "The dynamicndarray C++ library must be placed in\n"
+    "libraries/dynamicndarray.\nRemove any temporary CMake\n"
+    "files, then if you're using git, run 'git submodule init'\n"
+    "and 'git submodule update' to clone it as a submodule.\n"
+    "See INSTALL.txt for more details.")
 endif()
 
 # For now, we include dynamicndarray as a submodule.

@@ -1,9 +1,12 @@
-__all__ = ['abs', 'floor', 'ceil', 'fmod', 'pow',
-            'sqrt', 'exp', 'log', 'log10',
-            'sin', 'cos', 'tan',
-            'arcsin', 'arccos', 'arctan', 'arctan2',
-            'sinh', 'cosh', 'tanh',
-            'ldexp', 'isnan', 'isfinite', 'nextafter']
+import sys
+__all__ = []
+if sys.platform == 'win32':
+    __all__.extend(['abs', 'floor', 'ceil', 'fmod', 'pow',
+                'sqrt', 'exp', 'log', 'log10',
+                'sin', 'cos', 'tan',
+                'arcsin', 'arccos', 'arctan', 'arctan2',
+                'sinh', 'cosh', 'tanh',
+                'ldexp', 'isnan', 'isfinite', 'nextafter'])
 
 import gfunc
 import elwise_kernels
@@ -31,75 +34,69 @@ add_basic_gfunc('divide', types)
 add_basic_gfunc('maximum', types, ['maximum2'])
 add_basic_gfunc('minimum', types, ['minimum2'])
 add_basic_gfunc('square', types)
+add_basic_gfunc('abs', types)
+add_basic_gfunc('floor', types)
+add_basic_gfunc('ceil', types)
 
-abs = gfunc.elwise('abs')
-abs.add_kernel(elwise_kernels.abs)
-abs.add_kernel(elwise_kernels.fabs)
+if sys.platform == 'win32':
+    fmod = gfunc.elwise('fmod')
+    fmod.add_kernel(elwise_kernels.fmod)
 
-floor = gfunc.elwise('floor')
-floor.add_kernel(elwise_kernels.floor)
+    pow = gfunc.elwise('pow')
+    pow.add_kernel(elwise_kernels.pow)
 
-ceil = gfunc.elwise('ceil')
-ceil.add_kernel(elwise_kernels.ceil)
+    sqrt = gfunc.elwise('sqrt')
+    sqrt.add_kernel(elwise_kernels.sqrt)
 
-fmod = gfunc.elwise('fmod')
-fmod.add_kernel(elwise_kernels.fmod)
+    exp = gfunc.elwise('exp')
+    exp.add_kernel(elwise_kernels.exp)
 
-pow = gfunc.elwise('pow')
-pow.add_kernel(elwise_kernels.pow)
+    log = gfunc.elwise('log')
+    log.add_kernel(elwise_kernels.log)
 
-sqrt = gfunc.elwise('sqrt')
-sqrt.add_kernel(elwise_kernels.sqrt)
+    log10 = gfunc.elwise('log10')
+    log10.add_kernel(elwise_kernels.log10)
 
-exp = gfunc.elwise('exp')
-exp.add_kernel(elwise_kernels.exp)
+    sin = gfunc.elwise('sin')
+    sin.add_kernel(elwise_kernels.sin)
 
-log = gfunc.elwise('log')
-log.add_kernel(elwise_kernels.log)
+    cos = gfunc.elwise('cos')
+    cos.add_kernel(elwise_kernels.cos)
 
-log10 = gfunc.elwise('log10')
-log10.add_kernel(elwise_kernels.log10)
+    tan = gfunc.elwise('tan')
+    tan.add_kernel(elwise_kernels.tan)
 
-sin = gfunc.elwise('sin')
-sin.add_kernel(elwise_kernels.sin)
+    arcsin = gfunc.elwise('arcsin')
+    arcsin.add_kernel(elwise_kernels.arcsin)
 
-cos = gfunc.elwise('cos')
-cos.add_kernel(elwise_kernels.cos)
+    arccos = gfunc.elwise('arccos')
+    arccos.add_kernel(elwise_kernels.arccos)
 
-tan = gfunc.elwise('tan')
-tan.add_kernel(elwise_kernels.tan)
+    arctan = gfunc.elwise('arctan')
+    arctan.add_kernel(elwise_kernels.arctan)
 
-arcsin = gfunc.elwise('arcsin')
-arcsin.add_kernel(elwise_kernels.arcsin)
+    arctan2 = gfunc.elwise('arctan2')
+    arctan2.add_kernel(elwise_kernels.arctan2)
 
-arccos = gfunc.elwise('arccos')
-arccos.add_kernel(elwise_kernels.arccos)
+    sinh = gfunc.elwise('sinh')
+    sinh.add_kernel(elwise_kernels.sinh)
 
-arctan = gfunc.elwise('arctan')
-arctan.add_kernel(elwise_kernels.arctan)
+    cosh = gfunc.elwise('cosh')
+    cosh.add_kernel(elwise_kernels.cosh)
 
-arctan2 = gfunc.elwise('arctan2')
-arctan2.add_kernel(elwise_kernels.arctan2)
+    tanh = gfunc.elwise('tanh')
+    tanh.add_kernel(elwise_kernels.tanh)
 
-sinh = gfunc.elwise('sinh')
-sinh.add_kernel(elwise_kernels.sinh)
+    ldexp = gfunc.elwise('ldexp')
+    ldexp.add_kernel(elwise_kernels.ldexp)
 
-cosh = gfunc.elwise('cosh')
-cosh.add_kernel(elwise_kernels.cosh)
+    isnan = gfunc.elwise('isnan')
+    isnan.add_kernel(elwise_kernels.isnan)
 
-tanh = gfunc.elwise('tanh')
-tanh.add_kernel(elwise_kernels.tanh)
+    isfinite = gfunc.elwise('isfinite')
+    isfinite.add_kernel(elwise_kernels.isfinite)
 
-ldexp = gfunc.elwise('ldexp')
-ldexp.add_kernel(elwise_kernels.ldexp)
-
-isnan = gfunc.elwise('isnan')
-isnan.add_kernel(elwise_kernels.isnan)
-
-isfinite = gfunc.elwise('isfinite')
-isfinite.add_kernel(elwise_kernels.isfinite)
-
-nextafter = gfunc.elwise('nextafter')
-nextafter.add_kernel(elwise_kernels.nextafter)
+    nextafter = gfunc.elwise('nextafter')
+    nextafter.add_kernel(elwise_kernels.nextafter)
 
 

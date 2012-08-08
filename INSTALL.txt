@@ -25,6 +25,20 @@ The following libraries/projects are included with the code:
 
  * Google Test 1.6 (included in project)
 
+CONFIGURATION OPTIONS
+=====================
+
+These are some options which can be configured by calling
+CMake with an argument like "-DCMAKE_BUILD_TYPE=Release".
+
+CMAKE_BUILD_TYPE
+    Which kind of build, such as Release, RelWithDebugInfo, Debug.
+PYTHON_PACKAGE_INSTALL_PREFIX
+    Where the Python module should be installed.
+CMAKE_INSTALL_PREFIX
+    The prefix for installing shared libraries such as
+    libdynamicndarray.so.
+
 BUILD AND INSTALL INSTRUCTIONS
 ==============================
 

@@ -3,6 +3,9 @@ import sys, os, ctypes, dnd_ctypes
 if sys.platform == 'win32':
     libpath = os.path.join(os.path.dirname(__file__), "basic_kernels.dll")
     basic = ctypes.WinDLL(libpath)
+elif sys.platform == 'darwin':
+    libpath = os.path.join(os.path.dirname(__file__), "libbasic_kernels.dylib")
+    basic = ctypes.CDLL(libpath)
 else:
     libpath = os.path.join(os.path.dirname(__file__), "libbasic_kernels.so")
     basic = ctypes.CDLL(libpath)

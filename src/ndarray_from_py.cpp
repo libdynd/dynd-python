@@ -74,8 +74,7 @@ inline void convert_one_pyscalar(double *out, PyObject *obj)
 
 inline void convert_one_pyscalar(complex<double> *out, PyObject *obj)
 {
-    out->real(PyComplex_RealAsDouble(obj));
-    out->imag(PyComplex_ImagAsDouble(obj));
+    *out = complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
 }
 
 struct ascii_string_ptrs {

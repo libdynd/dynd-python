@@ -76,6 +76,16 @@ dtype pydnd::deduce_dtype_from_object(PyObject* obj)
     } else if (PyComplex_Check(obj)) {
         // Python complex
         return make_dtype<complex<double> >();
+    } else if (PyString_Check(obj)) {
+        // Python ascii string
+        return make_string_dtype(string_encoding_ascii);
+    } else if (PyUnicode_Check(obj)) {
+        // Python unicode string
+#if Py_UNICODE_SIZE == 2
+        return make_string_dtype(string_encoding_ucs_2);
+#else
+        return make_string_dtype(string_encoding_utf_32);
+#endif
     }
 
     throw std::runtime_error("could not deduce pydnd dtype from the python object");

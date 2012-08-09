@@ -7,6 +7,7 @@
 
 #include <dnd/dtypes/string_dtype.hpp>
 #include <dnd/memblock/external_memory_block.hpp>
+#include <dnd/memblock/pod_memory_block.hpp>
 #include <dnd/nodes/scalar_node.hpp>
 #include <dnd/dtype_promotion.hpp>
 
@@ -77,6 +78,65 @@ inline void convert_one_pyscalar(complex<double> *out, PyObject *obj)
     out->imag(PyComplex_ImagAsDouble(obj));
 }
 
+struct ascii_string_ptrs {
+    char *begin, *end;
+};
+
+inline void convert_one_string(ascii_string_ptrs *out, PyObject *obj, const memory_block_ptr& dst_memblock)
+{
+    if (PyString_Check(obj)) {
+        char *data = NULL;
+        intptr_t len = 0;
+        if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
+            throw runtime_error("Error getting string data");
+        }
+
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(dst_memblock.get());
+        allocator->allocate(dst_memblock.get(), len, 1, &out->begin, &out->end);
+        memcpy(out->begin, data, len);
+    } else {
+        throw runtime_error("wrong kind of string provided");
+    }
+}
+
+struct pyunicode_string_ptrs {
+#if Py_UNICODE_SIZE == 2
+        uint16_t *begin, *end;
+#else
+        uint32_t *begin, *end;
+#endif
+};
+
+inline void convert_one_string(pyunicode_string_ptrs *out, PyObject *obj, const memory_block_ptr& dst_memblock)
+{
+    if (PyString_Check(obj)) {
+        char *data = NULL;
+        Py_ssize_t len = 0;
+        if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
+            throw runtime_error("Error getting string data");
+        }
+
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(dst_memblock.get());
+        allocator->allocate(dst_memblock.get(), len * Py_UNICODE_SIZE,
+                        Py_UNICODE_SIZE, (char **)&out->begin, (char **)&out->end);
+        for (Py_ssize_t i = 0; i < len; ++i) {
+            out->begin[i] = data[i];
+        }
+    } else if (PyUnicode_Check(obj)) {
+        const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
+        Py_ssize_t len = PyUnicode_GetSize(obj);
+        if (data == NULL || len == -1) {
+            throw runtime_error("Error getting unicode string data");
+        }
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(dst_memblock.get());
+        allocator->allocate(dst_memblock.get(), len * Py_UNICODE_SIZE,
+                        Py_UNICODE_SIZE, (char **)&out->begin, (char **)&out->end);
+        memcpy(out->begin, data, len * Py_UNICODE_SIZE);
+    } else {
+        throw runtime_error("wrong kind of string provided");
+    }
+}
+
 template<typename T>
 static T *fill_ndarray_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
 {
@@ -91,6 +151,26 @@ static T *fill_ndarray_from_pylist(T *data, PyObject *obj, const vector<intptr_t
         Py_ssize_t size = PyList_GET_SIZE(obj);
         for (Py_ssize_t i = 0; i < size; ++i) {
             data = fill_ndarray_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
+        }
+    }
+    return data;
+}
+
+template<typename T>
+static T *fill_string_ndarray_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape,
+                    int current_axis, const memory_block_ptr& dst_memblock)
+{
+    if (current_axis == shape.size() - 1) {
+        Py_ssize_t size = PyList_GET_SIZE(obj);
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            PyObject *item = PyList_GET_ITEM(obj, i);
+            convert_one_string(data, item, dst_memblock);
+            ++data;
+        }
+    } else {
+        Py_ssize_t size = PyList_GET_SIZE(obj);
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            data = fill_string_ndarray_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1, dst_memblock);
         }
     }
     return data;
@@ -113,7 +193,16 @@ static dnd::ndarray ndarray_from_pylist(PyObject *obj)
     for (int i = 0, i_end = (int)axis_perm.size(); i != i_end; ++i) {
         axis_perm[i] = i_end - i - 1;
     }
-    ndarray result(dt, (int)shape.size(), &shape[0], &axis_perm[0]);
+    memory_block_ptr dst_memblock; // For blockref string dtype
+    memory_block_ptr *blockrefs_begin = NULL, *blockrefs_end = NULL;
+     
+    if (dt.get_memory_management() == blockref_memory_management) {
+        dst_memblock = make_pod_memory_block();
+        blockrefs_begin = &dst_memblock;
+        blockrefs_end = &dst_memblock + 1;
+    }
+    ndarray result = ndarray(make_strided_ndarray_node(dt, (int)shape.size(), &shape[0], &axis_perm[0],
+                    read_access_flag|write_access_flag, blockrefs_begin, blockrefs_end));
 
     // Populate the array with data
     switch (dt.type_id()) {
@@ -137,6 +226,32 @@ static dnd::ndarray ndarray_from_pylist(PyObject *obj)
             fill_ndarray_from_pylist(reinterpret_cast<complex<double> *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
+        case string_type_id: {
+            const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
+            switch (ext->encoding()) {
+                case string_encoding_ascii:
+                    fill_string_ndarray_from_pylist(reinterpret_cast<ascii_string_ptrs *>(result.get_readwrite_originptr()),
+                            obj, shape, 0, dst_memblock);
+                    break;
+#if Py_UNICODE_SIZE == 2
+                case string_encoding_ucs_2:
+#else
+                case string_encoding_utf_32:
+#endif
+                        {
+                    fill_string_ndarray_from_pylist(reinterpret_cast<pyunicode_string_ptrs *>(result.get_readwrite_originptr()),
+                            obj, shape, 0, dst_memblock);
+                    memory_block_pod_allocator_api *api = get_memory_block_pod_allocator_api(dst_memblock.get());
+                    api->finalize(dst_memblock.get());
+                    break;
+                }
+                default:
+                    stringstream ss;
+                    ss << "Deduced type from Python list, " << dt << ", doesn't have a dnd::ndarray conversion function yet";
+                    throw runtime_error(ss.str());
+            }
+            break;
+        }
         default: {
             stringstream ss;
             ss << "Deduced type from Python list, " << dt << ", doesn't have a dnd::ndarray conversion function yet";

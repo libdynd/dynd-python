@@ -16,7 +16,7 @@ with the following commands from the root blaze directory:
 
  * Python 2.7
  * Cython >= 0.16
- * Numpy >= 1.6
+ * Numpy >= 1.5
 
  * CMake >= 2.6
  * Boost (header-only, doesn't require that any libraries be built)

@@ -51,7 +51,7 @@ cdef extern from "utility_functions.hpp" namespace "pydnd":
 cdef extern from "placement_wrappers.hpp" namespace "pydnd":
     cdef struct dtype_placement_wrapper:
         pass
-    void dtype_placement_new(dtype_placement_wrapper&) except +
+    void dtype_placement_new(dtype_placement_wrapper&) except +translate_exception
     void dtype_placement_delete(dtype_placement_wrapper&)
     # dtype placement cast
     dtype& GET(dtype_placement_wrapper&)
@@ -60,7 +60,7 @@ cdef extern from "placement_wrappers.hpp" namespace "pydnd":
 
     cdef struct ndarray_placement_wrapper:
         pass
-    void ndarray_placement_new(ndarray_placement_wrapper&) except +
+    void ndarray_placement_new(ndarray_placement_wrapper&) except +translate_exception
     void ndarray_placement_delete(ndarray_placement_wrapper&)
     # ndarray placement cast
     ndarray& GET(ndarray_placement_wrapper&)
@@ -69,7 +69,7 @@ cdef extern from "placement_wrappers.hpp" namespace "pydnd":
 
     cdef struct codegen_cache_placement_wrapper:
         pass
-    void codegen_cache_placement_new(codegen_cache_placement_wrapper&) except +
+    void codegen_cache_placement_new(codegen_cache_placement_wrapper&) except +translate_exception
     void codegen_cache_placement_delete(codegen_cache_placement_wrapper&)
     # placement cast
     codegen_cache& GET(codegen_cache_placement_wrapper&)

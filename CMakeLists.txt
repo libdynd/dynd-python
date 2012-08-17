@@ -62,6 +62,7 @@ set(pydnd_CPP_SRC
     include/do_import_array.hpp
     include/placement_wrappers.hpp
     include/dtype_functions.hpp
+    include/exception_translation.hpp
     include/ndarray_functions.hpp
     include/ndarray_from_py.hpp
     include/ndarray_as_py.hpp
@@ -72,6 +73,7 @@ set(pydnd_CPP_SRC
     src/codegen_cache_functions.cpp
     src/ctypes_interop.cpp
     src/dtype_functions.cpp
+    src/exception_translation.cpp
     src/ndarray_functions.cpp
     src/ndarray_from_py.cpp
     src/ndarray_as_py.cpp

@@ -3,17 +3,28 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+cdef extern from "exception_translation.hpp" namespace "pydnd":
+    void translate_exception()
+    void set_broadcast_exception(object)
+
+# Exceptions to convert from C++
+class BroadcastError(Exception):
+    pass
+
+# Register all the exception objects with the exception translator
+set_broadcast_exception(BroadcastError)
+
 # Initialize Numpy
 cdef extern from "do_import_array.hpp":
     pass
 cdef extern from "numpy_interop.hpp" namespace "pydnd":
-    object ndarray_as_numpy_struct_capsule(ndarray&) except +
+    object ndarray_as_numpy_struct_capsule(ndarray&) except +translate_exception
     void import_numpy()
 import_numpy()
 
 # Initialize ctypes C level interop data
 cdef extern from "ctypes_interop.hpp" namespace "pydnd":
-    void init_ctypes_interop() except +
+    void init_ctypes_interop() except +translate_exception
 init_ctypes_interop()
 
 # Initialize C++ access to the Cython type objects

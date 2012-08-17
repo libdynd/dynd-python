@@ -8,4 +8,4 @@ cdef extern from "dnd/codegen/codegen_cache.hpp" namespace "dnd":
         pass
 
 cdef extern from "codegen_cache_functions.hpp" namespace "pydnd":
-    string codegen_cache_debug_dump(codegen_cache&) except +
+    string codegen_cache_debug_dump(codegen_cache&) except +translate_exception

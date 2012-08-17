@@ -5,7 +5,7 @@
 
 cdef extern from "dnd/ndarray.hpp" namespace "dnd":
     cdef cppclass ndarray:
-        ndarray() except +
+        ndarray() except +translate_exception
         ndarray(signed char value)
         ndarray(short value)
         ndarray(int value)
@@ -25,10 +25,10 @@ cdef extern from "dnd/ndarray.hpp" namespace "dnd":
 
         # Cython bug: operator overloading doesn't obey "except +"
         # TODO: Report this bug
-        # ndarray operator+(ndarray&) except +
-        #ndarray operator-(ndarray&) except +
-        #ndarray operator*(ndarray&) except +
-        #ndarray operator/(ndarray&) except +
+        # ndarray operator+(ndarray&) except +translate_exception
+        #ndarray operator-(ndarray&) except +translate_exception
+        #ndarray operator*(ndarray&) except +translate_exception
+        #ndarray operator/(ndarray&) except +translate_exception
 
         dtype& get_dtype()
         int get_ndim()
@@ -39,41 +39,41 @@ cdef extern from "dnd/ndarray.hpp" namespace "dnd":
         char* get_readwrite_originptr()
         char* get_readonly_originptr()
 
-        void val_assign(ndarray&, assign_error_mode) except +
-        void val_assign(dtype&, char*, assign_error_mode) except +
+        void val_assign(ndarray&, assign_error_mode) except +translate_exception
+        void val_assign(dtype&, char*, assign_error_mode) except +translate_exception
 
-        ndarray eval_immutable() except +
+        ndarray eval_immutable() except +translate_exception
 
-        ndarray storage() except +
+        ndarray storage() except +translate_exception
 
-        ndarray as_dtype(dtype&, assign_error_mode) except +
+        ndarray as_dtype(dtype&, assign_error_mode) except +translate_exception
 
-        ndarray view_as_dtype(dtype&) except +
+        ndarray view_as_dtype(dtype&) except +translate_exception
 
         void debug_dump(ostream&)
 
 cdef extern from "ndarray_functions.hpp" namespace "pydnd":
     void init_w_ndarray_typeobject(object)
 
-    string ndarray_str(ndarray&) except +
-    string ndarray_repr(ndarray&) except +
-    string ndarray_debug_dump(ndarray&) except +
+    string ndarray_str(ndarray&) except +translate_exception
+    string ndarray_repr(ndarray&) except +translate_exception
+    string ndarray_debug_dump(ndarray&) except +translate_exception
 
-    void ndarray_init_from_pyobject(ndarray&, object obj) except +
-    ndarray ndarray_vals(ndarray&) except +
-    ndarray ndarray_eval_copy(ndarray&, object) except +
+    void ndarray_init_from_pyobject(ndarray&, object obj) except +translate_exception
+    ndarray ndarray_vals(ndarray&) except +translate_exception
+    ndarray ndarray_eval_copy(ndarray&, object) except +translate_exception
 
-    ndarray ndarray_add(ndarray&, ndarray&) except +
-    ndarray ndarray_subtract(ndarray&, ndarray&) except +
-    ndarray ndarray_multiply(ndarray&, ndarray&) except +
-    ndarray ndarray_divide(ndarray&, ndarray&) except +
+    ndarray ndarray_add(ndarray&, ndarray&) except +translate_exception
+    ndarray ndarray_subtract(ndarray&, ndarray&) except +translate_exception
+    ndarray ndarray_multiply(ndarray&, ndarray&) except +translate_exception
+    ndarray ndarray_divide(ndarray&, ndarray&) except +translate_exception
 
-    ndarray ndarray_getitem(ndarray&, object) except +
+    ndarray ndarray_getitem(ndarray&, object) except +translate_exception
 
-    ndarray ndarray_arange(object, object, object) except +
-    ndarray ndarray_linspace(object, object, object) except +
-    ndarray ndarray_groupby(ndarray, ndarray, dtype) except +
+    ndarray ndarray_arange(object, object, object) except +translate_exception
+    ndarray ndarray_linspace(object, object, object) except +translate_exception
+    ndarray ndarray_groupby(ndarray, ndarray, dtype) except +translate_exception
 
-    ndarray ndarray_as_dtype(ndarray&, dtype& , object) except +
-    object ndarray_as_py(ndarray&) except +
-    ndarray ndarray_from_py(object) except +
+    ndarray ndarray_as_dtype(ndarray&, dtype& , object) except +translate_exception
+    object ndarray_as_py(ndarray&) except +translate_exception
+    ndarray ndarray_from_py(object) except +translate_exception

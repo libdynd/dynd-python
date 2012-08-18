@@ -7,7 +7,9 @@
 #include "ndarray_functions.hpp"
 #include "numpy_interop.hpp"
 #include "ctypes_interop.hpp"
+#include "utility_functions.hpp"
 
+#include <dnd/dtypes/convert_dtype.hpp>
 #include <dnd/dtypes/fixedstring_dtype.hpp>
 #include <dnd/dtypes/string_dtype.hpp>
 #include <dnd/dtypes/pointer_dtype.hpp>
@@ -203,6 +205,11 @@ string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     } else {
         throw std::runtime_error("invalid input type for string encoding");
     }
+}
+
+dnd::dtype pydnd::dnd_make_convert_dtype(const dnd::dtype& to_dtype, const dnd::dtype& from_dtype, PyObject *errmode)
+{
+    return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
 dnd::dtype pydnd::dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size)

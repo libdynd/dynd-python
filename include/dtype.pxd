@@ -88,9 +88,6 @@ cdef extern from "dnd/dtypes/byteswap_dtype.hpp" namespace "dnd":
     dtype dnd_make_byteswap_dtype "dnd::make_byteswap_dtype" (dtype&) except +translate_exception
     dtype dnd_make_byteswap_dtype "dnd::make_byteswap_dtype" (dtype&, dtype&) except +translate_exception
 
-cdef extern from "dnd/dtypes/convert_dtype.hpp" namespace "dnd":
-    dtype dnd_make_convert_dtype "dnd::make_convert_dtype" (dtype&, dtype&, assign_error_mode) except +translate_exception
-
 cdef extern from "dnd/dtypes/categorical_dtype.hpp" namespace "dnd":
     dtype dnd_make_categorical_dtype "dnd::make_categorical_dtype" (ndarray&) except +translate_exception
     dtype dnd_factor_categorical_dtype "dnd::factor_categorical_dtype" (ndarray&) except +translate_exception
@@ -106,6 +103,7 @@ cdef extern from "dtype_functions.hpp" namespace "pydnd":
     dtype deduce_dtype_from_object(object) except +translate_exception
     dtype make_dtype_from_object(object) except +translate_exception
 
+    dtype dnd_make_convert_dtype(dtype&, dtype&, object) except +translate_exception
     dtype dnd_make_fixedstring_dtype(object, int) except +translate_exception
     dtype dnd_make_string_dtype(object) except +translate_exception
     dtype dnd_make_pointer_dtype(dtype&) except +translate_exception

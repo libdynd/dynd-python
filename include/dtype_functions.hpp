@@ -71,6 +71,11 @@ dnd::dtype deduce_dtype_from_object(PyObject* obj);
 dnd::dtype make_dtype_from_object(PyObject* obj);
 
 /**
+ * Creates a convert dtype.
+ */
+dnd::dtype dnd_make_convert_dtype(const dnd::dtype& to_dtype, const dnd::dtype& from_dtype, PyObject *errmode);
+
+/**
  * Creates a fixed-sized string dtype.
  */
 dnd::dtype dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size);

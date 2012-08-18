@@ -149,10 +149,10 @@ def make_fixedbytes_dtype(int element_size, int alignment):
     SET(result.v, dnd_make_fixedbytes_dtype(element_size, alignment))
     return result
 
-def make_convert_dtype(to_dtype, from_dtype):
+def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     """Constructs a conversion dtype from the given source and destination dtypes."""
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), assign_error_default))
+    SET(result.v, dnd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), errmode))
     return result
 
 def make_unaligned_dtype(aligned_dtype):
@@ -252,10 +252,10 @@ cdef class w_ndarray:
         """Evaluates the values, and converts them into native Python types."""
         return ndarray_as_py(GET(self.v))
 
-    def as_dtype(self, dtype, error_mode=None):
+    def as_dtype(self, dtype, errmode=None):
         """Converts the ndarray to the requested dtype. If dtype is an expression dtype, its expression gets applied on top of the existing data."""
         cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_as_dtype(GET(self.v), GET(w_dtype(dtype).v), error_mode))
+        SET(result.v, ndarray_as_dtype(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
     def view_as_dtype(self, dtype):

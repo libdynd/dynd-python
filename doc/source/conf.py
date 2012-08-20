@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Blaze'
-copyright = u'2012, Mark Wiebe'
+copyright = u'2012, Continuum Analytics'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

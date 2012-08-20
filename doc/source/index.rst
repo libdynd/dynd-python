@@ -19,7 +19,8 @@ Contents:
 .. toctree::
     :maxdepth: 2
 
-    dtypes
+    dtype
+    ndarray
 
 Indices and tables
 ==================

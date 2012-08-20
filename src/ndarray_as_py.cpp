@@ -35,7 +35,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data)
         case uint16_type_id:
             return PyInt_FromLong(*(const uint16_t *)data);
         case uint32_type_id:
-            return PyInt_FromLong(*(const uint32_t *)data);
+            return PyLong_FromUnsignedLong(*(const uint32_t *)data);
         case uint64_type_id:
             return PyLong_FromUnsignedLongLong(*(const uint64_t *)data);
         case float32_type_id:

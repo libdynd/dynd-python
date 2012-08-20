@@ -14,6 +14,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
     def test_dtype_from_numpy_scalar_types(self):
         """Tests converting numpy scalar types to pydnd dtypes"""
         self.assertEqual(nd.bool, nd.dtype(np.bool))
+        self.assertEqual(nd.bool, nd.dtype(np.bool_))
         self.assertEqual(nd.int8, nd.dtype(np.int8))
         self.assertEqual(nd.int16, nd.dtype(np.int16))
         self.assertEqual(nd.int32, nd.dtype(np.int32))
@@ -71,6 +72,13 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                 nd.dtype(np.dtype(nonnative + 'c8')))
         self.assertEqual(nd.make_byteswap_dtype(nd.cfloat64),
                 nd.dtype(np.dtype(nonnative + 'c16')))
+
+class TestNumpyViewInterop(unittest.TestCase):
+    def setUp(self):
+        if sys.byteorder == 'little':
+            self.nonnative = '>'
+        else:
+            self.nonnative = '<'
 
     def test_dnd_view_of_numpy_array(self):
         """Tests viewing a numpy array as a dnd ndarray"""
@@ -210,3 +218,40 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         # should still be 2.0
         self.assertEqual(b[0].as_py(), 2.0)
         self.assertEqual(a[0], 2.0)
+
+class TestNumpyScalarInterop(unittest.TestCase):
+    def test_numpy_scalar_conversion_dtypes(self):
+        self.assertEqual(nd.ndarray(np.bool_(True)).dtype, nd.bool)
+        self.assertEqual(nd.ndarray(np.bool(True)).dtype, nd.bool)
+        self.assertEqual(nd.ndarray(np.int8(100)).dtype, nd.int8)
+        self.assertEqual(nd.ndarray(np.int16(100)).dtype, nd.int16)
+        self.assertEqual(nd.ndarray(np.int32(100)).dtype, nd.int32)
+        self.assertEqual(nd.ndarray(np.int64(100)).dtype, nd.int64)
+        self.assertEqual(nd.ndarray(np.uint8(100)).dtype, nd.uint8)
+        self.assertEqual(nd.ndarray(np.uint16(100)).dtype, nd.uint16)
+        self.assertEqual(nd.ndarray(np.uint32(100)).dtype, nd.uint32)
+        self.assertEqual(nd.ndarray(np.uint64(100)).dtype, nd.uint64)
+        self.assertEqual(nd.ndarray(np.float32(100.)).dtype, nd.float32)
+        self.assertEqual(nd.ndarray(np.float64(100.)).dtype, nd.float64)
+        self.assertEqual(nd.ndarray(np.complex64(100j)).dtype, nd.cfloat32)
+        self.assertEqual(nd.ndarray(np.complex128(100j)).dtype, nd.cfloat64)
+
+    def test_numpy_scalar_conversion_values(self):
+        self.assertEqual(nd.ndarray(np.bool_(True)).as_py(), True)
+        self.assertEqual(nd.ndarray(np.bool_(False)).as_py(), False)
+        self.assertEqual(nd.ndarray(np.int8(100)).as_py(), 100)
+        self.assertEqual(nd.ndarray(np.int8(-100)).as_py(), -100)
+        self.assertEqual(nd.ndarray(np.int16(20000)).as_py(), 20000)
+        self.assertEqual(nd.ndarray(np.int16(-20000)).as_py(), -20000)
+        self.assertEqual(nd.ndarray(np.int32(1000000000)).as_py(), 1000000000)
+        self.assertEqual(nd.ndarray(np.int64(-1000000000000)).as_py(), -1000000000000)
+        self.assertEqual(nd.ndarray(np.int64(1000000000000)).as_py(), 1000000000000)
+        self.assertEqual(nd.ndarray(np.int32(-1000000000)).as_py(), -1000000000)
+        self.assertEqual(nd.ndarray(np.uint8(200)).as_py(), 200)
+        self.assertEqual(nd.ndarray(np.uint16(50000)).as_py(), 50000)
+        self.assertEqual(nd.ndarray(np.uint32(3000000000)).as_py(), 3000000000)
+        self.assertEqual(nd.ndarray(np.uint64(10000000000000000000)).as_py(), 10000000000000000000)
+        self.assertEqual(nd.ndarray(np.float32(2.5)).as_py(), 2.5)
+        self.assertEqual(nd.ndarray(np.float64(2.5)).as_py(), 2.5)
+        self.assertEqual(nd.ndarray(np.complex64(2.5-1j)).as_py(), 2.5-1j)
+        self.assertEqual(nd.ndarray(np.complex128(2.5-1j)).as_py(), 2.5-1j)

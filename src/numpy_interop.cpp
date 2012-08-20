@@ -390,7 +390,7 @@ ndarray pydnd::ndarray_from_numpy_array(PyArrayObject* obj)
 dnd::ndarray pydnd::ndarray_from_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
-        return ndarray(((PyBoolScalarObject *)obj)->obval != 0);
+        return ndarray((dnd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
     } else if (PyArray_IsScalar(obj, Byte)) {
         return ndarray(((PyByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UByte)) {

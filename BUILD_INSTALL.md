@@ -91,11 +91,12 @@ Linux
 -----
 
 Execute the following commands from the dynamicndarray folder,
-which is the root of the project:
+which is the root of the project (Replace RelWithDebugInfo with
+Release if doing a release build that doesn't need debug info):
 
     $ mkdir build
     $ cd build
-    $ cmake ..
+    $ cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
     $ make
     $ make install # or "sudo make install"
 
@@ -104,16 +105,24 @@ installed, and where the Python module goes, use the
 `CMAKE_INSTALL_PREFIX` and `PYTHON_PACKAGE_INSTALL_PREFIX`
 cmake configuration variables respectively.
 
+You may have to customize some library locations, for example a
+build configuration on a customized centos 5 install might
+look like this:
+
+    $ cmake -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44 -DCMAKE_BUILD_TYPE=RelWithDebugInfo -DPythonInterp_FIND_VERSION=2.6 -DBOOST_ROOT=~/Libraries/boost_1_50_0 ..
+
 Mac OS X
 --------
 
 Switch the "-DCMAKE\_OSX\_ARCHITECTURES" argument below to "i386" if
 you're using 32-bit Python. Execute the following commands
-from the dynamicndarray folder, which is the root of the project:
+from the dynamicndarray folder, which is the root of the project
+(Replace RelWithDebugInfo with Release if doing a release build
+that doesn't need debug info):
 
     $ mkdir build
     $ cd build
-    $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++"  ..
+    $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
     $ make
     $ make install # or "sudo make install"
 

@@ -28,7 +28,7 @@ These are some options which can be configured by calling
 CMake with an argument like "-DCMAKE_BUILD_TYPE=Release".
 
 CMAKE_BUILD_TYPE
-    Which kind of build, such as Release, RelWithDebugInfo, Debug.
+    Which kind of build, such as Release, RelWithDebInfo, Debug.
 PYTHON_PACKAGE_INSTALL_PREFIX
     Where the Python module should be installed.
 CMAKE_INSTALL_PREFIX
@@ -91,12 +91,12 @@ Linux
 -----
 
 Execute the following commands from the dynamicndarray folder,
-which is the root of the project (Replace RelWithDebugInfo with
+which is the root of the project (Replace RelWithDebInfo with
 Release if doing a release build that doesn't need debug info):
 
     $ mkdir build
     $ cd build
-    $ cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
+    $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
     $ make
     $ make install # or "sudo make install"
 
@@ -109,7 +109,7 @@ You may have to customize some library locations, for example a
 build configuration on a customized centos 5 install might
 look like this:
 
-    $ cmake -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44 -DCMAKE_BUILD_TYPE=RelWithDebugInfo -DPythonInterp_FIND_VERSION=2.6 -DBOOST_ROOT=~/Libraries/boost_1_50_0 ..
+    $ cmake -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPythonInterp_FIND_VERSION=2.6 -DBOOST_ROOT=~/Libraries/boost_1_50_0 ..
 
 Mac OS X
 --------
@@ -117,12 +117,12 @@ Mac OS X
 Switch the "-DCMAKE\_OSX\_ARCHITECTURES" argument below to "i386" if
 you're using 32-bit Python. Execute the following commands
 from the dynamicndarray folder, which is the root of the project
-(Replace RelWithDebugInfo with Release if doing a release build
+(Replace RelWithDebInfo with Release if doing a release build
 that doesn't need debug info):
 
     $ mkdir build
     $ cd build
-    $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebugInfo ..
+    $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
     $ make
     $ make install # or "sudo make install"
 

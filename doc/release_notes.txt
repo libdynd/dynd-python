@@ -1,0 +1,21 @@
+Blaze Release Notes
+===================
+
+Blaze 0.1.0
+-----------
+
+This is the first preview release of blaze, including an early version
+of blaze-local. Blaze will layer a broader distributed storage and
+compute system on top of blaze-local, numpy, and other systems.
+
+Blaze-local is a multi-dimensional array library for Python
+which provides functionality augmenting the NumPy/Matplotlib/SciPy
+computing stack. It is built using the dynamicndarray library,
+a C++ library which is also in preview release.
+
+This initial release includes a basic dtype system, a multi-dimensional
+array primitive, interoperability with Numpy, lazy evaluation,
+and an early gfunc library supporting kernels provided via ctypes.
+
+As a preview release, there are many bugs, missing features, and
+features that will change drastically as development proceeds.

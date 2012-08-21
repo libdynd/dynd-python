@@ -11,8 +11,14 @@ Welcome to the Blaze documentation!
    Blaze-Local and Blaze are in a preview release stage, things are expected
    to change significantly during pre-1.0 development.
 
-In any examples, it is assumed that `from blaze import nd` has been
-executed prior to the sample Python code.
+This is some preliminary documentation for blaze-local, meant to provide
+a simple reference to some of the key features in the library. Not everything
+in the library is covered, and many things you might expect to work are
+not implemented yet.
+
+In any examples, it is assumed that ``from blaze import nd`` has been
+executed prior to the sample Python code. In examples demonstrating
+Numpy interoperability, ``import numpy as np`` is also assumed.
 
 Contents:
 
@@ -21,6 +27,8 @@ Contents:
 
     dtype
     ndarray
+    gfunc
+    debugging
 
 Indices and tables
 ==================

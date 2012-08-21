@@ -1,11 +1,27 @@
+# An NDTable is either a LeafTable or a dictionary of NDTables (as values)
+# LeafTables are either local-tables, expression-graphs, or remote tables
+# Local tables are indexed-and-dtyped-bytes, indexed-NumPy arrays, or indexed-dynamic ndarrays.
+# The essence of the NDTable is that operations are mapped to separate operations
+# on the segments which when executed push the code to where the data lives.
+
 """
-NDtables are distributed
+NDtables 
 Attributes:
    * nd -- number of dimensions === number of independent indexing objects
-   * children --- a mapping of names or sub-indexes to ndtables
-   * name --- this is a unique URL for the ndtable or empty string if local
-   * indexes --- an nd-sequence of index-objects for each dimension. 
+   * children --- a mapping of names or sub-indexes to ndtable segments
+   * name --- this is a unique URL for the ndtable or empty string if unassigned
+   * indexes --- an nd-sequence of index-objects for each dimension.
+   * flags --- attributes are true or false
 """
+
+class Flags(object):
+    def __init__(self, **kwds):
+        for key, val in kwds.iteritems():
+            kwds[key] = True if val else False
+        self.__dict__.update(kwds)
+
+    def __setattr__(self, attr, val):
+        self.__dict__[attr] = True if val else False
 
 ############################
 # Index Objects
@@ -32,24 +48,25 @@ class FuncIndex(Function):
 class FuncCallBack(Function):
     pass
 
-# A Leaf Table is a local ndtable that is a leaf node
-#  It is a collection of local index arrays
-class LeafTable(object):
-    pass
+# wrapper around dyndarray and NumPy
+class BasicArray(object):
+    data = None
+    shape = None
+    strides = None
+    dtype = Float()
 
-# An ExpressionTable is an NDTable that is a calculation graph
-class ExpressionTable(object):
+class ITable(object):  # Table interface
     pass
-
-# A LocalTable is a collection of typed-bytes
-class LocalTable(object):
-    pass
-
-class NDTable(object):
+        
+class NDTable(ITable):
     nd = 1
-    children = {}
+    segments = {} # maps keys to NDTables
     name = ''
-    indexes = [Auto()]
+    dimexes = [Auto()]
+    indexes = {}
+    meta = {}
+    # local, remote, expression
+    flags = Flags()
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
 

@@ -11,7 +11,6 @@
 
 #include "Python.h"
 
-#include <stdint.h>
 #include <sstream>
 
 #include <dnd/ndarray.hpp>

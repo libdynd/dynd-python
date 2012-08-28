@@ -9,8 +9,6 @@
 #ifndef _DND__PLACEMENT_WRAPPERS_HPP_
 #define _DND__PLACEMENT_WRAPPERS_HPP_
 
-#include <stdint.h>
-
 #include <dnd/dtype.hpp>
 #include <dnd/ndarray.hpp>
 #include <dnd/codegen/codegen_cache.hpp>

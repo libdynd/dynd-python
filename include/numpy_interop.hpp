@@ -36,7 +36,6 @@
 # define NO_IMPORT_ARRAY
 #endif
 
-#include <stdint.h>
 #include <sstream>
 
 #include <dnd/dtype.hpp>

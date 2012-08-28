@@ -131,6 +131,7 @@ get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 #       solution, so CMAKE_BUILD_TYPE must match the build target
 #       you want to install with.
 string(REPLACE "$(Configuration)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
+string(REPLACE "$(OutDir)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
 install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blaze/nd")
 # Install the dynamicndarray lib
 if(NOT WIN32)

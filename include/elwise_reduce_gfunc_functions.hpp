@@ -8,7 +8,6 @@
 
 #include <Python.h>
 
-#include <stdint.h>
 #include <sstream>
 #include <deque>
 #include <vector>

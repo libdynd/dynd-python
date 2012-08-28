@@ -79,7 +79,7 @@ Execute the following commands:
     D:\dynamicndarray>mkdir build
     D:\dynamicndarray>cd build
     D:\dynamicndarray>set BOOST_ROOT=D:\Develop\boost_1_48_0
-    D:\dynamicndarray\build>cmake -G "Visual Studio 10 Win64" ..
+    D:\dynamicndarray\build>cmake -G "Visual Studio 10 Win64" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
        [output, check it for errors]
     D:\dynamicndarray\build>start dynamicndarray.sln
        [Visual Studio should start and load the project]

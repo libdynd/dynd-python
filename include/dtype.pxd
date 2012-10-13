@@ -37,6 +37,7 @@ cdef extern from "dnd/dtype.hpp" namespace "dnd":
         struct_type_id
         tuple_type_id
         array_type_id
+        ndarray_type_id
         convert_type_id
         pattern_type_id
 
@@ -102,6 +103,8 @@ cdef extern from "dtype_functions.hpp" namespace "pydnd":
     string dtype_repr(dtype&)
     dtype deduce_dtype_from_object(object) except +translate_exception
     dtype make_dtype_from_object(object) except +translate_exception
+
+    dtype dtype_getitem(dtype&, object) except +translate_exception
 
     dtype dnd_make_convert_dtype(dtype&, dtype&, object) except +translate_exception
     dtype dnd_make_fixedstring_dtype(object, int) except +translate_exception

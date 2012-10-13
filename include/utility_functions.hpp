@@ -77,6 +77,7 @@ public:
 };
 
 intptr_t pyobject_as_index(PyObject *index);
+dnd::irange pyobject_as_irange(PyObject *index);
 
 PyObject* intptr_array_as_tuple(int size, const intptr_t *array);
 

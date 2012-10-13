@@ -46,26 +46,6 @@ dnd::ndarray pydnd::ndarray_as_dtype(const dnd::ndarray& n, const dtype& dt, PyO
     return n.as_dtype(dt, pyarg_error_mode(assign_error_obj));
 }
 
-static irange pyobject_as_irange(PyObject *index)
-{
-    if (PySlice_Check(index)) {
-        irange result;
-        PySliceObject *slice = (PySliceObject *)index;
-        if (slice->start != Py_None) {
-            result.set_start(pyobject_as_index(slice->start));
-        }
-        if (slice->stop != Py_None) {
-            result.set_finish(pyobject_as_index(slice->stop));
-        }
-        if (slice->step != Py_None) {
-            result.set_step(pyobject_as_index(slice->step));
-        }
-        return result;
-    } else {
-        return irange(pyobject_as_index(index));
-    }
-}
-
 dnd::ndarray pydnd::ndarray_getitem(const dnd::ndarray& n, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges

@@ -30,6 +30,26 @@ intptr_t pydnd::pyobject_as_index(PyObject *index)
     return result;
 }
 
+irange pydnd::pyobject_as_irange(PyObject *index)
+{
+    if (PySlice_Check(index)) {
+        irange result;
+        PySliceObject *slice = (PySliceObject *)index;
+        if (slice->start != Py_None) {
+            result.set_start(pyobject_as_index(slice->start));
+        }
+        if (slice->stop != Py_None) {
+            result.set_finish(pyobject_as_index(slice->stop));
+        }
+        if (slice->step != Py_None) {
+            result.set_step(pyobject_as_index(slice->step));
+        }
+        return result;
+    } else {
+        return irange(pyobject_as_index(index));
+    }
+}
+
 PyObject* pydnd::intptr_array_as_tuple(int size, const intptr_t *values)
 {
     PyObject *result = PyTuple_New(size);

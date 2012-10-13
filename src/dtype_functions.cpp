@@ -230,3 +230,26 @@ dnd::dtype pydnd::dnd_make_pointer_dtype(const dtype& target_dtype)
 {
     return make_pointer_dtype(target_dtype);
 }
+
+dnd::dtype pydnd::dtype_getitem(const dnd::dtype& d, PyObject *subscript)
+{
+    // Convert the pyobject into an array of iranges
+    intptr_t size;
+    shortvector<irange> indices;
+    if (!PyTuple_Check(subscript)) {
+        // A single subscript
+        size = 1;
+        indices.init(1);
+        indices[0] = pyobject_as_irange(subscript);
+    } else {
+        size = PyTuple_GET_SIZE(subscript);
+        // Tuple of subscripts
+        indices.init(size);
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
+        }
+    }
+
+    // Do an indexing operation
+    return d.index((int)size, indices.get());
+}

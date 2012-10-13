@@ -89,6 +89,11 @@ dnd::dtype dnd_make_string_dtype(PyObject *encoding_obj);
  */
 dnd::dtype dnd_make_pointer_dtype(const dnd::dtype& target_dtype);
 
+/**
+ * Implementation of __getitem__ for the wrapped dtype object.
+ */
+dnd::dtype dtype_getitem(const dnd::dtype& d, PyObject *subscript);
+
 } // namespace pydnd
 
 #endif // _DND__DTYPE_FUNCTIONS_HPP_

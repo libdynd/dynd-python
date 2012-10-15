@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "exception_translation.hpp" namespace "pydnd":
+cdef extern from "exception_translation.hpp" namespace "pydynd":
     void translate_exception()
     void set_broadcast_exception(object)
 
@@ -17,13 +17,13 @@ set_broadcast_exception(BroadcastError)
 # Initialize Numpy
 cdef extern from "do_import_array.hpp":
     pass
-cdef extern from "numpy_interop.hpp" namespace "pydnd":
+cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object ndarray_as_numpy_struct_capsule(ndarray&) except +translate_exception
     void import_numpy()
 import_numpy()
 
 # Initialize ctypes C level interop data
-cdef extern from "ctypes_interop.hpp" namespace "pydnd":
+cdef extern from "ctypes_interop.hpp" namespace "pydynd":
     void init_ctypes_interop() except +translate_exception
 init_ctypes_interop()
 
@@ -31,7 +31,7 @@ init_ctypes_interop()
 init_w_ndarray_typeobject(w_ndarray)
 init_w_dtype_typeobject(w_dtype)
 
-include "dnd.pxd"
+include "dynd.pxd"
 include "codegen_cache.pxd"
 include "dtype.pxd"
 include "ndarray.pxd"
@@ -39,7 +39,7 @@ include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 
 # Issue a performance warning if any of the diagnostics macros are enabled
-cdef extern from "<dnd/diagnostics.hpp>" namespace "dnd":
+cdef extern from "<dnd/diagnostics.hpp>" namespace "dynd":
     bint any_diagnostics_enabled()
     string which_diagnostics_enabled()
 if any_diagnostics_enabled():
@@ -295,7 +295,7 @@ cdef class w_ndarray:
 
     def __len__(self):
         if GET(self.v).get_ndim() == 0:
-            raise TypeError('zero-dimensional dnd::ndarray has no len()')
+            raise TypeError('zero-dimensional dynd::ndarray has no len()')
         return GET(self.v).get_shape()[0]
 
     def __getitem__(self, x):
@@ -337,7 +337,7 @@ def groupby(data, by, groups):
 def arange(start, stop=None, step=None):
     """Constructs an ndarray representing a stepped range of values."""
     import warnings
-    warnings.warn("dnd::arange doesn't produce an arange node yet, it is still by value")
+    warnings.warn("dynd::arange doesn't produce an arange node yet, it is still by value")
     cdef w_ndarray result = w_ndarray()
     # Move the first argument to 'stop' if stop isn't specified
     if stop is None:
@@ -349,7 +349,7 @@ def arange(start, stop=None, step=None):
 def linspace(start, stop, count=50):
     """Constructs a specified count of values interpolating a range."""
     import warnings
-    warnings.warn("dnd::linspace doesn't produce a linspace node yet, it is still by value")
+    warnings.warn("dynd::linspace doesn't produce a linspace node yet, it is still by value")
     cdef w_ndarray result = w_ndarray()
     SET(result.v, ndarray_linspace(start, stop, count))
     return result

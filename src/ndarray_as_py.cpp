@@ -8,8 +8,8 @@
 #include "utility_functions.hpp"
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
 static PyObject* element_as_pyobject(const dtype& d, const char *data)
 {
@@ -78,7 +78,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data)
                     return PyUnicode_DecodeUTF32(data, sizeof(uint32_t) * (udata_end - udata), NULL, NULL);
                 }
                 default:
-                    throw runtime_error("Unrecognized dnd::ndarray string encoding");
+                    throw runtime_error("Unrecognized dynd::ndarray string encoding");
             }
         }
         case string_type_id: {
@@ -94,12 +94,12 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data)
                 case string_encoding_utf_32:
                     return PyUnicode_DecodeUTF32(refs[0], refs[1] - refs[0], NULL, NULL);
                 default:
-                    throw runtime_error("Unrecognized dnd::ndarray string encoding");
+                    throw runtime_error("Unrecognized dynd::ndarray string encoding");
             }
         }
         default: {
             stringstream ss;
-            ss << "Cannot convert dnd::ndarray with dtype " << d << " into python object";
+            ss << "Cannot convert dynd::ndarray with dtype " << d << " into python object";
             throw runtime_error(ss.str());
         }
     }
@@ -130,7 +130,7 @@ static PyObject* nested_ndarray_as_py(const dtype& d, const char *data, int ndim
     }
 }
 
-PyObject* pydnd::ndarray_as_py(const dnd::ndarray& n)
+PyObject* pydynd::ndarray_as_py(const dynd::ndarray& n)
 {
     // Evaluate the ndarray, and convert strings to the Python encoding
     ndarray nvals = n.vals();

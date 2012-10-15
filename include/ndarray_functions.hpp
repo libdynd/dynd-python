@@ -18,7 +18,7 @@
 #include "ndarray_from_py.hpp"
 #include "ndarray_as_py.hpp"
 
-namespace pydnd {
+namespace pydynd {
 
 /**
  * This is the typeobject and struct of w_ndarray from Cython.
@@ -33,80 +33,80 @@ inline bool WNDArray_Check(PyObject *obj) {
 struct WNDArray {
   PyObject_HEAD;
   // This is ndarray_placement_wrapper in Cython-land
-  dnd::ndarray v;
+  dynd::ndarray v;
 };
 void init_w_ndarray_typeobject(PyObject *type);
 
-inline void ndarray_init_from_pyobject(dnd::ndarray& n, PyObject* obj)
+inline void ndarray_init_from_pyobject(dynd::ndarray& n, PyObject* obj)
 {
     n = ndarray_from_py(obj);
 }
-dnd::ndarray ndarray_vals(const dnd::ndarray& n);
-dnd::ndarray ndarray_eval_copy(const dnd::ndarray& n, PyObject* access_flags, const dnd::eval::eval_context *ectx = &dnd::eval::default_eval_context);
+dynd::ndarray ndarray_vals(const dynd::ndarray& n);
+dynd::ndarray ndarray_eval_copy(const dynd::ndarray& n, PyObject* access_flags, const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
 
-inline dnd::ndarray ndarray_add(const dnd::ndarray& lhs, const dnd::ndarray& rhs)
+inline dynd::ndarray ndarray_add(const dynd::ndarray& lhs, const dynd::ndarray& rhs)
 {
     return lhs + rhs;
 }
 
-inline dnd::ndarray ndarray_subtract(const dnd::ndarray& lhs, const dnd::ndarray& rhs)
+inline dynd::ndarray ndarray_subtract(const dynd::ndarray& lhs, const dynd::ndarray& rhs)
 {
     return lhs - rhs;
 }
 
-inline dnd::ndarray ndarray_multiply(const dnd::ndarray& lhs, const dnd::ndarray& rhs)
+inline dynd::ndarray ndarray_multiply(const dynd::ndarray& lhs, const dynd::ndarray& rhs)
 {
     return lhs * rhs;
 }
 
-inline dnd::ndarray ndarray_divide(const dnd::ndarray& lhs, const dnd::ndarray& rhs)
+inline dynd::ndarray ndarray_divide(const dynd::ndarray& lhs, const dynd::ndarray& rhs)
 {
     return lhs / rhs;
 }
 
-inline std::string ndarray_str(const dnd::ndarray& n)
+inline std::string ndarray_str(const dynd::ndarray& n)
 {
     std::stringstream ss;
     ss << n;
     return ss.str();
 }
 
-inline std::string ndarray_repr(const dnd::ndarray& n)
+inline std::string ndarray_repr(const dynd::ndarray& n)
 {
     std::stringstream ss;
     ss << "nd." << n;
     return ss.str();
 }
 
-inline std::string ndarray_debug_dump(const dnd::ndarray& n)
+inline std::string ndarray_debug_dump(const dynd::ndarray& n)
 {
     std::stringstream ss;
     n.debug_dump(ss);
     return ss.str();
 }
 
-dnd::ndarray ndarray_as_dtype(const dnd::ndarray& n, const dnd::dtype& dt, PyObject *assign_error_obj);
+dynd::ndarray ndarray_as_dtype(const dynd::ndarray& n, const dynd::dtype& dt, PyObject *assign_error_obj);
 
 /**
  * Implementation of __getitem__ for the wrapped ndarray object.
  */
-dnd::ndarray ndarray_getitem(const dnd::ndarray& n, PyObject *subscript);
+dynd::ndarray ndarray_getitem(const dynd::ndarray& n, PyObject *subscript);
 
 /**
  * Implementation of nd.arange().
  */
-dnd::ndarray ndarray_arange(PyObject *start, PyObject *stop, PyObject *step);
+dynd::ndarray ndarray_arange(PyObject *start, PyObject *stop, PyObject *step);
 
 /**
  * Implementation of nd.linspace().
  */
-dnd::ndarray ndarray_linspace(PyObject *start, PyObject *stop, PyObject *count);
+dynd::ndarray ndarray_linspace(PyObject *start, PyObject *stop, PyObject *count);
 
 /**
  * Implementation of nd.groupby().
  */
-dnd::ndarray ndarray_groupby(const dnd::ndarray& data, const dnd::ndarray& by, const dnd::dtype& groups);
+dynd::ndarray ndarray_groupby(const dynd::ndarray& data, const dynd::ndarray& by, const dynd::dtype& groups);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__NDARRAY_FUNCTIONS_HPP_

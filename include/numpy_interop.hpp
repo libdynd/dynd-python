@@ -30,7 +30,7 @@
 # define NPY_ARRAY_UPDATEIFCOPY NPY_UPDATEIFCOPY
 #endif
 
-#define PY_ARRAY_UNIQUE_SYMBOL pydnd_ARRAY_API
+#define PY_ARRAY_UNIQUE_SYMBOL pydynd_ARRAY_API
 // Invert the importing signal to match how numpy wants it
 #ifndef NUMPY_IMPORT_ARRAY
 # define NO_IMPORT_ARRAY
@@ -44,7 +44,7 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
 
-namespace pydnd {
+namespace pydynd {
 
 inline int import_numpy()
 {
@@ -57,7 +57,7 @@ inline int import_numpy()
 }
 
 /**
- * Converts a numpy dtype to a dnd::dtype. Use the data_alignment
+ * Converts a numpy dtype to a dynd::dtype. Use the data_alignment
  * parameter to get accurate alignment, as Numpy may have misaligned data,
  * or may report a smaller alignment than is necessary based on the data.
  *
@@ -66,57 +66,57 @@ inline int import_numpy()
  *                        alignment of that data. The default of zero
  *                        causes it to use Numpy's data alignment
  */
-dnd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
+dynd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
 
 /**
- * Converts a dnd::dtype to a numpy dtype.
+ * Converts a dynd::dtype to a numpy dtype.
  *
  * @param dt  The dtype to convert.
  */
-PyArray_Descr *numpy_dtype_from_dtype(const dnd::dtype& dt);
+PyArray_Descr *numpy_dtype_from_dtype(const dynd::dtype& dt);
 
 /**
  * Converts a pytypeobject for a numpy scalar
- * into a dnd::dtype.
+ * into a dynd::dtype.
  *
  * Returns 0 on success, -1 if it didn't match.
  */
-int dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dnd::dtype& out_d);
+int dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d);
 
 /**
  * Gets the dtype of a numpy scalar object
  */
-dnd::dtype dtype_of_numpy_scalar(PyObject* obj);
+dynd::dtype dtype_of_numpy_scalar(PyObject* obj);
 
 /**
- * Views a Numpy PyArrayObject as a dnd::ndarray.
+ * Views a Numpy PyArrayObject as a dynd::ndarray.
  */
-dnd::ndarray ndarray_from_numpy_array(PyArrayObject* obj);
+dynd::ndarray ndarray_from_numpy_array(PyArrayObject* obj);
 
 /**
- * Creates a dnd::ndarray from a numpy scalar.
+ * Creates a dynd::ndarray from a numpy scalar.
  */
-dnd::ndarray ndarray_from_numpy_scalar(PyObject* obj);
+dynd::ndarray ndarray_from_numpy_scalar(PyObject* obj);
 
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
-char numpy_kindchar_of(const dnd::dtype& d);
+char numpy_kindchar_of(const dynd::dtype& d);
 
 /**
  * Produces a PyCapsule (or PyCObject as appropriate) which
  * contains a __array_struct__ interface object.
  */
-PyObject* ndarray_as_numpy_struct_capsule(const dnd::ndarray& n);
+PyObject* ndarray_as_numpy_struct_capsule(const dynd::ndarray& n);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // DND_NUMPY_INTEROP
 
 // Make a no-op import_numpy for Cython to call,
 // so it doesn't need to know about DND_NUMPY_INTEROP
 #if !DND_NUMPY_INTEROP
-namespace pydnd {
+namespace pydynd {
 
 inline int import_numpy()
 {
@@ -164,7 +164,7 @@ typedef struct {
                            */
 } PyArrayInterface;
 
-} // namespace pydnd
+} // namespace pydynd
 #endif // !DND_NUMPY_INTEROP
 
 #endif // _DND__NUMPY_INTEROP_HPP_

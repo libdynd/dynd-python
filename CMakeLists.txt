@@ -56,7 +56,7 @@ include_directories(
     include
     )
 
-set(pydnd_CPP_SRC
+set(pydynd_CPP_SRC
     include/codegen_cache_functions.hpp
     include/ctypes_interop.hpp
     include/do_import_array.hpp
@@ -82,29 +82,29 @@ set(pydnd_CPP_SRC
     src/elwise_reduce_gfunc_functions.cpp
     src/utility_functions.cpp
     )
-set(pydnd_CYTHON_SRC
-    src/_pydnd.pyx
+set(pydynd_CYTHON_SRC
+    src/_pydynd.pyx
     include/codegen_cache.pxd
-    include/dnd.pxd
+    include/dynd.pxd
     include/dtype.pxd
     include/ndarray.pxd
     include/elwise_gfunc.pxd
     include/elwise_reduce_gfunc.pxd
     )
-set_source_files_properties(${pydnd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
+set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 
 source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
-cython_add_module(_pydnd ${pydnd_CPP_SRC} ${pydnd_CYTHON_SRC})
+cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
 
-set_target_properties(_pydnd PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(_pydynd PROPERTIES LINKER_LANGUAGE CXX)
 if(WIN32)
 elseif(APPLE)
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.
     set_target_properties(
-        _pydnd
+        _pydynd
         PROPERTIES COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function"
         )
@@ -112,19 +112,19 @@ else()
     # strict aliasing is disabled because Cython generated code
     # which made g++ 4.6.1 complain
     set_target_properties(
-        _pydnd
+        _pydynd
         PROPERTIES COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
         )
 endif()
 
-target_link_libraries(_pydnd dynamicndarray)
+target_link_libraries(_pydynd dynamicndarray)
 
 # Install all the Python scripts
 install(DIRECTORY blaze DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
-install(TARGETS _pydnd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blaze/nd")
+install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blaze/nd")
 # Install the basic_kernels .dll/.so
 get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 # NOTE: This only uses one configuration for the whole Visual Studio

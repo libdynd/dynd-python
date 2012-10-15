@@ -8,12 +8,12 @@
 
 #include <Python.h>
 
-namespace pydnd {
+namespace pydynd {
 
 void translate_exception();
 
 void set_broadcast_exception(PyObject *e);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__EXCEPTION_TRANSLATION_HPP_

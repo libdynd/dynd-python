@@ -13,7 +13,7 @@
 
 #include <dnd/dtype.hpp>
 
-namespace pydnd {
+namespace pydynd {
 
 /**
  * Function which casts the parameter to
@@ -77,7 +77,7 @@ public:
 };
 
 intptr_t pyobject_as_index(PyObject *index);
-dnd::irange pyobject_as_irange(PyObject *index);
+dynd::irange pyobject_as_irange(PyObject *index);
 
 PyObject* intptr_array_as_tuple(int size, const intptr_t *array);
 
@@ -88,13 +88,13 @@ PyObject* intptr_array_as_tuple(int size, const intptr_t *array);
  *
  * Returns the number of axes which were set.
  */
-int pyarg_axis_argument(PyObject *axis, int ndim, dnd::dnd_bool *reduce_axes);
+int pyarg_axis_argument(PyObject *axis, int ndim, dynd::dnd_bool *reduce_axes);
 
 /**
  * Parses the error_mode argument. If it is None, returns
  * assign_error_default.
  */
-dnd::assign_error_mode pyarg_error_mode(PyObject *error_mode_obj);
+dynd::assign_error_mode pyarg_error_mode(PyObject *error_mode_obj);
 
 /**
  * Matches the input object against one of several
@@ -126,6 +126,6 @@ bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
 
 uint32_t pyarg_access_flags(PyObject* obj);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__UTILITY_FUNCTIONS_HPP_

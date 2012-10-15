@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "dnd/ndarray.hpp" namespace "dnd":
+cdef extern from "dnd/ndarray.hpp" namespace "dynd":
     cdef cppclass ndarray:
         ndarray() except +translate_exception
         ndarray(signed char value)
@@ -52,7 +52,7 @@ cdef extern from "dnd/ndarray.hpp" namespace "dnd":
 
         void debug_dump(ostream&)
 
-cdef extern from "ndarray_functions.hpp" namespace "pydnd":
+cdef extern from "ndarray_functions.hpp" namespace "pydynd":
     void init_w_ndarray_typeobject(object)
 
     string ndarray_str(ndarray&) except +translate_exception

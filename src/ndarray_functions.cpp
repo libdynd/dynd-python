@@ -17,22 +17,22 @@
 #include <dnd/dtype_promotion.hpp>
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
-PyTypeObject *pydnd::WNDArray_Type;
+PyTypeObject *pydynd::WNDArray_Type;
 
-void pydnd::init_w_ndarray_typeobject(PyObject *type)
+void pydynd::init_w_ndarray_typeobject(PyObject *type)
 {
     WNDArray_Type = (PyTypeObject *)type;
 }
 
-dnd::ndarray pydnd::ndarray_vals(const dnd::ndarray& n)
+dynd::ndarray pydynd::ndarray_vals(const dynd::ndarray& n)
 {
     return n.vals();
 }
 
-dnd::ndarray pydnd::ndarray_eval_copy(const dnd::ndarray& n, PyObject* access_flags, const eval::eval_context *ectx)
+dynd::ndarray pydynd::ndarray_eval_copy(const dynd::ndarray& n, PyObject* access_flags, const eval::eval_context *ectx)
 {
     if (access_flags == Py_None) {
         return n.eval_copy(ectx);
@@ -41,12 +41,12 @@ dnd::ndarray pydnd::ndarray_eval_copy(const dnd::ndarray& n, PyObject* access_fl
     }
 }
 
-dnd::ndarray pydnd::ndarray_as_dtype(const dnd::ndarray& n, const dtype& dt, PyObject *assign_error_obj)
+dynd::ndarray pydynd::ndarray_as_dtype(const dynd::ndarray& n, const dtype& dt, PyObject *assign_error_obj)
 {
     return n.as_dtype(dt, pyarg_error_mode(assign_error_obj));
 }
 
-dnd::ndarray pydnd::ndarray_getitem(const dnd::ndarray& n, PyObject *subscript)
+dynd::ndarray pydynd::ndarray_getitem(const dynd::ndarray& n, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges
     intptr_t size;
@@ -69,7 +69,7 @@ dnd::ndarray pydnd::ndarray_getitem(const dnd::ndarray& n, PyObject *subscript)
     return n.index((int)size, indices.get());
 }
 
-ndarray pydnd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
+ndarray pydynd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
 {
     ndarray start_nd, stop_nd, step_nd;
     if (start != Py_None) {
@@ -92,7 +92,7 @@ ndarray pydnd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
     step_nd = step_nd.as_dtype(dt, assign_error_none).vals();
 
     if (start_nd.get_ndim() > 0 || stop_nd.get_ndim() > 0 || step_nd.get_ndim()) {
-        throw runtime_error("dnd::arange should only be called with scalar parameters");
+        throw runtime_error("dynd::arange should only be called with scalar parameters");
     }
 
     return arange(dt, start_nd.get_readonly_originptr(),
@@ -100,7 +100,7 @@ ndarray pydnd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
             step_nd.get_readonly_originptr());
 }
 
-dnd::ndarray pydnd::ndarray_linspace(PyObject *start, PyObject *stop, PyObject *count)
+dynd::ndarray pydynd::ndarray_linspace(PyObject *start, PyObject *stop, PyObject *count)
 {
     ndarray start_nd, stop_nd;
     intptr_t count_val = pyobject_as_index(count);
@@ -115,13 +115,13 @@ dnd::ndarray pydnd::ndarray_linspace(PyObject *start, PyObject *stop, PyObject *
     stop_nd = stop_nd.as_dtype(dt, assign_error_none).vals();
 
     if (start_nd.get_ndim() > 0 || stop_nd.get_ndim() > 0) {
-        throw runtime_error("dnd::linspace should only be called with scalar parameters");
+        throw runtime_error("dynd::linspace should only be called with scalar parameters");
     }
 
     return linspace(dt, start_nd.get_readonly_originptr(), stop_nd.get_readonly_originptr(), count_val);
 }
 
-dnd::ndarray pydnd::ndarray_groupby(const dnd::ndarray& data, const dnd::ndarray& by, const dnd::dtype& groups)
+dynd::ndarray pydynd::ndarray_groupby(const dynd::ndarray& data, const dynd::ndarray& by, const dynd::dtype& groups)
 {
     return ndarray(make_groupby_node(data.get_node(), by.get_node(), groups));
 }

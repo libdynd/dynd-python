@@ -21,8 +21,8 @@
 #include <numpy/arrayscalars.h>
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
 dtype make_tuple_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
 {
@@ -68,7 +68,7 @@ dtype make_tuple_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment
     return make_tuple_dtype(fields, offsets, d->elsize, data_alignment);
 }
 
-dtype pydnd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
+dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 {
     dtype dt;
 
@@ -151,7 +151,7 @@ dtype pydnd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
     return dt;
 }
 
-PyArray_Descr *pydnd::numpy_dtype_from_dtype(const dnd::dtype& dt)
+PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
 {
     switch (dt.type_id()) {
         case bool_type_id:
@@ -261,7 +261,7 @@ PyArray_Descr *pydnd::numpy_dtype_from_dtype(const dnd::dtype& dt)
     throw runtime_error(ss.str());
 }
 
-int pydnd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dnd::dtype& out_d)
+int pydynd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d)
 {
     if (obj == &PyBoolArrType_Type) {
         out_d = make_dtype<dnd_bool>();
@@ -300,7 +300,7 @@ int pydnd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dnd::dtype& out
     return 0;
 }
 
-dtype pydnd::dtype_of_numpy_scalar(PyObject* obj)
+dtype pydynd::dtype_of_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
         return make_dtype<dnd_bool>();
@@ -334,7 +334,7 @@ dtype pydnd::dtype_of_numpy_scalar(PyObject* obj)
         return make_dtype<complex<double> >();
     }
 
-    throw std::runtime_error("could not deduce a pydnd dtype from the numpy scalar object");
+    throw std::runtime_error("could not deduce a pydynd dtype from the numpy scalar object");
 }
 
 inline size_t get_alignment_of(uintptr_t align_bits)
@@ -364,10 +364,10 @@ inline size_t get_alignment_of(PyArrayObject* obj)
     return get_alignment_of(align_bits);
 }
 
-ndarray pydnd::ndarray_from_numpy_array(PyArrayObject* obj)
+ndarray pydynd::ndarray_from_numpy_array(PyArrayObject* obj)
 {
     // Get the dtype of the array
-    dtype d = pydnd::dtype_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
+    dtype d = pydynd::dtype_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
 
     // Get a shared pointer that tracks buffer ownership
     PyObject *base = PyArray_BASE(obj);
@@ -387,7 +387,7 @@ ndarray pydnd::ndarray_from_numpy_array(PyArrayObject* obj)
                     DND_MOVE(memblock)));
 }
 
-dnd::ndarray pydnd::ndarray_from_numpy_scalar(PyObject* obj)
+dynd::ndarray pydynd::ndarray_from_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
         return ndarray((dnd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
@@ -423,10 +423,10 @@ dnd::ndarray pydnd::ndarray_from_numpy_scalar(PyObject* obj)
         return ndarray(complex<double>(val.real, val.imag));
     }
 
-    throw std::runtime_error("could not create a dnd::ndarray from the numpy scalar object");
+    throw std::runtime_error("could not create a dynd::ndarray from the numpy scalar object");
 }
 
-char pydnd::numpy_kindchar_of(const dnd::dtype& d)
+char pydynd::numpy_kindchar_of(const dynd::dtype& d)
 {
     switch (d.kind()) {
     case bool_kind:
@@ -456,7 +456,7 @@ char pydnd::numpy_kindchar_of(const dnd::dtype& d)
     }
 
     stringstream ss;
-    ss << "dnd::dtype \"" << d << "\" does not have an equivalent numpy kind";
+    ss << "dynd::dtype \"" << d << "\" does not have an equivalent numpy kind";
     throw runtime_error(ss.str());
 }
 
@@ -473,7 +473,7 @@ static void free_array_interface(void *ptr, void *extra_ptr)
     delete extra;
 }
 
-static PyObject* tuple_ndarray_as_numpy_struct_capsule(const dnd::ndarray& n)
+static PyObject* tuple_ndarray_as_numpy_struct_capsule(const dynd::ndarray& n)
 {
     bool writeable = (n.get_node()->get_access_flags() & write_access_flag) != 0;
 
@@ -503,10 +503,10 @@ static PyObject* tuple_ndarray_as_numpy_struct_capsule(const dnd::ndarray& n)
     return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_node()->get_data_memory_block()), free_array_interface);
 }
 
-PyObject* pydnd::ndarray_as_numpy_struct_capsule(const dnd::ndarray& n)
+PyObject* pydynd::ndarray_as_numpy_struct_capsule(const dynd::ndarray& n)
 {
     if (n.get_node()->get_category() != strided_array_node_category) {
-        throw runtime_error("cannot convert a dnd::ndarray that isn't a strided array into a numpy array");
+        throw runtime_error("cannot convert a dynd::ndarray that isn't a strided array into a numpy array");
     }
 
     dtype dt = n.get_dtype();

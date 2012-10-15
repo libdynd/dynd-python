@@ -11,16 +11,16 @@
 #include <Python.h>
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
-void pydnd::py_decref_function(void* obj)
+void pydynd::py_decref_function(void* obj)
 {
     // TODO: Should ensure we're holding the GIL before doing the DECREF
     Py_XDECREF((PyObject *)obj);
 }
 
-intptr_t pydnd::pyobject_as_index(PyObject *index)
+intptr_t pydynd::pyobject_as_index(PyObject *index)
 {
     pyobject_ownref start_obj(PyNumber_Index(index));
     intptr_t result = PyLong_AsLongLong(start_obj);
@@ -30,7 +30,7 @@ intptr_t pydnd::pyobject_as_index(PyObject *index)
     return result;
 }
 
-irange pydnd::pyobject_as_irange(PyObject *index)
+irange pydynd::pyobject_as_irange(PyObject *index)
 {
     if (PySlice_Check(index)) {
         irange result;
@@ -50,7 +50,7 @@ irange pydnd::pyobject_as_irange(PyObject *index)
     }
 }
 
-PyObject* pydnd::intptr_array_as_tuple(int size, const intptr_t *values)
+PyObject* pydynd::intptr_array_as_tuple(int size, const intptr_t *values)
 {
     PyObject *result = PyTuple_New(size);
     if (result == NULL) {
@@ -78,7 +78,7 @@ static void mark_axis(PyObject *int_axis, int ndim, dnd_bool *reduce_axes)
     }
 
     if (value >= ndim || value < -ndim) {
-        throw dnd::axis_out_of_bounds(value, ndim);
+        throw dynd::axis_out_of_bounds(value, ndim);
     } else if (value < 0) {
         value += ndim;
     }
@@ -92,7 +92,7 @@ static void mark_axis(PyObject *int_axis, int ndim, dnd_bool *reduce_axes)
     }
 }
 
-int pydnd::pyarg_axis_argument(PyObject *axis, int ndim, dnd_bool *reduce_axes)
+int pydynd::pyarg_axis_argument(PyObject *axis, int ndim, dnd_bool *reduce_axes)
 {
     int axis_count = 0;
 
@@ -124,7 +124,7 @@ int pydnd::pyarg_axis_argument(PyObject *axis, int ndim, dnd_bool *reduce_axes)
     return axis_count;
 }
 
-assign_error_mode pydnd::pyarg_error_mode(PyObject *error_mode_obj)
+assign_error_mode pydynd::pyarg_error_mode(PyObject *error_mode_obj)
 {
     return (assign_error_mode)pyarg_strings_to_int(error_mode_obj, "error_mode", assign_error_default,
                     "none", assign_error_none,
@@ -133,7 +133,7 @@ assign_error_mode pydnd::pyarg_error_mode(PyObject *error_mode_obj)
                     "inexact", assign_error_inexact);
 }
 
-int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string0, int value0)
 {
     if (obj == NULL || obj == Py_None) {
@@ -156,7 +156,7 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
     throw runtime_error(ss.str());
 }
 
-int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string0, int value0,
                 const char *string1, int value1)
 {
@@ -182,7 +182,7 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
     throw runtime_error(ss.str());
 }
 
-int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string0, int value0,
                 const char *string1, int value1,
                 const char *string2, int value2)
@@ -211,7 +211,7 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
     throw runtime_error(ss.str());
 }
 
-int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string0, int value0,
                 const char *string1, int value1,
                 const char *string2, int value2,
@@ -243,7 +243,7 @@ int pydnd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_
     throw runtime_error(ss.str());
 }
 
-bool pydnd::pyarg_bool(PyObject *obj, const char *argname, bool default_value)
+bool pydynd::pyarg_bool(PyObject *obj, const char *argname, bool default_value)
 {
     if (obj == NULL || obj == Py_None) {
         return default_value;
@@ -260,7 +260,7 @@ bool pydnd::pyarg_bool(PyObject *obj, const char *argname, bool default_value)
     }
 }
 
-uint32_t pydnd::pyarg_access_flags(PyObject* obj)
+uint32_t pydynd::pyarg_access_flags(PyObject* obj)
 {
     pyobject_ownref iterator(PyObject_GetIter(obj));
     PyObject *item_raw;

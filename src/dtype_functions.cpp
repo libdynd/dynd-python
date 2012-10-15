@@ -15,17 +15,17 @@
 #include <dnd/dtypes/pointer_dtype.hpp>
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
-PyTypeObject *pydnd::WDType_Type;
+PyTypeObject *pydynd::WDType_Type;
 
-void pydnd::init_w_dtype_typeobject(PyObject *type)
+void pydynd::init_w_dtype_typeobject(PyObject *type)
 {
     WDType_Type = (PyTypeObject *)type;
 }
 
-dtype pydnd::deduce_dtype_from_object(PyObject* obj)
+dtype pydynd::deduce_dtype_from_object(PyObject* obj)
 {
 #if DND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
@@ -90,13 +90,13 @@ dtype pydnd::deduce_dtype_from_object(PyObject* obj)
 #endif
     }
 
-    throw std::runtime_error("could not deduce pydnd dtype from the python object");
+    throw std::runtime_error("could not deduce pydynd dtype from the python object");
 }
 
 /**
- * Creates a dnd::dtype out of typical Python typeobjects.
+ * Creates a dynd::dtype out of typical Python typeobjects.
  */
-static dnd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
+static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
 {
     if (obj == &PyBool_Type) {
         return make_dtype<dnd_bool>();
@@ -111,10 +111,10 @@ static dnd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
         return dtype_from_ctypes_cdatatype((PyObject *)obj);
     }
 
-    throw std::runtime_error("could not convert the given Python TypeObject into a dnd::dtype");
+    throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");
 }
 
-dnd::dtype pydnd::make_dtype_from_object(PyObject* obj)
+dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
 {
     if (WDType_Check(obj)) {
         return ((WDType *)obj)->v;
@@ -122,12 +122,12 @@ dnd::dtype pydnd::make_dtype_from_object(PyObject* obj)
         char *s = NULL;
         Py_ssize_t len = 0;
         if (PyString_AsStringAndSize(obj, &s, &len) < 0) {
-            throw std::runtime_error("error processing string input to make dnd::dtype");
+            throw std::runtime_error("error processing string input to make dynd::dtype");
         }
         return dtype(string(s, len));
     } else if (PyUnicode_Check(obj)) {
         // TODO: Haven't implemented unicode yet.
-        throw std::runtime_error("unicode to dnd::dtype conversion isn't implemented yet");
+        throw std::runtime_error("unicode to dynd::dtype conversion isn't implemented yet");
     } else if (PyType_Check(obj)) {
 #if DND_NUMPY_INTEROP
         dtype result;
@@ -144,7 +144,7 @@ dnd::dtype pydnd::make_dtype_from_object(PyObject* obj)
     }
 #endif // DND_NUMPY_INTEROP
 
-    throw std::runtime_error("could not convert the Python Object into a dnd::dtype");
+    throw std::runtime_error("could not convert the Python Object into a dynd::dtype");
 }
 
 string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
@@ -207,31 +207,31 @@ string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     }
 }
 
-dnd::dtype pydnd::dnd_make_convert_dtype(const dnd::dtype& to_dtype, const dnd::dtype& from_dtype, PyObject *errmode)
+dynd::dtype pydynd::dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode)
 {
     return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
-dnd::dtype pydnd::dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size)
+dynd::dtype pydynd::dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
     return make_fixedstring_dtype(encoding, size);
 }
 
-dnd::dtype pydnd::dnd_make_string_dtype(PyObject *encoding_obj)
+dynd::dtype pydynd::dnd_make_string_dtype(PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
     return make_string_dtype(encoding);
 }
 
-dnd::dtype pydnd::dnd_make_pointer_dtype(const dtype& target_dtype)
+dynd::dtype pydynd::dnd_make_pointer_dtype(const dtype& target_dtype)
 {
     return make_pointer_dtype(target_dtype);
 }
 
-dnd::dtype pydnd::dtype_getitem(const dnd::dtype& d, PyObject *subscript)
+dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges
     intptr_t size;

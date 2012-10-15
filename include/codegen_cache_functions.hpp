@@ -13,9 +13,9 @@
 
 #include <dnd/codegen/codegen_cache.hpp>
 
-namespace pydnd {
+namespace pydynd {
 
-inline std::string codegen_cache_debug_dump(const dnd::codegen_cache& cgcache)
+inline std::string codegen_cache_debug_dump(const dynd::codegen_cache& cgcache)
 {
     std::stringstream ss;
     cgcache.debug_dump(ss);
@@ -23,6 +23,6 @@ inline std::string codegen_cache_debug_dump(const dnd::codegen_cache& cgcache)
 }
 
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__CODEGEN_CACHE_FUNCTIONS_HPP_

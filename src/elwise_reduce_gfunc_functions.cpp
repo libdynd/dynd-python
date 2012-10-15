@@ -16,12 +16,12 @@
 #include "ctypes_interop.hpp"
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
-static void create_elwise_reduce_gfunc_kernel_from_ctypes(dnd::codegen_cache& cgcache,
+static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache,
             PyCFuncPtrObject *cfunc, bool associative, bool commutative, const ndarray& identity,
-            dnd::gfunc::elwise_reduce_kernel& out_kernel)
+            dynd::gfunc::elwise_reduce_kernel& out_kernel)
 {
     dtype& returntype = out_kernel.m_returntype;
     vector<dtype> &paramtypes = out_kernel.m_paramtypes;
@@ -75,8 +75,8 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dnd::codegen_cache& cg
     }
 }
 
-void pydnd::elwise_reduce_gfunc_add_kernel(dnd::gfunc::elwise_reduce& gf, dnd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dnd::ndarray& identity)
+void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
+                            bool associative, bool commutative, const dynd::ndarray& identity)
 {
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
         gfunc::elwise_reduce_kernel ergk;
@@ -91,7 +91,7 @@ void pydnd::elwise_reduce_gfunc_add_kernel(dnd::gfunc::elwise_reduce& gf, dnd::c
 }
 
 
-PyObject *pydnd::elwise_reduce_gfunc_call(dnd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs)
+PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs)
 {
     Py_ssize_t nargs = PySequence_Size(args);
     if (nargs == 1) {

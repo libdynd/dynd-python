@@ -13,13 +13,13 @@
 #include "utility_functions.hpp"
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
-ctypes_info pydnd::ctypes;
+ctypes_info pydynd::ctypes;
 
 
-void pydnd::init_ctypes_interop()
+void pydynd::init_ctypes_interop()
 {
     memset(&ctypes, 0, sizeof(ctypes));
 
@@ -56,7 +56,7 @@ void pydnd::init_ctypes_interop()
 }
 
 
-calling_convention_t pydnd::get_ctypes_calling_convention(PyCFuncPtrObject* cfunc)
+calling_convention_t pydynd::get_ctypes_calling_convention(PyCFuncPtrObject* cfunc)
 {
     // This is the internal StgDictObject "flags" attribute, which is
     // custom-placed in the typeobject's dict by ctypes.
@@ -97,7 +97,7 @@ calling_convention_t pydnd::get_ctypes_calling_convention(PyCFuncPtrObject* cfun
 #endif
 }
 
-void pydnd::get_ctypes_signature(PyCFuncPtrObject* cfunc, dtype& out_returntype, std::vector<dnd::dtype>& out_paramtypes)
+void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, dtype& out_returntype, std::vector<dynd::dtype>& out_paramtypes)
 {
     // The fields restype and argtypes are not always stored at the C level,
     // so must use the higher level getattr.
@@ -132,14 +132,14 @@ void pydnd::get_ctypes_signature(PyCFuncPtrObject* cfunc, dtype& out_returntype,
 }
 
 
-dnd::dtype pydnd::dtype_from_ctypes_cdatatype(PyObject *d)
+dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
 {
     if (!PyObject_IsSubclass(d, ctypes.PyCData_Type)) {
         throw runtime_error("requested a dtype from a ctypes c data type, but the given object has the wrong type");
     }
 
     // If the ctypes type has a _dynd_type_ property, that should be
-    // a pydnd dtype instance corresponding to the type. This is how
+    // a pydynd dtype instance corresponding to the type. This is how
     // the complex type is supported, for example.
     PyObject *dynd_type_obj = PyObject_GetAttrString(d, "_dynd_type_");
     if (dynd_type_obj == NULL) {
@@ -188,7 +188,7 @@ dnd::dtype pydnd::dtype_from_ctypes_cdatatype(PyObject *d)
                 return make_dtype<uint64_t>();
             default: {
                 stringstream ss;
-                ss << "The ctypes type code '" << proto_str[0] << "' cannot be converted to a dnd::dtype";
+                ss << "The ctypes type code '" << proto_str[0] << "' cannot be converted to a dynd::dtype";
                 throw runtime_error(ss.str());
             }
         }
@@ -199,5 +199,5 @@ dnd::dtype pydnd::dtype_from_ctypes_cdatatype(PyObject *d)
         return make_pointer_dtype(target_dtype);
     }
 
-    throw runtime_error("Ctypes type object is not supported by dnd::dtype");
+    throw runtime_error("Ctypes type object is not supported by dynd::dtype");
 }

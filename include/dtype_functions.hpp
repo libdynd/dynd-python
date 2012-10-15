@@ -16,7 +16,7 @@
 #include <dnd/dtype.hpp>
 #include <dnd/string_encodings.hpp>
 
-namespace pydnd {
+namespace pydynd {
 
 /**
  * This is the typeobject and struct of w_dtype from Cython.
@@ -31,23 +31,23 @@ inline bool WDType_Check(PyObject *obj) {
 struct WDType {
   PyObject_HEAD;
   // This is dtype_placement_wrapper in Cython-land
-  dnd::dtype v;
+  dynd::dtype v;
 };
 void init_w_dtype_typeobject(PyObject *type);
 
-inline std::string dtype_str(const dnd::dtype& d)
+inline std::string dtype_str(const dynd::dtype& d)
 {
     std::stringstream ss;
     ss << d;
     return ss.str();
 }
 
-inline std::string dtype_repr(const dnd::dtype& d)
+inline std::string dtype_repr(const dynd::dtype& d)
 {
     std::stringstream ss;
-    if (d.type_id() < dnd::builtin_type_id_count &&
-                    d.type_id() != dnd::complex_float32_type_id &&
-                    d.type_id() != dnd::complex_float64_type_id) {
+    if (d.type_id() < dynd::builtin_type_id_count &&
+                    d.type_id() != dynd::complex_float32_type_id &&
+                    d.type_id() != dynd::complex_float64_type_id) {
         ss << "nd." << d;
     } else {
         ss << "nd.dtype('" << d << "')";
@@ -56,44 +56,44 @@ inline std::string dtype_repr(const dnd::dtype& d)
 }
 
 /**
- * Produces a dnd::dtype corresponding to the object's type. This
+ * Produces a dynd::dtype corresponding to the object's type. This
  * is to determine the dtype of an object that contains a value
  * or values.
  */
-dnd::dtype deduce_dtype_from_object(PyObject* obj);
+dynd::dtype deduce_dtype_from_object(PyObject* obj);
 
 /**
  * Converts a Python type, Numpy dtype, or string
  * into a dtype. This raises an error if given an object
  * which contains values, it is for dtype-like things only.
  */
-dnd::dtype make_dtype_from_object(PyObject* obj);
+dynd::dtype make_dtype_from_object(PyObject* obj);
 
 /**
  * Creates a convert dtype.
  */
-dnd::dtype dnd_make_convert_dtype(const dnd::dtype& to_dtype, const dnd::dtype& from_dtype, PyObject *errmode);
+dynd::dtype dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode);
 
 /**
  * Creates a fixed-sized string dtype.
  */
-dnd::dtype dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size);
+dynd::dtype dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size);
 
 /**
  * Creates a blockref string dtype.
  */
-dnd::dtype dnd_make_string_dtype(PyObject *encoding_obj);
+dynd::dtype dnd_make_string_dtype(PyObject *encoding_obj);
 
 /**
  * Creates a blockref pointer dtype.
  */
-dnd::dtype dnd_make_pointer_dtype(const dnd::dtype& target_dtype);
+dynd::dtype dnd_make_pointer_dtype(const dynd::dtype& target_dtype);
 
 /**
  * Implementation of __getitem__ for the wrapped dtype object.
  */
-dnd::dtype dtype_getitem(const dnd::dtype& d, PyObject *subscript);
+dynd::dtype dtype_getitem(const dynd::dtype& d, PyObject *subscript);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__DTYPE_FUNCTIONS_HPP_

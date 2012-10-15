@@ -18,8 +18,8 @@
 #include "numpy_interop.hpp"
 
 using namespace std;
-using namespace dnd;
-using namespace pydnd;
+using namespace dynd;
+using namespace pydynd;
 
 static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape, dtype& dt, int current_axis)
 {
@@ -33,7 +33,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
             }
         } else {
             if (shape[current_axis] != size) {
-                throw runtime_error("dnd::ndarray doesn't support arrays with varying dimension sizes yet");
+                throw runtime_error("dynd::ndarray doesn't support arrays with varying dimension sizes yet");
             }
         }
         
@@ -45,9 +45,9 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
             throw runtime_error("dnd:ndarray doesn't support dimensions which are sometimes scalars and sometimes arrays");
         }
 
-        dtype obj_dt = pydnd::deduce_dtype_from_object(obj);
+        dtype obj_dt = pydynd::deduce_dtype_from_object(obj);
         if (dt != obj_dt) {
-            dt = dnd::promote_dtypes_arithmetic(obj_dt, dt);
+            dt = dynd::promote_dtypes_arithmetic(obj_dt, dt);
         }
     }
 }
@@ -175,7 +175,7 @@ static T *fill_string_ndarray_from_pylist(T *data, PyObject *obj, const vector<i
     return data;
 }
 
-static dnd::ndarray ndarray_from_pylist(PyObject *obj)
+static dynd::ndarray ndarray_from_pylist(PyObject *obj)
 {
     // TODO: Add ability to specify access flags (e.g. immutable)
     // Do a pass through all the data to deduce its dtype and shape
@@ -246,14 +246,14 @@ static dnd::ndarray ndarray_from_pylist(PyObject *obj)
                 }
                 default:
                     stringstream ss;
-                    ss << "Deduced type from Python list, " << dt << ", doesn't have a dnd::ndarray conversion function yet";
+                    ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndarray conversion function yet";
                     throw runtime_error(ss.str());
             }
             break;
         }
         default: {
             stringstream ss;
-            ss << "Deduced type from Python list, " << dt << ", doesn't have a dnd::ndarray conversion function yet";
+            ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndarray conversion function yet";
             throw runtime_error(ss.str());
         }
     }
@@ -261,7 +261,7 @@ static dnd::ndarray ndarray_from_pylist(PyObject *obj)
     return result;
 }
 
-dnd::ndarray pydnd::ndarray_from_py(PyObject *obj)
+dynd::ndarray pydynd::ndarray_from_py(PyObject *obj)
 {
     // If it's a Cython w_ndarray
     if (WNDArray_Check(obj)) {
@@ -340,6 +340,6 @@ dnd::ndarray pydnd::ndarray_from_py(PyObject *obj)
     } else if (PyList_Check(obj)) {
         return ndarray_from_pylist(obj);
     } else {
-        throw std::runtime_error("could not convert python object into a dnd::ndarray");
+        throw std::runtime_error("could not convert python object into a dynd::ndarray");
     }
 }

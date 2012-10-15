@@ -10,14 +10,14 @@
 
 #include <dnd/ndarray.hpp>
 
-namespace pydnd {
+namespace pydynd {
 
 /**
  * Converts an ndarray into a Python object
  * using the default settings.
  */
-PyObject *ndarray_as_py(const dnd::ndarray& n);
+PyObject *ndarray_as_py(const dynd::ndarray& n);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__NDARRAY_AS_PY_HPP_

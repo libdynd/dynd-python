@@ -3,11 +3,11 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "<dnd/gfunc/elwise_reduce_gfunc.hpp>" namespace "dnd::gfunc":
+cdef extern from "<dnd/gfunc/elwise_reduce_gfunc.hpp>" namespace "dynd::gfunc":
     cdef cppclass elwise_reduce_gfunc:
         string& get_name()
 
-cdef extern from "elwise_reduce_gfunc_functions.hpp" namespace "pydnd":
+cdef extern from "elwise_reduce_gfunc_functions.hpp" namespace "pydynd":
     void elwise_reduce_gfunc_add_kernel(elwise_reduce_gfunc&, codegen_cache&, object,
                             bint, bint, ndarray&) except +translate_exception
     object elwise_reduce_gfunc_call(elwise_reduce_gfunc&, object, object) except +translate_exception

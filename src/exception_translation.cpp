@@ -16,24 +16,24 @@ namespace {
     PyObject *BroadcastException = NULL;
 } // anonymous namespace
 
-void pydnd::translate_exception()
+void pydynd::translate_exception()
 {
     try {
         if (PyErr_Occurred())
             ; // let the latest Python exn pass through and ignore the current one
         else
             throw;
-    } catch (const dnd::broadcast_error& exn) {
+    } catch (const dynd::broadcast_error& exn) {
         PyErr_SetString(BroadcastException, exn.message());
-    } catch (const dnd::too_many_indices& exn) {
+    } catch (const dynd::too_many_indices& exn) {
         PyErr_SetString(PyExc_IndexError, exn.message());
-    } catch (const dnd::index_out_of_bounds& exn) {
+    } catch (const dynd::index_out_of_bounds& exn) {
         PyErr_SetString(PyExc_IndexError, exn.message());
-    } catch (const dnd::axis_out_of_bounds& exn) {
+    } catch (const dynd::axis_out_of_bounds& exn) {
         PyErr_SetString(PyExc_IndexError, exn.message());
-    } catch (const dnd::irange_out_of_bounds& exn) {
+    } catch (const dynd::irange_out_of_bounds& exn) {
         PyErr_SetString(PyExc_IndexError, exn.message());
-    } catch (const dnd::invalid_type_id& exn) {
+    } catch (const dynd::invalid_type_id& exn) {
         PyErr_SetString(PyExc_TypeError, exn.message());
     } catch (const std::bad_alloc& exn) {
         PyErr_SetString(PyExc_MemoryError, exn.what());
@@ -56,7 +56,7 @@ void pydnd::translate_exception()
     }
 }
 
-void pydnd::set_broadcast_exception(PyObject *e)
+void pydynd::set_broadcast_exception(PyObject *e)
 {
     BroadcastException = e;
 }

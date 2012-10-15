@@ -15,7 +15,7 @@
 #include <dnd/ndarray.hpp>
 #include <dnd/codegen/calling_conventions.hpp>
 
-namespace pydnd {
+namespace pydynd {
 
 /**
  * Struct with data about the _ctypes module.
@@ -46,7 +46,7 @@ void init_ctypes_interop();
  * Constructs a dtype from a ctypes type object, such
  * as ctypes.c_int, ctypes.c_float, etc.
  */
-dnd::dtype dtype_from_ctypes_cdatatype(PyObject *d);
+dynd::dtype dtype_from_ctypes_cdatatype(PyObject *d);
 
 //////////////////////////////////////////////////////////
 // The following emulates a lot of the internal ctypes.h
@@ -130,7 +130,7 @@ inline bool CDataObject_Check(PyObject *v) {
 /**
  * Gets the calling convention of the ctypes function pointer object.
  */
-dnd::calling_convention_t get_ctypes_calling_convention(PyCFuncPtrObject* cfunc);
+dynd::calling_convention_t get_ctypes_calling_convention(PyCFuncPtrObject* cfunc);
 
 /**
  * Gets the signature of the ctypes function pointer object.
@@ -139,8 +139,8 @@ dnd::calling_convention_t get_ctypes_calling_convention(PyCFuncPtrObject* cfunc)
  * @out_returntype  The return type is placed here
  * @out_paramtypes  This is populated with the parameter types
  */
-void get_ctypes_signature(PyCFuncPtrObject* cfunc, dnd::dtype& out_returntype, std::vector<dnd::dtype>& out_paramtypes);
+void get_ctypes_signature(PyCFuncPtrObject* cfunc, dynd::dtype& out_returntype, std::vector<dynd::dtype>& out_paramtypes);
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__CTYPES_INTEROP_HPP_

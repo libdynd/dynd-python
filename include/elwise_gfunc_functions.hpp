@@ -18,13 +18,13 @@
 #include <dnd/codegen/codegen_cache.hpp>
 #include <dnd/gfunc/elwise_gfunc.hpp>
 
-namespace pydnd {
+namespace pydynd {
 
-void elwise_gfunc_add_kernel(dnd::gfunc::elwise& gf, dnd::codegen_cache& cgcache, PyObject *kernel);
+void elwise_gfunc_add_kernel(dynd::gfunc::elwise& gf, dynd::codegen_cache& cgcache, PyObject *kernel);
 
-PyObject *elwise_gfunc_call(dnd::gfunc::elwise& gf, PyObject *args, PyObject *kwargs);
+PyObject *elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyObject *kwargs);
 
-inline std::string elwise_gfunc_debug_dump(dnd::gfunc::elwise& gf)
+inline std::string elwise_gfunc_debug_dump(dynd::gfunc::elwise& gf)
 {
     std::stringstream ss;
     gf.debug_dump(ss);
@@ -32,27 +32,27 @@ inline std::string elwise_gfunc_debug_dump(dnd::gfunc::elwise& gf)
 }
 
 struct elwise_gfunc_placement_wrapper {
-    intptr_t dummy[(sizeof(dnd::gfunc::elwise) + sizeof(intptr_t) - 1)/sizeof(intptr_t)];
+    intptr_t dummy[(sizeof(dynd::gfunc::elwise) + sizeof(intptr_t) - 1)/sizeof(intptr_t)];
 };
 
 inline void elwise_gfunc_placement_new(elwise_gfunc_placement_wrapper& v, const char *name)
 {
     // Call placement new
-    new (&v) dnd::gfunc::elwise(name);
+    new (&v) dynd::gfunc::elwise(name);
 }
 
 inline void elwise_gfunc_placement_delete(elwise_gfunc_placement_wrapper& v)
 {
     // Call the destructor
-    ((dnd::gfunc::elwise *)(&v))->~elwise();
+    ((dynd::gfunc::elwise *)(&v))->~elwise();
 }
 
 // placement cast
-inline dnd::gfunc::elwise& GET(elwise_gfunc_placement_wrapper& v)
+inline dynd::gfunc::elwise& GET(elwise_gfunc_placement_wrapper& v)
 {
-    return *(dnd::gfunc::elwise *)&v;
+    return *(dynd::gfunc::elwise *)&v;
 }
 
-} // namespace pydnd
+} // namespace pydynd
 
 #endif // _DND__ELWISE_GFUNC_FUNCTIONS_HPP_

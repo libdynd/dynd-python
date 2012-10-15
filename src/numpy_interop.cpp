@@ -7,12 +7,12 @@
 
 #if DND_NUMPY_INTEROP
 
-#include <dnd/dtypes/byteswap_dtype.hpp>
-#include <dnd/dtypes/view_dtype.hpp>
-#include <dnd/dtypes/dtype_alignment.hpp>
-#include <dnd/dtypes/fixedstring_dtype.hpp>
-#include <dnd/dtypes/tuple_dtype.hpp>
-#include <dnd/memblock/external_memory_block.hpp>
+#include <dynd/dtypes/byteswap_dtype.hpp>
+#include <dynd/dtypes/view_dtype.hpp>
+#include <dynd/dtypes/dtype_alignment.hpp>
+#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/tuple_dtype.hpp>
+#include <dynd/memblock/external_memory_block.hpp>
 
 #include "dtype_functions.hpp"
 #include "ndarray_functions.hpp"

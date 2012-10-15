@@ -39,7 +39,7 @@ include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 
 # Issue a performance warning if any of the diagnostics macros are enabled
-cdef extern from "<dnd/diagnostics.hpp>" namespace "dynd":
+cdef extern from "<dynd/diagnostics.hpp>" namespace "dynd":
     bint any_diagnostics_enabled()
     string which_diagnostics_enabled()
 if any_diagnostics_enabled():

@@ -5,11 +5,11 @@
 
 #include <Python.h>
 
-#include <dnd/dtypes/string_dtype.hpp>
-#include <dnd/memblock/external_memory_block.hpp>
-#include <dnd/memblock/pod_memory_block.hpp>
-#include <dnd/nodes/scalar_node.hpp>
-#include <dnd/dtype_promotion.hpp>
+#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/memblock/external_memory_block.hpp>
+#include <dynd/memblock/pod_memory_block.hpp>
+#include <dynd/nodes/scalar_node.hpp>
+#include <dynd/dtype_promotion.hpp>
 
 #include "ndarray_from_py.hpp"
 #include "ndarray_functions.hpp"

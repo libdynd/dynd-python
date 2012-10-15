@@ -38,8 +38,8 @@
 
 #include <sstream>
 
-#include <dnd/dtype.hpp>
-#include <dnd/ndarray.hpp>
+#include <dynd/dtype.hpp>
+#include <dynd/ndarray.hpp>
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>

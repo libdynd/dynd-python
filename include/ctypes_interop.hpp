@@ -11,9 +11,9 @@
 
 #include <Python.h>
 
-#include <dnd/dtype.hpp>
-#include <dnd/ndarray.hpp>
-#include <dnd/codegen/calling_conventions.hpp>
+#include <dynd/dtype.hpp>
+#include <dynd/ndarray.hpp>
+#include <dynd/codegen/calling_conventions.hpp>
 
 namespace pydynd {
 

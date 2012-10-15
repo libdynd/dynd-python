@@ -5,8 +5,8 @@
 
 #include <Python.h>
 
-#include <dnd/dtypes/fixedstring_dtype.hpp>
-#include <dnd/dtypes/pointer_dtype.hpp>
+#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/pointer_dtype.hpp>
 
 #include "ctypes_interop.hpp"
 #include "dtype_functions.hpp"

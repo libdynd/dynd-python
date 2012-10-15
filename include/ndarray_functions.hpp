@@ -13,7 +13,7 @@
 
 #include <sstream>
 
-#include <dnd/ndarray.hpp>
+#include <dynd/ndarray.hpp>
 
 #include "ndarray_from_py.hpp"
 #include "ndarray_as_py.hpp"

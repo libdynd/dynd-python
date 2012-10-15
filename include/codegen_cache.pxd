@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "dnd/codegen/codegen_cache.hpp" namespace "dynd":
+cdef extern from "dynd/codegen/codegen_cache.hpp" namespace "dynd":
     cdef cppclass codegen_cache:
         pass
 

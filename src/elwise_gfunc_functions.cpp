@@ -7,9 +7,9 @@
 
 #include <algorithm>
 
-#include <dnd/nodes/elwise_unary_kernel_node.hpp>
-#include <dnd/nodes/elwise_binary_kernel_node.hpp>
-#include <dnd/memblock/external_memory_block.hpp>
+#include <dynd/nodes/elwise_unary_kernel_node.hpp>
+#include <dynd/nodes/elwise_binary_kernel_node.hpp>
+#include <dynd/memblock/external_memory_block.hpp>
 
 #include "elwise_gfunc_functions.hpp"
 #include "ndarray_functions.hpp"

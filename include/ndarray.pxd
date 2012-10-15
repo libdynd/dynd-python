@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "dnd/ndarray.hpp" namespace "dynd":
+cdef extern from "dynd/ndarray.hpp" namespace "dynd":
     cdef cppclass ndarray:
         ndarray() except +translate_exception
         ndarray(signed char value)

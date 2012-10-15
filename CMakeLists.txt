@@ -36,7 +36,7 @@ if(NUMPY_VERSION_DECIMAL LESS 10500)
         "Blaze requires NumPy >= 1.5")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynamicndarray/include/dnd/ndarray.hpp")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynamicndarray/include/dynd/ndarray.hpp")
 message(FATAL_ERROR
     "The dynamicndarray C++ library must be placed in\n"
     "libraries/dynamicndarray.\nRemove any temporary CMake\n"

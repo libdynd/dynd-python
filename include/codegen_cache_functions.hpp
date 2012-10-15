@@ -11,7 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <dnd/codegen/codegen_cache.hpp>
+#include <dynd/codegen/codegen_cache.hpp>
 
 namespace pydynd {
 

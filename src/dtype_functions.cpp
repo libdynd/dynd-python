@@ -9,10 +9,10 @@
 #include "ctypes_interop.hpp"
 #include "utility_functions.hpp"
 
-#include <dnd/dtypes/convert_dtype.hpp>
-#include <dnd/dtypes/fixedstring_dtype.hpp>
-#include <dnd/dtypes/string_dtype.hpp>
-#include <dnd/dtypes/pointer_dtype.hpp>
+#include <dynd/dtypes/convert_dtype.hpp>
+#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/pointer_dtype.hpp>
 
 using namespace std;
 using namespace dynd;

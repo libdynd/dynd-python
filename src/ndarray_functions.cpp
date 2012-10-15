@@ -9,12 +9,12 @@
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 
-#include <dnd/dtypes/string_dtype.hpp>
-#include <dnd/memblock/external_memory_block.hpp>
-#include <dnd/nodes/scalar_node.hpp>
-#include <dnd/nodes/groupby_node.hpp>
-#include <dnd/ndarray_arange.hpp>
-#include <dnd/dtype_promotion.hpp>
+#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/memblock/external_memory_block.hpp>
+#include <dynd/nodes/scalar_node.hpp>
+#include <dynd/nodes/groupby_node.hpp>
+#include <dynd/ndarray_arange.hpp>
+#include <dynd/dtype_promotion.hpp>
 
 using namespace std;
 using namespace dynd;

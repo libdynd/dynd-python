@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "dnd/dtype.hpp" namespace "dynd":
+cdef extern from "dynd/dtype.hpp" namespace "dynd":
     cdef cppclass shared_ptr[T]:
         T* get()
 
@@ -77,7 +77,7 @@ cdef extern from "dnd/dtype.hpp" namespace "dynd":
 
     dtype dnd_make_fixedbytes_dtype "dynd::make_fixedbytes_dtype" (intptr_t, intptr_t) except +translate_exception
 
-cdef extern from "dnd/dtype_assign.hpp" namespace "dynd":
+cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
         assign_error_none
         assign_error_overflow
@@ -85,15 +85,15 @@ cdef extern from "dnd/dtype_assign.hpp" namespace "dynd":
         assign_error_inexact
         assign_error_default
 
-cdef extern from "dnd/dtypes/byteswap_dtype.hpp" namespace "dynd":
+cdef extern from "dynd/dtypes/byteswap_dtype.hpp" namespace "dynd":
     dtype dnd_make_byteswap_dtype "dynd::make_byteswap_dtype" (dtype&) except +translate_exception
     dtype dnd_make_byteswap_dtype "dynd::make_byteswap_dtype" (dtype&, dtype&) except +translate_exception
 
-cdef extern from "dnd/dtypes/categorical_dtype.hpp" namespace "dynd":
+cdef extern from "dynd/dtypes/categorical_dtype.hpp" namespace "dynd":
     dtype dnd_make_categorical_dtype "dynd::make_categorical_dtype" (ndarray&) except +translate_exception
     dtype dnd_factor_categorical_dtype "dynd::factor_categorical_dtype" (ndarray&) except +translate_exception
 
-cdef extern from "dnd/dtypes/dtype_alignment.hpp" namespace "dynd":
+cdef extern from "dynd/dtypes/dtype_alignment.hpp" namespace "dynd":
     dtype dnd_make_unaligned_dtype "dynd::make_unaligned_dtype" (dtype&) except +translate_exception
 
 cdef extern from "dtype_functions.hpp" namespace "pydynd":

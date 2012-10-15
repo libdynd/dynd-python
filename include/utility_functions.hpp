@@ -11,7 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <dnd/dtype.hpp>
+#include <dynd/dtype.hpp>
 
 namespace pydynd {
 

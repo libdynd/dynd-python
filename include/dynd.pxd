@@ -24,7 +24,7 @@ cdef extern from "<string>" namespace "std":
     cdef cppclass string:
         char *c_str()
 
-cdef extern from "<dnd/config.hpp>":
+cdef extern from "<dynd/config.hpp>":
     # From the Cython docs:
     #   If the header file uses typedef names such as word to refer
     #   to platform-dependent flavours of numeric types, you will

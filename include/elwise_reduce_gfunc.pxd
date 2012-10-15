@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cdef extern from "<dnd/gfunc/elwise_reduce_gfunc.hpp>" namespace "dynd::gfunc":
+cdef extern from "<dynd/gfunc/elwise_reduce_gfunc.hpp>" namespace "dynd::gfunc":
     cdef cppclass elwise_reduce_gfunc:
         string& get_name()
 

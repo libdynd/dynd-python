@@ -12,11 +12,11 @@
 #include <deque>
 #include <vector>
 
-#include <dnd/dtype.hpp>
-#include <dnd/ndarray.hpp>
-#include <dnd/kernels/kernel_instance.hpp>
-#include <dnd/codegen/codegen_cache.hpp>
-#include <dnd/gfunc/elwise_gfunc.hpp>
+#include <dynd/dtype.hpp>
+#include <dynd/ndarray.hpp>
+#include <dynd/kernels/kernel_instance.hpp>
+#include <dynd/codegen/codegen_cache.hpp>
+#include <dynd/gfunc/elwise_gfunc.hpp>
 
 namespace pydynd {
 

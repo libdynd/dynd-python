@@ -8,7 +8,7 @@
 
 #include <Python.h>
 
-#include <dnd/ndarray.hpp>
+#include <dynd/ndarray.hpp>
 
 namespace pydynd {
 

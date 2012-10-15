@@ -13,8 +13,8 @@
 
 #include <sstream>
 
-#include <dnd/dtype.hpp>
-#include <dnd/string_encodings.hpp>
+#include <dynd/dtype.hpp>
+#include <dynd/string_encodings.hpp>
 
 namespace pydynd {
 

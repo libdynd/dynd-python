@@ -7,7 +7,7 @@
 
 #include <stdexcept>
 
-#include <dnd/exceptions.hpp>
+#include <dynd/exceptions.hpp>
 
 #include "exception_translation.hpp"
 

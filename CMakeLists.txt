@@ -70,6 +70,7 @@ set(pydynd_CPP_SRC
     include/elwise_gfunc_functions.hpp
     include/elwise_reduce_gfunc_functions.hpp
     include/utility_functions.hpp
+    include/vm_elwise_program_functions.hpp
     src/codegen_cache_functions.cpp
     src/ctypes_interop.cpp
     src/dtype_functions.cpp
@@ -81,6 +82,7 @@ set(pydynd_CPP_SRC
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp
     src/utility_functions.cpp
+    src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
     src/_pydynd.pyx
@@ -90,6 +92,7 @@ set(pydynd_CYTHON_SRC
     include/ndarray.pxd
     include/elwise_gfunc.pxd
     include/elwise_reduce_gfunc.pxd
+    include/vm_elwise_program.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 

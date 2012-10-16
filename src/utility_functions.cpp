@@ -25,9 +25,22 @@ intptr_t pydynd::pyobject_as_index(PyObject *index)
     pyobject_ownref start_obj(PyNumber_Index(index));
     intptr_t result = PyLong_AsLongLong(start_obj);
     if (result == -1 && PyErr_Occurred()) {
-        throw runtime_error("error getting index integer"); // TODO: propagate Python exception
+        throw exception();
     }
     return result;
+}
+
+int pydynd::pyobject_as_int_index(PyObject *index)
+{
+    pyobject_ownref start_obj(PyNumber_Index(index));
+    long result = PyInt_AsLong(start_obj);
+    if (result == -1 && PyErr_Occurred()) {
+        throw exception();
+    }
+    if (((unsigned long)result & 0xffffffffu) != (unsigned long)result) {
+        throw overflow_error("overflow converting Python integer to 32-bit int");
+    }
+    return (int)result;
 }
 
 irange pydynd::pyobject_as_irange(PyObject *index)

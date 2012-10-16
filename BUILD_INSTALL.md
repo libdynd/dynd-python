@@ -2,9 +2,9 @@ PREREQUISITES
 =============
 
 This library requires a C++98 or C++11 compiler. On Windows, Visual
-Studio 2010 is the recommended compiler. On Mac OS X, clang
-is the recommended compiler. On Linux, gcc 4.6.1 and 4.7.0 have
-been tested.
+Studio 2010 is the recommended compiler, but 2008 has been tested
+as well. On Mac OS X, clang is the recommended compiler. On Linux,
+gcc 4.6.1 and 4.7.0 have been tested.
 
  * dynamicndarray, included as a git submodule
 
@@ -51,7 +51,7 @@ Python versions built with previous compilers.
 1. Run CMake-gui.
 
 2. For the 'source code' folder, choose the
-    dynamicndarray folder which is the root of the project.
+    blaze folder which is the root of the project.
 
 3. For the 'build the binaries' folder, create a 'build'
     subdirectory so that your build is isolated from the
@@ -61,7 +61,7 @@ Python versions built with previous compilers.
    Set its type to PATH, and select the path to the boost library.
    Boost doesn't need to be built, only headers are used.
 
-5. Double-click on the generated dynamicndarray.sln
+5. Double-click on the generated blaze.sln
     to open Visual Studio. The RelWithDebInfo configuration is
     recommended for most purposes.
 
@@ -70,18 +70,18 @@ Python versions built with previous compilers.
 *OR*
 
 Start a command prompt window, and navigate to the
-dynamicndarray folder which is the root of the project.
+blaze folder which is the root of the project.
 Switch the "-G" argument below to "Visual Studio 10" if using
 32-bit Python. Replace the "BOOST_ROOT" path with the path to boost
 (boost doesn't need to be built, only headers are used).
 Execute the following commands:
 
-    D:\dynamicndarray>mkdir build
-    D:\dynamicndarray>cd build
-    D:\dynamicndarray>set BOOST_ROOT=D:\Develop\boost_1_48_0
-    D:\dynamicndarray\build>cmake -G "Visual Studio 10 Win64" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+    D:\blaze>mkdir build
+    D:\blaze>cd build
+    D:\blaze\build>set BOOST_ROOT=D:\boost_1_51_0
+    D:\blaze\build>cmake -G "Visual Studio 10 Win64" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
        [output, check it for errors]
-    D:\dynamicndarray\build>start dynamicndarray.sln
+    D:\blaze\build>start blaze.sln
        [Visual Studio should start and load the project]
 
 The RelWithDebInfo configuration is recommended for most purposes.
@@ -90,7 +90,7 @@ To install the Python module, explicitly build the INSTALL target.
 Linux
 -----
 
-Execute the following commands from the dynamicndarray folder,
+Execute the following commands from the blaze folder,
 which is the root of the project (Replace RelWithDebInfo with
 Release if doing a release build that doesn't need debug info):
 
@@ -116,7 +116,7 @@ Mac OS X
 
 Switch the "-DCMAKE\_OSX\_ARCHITECTURES" argument below to "i386" if
 you're using 32-bit Python. Execute the following commands
-from the dynamicndarray folder, which is the root of the project
+from the blaze folder, which is the root of the project
 (Replace RelWithDebInfo with Release if doing a release build
 that doesn't need debug info):
 

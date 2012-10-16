@@ -77,7 +77,34 @@ public:
 };
 
 intptr_t pyobject_as_index(PyObject *index);
+int pyobject_as_int_index(PyObject *index);
 dynd::irange pyobject_as_irange(PyObject *index);
+
+/**
+ * Same as PySequence_Size, but throws a C++
+ * exception on error.
+ */
+inline Py_ssize_t pysequence_size(PyObject *seq)
+{
+    Py_ssize_t s = PySequence_Size(seq);
+    if (s == -1 && PyErr_Occurred()) {
+        throw std::exception();
+    }
+    return s;
+}
+
+/**
+ * Same as PyDict_GetItemString, but throws a
+ * C++ exception on error.
+ */
+inline PyObject *pydict_getitemstring(PyObject *dp, const char *key)
+{
+    PyObject *result = PyDict_GetItemString(dp, key);
+    if (result == NULL) {
+        throw std::exception();
+    }
+    return result;
+}
 
 PyObject* intptr_array_as_tuple(int size, const intptr_t *array);
 

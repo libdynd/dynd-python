@@ -17,3 +17,5 @@ from elwise_gfuncs import *
 
 # All the builtin elementwise reduce gfuncs
 from elwise_reduce_gfuncs import *
+
+import vm

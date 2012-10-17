@@ -429,7 +429,9 @@ cdef class w_elwise_program:
         placement_delete(self.v)
 
     def set(self, obj):
+        """Sets the elementwise program from the provided dict"""
         vm_elwise_program_from_py(obj, GET(self.v))
 
     def as_dict(self):
+        """Converts the elementwise VM program into a dict"""
         return vm_elwise_program_as_py(GET(self.v))

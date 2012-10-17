@@ -40,7 +40,7 @@ dtype pydynd::deduce_dtype_from_object(PyObject* obj)
     
     if (PyBool_Check(obj)) {
         // Python bool
-        return make_dtype<dnd_bool>();
+        return make_dtype<dynd_bool>();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(obj)) {
         // Python integer
@@ -99,7 +99,7 @@ dtype pydynd::deduce_dtype_from_object(PyObject* obj)
 static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
 {
     if (obj == &PyBool_Type) {
-        return make_dtype<dnd_bool>();
+        return make_dtype<dynd_bool>();
     } else if (obj == &PyInt_Type || obj == &PyLong_Type) {
         return make_dtype<int32_t>();
     } else if (obj == &PyFloat_Type) {

@@ -99,7 +99,7 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
         ndarray arg0;
         ndarray_init_from_pyobject(arg0, arg0_obj);
 
-        shortvector<dnd_bool> reduce_axes(arg0.get_ndim());
+        shortvector<dynd_bool> reduce_axes(arg0.get_ndim());
 
         // axis=[integer OR tuple of integers]
         int axis_count = pyarg_axis_argument(PyDict_GetItemString(kwargs, "axis"), arg0.get_ndim(), reduce_axes.get());

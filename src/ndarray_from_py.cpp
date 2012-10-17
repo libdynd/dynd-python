@@ -52,7 +52,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
     }
 }
 
-inline void convert_one_pyscalar(dnd_bool *out, PyObject *obj)
+inline void convert_one_pyscalar(dynd_bool *out, PyObject *obj)
 {
     *out = (PyObject_IsTrue(obj) != 0);
 }
@@ -206,7 +206,7 @@ static dynd::ndarray ndarray_from_pylist(PyObject *obj)
     // Populate the array with data
     switch (dt.type_id()) {
         case bool_type_id:
-            fill_ndarray_from_pylist(reinterpret_cast<dnd_bool *>(result.get_readwrite_originptr()),
+            fill_ndarray_from_pylist(reinterpret_cast<dynd_bool *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
         case int32_type_id:
@@ -277,8 +277,8 @@ dynd::ndarray pydynd::ndarray_from_py(PyObject *obj)
 #endif // DND_NUMPY_INTEROP
 
     if (PyBool_Check(obj)) {
-        dnd_bool value = (obj == Py_True);
-        return ndarray(make_dtype<dnd_bool>(), reinterpret_cast<const char *>(&value));
+        dynd_bool value = (obj == Py_True);
+        return ndarray(make_dtype<dynd_bool>(), reinterpret_cast<const char *>(&value));
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(obj)) {
         long value = PyInt_AS_LONG(obj);

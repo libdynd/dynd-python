@@ -78,7 +78,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 
     switch (d->type_num) {
     case NPY_BOOL:
-        dt = make_dtype<dnd_bool>();
+        dt = make_dtype<dynd_bool>();
         break;
     case NPY_BYTE:
         dt = make_dtype<npy_byte>();
@@ -264,7 +264,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
 int pydynd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d)
 {
     if (obj == &PyBoolArrType_Type) {
-        out_d = make_dtype<dnd_bool>();
+        out_d = make_dtype<dynd_bool>();
     } else if (obj == &PyByteArrType_Type) {
         out_d = make_dtype<npy_byte>();
     } else if (obj == &PyUByteArrType_Type) {
@@ -303,7 +303,7 @@ int pydynd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& o
 dtype pydynd::dtype_of_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
-        return make_dtype<dnd_bool>();
+        return make_dtype<dynd_bool>();
     } else if (PyArray_IsScalar(obj, Byte)) {
         return make_dtype<npy_byte>();
     } else if (PyArray_IsScalar(obj, UByte)) {
@@ -390,7 +390,7 @@ ndarray pydynd::ndarray_from_numpy_array(PyArrayObject* obj)
 dynd::ndarray pydynd::ndarray_from_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
-        return ndarray((dnd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
+        return ndarray((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
     } else if (PyArray_IsScalar(obj, Byte)) {
         return ndarray(((PyByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UByte)) {

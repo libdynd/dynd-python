@@ -15,7 +15,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data)
 {
     switch (d.type_id()) {
         case bool_type_id:
-            if (*(const dnd_bool *)data) {
+            if (*(const dynd_bool *)data) {
                 Py_INCREF(Py_True);
                 return Py_True;
             } else {

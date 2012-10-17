@@ -35,13 +35,13 @@ struct elwise_gfunc_placement_wrapper {
     intptr_t dummy[(sizeof(dynd::gfunc::elwise) + sizeof(intptr_t) - 1)/sizeof(intptr_t)];
 };
 
-inline void elwise_gfunc_placement_new(elwise_gfunc_placement_wrapper& v, const char *name)
+inline void placement_new(elwise_gfunc_placement_wrapper& v, const char *name)
 {
     // Call placement new
     new (&v) dynd::gfunc::elwise(name);
 }
 
-inline void elwise_gfunc_placement_delete(elwise_gfunc_placement_wrapper& v)
+inline void placement_delete(elwise_gfunc_placement_wrapper& v)
 {
     // Call the destructor
     ((dynd::gfunc::elwise *)(&v))->~elwise();

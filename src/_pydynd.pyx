@@ -37,6 +37,7 @@ include "dtype.pxd"
 include "ndarray.pxd"
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
+include "vm_elwise_program.pxd"
 
 # Issue a performance warning if any of the diagnostics macros are enabled
 cdef extern from "<dynd/diagnostics.hpp>" namespace "dynd":
@@ -64,11 +65,11 @@ cdef class w_dtype:
     cdef dtype_placement_wrapper v
 
     def __cinit__(self, rep=None):
-        dtype_placement_new(self.v)
+        placement_new(self.v)
         if rep is not None:
             SET(self.v, make_dtype_from_object(rep))
     def __dealloc__(self):
-        dtype_placement_delete(self.v)
+        placement_delete(self.v)
 
     property element_size:
         def __get__(self):
@@ -211,7 +212,7 @@ cdef class w_ndarray:
     cdef ndarray_placement_wrapper v
 
     def __cinit__(self, obj=None, dtype=None):
-        ndarray_placement_new(self.v)
+        placement_new(self.v)
         if obj is not None:
             # Get the array data
             ndarray_init_from_pyobject(GET(self.v), obj)
@@ -220,7 +221,7 @@ cdef class w_ndarray:
             if dtype is not None:
                 SET(self.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_default))
     def __dealloc__(self):
-        ndarray_placement_delete(self.v)
+        placement_delete(self.v)
 
     def debug_dump(self):
         """Prints a raw representation of the ndarray data."""
@@ -358,9 +359,9 @@ cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
 
     def __cinit__(self, bytes name):
-        elwise_gfunc_placement_new(self.v, name)
+        placement_new(self.v, name)
     def __dealloc__(self):
-        elwise_gfunc_placement_delete(self.v)
+        placement_delete(self.v)
 
     property name:
         def __get__(self):
@@ -382,9 +383,9 @@ cdef class w_elwise_reduce_gfunc:
     cdef elwise_reduce_gfunc_placement_wrapper v
 
     def __cinit__(self, bytes name):
-        elwise_reduce_gfunc_placement_new(self.v, name)
+        placement_new(self.v, name)
     def __dealloc__(self):
-        elwise_reduce_gfunc_placement_delete(self.v)
+        placement_delete(self.v)
 
     property name:
         def __get__(self):
@@ -411,11 +412,21 @@ cdef class w_codegen_cache:
     cdef codegen_cache_placement_wrapper v
 
     def __cinit__(self):
-        codegen_cache_placement_new(self.v)
+        placement_new(self.v)
     def __dealloc__(self):
-        codegen_cache_placement_delete(self.v)
+        placement_delete(self.v)
 
     def debug_dump(self):
         """Prints a raw representation of the codegen_cache data."""
         print str(codegen_cache_debug_dump(GET(self.v)).c_str())
 
+cdef class w_elwise_program:
+    cdef vm_elwise_program_placement_wrapper v
+
+    def __cinit__(self):
+        placement_new(self.v)
+    def __dealloc__(self):
+        placement_delete(self.v)
+
+    def set(self, obj):
+        vm_elwise_program_from_py(obj, GET(self.v))

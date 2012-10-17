@@ -16,7 +16,7 @@ cdef extern from "elwise_reduce_gfunc_functions.hpp" namespace "pydynd":
 
     cdef struct elwise_reduce_gfunc_placement_wrapper:
         pass
-    void elwise_reduce_gfunc_placement_new(elwise_reduce_gfunc_placement_wrapper&, char *)
-    void elwise_reduce_gfunc_placement_delete(elwise_reduce_gfunc_placement_wrapper&)
+    void placement_new(elwise_reduce_gfunc_placement_wrapper&, char *)
+    void placement_delete(elwise_reduce_gfunc_placement_wrapper&)
     # ndarray placement cast
     elwise_reduce_gfunc& GET(elwise_reduce_gfunc_placement_wrapper&)

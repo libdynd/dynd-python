@@ -13,6 +13,8 @@
 
 #include <dynd/vm/elwise_program.hpp>
 
+#include "placement_wrappers.hpp"
+
 namespace pydynd {
 
 /**

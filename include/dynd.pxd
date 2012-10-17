@@ -19,7 +19,7 @@
 include "cpython/object.pxd"
 
 # string.pxd does not exist in older Cython
-#include "libcpp/string.pxd"
+# include "libcpp/string.pxd"
 cdef extern from "<string>" namespace "std":
     cdef cppclass string:
         char *c_str()
@@ -51,8 +51,8 @@ cdef extern from "utility_functions.hpp" namespace "pydynd":
 cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     cdef struct dtype_placement_wrapper:
         pass
-    void dtype_placement_new(dtype_placement_wrapper&) except +translate_exception
-    void dtype_placement_delete(dtype_placement_wrapper&)
+    void placement_new(dtype_placement_wrapper&) except +translate_exception
+    void placement_delete(dtype_placement_wrapper&)
     # dtype placement cast
     dtype& GET(dtype_placement_wrapper&)
     # dtype placement assignment
@@ -60,8 +60,8 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
 
     cdef struct ndarray_placement_wrapper:
         pass
-    void ndarray_placement_new(ndarray_placement_wrapper&) except +translate_exception
-    void ndarray_placement_delete(ndarray_placement_wrapper&)
+    void placement_new(ndarray_placement_wrapper&) except +translate_exception
+    void placement_delete(ndarray_placement_wrapper&)
     # ndarray placement cast
     ndarray& GET(ndarray_placement_wrapper&)
     # ndarray placement assignment
@@ -69,7 +69,15 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
 
     cdef struct codegen_cache_placement_wrapper:
         pass
-    void codegen_cache_placement_new(codegen_cache_placement_wrapper&) except +translate_exception
-    void codegen_cache_placement_delete(codegen_cache_placement_wrapper&)
+    void placement_new(codegen_cache_placement_wrapper&) except +translate_exception
+    void placement_delete(codegen_cache_placement_wrapper&)
     # placement cast
     codegen_cache& GET(codegen_cache_placement_wrapper&)
+
+    cdef struct vm_elwise_program_placement_wrapper:
+        pass
+    void placement_new(vm_elwise_program_placement_wrapper&) except +translate_exception
+    void placement_delete(vm_elwise_program_placement_wrapper&)
+    # placement cast
+    elwise_program& GET(vm_elwise_program_placement_wrapper&)
+    void SET(vm_elwise_program_placement_wrapper&, elwise_program&)

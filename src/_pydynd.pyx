@@ -80,6 +80,10 @@ cdef class w_dtype:
         def __get__(self):
             return GET(self.v).alignment()
 
+    property kind:
+        def __get__(self):
+            return dtype_get_kind(GET(self.v))
+
     property string_encoding:
         def __get__(self):
             cdef string_encoding_t encoding = GET(self.v).string_encoding()

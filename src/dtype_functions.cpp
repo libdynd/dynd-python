@@ -25,6 +25,38 @@ void pydynd::init_w_dtype_typeobject(PyObject *type)
     pydynd::WDType_Type = (PyTypeObject *)type;
 }
 
+PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
+{
+    switch (d.kind()) {
+        case bool_kind:
+            return PyString_FromString("bool");
+        case int_kind:
+            return PyString_FromString("int");
+        case uint_kind:
+            return PyString_FromString("uint");
+        case real_kind:
+            return PyString_FromString("real");
+        case complex_kind:
+            return PyString_FromString("complex");
+        case string_kind:
+            return PyString_FromString("string");
+        case bytes_kind:
+            return PyString_FromString("bytes");
+        case void_kind:
+            return PyString_FromString("void");
+        case composite_kind:
+            return PyString_FromString("composite");
+        case expression_kind:
+            return PyString_FromString("expression");
+        case pattern_kind:
+            return PyString_FromString("pattern");
+        case custom_kind:
+            return PyString_FromString("custom");
+        default:
+            throw runtime_error("DyND DType has an unexpected kind");
+    }
+}
+
 dtype pydynd::deduce_dtype_from_object(PyObject* obj)
 {
 #if DYND_NUMPY_INTEROP

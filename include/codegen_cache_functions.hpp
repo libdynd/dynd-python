@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DND__CODEGEN_CACHE_FUNCTIONS_HPP_
-#define _DND__CODEGEN_CACHE_FUNCTIONS_HPP_
+#ifndef _DYND__CODEGEN_CACHE_FUNCTIONS_HPP_
+#define _DYND__CODEGEN_CACHE_FUNCTIONS_HPP_
 
 #include "Python.h"
 
@@ -25,4 +25,4 @@ inline std::string codegen_cache_debug_dump(const dynd::codegen_cache& cgcache)
 
 } // namespace pydynd
 
-#endif // _DND__CODEGEN_CACHE_FUNCTIONS_HPP_
+#endif // _DYND__CODEGEN_CACHE_FUNCTIONS_HPP_

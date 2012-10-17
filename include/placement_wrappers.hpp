@@ -6,8 +6,8 @@
 // to enable wrapping them without adding extra indirection layers.
 //
 
-#ifndef _DND__PLACEMENT_WRAPPERS_HPP_
-#define _DND__PLACEMENT_WRAPPERS_HPP_
+#ifndef _DYND__PLACEMENT_WRAPPERS_HPP_
+#define _DYND__PLACEMENT_WRAPPERS_HPP_
 
 #include <dynd/dtype.hpp>
 #include <dynd/ndarray.hpp>
@@ -55,4 +55,4 @@ DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwis
 
 } // namespace pydynd
 
-#endif // _DND__PLACEMENT_WRAPPERS_HPP_
+#endif // _DYND__PLACEMENT_WRAPPERS_HPP_

@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DND__ELWISE_GFUNC_FUNCTIONS_HPP_
-#define _DND__ELWISE_GFUNC_FUNCTIONS_HPP_
+#ifndef _DYND__ELWISE_GFUNC_FUNCTIONS_HPP_
+#define _DYND__ELWISE_GFUNC_FUNCTIONS_HPP_
 
 #include <Python.h>
 
@@ -55,4 +55,4 @@ inline dynd::gfunc::elwise& GET(elwise_gfunc_placement_wrapper& v)
 
 } // namespace pydynd
 
-#endif // _DND__ELWISE_GFUNC_FUNCTIONS_HPP_
+#endif // _DYND__ELWISE_GFUNC_FUNCTIONS_HPP_

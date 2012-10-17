@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DND__UTILITY_FUNCTIONS_HPP_
-#define _DND__UTILITY_FUNCTIONS_HPP_
+#ifndef _DYND__UTILITY_FUNCTIONS_HPP_
+#define _DYND__UTILITY_FUNCTIONS_HPP_
 
 #include "Python.h"
 
@@ -155,4 +155,4 @@ uint32_t pyarg_access_flags(PyObject* obj);
 
 } // namespace pydynd
 
-#endif // _DND__UTILITY_FUNCTIONS_HPP_
+#endif // _DYND__UTILITY_FUNCTIONS_HPP_

@@ -6,8 +6,8 @@
 // access various dtype parameters
 //
 
-#ifndef _DND__DTYPE_FUNCTIONS_HPP_
-#define _DND__DTYPE_FUNCTIONS_HPP_
+#ifndef _DYND__DTYPE_FUNCTIONS_HPP_
+#define _DYND__DTYPE_FUNCTIONS_HPP_
 
 #include "Python.h"
 
@@ -101,4 +101,4 @@ dynd::dtype dtype_getitem(const dynd::dtype& d, PyObject *subscript);
 
 } // namespace pydynd
 
-#endif // _DND__DTYPE_FUNCTIONS_HPP_
+#endif // _DYND__DTYPE_FUNCTIONS_HPP_

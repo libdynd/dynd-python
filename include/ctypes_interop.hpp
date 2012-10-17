@@ -6,8 +6,8 @@
 // interoperate with ctypes
 //
 
-#ifndef _DND__CTYPES_INTEROP_HPP_
-#define _DND__CTYPES_INTEROP_HPP_
+#ifndef _DYND__CTYPES_INTEROP_HPP_
+#define _DYND__CTYPES_INTEROP_HPP_
 
 #include <Python.h>
 
@@ -143,4 +143,4 @@ void get_ctypes_signature(PyCFuncPtrObject* cfunc, dynd::dtype& out_returntype, 
 
 } // namespace pydynd
 
-#endif // _DND__CTYPES_INTEROP_HPP_
+#endif // _DYND__CTYPES_INTEROP_HPP_

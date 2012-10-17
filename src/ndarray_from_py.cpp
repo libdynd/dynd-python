@@ -268,13 +268,13 @@ dynd::ndarray pydynd::ndarray_from_py(PyObject *obj)
         return ((WNDArray *)obj)->v;
     }
 
-#if DND_NUMPY_INTEROP
+#if DYND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
         return ndarray_from_numpy_array((PyArrayObject *)obj);
     } else if (PyArray_IsScalar(obj, Generic)) {
         return ndarray_from_numpy_scalar(obj);
     }
-#endif // DND_NUMPY_INTEROP
+#endif // DYND_NUMPY_INTEROP
 
     if (PyBool_Check(obj)) {
         dynd_bool value = (obj == Py_True);

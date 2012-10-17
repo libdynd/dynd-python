@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_
-#define _DND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_
+#ifndef _DYND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_
+#define _DYND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_
 
 #include "Python.h"
 
@@ -36,4 +36,4 @@ inline std::string vm_elwise_program_debug_dump(const dynd::vm::elwise_program& 
 
 } // namespace pydynd
 
-#endif // _DND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_
+#endif // _DYND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_

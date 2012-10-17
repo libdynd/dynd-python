@@ -6,8 +6,8 @@
 // access various ndarray parameters
 //
 
-#ifndef _DND__NDARRAY_FUNCTIONS_HPP_
-#define _DND__NDARRAY_FUNCTIONS_HPP_
+#ifndef _DYND__NDARRAY_FUNCTIONS_HPP_
+#define _DYND__NDARRAY_FUNCTIONS_HPP_
 
 #include "Python.h"
 
@@ -109,4 +109,4 @@ dynd::ndarray ndarray_groupby(const dynd::ndarray& data, const dynd::ndarray& by
 
 } // namespace pydynd
 
-#endif // _DND__NDARRAY_FUNCTIONS_HPP_
+#endif // _DYND__NDARRAY_FUNCTIONS_HPP_

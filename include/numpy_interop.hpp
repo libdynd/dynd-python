@@ -6,17 +6,17 @@
 // interoperate with numpy
 //
 
-#ifndef _DND__NUMPY_INTEROP_HPP_
-#define _DND__NUMPY_INTEROP_HPP_
+#ifndef _DYND__NUMPY_INTEROP_HPP_
+#define _DYND__NUMPY_INTEROP_HPP_
 
 #include <Python.h>
 
 // Define this to 1 or 0 depending on whether numpy interop
 // should be compiled in.
-#define DND_NUMPY_INTEROP 1
+#define DYND_NUMPY_INTEROP 1
 
 // Only expose the things in this header when numpy interop is enabled
-#if DND_NUMPY_INTEROP
+#if DYND_NUMPY_INTEROP
 
 #include <numpy/numpyconfig.h>
 
@@ -111,11 +111,11 @@ PyObject* ndarray_as_numpy_struct_capsule(const dynd::ndarray& n);
 
 } // namespace pydynd
 
-#endif // DND_NUMPY_INTEROP
+#endif // DYND_NUMPY_INTEROP
 
 // Make a no-op import_numpy for Cython to call,
-// so it doesn't need to know about DND_NUMPY_INTEROP
-#if !DND_NUMPY_INTEROP
+// so it doesn't need to know about DYND_NUMPY_INTEROP
+#if !DYND_NUMPY_INTEROP
 namespace pydynd {
 
 inline int import_numpy()
@@ -165,6 +165,6 @@ typedef struct {
 } PyArrayInterface;
 
 } // namespace pydynd
-#endif // !DND_NUMPY_INTEROP
+#endif // !DYND_NUMPY_INTEROP
 
-#endif // _DND__NUMPY_INTEROP_HPP_
+#endif // _DYND__NUMPY_INTEROP_HPP_

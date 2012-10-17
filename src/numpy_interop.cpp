@@ -5,7 +5,7 @@
 
 #include "numpy_interop.hpp"
 
-#if DND_NUMPY_INTEROP
+#if DYND_NUMPY_INTEROP
 
 #include <dynd/dtypes/byteswap_dtype.hpp>
 #include <dynd/dtypes/view_dtype.hpp>
@@ -384,7 +384,7 @@ ndarray pydynd::ndarray_from_numpy_array(PyArrayObject* obj)
     return ndarray(make_strided_ndarray_node(d, PyArray_NDIM(obj),
                     PyArray_DIMS(obj), PyArray_STRIDES(obj), PyArray_BYTES(obj),
                     read_access_flag | (PyArray_ISWRITEABLE(obj) ? write_access_flag : 0),
-                    DND_MOVE(memblock)));
+                    DYND_MOVE(memblock)));
 }
 
 dynd::ndarray pydynd::ndarray_from_numpy_scalar(PyObject* obj)
@@ -460,7 +460,7 @@ char pydynd::numpy_kindchar_of(const dynd::dtype& d)
     throw runtime_error(ss.str());
 }
 
-#endif // DND_NUMPY_INTEROP
+#endif // DYND_NUMPY_INTEROP
 
 // The function ndarray_as_numpy_struct_capsule is exposed even without building against numpy
 static void free_array_interface(void *ptr, void *extra_ptr)

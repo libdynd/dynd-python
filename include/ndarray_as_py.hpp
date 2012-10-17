@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DND__NDARRAY_AS_PY_HPP_
-#define _DND__NDARRAY_AS_PY_HPP_
+#ifndef _DYND__NDARRAY_AS_PY_HPP_
+#define _DYND__NDARRAY_AS_PY_HPP_
 
 #include <Python.h>
 
@@ -20,4 +20,4 @@ PyObject *ndarray_as_py(const dynd::ndarray& n);
 
 } // namespace pydynd
 
-#endif // _DND__NDARRAY_AS_PY_HPP_
+#endif // _DYND__NDARRAY_AS_PY_HPP_

@@ -13,8 +13,6 @@ using namespace pydynd;
 
 void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& out_ep)
 {
-    cout << "Input object is " << (void *)obj << endl;
-    cout << "Input object type is " << (void *)Py_TYPE(obj) << endl;
     vector<dtype> regtypes;
     vector<int> program;
     int input_count;
@@ -33,7 +31,6 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
     regtypes.resize(regtypes_size);
     for (Py_ssize_t i = 0; i < regtypes_size; ++i) {
         pyobject_ownref item(PySequence_GetItem(regtypes_object, i));
-        cout << "Object type " << i << " is " << Py_TYPE(item.get()) << endl;
         regtypes[i] = make_dtype_from_object(item.get());
     }
 
@@ -109,10 +106,11 @@ PyObject *pydynd::vm_elwise_program_as_py(dynd::vm::elwise_program& ep)
         int arity = vm::opcode_info[opcode].arity;
         pyobject_ownref instr(PyTuple_New(arity + 2));
         PyTuple_SET_ITEM(instr.get(), 0, PyString_FromString(vm::opcode_info[opcode].name));
-        for (int j = 1; j < arity + 2; ++j) {
+        for (int j = 1; j < 2 + arity; ++j) {
             PyTuple_SET_ITEM(instr.get(), j, PyInt_FromLong(ep.get_program()[ip + j]));
         }
         PyList_SET_ITEM(program_obj.get(), i, instr.release());
+        ip += 2 + arity;
     }
 
     // Pack the values into a dict

@@ -424,8 +424,10 @@ cdef class w_codegen_cache:
 cdef class w_elwise_program:
     cdef vm_elwise_program_placement_wrapper v
 
-    def __cinit__(self):
+    def __cinit__(self, obj=None):
         placement_new(self.v)
+        if obj is not None:
+            vm_elwise_program_from_py(obj, GET(self.v))
     def __dealloc__(self):
         placement_delete(self.v)
 
@@ -436,3 +438,7 @@ cdef class w_elwise_program:
     def as_dict(self):
         """Converts the elementwise VM program into a dict"""
         return vm_elwise_program_as_py(GET(self.v))
+
+    def debug_dump(self):
+        """Prints a raw representation of the elwise_program data."""
+        print str(vm_elwise_program_debug_dump(GET(self.v)).c_str())

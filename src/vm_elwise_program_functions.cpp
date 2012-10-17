@@ -23,7 +23,7 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
 
     // The number of inputs
 
-    input_count = pyobject_as_int_index(pydict_getitemstring(obj, "num_inputs"));
+    input_count = pyobject_as_int_index(pydict_getitemstring(obj, "input_count"));
 
     // The list of register types
     PyObject *regtypes_object = pydict_getitemstring(obj, "register_types");
@@ -86,4 +86,37 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
     }
 
     out_ep.set(input_count, regtypes, program);
+}
+
+PyObject *pydynd::vm_elwise_program_as_py(dynd::vm::elwise_program& ep)
+{
+    pyobject_ownref regtypes_obj(PyList_New(ep.get_register_types().size()));
+    pyobject_ownref program_obj(PyList_New(ep.get_instruction_count()));
+    pyobject_ownref input_count(PyInt_FromLong(ep.get_input_count()));
+
+    // Set the list of register types
+    for (size_t i = 0; i < ep.get_register_types().size(); ++i) {
+        PyList_SET_ITEM(regtypes_obj.get(), i, dtype_as_pyobject(ep.get_register_types()[i]));
+    }
+
+    // Set the list of instructions
+    int ip = 0;
+    for (int i = 0; i < ep.get_instruction_count(); ++i) {
+        int opcode = ep.get_program()[ip];
+        int arity = vm::opcode_info[opcode].arity;
+        pyobject_ownref instr(PyTuple_New(arity + 2));
+        PyTuple_SET_ITEM(instr.get(), 0, PyString_FromString(vm::opcode_info[opcode].name));
+        for (int j = 1; j < arity + 2; ++j) {
+            PyTuple_SET_ITEM(instr.get(), j, PyInt_FromLong(ep.get_program()[ip + j]));
+        }
+        PyList_SET_ITEM(program_obj.get(), i, instr.release());
+    }
+
+    // Pack the values into a dict
+    pyobject_ownref result_obj(PyDict_New());
+    PyDict_SetItemString(result_obj.get(), "input_count", input_count.get());
+    PyDict_SetItemString(result_obj.get(), "register_types", regtypes_obj.get());
+    PyDict_SetItemString(result_obj.get(), "program", program_obj.get());
+
+    return result_obj.release();
 }

@@ -430,3 +430,6 @@ cdef class w_elwise_program:
 
     def set(self, obj):
         vm_elwise_program_from_py(obj, GET(self.v))
+
+    def as_dict(self):
+        return vm_elwise_program_as_py(GET(self.v))

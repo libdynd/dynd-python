@@ -9,3 +9,4 @@ cdef extern from "dynd/vm/elwise_program.hpp" namespace "dynd::vm":
 
 cdef extern from "vm_elwise_program_functions.hpp" namespace "pydynd":
     void vm_elwise_program_from_py(object, elwise_program&)
+    object vm_elwise_program_as_py(elwise_program&)

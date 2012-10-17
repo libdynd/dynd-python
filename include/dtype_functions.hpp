@@ -70,6 +70,11 @@ dynd::dtype deduce_dtype_from_object(PyObject* obj);
 dynd::dtype make_dtype_from_object(PyObject* obj);
 
 /**
+ * Constructs a w_dtype object from a dtype.
+ */
+PyObject * dtype_as_pyobject(const dynd::dtype& dt);
+
+/**
  * Creates a convert dtype.
  */
 dynd::dtype dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode);

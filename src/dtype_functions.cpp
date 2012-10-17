@@ -147,7 +147,14 @@ dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
     throw std::runtime_error("could not convert the Python Object into a dynd::dtype");
 }
 
-string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
+PyObject *pydynd::dtype_as_pyobject(const dynd::dtype& dt)
+{
+    pyobject_ownref obj(_PyObject_New(WDType_Type));
+    ((WDType *)obj.get())->v = dt;
+    return obj.release();
+}
+
+static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
 {
     string_encoding_t encoding = string_encoding_invalid;
     if (PyString_Check(encoding_obj)) {

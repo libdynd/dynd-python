@@ -22,6 +22,11 @@ namespace pydynd {
  */
 void vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& out_ep);
 
+/**
+ * Converts a VM elementwise program into a Python object
+ */
+PyObject *vm_elwise_program_as_py(dynd::vm::elwise_program& ep);
+
 } // namespace pydynd
 
 #endif // _DND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_

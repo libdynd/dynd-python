@@ -22,7 +22,7 @@ PyTypeObject *pydynd::WDType_Type;
 
 void pydynd::init_w_dtype_typeobject(PyObject *type)
 {
-    WDType_Type = (PyTypeObject *)type;
+    pydynd::WDType_Type = (PyTypeObject *)type;
 }
 
 dtype pydynd::deduce_dtype_from_object(PyObject* obj)
@@ -144,7 +144,12 @@ dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
     }
 #endif // DND_NUMPY_INTEROP
 
-    throw std::runtime_error("could not convert the Python Object into a dynd::dtype");
+    stringstream ss;
+    ss << "could not convert the object ";
+    pyobject_ownref repr(PyObject_Repr(obj));
+    ss << PyString_AsString(repr.get());
+    ss << " into a dynd::dtype";
+    throw std::runtime_error(ss.str());
 }
 
 PyObject *pydynd::dtype_as_pyobject(const dynd::dtype& dt)

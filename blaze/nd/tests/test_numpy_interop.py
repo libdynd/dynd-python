@@ -12,7 +12,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
             self.nonnative = '<'
 
     def test_dtype_from_numpy_scalar_types(self):
-        """Tests converting numpy scalar types to pydnd dtypes"""
+        """Tests converting numpy scalar types to pydynd dtypes"""
         self.assertEqual(nd.bool, nd.dtype(np.bool))
         self.assertEqual(nd.bool, nd.dtype(np.bool_))
         self.assertEqual(nd.int8, nd.dtype(np.int8))
@@ -29,7 +29,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(nd.cfloat64, nd.dtype(np.complex128))
 
     def test_dtype_from_numpy_dtype(self):
-        """Tests converting numpy dtypes to pydnd dtypes"""
+        """Tests converting numpy dtypes to pydynd dtypes"""
         # native byte order
         self.assertEqual(nd.bool, nd.dtype(np.dtype(np.bool)))
         self.assertEqual(nd.int8, nd.dtype(np.dtype(np.int8)))
@@ -80,8 +80,8 @@ class TestNumpyViewInterop(unittest.TestCase):
         else:
             self.nonnative = '<'
 
-    def test_dnd_view_of_numpy_array(self):
-        """Tests viewing a numpy array as a dnd ndarray"""
+    def test_dynd_view_of_numpy_array(self):
+        """Tests viewing a numpy array as a dynd ndarray"""
         nonnative = self.nonnative
 
         a = np.arange(10, dtype=np.int32)
@@ -115,8 +115,8 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
-    def test_numpy_view_of_dnd_array(self):
-        """Tests viewing a dnd ndarray as a numpy array"""
+    def test_numpy_view_of_dynd_array(self):
+        """Tests viewing a dynd ndarray as a numpy array"""
         nonnative = self.nonnative
 
         n = nd.ndarray(np.arange(10, dtype=np.int32))
@@ -152,15 +152,15 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-    def test_numpy_dnd_fixedstring_interop(self):
+    def test_numpy_dynd_fixedstring_interop(self):
         """Tests converting fixed-size string arrays to/from numpy"""
-        # ASCII Numpy -> dnd
+        # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
         b = nd.ndarray(a)
         self.assertEqual(nd.make_fixedstring_dtype('ascii', 7), b.dtype)
         self.assertEqual(b.dtype, nd.dtype(a.dtype))
 
-        # ASCII dnd -> Numpy
+        # ASCII dynd -> Numpy
         c = np.asarray(b)
         self.assertEqual(a.dtype, c.dtype)
         assert_array_equal(a, c)
@@ -168,7 +168,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a[1] = 'modify'
         assert_array_equal(a, c)
 
-        # ASCII dnd -> UTF32 dnd
+        # ASCII dynd -> UTF32 dynd
         b_u = b.as_dtype(nd.make_fixedstring_dtype('utf_32', 7))
         self.assertEqual(
                 nd.make_convert_dtype(
@@ -181,7 +181,7 @@ class TestNumpyViewInterop(unittest.TestCase):
                 nd.make_fixedstring_dtype('utf_32', 7),
                 b_u.dtype)
 
-        # UTF32 dnd -> Numpy
+        # UTF32 dynd -> Numpy
         c_u = np.asarray(b_u)
         self.assertEqual(b_u.dtype, nd.dtype(c_u.dtype))
         assert_array_equal(a, c_u)

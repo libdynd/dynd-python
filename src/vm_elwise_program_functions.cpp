@@ -13,6 +13,8 @@ using namespace pydynd;
 
 void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& out_ep)
 {
+    cout << "Input object is " << (void *)obj << endl;
+    cout << "Input object type is " << (void *)Py_TYPE(obj) << endl;
     vector<dtype> regtypes;
     vector<int> program;
     int input_count;
@@ -31,7 +33,8 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
     regtypes.resize(regtypes_size);
     for (Py_ssize_t i = 0; i < regtypes_size; ++i) {
         pyobject_ownref item(PySequence_GetItem(regtypes_object, i));
-        regtypes[i] = make_dtype_from_object(item);
+        cout << "Object type " << i << " is " << Py_TYPE(item.get()) << endl;
+        regtypes[i] = make_dtype_from_object(item.get());
     }
 
     // The program (list of instructions)

@@ -1,4 +1,4 @@
-import sys, os, ctypes, dnd_ctypes
+import sys, os, ctypes, dynd_ctypes
 
 if sys.platform == 'win32':
     libpath = os.path.join(os.path.dirname(__file__), "basic_kernels.dll")
@@ -127,12 +127,12 @@ if sys.platform == 'win32':
 
     # isnan
     isnan = ctypes.cdll.msvcrt._isnan
-    isnan.restype = dnd_ctypes.c_dnd_bool
+    isnan.restype = dynd_ctypes.c_dynd_bool
     isnan.argtypes = [ctypes.c_double]
 
     # isfinite
     isfinite = ctypes.cdll.msvcrt._finite
-    isfinite.restype = dnd_ctypes.c_dnd_bool
+    isfinite.restype = dynd_ctypes.c_dynd_bool
     isfinite.argtypes = [ctypes.c_double]
 
     # nextafter

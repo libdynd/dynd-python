@@ -66,6 +66,7 @@ cdef class w_dtype:
 
     def __cinit__(self, rep=None):
         placement_new(self.v)
+        init_w_dtype_typeobject(type(self))
         if rep is not None:
             SET(self.v, make_dtype_from_object(rep))
     def __dealloc__(self):

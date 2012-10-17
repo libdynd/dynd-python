@@ -4,7 +4,7 @@ __all__ = ['void', 'bool', 'int8', 'int16', 'int32', 'int64',
             'complex_float32', 'complex_float64',
             'complex64', 'complex128']
 
-from _pydnd import w_dtype as dtype
+from _pydynd import w_dtype as dtype
 
 void = dtype('void')
 bool = dtype('bool')

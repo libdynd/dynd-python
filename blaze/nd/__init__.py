@@ -1,5 +1,5 @@
 # Expose types and functions directly from the Cython/C++ module
-from _pydnd import w_dtype as dtype, w_ndarray as ndarray, \
+from _pydynd import w_dtype as dtype, w_ndarray as ndarray, \
         make_byteswap_dtype, make_fixedbytes_dtype, make_convert_dtype, \
         make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
         make_pointer_dtype, make_categorical_dtype, \
@@ -10,7 +10,7 @@ from _pydnd import w_dtype as dtype, w_ndarray as ndarray, \
 from basic_dtypes import *
 
 # Includes ctypes definitions of the complex types
-import dnd_ctypes as ctypes
+import dynd_ctypes as ctypes
 
 # All the builtin elementwise gfuncs
 from elwise_gfuncs import *

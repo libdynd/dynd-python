@@ -59,7 +59,7 @@ else()
 endif()
 
 if(NOT PYTHONINTERP_FOUND)
-    set(PYTHONINTERP_FOUND FALSE)
+    set(PYTHONLIBS_FOUND FALSE)
     return()
 endif()
 
@@ -144,8 +144,6 @@ else()
     endif()
     # Probably this needs to be more involved. It would be nice if the config
     # information the python interpreter itself gave us were more complete.
-    #
-    # In particular, I'm concerned about Mac OS X and the system Python vs EPD Python.
     find_library(PYTHON_LIBRARY
         NAMES "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
         PATHS ${_PYTHON_LIBS_SEARCH}

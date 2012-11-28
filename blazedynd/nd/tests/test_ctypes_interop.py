@@ -1,6 +1,6 @@
 import sys
 import unittest
-from blaze import nd
+from blazedynd import nd
 import ctypes
 
 class TestCTypesDTypeInterop(unittest.TestCase):

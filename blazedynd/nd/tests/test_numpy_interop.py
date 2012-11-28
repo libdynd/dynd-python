@@ -1,6 +1,6 @@
 import sys
 import unittest
-from blaze import nd
+from blazedynd import nd
 import numpy as np
 from numpy.testing import *
 

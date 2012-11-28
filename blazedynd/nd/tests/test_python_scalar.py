@@ -1,6 +1,6 @@
 import sys
 import unittest
-from blaze import nd
+from blazedynd import nd
 
 class TestPythonScalar(unittest.TestCase):
     def test_bool(self):

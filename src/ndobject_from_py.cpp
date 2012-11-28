@@ -214,12 +214,10 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                             obj, shape, 0);
             break;
         case string_type_id: {
-            // Allocate the destination memory block
-            memory_block_ptr dst_memblock = make_pod_memory_block();
+            // Get the destination memory block
             char *str_meta = result.get_ndo_meta() + shape.size() * sizeof(strided_array_dtype_metadata);
             string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(str_meta);
-            md->blockref = dst_memblock.get();
-            memory_block_incref(md->blockref);
+            memory_block_ptr dst_memblock(md->blockref, true);
 
             const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
             switch (ext->get_encoding()) {

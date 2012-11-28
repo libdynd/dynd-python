@@ -1,5 +1,5 @@
 # Expose types and functions directly from the Cython/C++ module
-from _pydynd import w_dtype as dtype, w_ndarray as ndarray, \
+from _pydynd import w_dtype as dtype, w_ndobject as ndobject, \
         make_byteswap_dtype, make_fixedbytes_dtype, make_convert_dtype, \
         make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
         make_pointer_dtype, make_categorical_dtype, \

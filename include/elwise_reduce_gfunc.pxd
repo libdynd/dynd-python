@@ -12,7 +12,7 @@ cdef extern from "elwise_reduce_gfunc_functions.hpp" namespace "pydynd":
                             bint, bint, ndobject&) except +translate_exception
     object elwise_reduce_gfunc_call(elwise_reduce_gfunc&, object, object) except +translate_exception
     string elwise_reduce_gfunc_repr(elwise_reduce_gfunc&) except +translate_exception
-    string elwise_reduce_gfunc_debug_dump(elwise_reduce_gfunc&) except +translate_exception
+    string elwise_reduce_gfunc_debug_print(elwise_reduce_gfunc&) except +translate_exception
 
     cdef struct elwise_reduce_gfunc_placement_wrapper:
         pass

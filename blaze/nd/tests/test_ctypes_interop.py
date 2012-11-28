@@ -18,5 +18,12 @@ class TestCTypesDTypeInterop(unittest.TestCase):
         self.assertEqual(nd.float32, nd.dtype(ctypes.c_float))
         self.assertEqual(nd.float64, nd.dtype(ctypes.c_double))
 
+    def test_dtype_from_annotated_ctype_typeobject(self):
+        self.assertEqual(nd.bool, nd.dtype(nd.ctypes.c_dynd_bool))
+        self.assertEqual(nd.complex_float32, nd.dtype(nd.ctypes.c_complex_float32))
+        self.assertEqual(nd.complex_float64, nd.dtype(nd.ctypes.c_complex_float64))
+        self.assertEqual(nd.complex_float32, nd.dtype(nd.ctypes.c_complex64))
+        self.assertEqual(nd.complex_float64, nd.dtype(nd.ctypes.c_complex128))
+
 if __name__ == '__main__':
     unittest.main()

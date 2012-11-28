@@ -24,10 +24,10 @@ void elwise_gfunc_add_kernel(dynd::gfunc::elwise& gf, dynd::codegen_cache& cgcac
 
 PyObject *elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyObject *kwargs);
 
-inline std::string elwise_gfunc_debug_dump(dynd::gfunc::elwise& gf)
+inline std::string elwise_gfunc_debug_print(dynd::gfunc::elwise& gf)
 {
     std::stringstream ss;
-    gf.debug_dump(ss);
+    gf.debug_print(ss);
     return ss.str();
 }
 

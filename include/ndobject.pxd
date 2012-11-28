@@ -48,14 +48,14 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
 
         ndobject view_scalars(dtype&) except +translate_exception
 
-        void debug_dump(ostream&)
+        void debug_print(ostream&)
 
 cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     void init_w_ndobject_typeobject(object)
 
     string ndobject_str(ndobject&) except +translate_exception
     string ndobject_repr(ndobject&) except +translate_exception
-    string ndobject_debug_dump(ndobject&) except +translate_exception
+    string ndobject_debug_print(ndobject&) except +translate_exception
 
     void ndobject_init_from_pyobject(ndobject&, object obj) except +translate_exception
     ndobject ndobject_vals(ndobject&) except +translate_exception

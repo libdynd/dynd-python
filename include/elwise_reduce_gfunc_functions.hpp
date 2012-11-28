@@ -25,10 +25,10 @@ void elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codege
 
 PyObject *elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs);
 
-inline std::string elwise_reduce_gfunc_debug_dump(dynd::gfunc::elwise_reduce& gf)
+inline std::string elwise_reduce_gfunc_debug_print(dynd::gfunc::elwise_reduce& gf)
 {
     std::stringstream ss;
-    gf.debug_dump(ss);
+    gf.debug_print(ss);
     return ss.str();
 }
 

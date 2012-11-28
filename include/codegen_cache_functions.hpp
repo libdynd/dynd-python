@@ -15,10 +15,10 @@
 
 namespace pydynd {
 
-inline std::string codegen_cache_debug_dump(const dynd::codegen_cache& cgcache)
+inline std::string codegen_cache_debug_print(const dynd::codegen_cache& cgcache)
 {
     std::stringstream ss;
-    cgcache.debug_dump(ss);
+    cgcache.debug_print(ss);
     return ss.str();
 }
 

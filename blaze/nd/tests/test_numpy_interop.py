@@ -81,18 +81,18 @@ class TestNumpyViewInterop(unittest.TestCase):
             self.nonnative = '<'
 
     def test_dynd_view_of_numpy_array(self):
-        """Tests viewing a numpy array as a dynd ndarray"""
+        """Tests viewing a numpy array as a dynd.ndobject"""
         nonnative = self.nonnative
 
         a = np.arange(10, dtype=np.int32)
-        n = nd.ndarray(a)
+        n = nd.ndobject(a)
         self.assertEqual(n.dtype, nd.int32)
         self.assertEqual(n.ndim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
         a = np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4)
-        n = nd.ndarray(a)
+        n = nd.ndobject(a)
         self.assertEqual(n.dtype, nd.make_byteswap_dtype(nd.int32))
         self.assertEqual(n.ndim, a.ndim)
         self.assertEqual(n.shape, a.shape)
@@ -100,7 +100,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=np.int32).reshape(4,3)
-        n = nd.ndarray(a)
+        n = nd.ndobject(a)
         self.assertEqual(n.dtype, nd.make_unaligned_dtype(nd.int32))
         self.assertEqual(n.ndim, a.ndim)
         self.assertEqual(n.shape, a.shape)
@@ -108,7 +108,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=(nonnative + 'i4')).reshape(2,2,3)
-        n = nd.ndarray(a)
+        n = nd.ndobject(a)
         self.assertEqual(n.dtype,
                 nd.make_unaligned_dtype(nd.make_byteswap_dtype(nd.int32)))
         self.assertEqual(n.ndim, a.ndim)
@@ -116,10 +116,10 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(n.strides, a.strides)
 
     def test_numpy_view_of_dynd_array(self):
-        """Tests viewing a dynd ndarray as a numpy array"""
+        """Tests viewing a dynd.ndobject as a numpy array"""
         nonnative = self.nonnative
 
-        n = nd.ndarray(np.arange(10, dtype=np.int32))
+        n = nd.ndobject(np.arange(10, dtype=np.int32))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertTrue(a.flags.aligned)
@@ -127,7 +127,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-        n = nd.ndarray(np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4))
+        n = nd.ndobject(np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(nonnative + 'i4'))
         self.assertTrue(a.flags.aligned)
@@ -135,7 +135,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-        n = nd.ndarray(np.arange(49, dtype='i1')[1:].view(dtype=np.int32).reshape(4,3))
+        n = nd.ndobject(np.arange(49, dtype='i1')[1:].view(dtype=np.int32).reshape(4,3))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertFalse(a.flags.aligned)
@@ -143,7 +143,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-        n = nd.ndarray(np.arange(49, dtype='i1')[1:].view(
+        n = nd.ndobject(np.arange(49, dtype='i1')[1:].view(
                     dtype=(nonnative + 'i4')).reshape(2,2,3))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(nonnative + 'i4'))
@@ -156,7 +156,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         """Tests converting fixed-size string arrays to/from numpy"""
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
-        b = nd.ndarray(a)
+        b = nd.ndobject(a)
         self.assertEqual(nd.make_fixedstring_dtype('ascii', 7), b.dtype)
         self.assertEqual(b.dtype, nd.dtype(a.dtype))
 
@@ -192,13 +192,13 @@ class TestNumpyViewInterop(unittest.TestCase):
     def test_numpy_blockref_string(self):
         # Blockref strings don't have a corresponding Numpy construct
         # Therefore numpy makes an object array scalar out of them.
-        a = nd.ndarray("abcdef")
+        a = nd.ndobject("abcdef")
         self.assertEqual(
                 nd.make_string_dtype('ascii'),
                 a.dtype)
         self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
-        a = nd.ndarray(u"abcdef")
+        a = nd.ndobject(u"abcdef")
         self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
     def test_readwrite_access_flags(self):
@@ -206,14 +206,14 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.arange(10.)
 
         # Writeable
-        b = nd.ndarray(a)
+        b = nd.ndobject(a)
         b[0].val_assign(2.0)
         self.assertEqual(b[0].as_py(), 2.0)
         self.assertEqual(a[0], 2.0)
 
         # Not writeable
         a.flags.writeable = False
-        b = nd.ndarray(a)
+        b = nd.ndobject(a)
         self.assertRaises(RuntimeError, b[0].val_assign, 3.0)
         # should still be 2.0
         self.assertEqual(b[0].as_py(), 2.0)
@@ -221,37 +221,37 @@ class TestNumpyViewInterop(unittest.TestCase):
 
 class TestNumpyScalarInterop(unittest.TestCase):
     def test_numpy_scalar_conversion_dtypes(self):
-        self.assertEqual(nd.ndarray(np.bool_(True)).dtype, nd.bool)
-        self.assertEqual(nd.ndarray(np.bool(True)).dtype, nd.bool)
-        self.assertEqual(nd.ndarray(np.int8(100)).dtype, nd.int8)
-        self.assertEqual(nd.ndarray(np.int16(100)).dtype, nd.int16)
-        self.assertEqual(nd.ndarray(np.int32(100)).dtype, nd.int32)
-        self.assertEqual(nd.ndarray(np.int64(100)).dtype, nd.int64)
-        self.assertEqual(nd.ndarray(np.uint8(100)).dtype, nd.uint8)
-        self.assertEqual(nd.ndarray(np.uint16(100)).dtype, nd.uint16)
-        self.assertEqual(nd.ndarray(np.uint32(100)).dtype, nd.uint32)
-        self.assertEqual(nd.ndarray(np.uint64(100)).dtype, nd.uint64)
-        self.assertEqual(nd.ndarray(np.float32(100.)).dtype, nd.float32)
-        self.assertEqual(nd.ndarray(np.float64(100.)).dtype, nd.float64)
-        self.assertEqual(nd.ndarray(np.complex64(100j)).dtype, nd.cfloat32)
-        self.assertEqual(nd.ndarray(np.complex128(100j)).dtype, nd.cfloat64)
+        self.assertEqual(nd.ndobject(np.bool_(True)).dtype, nd.bool)
+        self.assertEqual(nd.ndobject(np.bool(True)).dtype, nd.bool)
+        self.assertEqual(nd.ndobject(np.int8(100)).dtype, nd.int8)
+        self.assertEqual(nd.ndobject(np.int16(100)).dtype, nd.int16)
+        self.assertEqual(nd.ndobject(np.int32(100)).dtype, nd.int32)
+        self.assertEqual(nd.ndobject(np.int64(100)).dtype, nd.int64)
+        self.assertEqual(nd.ndobject(np.uint8(100)).dtype, nd.uint8)
+        self.assertEqual(nd.ndobject(np.uint16(100)).dtype, nd.uint16)
+        self.assertEqual(nd.ndobject(np.uint32(100)).dtype, nd.uint32)
+        self.assertEqual(nd.ndobject(np.uint64(100)).dtype, nd.uint64)
+        self.assertEqual(nd.ndobject(np.float32(100.)).dtype, nd.float32)
+        self.assertEqual(nd.ndobject(np.float64(100.)).dtype, nd.float64)
+        self.assertEqual(nd.ndobject(np.complex64(100j)).dtype, nd.cfloat32)
+        self.assertEqual(nd.ndobject(np.complex128(100j)).dtype, nd.cfloat64)
 
     def test_numpy_scalar_conversion_values(self):
-        self.assertEqual(nd.ndarray(np.bool_(True)).as_py(), True)
-        self.assertEqual(nd.ndarray(np.bool_(False)).as_py(), False)
-        self.assertEqual(nd.ndarray(np.int8(100)).as_py(), 100)
-        self.assertEqual(nd.ndarray(np.int8(-100)).as_py(), -100)
-        self.assertEqual(nd.ndarray(np.int16(20000)).as_py(), 20000)
-        self.assertEqual(nd.ndarray(np.int16(-20000)).as_py(), -20000)
-        self.assertEqual(nd.ndarray(np.int32(1000000000)).as_py(), 1000000000)
-        self.assertEqual(nd.ndarray(np.int64(-1000000000000)).as_py(), -1000000000000)
-        self.assertEqual(nd.ndarray(np.int64(1000000000000)).as_py(), 1000000000000)
-        self.assertEqual(nd.ndarray(np.int32(-1000000000)).as_py(), -1000000000)
-        self.assertEqual(nd.ndarray(np.uint8(200)).as_py(), 200)
-        self.assertEqual(nd.ndarray(np.uint16(50000)).as_py(), 50000)
-        self.assertEqual(nd.ndarray(np.uint32(3000000000)).as_py(), 3000000000)
-        self.assertEqual(nd.ndarray(np.uint64(10000000000000000000)).as_py(), 10000000000000000000)
-        self.assertEqual(nd.ndarray(np.float32(2.5)).as_py(), 2.5)
-        self.assertEqual(nd.ndarray(np.float64(2.5)).as_py(), 2.5)
-        self.assertEqual(nd.ndarray(np.complex64(2.5-1j)).as_py(), 2.5-1j)
-        self.assertEqual(nd.ndarray(np.complex128(2.5-1j)).as_py(), 2.5-1j)
+        self.assertEqual(nd.ndobject(np.bool_(True)).as_py(), True)
+        self.assertEqual(nd.ndobject(np.bool_(False)).as_py(), False)
+        self.assertEqual(nd.ndobject(np.int8(100)).as_py(), 100)
+        self.assertEqual(nd.ndobject(np.int8(-100)).as_py(), -100)
+        self.assertEqual(nd.ndobject(np.int16(20000)).as_py(), 20000)
+        self.assertEqual(nd.ndobject(np.int16(-20000)).as_py(), -20000)
+        self.assertEqual(nd.ndobject(np.int32(1000000000)).as_py(), 1000000000)
+        self.assertEqual(nd.ndobject(np.int64(-1000000000000)).as_py(), -1000000000000)
+        self.assertEqual(nd.ndobject(np.int64(1000000000000)).as_py(), 1000000000000)
+        self.assertEqual(nd.ndobject(np.int32(-1000000000)).as_py(), -1000000000)
+        self.assertEqual(nd.ndobject(np.uint8(200)).as_py(), 200)
+        self.assertEqual(nd.ndobject(np.uint16(50000)).as_py(), 50000)
+        self.assertEqual(nd.ndobject(np.uint32(3000000000)).as_py(), 3000000000)
+        self.assertEqual(nd.ndobject(np.uint64(10000000000000000000)).as_py(), 10000000000000000000)
+        self.assertEqual(nd.ndobject(np.float32(2.5)).as_py(), 2.5)
+        self.assertEqual(nd.ndobject(np.float64(2.5)).as_py(), 2.5)
+        self.assertEqual(nd.ndobject(np.complex64(2.5-1j)).as_py(), 2.5-1j)
+        self.assertEqual(nd.ndobject(np.complex128(2.5-1j)).as_py(), 2.5-1j)

@@ -82,10 +82,10 @@ inline std::string ndobject_repr(const dynd::ndobject& n)
     return ss.str();
 }
 
-inline std::string ndobject_debug_dump(const dynd::ndobject& n)
+inline std::string ndobject_debug_print(const dynd::ndobject& n)
 {
     std::stringstream ss;
-    n.debug_dump(ss);
+    n.debug_print(ss);
     return ss.str();
 }
 

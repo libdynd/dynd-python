@@ -190,18 +190,17 @@ def make_pointer_dtype(target_dtype):
     SET(result.v, dnd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
     return result
 
-# TODO uncomment
-#def make_categorical_dtype(values):
-#    """Constructs a categorical dtype with the specified values as its categories."""
-#    cdef w_dtype result = w_dtype()
-#    SET(result.v, dnd_make_categorical_dtype(GET(w_ndobject(values).v)))
-#    return result
-# TODO uncomment
-#def factor_categorical_dtype(values):
-#    """Constructs a categorical dtype by factoring and sorting the unique values from the provided array."""
-#    cdef w_dtype result = w_dtype()
-#    SET(result.v, dnd_factor_categorical_dtype(GET(w_ndobject(values).v)))
-#    return result
+def make_categorical_dtype(values):
+    """Constructs a categorical dtype with the specified values as its categories."""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_make_categorical_dtype(GET(w_ndobject(values).v)))
+    return result
+
+def factor_categorical_dtype(values):
+    """Constructs a categorical dtype by factoring and sorting the unique values from the provided array."""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_factor_categorical_dtype(GET(w_ndobject(values).v)))
+    return result
 
 ##############################################################################
 
@@ -229,9 +228,9 @@ cdef class w_ndobject:
     def __dealloc__(self):
         placement_delete(self.v)
 
-    def debug_dump(self):
+    def debug_print(self):
         """Prints a raw representation of the ndobject data."""
-        print str(ndobject_debug_dump(GET(self.v)).c_str())
+        print str(ndobject_debug_print(GET(self.v)).c_str())
 
     def vals(self):
         """Returns a version of the ndobject with plain values, all expressions evaluated."""
@@ -345,26 +344,21 @@ def groupby(data, by, groups):
     SET(result.v, ndobject_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
-# TODO uncomment
-#def arange(start, stop=None, step=None):
-#    """Constructs an ndobject representing a stepped range of values."""
-#    import warnings
-#    warnings.warn("dynd::arange doesn't produce an arange node yet, it is still by value")
-#    cdef w_ndobject result = w_ndobject()
-#    # Move the first argument to 'stop' if stop isn't specified
-#    if stop is None:
-#        SET(result.v, ndobject_arange(None, start, step))
-#    else:
-#        SET(result.v, ndobject_arange(start, stop, step))
-#    return result
-# TODO uncomment
-#def linspace(start, stop, count=50):
-#    """Constructs a specified count of values interpolating a range."""
-#    import warnings
-#    warnings.warn("dynd::linspace doesn't produce a linspace node yet, it is still by value")
-#    cdef w_ndobject result = w_ndobject()
-#    SET(result.v, ndobject_linspace(start, stop, count))
-#    return result
+def arange(start, stop=None, step=None):
+    """Constructs an ndobject representing a stepped range of values."""
+    cdef w_ndobject result = w_ndobject()
+    # Move the first argument to 'stop' if stop isn't specified
+    if stop is None:
+        SET(result.v, ndobject_arange(None, start, step))
+    else:
+        SET(result.v, ndobject_arange(start, stop, step))
+    return result
+
+def linspace(start, stop, count=50):
+    """Constructs a specified count of values interpolating a range."""
+    cdef w_ndobject result = w_ndobject()
+    SET(result.v, ndobject_linspace(start, stop, count))
+    return result
 
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
@@ -382,9 +376,9 @@ cdef class w_elwise_gfunc:
         """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
         elwise_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel)
 
-    def debug_dump(self):
+    def debug_print(self):
         """Prints a raw representation of the gfunc data."""
-        print str(elwise_gfunc_debug_dump(GET(self.v)).c_str())
+        print str(elwise_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -411,9 +405,9 @@ cdef class w_elwise_reduce_gfunc:
             id = w_ndobject(identity)
             elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
 
-    def debug_dump(self):
+    def debug_print(self):
         """Prints a raw representation of the gfunc data."""
-        print str(elwise_reduce_gfunc_debug_dump(GET(self.v)).c_str())
+        print str(elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -427,9 +421,9 @@ cdef class w_codegen_cache:
     def __dealloc__(self):
         placement_delete(self.v)
 
-    def debug_dump(self):
+    def debug_print(self):
         """Prints a raw representation of the codegen_cache data."""
-        print str(codegen_cache_debug_dump(GET(self.v)).c_str())
+        print str(codegen_cache_debug_print(GET(self.v)).c_str())
 
 cdef class w_elwise_program:
     cdef vm_elwise_program_placement_wrapper v
@@ -449,6 +443,6 @@ cdef class w_elwise_program:
         """Converts the elementwise VM program into a dict"""
         return vm_elwise_program_as_py(GET(self.v))
 
-    def debug_dump(self):
+    def debug_print(self):
         """Prints a raw representation of the elwise_program data."""
-        print str(vm_elwise_program_debug_dump(GET(self.v)).c_str())
+        print str(vm_elwise_program_debug_print(GET(self.v)).c_str())

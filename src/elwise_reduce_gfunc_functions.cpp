@@ -11,7 +11,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "elwise_reduce_gfunc_functions.hpp"
-#include "ndarray_functions.hpp"
+#include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
 #include "ctypes_interop.hpp"
 
@@ -20,7 +20,7 @@ using namespace dynd;
 using namespace pydynd;
 
 static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache,
-            PyCFuncPtrObject *cfunc, bool associative, bool commutative, const ndarray& identity,
+            PyCFuncPtrObject *cfunc, bool associative, bool commutative, const ndobject& identity,
             dynd::gfunc::elwise_reduce_kernel& out_kernel)
 {
     dtype& returntype = out_kernel.m_returntype;
@@ -68,15 +68,15 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
     }
 
     // If an identity is provided, get an immutable version of it as the reduction dtype
-    if (identity.get_node().get() != NULL) {
-        out_kernel.m_identity = identity.as_dtype(returntype).eval_immutable();
+    if (!identity.empty()) {
+        out_kernel.m_identity = identity.cast_scalars(returntype).eval_immutable();
     } else {
-        out_kernel.m_identity = ndarray();
+        out_kernel.m_identity = ndobject();
     }
 }
 
 void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dynd::ndarray& identity)
+                            bool associative, bool commutative, const dynd::ndobject& identity)
 {
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
         gfunc::elwise_reduce_kernel ergk;
@@ -96,13 +96,14 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
     Py_ssize_t nargs = PySequence_Size(args);
     if (nargs == 1) {
         pyobject_ownref arg0_obj(PySequence_GetItem(args, 0));
-        ndarray arg0;
-        ndarray_init_from_pyobject(arg0, arg0_obj);
+        ndobject arg0;
+        ndobject_init_from_pyobject(arg0, arg0_obj);
+        int ndim = arg0.get_dtype().get_uniform_ndim();
 
-        shortvector<dynd_bool> reduce_axes(arg0.get_ndim());
+        shortvector<dynd_bool> reduce_axes(ndim);
 
         // axis=[integer OR tuple of integers]
-        int axis_count = pyarg_axis_argument(PyDict_GetItemString(kwargs, "axis"), arg0.get_ndim(), reduce_axes.get());
+        int axis_count = pyarg_axis_argument(PyDict_GetItemString(kwargs, "axis"), ndim, reduce_axes.get());
 
         // associate=['left' OR 'right']
         bool rightassoc = pyarg_strings_to_int(PyDict_GetItemString(kwargs, "associate"), "associate", 0,
@@ -121,13 +122,16 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
                 ss << "Cannot call non-commutative reduce gfunc " << gf.get_name() << " with more than one axis";
                 throw runtime_error(ss.str());
             }
-            ndarray result(make_elwise_reduce_kernel_node_copy_kernel(
+            throw std::runtime_error("pydynd::elwise_reduce_gfunc_call isn't implemented presently");
+            /*
+            ndobject result(make_elwise_reduce_kernel_node_copy_kernel(
                         ergk->m_returntype, arg0.get_node(), reduce_axes.get(), rightassoc, keepdims, ergk->m_identity.get_node(),
                         (!rightassoc || ergk->m_commutative) ? ergk->m_left_associative_reduction_kernel :
                                 ergk->m_right_associative_reduction_kernel));
             pyobject_ownref result_obj(WNDArray_Type->tp_alloc(WNDArray_Type, 0));
             ((WNDArray *)result_obj.get())->v.swap(result);
             return result_obj.release();
+            */
         } else {
             std::stringstream ss;
             ss << gf.get_name() << ": could not find a gfunc kernel matching input dtype (" << argtypes[0] << ")";

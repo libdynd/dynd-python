@@ -11,8 +11,8 @@
 #include <dynd/nodes/scalar_node.hpp>
 #include <dynd/dtype_promotion.hpp>
 
-#include "ndarray_from_py.hpp"
-#include "ndarray_functions.hpp"
+#include "ndobject_from_py.hpp"
+#include "ndobject_functions.hpp"
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
@@ -29,11 +29,11 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
             if (dt.type_id() == void_type_id) {
                 shape.push_back(size);
             } else {
-                throw runtime_error("dnd:ndarray doesn't support dimensions which are sometimes scalars and sometimes arrays");
+                throw runtime_error("dnd:ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
             }
         } else {
             if (shape[current_axis] != size) {
-                throw runtime_error("dynd::ndarray doesn't support arrays with varying dimension sizes yet");
+                throw runtime_error("dynd::ndobject doesn't support arrays with varying dimension sizes yet");
             }
         }
         
@@ -42,7 +42,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
         }
     } else {
         if (shape.size() != current_axis) {
-            throw runtime_error("dnd:ndarray doesn't support dimensions which are sometimes scalars and sometimes arrays");
+            throw runtime_error("dnd:ndobject doesn't yet support dimensions which are sometimes scalars and sometimes arrays");
         }
 
         dtype obj_dt = pydynd::deduce_dtype_from_object(obj);
@@ -137,7 +137,7 @@ inline void convert_one_string(pyunicode_string_ptrs *out, PyObject *obj, const 
 }
 
 template<typename T>
-static T *fill_ndarray_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
+static T *fill_ndobject_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
 {
     if (current_axis == shape.size() - 1) {
         Py_ssize_t size = PyList_GET_SIZE(obj);
@@ -149,14 +149,14 @@ static T *fill_ndarray_from_pylist(T *data, PyObject *obj, const vector<intptr_t
     } else {
         Py_ssize_t size = PyList_GET_SIZE(obj);
         for (Py_ssize_t i = 0; i < size; ++i) {
-            data = fill_ndarray_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
+            data = fill_ndobject_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
         }
     }
     return data;
 }
 
 template<typename T>
-static T *fill_string_ndarray_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape,
+static T *fill_string_ndobject_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape,
                     int current_axis, const memory_block_ptr& dst_memblock)
 {
     if (current_axis == shape.size() - 1) {
@@ -169,13 +169,13 @@ static T *fill_string_ndarray_from_pylist(T *data, PyObject *obj, const vector<i
     } else {
         Py_ssize_t size = PyList_GET_SIZE(obj);
         for (Py_ssize_t i = 0; i < size; ++i) {
-            data = fill_string_ndarray_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1, dst_memblock);
+            data = fill_string_ndobject_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1, dst_memblock);
         }
     }
     return data;
 }
 
-static dynd::ndarray ndarray_from_pylist(PyObject *obj)
+static dynd::ndobject ndobject_from_pylist(PyObject *obj)
 {
     // TODO: Add ability to specify access flags (e.g. immutable)
     // Do a pass through all the data to deduce its dtype and shape
@@ -200,36 +200,36 @@ static dynd::ndarray ndarray_from_pylist(PyObject *obj)
         blockrefs_begin = &dst_memblock;
         blockrefs_end = &dst_memblock + 1;
     }
-    ndarray result = ndarray(make_strided_ndarray_node(dt, (int)shape.size(), &shape[0], &axis_perm[0],
-                    read_access_flag|write_access_flag, blockrefs_begin, blockrefs_end));
+    ndobject result = make_strided_ndobject(dt, (int)shape.size(), &shape[0],
+                    read_access_flag|write_access_flag, &axis_perm[0]);
 
     // Populate the array with data
     switch (dt.type_id()) {
         case bool_type_id:
-            fill_ndarray_from_pylist(reinterpret_cast<dynd_bool *>(result.get_readwrite_originptr()),
+            fill_ndobject_from_pylist(reinterpret_cast<dynd_bool *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
         case int32_type_id:
-            fill_ndarray_from_pylist(reinterpret_cast<int32_t *>(result.get_readwrite_originptr()),
+            fill_ndobject_from_pylist(reinterpret_cast<int32_t *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
         case int64_type_id:
-            fill_ndarray_from_pylist(reinterpret_cast<int64_t *>(result.get_readwrite_originptr()),
+            fill_ndobject_from_pylist(reinterpret_cast<int64_t *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
         case float64_type_id:
-            fill_ndarray_from_pylist(reinterpret_cast<double *>(result.get_readwrite_originptr()),
+            fill_ndobject_from_pylist(reinterpret_cast<double *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
         case complex_float64_type_id:
-            fill_ndarray_from_pylist(reinterpret_cast<complex<double> *>(result.get_readwrite_originptr()),
+            fill_ndobject_from_pylist(reinterpret_cast<complex<double> *>(result.get_readwrite_originptr()),
                             obj, shape, 0);
             break;
         case string_type_id: {
             const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
-            switch (ext->encoding()) {
+            switch (ext->get_encoding()) {
                 case string_encoding_ascii:
-                    fill_string_ndarray_from_pylist(reinterpret_cast<ascii_string_ptrs *>(result.get_readwrite_originptr()),
+                    fill_string_ndobject_from_pylist(reinterpret_cast<ascii_string_ptrs *>(result.get_readwrite_originptr()),
                             obj, shape, 0, dst_memblock);
                     break;
 #if Py_UNICODE_SIZE == 2
@@ -238,7 +238,7 @@ static dynd::ndarray ndarray_from_pylist(PyObject *obj)
                 case string_encoding_utf_32:
 #endif
                         {
-                    fill_string_ndarray_from_pylist(reinterpret_cast<pyunicode_string_ptrs *>(result.get_readwrite_originptr()),
+                    fill_string_ndobject_from_pylist(reinterpret_cast<pyunicode_string_ptrs *>(result.get_readwrite_originptr()),
                             obj, shape, 0, dst_memblock);
                     memory_block_pod_allocator_api *api = get_memory_block_pod_allocator_api(dst_memblock.get());
                     api->finalize(dst_memblock.get());
@@ -246,14 +246,14 @@ static dynd::ndarray ndarray_from_pylist(PyObject *obj)
                 }
                 default:
                     stringstream ss;
-                    ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndarray conversion function yet";
+                    ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndobject conversion function yet";
                     throw runtime_error(ss.str());
             }
             break;
         }
         default: {
             stringstream ss;
-            ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndarray conversion function yet";
+            ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndobject conversion function yet";
             throw runtime_error(ss.str());
         }
     }
@@ -261,24 +261,23 @@ static dynd::ndarray ndarray_from_pylist(PyObject *obj)
     return result;
 }
 
-dynd::ndarray pydynd::ndarray_from_py(PyObject *obj)
+dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
 {
-    // If it's a Cython w_ndarray
+    // If it's a Cython w_ndobject
     if (WNDArray_Check(obj)) {
         return ((WNDArray *)obj)->v;
     }
 
 #if DYND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
-        return ndarray_from_numpy_array((PyArrayObject *)obj);
+        return ndobject_from_numpy_array((PyArrayObject *)obj);
     } else if (PyArray_IsScalar(obj, Generic)) {
-        return ndarray_from_numpy_scalar(obj);
+        return ndobject_from_numpy_scalar(obj);
     }
 #endif // DYND_NUMPY_INTEROP
 
     if (PyBool_Check(obj)) {
-        dynd_bool value = (obj == Py_True);
-        return ndarray(make_dtype<dynd_bool>(), reinterpret_cast<const char *>(&value));
+        return ndobject(obj == Py_True);
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(obj)) {
         long value = PyInt_AS_LONG(obj);
@@ -323,7 +322,7 @@ dynd::ndarray pydynd::ndarray_from_py(PyObject *obj)
         const char *refs[2] = {data, data + len};
         // Python strings are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
-        return ndarray(make_scalar_node(d, reinterpret_cast<const char *>(&refs), read_access_flag | immutable_access_flag,
+        return ndobject(make_scalar_node(d, reinterpret_cast<const char *>(&refs), read_access_flag | immutable_access_flag,
                 make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function)));
     } else if (PyUnicode_Check(obj)) {
 #if Py_UNICODE_SIZE == 2
@@ -335,11 +334,11 @@ dynd::ndarray pydynd::ndarray_from_py(PyObject *obj)
         const char *refs[2] = {data, data + Py_UNICODE_SIZE * PyUnicode_GetSize(obj)};
         // Python strings are immutable, so simply use the existing memory with an external memory block
         Py_INCREF(obj);
-        return ndarray(make_scalar_node(d, reinterpret_cast<const char *>(&refs), read_access_flag | immutable_access_flag,
+        return ndobject(make_scalar_node(d, reinterpret_cast<const char *>(&refs), read_access_flag | immutable_access_flag,
                 make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function)));
     } else if (PyList_Check(obj)) {
-        return ndarray_from_pylist(obj);
+        return ndobject_from_pylist(obj);
     } else {
-        throw std::runtime_error("could not convert python object into a dynd::ndarray");
+        throw std::runtime_error("could not convert python object into a dynd::ndobject");
     }
 }

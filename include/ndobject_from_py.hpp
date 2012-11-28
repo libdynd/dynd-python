@@ -8,15 +8,15 @@
 
 #include <Python.h>
 
-#include <dynd/ndarray.hpp>
+#include <dynd/ndobject.hpp>
 
 namespace pydynd {
 
 /**
- * Converts a Python object into an ndarray using
+ * Converts a Python object into an ndobject using
  * the default settings.
  */
-dynd::ndarray ndarray_from_py(PyObject *obj);
+dynd::ndobject ndobject_from_py(PyObject *obj);
 
 } // namespace pydynd
 

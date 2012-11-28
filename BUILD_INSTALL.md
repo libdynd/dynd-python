@@ -57,28 +57,22 @@ Python versions built with previous compilers.
     subdirectory so that your build is isolated from the
     source code files.
 
-4. Click 'Add Entry', and create a variable called BOOST_ROOT.
-   Set its type to PATH, and select the path to the boost library.
-   Boost doesn't need to be built, only headers are used.
-
-5. Double-click on the generated blaze.sln
+4. Double-click on the generated blaze.sln
     to open Visual Studio. The RelWithDebInfo configuration is
     recommended for most purposes.
 
-6. To install the Python module, explicitly build the INSTALL target.
+5. To install the Python module, explicitly build the INSTALL target.
 
 *OR*
 
 Start a command prompt window, and navigate to the
 blaze folder which is the root of the project.
 Switch the "-G" argument below to "Visual Studio 10" if using
-32-bit Python. Replace the "BOOST_ROOT" path with the path to boost
-(boost doesn't need to be built, only headers are used).
+32-bit Python.
 Execute the following commands:
 
     D:\blaze>mkdir build
     D:\blaze>cd build
-    D:\blaze\build>set BOOST_ROOT=D:\boost_1_51_0
     D:\blaze\build>cmake -G "Visual Studio 10 Win64" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
        [output, check it for errors]
     D:\blaze\build>start blaze.sln
@@ -109,7 +103,7 @@ You may have to customize some library locations, for example a
 build configuration on a customized centos 5 install might
 look like this:
 
-    $ cmake -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPythonInterp_FIND_VERSION=2.6 -DBOOST_ROOT=~/Libraries/boost_1_50_0 ..
+    $ cmake -DCMAKE_C_COMPILER=/usr/bin/gcc44 -DCMAKE_CXX_COMPILER=/usr/bin/g++44 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPythonInterp_FIND_VERSION=2.6 ..
 
 Mac OS X
 --------

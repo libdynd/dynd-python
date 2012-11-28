@@ -2,7 +2,7 @@
 // Copyright (C) 2011-12, Dynamic NDArray Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
-// This header defines some placement wrappers of dtype and ndarray
+// This header defines some placement wrappers of dtype and ndobject
 // to enable wrapping them without adding extra indirection layers.
 //
 
@@ -10,7 +10,7 @@
 #define _DYND__PLACEMENT_WRAPPERS_HPP_
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndarray.hpp>
+#include <dynd/ndobject.hpp>
 #include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/vm/elwise_program.hpp>
 
@@ -49,7 +49,7 @@
 namespace pydynd {
 
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::dtype, dtype, dtype_placement_wrapper);
-DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndarray, ndarray, ndarray_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndobject, ndobject, ndobject_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwise_program_placement_wrapper);
 

@@ -18,7 +18,7 @@ set_broadcast_exception(BroadcastError)
 cdef extern from "do_import_array.hpp":
     pass
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    object ndarray_as_numpy_struct_capsule(ndarray&) except +translate_exception
+    object ndobject_as_numpy_struct_capsule(ndobject&) except +translate_exception
     void import_numpy()
 import_numpy()
 
@@ -28,13 +28,13 @@ cdef extern from "ctypes_interop.hpp" namespace "pydynd":
 init_ctypes_interop()
 
 # Initialize C++ access to the Cython type objects
-init_w_ndarray_typeobject(w_ndarray)
+init_w_ndobject_typeobject(w_ndobject)
 init_w_dtype_typeobject(w_dtype)
 
 include "dynd.pxd"
 include "codegen_cache.pxd"
 include "dtype.pxd"
-include "ndarray.pxd"
+include "ndobject.pxd"
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 include "vm_elwise_program.pxd"
@@ -190,89 +190,90 @@ def make_pointer_dtype(target_dtype):
     SET(result.v, dnd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
     return result
 
-def make_categorical_dtype(values):
-    """Constructs a categorical dtype with the specified values as its categories."""
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_categorical_dtype(GET(w_ndarray(values).v)))
-    return result
-
-def factor_categorical_dtype(values):
-    """Constructs a categorical dtype by factoring and sorting the unique values from the provided array."""
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_factor_categorical_dtype(GET(w_ndarray(values).v)))
-    return result
+# TODO uncomment
+#def make_categorical_dtype(values):
+#    """Constructs a categorical dtype with the specified values as its categories."""
+#    cdef w_dtype result = w_dtype()
+#    SET(result.v, dnd_make_categorical_dtype(GET(w_ndobject(values).v)))
+#    return result
+# TODO uncomment
+#def factor_categorical_dtype(values):
+#    """Constructs a categorical dtype by factoring and sorting the unique values from the provided array."""
+#    cdef w_dtype result = w_dtype()
+#    SET(result.v, dnd_factor_categorical_dtype(GET(w_ndobject(values).v)))
+#    return result
 
 ##############################################################################
 
-# NOTE: This is a possible alternative to the init_w_ndarray_typeobject() call
+# NOTE: This is a possible alternative to the init_w_ndobject_typeobject() call
 #       above, but it generates a 1300 line header file and still requires calling
 #       import__dnd from the C++ code, so directly using C++ primitives seems simpler.
-#cdef public api class w_ndarray [object WNDArrayObject, type WNDArrayObject_Type]:
+#cdef public api class w_ndobject [object WNDArrayObject, type WNDArrayObject_Type]:
 
-cdef class w_ndarray:
+cdef class w_ndobject:
     # To access the embedded dtype, use "GET(self.v)",
-    # which returns a reference to the ndarray, and
-    # SET(self.v, <ndarray value>), which sets the embeded
-    # ndarray's value.
-    cdef ndarray_placement_wrapper v
+    # which returns a reference to the ndobject, and
+    # SET(self.v, <ndobject value>), which sets the embeded
+    # ndobject's value.
+    cdef ndobject_placement_wrapper v
 
     def __cinit__(self, obj=None, dtype=None):
         placement_new(self.v)
         if obj is not None:
             # Get the array data
-            ndarray_init_from_pyobject(GET(self.v), obj)
+            ndobject_init_from_pyobject(GET(self.v), obj)
 
-            # If a specific dtype is requested, use as_dtype to switch types
+            # If a specific dtype is requested, use cast_scalars to switch types
             if dtype is not None:
-                SET(self.v, GET(self.v).as_dtype(GET(w_dtype(dtype).v), assign_error_default))
+                SET(self.v, GET(self.v).cast_scalars(GET(w_dtype(dtype).v), assign_error_default))
     def __dealloc__(self):
         placement_delete(self.v)
 
     def debug_dump(self):
-        """Prints a raw representation of the ndarray data."""
-        print str(ndarray_debug_dump(GET(self.v)).c_str())
+        """Prints a raw representation of the ndobject data."""
+        print str(ndobject_debug_dump(GET(self.v)).c_str())
 
     def vals(self):
-        """Returns a version of the ndarray with plain values, all expressions evaluated."""
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_vals(GET(self.v)))
+        """Returns a version of the ndobject with plain values, all expressions evaluated."""
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_vals(GET(self.v)))
         return result
 
     def eval_immutable(self):
-        cdef w_ndarray result = w_ndarray()
+        cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).eval_immutable())
         return result
 
     def eval_copy(self, access_flags = None):
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_eval_copy(GET(self.v), access_flags))
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_eval_copy(GET(self.v), access_flags))
         return result
 
     def storage(self):
-        """Returns a version of the ndarray with its storage dtype, all expressions discarded."""
-        cdef w_ndarray result = w_ndarray()
+        """Returns a version of the ndobject with its storage dtype, all expressions discarded."""
+        cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).storage())
         return result
 
     def val_assign(self, obj):
-        """Assigns to the ndarray by value instead of by reference."""
-        cdef w_ndarray n = w_ndarray(obj)
+        """Assigns to the ndobject by value instead of by reference."""
+        cdef w_ndobject n = w_ndobject(obj)
         GET(self.v).val_assign(GET(n.v), assign_error_default)
 
     def as_py(self):
         """Evaluates the values, and converts them into native Python types."""
-        return ndarray_as_py(GET(self.v))
+        return ndobject_as_py(GET(self.v))
 
-    def as_dtype(self, dtype, errmode=None):
-        """Converts the ndarray to the requested dtype. If dtype is an expression dtype, its expression gets applied on top of the existing data."""
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_as_dtype(GET(self.v), GET(w_dtype(dtype).v), errmode))
+    def cast_scalars(self, dtype, errmode=None):
+        """Converts the ndobject to the requested dtype. If dtype is an expression dtype, its expression gets applied on top of the existing data."""
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_cast_scalars(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
-    def view_as_dtype(self, dtype):
-        """Views the data of the ndarray as the requested dtype, where it makes sense."""
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, GET(self.v).view_as_dtype(GET(w_dtype(dtype).v)))
+    def view_scalars(self, dtype):
+        """Views the data of the ndobject as the requested dtype, where it makes sense."""
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, GET(self.v).view_scalars(GET(w_dtype(dtype).v)))
         return result
 
     property dtype:
@@ -281,84 +282,89 @@ cdef class w_ndarray:
             SET(result.v, GET(self.v).get_dtype())
             return result
 
-    property ndim:
+    property uniform_ndim:
         def __get__(self):
-            return GET(self.v).get_ndim()
+            return GET(self.v).get_dtype().get_uniform_ndim()
+
+    property is_scalar:
+        def __get__(self):
+            return GET(self.v).is_scalar()
 
     property shape:
         def __get__(self):
-            return intptr_array_as_tuple(GET(self.v).get_ndim(), GET(self.v).get_shape())
+            return ndobject_get_shape(GET(self.v))
 
     property strides:
         def __get__(self):
-            return intptr_array_as_tuple(GET(self.v).get_ndim(), GET(self.v).get_strides())
+            return ndobject_get_strides(GET(self.v))
 
     def __str__(self):
-        return str(ndarray_str(GET(self.v)).c_str())
+        return str(ndobject_str(GET(self.v)).c_str())
 
     def __repr__(self):
-        return str(ndarray_repr(GET(self.v)).c_str())
+        return str(ndobject_repr(GET(self.v)).c_str())
 
     def __len__(self):
-        if GET(self.v).get_ndim() == 0:
-            raise TypeError('zero-dimensional dynd::ndarray has no len()')
-        return GET(self.v).get_shape()[0]
+        if GET(self.v).is_scalar():
+            raise TypeError('zero-dimensional dynd::ndobject has no len()')
+        return GET(self.v).get_dim_size()
 
     def __getitem__(self, x):
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_getitem(GET(self.v), x))
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_getitem(GET(self.v), x))
         return result
 
     property __array_struct__:
         # Using the __array_struct__ mechanism to expose our data to numpy
         def __get__(self):
-            return ndarray_as_numpy_struct_capsule(GET(self.v))
+            return ndobject_as_numpy_struct_capsule(GET(self.v))
 
     def __add__(lhs, rhs):
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_add(GET(w_ndarray(lhs).v), GET(w_ndarray(rhs).v)))
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_add(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
     def __sub__(lhs, rhs):
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_subtract(GET(w_ndarray(lhs).v), GET(w_ndarray(rhs).v)))
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_subtract(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
     def __mul__(lhs, rhs):
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_multiply(GET(w_ndarray(lhs).v), GET(w_ndarray(rhs).v)))
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_multiply(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
     def __div__(lhs, rhs):
-        cdef w_ndarray result = w_ndarray()
-        SET(result.v, ndarray_divide(GET(w_ndarray(lhs).v), GET(w_ndarray(rhs).v)))
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_divide(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
 def groupby(data, by, groups):
     """Produces an array containing the elements of `data`, grouped according to `by` which has corresponding shape."""
-    cdef w_ndarray result = w_ndarray()
-    SET(result.v, ndarray_groupby(GET(w_ndarray(data).v), GET(w_ndarray(by).v), GET(w_dtype(groups).v)))
+    cdef w_ndobject result = w_ndobject()
+    SET(result.v, ndobject_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
-def arange(start, stop=None, step=None):
-    """Constructs an ndarray representing a stepped range of values."""
-    import warnings
-    warnings.warn("dynd::arange doesn't produce an arange node yet, it is still by value")
-    cdef w_ndarray result = w_ndarray()
-    # Move the first argument to 'stop' if stop isn't specified
-    if stop is None:
-        SET(result.v, ndarray_arange(None, start, step))
-    else:
-        SET(result.v, ndarray_arange(start, stop, step))
-    return result
-
-def linspace(start, stop, count=50):
-    """Constructs a specified count of values interpolating a range."""
-    import warnings
-    warnings.warn("dynd::linspace doesn't produce a linspace node yet, it is still by value")
-    cdef w_ndarray result = w_ndarray()
-    SET(result.v, ndarray_linspace(start, stop, count))
-    return result
+# TODO uncomment
+#def arange(start, stop=None, step=None):
+#    """Constructs an ndobject representing a stepped range of values."""
+#    import warnings
+#    warnings.warn("dynd::arange doesn't produce an arange node yet, it is still by value")
+#    cdef w_ndobject result = w_ndobject()
+#    # Move the first argument to 'stop' if stop isn't specified
+#    if stop is None:
+#        SET(result.v, ndobject_arange(None, start, step))
+#    else:
+#        SET(result.v, ndobject_arange(start, stop, step))
+#    return result
+# TODO uncomment
+#def linspace(start, stop, count=50):
+#    """Constructs a specified count of values interpolating a range."""
+#    import warnings
+#    warnings.warn("dynd::linspace doesn't produce a linspace node yet, it is still by value")
+#    cdef w_ndobject result = w_ndobject()
+#    SET(result.v, ndobject_linspace(start, stop, count))
+#    return result
 
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
@@ -398,11 +404,11 @@ cdef class w_elwise_reduce_gfunc:
 
     def add_kernel(self, kernel, bint associative, bint commutative, identity = None, w_codegen_cache cgcache = default_cgcache_c):
         """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
-        cdef w_ndarray id
+        cdef w_ndobject id
         if identity is None:
-            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, ndarray())
+            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, ndobject())
         else:
-            id = w_ndarray(identity)
+            id = w_ndobject(identity)
             elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
 
     def debug_dump(self):

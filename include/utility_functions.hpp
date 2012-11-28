@@ -43,7 +43,7 @@ public:
         : m_obj(obj)
     {
         if (obj == NULL) {
-            throw std::runtime_error("propagating a Python exception...need a mechanism to do that through Cython with a C++ exception");
+            throw std::runtime_error("propagating a Python exception...");
         }
     }
 
@@ -55,6 +55,15 @@ public:
     PyObject *get()
     {
         return m_obj;
+    }
+
+    void reset(PyObject* obj)
+    {
+        if (obj == NULL) {
+            throw std::runtime_error("propagating a Python exception...");
+        }
+        Py_XDECREF(m_obj);
+        m_obj = obj;
     }
 
     // Returns a borrowed reference

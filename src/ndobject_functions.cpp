@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#include "ndarray_functions.hpp"
-#include "ndarray_from_py.hpp"
+#include "ndobject_functions.hpp"
+#include "ndobject_from_py.hpp"
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
@@ -13,7 +13,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/nodes/scalar_node.hpp>
 #include <dynd/nodes/groupby_node.hpp>
-#include <dynd/ndarray_arange.hpp>
+#include <dynd/ndobject_arange.hpp>
 #include <dynd/dtype_promotion.hpp>
 
 using namespace std;
@@ -22,17 +22,17 @@ using namespace pydynd;
 
 PyTypeObject *pydynd::WNDArray_Type;
 
-void pydynd::init_w_ndarray_typeobject(PyObject *type)
+void pydynd::init_w_ndobject_typeobject(PyObject *type)
 {
     WNDArray_Type = (PyTypeObject *)type;
 }
 
-dynd::ndarray pydynd::ndarray_vals(const dynd::ndarray& n)
+dynd::ndobject pydynd::ndobject_vals(const dynd::ndobject& n)
 {
     return n.vals();
 }
 
-dynd::ndarray pydynd::ndarray_eval_copy(const dynd::ndarray& n, PyObject* access_flags, const eval::eval_context *ectx)
+dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n, PyObject* access_flags, const eval::eval_context *ectx)
 {
     if (access_flags == Py_None) {
         return n.eval_copy(ectx);
@@ -41,12 +41,28 @@ dynd::ndarray pydynd::ndarray_eval_copy(const dynd::ndarray& n, PyObject* access
     }
 }
 
-dynd::ndarray pydynd::ndarray_as_dtype(const dynd::ndarray& n, const dtype& dt, PyObject *assign_error_obj)
+dynd::ndobject pydynd::ndobject_cast_scalars(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
 {
-    return n.as_dtype(dt, pyarg_error_mode(assign_error_obj));
+    return n.cast_scalars(dt, pyarg_error_mode(assign_error_obj));
 }
 
-dynd::ndarray pydynd::ndarray_getitem(const dynd::ndarray& n, PyObject *subscript)
+PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)
+{
+    int ndim = n.get_dtype().get_uniform_ndim();
+    dimvector result(ndim);
+    n.get_shape(result.get());
+    return intptr_array_as_tuple(ndim, result.get());
+}
+
+PyObject *pydynd::ndobject_get_strides(const dynd::ndobject& n)
+{
+    int ndim = n.get_dtype().get_uniform_ndim();
+    dimvector result(ndim);
+    n.get_strides(result.get());
+    return intptr_array_as_tuple(ndim, result.get());
+}
+
+dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges
     intptr_t size;
@@ -66,20 +82,20 @@ dynd::ndarray pydynd::ndarray_getitem(const dynd::ndarray& n, PyObject *subscrip
     }
 
     // Do an indexing operation
-    return n.index((int)size, indices.get());
+    return n.at_array((int)size, indices.get());
 }
 
-ndarray pydynd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
+ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step)
 {
-    ndarray start_nd, stop_nd, step_nd;
+    ndobject start_nd, stop_nd, step_nd;
     if (start != Py_None) {
-        ndarray_init_from_pyobject(start_nd, start);
+        ndobject_init_from_pyobject(start_nd, start);
     } else {
         start_nd = 0;
     }
-    ndarray_init_from_pyobject(stop_nd, stop);
+    ndobject_init_from_pyobject(stop_nd, stop);
     if (step != Py_None) {
-        ndarray_init_from_pyobject(step_nd, step);
+        ndobject_init_from_pyobject(step_nd, step);
     } else {
         step_nd = 1;
     }
@@ -87,11 +103,11 @@ ndarray pydynd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
     dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(),
             promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
     
-    start_nd = start_nd.as_dtype(dt, assign_error_none).vals();
-    stop_nd = stop_nd.as_dtype(dt, assign_error_none).vals();
-    step_nd = step_nd.as_dtype(dt, assign_error_none).vals();
+    start_nd = start_nd.cast_scalars(dt, assign_error_none).vals();
+    stop_nd = stop_nd.cast_scalars(dt, assign_error_none).vals();
+    step_nd = step_nd.cast_scalars(dt, assign_error_none).vals();
 
-    if (start_nd.get_ndim() > 0 || stop_nd.get_ndim() > 0 || step_nd.get_ndim()) {
+    if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
         throw runtime_error("dynd::arange should only be called with scalar parameters");
     }
 
@@ -100,28 +116,29 @@ ndarray pydynd::ndarray_arange(PyObject *start, PyObject *stop, PyObject *step)
             step_nd.get_readonly_originptr());
 }
 
-dynd::ndarray pydynd::ndarray_linspace(PyObject *start, PyObject *stop, PyObject *count)
+dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count)
 {
-    ndarray start_nd, stop_nd;
+    ndobject start_nd, stop_nd;
     intptr_t count_val = pyobject_as_index(count);
-    ndarray_init_from_pyobject(start_nd, start);
-    ndarray_init_from_pyobject(stop_nd, stop);
+    ndobject_init_from_pyobject(start_nd, start);
+    ndobject_init_from_pyobject(stop_nd, stop);
     dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(), stop_nd.get_dtype());
     // Make sure it's at least floating point
     if (dt.kind() == bool_kind || dt.kind() == int_kind || dt.kind() == uint_kind) {
         dt = make_dtype<double>();
     }
-    start_nd = start_nd.as_dtype(dt, assign_error_none).vals();
-    stop_nd = stop_nd.as_dtype(dt, assign_error_none).vals();
+    start_nd = start_nd.cast_scalars(dt, assign_error_none).vals();
+    stop_nd = stop_nd.cast_scalars(dt, assign_error_none).vals();
 
-    if (start_nd.get_ndim() > 0 || stop_nd.get_ndim() > 0) {
+    if (!start_nd.is_scalar() || !stop_nd.is_scalar()) {
         throw runtime_error("dynd::linspace should only be called with scalar parameters");
     }
 
     return linspace(dt, start_nd.get_readonly_originptr(), stop_nd.get_readonly_originptr(), count_val);
 }
 
-dynd::ndarray pydynd::ndarray_groupby(const dynd::ndarray& data, const dynd::ndarray& by, const dynd::dtype& groups)
+dynd::ndobject pydynd::ndobject_groupby(const dynd::ndobject& data, const dynd::ndobject& by, const dynd::dtype& groups)
 {
-    return ndarray(make_groupby_node(data.get_node(), by.get_node(), groups));
+    throw runtime_error("pydynd::ndobject_groupby not implemented");
+//    return ndobject(make_groupby_node(data.get_node(), by.get_node(), groups));
 }

@@ -18,7 +18,6 @@ endif()
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
-find_package(Boost REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)
 find_package(NumPy REQUIRED)
@@ -51,7 +50,6 @@ add_subdirectory(libraries/dynamicndarray)
 include_directories(
     ${PYTHON_INCLUDE_DIRS}
     ${NUMPY_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS}
     libraries/dynamicndarray/include
     include
     )
@@ -63,9 +61,9 @@ set(pydynd_CPP_SRC
     include/placement_wrappers.hpp
     include/dtype_functions.hpp
     include/exception_translation.hpp
-    include/ndarray_functions.hpp
-    include/ndarray_from_py.hpp
-    include/ndarray_as_py.hpp
+    include/ndobject_functions.hpp
+    include/ndobject_from_py.hpp
+    include/ndobject_as_py.hpp
     include/numpy_interop.hpp
     include/elwise_gfunc_functions.hpp
     include/elwise_reduce_gfunc_functions.hpp
@@ -75,9 +73,9 @@ set(pydynd_CPP_SRC
     src/ctypes_interop.cpp
     src/dtype_functions.cpp
     src/exception_translation.cpp
-    src/ndarray_functions.cpp
-    src/ndarray_from_py.cpp
-    src/ndarray_as_py.cpp
+    src/ndobject_functions.cpp
+    src/ndobject_from_py.cpp
+    src/ndobject_as_py.cpp
     src/numpy_interop.cpp
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp
@@ -89,7 +87,7 @@ set(pydynd_CYTHON_SRC
     include/codegen_cache.pxd
     include/dynd.pxd
     include/dtype.pxd
-    include/ndarray.pxd
+    include/ndobject.pxd
     include/elwise_gfunc.pxd
     include/elwise_reduce_gfunc.pxd
     include/vm_elwise_program.pxd

@@ -3,15 +3,17 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#include "ndarray_as_py.hpp"
-#include "ndarray_functions.hpp"
+#include "ndobject_as_py.hpp"
+#include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
+
+#include <dynd/dtypes/strided_array_dtype.hpp>
 
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static PyObject* element_as_pyobject(const dtype& d, const char *data)
+static PyObject* element_as_pyobject(const dtype& d, const char *data, const char *DYND_UNUSED(metadata))
 {
     switch (d.type_id()) {
         case bool_type_id:
@@ -78,7 +80,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data)
                     return PyUnicode_DecodeUTF32(data, sizeof(uint32_t) * (udata_end - udata), NULL, NULL);
                 }
                 default:
-                    throw runtime_error("Unrecognized dynd::ndarray string encoding");
+                    throw runtime_error("Unrecognized dynd::ndobject string encoding");
             }
         }
         case string_type_id: {
@@ -94,48 +96,52 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data)
                 case string_encoding_utf_32:
                     return PyUnicode_DecodeUTF32(refs[0], refs[1] - refs[0], NULL, NULL);
                 default:
-                    throw runtime_error("Unrecognized dynd::ndarray string encoding");
+                    throw runtime_error("Unrecognized dynd::ndobject string encoding");
             }
         }
         default: {
             stringstream ss;
-            ss << "Cannot convert dynd::ndarray with dtype " << d << " into python object";
+            ss << "Cannot convert dynd::ndobject with dtype " << d << " into python object";
             throw runtime_error(ss.str());
         }
     }
 }
 
-static PyObject* nested_ndarray_as_py(const dtype& d, const char *data, int ndim, const intptr_t *shape, const intptr_t *strides)
-{
-    if (ndim == 0) {
-        return element_as_pyobject(d, data);
-    } else if (ndim == 1) {
-        pyobject_ownref lst(PyList_New(shape[0]));
-        for (intptr_t i = 0; i < shape[0]; ++i) {
-            pyobject_ownref item(element_as_pyobject(d, data));
-            PyList_SET_ITEM((PyObject *)lst, i, item.release());
-            data += strides[0];
+namespace {
+    struct ndobject_as_py_data {
+        pyobject_ownref result;
+        int index;
+    };
+
+    static void nested_ndobject_as_py(const dtype& d, char *data, const char *metadata, void *result)
+    {
+        ndobject_as_py_data *r = reinterpret_cast<ndobject_as_py_data *>(result);
+
+        ndobject_as_py_data el;
+        if (d.is_scalar()) {
+            el.result.reset(element_as_pyobject(d, data, metadata));
+        } else {
+            intptr_t size = d.get_dim_size(data, metadata);
+            el.result.reset(PyList_New(size));
+
+            d.extended()->foreach_leading(data, metadata, &nested_ndobject_as_py, &el);
         }
-        return lst.release();
-    } else {
-        pyobject_ownref lst(PyList_New(shape[0]));
-        intptr_t size = *shape;
-        intptr_t stride = *strides;
-        for (intptr_t i = 0; i < size; ++i) {
-            pyobject_ownref item(nested_ndarray_as_py(d, data, ndim - 1, shape + 1, strides + 1));
-            PyList_SET_ITEM((PyObject *)lst, i, item.release());
-            data += stride;
+
+        if (r->result) {
+            PyList_SET_ITEM(r->result.get(), r->index++, el.result.release());
+        } else {
+            r->result.reset(el.result.release());
         }
-        return lst.release();
     }
-}
+} // anonymous namespace
 
-PyObject* pydynd::ndarray_as_py(const dynd::ndarray& n)
+PyObject* pydynd::ndobject_as_py(const dynd::ndobject& n)
 {
-    // Evaluate the ndarray, and convert strings to the Python encoding
-    ndarray nvals = n.vals();
+    // Evaluate the ndobject
+    ndobject nvals = n.vals();
+    ndobject_as_py_data result;
 
-    return nested_ndarray_as_py(nvals.get_dtype(), nvals.get_readonly_originptr(),
-                nvals.get_ndim(), nvals.get_shape(), nvals.get_strides());
+    nested_ndobject_as_py(nvals.get_dtype(), nvals.get_ndo()->m_data_pointer, nvals.get_ndo_meta(), &result);
+    return result.result.release();
 }
 

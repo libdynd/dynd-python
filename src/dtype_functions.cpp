@@ -4,7 +4,7 @@
 //
 
 #include "dtype_functions.hpp"
-#include "ndarray_functions.hpp"
+#include "ndobject_functions.hpp"
 #include "numpy_interop.hpp"
 #include "ctypes_interop.hpp"
 #include "utility_functions.hpp"
@@ -295,5 +295,5 @@ dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
     }
 
     // Do an indexing operation
-    return d.index((int)size, indices.get());
+    return d.at_array((int)size, indices.get());
 }

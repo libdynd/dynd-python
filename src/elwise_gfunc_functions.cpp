@@ -12,7 +12,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "elwise_gfunc_functions.hpp"
-#include "ndarray_functions.hpp"
+#include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
 #include "ctypes_interop.hpp"
 
@@ -65,13 +65,13 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
 {
     Py_ssize_t nargs = PySequence_Size(args);
 
-    // Convert the args into ndarrays, and get the value dtypes
-    vector<ndarray> ndarray_args(nargs);
+    // Convert the args into ndobjects, and get the value dtypes
+    vector<ndobject> ndobject_args(nargs);
     vector<dtype> argtypes(nargs);
     for (Py_ssize_t i = 0; i < nargs; ++i) {
         pyobject_ownref arg_obj(PySequence_GetItem(args, i));
-        ndarray_init_from_pyobject(ndarray_args[i], arg_obj);
-        argtypes[i] = ndarray_args[i].get_dtype().value_dtype();
+        ndobject_init_from_pyobject(ndobject_args[i], arg_obj);
+        argtypes[i] = ndobject_args[i].get_dtype().value_dtype();
     }
 
     const gfunc::elwise_kernel *egk;
@@ -90,15 +90,18 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
         throw std::runtime_error(ss.str());
     }
 
+    PyErr_SetString(PyExc_TypeError, "pydynd::elwise_gfunc_call isn't implemented presently");
+    return NULL;
+    /*
     if (nargs == 1) {
-        ndarray result(make_elwise_unary_kernel_node_copy_kernel(
-                    egk->m_returntype, ndarray_args[0].get_node(), egk->m_unary_kernel));
+        ndobject result(make_elwise_unary_kernel_node_copy_kernel(
+                    egk->m_returntype, ndobject_args[0].get_node(), egk->m_unary_kernel));
         pyobject_ownref result_obj(WNDArray_Type->tp_alloc(WNDArray_Type, 0));
         ((WNDArray *)result_obj.get())->v.swap(result);
         return result_obj.release();
     } else if (nargs == 2) {
-        ndarray result(make_elwise_binary_kernel_node_copy_kernel(
-                    egk->m_returntype, ndarray_args[0].get_node(), ndarray_args[1].get_node(), egk->m_binary_kernel));
+        ndobject result(make_elwise_binary_kernel_node_copy_kernel(
+                    egk->m_returntype, ndobject_args[0].get_node(), ndobject_args[1].get_node(), egk->m_binary_kernel));
         pyobject_ownref result_obj(WNDArray_Type->tp_alloc(WNDArray_Type, 0));
         ((WNDArray *)result_obj.get())->v.swap(result);
         return result_obj.release();
@@ -106,4 +109,5 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
         PyErr_SetString(PyExc_TypeError, "Elementwise gfuncs only support 1 or 2 arguments presently");
         return NULL;
     }
+    */
 }

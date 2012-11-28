@@ -24,9 +24,9 @@
 #ifdef NPY_1_7_API_VERSION
 # define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #else
-# define NPY_ARRAY_NOTSWAPPED NPY_NOTSWAPPED
-# define NPY_ARRAY_ALIGNED NPY_ALIGNED
-# define NPY_ARRAY_WRITEABLE NPY_WRITEABLE
+# define NPY_ARRAY_NOTSWAPPED   NPY_NOTSWAPPED
+# define NPY_ARRAY_ALIGNED      NPY_ALIGNED
+# define NPY_ARRAY_WRITEABLE    NPY_WRITEABLE
 # define NPY_ARRAY_UPDATEIFCOPY NPY_UPDATEIFCOPY
 #endif
 
@@ -39,7 +39,7 @@
 #include <sstream>
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndarray.hpp>
+#include <dynd/ndobject.hpp>
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
@@ -61,8 +61,8 @@ inline int import_numpy()
  * parameter to get accurate alignment, as Numpy may have misaligned data,
  * or may report a smaller alignment than is necessary based on the data.
  *
- * @param d  The Numpy dtype to convert.
- * @param data_alignment  If associated with particular data, the actual
+ * \param d  The Numpy dtype to convert.
+ * \param data_alignment  If associated with particular data, the actual
  *                        alignment of that data. The default of zero
  *                        causes it to use Numpy's data alignment
  */
@@ -71,9 +71,18 @@ dynd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
 /**
  * Converts a dynd::dtype to a numpy dtype.
  *
- * @param dt  The dtype to convert.
+ * \param dt  The dtype to convert.
  */
 PyArray_Descr *numpy_dtype_from_dtype(const dynd::dtype& dt);
+
+/**
+ * Converts a dynd::dtype to a numpy dtype, also supporting dtypes which
+ * rely on their metadata for field offset information.
+ *
+ * \param dt  The dtype to convert.
+ * \param metadata  The metadata for the dtype.
+ */
+PyArray_Descr *numpy_dtype_from_dtype(const dynd::dtype& dt, const char *metadata);
 
 /**
  * Converts a pytypeobject for a numpy scalar
@@ -89,14 +98,14 @@ int dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d);
 dynd::dtype dtype_of_numpy_scalar(PyObject* obj);
 
 /**
- * Views a Numpy PyArrayObject as a dynd::ndarray.
+ * Views a Numpy PyArrayObject as a dynd::ndobject.
  */
-dynd::ndarray ndarray_from_numpy_array(PyArrayObject* obj);
+dynd::ndobject ndobject_from_numpy_array(PyArrayObject* obj);
 
 /**
- * Creates a dynd::ndarray from a numpy scalar.
+ * Creates a dynd::ndobject from a numpy scalar.
  */
-dynd::ndarray ndarray_from_numpy_scalar(PyObject* obj);
+dynd::ndobject ndobject_from_numpy_scalar(PyObject* obj);
 
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
@@ -107,7 +116,7 @@ char numpy_kindchar_of(const dynd::dtype& d);
  * Produces a PyCapsule (or PyCObject as appropriate) which
  * contains a __array_struct__ interface object.
  */
-PyObject* ndarray_as_numpy_struct_capsule(const dynd::ndarray& n);
+PyObject* ndobject_as_numpy_struct_capsule(const dynd::ndobject& n);
 
 } // namespace pydynd
 

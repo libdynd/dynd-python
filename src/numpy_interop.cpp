@@ -12,10 +12,12 @@
 #include <dynd/dtypes/dtype_alignment.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/tuple_dtype.hpp>
+#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "dtype_functions.hpp"
-#include "ndarray_functions.hpp"
+#include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <numpy/arrayscalars.h>
@@ -183,14 +185,14 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
         case fixedstring_type_id: {
             const fixedstring_dtype *fdt = static_cast<const fixedstring_dtype *>(dt.extended());
             PyArray_Descr *result;
-            switch (fdt->encoding()) {
+            switch (fdt->get_encoding()) {
                 case string_encoding_ascii:
                     result = PyArray_DescrNewFromType(NPY_STRING);
-                    result->elsize = (int)fdt->element_size();
+                    result->elsize = (int)fdt->get_element_size();
                     return result;
                 case string_encoding_utf_32:
                     result = PyArray_DescrNewFromType(NPY_UNICODE);
-                    result->elsize = (int)fdt->element_size();
+                    result->elsize = (int)fdt->get_element_size();
                     return result;
                 default:
                     break;
@@ -260,6 +262,52 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
     ss << "cannot convert dynd dtype " << dt << " into a Numpy dtype";
     throw runtime_error(ss.str());
 }
+
+PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char *metadata)
+{
+    switch (dt.type_id()) {
+        case struct_type_id: {
+            const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
+            const vector<dtype>& fields = sdt->get_fields();
+            const vector<string>& field_names = sdt->get_field_names();
+            const vector<size_t>& metadata_offsets = sdt->get_metadata_offsets();
+            const intptr_t *offsets = reinterpret_cast<const intptr_t *>(metadata);
+            int num_fields = (int)fields.size();
+
+            pyobject_ownref names_obj(PyList_New(num_fields));
+            for (size_t i = 0; i < num_fields; ++i) {
+                PyList_SET_ITEM((PyObject *)names_obj, i, PyString_FromString(field_names[i].c_str()));
+            }
+
+            pyobject_ownref formats_obj(PyList_New(num_fields));
+            for (size_t i = 0; i < num_fields; ++i) {
+                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)numpy_dtype_from_dtype(fields[i], metadata + metadata_offsets[i]));
+            }
+
+            pyobject_ownref offsets_obj(PyList_New(num_fields));
+            for (size_t i = 0; i < num_fields; ++i) {
+                PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
+            }
+
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.element_size()));
+
+            pyobject_ownref dict_obj(PyDict_New());
+            PyDict_SetItemString(dict_obj, "names", names_obj);
+            PyDict_SetItemString(dict_obj, "formats", formats_obj);
+            PyDict_SetItemString(dict_obj, "offsets", offsets_obj);
+            PyDict_SetItemString(dict_obj, "itemsize", itemsize_obj);
+
+            PyArray_Descr *result = NULL;
+            if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
+                throw runtime_error("failed to convert dtype into numpy struct dtype via dict");
+            }
+            return result;
+        }
+        default:
+            return numpy_dtype_from_dtype(dt);
+    }
+}
+
 
 int pydynd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d)
 {
@@ -364,7 +412,7 @@ inline size_t get_alignment_of(PyArrayObject* obj)
     return get_alignment_of(align_bits);
 }
 
-ndarray pydynd::ndarray_from_numpy_array(PyArrayObject* obj)
+ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
 {
     // Get the dtype of the array
     dtype d = pydynd::dtype_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
@@ -380,50 +428,50 @@ ndarray pydynd::ndarray_from_numpy_array(PyArrayObject* obj)
         memblock = make_external_memory_block(base, py_decref_function);
     }
 
-    // Create the result ndarray
-    return ndarray(make_strided_ndarray_node(d, PyArray_NDIM(obj),
-                    PyArray_DIMS(obj), PyArray_STRIDES(obj), PyArray_BYTES(obj),
+    // Create the result ndobject
+    return make_strided_ndobject_from_data(d, PyArray_NDIM(obj),
+                    PyArray_DIMS(obj), PyArray_STRIDES(obj),
                     read_access_flag | (PyArray_ISWRITEABLE(obj) ? write_access_flag : 0),
-                    DYND_MOVE(memblock)));
+                    PyArray_BYTES(obj), DYND_MOVE(memblock));
 }
 
-dynd::ndarray pydynd::ndarray_from_numpy_scalar(PyObject* obj)
+dynd::ndobject pydynd::ndobject_from_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
-        return ndarray((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
+        return ndobject((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
     } else if (PyArray_IsScalar(obj, Byte)) {
-        return ndarray(((PyByteScalarObject *)obj)->obval);
+        return ndobject(((PyByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UByte)) {
-        return ndarray(((PyUByteScalarObject *)obj)->obval);
+        return ndobject(((PyUByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Short)) {
-        return ndarray(((PyShortScalarObject *)obj)->obval);
+        return ndobject(((PyShortScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UShort)) {
-        return ndarray(((PyUShortScalarObject *)obj)->obval);
+        return ndobject(((PyUShortScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Int)) {
-        return ndarray(((PyIntScalarObject *)obj)->obval);
+        return ndobject(((PyIntScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UInt)) {
-        return ndarray(((PyUIntScalarObject *)obj)->obval);
+        return ndobject(((PyUIntScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Long)) {
-        return ndarray(((PyLongScalarObject *)obj)->obval);
+        return ndobject(((PyLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, ULong)) {
-        return ndarray(((PyULongScalarObject *)obj)->obval);
+        return ndobject(((PyULongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, LongLong)) {
-        return ndarray(((PyLongLongScalarObject *)obj)->obval);
+        return ndobject(((PyLongLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, ULongLong)) {
-        return ndarray(((PyULongLongScalarObject *)obj)->obval);
+        return ndobject(((PyULongLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Float)) {
-        return ndarray(((PyFloatScalarObject *)obj)->obval);
+        return ndobject(((PyFloatScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Double)) {
-        return ndarray(((PyDoubleScalarObject *)obj)->obval);
+        return ndobject(((PyDoubleScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, CFloat)) {
         npy_cfloat& val = ((PyCFloatScalarObject *)obj)->obval;
-        return ndarray(complex<float>(val.real, val.imag));
+        return ndobject(complex<float>(val.real, val.imag));
     } else if (PyArray_IsScalar(obj, CDouble)) {
         npy_cdouble& val = ((PyCDoubleScalarObject *)obj)->obval;
-        return ndarray(complex<double>(val.real, val.imag));
+        return ndobject(complex<double>(val.real, val.imag));
     }
 
-    throw std::runtime_error("could not create a dynd::ndarray from the numpy scalar object");
+    throw std::runtime_error("could not create a dynd::ndobject from the numpy scalar object");
 }
 
 char pydynd::numpy_kindchar_of(const dynd::dtype& d)
@@ -462,7 +510,7 @@ char pydynd::numpy_kindchar_of(const dynd::dtype& d)
 
 #endif // DYND_NUMPY_INTEROP
 
-// The function ndarray_as_numpy_struct_capsule is exposed even without building against numpy
+// The function ndobject_as_numpy_struct_capsule is exposed even without building against numpy
 static void free_array_interface(void *ptr, void *extra_ptr)
 {
     PyArrayInterface* inter = (PyArrayInterface *)ptr;
@@ -473,47 +521,59 @@ static void free_array_interface(void *ptr, void *extra_ptr)
     delete extra;
 }
 
-static PyObject* tuple_ndarray_as_numpy_struct_capsule(const dynd::ndarray& n)
+static PyObject* struct_ndobject_as_numpy_struct_capsule(const dynd::ndobject& n, int ndim, const intptr_t *shape,
+                const intptr_t *strides, const dtype& dt, const char *metadata)
 {
-    bool writeable = (n.get_node()->get_access_flags() & write_access_flag) != 0;
+    bool writeable = (n.get_access_flags() & write_access_flag) != 0;
 
-    pyobject_ownref descr((PyObject *)numpy_dtype_from_dtype(n.get_dtype()));
+    pyobject_ownref descr((PyObject *)numpy_dtype_from_dtype(n.get_dtype(), metadata));
 
     PyArrayInterface inter;
     memset(&inter, 0, sizeof(inter));
 
     inter.two = 2;
-    inter.nd = n.get_ndim();
+    inter.nd = n.get_dtype().get_uniform_ndim();
     inter.typekind = 'V';
-    inter.itemsize = (int)n.get_dtype().element_size();
+    inter.itemsize = ((PyArray_Descr *)descr.get())->elsize;
     inter.flags = NPY_ARRAY_ALIGNED | (writeable ? NPY_ARRAY_WRITEABLE : 0);
     if (writeable) {
         inter.data = n.get_readwrite_originptr();
     } else {
         inter.data = const_cast<char *>(n.get_readonly_originptr());
     }
-    inter.strides = new intptr_t[2 * n.get_ndim()];
-    inter.shape = inter.strides + n.get_ndim();
+    inter.strides = new intptr_t[2 * inter.nd];
+    inter.shape = inter.strides + inter.nd;
     inter.descr = descr.release();
 
-    memcpy(inter.strides, n.get_strides(), n.get_ndim() * sizeof(intptr_t));
-    memcpy(inter.shape, n.get_shape(), n.get_ndim() * sizeof(intptr_t));
+    memcpy(inter.strides, strides, ndim * sizeof(intptr_t));
+    memcpy(inter.shape, shape, ndim * sizeof(intptr_t));
 
     // TODO: Check for Python 3, use PyCapsule there
-    return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_node()->get_data_memory_block()), free_array_interface);
+    return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_memblock()), free_array_interface);
 }
 
-PyObject* pydynd::ndarray_as_numpy_struct_capsule(const dynd::ndarray& n)
+PyObject* pydynd::ndobject_as_numpy_struct_capsule(const dynd::ndobject& n)
 {
-    if (n.get_node()->get_category() != strided_array_node_category) {
-        throw runtime_error("cannot convert a dynd::ndarray that isn't a strided array into a numpy array");
+    dtype dt = n.get_dtype();
+    int ndim = dt.get_uniform_ndim();
+    dimvector shape(ndim), strides(ndim);
+    const char *metadata = n.get_ndo_meta();
+    // Follow the chain of strided array dtypes to convert them into numpy shape/strides
+    for (int i = 0; i < ndim; ++i) {
+        if (dt.type_id() != strided_array_type_id) {
+            stringstream ss;
+            ss << "Cannot view ndobject with dtype " << n.get_dtype() << " directly as a numpy array";
+            throw runtime_error(ss.str());
+        }
+        const strided_array_dtype_metadata *md = reinterpret_cast<const strided_array_dtype_metadata *>(metadata);
+        shape[i] = md->size;
+        strides[i] = md->stride;
+        metadata += sizeof(strided_array_dtype_metadata);
+        dt = static_cast<const strided_array_dtype *>(dt.extended())->get_element_dtype();
     }
 
-    dtype dt = n.get_dtype();
-    const dtype& value_dt = dt.value_dtype();
-
-    if (dt.type_id() == tuple_type_id) {
-        return tuple_ndarray_as_numpy_struct_capsule(n);
+    if (dt.type_id() == struct_type_id) {
+        return struct_ndobject_as_numpy_struct_capsule(n, ndim, shape.get(), strides.get(), dt, metadata);
     }
 
     bool byteswapped = false;
@@ -531,14 +591,14 @@ PyObject* pydynd::ndarray_as_numpy_struct_capsule(const dynd::ndarray& n)
         }
     }
 
-    bool writeable = (n.get_node()->get_access_flags() & write_access_flag) != 0;
+    bool writeable = (n.get_access_flags() & write_access_flag) != 0;
 
     PyArrayInterface inter;
     memset(&inter, 0, sizeof(inter));
 
     inter.two = 2;
-    inter.nd = n.get_ndim();
-    inter.typekind = numpy_kindchar_of(value_dt);
+    inter.nd = ndim;
+    inter.typekind = numpy_kindchar_of(dt);
     // Numpy treats 'U' as number of 4-byte characters, not number of bytes
     inter.itemsize = (int)(inter.typekind != 'U' ? n.get_dtype().element_size() : n.get_dtype().element_size() / 4);
     inter.flags = (byteswapped ? 0 : NPY_ARRAY_NOTSWAPPED) |
@@ -549,12 +609,12 @@ PyObject* pydynd::ndarray_as_numpy_struct_capsule(const dynd::ndarray& n)
     } else {
         inter.data = const_cast<char *>(n.get_readonly_originptr());
     }
-    inter.strides = new intptr_t[2 * n.get_ndim()];
-    inter.shape = inter.strides + n.get_ndim();
+    inter.strides = new intptr_t[2 * ndim];
+    inter.shape = inter.strides + ndim;
 
-    memcpy(inter.strides, n.get_strides(), n.get_ndim() * sizeof(intptr_t));
-    memcpy(inter.shape, n.get_shape(), n.get_ndim() * sizeof(intptr_t));
+    memcpy(inter.strides, strides.get(), ndim * sizeof(intptr_t));
+    memcpy(inter.shape, shape.get(), ndim * sizeof(intptr_t));
 
     // TODO: Check for Python 3, use PyCapsule there
-    return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_node()->get_data_memory_block()), free_array_interface);
+    return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_memblock()), free_array_interface);
 }

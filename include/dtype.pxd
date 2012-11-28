@@ -4,9 +4,6 @@
 #
 
 cdef extern from "dynd/dtype.hpp" namespace "dynd":
-    cdef cppclass shared_ptr[T]:
-        T* get()
-
     cdef enum dtype_kind_t:
         bool_kind
         int_kind
@@ -37,7 +34,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         struct_type_id
         tuple_type_id
         array_type_id
-        ndarray_type_id
+        ndobject_type_id
         convert_type_id
         pattern_type_id
 
@@ -74,8 +71,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         uintptr_t element_size()
         extended_dtype* extended()
         string_encoding_t string_encoding() except +translate_exception
-
-    dtype dnd_make_fixedbytes_dtype "dynd::make_fixedbytes_dtype" (intptr_t, intptr_t) except +translate_exception
+        int get_uniform_ndim()
 
 cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
@@ -85,13 +81,16 @@ cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
         assign_error_inexact
         assign_error_default
 
+cdef extern from "dynd/dtypes/fixedbytes_dtype.hpp" namespace "dynd":
+    dtype dnd_make_fixedbytes_dtype "dynd::make_fixedbytes_dtype" (intptr_t, intptr_t) except +translate_exception
+
 cdef extern from "dynd/dtypes/byteswap_dtype.hpp" namespace "dynd":
     dtype dnd_make_byteswap_dtype "dynd::make_byteswap_dtype" (dtype&) except +translate_exception
     dtype dnd_make_byteswap_dtype "dynd::make_byteswap_dtype" (dtype&, dtype&) except +translate_exception
 
 cdef extern from "dynd/dtypes/categorical_dtype.hpp" namespace "dynd":
-    dtype dnd_make_categorical_dtype "dynd::make_categorical_dtype" (ndarray&) except +translate_exception
-    dtype dnd_factor_categorical_dtype "dynd::factor_categorical_dtype" (ndarray&) except +translate_exception
+    dtype dnd_make_categorical_dtype "dynd::make_categorical_dtype" (ndobject&) except +translate_exception
+    dtype dnd_factor_categorical_dtype "dynd::factor_categorical_dtype" (ndobject&) except +translate_exception
 
 cdef extern from "dynd/dtypes/dtype_alignment.hpp" namespace "dynd":
     dtype dnd_make_unaligned_dtype "dynd::make_unaligned_dtype" (dtype&) except +translate_exception

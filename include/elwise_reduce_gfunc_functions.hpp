@@ -13,7 +13,7 @@
 #include <vector>
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndarray.hpp>
+#include <dynd/ndobject.hpp>
 #include <dynd/kernels/kernel_instance.hpp>
 #include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/gfunc/elwise_reduce_gfunc.hpp>
@@ -21,7 +21,7 @@
 namespace pydynd {
 
 void elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dynd::ndarray& identity);
+                            bool associative, bool commutative, const dynd::ndobject& identity);
 
 PyObject *elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs);
 

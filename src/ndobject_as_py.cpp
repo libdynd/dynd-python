@@ -123,6 +123,7 @@ namespace {
         } else {
             intptr_t size = d.get_dim_size(data, metadata);
             el.result.reset(PyList_New(size));
+            el.index = 0;
 
             d.extended()->foreach_leading(data, metadata, &nested_ndobject_as_py, &el);
         }

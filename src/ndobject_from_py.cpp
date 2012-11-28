@@ -6,9 +6,9 @@
 #include <Python.h>
 
 #include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/strided_array_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
-#include <dynd/nodes/scalar_node.hpp>
 #include <dynd/dtype_promotion.hpp>
 
 #include "ndobject_from_py.hpp"
@@ -188,20 +188,8 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
     }
 
     // Create the array
-    vector<int> axis_perm(shape.size());
-    for (int i = 0, i_end = (int)axis_perm.size(); i != i_end; ++i) {
-        axis_perm[i] = i_end - i - 1;
-    }
-    memory_block_ptr dst_memblock; // For blockref string dtype
-    memory_block_ptr *blockrefs_begin = NULL, *blockrefs_end = NULL;
-     
-    if (dt.get_memory_management() == blockref_memory_management) {
-        dst_memblock = make_pod_memory_block();
-        blockrefs_begin = &dst_memblock;
-        blockrefs_end = &dst_memblock + 1;
-    }
     ndobject result = make_strided_ndobject(dt, (int)shape.size(), &shape[0],
-                    read_access_flag|write_access_flag, &axis_perm[0]);
+                    read_access_flag|write_access_flag, NULL);
 
     // Populate the array with data
     switch (dt.type_id()) {
@@ -226,6 +214,13 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                             obj, shape, 0);
             break;
         case string_type_id: {
+            // Allocate the destination memory block
+            memory_block_ptr dst_memblock = make_pod_memory_block();
+            char *str_meta = result.get_ndo_meta() + shape.size() * sizeof(strided_array_dtype_metadata);
+            string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(str_meta);
+            md->blockref = dst_memblock.get();
+            memory_block_incref(md->blockref);
+
             const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
             switch (ext->get_encoding()) {
                 case string_encoding_ascii:
@@ -322,8 +317,22 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         const char *refs[2] = {data, data + len};
         // Python strings are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
-        return ndobject(make_scalar_node(d, reinterpret_cast<const char *>(&refs), read_access_flag | immutable_access_flag,
-                make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function)));
+        memory_block_ptr stringref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
+        char *data_ptr;
+        ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
+                        d.element_size(), d.alignment(), &data_ptr));
+        result.get_ndo()->m_data_pointer = data_ptr;
+        result.get_ndo()->m_data_reference = NULL;
+        result.get_ndo()->m_dtype = d.extended();
+        extended_dtype_incref(result.get_ndo()->m_dtype);
+        // The scalar consists of pointers to the string data
+        ((const char **)data_ptr)[0] = data;
+        ((const char **)data_ptr)[1] = data + len;
+        // The metadata
+        string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
+        md->blockref = stringref.release();
+        result.get_ndo()->m_flags = immutable_access_flag|read_access_flag;
+        return result;
     } else if (PyUnicode_Check(obj)) {
 #if Py_UNICODE_SIZE == 2
         dtype d = make_string_dtype(string_encoding_ucs_2);
@@ -331,11 +340,24 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         dtype d = make_string_dtype(string_encoding_utf_32);
 #endif
         const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
-        const char *refs[2] = {data, data + Py_UNICODE_SIZE * PyUnicode_GetSize(obj)};
         // Python strings are immutable, so simply use the existing memory with an external memory block
         Py_INCREF(obj);
-        return ndobject(make_scalar_node(d, reinterpret_cast<const char *>(&refs), read_access_flag | immutable_access_flag,
-                make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function)));
+        memory_block_ptr stringdata = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
+        char *data_ptr;
+        ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
+                    d.element_size(), d.alignment(), &data_ptr));
+        result.get_ndo()->m_data_pointer = data_ptr;
+        result.get_ndo()->m_data_reference = NULL;
+        result.get_ndo()->m_dtype = d.extended();
+        extended_dtype_incref(result.get_ndo()->m_dtype);
+        // The scalar consists of pointers to the string data
+        ((const char **)data_ptr)[0] = data;
+        ((const char **)data_ptr)[1] = data + Py_UNICODE_SIZE * PyUnicode_GetSize(obj);
+        // The metadata
+        string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
+        md->blockref = stringdata.release();
+        result.get_ndo()->m_flags = immutable_access_flag|read_access_flag;
+        return result;
     } else if (PyList_Check(obj)) {
         return ndobject_from_pylist(obj);
     } else {

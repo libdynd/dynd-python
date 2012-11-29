@@ -64,9 +64,22 @@ inline int import_numpy()
  * \param d  The Numpy dtype to convert.
  * \param data_alignment  If associated with particular data, the actual
  *                        alignment of that data. The default of zero
- *                        causes it to use Numpy's data alignment
+ *                        causes it to use Numpy's data alignment.
+ *
+ * \returns  The dynd equivalent of the Numpy dtype.
  */
 dynd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
+
+/**
+ * When the function dtype_from_numpy_dtype returns a dtype which requires
+ * additional metadata to be filled in, this function should be called to populate
+ * that metadata in a created ndobject.
+ *
+ * \param dt  The dtype returned by dtype_from_numpy_dtype.
+ * \param d  The numpy dtype passed to dtype_from_numpy_dtype.
+ * \param metadata  A pointer to the metadata to populate.
+ */
+void fill_metadata_from_numpy_dtype(const dynd::dtype& dt, PyArray_Descr *d, char *metadata);
 
 /**
  * Converts a dynd::dtype to a numpy dtype.

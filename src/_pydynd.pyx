@@ -121,6 +121,13 @@ cdef class w_dtype:
             SET(result.v, GET(self.v).storage_dtype())
             return result
 
+    property canonical_dtype:
+        """The canonical version of the dtype."""
+        def __get__(self):
+            cdef w_dtype result = w_dtype()
+            SET(result.v, GET(self.v).get_canonical_dtype())
+            return result
+
     def __getitem__(self, x):
         cdef w_dtype result = w_dtype()
         SET(result.v, dtype_getitem(GET(self.v), x))

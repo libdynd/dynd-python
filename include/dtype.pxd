@@ -65,6 +65,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         dtype& value_dtype()
         dtype& operand_dtype()
         dtype& storage_dtype()
+        dtype get_canonical_dtype()
         type_id_t type_id()
         dtype_kind_t kind()
         int alignment()

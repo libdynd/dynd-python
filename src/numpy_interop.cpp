@@ -55,7 +55,7 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
         }
         fields.push_back(dtype_from_numpy_dtype(fld_dtype));
         // If the field isn't aligned enough, turn it into an unaligned type
-        if ((((offset | data_alignment) & (fields.back().alignment() - 1))) != 0) {
+        if ((((offset | data_alignment) & (fields.back().get_alignment() - 1))) != 0) {
             fields.back() = make_unaligned_dtype(fields.back());
         }
         field_names.push_back(pystring_as_string(key));
@@ -149,7 +149,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 
     // If the data this dtype is for isn't aligned enough,
     // make an unaligned version.
-    if (data_alignment < dt.alignment()) {
+    if (data_alignment < dt.get_alignment()) {
         dt = make_unaligned_dtype(dt);
     }
 
@@ -293,7 +293,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.element_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_element_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
@@ -365,7 +365,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.element_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_element_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
@@ -686,7 +686,7 @@ PyObject* pydynd::ndobject_as_numpy_struct_capsule(const dynd::ndobject& n)
     inter.nd = ndim;
     inter.typekind = numpy_kindchar_of(dt);
     // Numpy treats 'U' as number of 4-byte characters, not number of bytes
-    inter.itemsize = (int)(inter.typekind != 'U' ? dt.element_size() : dt.element_size() / 4);
+    inter.itemsize = (int)(inter.typekind != 'U' ? dt.get_element_size() : dt.get_element_size() / 4);
     inter.flags = (byteswapped ? 0 : NPY_ARRAY_NOTSWAPPED) |
                   (aligned ? NPY_ARRAY_ALIGNED : 0) |
                   (writeable ? NPY_ARRAY_WRITEABLE : 0);

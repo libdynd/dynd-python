@@ -74,11 +74,11 @@ cdef class w_dtype:
 
     property element_size:
         def __get__(self):
-            return GET(self.v).element_size()
+            return GET(self.v).get_element_size()
 
     property alignment:
         def __get__(self):
-            return GET(self.v).alignment()
+            return GET(self.v).get_alignment()
 
     property kind:
         def __get__(self):

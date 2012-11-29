@@ -26,7 +26,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
     if (PyList_Check(obj)) {
         Py_ssize_t size = PyList_GET_SIZE(obj);
         if (shape.size() == current_axis) {
-            if (dt.type_id() == void_type_id) {
+            if (dt.get_type_id() == void_type_id) {
                 shape.push_back(size);
             } else {
                 throw runtime_error("dnd:ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
@@ -192,7 +192,7 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                     read_access_flag|write_access_flag, NULL);
 
     // Populate the array with data
-    switch (dt.type_id()) {
+    switch (dt.get_type_id()) {
         case bool_type_id:
             fill_ndobject_from_pylist(reinterpret_cast<dynd_bool *>(result.get_readwrite_originptr()),
                             obj, shape, 0);

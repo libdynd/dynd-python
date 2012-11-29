@@ -158,7 +158,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 
 void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, char *metadata)
 {
-    switch (dt.type_id()) {
+    switch (dt.get_type_id()) {
         case struct_type_id: {
             // In DyND, the struct offsets are part of the metadata instead of the dtype.
             // That's why we have to populate them here.
@@ -224,7 +224,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
 
 PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
 {
-    switch (dt.type_id()) {
+    switch (dt.get_type_id()) {
         case bool_type_id:
             return PyArray_DescrFromType(NPY_BOOL);
         case int8_type_id:
@@ -311,14 +311,14 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it
             // away because Numpy works differently
-            if (dt.operand_dtype().type_id() == fixedbytes_type_id) {
+            if (dt.operand_dtype().get_type_id() == fixedbytes_type_id) {
                 return numpy_dtype_from_dtype(dt.value_dtype());
             }
             break;
         }
         case byteswap_type_id: {
             // If it's a simple byteswap from bytes, that can be converted
-            if (dt.operand_dtype().type_id() == fixedbytes_type_id) {
+            if (dt.operand_dtype().get_type_id() == fixedbytes_type_id) {
                 PyArray_Descr *unswapped = numpy_dtype_from_dtype(dt.value_dtype());
                 PyArray_Descr *result = PyArray_DescrNewByteorder(unswapped, NPY_SWAP);
                 Py_DECREF(unswapped);
@@ -336,7 +336,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
 
 PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char *metadata)
 {
-    switch (dt.type_id()) {
+    switch (dt.get_type_id()) {
         case struct_type_id: {
             if (metadata == NULL) {
                 stringstream ss;
@@ -514,7 +514,7 @@ ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
                     PyArray_DIMS(obj), PyArray_STRIDES(obj),
                     read_access_flag | (PyArray_ISWRITEABLE(obj) ? write_access_flag : 0),
                     PyArray_BYTES(obj), DYND_MOVE(memblock), &metadata);
-    if (d.type_id() == struct_type_id) {
+    if (d.get_type_id() == struct_type_id) {
         // If it's a struct, there's additional metadata that needs to be populated
         pydynd::fill_metadata_from_numpy_dtype(d, PyArray_DESCR(obj), metadata);
     }
@@ -574,7 +574,7 @@ char pydynd::numpy_kindchar_of(const dynd::dtype& d)
     case complex_kind:
         return 'c';
     case string_kind:
-        if (d.type_id() == fixedstring_type_id) {
+        if (d.get_type_id() == fixedstring_type_id) {
             switch (d.string_encoding()) {
                 case string_encoding_ascii:
                     return 'S';
@@ -646,7 +646,7 @@ PyObject* pydynd::ndobject_as_numpy_struct_capsule(const dynd::ndobject& n)
     const char *metadata = n.get_ndo_meta();
     // Follow the chain of strided array dtypes to convert them into numpy shape/strides
     for (int i = 0; i < ndim; ++i) {
-        if (dt.type_id() != strided_array_type_id) {
+        if (dt.get_type_id() != strided_array_type_id) {
             stringstream ss;
             ss << "Cannot view ndobject with dtype " << n.get_dtype() << " directly as a numpy array";
             throw runtime_error(ss.str());
@@ -658,20 +658,20 @@ PyObject* pydynd::ndobject_as_numpy_struct_capsule(const dynd::ndobject& n)
         dt = static_cast<const strided_array_dtype *>(dt.extended())->get_element_dtype();
     }
 
-    if (dt.type_id() == struct_type_id) {
+    if (dt.get_type_id() == struct_type_id) {
         return struct_ndobject_as_numpy_struct_capsule(n, ndim, shape.get(), strides.get(), dt, metadata);
     }
 
     bool byteswapped = false;
-    if (dt.type_id() == byteswap_type_id) {
+    if (dt.get_type_id() == byteswap_type_id) {
         dt = dt.operand_dtype();
         byteswapped = true;
     }
 
     bool aligned = true;
-    if (dt.type_id() == view_type_id) {
+    if (dt.get_type_id() == view_type_id) {
         dtype sdt = dt.operand_dtype();
-        if (sdt.type_id() == fixedbytes_type_id) {
+        if (sdt.get_type_id() == fixedbytes_type_id) {
             dt = dt.value_dtype();
             aligned = false;
         }

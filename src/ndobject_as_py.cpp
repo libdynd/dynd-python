@@ -15,7 +15,7 @@ using namespace pydynd;
 
 static PyObject* element_as_pyobject(const dtype& d, const char *data, const char *DYND_UNUSED(metadata))
 {
-    switch (d.type_id()) {
+    switch (d.get_type_id()) {
         case bool_type_id:
             if (*(const dynd_bool *)data) {
                 Py_INCREF(Py_True);

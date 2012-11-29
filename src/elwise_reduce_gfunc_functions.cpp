@@ -33,7 +33,7 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
     memory_block_ptr ctypes_memblock = make_external_memory_block(cfunc, &py_decref_function);
     Py_INCREF(cfunc);
 
-    if (returntype.type_id() == void_type_id) {
+    if (returntype.get_type_id() == void_type_id) {
         // TODO: Should support this if the kernel is flagged as commutative,
         //       in which case the first parameter must be an inout pointer parameter
         throw std::runtime_error("Cannot construct a gfunc reduce kernel from a single ctypes function which returns void");

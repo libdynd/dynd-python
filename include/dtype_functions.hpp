@@ -45,9 +45,9 @@ inline std::string dtype_str(const dynd::dtype& d)
 inline std::string dtype_repr(const dynd::dtype& d)
 {
     std::stringstream ss;
-    if (d.type_id() < dynd::builtin_type_id_count &&
-                    d.type_id() != dynd::complex_float32_type_id &&
-                    d.type_id() != dynd::complex_float64_type_id) {
+    if (d.get_type_id() < dynd::builtin_type_id_count &&
+                    d.get_type_id() != dynd::complex_float32_type_id &&
+                    d.get_type_id() != dynd::complex_float64_type_id) {
         ss << "nd." << d;
     } else {
         ss << "nd.dtype('" << d << "')";

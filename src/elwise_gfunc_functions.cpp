@@ -26,7 +26,7 @@ static void create_elwise_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache,
     vector<dtype> &paramtypes = out_kernel.m_paramtypes;
     get_ctypes_signature(cfunc, returntype, paramtypes);
 
-    if (returntype.type_id() == void_type_id) {
+    if (returntype.get_type_id() == void_type_id) {
         // TODO: May want support for this later, e.g. for print or other output functions
         throw std::runtime_error("Cannot construct a gfunc kernel from a ctypes function which returns void");
     }

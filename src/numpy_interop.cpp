@@ -53,7 +53,7 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
         if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
             throw runtime_error("Numpy struct dtype has corrupt data");
         }
-        fields.push_back(dtype_from_numpy_dtype(fld_dtype));
+        fields.push_back(dtype_from_numpy_dtype(fld_dtype, data_alignment));
         // If the field isn't aligned enough, turn it into an unaligned type
         if ((((offset | data_alignment) & (fields.back().get_alignment() - 1))) != 0) {
             fields.back() = make_unaligned_dtype(fields.back());
@@ -189,11 +189,16 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
             // need to copy the strides into the metadata.
             dtype el;
             PyArray_ArrayDescr *adescr = d->subarray;
+            if (adescr == NULL) {
+                stringstream ss;
+                ss << "Internal error building dynd metadata: Numpy dtype has NULL subarray corresponding to strided_array type";
+                throw runtime_error(ss.str());
+            }
             int ndim;
             if (PyTuple_Check(adescr->shape)) {
                 ndim = (int)PyTuple_GET_SIZE(adescr->shape);
                 strided_array_dtype_metadata *md = reinterpret_cast<strided_array_dtype_metadata *>(metadata);
-                intptr_t stride = PyArray_ITEMSIZE(adescr->base);
+                intptr_t stride = adescr->base->elsize;
                 el = dt;
                 for (int i = ndim-1; i >= 0; --i) {
                     md[i].size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));

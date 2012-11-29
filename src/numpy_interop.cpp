@@ -562,7 +562,7 @@ dynd::ndobject pydynd::ndobject_from_numpy_scalar(PyObject* obj)
 
 char pydynd::numpy_kindchar_of(const dynd::dtype& d)
 {
-    switch (d.kind()) {
+    switch (d.get_kind()) {
     case bool_kind:
         return 'b';
     case int_kind:

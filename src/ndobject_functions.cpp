@@ -124,7 +124,7 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     ndobject_init_from_pyobject(stop_nd, stop);
     dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(), stop_nd.get_dtype());
     // Make sure it's at least floating point
-    if (dt.kind() == bool_kind || dt.kind() == int_kind || dt.kind() == uint_kind) {
+    if (dt.get_kind() == bool_kind || dt.get_kind() == int_kind || dt.get_kind() == uint_kind) {
         dt = make_dtype<double>();
     }
     start_nd = start_nd.cast_scalars(dt, assign_error_none).vals();

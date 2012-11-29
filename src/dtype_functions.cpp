@@ -27,7 +27,7 @@ void pydynd::init_w_dtype_typeobject(PyObject *type)
 
 PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
 {
-    switch (d.kind()) {
+    switch (d.get_kind()) {
         case bool_kind:
             return PyString_FromString("bool");
         case int_kind:

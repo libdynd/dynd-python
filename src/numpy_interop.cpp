@@ -11,7 +11,6 @@
 #include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
-#include <dynd/dtypes/tuple_dtype.hpp>
 #include <dynd/dtypes/strided_array_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
@@ -26,10 +25,10 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-dtype make_tuple_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
+dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
 {
     vector<dtype> fields;
-    vector<size_t> offsets;
+    vector<string> field_names;
 
     if (!PyDataType_HASFIELDS(d)) {
         throw runtime_error("Tried to make a tuple dtype from a Numpy descr without fields");
@@ -59,15 +58,10 @@ dtype make_tuple_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment
         if ((((offset | data_alignment) & (fields.back().alignment() - 1))) != 0) {
             fields.back() = make_unaligned_dtype(fields.back());
         }
-        offsets.push_back(offset);
-        if (fields.back().alignment() > max_field_alignment) {
-            max_field_alignment = fields.back().alignment();
-        }
+        field_names.push_back(pystring_as_string(key));
     }
 
-    data_alignment = min(max_field_alignment, data_alignment);
-
-    return make_tuple_dtype(fields, offsets, d->elsize, data_alignment);
+    return make_struct_dtype(fields, field_names);
 }
 
 dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
@@ -131,7 +125,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
         dt = make_fixedstring_dtype(string_encoding_utf_32, d->elsize / 4);
         break;
     case NPY_VOID:
-        dt = make_tuple_dtype_from_numpy_struct(d, data_alignment);
+        dt = make_struct_dtype_from_numpy_struct(d, data_alignment);
         break;
     default: {
         stringstream ss;
@@ -199,6 +193,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             }
             break;
         }
+        /*
         case tuple_type_id: {
             const tuple_dtype *tdt = static_cast<const tuple_dtype *>(dt.extended());
             const vector<dtype>& fields = tdt->get_fields();
@@ -237,6 +232,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             }
             return result;
         }
+        */
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it
             // away because Numpy works differently
@@ -267,6 +263,11 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
 {
     switch (dt.type_id()) {
         case struct_type_id: {
+            if (metadata == NULL) {
+                stringstream ss;
+                ss << "Can only convert dynd dtype " << dt << " into a numpy dtype with ndobject metadata";
+                throw runtime_error(ss.str());
+            }
             const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
             const vector<dtype>& fields = sdt->get_fields();
             const vector<string>& field_names = sdt->get_field_names();
@@ -307,7 +308,6 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
             return numpy_dtype_from_dtype(dt);
     }
 }
-
 
 int pydynd::dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d)
 {
@@ -424,8 +424,13 @@ ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
         Py_INCREF(obj);
         memblock = make_external_memory_block(obj, py_decref_function);
     } else {
-        Py_INCREF(base);
-        memblock = make_external_memory_block(base, py_decref_function);
+        if (WNDObject_Check(base)) {
+            // If the base of the numpy array is an ndobject, skip the Python reference
+            memblock = ((WNDObject *)base)->v.get_data_memblock();
+        } else {
+            Py_INCREF(base);
+            memblock = make_external_memory_block(base, py_decref_function);
+        }
     }
 
     // Create the result ndobject
@@ -600,7 +605,7 @@ PyObject* pydynd::ndobject_as_numpy_struct_capsule(const dynd::ndobject& n)
     inter.nd = ndim;
     inter.typekind = numpy_kindchar_of(dt);
     // Numpy treats 'U' as number of 4-byte characters, not number of bytes
-    inter.itemsize = (int)(inter.typekind != 'U' ? n.get_dtype().element_size() : n.get_dtype().element_size() / 4);
+    inter.itemsize = (int)(inter.typekind != 'U' ? dt.element_size() : dt.element_size() / 4);
     inter.flags = (byteswapped ? 0 : NPY_ARRAY_NOTSWAPPED) |
                   (aligned ? NPY_ARRAY_ALIGNED : 0) |
                   (writeable ? NPY_ARRAY_WRITEABLE : 0);
@@ -616,5 +621,5 @@ PyObject* pydynd::ndobject_as_numpy_struct_capsule(const dynd::ndobject& n)
     memcpy(inter.shape, shape.get(), ndim * sizeof(intptr_t));
 
     // TODO: Check for Python 3, use PyCapsule there
-    return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_memblock()), free_array_interface);
+    return PyCObject_FromVoidPtrAndDesc(new PyArrayInterface(inter), new memory_block_ptr(n.get_data_memblock()), free_array_interface);
 }

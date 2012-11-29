@@ -20,11 +20,11 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WNDArray_Type;
+PyTypeObject *pydynd::WNDObject_Type;
 
 void pydynd::init_w_ndobject_typeobject(PyObject *type)
 {
-    WNDArray_Type = (PyTypeObject *)type;
+    WNDObject_Type = (PyTypeObject *)type;
 }
 
 dynd::ndobject pydynd::ndobject_vals(const dynd::ndobject& n)

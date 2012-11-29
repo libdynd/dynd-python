@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 #include <dynd/dtype.hpp>
 
@@ -88,6 +89,7 @@ public:
 intptr_t pyobject_as_index(PyObject *index);
 int pyobject_as_int_index(PyObject *index);
 dynd::irange pyobject_as_irange(PyObject *index);
+std::string pystring_as_string(PyObject *str);
 
 /**
  * Same as PySequence_Size, but throws a C++
@@ -159,6 +161,7 @@ int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string3, int value3);
 
 bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
+
 
 uint32_t pyarg_access_flags(PyObject* obj);
 

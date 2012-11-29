@@ -257,8 +257,8 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
 dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
 {
     // If it's a Cython w_ndobject
-    if (WNDArray_Check(obj)) {
-        return ((WNDArray *)obj)->v;
+    if (WNDObject_Check(obj)) {
+        return ((WNDObject *)obj)->v;
     }
 
 #if DYND_NUMPY_INTEROP

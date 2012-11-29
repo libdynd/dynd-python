@@ -63,6 +63,28 @@ irange pydynd::pyobject_as_irange(PyObject *index)
     }
 }
 
+std::string pydynd::pystring_as_string(PyObject *str)
+{
+    char *data = NULL;
+    Py_ssize_t len = 0;
+    if (PyString_Check(str)) {
+        if (PyString_AsStringAndSize(str, &data, &len) < 0) {
+            throw runtime_error("Error getting string data");
+        }
+        return string(data, len);
+    } else if (PyUnicode_Check(str)) {
+        pyobject_ownref utf8(PyUnicode_AsUTF8String(str));
+
+        if (PyString_AsStringAndSize(utf8.get(), &data, &len) < 0) {
+            throw runtime_error("Error getting string data");
+        }
+        return string(data, len);
+    } else {
+        throw runtime_error("Cannot convert pyobject to string");
+    }
+}
+
+
 PyObject* pydynd::intptr_array_as_tuple(int size, const intptr_t *values)
 {
     PyObject *result = PyTuple_New(size);

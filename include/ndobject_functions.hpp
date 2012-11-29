@@ -23,14 +23,14 @@ namespace pydynd {
 /**
  * This is the typeobject and struct of w_ndobject from Cython.
  */
-extern PyTypeObject *WNDArray_Type;
-inline bool WNDArray_CheckExact(PyObject *obj) {
-    return Py_TYPE(obj) == WNDArray_Type;
+extern PyTypeObject *WNDObject_Type;
+inline bool WNDObject_CheckExact(PyObject *obj) {
+    return Py_TYPE(obj) == WNDObject_Type;
 }
-inline bool WNDArray_Check(PyObject *obj) {
-    return PyObject_TypeCheck(obj, WNDArray_Type);
+inline bool WNDObject_Check(PyObject *obj) {
+    return PyObject_TypeCheck(obj, WNDObject_Type);
 }
-struct WNDArray {
+struct WNDObject {
   PyObject_HEAD;
   // This is ndobject_placement_wrapper in Cython-land
   dynd::ndobject v;

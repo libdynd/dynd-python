@@ -128,8 +128,8 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
                         ergk->m_returntype, arg0.get_node(), reduce_axes.get(), rightassoc, keepdims, ergk->m_identity.get_node(),
                         (!rightassoc || ergk->m_commutative) ? ergk->m_left_associative_reduction_kernel :
                                 ergk->m_right_associative_reduction_kernel));
-            pyobject_ownref result_obj(WNDArray_Type->tp_alloc(WNDArray_Type, 0));
-            ((WNDArray *)result_obj.get())->v.swap(result);
+            pyobject_ownref result_obj(WNDObject_Type->tp_alloc(WNDObject_Type, 0));
+            ((WNDObject *)result_obj.get())->v.swap(result);
             return result_obj.release();
             */
         } else {

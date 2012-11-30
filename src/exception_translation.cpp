@@ -37,8 +37,8 @@ void pydynd::translate_exception()
         PyErr_SetString(PyExc_TypeError, exn.message());
     } catch (const std::bad_alloc& exn) {
         PyErr_SetString(PyExc_MemoryError, exn.what());
-    } catch (const std::bad_cast& exn) {
-        PyErr_SetString(PyExc_TypeError, exn.what());
+//    } catch (const std::bad_cast& exn) {
+//        PyErr_SetString(PyExc_TypeError, exn.what());
     } catch (const std::domain_error& exn) {
         PyErr_SetString(PyExc_ValueError, exn.what());
     } catch (const std::invalid_argument& exn) {

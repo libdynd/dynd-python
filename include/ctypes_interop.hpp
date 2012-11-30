@@ -12,7 +12,6 @@
 #include <Python.h>
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndarray.hpp>
 #include <dynd/codegen/calling_conventions.hpp>
 
 namespace pydynd {

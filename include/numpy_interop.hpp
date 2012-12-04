@@ -125,12 +125,6 @@ dynd::ndobject ndobject_from_numpy_scalar(PyObject* obj);
  */
 char numpy_kindchar_of(const dynd::dtype& d);
 
-/**
- * Produces a PyCapsule (or PyCObject as appropriate) which
- * contains a __array_struct__ interface object.
- */
-PyObject* ndobject_as_numpy_struct_capsule(const dynd::ndobject& n);
-
 } // namespace pydynd
 
 #endif // DYND_NUMPY_INTEROP

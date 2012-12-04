@@ -347,11 +347,6 @@ cdef class w_ndobject:
         SET(result.v, ndobject_getitem(GET(self.v), x))
         return result
 
-    property __array_struct__:
-        # Using the __array_struct__ mechanism to expose our data to numpy
-        def __get__(self):
-            return ndobject_as_numpy_struct_capsule(GET(self.v))
-
     def __getbuffer__(w_ndobject self, Py_buffer* buffer, int flags):
         """PEP 3118 buffer protocol"""
         ndobject_getbuffer_pep3118(self, buffer, flags)

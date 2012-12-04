@@ -572,10 +572,8 @@ inline size_t get_alignment_of(PyArrayObject* obj)
 
 ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
 {
-cout << "ndobject_from_numpy_array" << endl;
     // Get the dtype of the array
     dtype d = pydynd::dtype_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
-cout << "dtype " << d << endl;
 
     // Get a shared pointer that tracks buffer ownership
     PyObject *base = PyArray_BASE(obj);
@@ -695,9 +693,12 @@ static void free_array_interface(void *ptr, void *extra_ptr)
 static PyObject* struct_ndobject_as_numpy_struct_capsule(const dynd::ndobject& n, int ndim, const intptr_t *shape,
                 const intptr_t *strides, const dtype& dt, const char *metadata)
 {
+cout << "struct_ndobject_as_numpy_struct_capsule" << endl;
     bool writeable = (n.get_access_flags() & write_access_flag) != 0;
 
     pyobject_ownref descr((PyObject *)numpy_dtype_from_dtype(n.get_dtype(), metadata));
+cout << "struct_ndobject_as_numpy_struct_capsule have descr now" << endl;
+PyObject_Print(descr.get(), stdout, 0);
 
     PyArrayInterface inter;
     memset(&inter, 0, sizeof(inter));

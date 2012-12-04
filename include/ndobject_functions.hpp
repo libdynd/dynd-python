@@ -17,6 +17,7 @@
 
 #include "ndobject_from_py.hpp"
 #include "ndobject_as_py.hpp"
+#include "ndobject_as_pep3118.hpp"
 
 namespace pydynd {
 

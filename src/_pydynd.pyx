@@ -352,6 +352,14 @@ cdef class w_ndobject:
         def __get__(self):
             return ndobject_as_numpy_struct_capsule(GET(self.v))
 
+    def __getbuffer__(w_ndobject self, Py_buffer* buffer, int flags):
+        """PEP 3118 buffer protocol"""
+        ndobject_getbuffer_pep3118(self, buffer, flags)
+
+    def __releasebuffer__(w_ndobject self, Py_buffer* buffer):
+        """PEP 3118 buffer protocol"""
+        ndobject_releasebuffer_pep3118(self, buffer)
+
     def __add__(lhs, rhs):
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_add(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))

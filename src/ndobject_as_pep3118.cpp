@@ -125,8 +125,13 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
                 // Append the name
                 o << ":" << field_names[i] << ":";
             }
-            o << "}";
             out_itemsize = dt.get_element_size();
+            // Add padding bytes to the end
+            while ((size_t)out_itemsize > format_offset) {
+                o << "x";
+                ++format_offset;
+            }
+            o << "}";
             return;
         }
         default:

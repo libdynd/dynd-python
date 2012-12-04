@@ -13,6 +13,8 @@
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/strided_array_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
+#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/fixedarray_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "dtype_functions.hpp"
@@ -27,8 +29,9 @@ using namespace pydynd;
 
 dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
 {
-    vector<dtype> fields;
+    vector<dtype> field_types;
     vector<string> field_names;
+    vector<size_t> field_offsets;
 
     if (!PyDataType_HASFIELDS(d)) {
         throw runtime_error("Tried to make a tuple dtype from a Numpy descr without fields");
@@ -40,7 +43,7 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
 
     // The alignment must divide into the total element size,
     // shrink it until it does.
-    while ((((size_t)d->elsize)&(data_alignment-1)) != 0) {
+    while (!offset_is_aligned((size_t)d->elsize, data_alignment)) {
         data_alignment >>= 1;
     }
 
@@ -53,15 +56,21 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
         if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
             throw runtime_error("Numpy struct dtype has corrupt data");
         }
-        fields.push_back(dtype_from_numpy_dtype(fld_dtype, data_alignment));
+        field_types.push_back(dtype_from_numpy_dtype(fld_dtype, data_alignment));
         // If the field isn't aligned enough, turn it into an unaligned type
-        if ((((offset | data_alignment) & (fields.back().get_alignment() - 1))) != 0) {
-            fields.back() = make_unaligned_dtype(fields.back());
+        if (!offset_is_aligned(offset | data_alignment, field_types.back().get_alignment())) {
+            field_types.back() = make_unaligned_dtype(field_types.back());
         }
         field_names.push_back(pystring_as_string(key));
+        field_offsets.push_back(offset);
     }
 
-    return make_struct_dtype(fields, field_names);
+    // Make a fixedstruct if possible, struct otherwise
+    if (is_fixedstruct_compatible_offsets((int)field_types.size(), &field_types[0], &field_offsets[0], d->elsize)) {
+        return make_fixedstruct_dtype(field_types, field_names);
+    } else {
+        return make_struct_dtype(field_types, field_names);
+    }
 }
 
 dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
@@ -73,12 +82,18 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
     }
 
     if (d->subarray) {
-        int ndim = 1;
-        if (PyTuple_Check(d->subarray->shape)) {
-            ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
-        }
         dt = dtype_from_numpy_dtype(d->subarray->base, data_alignment);
-        return make_strided_array_dtype(dt, ndim);
+        if (dt.get_element_size() == 0) {
+            // If the element size isn't fixed, use the strided array
+            int ndim = 1;
+            if (PyTuple_Check(d->subarray->shape)) {
+                ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
+            }
+            return make_strided_array_dtype(dt, ndim);
+        } else {
+            // Otherwise make a fixedstruct array
+            return dnd_make_fixedarray_dtype(dt, d->subarray->shape, Py_None);
+        }
     }
 
     switch (d->type_num) {
@@ -313,6 +328,69 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             return result;
         }
         */
+        case fixedstruct_type_id: {
+            const fixedstruct_dtype *tdt = static_cast<const fixedstruct_dtype *>(dt.extended());
+            const vector<dtype>& field_types = tdt->get_field_types();
+            const vector<string>& field_names = tdt->get_field_names();
+            size_t num_fields = field_types.size();
+            const vector<size_t>& offsets = tdt->get_data_offsets();
+
+            pyobject_ownref names_obj(PyList_New(num_fields));
+            for (size_t i = 0; i < num_fields; ++i) {
+                PyList_SET_ITEM((PyObject *)names_obj, i, PyString_FromString(field_names[i].c_str()));
+            }
+
+            pyobject_ownref formats_obj(PyList_New(num_fields));
+            for (size_t i = 0; i < num_fields; ++i) {
+                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)numpy_dtype_from_dtype(field_types[i]));
+            }
+
+            pyobject_ownref offsets_obj(PyList_New(num_fields));
+            for (size_t i = 0; i < num_fields; ++i) {
+                PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
+            }
+
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_element_size()));
+
+            pyobject_ownref dict_obj(PyDict_New());
+            PyDict_SetItemString(dict_obj, "names", names_obj);
+            PyDict_SetItemString(dict_obj, "formats", formats_obj);
+            PyDict_SetItemString(dict_obj, "offsets", offsets_obj);
+            PyDict_SetItemString(dict_obj, "itemsize", itemsize_obj);
+
+            PyArray_Descr *result = NULL;
+            if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
+                stringstream ss;
+                ss << "failed to convert dtype " << dt << " into numpy dtype via dict";
+                throw runtime_error(ss.str());
+            }
+            return result;
+        }
+        case fixedarray_type_id: {
+            dtype child_dt = dt;
+            vector<intptr_t> shape;
+            do {
+                const fixedarray_dtype *tdt = static_cast<const fixedarray_dtype *>(child_dt.extended());
+                shape.push_back(tdt->get_fixed_dim_size());
+                if (child_dt.get_element_size() != tdt->get_element_dtype().get_element_size() * shape.back()) {
+                    stringstream ss;
+                    ss << "Cannot convert dynd dtype " << dt << " into a numpy dtype because it is not C-order";
+                    throw runtime_error(ss.str());
+                }
+                child_dt = tdt->get_element_dtype();
+            } while (child_dt.get_type_id() == fixedarray_type_id);
+            pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from_dtype(child_dt));
+            pyobject_ownref shape_obj(intptr_array_as_tuple((int)shape.size(), &shape[0]));
+            pyobject_ownref tuple_obj(PyTuple_New(2));
+            PyTuple_SET_ITEM(tuple_obj.get(), 0, dtype_obj.release());
+            PyTuple_SET_ITEM(tuple_obj.get(), 1, shape_obj.release());
+
+            PyArray_Descr *result = NULL;
+            if (PyArray_DescrConverter(tuple_obj, &result) != NPY_SUCCEED) {
+                throw runtime_error("failed to convert dynd dtype into numpy subarray dtype");
+            }
+            return result;
+        }
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it
             // away because Numpy works differently
@@ -494,8 +572,10 @@ inline size_t get_alignment_of(PyArrayObject* obj)
 
 ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
 {
+cout << "ndobject_from_numpy_array" << endl;
     // Get the dtype of the array
     dtype d = pydynd::dtype_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
+cout << "dtype " << d << endl;
 
     // Get a shared pointer that tracks buffer ownership
     PyObject *base = PyArray_BASE(obj);

@@ -197,6 +197,33 @@ def make_pointer_dtype(target_dtype):
     SET(result.v, dnd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
     return result
 
+def make_strided_array_dtype(element_dtype, ndim=None):
+    """Constructs a strided array dtype"""
+    cdef w_dtype result = w_dtype()
+    if (ndim is None):
+        SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v)))
+    else:
+        SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v), int(ndim)))
+    return result
+
+def make_fixedarray_dtype(element_dtype, shape, axis_perm=None):
+    """Constructs a fixedarray dtype of the given shape and axis permutation (C order by default)"""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_make_fixedarray_dtype(GET(w_dtype(element_dtype).v), shape, axis_perm))
+    return result
+
+def make_struct_dtype(field_types, field_names):
+    """Constructs a struct dtype"""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_make_struct_dtype(field_types, field_names))
+    return result
+
+def make_fixedstruct_dtype(field_types, field_names):
+    """Constructs a struct dtype"""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_make_fixedstruct_dtype(field_types, field_names))
+    return result
+
 def make_categorical_dtype(values):
     """Constructs a categorical dtype with the specified values as its categories."""
     cdef w_dtype result = w_dtype()

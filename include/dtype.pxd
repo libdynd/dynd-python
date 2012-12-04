@@ -96,6 +96,10 @@ cdef extern from "dynd/dtypes/categorical_dtype.hpp" namespace "dynd":
 cdef extern from "dynd/dtypes/dtype_alignment.hpp" namespace "dynd":
     dtype dnd_make_unaligned_dtype "dynd::make_unaligned_dtype" (dtype&) except +translate_exception
 
+cdef extern from "dynd/dtypes/strided_array_dtype.hpp" namespace "dynd":
+    dtype dnd_make_strided_array_dtype "dynd::make_strided_array_dtype" (dtype&) except +translate_exception
+    dtype dnd_make_strided_array_dtype "dynd::make_strided_array_dtype" (dtype&, intptr_t) except +translate_exception
+
 cdef extern from "dtype_functions.hpp" namespace "pydynd":
     void init_w_dtype_typeobject(object)
 
@@ -111,3 +115,6 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     dtype dnd_make_fixedstring_dtype(object, int) except +translate_exception
     dtype dnd_make_string_dtype(object) except +translate_exception
     dtype dnd_make_pointer_dtype(dtype&) except +translate_exception
+    dtype dnd_make_struct_dtype(object, object) except +translate_exception
+    dtype dnd_make_fixedstruct_dtype(object, object) except +translate_exception
+    dtype dnd_make_fixedarray_dtype(dtype&, object, object) except +translate_exception

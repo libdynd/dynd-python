@@ -6,7 +6,12 @@
 #include <Python.h>
 
 #include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/fixedarray_dtype.hpp>
+#include <dynd/dtypes/struct_dtype.hpp>
+#include <dynd/dtypes/strided_array_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
+#include <dynd/dtypes/dtype_alignment.hpp>
 
 #include "ctypes_interop.hpp"
 #include "dtype_functions.hpp"
@@ -197,6 +202,53 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         pyobject_ownref target_dtype_obj(PyObject_GetAttrString(d, "_type_"));
         dtype target_dtype = dtype_from_ctypes_cdatatype(target_dtype_obj);
         return make_pointer_dtype(target_dtype);
+    } else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
+        // Translate into a fixedstruct or struct dtype
+        pyobject_ownref fields_list_obj(PyObject_GetAttrString(d, "_fields_"));
+        if (!PyList_Check(fields_list_obj.get())) {
+            throw runtime_error("The _fields_ member of the ctypes C struct is not a list");
+        }
+        vector<dtype> field_types;
+        vector<string> field_names;
+        vector<size_t> field_offsets;
+        Py_ssize_t field_count = PyList_GET_SIZE(fields_list_obj.get());
+        for (Py_ssize_t i = 0; i < field_count; ++i) {
+            PyObject *item = PyList_GET_ITEM(fields_list_obj.get(), i);
+            if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
+                stringstream ss;
+                ss << "The _fields_[" << i << "] member of the ctypes C struct is not a tuple of size 2";
+                throw runtime_error(ss.str());
+            }
+            field_types.push_back(dtype_from_ctypes_cdatatype(PyTuple_GET_ITEM(item, 1)));
+            PyObject *key = PyTuple_GET_ITEM(item, 0);
+            field_names.push_back(pystring_as_string(key));
+            pyobject_ownref field_data_obj(PyObject_GetAttr(d, key));
+            pyobject_ownref field_data_offset_obj(PyObject_GetAttrString(field_data_obj.get(), "offset"));
+            field_offsets.push_back(pyobject_as_index(field_data_offset_obj.get()));
+            // If the field isn't aligned as the dtype requires, make it into an unaligned version
+            if (!offset_is_aligned(field_offsets.back(), field_types.back().get_alignment())) {
+                field_types.back() = make_unaligned_dtype(field_types.back());
+            }
+        }
+        pyobject_ownref total_size_obj(PyObject_CallMethod(ctypes._ctypes, "sizeof", "N", d));
+        size_t total_size = pyobject_as_index(total_size_obj.get());
+
+        if (is_fixedstruct_compatible_offsets((int)field_count, &field_types[0], &field_offsets[0], total_size)) {
+            return make_fixedstruct_dtype(field_types, field_names);
+        } else {
+            return make_struct_dtype(field_types, field_names);
+        }
+    } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
+        // Translate into a either a fixedarray or strided_array
+        pyobject_ownref element_dtype_obj(PyObject_GetAttrString(d, "_type_"));
+        dtype element_dtype = dtype_from_ctypes_cdatatype(element_dtype_obj);
+        if (element_dtype.get_element_size() != 0) {
+            pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
+            intptr_t array_length = pyobject_as_index(array_length_obj.get());
+            return make_fixedarray_dtype(element_dtype, array_length);
+        } else {
+            return make_strided_array_dtype(element_dtype);
+        }
     }
 
     throw runtime_error("Ctypes type object is not supported by dynd::dtype");

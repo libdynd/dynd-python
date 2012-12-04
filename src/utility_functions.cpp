@@ -4,6 +4,7 @@
 //
 
 #include "utility_functions.hpp"
+#include "dtype_functions.hpp"
 
 #include <dynd/exceptions.hpp>
 #include <dynd/nodes/ndarray_node.hpp>
@@ -84,6 +85,45 @@ std::string pydynd::pystring_as_string(PyObject *str)
     }
 }
 
+void pydynd::pyobject_as_vector_dtype(PyObject *list_dtype, std::vector<dynd::dtype>& vector_dtype)
+{
+    Py_ssize_t size = PySequence_Size(list_dtype);
+    vector_dtype.resize(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        pyobject_ownref item(PySequence_GetItem(list_dtype, i));
+        vector_dtype[i] = make_dtype_from_object(item.get());
+    }
+}
+
+void pydynd::pyobject_as_vector_string(PyObject *list_string, std::vector<std::string>& vector_string)
+{
+    Py_ssize_t size = PySequence_Size(list_string);
+    vector_string.resize(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        pyobject_ownref item(PySequence_GetItem(list_string, i));
+        vector_string[i] = pystring_as_string(item.get());
+    }
+}
+
+void pydynd::pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>& vector_intp)
+{
+    Py_ssize_t size = PySequence_Size(list_index);
+    vector_intp.resize(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        pyobject_ownref item(PySequence_GetItem(list_index, i));
+        vector_intp[i] = pyobject_as_index(item.get());
+    }
+}
+
+void pydynd::pyobject_as_vector_int(PyObject *list_int, std::vector<int>& vector_int)
+{
+    Py_ssize_t size = PySequence_Size(list_int);
+    vector_int.resize(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        pyobject_ownref item(PySequence_GetItem(list_int, i));
+        vector_int[i] = pyobject_as_int_index(item.get());
+    }
+}
 
 PyObject* pydynd::intptr_array_as_tuple(int size, const intptr_t *values)
 {

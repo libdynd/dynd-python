@@ -13,6 +13,10 @@
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
+#include <dynd/dtypes/struct_dtype.hpp>
+#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/fixedarray_dtype.hpp>
+#include <dynd/shape_tools.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -274,6 +278,49 @@ dynd::dtype pydynd::dnd_make_pointer_dtype(const dtype& target_dtype)
 {
     return make_pointer_dtype(target_dtype);
 }
+
+dynd::dtype pydynd::dnd_make_struct_dtype(PyObject *field_types, PyObject *field_names)
+{
+    vector<dtype> field_types_vec;
+    vector<string> field_names_vec;
+    pyobject_as_vector_dtype(field_types, field_types_vec);
+    pyobject_as_vector_string(field_names, field_names_vec);
+    return make_struct_dtype(field_types_vec, field_names_vec);
+}
+
+dynd::dtype pydynd::dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names)
+{
+    vector<dtype> field_types_vec;
+    vector<string> field_names_vec;
+    pyobject_as_vector_dtype(field_types, field_types_vec);
+    pyobject_as_vector_string(field_names, field_names_vec);
+    return make_fixedstruct_dtype(field_types_vec, field_names_vec);
+}
+
+dynd::dtype pydynd::dnd_make_fixedarray_dtype(const dtype& element_dtype, PyObject *shape, PyObject *axis_perm)
+{
+    vector<intptr_t> shape_vec;
+    if (PySequence_Check(shape)) {
+        pyobject_as_vector_intp(shape, shape_vec);
+    } else {
+        shape_vec.push_back(pyobject_as_index(shape));
+    }
+
+    if (axis_perm != Py_None) {
+        vector<int> axis_perm_vec;
+        pyobject_as_vector_int(axis_perm, axis_perm_vec);
+        if (!is_valid_perm((int)axis_perm_vec.size(), axis_perm_vec.empty() ? NULL : &axis_perm_vec[0])) {
+            throw runtime_error("Provided axis_perm is not a valid permutation");
+        }
+        if (axis_perm_vec.size() != shape_vec.size()) {
+            throw runtime_error("Provided axis_perm is a different size than the provided shape");
+        }
+        return make_fixedarray_dtype(element_dtype, (int)shape_vec.size(), &shape_vec[0], &axis_perm_vec[0]);
+    } else {
+        return make_fixedarray_dtype(element_dtype, (int)shape_vec.size(), &shape_vec[0], NULL);
+    }
+}
+
 
 dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
 {

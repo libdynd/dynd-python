@@ -72,6 +72,19 @@ cdef class w_dtype:
     def __dealloc__(self):
         placement_delete(self.v)
 
+    def __dir__(self):
+        # Customize dir() so that additional properties of various dtypes
+        # will show up in IPython tab-complete, for example.
+        result = dict(w_dtype.__dict__)
+        result.update(object.__dict__)
+        result['mydynamic'] = None
+        return result.keys()
+
+    def __getattr__(self, name):
+        if name == 'mydynamid':
+            return 'wakawaka'
+        raise AttributeError(name)
+
     property element_size:
         def __get__(self):
             return GET(self.v).get_element_size()
@@ -348,11 +361,13 @@ cdef class w_ndobject:
         return result
 
     def __getbuffer__(w_ndobject self, Py_buffer* buffer, int flags):
-        """PEP 3118 buffer protocol"""
+        # Docstring triggered Cython bug (fixed in master), so it's commented out
+        #"""PEP 3118 buffer protocol"""
         ndobject_getbuffer_pep3118(self, buffer, flags)
 
     def __releasebuffer__(w_ndobject self, Py_buffer* buffer):
-        """PEP 3118 buffer protocol"""
+        # Docstring triggered Cython bug (fixed in master), so it's commented out
+        #"""PEP 3118 buffer protocol"""
         ndobject_releasebuffer_pep3118(self, buffer)
 
     def __add__(lhs, rhs):

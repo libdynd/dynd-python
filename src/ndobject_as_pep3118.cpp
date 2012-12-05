@@ -74,15 +74,20 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             return;
         case fixedstring_type_id:
             switch (static_cast<const fixedstring_dtype *>(dt.extended())->get_encoding()) {
-                case string_encoding_ascii:
-                    o << dt.get_element_size() << "s";
+                case string_encoding_ascii: {
+                    intptr_t element_size = dt.get_element_size();
+                    o << element_size << "s";
+                    out_itemsize = element_size;
                     return;
+                }
                 // TODO: Couldn't find documentation for UCS-2 character code?
                 case string_encoding_utf_32:
-                    o << (dt.get_element_size()/4) << "w";
+                    intptr_t element_size = dt.get_element_size();
+                    o << (element_size/4) << "w";
+                    out_itemsize = element_size;
                     return;
             }
-            // Pass through to error code
+            // Pass through to error
             break;
         case fixedarray_type_id: {
             dtype child_dt = dt;
@@ -208,6 +213,11 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         }
 
         buffer->ndim = dt.get_uniform_ndim();
+        if ((flags&PyBUF_ND) && buffer->ndim > 1) {
+            stringstream ss;
+            ss << "dynd dtype " << n.get_dtype() << " is multidimensional, but PEP 3118 request is not ND";
+            throw runtime_error(ss.str());
+        }
 
         // Create the format, and allocate the dynamic memory but Py_buffer needs
         char *uniform_metadata = n.get_ndo_meta();
@@ -258,7 +268,6 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
                     stringstream ss;
                     ss << "Cannot get a strided view of dynd dtype " << n.get_dtype() << " for PEP 3118 buffer";
                     throw runtime_error(ss.str());
-                    break;
                 }
             }
         }

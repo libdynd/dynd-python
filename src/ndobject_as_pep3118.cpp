@@ -162,7 +162,7 @@ static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metada
 {
     buffer->itemsize = 1;
     if (flags&PyBUF_FORMAT) {
-        buffer->format = "c";
+        buffer->format = (char *)"c";
     } else {
         buffer->format = NULL;
     }

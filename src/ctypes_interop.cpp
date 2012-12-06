@@ -230,7 +230,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
                 field_types.back() = make_unaligned_dtype(field_types.back());
             }
         }
-        pyobject_ownref total_size_obj(PyObject_CallMethod(ctypes._ctypes, "sizeof", "N", d));
+        pyobject_ownref total_size_obj(PyObject_CallMethod(ctypes._ctypes, (char *)"sizeof", (char *)"N", d));
         size_t total_size = pyobject_as_index(total_size_obj.get());
 
         if (is_fixedstruct_compatible_offsets((int)field_count, &field_types[0], &field_offsets[0], total_size)) {

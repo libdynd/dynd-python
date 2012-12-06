@@ -60,6 +60,7 @@ set(pydynd_CPP_SRC
     include/do_import_array.hpp
     include/placement_wrappers.hpp
     include/dtype_functions.hpp
+    include/gfunc_callable_functions.hpp
     include/exception_translation.hpp
     include/ndobject_functions.hpp
     include/ndobject_from_py.hpp
@@ -73,6 +74,7 @@ set(pydynd_CPP_SRC
     src/codegen_cache_functions.cpp
     src/ctypes_interop.cpp
     src/dtype_functions.cpp
+    src/gfunc_callable_functions.cpp
     src/exception_translation.cpp
     src/ndobject_functions.cpp
     src/ndobject_from_py.cpp
@@ -90,6 +92,7 @@ set(pydynd_CYTHON_SRC
     include/dynd.pxd
     include/dtype.pxd
     include/ndobject.pxd
+    include/gfunc_callable.pxd
     include/elwise_gfunc.pxd
     include/elwise_reduce_gfunc.pxd
     include/vm_elwise_program.pxd

@@ -38,6 +38,7 @@ include "ndobject.pxd"
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 include "vm_elwise_program.pxd"
+include "gfunc_callable.pxd"
 
 # Issue a performance warning if any of the diagnostics macros are enabled
 cdef extern from "<dynd/diagnostics.hpp>" namespace "dynd":
@@ -77,13 +78,11 @@ cdef class w_dtype:
         # will show up in IPython tab-complete, for example.
         result = dict(w_dtype.__dict__)
         result.update(object.__dict__)
-        result['mydynamic'] = None
+        add_dtype_names_to_dir_dict(GET(self.v), result)
         return result.keys()
 
     def __getattr__(self, name):
-        if name == 'mydynamid':
-            return 'wakawaka'
-        raise AttributeError(name)
+        return get_dtype_dynamic_property(GET(self.v), name)
 
     property element_size:
         def __get__(self):
@@ -96,22 +95,6 @@ cdef class w_dtype:
     property kind:
         def __get__(self):
             return dtype_get_kind(GET(self.v))
-
-    property string_encoding:
-        def __get__(self):
-            cdef string_encoding_t encoding = GET(self.v).string_encoding()
-            if encoding == string_encoding_ascii:
-                return "ascii"
-            elif encoding == string_encoding_ucs_2:
-                return "ucs_2"
-            elif encoding == string_encoding_utf_8:
-                return "utf_8"
-            elif encoding == string_encoding_utf_16:
-                return "utf_16"
-            elif encoding == string_encoding_utf_32:
-                return "utf_32"
-            else:
-                return "unknown_encoding"
 
     property value_dtype:
         """What this dtype looks like to calculations, printing, etc."""

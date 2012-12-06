@@ -38,6 +38,15 @@ struct WNDObject {
 };
 void init_w_ndobject_typeobject(PyObject *type);
 
+inline PyObject *wrap_ndobject(const dynd::ndobject& n) {
+    WNDObject *result = (WNDObject *)WNDObject_Type->tp_alloc(WNDObject_Type, 0);
+    if (!result) {
+        throw std::runtime_error("");
+    }
+    result->v = n;
+    return (PyObject *)result;
+}
+
 inline void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
 {
     n = ndobject_from_py(obj);

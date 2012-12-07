@@ -232,6 +232,12 @@ def factor_categorical_dtype(values):
     SET(result.v, dnd_factor_categorical_dtype(GET(w_ndobject(values).v)))
     return result
 
+def make_date_dtype(unit=None):
+    """Constructs a date dtype based on the given unit."""
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_make_date_dtype(unit))
+    return result
+
 ##############################################################################
 
 # NOTE: This is a possible alternative to the init_w_ndobject_typeobject() call

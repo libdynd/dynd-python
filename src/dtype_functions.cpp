@@ -16,6 +16,7 @@
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixedarray_dtype.hpp>
+#include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 
 using namespace std;
@@ -44,6 +45,8 @@ PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
             return PyString_FromString("complex");
         case string_kind:
             return PyString_FromString("string");
+        case datetime_kind:
+            return PyString_FromString("datetime");
         case bytes_kind:
             return PyString_FromString("bytes");
         case void_kind:
@@ -56,8 +59,11 @@ PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
             return PyString_FromString("pattern");
         case custom_kind:
             return PyString_FromString("custom");
-        default:
-            throw runtime_error("DyND DType has an unexpected kind");
+        default: {
+            stringstream ss;
+            ss << "dynd dtype " << d << " has unexpected kind value " << (int)d.get_kind();
+            throw runtime_error(ss.str());
+        }
     }
 }
 
@@ -321,6 +327,12 @@ dynd::dtype pydynd::dnd_make_fixedarray_dtype(const dtype& element_dtype, PyObje
     }
 }
 
+dynd::dtype pydynd::dnd_make_date_dtype(PyObject *unit)
+{
+    date_unit_t u = (date_unit_t)pyarg_strings_to_int(unit, "unit", date_unit_day, "day", date_unit_day, "week", date_unit_week,
+                    "month", date_unit_month, "year", date_unit_year);
+    return make_date_dtype(u);
+}
 
 dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
 {

@@ -215,19 +215,14 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default
         return default_value;
     }
 
-    if (!PyString_Check(obj)) {
-        stringstream ss;
-        ss << "argument " << argname << " must be a string";
-        throw runtime_error(ss.str());
-    }
+    string s = pystring_as_string(obj);
 
-    char *obj_str = PyString_AsString(obj);
-    if (strcmp(obj_str, string0) == 0) {
+    if (s == string0) {
         return value0;
     }
 
     stringstream ss;
-    ss << "argument " << argname << " was given the invalid argument value \"" << obj_str << "\"";
+    ss << "argument " << argname << " was given the invalid argument value \"" << s << "\"";
     throw runtime_error(ss.str());
 }
 
@@ -239,21 +234,16 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default
         return default_value;
     }
 
-    if (!PyString_Check(obj)) {
-        stringstream ss;
-        ss << "argument " << argname << " must be a string";
-        throw runtime_error(ss.str());
-    }
+    string s = pystring_as_string(obj);
 
-    char *obj_str = PyString_AsString(obj);
-    if (strcmp(obj_str, string0) == 0) {
+    if (s == string0) {
         return value0;
-    } else if (strcmp(obj_str, string1) == 0) {
+    } else if (s == string1) {
         return value1;
     }
 
     stringstream ss;
-    ss << "argument " << argname << " was given the invalid argument value \"" << obj_str << "\"";
+    ss << "argument " << argname << " was given the invalid argument value \"" << s << "\"";
     throw runtime_error(ss.str());
 }
 
@@ -266,23 +256,18 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default
         return default_value;
     }
 
-    if (!PyString_Check(obj)) {
-        stringstream ss;
-        ss << "argument " << argname << " must be a string";
-        throw runtime_error(ss.str());
-    }
+    string s = pystring_as_string(obj);
 
-    char *obj_str = PyString_AsString(obj);
-    if (strcmp(obj_str, string0) == 0) {
+    if (s == string0) {
         return value0;
-    } else if (strcmp(obj_str, string1) == 0) {
+    } else if (s == string1) {
         return value1;
-    } else if (strcmp(obj_str, string2) == 0) {
+    } else if (s == string2) {
         return value2;
     }
 
     stringstream ss;
-    ss << "argument " << argname << " was given the invalid argument value \"" << obj_str << "\"";
+    ss << "argument " << argname << " was given the invalid argument value \"" << s << "\"";
     throw runtime_error(ss.str());
 }
 
@@ -296,25 +281,20 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default
         return default_value;
     }
 
-    if (!PyString_Check(obj)) {
-        stringstream ss;
-        ss << "argument " << argname << " must be a string";
-        throw runtime_error(ss.str());
-    }
+    string s = pystring_as_string(obj);
 
-    char *obj_str = PyString_AsString(obj);
-    if (strcmp(obj_str, string0) == 0) {
+    if (s == string0) {
         return value0;
-    } else if (strcmp(obj_str, string1) == 0) {
+    } else if (s == string1) {
         return value1;
-    } else if (strcmp(obj_str, string2) == 0) {
+    } else if (s == string2) {
         return value2;
-    } else if (strcmp(obj_str, string3) == 0) {
+    } else if (s == string3) {
         return value3;
     }
 
     stringstream ss;
-    ss << "argument " << argname << " was given the invalid argument value \"" << obj_str << "\"";
+    ss << "argument " << argname << " was given the invalid argument value \"" << s << "\"";
     throw runtime_error(ss.str());
 }
 

@@ -48,7 +48,7 @@ inline std::string dtype_repr(const dynd::dtype& d)
     if (d.get_type_id() < dynd::builtin_type_id_count &&
                     d.get_type_id() != dynd::complex_float32_type_id &&
                     d.get_type_id() != dynd::complex_float64_type_id) {
-        ss << "nd." << d;
+        ss << "nd.dt." << d;
     } else {
         ss << "nd.dtype('" << d << "')";
     }
@@ -102,6 +102,8 @@ dynd::dtype dnd_make_pointer_dtype(const dynd::dtype& target_dtype);
 dynd::dtype dnd_make_struct_dtype(PyObject *field_types, PyObject *field_names);
 dynd::dtype dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names);
 dynd::dtype dnd_make_fixedarray_dtype(const dynd::dtype& element_dtype, PyObject *shape, PyObject *axis_perm);
+
+dynd::dtype dnd_make_date_dtype(PyObject *unit);
 
 /**
  * Implementation of __getitem__ for the wrapped dtype object.

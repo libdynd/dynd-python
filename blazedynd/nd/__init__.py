@@ -1,15 +1,9 @@
 # Expose types and functions directly from the Cython/C++ module
 from _pydynd import w_dtype as dtype, w_ndobject as ndobject, \
-        make_byteswap_dtype, make_fixedbytes_dtype, make_convert_dtype, \
-        make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
-        make_pointer_dtype, make_struct_dtype, make_fixedstruct_dtype, \
-        make_strided_array_dtype, make_fixedarray_dtype, \
-        make_categorical_dtype, \
-        factor_categorical_dtype, \
         arange, linspace, groupby
 
 # All the basic dtypes
-from basic_dtypes import *
+import basic_dtypes as dt
 
 # Includes ctypes definitions of the complex types
 import dynd_ctypes as ctypes

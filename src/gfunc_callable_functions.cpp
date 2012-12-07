@@ -19,7 +19,7 @@ void pydynd::add_dtype_names_to_dir_dict(const dtype& dt, PyObject *dict)
     if (dt.extended()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
-        dt.extended()->get_dynamic_properties(&properties, &count);
+        dt.extended()->get_dynamic_dtype_properties(&properties, &count);
         for (int i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
@@ -33,7 +33,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
     if (dt.extended()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
-        dt.extended()->get_dynamic_properties(&properties, &count);
+        dt.extended()->get_dynamic_dtype_properties(&properties, &count);
         // TODO: We probably want to make some kind of acceleration structure for the name lookup
         if (count > 0) {
             string nstr = pystring_as_string(name);

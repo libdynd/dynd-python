@@ -179,7 +179,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
             // That's why we have to populate them here.
             PyObject *d_names = d->names;
             const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
-            const vector<dtype>& fields = sdt->get_fields();
+            const vector<dtype>& fields = sdt->get_field_types();
             const vector<size_t>& metadata_offsets = sdt->get_metadata_offsets();
             size_t *offsets = reinterpret_cast<size_t *>(metadata);
             for (size_t i = 0; i < fields.size(); ++i) {
@@ -427,7 +427,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
                 throw runtime_error(ss.str());
             }
             const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
-            const vector<dtype>& fields = sdt->get_fields();
+            const vector<dtype>& fields = sdt->get_field_types();
             const vector<string>& field_names = sdt->get_field_names();
             const vector<size_t>& metadata_offsets = sdt->get_metadata_offsets();
             const intptr_t *offsets = reinterpret_cast<const intptr_t *>(metadata);

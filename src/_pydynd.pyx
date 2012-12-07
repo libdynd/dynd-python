@@ -258,6 +258,17 @@ cdef class w_ndobject:
     def __dealloc__(self):
         placement_delete(self.v)
 
+    def __dir__(self):
+        # Customize dir() so that additional properties of various dtypes
+        # will show up in IPython tab-complete, for example.
+        result = dict(w_ndobject.__dict__)
+        result.update(object.__dict__)
+        add_ndobject_names_to_dir_dict(GET(self.v), result)
+        return result.keys()
+
+    def __getattr__(self, name):
+        return get_ndobject_dynamic_property(GET(self.v), name)
+
     def debug_print(self):
         """Prints a raw representation of the ndobject data."""
         print str(ndobject_debug_print(GET(self.v)).c_str())

@@ -260,7 +260,7 @@ cdef class w_ndobject:
 
             # If a specific dtype is requested, use cast_scalars to switch types
             if dtype is not None:
-                SET(self.v, GET(self.v).cast_scalars(GET(w_dtype(dtype).v), assign_error_default))
+                SET(self.v, GET(self.v).cast_scalars(GET(w_dtype(dtype).v), assign_error_default).vals())
     def __dealloc__(self):
         placement_delete(self.v)
 

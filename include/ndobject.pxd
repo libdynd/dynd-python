@@ -40,6 +40,8 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
         void val_assign(ndobject&, assign_error_mode) except +translate_exception
         void val_assign(dtype&, char*, assign_error_mode) except +translate_exception
 
+        ndobject vals() except +translate_exception
+
         ndobject eval_immutable() except +translate_exception
 
         ndobject storage() except +translate_exception

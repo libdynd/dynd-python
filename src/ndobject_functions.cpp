@@ -11,8 +11,6 @@
 
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/nodes/scalar_node.hpp>
-#include <dynd/nodes/groupby_node.hpp>
 #include <dynd/ndobject_arange.hpp>
 #include <dynd/dtype_promotion.hpp>
 

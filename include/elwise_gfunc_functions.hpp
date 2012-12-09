@@ -26,7 +26,8 @@ PyObject *elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyObject *k
 inline std::string elwise_gfunc_debug_print(dynd::gfunc::elwise& gf)
 {
     std::stringstream ss;
-    gf.debug_print(ss);
+    //gf.debug_print(ss); TODO reenable
+    ss << "temporarily disabled\n";
     return ss.str();
 }
 

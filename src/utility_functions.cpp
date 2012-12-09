@@ -7,7 +7,7 @@
 #include "dtype_functions.hpp"
 
 #include <dynd/exceptions.hpp>
-#include <dynd/nodes/ndarray_node.hpp>
+#include <dynd/ndobject.hpp>
 
 #include <Python.h>
 

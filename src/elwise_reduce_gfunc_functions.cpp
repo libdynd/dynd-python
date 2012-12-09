@@ -7,7 +7,6 @@
 
 #include <algorithm>
 
-#include <dynd/nodes/elwise_reduce_kernel_node.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "elwise_reduce_gfunc_functions.hpp"
@@ -23,6 +22,7 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
             PyCFuncPtrObject *cfunc, bool associative, bool commutative, const ndobject& identity,
             dynd::gfunc::elwise_reduce_kernel& out_kernel)
 {
+#if 0 // TODO reenable
     dtype& returntype = out_kernel.m_returntype;
     vector<dtype> &paramtypes = out_kernel.m_paramtypes;
     get_ctypes_signature(cfunc, returntype, paramtypes);
@@ -73,11 +73,13 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
     } else {
         out_kernel.m_identity = ndobject();
     }
+#endif // TODO reenable
 }
 
 void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
                             bool associative, bool commutative, const dynd::ndobject& identity)
 {
+#if 0 // TODO reenable
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
         gfunc::elwise_reduce_kernel ergk;
 
@@ -88,11 +90,13 @@ void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd
     }
 
     throw std::runtime_error("Object could not be used as a gfunc kernel");
+#endif // TODO reenable
 }
 
 
 PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs)
 {
+#if 0 // TODO reenable
     Py_ssize_t nargs = PySequence_Size(args);
     if (nargs == 1) {
         pyobject_ownref arg0_obj(PySequence_GetItem(args, 0));
@@ -141,5 +145,8 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
         PyErr_SetString(PyExc_TypeError, "Elementwise reduction gfuncs only support 1 argument");
         return NULL;
     }
+#endif // TODO reenable
+        PyErr_SetString(PyExc_TypeError, "Elementwise reduction gfuncs disabled presently");
+        return NULL;
 }
 

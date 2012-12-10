@@ -120,13 +120,13 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
     if (fsdt->get_field_types().size() != 1) {
         stringstream ss;
-        ss << "not enough arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
+        ss << "incorrect number of arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
         throw runtime_error(ss.str());
     }
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
             params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], dt);
-    ndobject result = c.call(params);
+    ndobject result = c.call_generic(params);
     if (result.get_dtype().is_scalar()) {
         return ndobject_as_py(result);
     } else {
@@ -147,5 +147,5 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
             params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], n);
-    return wrap_ndobject(c.call(params));
+    return wrap_ndobject(c.call_generic(params));
 }

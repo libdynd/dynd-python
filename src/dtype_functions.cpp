@@ -329,7 +329,7 @@ dynd::dtype pydynd::dnd_make_fixedarray_dtype(const dtype& element_dtype, PyObje
 
 dynd::dtype pydynd::dnd_make_date_dtype(PyObject *unit)
 {
-    date_unit_t u = (date_unit_t)pyarg_strings_to_int(unit, "unit", date_unit_day, "day", date_unit_day, "week", date_unit_week,
+    date_unit_t u = (date_unit_t)pyarg_strings_to_int(unit, "unit", date_unit_day, "day", date_unit_day,
                     "month", date_unit_month, "year", date_unit_year);
     return make_date_dtype(u);
 }

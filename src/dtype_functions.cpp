@@ -51,8 +51,8 @@ PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
             return PyString_FromString("bytes");
         case void_kind:
             return PyString_FromString("void");
-        case composite_kind:
-            return PyString_FromString("composite");
+        case struct_kind:
+            return PyString_FromString("struct");
         case expression_kind:
             return PyString_FromString("expression");
         case pattern_kind:

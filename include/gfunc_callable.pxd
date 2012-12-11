@@ -9,3 +9,15 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
 
     void add_ndobject_names_to_dir_dict(ndobject&, object) except +translate_exception
     object get_ndobject_dynamic_property(ndobject&, object) except +translate_exception
+
+    cdef cppclass ndobject_callable_wrapper:
+        pass
+    object ndobject_callable_call(ndobject_callable_wrapper&, object, object) except +translate_exception
+
+    void init_w_ndobject_callable_typeobject(object)
+    cdef struct ndobject_callable_placement_wrapper:
+        pass
+    void placement_new(ndobject_callable_placement_wrapper&)
+    void placement_delete(ndobject_callable_placement_wrapper&)
+    # ndarray placement cast
+    ndobject_callable_wrapper& GET(ndobject_callable_placement_wrapper&)

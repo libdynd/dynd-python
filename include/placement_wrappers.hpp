@@ -13,6 +13,7 @@
 #include <dynd/ndobject.hpp>
 #include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/vm/elwise_program.hpp>
+#include "gfunc_callable_functions.hpp"
 
 #define DYND_DEFINE_PLACEMENT_WRAPPER(cpp_type, cpp_type_no_namespace, wrapper_type) \
     /** This is a struct with the same alignment (because of intptr_t) \
@@ -52,6 +53,8 @@ DYND_DEFINE_PLACEMENT_WRAPPER(dynd::dtype, dtype, dtype_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndobject, ndobject, ndobject_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwise_program_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::ndobject_callable_wrapper, ndobject_callable_wrapper,
+            ndobject_callable_placement_wrapper);
 
 } // namespace pydynd
 

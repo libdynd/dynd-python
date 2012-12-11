@@ -30,6 +30,7 @@ init_ctypes_interop()
 # Initialize C++ access to the Cython type objects
 init_w_ndobject_typeobject(w_ndobject)
 init_w_dtype_typeobject(w_dtype)
+init_w_ndobject_callable_typeobject(w_ndobject_callable)
 
 include "dynd.pxd"
 include "codegen_cache.pxd"
@@ -498,3 +499,14 @@ cdef class w_elwise_program:
     def debug_print(self):
         """Prints a raw representation of the elwise_program data."""
         print str(vm_elwise_program_debug_print(GET(self.v)).c_str())
+
+cdef class w_ndobject_callable:
+    cdef ndobject_callable_placement_wrapper v
+
+    def __cinit__(self):
+        placement_new(self.v)
+    def __dealloc__(self):
+        placement_delete(self.v)
+
+    def __call__(self, *args, **kwargs):
+        return ndobject_callable_call(GET(self.v), args, kwargs)

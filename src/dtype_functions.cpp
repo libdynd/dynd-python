@@ -19,6 +19,9 @@
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 
+// Python's datetime C API
+#include "datetime.h"
+
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
@@ -28,6 +31,9 @@ PyTypeObject *pydynd::WDType_Type;
 void pydynd::init_w_dtype_typeobject(PyObject *type)
 {
     pydynd::WDType_Type = (PyTypeObject *)type;
+
+    // hijack this call to also initialize Python's datetime C API
+    PyDateTime_IMPORT;
 }
 
 PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
@@ -130,6 +136,8 @@ dtype pydynd::deduce_dtype_from_object(PyObject* obj)
 #else
         return make_string_dtype(string_encoding_utf_32);
 #endif
+    } else if (PyDate_Check(obj)) {
+        return make_date_dtype();
     }
 
     throw std::runtime_error("could not deduce pydynd dtype from the python object");
@@ -151,6 +159,8 @@ static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
     } else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
         // CTypes type object
         return dtype_from_ctypes_cdatatype((PyObject *)obj);
+    } else if (obj == PyDateTimeAPI->DateType) {
+        return make_date_dtype();
     }
 
     throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");

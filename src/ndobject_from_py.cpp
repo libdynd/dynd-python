@@ -81,8 +81,9 @@ struct ascii_string_ptrs {
     char *begin, *end;
 };
 
-inline void convert_one_string(ascii_string_ptrs *out, PyObject *obj, const memory_block_ptr& dst_memblock)
+inline void convert_one_string(const char *metadata, ascii_string_ptrs *out, PyObject *obj)
 {
+    const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
     if (PyString_Check(obj)) {
         char *data = NULL;
         intptr_t len = 0;
@@ -90,8 +91,8 @@ inline void convert_one_string(ascii_string_ptrs *out, PyObject *obj, const memo
             throw runtime_error("Error getting string data");
         }
 
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(dst_memblock.get());
-        allocator->allocate(dst_memblock.get(), len, 1, &out->begin, &out->end);
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
+        allocator->allocate(md->blockref, len, 1, &out->begin, &out->end);
         memcpy(out->begin, data, len);
     } else {
         throw runtime_error("wrong kind of string provided");
@@ -106,8 +107,9 @@ struct pyunicode_string_ptrs {
 #endif
 };
 
-inline void convert_one_string(pyunicode_string_ptrs *out, PyObject *obj, const memory_block_ptr& dst_memblock)
+inline void convert_one_string(const char *metadata, pyunicode_string_ptrs *out, PyObject *obj)
 {
+    const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
     if (PyString_Check(obj)) {
         char *data = NULL;
         Py_ssize_t len = 0;
@@ -115,8 +117,8 @@ inline void convert_one_string(pyunicode_string_ptrs *out, PyObject *obj, const 
             throw runtime_error("Error getting string data");
         }
 
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(dst_memblock.get());
-        allocator->allocate(dst_memblock.get(), len * Py_UNICODE_SIZE,
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
+        allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
                         Py_UNICODE_SIZE, (char **)&out->begin, (char **)&out->end);
         for (Py_ssize_t i = 0; i < len; ++i) {
             out->begin[i] = data[i];
@@ -127,8 +129,8 @@ inline void convert_one_string(pyunicode_string_ptrs *out, PyObject *obj, const 
         if (data == NULL || len == -1) {
             throw runtime_error("Error getting unicode string data");
         }
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(dst_memblock.get());
-        allocator->allocate(dst_memblock.get(), len * Py_UNICODE_SIZE,
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
+        allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
                         Py_UNICODE_SIZE, (char **)&out->begin, (char **)&out->end);
         memcpy(out->begin, data, len * Py_UNICODE_SIZE);
     } else {
@@ -156,20 +158,22 @@ static T *fill_ndobject_from_pylist(T *data, PyObject *obj, const vector<intptr_
 }
 
 template<typename T>
-static T *fill_string_ndobject_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape,
-                    int current_axis, const memory_block_ptr& dst_memblock)
+static T *fill_string_ndobject_from_pylist(const char *metadata, T *data, PyObject *obj, const vector<intptr_t>& shape,
+                    int current_axis)
 {
+    metadata += sizeof(strided_array_dtype_metadata);
+
     if (current_axis == shape.size() - 1) {
         Py_ssize_t size = PyList_GET_SIZE(obj);
         for (Py_ssize_t i = 0; i < size; ++i) {
             PyObject *item = PyList_GET_ITEM(obj, i);
-            convert_one_string(data, item, dst_memblock);
+            convert_one_string(metadata, data, item);
             ++data;
         }
     } else {
         Py_ssize_t size = PyList_GET_SIZE(obj);
         for (Py_ssize_t i = 0; i < size; ++i) {
-            data = fill_string_ndobject_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1, dst_memblock);
+            data = fill_string_ndobject_from_pylist(metadata, data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
         }
     }
     return data;
@@ -214,16 +218,13 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                             obj, shape, 0);
             break;
         case string_type_id: {
-            // Get the destination memory block
-            char *str_meta = result.get_ndo_meta() + shape.size() * sizeof(strided_array_dtype_metadata);
-            string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(str_meta);
-            memory_block_ptr dst_memblock(md->blockref, true);
-
             const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
             switch (ext->get_encoding()) {
                 case string_encoding_ascii:
-                    fill_string_ndobject_from_pylist(reinterpret_cast<ascii_string_ptrs *>(result.get_readwrite_originptr()),
-                            obj, shape, 0, dst_memblock);
+                    fill_string_ndobject_from_pylist(result.get_ndo_meta(),
+                                    reinterpret_cast<ascii_string_ptrs *>(result.get_readwrite_originptr()),
+                                    obj, shape, 0);
+                    result.get_dtype().extended()->metadata_finalize_buffers(result.get_ndo_meta());
                     break;
 #if Py_UNICODE_SIZE == 2
                 case string_encoding_ucs_2:
@@ -231,10 +232,10 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                 case string_encoding_utf_32:
 #endif
                         {
-                    fill_string_ndobject_from_pylist(reinterpret_cast<pyunicode_string_ptrs *>(result.get_readwrite_originptr()),
-                            obj, shape, 0, dst_memblock);
-                    memory_block_pod_allocator_api *api = get_memory_block_pod_allocator_api(dst_memblock.get());
-                    api->finalize(dst_memblock.get());
+                    fill_string_ndobject_from_pylist(result.get_ndo_meta(),
+                                    reinterpret_cast<pyunicode_string_ptrs *>(result.get_readwrite_originptr()),
+                                    obj, shape, 0);
+                    result.get_dtype().extended()->metadata_finalize_buffers(result.get_ndo_meta());
                     break;
                 }
                 default:

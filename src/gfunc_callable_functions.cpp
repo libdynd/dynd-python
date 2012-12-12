@@ -416,7 +416,7 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
             if (i == param_count) {
                 stringstream ss;
                 ss << "dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
-                ss << " does not have a parameter s";
+                ss << " does not have a parameter " << s;
                 throw runtime_error(ss.str());
             }
         }

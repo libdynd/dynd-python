@@ -4,9 +4,11 @@
 //
 
 #include <Python.h>
+#include <datetime.h>
 
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/dtype_promotion.hpp>
@@ -20,6 +22,16 @@
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
+
+// Initialize the pydatetime API
+namespace {
+struct init_pydatetime {
+    init_pydatetime() {
+        PyDateTime_IMPORT;
+    }
+};
+init_pydatetime pdt;
+} // anonymous namespace
 
 static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape, dtype& dt, int current_axis)
 {
@@ -97,6 +109,16 @@ inline void convert_one_string(const char *metadata, ascii_string_ptrs *out, PyO
     } else {
         throw runtime_error("wrong kind of string provided");
     }
+}
+
+inline void convert_one_date_pyscalar(const dtype& dt, char *out, PyObject *obj)
+{
+    if (!PyDate_Check(obj)) {
+        throw runtime_error("input object is not a data as expected");
+    }
+    const date_dtype *dd = static_cast<const date_dtype *>(dt.extended());
+    dd->set_ymd(NULL, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
 struct pyunicode_string_ptrs {
@@ -179,6 +201,26 @@ static T *fill_string_ndobject_from_pylist(const char *metadata, T *data, PyObje
     return data;
 }
 
+char *fill_date_ndobject_from_pylist(const dtype& dt, char *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
+{
+    if (current_axis == shape.size() - 1) {
+        size_t element_size = dt.get_element_size();
+        Py_ssize_t size = PyList_GET_SIZE(obj);
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            PyObject *item = PyList_GET_ITEM(obj, i);
+            convert_one_date_pyscalar(dt, data, item);
+            data += element_size;
+        }
+    } else {
+        Py_ssize_t size = PyList_GET_SIZE(obj);
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            data = fill_date_ndobject_from_pylist(dt, data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
+        }
+    }
+    return data;
+}
+
+
 static dynd::ndobject ndobject_from_pylist(PyObject *obj)
 {
     // TODO: Add ability to specify access flags (e.g. immutable)
@@ -243,6 +285,10 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                     ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndobject conversion function yet";
                     throw runtime_error(ss.str());
             }
+            break;
+        }
+        case date_type_id: {
+            fill_date_ndobject_from_pylist(dt, result.get_readwrite_originptr(), obj, shape, 0);
             break;
         }
         default: {
@@ -356,6 +402,13 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
         md->blockref = stringdata.release();
         result.get_ndo()->m_flags = immutable_access_flag|read_access_flag;
+        return result;
+    } else if (PyDate_Check(obj)) {
+        dtype d = make_date_dtype();
+        const date_dtype *dd = static_cast<const date_dtype *>(d.extended());
+        ndobject result(d);
+        dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
+                    PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
         return result;
     } else if (PyList_Check(obj)) {
         return ndobject_from_pylist(obj);

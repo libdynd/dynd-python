@@ -26,14 +26,21 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
+// Initialize the pydatetime API
+namespace {
+struct init_pydatetime {
+    init_pydatetime() {
+        PyDateTime_IMPORT;
+    }
+};
+init_pydatetime pdt;
+} // anonymous namespace
+
 PyTypeObject *pydynd::WDType_Type;
 
 void pydynd::init_w_dtype_typeobject(PyObject *type)
 {
     pydynd::WDType_Type = (PyTypeObject *)type;
-
-    // hijack this call to also initialize Python's datetime C API
-    PyDateTime_IMPORT;
 }
 
 PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)

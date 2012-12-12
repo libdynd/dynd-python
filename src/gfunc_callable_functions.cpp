@@ -7,6 +7,7 @@
 #include "utility_functions.hpp"
 #include "ndobject_functions.hpp"
 #include "ndobject_as_py.hpp"
+#include "placement_wrappers.hpp"
 
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 
@@ -103,7 +104,7 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
             string nstr = pystring_as_string(name);
             for (int i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
-                    return wrap_gfunc_callable(nstr, properties[i].second, n);
+                    return wrap_ndobject_callable(nstr, properties[i].second, n);
                 }
             }
         }
@@ -346,12 +347,14 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     return wrap_ndobject(c.call_generic(params));
 }
 
-PyObject *pydynd::wrap_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
+PyObject *pydynd::wrap_ndobject_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
 {
     WNDObjectCallable *result = (WNDObjectCallable *)WNDObjectCallable_Type->tp_alloc(WNDObjectCallable_Type, 0);
     if (!result) {
         return NULL;
     }
+    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
+    placement_new(reinterpret_cast<pydynd::ndobject_callable_placement_wrapper &>(result->v));
     result->v.n = n;
     result->v.c = c;
     result->v.funcname = funcname;
@@ -430,5 +433,6 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
         ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
         throw runtime_error(ss.str());
     }
+
     return wrap_ndobject(ncw.c.call_generic(params));
 }

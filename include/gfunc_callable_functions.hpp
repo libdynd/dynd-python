@@ -88,7 +88,7 @@ PyObject *call_gfunc_callable(const std::string& funcname, const dynd::gfunc::ca
  * \param c  The callable.
  * \param n  The first parameter for the callable.
  */
-PyObject *wrap_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n);
+PyObject *wrap_ndobject_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n);
 
 } // namespace pydynd
 

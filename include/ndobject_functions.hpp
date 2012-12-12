@@ -18,6 +18,7 @@
 #include "ndobject_from_py.hpp"
 #include "ndobject_as_py.hpp"
 #include "ndobject_as_pep3118.hpp"
+#include "placement_wrappers.hpp"
 
 namespace pydynd {
 
@@ -43,6 +44,8 @@ inline PyObject *wrap_ndobject(const dynd::ndobject& n) {
     if (!result) {
         throw std::runtime_error("");
     }
+    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
+    pydynd::placement_new(reinterpret_cast<pydynd::ndobject_placement_wrapper &>(result->v));
     result->v = n;
     return (PyObject *)result;
 }

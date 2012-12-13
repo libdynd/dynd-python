@@ -72,7 +72,8 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         uintptr_t get_element_size()
         extended_dtype* extended()
         string_encoding_t string_encoding() except +translate_exception
-        int get_uniform_ndim()
+        int get_undim()
+        dtype get_udtype()
 
 cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:

@@ -102,7 +102,7 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
         pyobject_ownref arg0_obj(PySequence_GetItem(args, 0));
         ndobject arg0;
         ndobject_init_from_pyobject(arg0, arg0_obj);
-        int ndim = arg0.get_dtype().get_uniform_ndim();
+        int ndim = arg0.get_dtype().get_undim();
 
         shortvector<dynd_bool> reduce_axes(ndim);
 

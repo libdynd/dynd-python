@@ -97,6 +97,18 @@ cdef class w_dtype:
         def __get__(self):
             return dtype_get_kind(GET(self.v))
 
+    property undim:
+        """The number of uniform dimensions in the dtype."""
+        def __get__(self):
+            return GET(self.v).get_undim()
+
+    property udtype:
+        """The dtype with all the uniform array dimensions stripped from the data shape."""
+        def __get__(self):
+            cdef w_dtype result = w_dtype()
+            SET(result.v, GET(self.v).get_udtype())
+            return result;
+
     property value_dtype:
         """What this dtype looks like to calculations, printing, etc."""
         def __get__(self):
@@ -109,13 +121,6 @@ cdef class w_dtype:
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).operand_dtype())
-            return result
-
-    property storage_dtype:
-        """The bottom dtype in the expression chain."""
-        def __get__(self):
-            cdef w_dtype result = w_dtype()
-            SET(result.v, GET(self.v).storage_dtype())
             return result
 
     property canonical_dtype:
@@ -331,7 +336,7 @@ cdef class w_ndobject:
 
     property uniform_ndim:
         def __get__(self):
-            return GET(self.v).get_dtype().get_uniform_ndim()
+            return GET(self.v).get_dtype().get_undim()
 
     property is_scalar:
         def __get__(self):

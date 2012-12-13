@@ -18,8 +18,19 @@ using namespace pydynd;
 
 void pydynd::py_decref_function(void* obj)
 {
-    // TODO: Should ensure we're holding the GIL before doing the DECREF
-    Py_XDECREF((PyObject *)obj);
+    // Because dynd in general is intended to do things multi-threaded (eventually),
+    // the decref function needs to be threadsafe. The way to do that is to ensure
+    // we're holding the GIL. This is slower than normal DECREF, but because the
+    // reference count isn't an atomic variable, this appears to be the best we
+    // can do.
+    if (obj != NULL) {
+        PyGILState_STATE gstate;
+        gstate = PyGILState_Ensure();
+
+        Py_DECREF((PyObject *)obj);
+
+        PyGILState_Release(gstate);
+    }
 }
 
 intptr_t pydynd::pyobject_as_index(PyObject *index)

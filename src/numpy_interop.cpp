@@ -658,7 +658,8 @@ char pydynd::numpy_kindchar_of(const dynd::dtype& d)
         return 'c';
     case string_kind:
         if (d.get_type_id() == fixedstring_type_id) {
-            switch (d.string_encoding()) {
+            const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(d.extended());
+            switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return 'S';
                 case string_encoding_utf_32:

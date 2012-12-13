@@ -334,7 +334,13 @@ cdef class w_ndobject:
             SET(result.v, GET(self.v).get_dtype())
             return result
 
-    property uniform_ndim:
+    property udtype:
+        def __get__(self):
+            cdef w_dtype result = w_dtype()
+            SET(result.v, GET(self.v).get_dtype().get_udtype())
+            return result
+
+    property undim:
         def __get__(self):
             return GET(self.v).get_dtype().get_undim()
 

@@ -7,6 +7,8 @@
 #include <dynd/dtypes/fixedarray_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/byteswap_dtype.hpp>
+#include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 
 #include "ndobject_as_pep3118.hpp"
@@ -16,6 +18,38 @@
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
+
+static void debug_print_getbuffer_flags(std::ostream& o, int flags)
+{
+    cout << "Requested buffer flags " << flags << "\n";
+    if ((flags&PyBUF_WRITABLE) == PyBUF_WRITABLE) cout << "  PyBUF_WRITABLE\n";
+    if ((flags&PyBUF_FORMAT) == PyBUF_FORMAT) cout << "  PyBUF_FORMAT\n";
+    if ((flags&PyBUF_ND) == PyBUF_ND) cout << "  PyBUF_ND\n";
+    if ((flags&PyBUF_STRIDES) == PyBUF_STRIDES) cout << "  PyBUF_STRIDES\n";
+    if ((flags&PyBUF_C_CONTIGUOUS) == PyBUF_C_CONTIGUOUS) cout << "  PyBUF_C_CONTIGUOUS\n";
+    if ((flags&PyBUF_F_CONTIGUOUS) == PyBUF_F_CONTIGUOUS) cout << "  PyBUF_F_CONTIGUOUS\n";
+    if ((flags&PyBUF_ANY_CONTIGUOUS) == PyBUF_ANY_CONTIGUOUS) cout << "  PyBUF_ANY_CONTIGUOUS\n";
+    if ((flags&PyBUF_INDIRECT) == PyBUF_INDIRECT) cout << "  PyBUF_INDIRECT\n";
+}
+
+static void debug_print_py_buffer(std::ostream& o, const Py_buffer *buffer, int flags)
+{
+    cout << "PEP 3118 buffer info:\n";
+    cout << "  buf: " << buffer->buf << "\n";
+    cout << "  obj: " << (void *)buffer->obj << "\n";
+    cout << "  len: " << buffer->len << "\n";
+    cout << "  itemsize: " << buffer->itemsize << "\n";
+    cout << "  readonly: " << buffer->readonly << "\n";
+    cout << "  ndim: " << buffer->ndim << "\n";
+    cout << "  format: " << (buffer->format ? buffer->format : "<NULL>") << "\n";
+    cout << "  shape: ";
+    for (int i = 0; i < buffer->ndim; ++i) cout << buffer->shape[i] << " ";
+    cout << "\n";
+    cout << "  strides: ";
+    for (int i = 0; i < buffer->ndim; ++i) cout << buffer->strides[i] << " ";
+    cout << "\n";
+    cout << "  internal: " << buffer->internal << endl;
+}
 
 static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const char *metadata, std::stringstream& o)
 {
@@ -139,6 +173,27 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             o << "}";
             return;
         }
+        case byteswap_type_id: {
+            union {
+                char s[2];
+                uint16_t u;
+            } vals;
+            vals.u = '>' + ('<' << 8);
+            const byteswap_dtype *bd = static_cast<const byteswap_dtype *>(dt.extended());
+            o << vals.s[0];
+            append_pep3118_format(out_itemsize, bd->get_value_dtype(), metadata, o);
+            return;
+        }
+        case view_type_id: {
+            const view_dtype *vd = static_cast<const view_dtype *>(dt.extended());
+            // If it's a view of bytes, usually to view unaligned data, can ignore it
+            // since the buffer format we're creating doesn't use alignment
+            if (vd->get_operand_dtype().get_type_id() == fixedbytes_type_id) {
+                append_pep3118_format(out_itemsize, vd->get_value_dtype(), metadata, o);
+                return;
+            }
+            break;
+        }
         default:
             break;
     }
@@ -185,6 +240,7 @@ static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metada
 
 int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 {
+    //debug_print_getbuffer_flags(cout, flags);
     try {
         buffer->shape = NULL;
         buffer->strides = NULL;
@@ -213,7 +269,7 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         }
 
         buffer->ndim = dt.get_undim();
-        if ((flags&PyBUF_ND) && buffer->ndim > 1) {
+        if (((flags&PyBUF_ND) != PyBUF_ND) && buffer->ndim > 1) {
             stringstream ss;
             ss << "dynd dtype " << n.get_dtype() << " is multidimensional, but PEP 3118 request is not ND";
             throw runtime_error(ss.str());
@@ -223,6 +279,7 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         char *uniform_metadata = n.get_ndo_meta();
         dtype uniform_dtype = dt.get_dtype_at_dimension(&uniform_metadata, buffer->ndim);
         if ((flags&PyBUF_FORMAT) || uniform_dtype.get_element_size() == 0) {
+            // If the uniform dtype doesn't have a fixed size, make_pep3118 fills buffer->itemsize as a side effect
             string format = make_pep3118_format(buffer->itemsize, uniform_dtype, uniform_metadata);
             if (flags&PyBUF_FORMAT) {
                 buffer->internal = malloc(2*buffer->ndim*sizeof(intptr_t) + format.size() + 1);
@@ -294,8 +351,12 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
             }
         }
 
+        //debug_print_py_buffer(cout, buffer, flags);
+
         return 0;
     } catch (const std::exception& e) {
+        // Numpy likes to hide these errors and repeatedly try again, so it's useful to see what's happening
+        //cout << "ERROR " << e.what() << endl;
         Py_DECREF(ndo);
         buffer->obj = NULL;
         if (buffer->internal != NULL) {

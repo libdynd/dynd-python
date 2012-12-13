@@ -3,17 +3,31 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
+#include <Python.h>
+#include <datetime.h>
+
 #include "ndobject_as_py.hpp"
 #include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/date_dtype.hpp>
 
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static PyObject* element_as_pyobject(const dtype& d, const char *data, const char *DYND_UNUSED(metadata))
+// Initialize the pydatetime API
+namespace {
+struct init_pydatetime {
+    init_pydatetime() {
+        PyDateTime_IMPORT;
+    }
+};
+init_pydatetime pdt;
+} // anonymous namespace
+
+static PyObject* element_as_pyobject(const dtype& d, const char *data, const char *metadata)
 {
     switch (d.get_type_id()) {
         case bool_type_id:
@@ -51,7 +65,8 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
         case fixedbytes_type_id:
             return PyBytes_FromStringAndSize(data, d.get_element_size());
         case fixedstring_type_id: {
-            switch (d.string_encoding()) {
+            const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(d.extended());
+            switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return PyUnicode_DecodeASCII(data, strnlen(data, d.get_element_size()), NULL);
                 case string_encoding_utf_8:
@@ -85,7 +100,8 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
         }
         case string_type_id: {
             const char * const *refs = reinterpret_cast<const char * const *>(data);
-            switch (d.string_encoding()) {
+            const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(d.extended());
+            switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return PyUnicode_DecodeASCII(refs[0], refs[1] - refs[0], NULL);
                 case string_encoding_utf_8:
@@ -98,6 +114,12 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
                 default:
                     throw runtime_error("Unrecognized dynd::ndobject string encoding");
             }
+        }
+        case date_type_id: {
+            const date_dtype *dd = static_cast<const date_dtype *>(d.extended());
+            int32_t year, month, day;
+            dd->get_ymd(metadata, data, year, month, day);
+            return PyDate_FromDate(year, month, day);
         }
         default: {
             stringstream ss;

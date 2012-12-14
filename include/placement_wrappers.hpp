@@ -55,6 +55,8 @@ DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwise_program_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::ndobject_callable_wrapper, ndobject_callable_wrapper,
             ndobject_callable_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::dtype_callable_wrapper, dtype_callable_wrapper,
+            dtype_callable_placement_wrapper);
 
 } // namespace pydynd
 

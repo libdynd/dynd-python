@@ -22,12 +22,27 @@ void pydynd::init_w_ndobject_callable_typeobject(PyObject *type)
     WNDObjectCallable_Type = (PyTypeObject *)type;
 }
 
+PyTypeObject *pydynd::WDTypeCallable_Type;
+
+void pydynd::init_w_dtype_callable_typeobject(PyObject *type)
+{
+    WDTypeCallable_Type = (PyTypeObject *)type;
+}
+
 
 void pydynd::add_dtype_names_to_dir_dict(const dtype& dt, PyObject *dict)
 {
     if (dt.extended()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
+        // Add the dtype properties
+        dt.extended()->get_dynamic_dtype_properties(&properties, &count);
+        for (int i = 0; i < count; ++i) {
+            if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
+                throw runtime_error("");
+            }
+        }
+        // Add the dtype functions
         dt.extended()->get_dynamic_dtype_properties(&properties, &count);
         for (int i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
@@ -42,6 +57,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
     if (dt.extended()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
+        // Search for a property
         dt.extended()->get_dynamic_dtype_properties(&properties, &count);
         // TODO: We probably want to make some kind of acceleration structure for the name lookup
         if (count > 0) {
@@ -49,6 +65,16 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
             for (int i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
                     return call_gfunc_callable(nstr, properties[i].second, dt);
+                }
+            }
+        }
+        // Search for a function
+        dt.extended()->get_dynamic_dtype_functions(&properties, &count);
+        if (count > 0) {
+            string nstr = pystring_as_string(name);
+            for (int i = 0; i < count; ++i) {
+                if (properties[i].first == nstr) {
+                    return wrap_dtype_callable(nstr, properties[i].second, dt);
                 }
             }
         }
@@ -361,41 +387,38 @@ PyObject *pydynd::wrap_ndobject_callable(const std::string& funcname, const dynd
     return (PyObject *)result;
 }
 
-PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, PyObject *args, PyObject *kwargs)
+/**
+ * Fills all the parameters after the first one from the args/kwargs.
+ */
+static void fill_thiscall_parameters_ndobject(const string& funcname, const gfunc::callable &c, PyObject *args, PyObject *kwargs,
+                ndobject& out_params)
 {
-    const dtype& pdt = ncw.c.get_parameters_dtype();
-    ndobject params(pdt);
+    const dtype& pdt = c.get_parameters_dtype();
     const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
     size_t param_count = fsdt->get_field_count() - 1, args_count = PyTuple_GET_SIZE(args);
     if (args_count > param_count) {
         stringstream ss;
-        ss << "too many arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+        ss << "too many arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
         throw runtime_error(ss.str());
     }
 
-    // Set the 'self' parameters
-    set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
-                params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
-                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], ncw.n);
-
     // Fill all the positional arguments
     for (size_t i = 0; i < args_count; ++i) {
-        set_single_parameter(ncw.funcname, fsdt->get_field_names()[i+1], fsdt->get_field_types()[i+1],
-                params.get_ndo_meta() + fsdt->get_metadata_offsets()[i+1],
-                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[i+1], PyTuple_GET_ITEM(args, i));
+        set_single_parameter(funcname, fsdt->get_field_names()[i+1], fsdt->get_field_types()[i+1],
+                out_params.get_ndo_meta() + fsdt->get_metadata_offsets()[i+1],
+                out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[i+1], PyTuple_GET_ITEM(args, i));
     }
-    if (args_count == param_count) {
-        if (kwargs != NULL) {
-            Py_ssize_t size = PyDict_Size(kwargs);
-            if (size != 0) {
-                stringstream ss;
-                ss << "too many arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
-                throw runtime_error(ss.str());
-            }
+
+    // Fill in the keyword arguments if any are provided
+    if (kwargs != NULL && PyDict_Size(kwargs) > 0) {
+        // Make sure there aren't too many arguments
+        if (args_count == param_count) {
+            stringstream ss;
+            ss << "too many arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
+            throw runtime_error(ss.str());
         }
-    } else if (kwargs != NULL && PyDict_Size(kwargs) > 0) {
-        // Flags to make sure every parameter is filled (eventually would
-        // use this to copy from default parameter values after filling kwargs)
+
+        // Flags to make sure every parameter is filled
         shortvector<char, 6> filled(param_count - args_count);
         memset(filled.get(), 0, param_count - args_count);
         PyObject *key, *value;
@@ -406,25 +429,25 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
             // Search for the parameter in the struct, and fill it if found
             for (i = args_count; i < param_count; ++i) {
                 if (s == fsdt->get_field_names()[i+1]) {
-                    set_single_parameter(ncw.funcname, fsdt->get_field_names()[i+1], fsdt->get_field_types()[i+1],
-                            params.get_ndo_meta() + fsdt->get_metadata_offsets()[i+1],
-                            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[i+1], value);
+                    set_single_parameter(funcname, fsdt->get_field_names()[i+1], fsdt->get_field_types()[i+1],
+                            out_params.get_ndo_meta() + fsdt->get_metadata_offsets()[i+1],
+                            out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[i+1], value);
                     filled[i - args_count] = 1;
                     break;
                 }
             }
             if (i == param_count) {
                 stringstream ss;
-                ss << "dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+                ss << "dynd callable \"" << funcname << "\" with parameters " << pdt;
                 ss << " does not have a parameter " << s;
                 throw runtime_error(ss.str());
             }
         }
         // Fill in missing parameters from the defaults
-        const ndobject& default_parameters = ncw.c.get_default_parameters();
+        const ndobject& default_parameters = c.get_default_parameters();
         if (!default_parameters.empty()) {
             // Figure out where to start filling in default parameters
-            int first_default_param = ncw.c.get_first_default_parameter() - 1;
+            int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count) {
                 if (first_default_param < (int)args_count) {
                     first_default_param = (int)args_count;
@@ -435,8 +458,8 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
                         size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
                         size_t data_offset = fsdt->get_data_offsets()[i+1];
                         dtype_copy(fsdt->get_field_types()[i+1],
-                                        params.get_ndo_meta() + metadata_offset,
-                                        params.get_ndo()->m_data_pointer + data_offset,
+                                        out_params.get_ndo_meta() + metadata_offset,
+                                        out_params.get_ndo()->m_data_pointer + data_offset,
                                         default_parameters.get_ndo_meta() + metadata_offset,
                                         default_parameters.get_ndo()->m_data_pointer + data_offset);
                         filled[i - args_count] = 1;
@@ -448,37 +471,79 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
         for (size_t i = 0; i < param_count - args_count; ++i) {
             if (filled[i] == 0) {
                 stringstream ss;
-                ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+                ss << "not enough arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
                 throw runtime_error(ss.str());
             }
         }
-    } else {
+    } else if (args_count < param_count) {
         // Fill in missing parameters from the defaults
-        const ndobject& default_parameters = ncw.c.get_default_parameters();
+        const ndobject& default_parameters = c.get_default_parameters();
         if (!default_parameters.empty()) {
             // Figure out where to start filling in default parameters
-            int first_default_param = ncw.c.get_first_default_parameter() - 1;
+            int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count && first_default_param <= (int)args_count) {
                 for (size_t i = args_count; i < param_count; ++i) {
                     size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
                     size_t data_offset = fsdt->get_data_offsets()[i+1];
                     dtype_copy(fsdt->get_field_types()[i+1],
-                                    params.get_ndo_meta() + metadata_offset,
-                                    params.get_ndo()->m_data_pointer + data_offset,
+                                    out_params.get_ndo_meta() + metadata_offset,
+                                    out_params.get_ndo()->m_data_pointer + data_offset,
                                     default_parameters.get_ndo_meta() + metadata_offset,
                                     default_parameters.get_ndo()->m_data_pointer + data_offset);
                 }
             } else {
                 stringstream ss;
-                ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+                ss << "not enough arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
                 throw runtime_error(ss.str());
             }
         } else {
             stringstream ss;
-            ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+            ss << "not enough arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
             throw runtime_error(ss.str());
         }
     }
+}
+
+PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, PyObject *args, PyObject *kwargs)
+{
+    const dtype& pdt = ncw.c.get_parameters_dtype();
+    ndobject params(pdt);
+    const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
+    // Set the 'self' parameter value
+    set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
+                params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
+                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], ncw.n);
+
+    fill_thiscall_parameters_ndobject(ncw.funcname, ncw.c, args, kwargs, params);
 
     return wrap_ndobject(ncw.c.call_generic(params));
+}
+
+PyObject *pydynd::wrap_dtype_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::dtype& d)
+{
+    WDTypeCallable *result = (WDTypeCallable *)WDTypeCallable_Type->tp_alloc(WDTypeCallable_Type, 0);
+    if (!result) {
+        return NULL;
+    }
+    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
+    placement_new(reinterpret_cast<pydynd::dtype_callable_placement_wrapper &>(result->v));
+    result->v.d = d;
+    result->v.c = c;
+    result->v.funcname = funcname;
+    return (PyObject *)result;
+}
+
+PyObject *pydynd::dtype_callable_call(const dtype_callable_wrapper& dcw, PyObject *args, PyObject *kwargs)
+{
+    const dtype& pdt = dcw.c.get_parameters_dtype();
+    ndobject params(pdt);
+    const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
+    // Set the 'self' parameter value
+    set_single_parameter(dcw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
+                params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
+                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], dcw.d);
+
+    fill_thiscall_parameters_ndobject(dcw.funcname, dcw.c, args, kwargs, params);
+
+    return wrap_ndobject(dcw.c.call_generic(params));
 }

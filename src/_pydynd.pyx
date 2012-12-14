@@ -402,6 +402,14 @@ cdef class w_ndobject:
         SET(result.v, ndobject_divide(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
+def empty_like(w_ndobject rhs, dtype=None):
+    cdef w_ndobject result = w_ndobject()
+    if dtype is None:
+        SET(result.v, ndobject_empty_like(GET(rhs.v)))
+    else:
+        SET(result.v, ndobject_empty_like(GET(rhs.v), GET(w_dtype(dtype).v)))
+    return result
+
 def groupby(data, by, groups):
     """Produces an array containing the elements of `data`, grouped according to `by` which has corresponding shape."""
     cdef w_ndobject result = w_ndobject()

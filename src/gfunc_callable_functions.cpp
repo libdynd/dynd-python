@@ -393,7 +393,7 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
                 throw runtime_error(ss.str());
             }
         }
-    } else if (kwargs != NULL) {
+    } else if (kwargs != NULL && PyDict_Size(kwargs) > 0) {
         // Flags to make sure every parameter is filled (eventually would
         // use this to copy from default parameter values after filling kwargs)
         shortvector<char, 6> filled(param_count - args_count);
@@ -420,6 +420,30 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
                 throw runtime_error(ss.str());
             }
         }
+        // Fill in missing parameters from the defaults
+        const ndobject& default_parameters = ncw.c.get_default_parameters();
+        if (!default_parameters.empty()) {
+            // Figure out where to start filling in default parameters
+            int first_default_param = ncw.c.get_first_default_parameter() - 1;
+            if (first_default_param < (int)param_count) {
+                if (first_default_param < (int)args_count) {
+                    first_default_param = (int)args_count;
+                }
+                for (size_t i = first_default_param; i < param_count; ++i) {
+                    // Fill in the parameters which haven't been touched yet
+                    if (filled[i - args_count] == 0) {
+                        size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
+                        size_t data_offset = fsdt->get_data_offsets()[i+1];
+                        dtype_copy(fsdt->get_field_types()[i+1],
+                                        params.get_ndo_meta() + metadata_offset,
+                                        params.get_ndo()->m_data_pointer + data_offset,
+                                        default_parameters.get_ndo_meta() + metadata_offset,
+                                        default_parameters.get_ndo()->m_data_pointer + data_offset);
+                        filled[i - args_count] = 1;
+                    }
+                }
+            }
+        }
         // Check that all the arguments are full
         for (size_t i = 0; i < param_count - args_count; ++i) {
             if (filled[i] == 0) {
@@ -429,9 +453,31 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
             }
         }
     } else {
-        stringstream ss;
-        ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
-        throw runtime_error(ss.str());
+        // Fill in missing parameters from the defaults
+        const ndobject& default_parameters = ncw.c.get_default_parameters();
+        if (!default_parameters.empty()) {
+            // Figure out where to start filling in default parameters
+            int first_default_param = ncw.c.get_first_default_parameter() - 1;
+            if (first_default_param < (int)param_count && first_default_param <= (int)args_count) {
+                for (size_t i = args_count; i < param_count; ++i) {
+                    size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
+                    size_t data_offset = fsdt->get_data_offsets()[i+1];
+                    dtype_copy(fsdt->get_field_types()[i+1],
+                                    params.get_ndo_meta() + metadata_offset,
+                                    params.get_ndo()->m_data_pointer + data_offset,
+                                    default_parameters.get_ndo_meta() + metadata_offset,
+                                    default_parameters.get_ndo()->m_data_pointer + data_offset);
+                }
+            } else {
+                stringstream ss;
+                ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+                throw runtime_error(ss.str());
+            }
+        } else {
+            stringstream ss;
+            ss << "not enough arguments for dynd callable \"" << ncw.funcname << "\" with parameters " << pdt;
+            throw runtime_error(ss.str());
+        }
     }
 
     return wrap_ndobject(ncw.c.call_generic(params));

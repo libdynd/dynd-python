@@ -1,6 +1,6 @@
 # Expose types and functions directly from the Cython/C++ module
 from _pydynd import w_dtype as dtype, w_ndobject as ndobject, \
-        arange, linspace, groupby
+        empty_like, arange, linspace, groupby
 
 # All the basic dtypes
 import basic_dtypes as dt

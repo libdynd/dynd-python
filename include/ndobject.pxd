@@ -62,6 +62,8 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     void ndobject_init_from_pyobject(ndobject&, object obj) except +translate_exception
     ndobject ndobject_vals(ndobject&) except +translate_exception
     ndobject ndobject_eval_copy(ndobject&, object) except +translate_exception
+    ndobject ndobject_empty_like(ndobject&) except +translate_exception
+    ndobject ndobject_empty_like(ndobject&, dtype&) except +translate_exception
 
     ndobject ndobject_add(ndobject&, ndobject&) except +translate_exception
     ndobject ndobject_subtract(ndobject&, ndobject&) except +translate_exception

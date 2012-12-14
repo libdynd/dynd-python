@@ -57,6 +57,16 @@ inline void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
 dynd::ndobject ndobject_vals(const dynd::ndobject& n);
 dynd::ndobject ndobject_eval_copy(const dynd::ndobject& n, PyObject* access_flags, const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
 
+inline dynd::ndobject ndobject_empty_like(const dynd::ndobject& n)
+{
+    return dynd::empty_like(n);
+}
+
+inline dynd::ndobject ndobject_empty_like(const dynd::ndobject& n, const dynd::dtype& d)
+{
+    return dynd::empty_like(n, d);
+}
+
 inline dynd::ndobject ndobject_add(const dynd::ndobject& lhs, const dynd::ndobject& rhs)
 {
     throw std::runtime_error("TODO: ndobject_add");
@@ -84,7 +94,7 @@ inline dynd::ndobject ndobject_divide(const dynd::ndobject& lhs, const dynd::ndo
 inline std::string ndobject_str(const dynd::ndobject& n)
 {
     std::stringstream ss;
-    ss << n;
+    n.get_dtype().print_element(ss, n.get_ndo_meta(), n.get_readonly_originptr());
     return ss.str();
 }
 

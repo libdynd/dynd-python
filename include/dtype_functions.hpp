@@ -103,8 +103,6 @@ dynd::dtype dnd_make_struct_dtype(PyObject *field_types, PyObject *field_names);
 dynd::dtype dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names);
 dynd::dtype dnd_make_fixedarray_dtype(const dynd::dtype& element_dtype, PyObject *shape, PyObject *axis_perm);
 
-dynd::dtype dnd_make_date_dtype(PyObject *unit);
-
 /**
  * Implementation of __getitem__ for the wrapped dtype object.
  */

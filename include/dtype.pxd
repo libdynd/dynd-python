@@ -119,4 +119,3 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     dtype dnd_make_struct_dtype(object, object) except +translate_exception
     dtype dnd_make_fixedstruct_dtype(object, object) except +translate_exception
     dtype dnd_make_fixedarray_dtype(dtype&, object, object) except +translate_exception
-    dtype dnd_make_date_dtype(object) except +translate_exception

@@ -70,3 +70,6 @@ class TestDate(unittest.TestCase):
         self.assertEqual(a.replace(day=-1,month=7).as_py(), date(1955,7,31))
         self.assertEqual(a.replace(month=2,day=-1).as_py(), date(1955,2,28))
         self.assertEqual(a.replace(month=2,day=-1,year=2000).as_py(), date(2000,2,29))
+
+if __name__ == '__main__':
+    unittest.main()

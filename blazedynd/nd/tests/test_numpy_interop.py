@@ -255,3 +255,6 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.ndobject(np.float64(2.5)).as_py(), 2.5)
         self.assertEqual(nd.ndobject(np.complex64(2.5-1j)).as_py(), 2.5-1j)
         self.assertEqual(nd.ndobject(np.complex128(2.5-1j)).as_py(), 2.5-1j)
+
+if __name__ == '__main__':
+    unittest.main()

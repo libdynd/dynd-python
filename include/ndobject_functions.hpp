@@ -94,7 +94,7 @@ inline dynd::ndobject ndobject_divide(const dynd::ndobject& lhs, const dynd::ndo
 inline std::string ndobject_str(const dynd::ndobject& n)
 {
     std::stringstream ss;
-    n.get_dtype().print_element(ss, n.get_ndo_meta(), n.get_readonly_originptr());
+    n.get_dtype().print_data(ss, n.get_ndo_meta(), n.get_readonly_originptr());
     return ss.str();
 }
 
@@ -113,6 +113,7 @@ inline std::string ndobject_debug_print(const dynd::ndobject& n)
 }
 
 dynd::ndobject ndobject_cast_scalars(const dynd::ndobject& n, const dynd::dtype& dt, PyObject *assign_error_obj);
+dynd::ndobject ndobject_cast_udtype(const dynd::ndobject& n, const dynd::dtype& dt, PyObject *assign_error_obj);
 
 PyObject *ndobject_get_shape(const dynd::ndobject& n);
 

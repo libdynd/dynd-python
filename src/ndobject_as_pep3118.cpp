@@ -109,14 +109,14 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
         case fixedstring_type_id:
             switch (static_cast<const fixedstring_dtype *>(dt.extended())->get_encoding()) {
                 case string_encoding_ascii: {
-                    intptr_t element_size = dt.get_element_size();
+                    intptr_t element_size = dt.get_data_size();
                     o << element_size << "s";
                     out_itemsize = element_size;
                     return;
                 }
                 // TODO: Couldn't find documentation for UCS-2 character code?
                 case string_encoding_utf_32:
-                    intptr_t element_size = dt.get_element_size();
+                    intptr_t element_size = dt.get_data_size();
                     o << (element_size/4) << "w";
                     out_itemsize = element_size;
                     return;
@@ -130,7 +130,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
                 const fixedarray_dtype *tdt = static_cast<const fixedarray_dtype *>(child_dt.extended());
                 size_t dim_size = tdt->get_fixed_dim_size();
                 o << dim_size;
-                if (child_dt.get_element_size() != tdt->get_element_dtype().get_element_size() * dim_size) {
+                if (child_dt.get_data_size() != tdt->get_element_dtype().get_data_size() * dim_size) {
                     stringstream ss;
                     ss << "Cannot convert dynd dtype " << dt << " into a PEP 3118 format because it is not C-order";
                     throw runtime_error(ss.str());
@@ -139,7 +139,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
                 child_dt = tdt->get_element_dtype();
             } while (child_dt.get_type_id() == fixedarray_type_id && (o << ","));
             append_pep3118_format(out_itemsize, child_dt, metadata, o);
-            out_itemsize = dt.get_element_size();
+            out_itemsize = dt.get_data_size();
             return;
         }
         case fixedstruct_type_id: {
@@ -164,7 +164,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
                 // Append the name
                 o << ":" << field_names[i] << ":";
             }
-            out_itemsize = dt.get_element_size();
+            out_itemsize = dt.get_data_size();
             // Add padding bytes to the end
             while ((size_t)out_itemsize > format_offset) {
                 o << "x";
@@ -233,7 +233,7 @@ static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metada
         buffer->len = (bytes_data[1] - bytes_data[0]);
     } else {
         // Fixed-length bytes type
-        buffer->len = dt.get_element_size();
+        buffer->len = dt.get_data_size();
     }
     buffer->shape[0] = buffer->len;
 }
@@ -278,7 +278,7 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         // Create the format, and allocate the dynamic memory but Py_buffer needs
         char *uniform_metadata = n.get_ndo_meta();
         dtype uniform_dtype = dt.get_dtype_at_dimension(&uniform_metadata, buffer->ndim);
-        if ((flags&PyBUF_FORMAT) || uniform_dtype.get_element_size() == 0) {
+        if ((flags&PyBUF_FORMAT) || uniform_dtype.get_data_size() == 0) {
             // If the uniform dtype doesn't have a fixed size, make_pep3118 fills buffer->itemsize as a side effect
             string format = make_pep3118_format(buffer->itemsize, uniform_dtype, uniform_metadata);
             if (flags&PyBUF_FORMAT) {
@@ -295,7 +295,7 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
             }
         } else {
             buffer->format = NULL;
-            buffer->itemsize = uniform_dtype.get_element_size();
+            buffer->itemsize = uniform_dtype.get_data_size();
             buffer->internal = malloc(2*buffer->ndim*sizeof(intptr_t));
             buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
             buffer->strides = buffer->shape + buffer->ndim;

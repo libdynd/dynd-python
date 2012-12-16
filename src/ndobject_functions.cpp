@@ -44,6 +44,11 @@ dynd::ndobject pydynd::ndobject_cast_scalars(const dynd::ndobject& n, const dtyp
     return n.cast_scalars(dt, pyarg_error_mode(assign_error_obj));
 }
 
+dynd::ndobject pydynd::ndobject_cast_udtype(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
+{
+    return n.cast_udtype(dt, pyarg_error_mode(assign_error_obj));
+}
+
 PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)
 {
     int ndim = n.get_dtype().get_undim();
@@ -120,19 +125,7 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     intptr_t count_val = pyobject_as_index(count);
     ndobject_init_from_pyobject(start_nd, start);
     ndobject_init_from_pyobject(stop_nd, stop);
-    dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(), stop_nd.get_dtype());
-    // Make sure it's at least floating point
-    if (dt.get_kind() == bool_kind || dt.get_kind() == int_kind || dt.get_kind() == uint_kind) {
-        dt = make_dtype<double>();
-    }
-    start_nd = start_nd.cast_scalars(dt, assign_error_none).vals();
-    stop_nd = stop_nd.cast_scalars(dt, assign_error_none).vals();
-
-    if (!start_nd.is_scalar() || !stop_nd.is_scalar()) {
-        throw runtime_error("dynd::linspace should only be called with scalar parameters");
-    }
-
-    return linspace(dt, start_nd.get_readonly_originptr(), stop_nd.get_readonly_originptr(), count_val);
+    return dynd::linspace(start_nd, stop_nd, count_val);
 }
 
 dynd::ndobject pydynd::ndobject_groupby(const dynd::ndobject& data, const dynd::ndobject& by, const dynd::dtype& groups)

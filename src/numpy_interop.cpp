@@ -83,7 +83,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 
     if (d->subarray) {
         dt = dtype_from_numpy_dtype(d->subarray->base, data_alignment);
-        if (dt.get_element_size() == 0) {
+        if (dt.get_data_size() == 0) {
             // If the element size isn't fixed, use the strided array
             int ndim = 1;
             if (PyTuple_Check(d->subarray->shape)) {
@@ -193,7 +193,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
                 // Set the field offset in the output metadata
                 offsets[i] = offset;
                 // Fill the metadata for the field, if necessary
-                if (fields[i].extended()) {
+                if (!fields[i].is_builtin()) {
                     fill_metadata_from_numpy_dtype(fields[i], fld_dtype, metadata + metadata_offsets[i]);
                 }
             }
@@ -231,7 +231,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
                 el = static_cast<const strided_array_dtype *>(dt.extended())->get_element_dtype();
             }
             // Fill the metadata for the array element, if necessary
-            if (el.extended()) {
+            if (!el.is_builtin()) {
                 fill_metadata_from_numpy_dtype(el, adescr->base, metadata);
             }
             break;
@@ -277,11 +277,11 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             switch (fdt->get_encoding()) {
                 case string_encoding_ascii:
                     result = PyArray_DescrNewFromType(NPY_STRING);
-                    result->elsize = (int)fdt->get_element_size();
+                    result->elsize = (int)fdt->get_data_size();
                     return result;
                 case string_encoding_utf_32:
                     result = PyArray_DescrNewFromType(NPY_UNICODE);
-                    result->elsize = (int)fdt->get_element_size();
+                    result->elsize = (int)fdt->get_data_size();
                     return result;
                 default:
                     break;
@@ -313,7 +313,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_element_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
@@ -350,7 +350,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_element_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
@@ -372,7 +372,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             do {
                 const fixedarray_dtype *tdt = static_cast<const fixedarray_dtype *>(child_dt.extended());
                 shape.push_back(tdt->get_fixed_dim_size());
-                if (child_dt.get_element_size() != tdt->get_element_dtype().get_element_size() * shape.back()) {
+                if (child_dt.get_data_size() != tdt->get_element_dtype().get_data_size() * shape.back()) {
                     stringstream ss;
                     ss << "Cannot convert dynd dtype " << dt << " into a numpy dtype because it is not C-order";
                     throw runtime_error(ss.str());
@@ -448,7 +448,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_element_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);

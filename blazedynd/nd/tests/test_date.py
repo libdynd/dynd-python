@@ -32,8 +32,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(s.month.as_py(), [3, 1])
         self.assertEqual(s.day.as_py(), [4, 30])
         # cast from struct back to date
-        d = nd.empty_like(s, dtype=nd.dt.date)
-        d.val_assign(s)
+        d = s.cast_udtype(nd.dt.date)
         d = d.vals()
         self.assertEqual(d.as_py(), [date(1912,3,4), date(2002,1,30)])
 

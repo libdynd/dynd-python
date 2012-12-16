@@ -88,7 +88,7 @@ cdef class w_dtype:
 
     property element_size:
         def __get__(self):
-            return GET(self.v).get_element_size()
+            return GET(self.v).get_data_size()
 
     property alignment:
         def __get__(self):
@@ -318,9 +318,15 @@ cdef class w_ndobject:
         return ndobject_as_py(GET(self.v))
 
     def cast_scalars(self, dtype, errmode=None):
-        """Converts the ndobject to the requested dtype. If dtype is an expression dtype, its expression gets applied on top of the existing data."""
+        """Converts the ndobject's scalars to the requested dtype, producing a conversion dtype."""
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_cast_scalars(GET(self.v), GET(w_dtype(dtype).v), errmode))
+        return result
+
+    def cast_udtype(self, dtype, errmode=None):
+        """Converts the ndobject's uniform dtype (after all the uniform dimensions) to the requested dtype."""
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_cast_udtype(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
     def view_scalars(self, dtype):

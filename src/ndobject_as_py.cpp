@@ -63,20 +63,20 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
         case complex_float64_type_id:
             return PyComplex_FromDoubles(*(const double *)data, *((const double *)data + 1));
         case fixedbytes_type_id:
-            return PyBytes_FromStringAndSize(data, d.get_element_size());
+            return PyBytes_FromStringAndSize(data, d.get_data_size());
         case fixedstring_type_id: {
             const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(d.extended());
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
-                    return PyUnicode_DecodeASCII(data, strnlen(data, d.get_element_size()), NULL);
+                    return PyUnicode_DecodeASCII(data, strnlen(data, d.get_data_size()), NULL);
                 case string_encoding_utf_8:
-                    return PyUnicode_DecodeUTF8(data, strnlen(data, d.get_element_size()), NULL);
+                    return PyUnicode_DecodeUTF8(data, strnlen(data, d.get_data_size()), NULL);
                 case string_encoding_ucs_2:
                 case string_encoding_utf_16: {
                     // Get the null-terminated string length
                     const uint16_t *udata = (const uint16_t *)data;
                     const uint16_t *udata_end = udata;
-                    intptr_t size = d.get_element_size() / sizeof(uint16_t);
+                    intptr_t size = d.get_data_size() / sizeof(uint16_t);
                     while (size > 0 && *udata_end != 0) {
                         --size;
                         ++udata_end;
@@ -87,7 +87,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
                     // Get the null-terminated string length
                     const uint32_t *udata = (const uint32_t *)data;
                     const uint32_t *udata_end = udata;
-                    intptr_t size = d.get_element_size() / sizeof(uint32_t);
+                    intptr_t size = d.get_data_size() / sizeof(uint32_t);
                     while (size > 0 && *udata_end != 0) {
                         --size;
                         ++udata_end;

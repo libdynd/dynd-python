@@ -204,7 +204,7 @@ static T *fill_string_ndobject_from_pylist(const char *metadata, T *data, PyObje
 char *fill_date_ndobject_from_pylist(const dtype& dt, char *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
 {
     if (current_axis == shape.size() - 1) {
-        size_t element_size = dt.get_element_size();
+        size_t element_size = dt.get_data_size();
         Py_ssize_t size = PyList_GET_SIZE(obj);
         for (Py_ssize_t i = 0; i < size; ++i) {
             PyObject *item = PyList_GET_ITEM(obj, i);
@@ -365,7 +365,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         memory_block_ptr stringref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
         char *data_ptr;
         ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
-                        d.get_element_size(), d.get_alignment(), &data_ptr));
+                        d.get_data_size(), d.get_alignment(), &data_ptr));
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();
@@ -390,7 +390,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         memory_block_ptr stringdata = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
         char *data_ptr;
         ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
-                    d.get_element_size(), d.get_alignment(), &data_ptr));
+                    d.get_data_size(), d.get_alignment(), &data_ptr));
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();

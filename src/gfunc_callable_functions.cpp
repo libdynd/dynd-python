@@ -32,7 +32,7 @@ void pydynd::init_w_dtype_callable_typeobject(PyObject *type)
 
 void pydynd::add_dtype_names_to_dir_dict(const dtype& dt, PyObject *dict)
 {
-    if (dt.extended()) {
+    if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
         // Add the dtype properties
@@ -54,7 +54,7 @@ void pydynd::add_dtype_names_to_dir_dict(const dtype& dt, PyObject *dict)
 
 PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *name)
 {
-    if (dt.extended()) {
+    if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
         // Search for a property
@@ -87,7 +87,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
 void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *dict)
 {
     dtype dt = n.get_dtype();
-    if (dt.extended()) {
+    if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
         // Add the ndobject properties
@@ -110,7 +110,7 @@ void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *d
 PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name)
 {
     dtype dt = n.get_dtype();
-    if (dt.extended()) {
+    if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         int count;
         // Search for a property
@@ -150,8 +150,9 @@ static void set_single_parameter(const std::string& funcname, const std::string&
         ss << " cannot accept a dtype as its value";
         throw runtime_error(ss.str());
     }
-    *(const void **)data = value.extended() ? value.extended()
-                                            : reinterpret_cast<const void *>(value.get_type_id());
+    // The dtype is encoded as either a raw type id, or a pointer to an extended_dtype,
+    // just as the gfunc object is expecting.
+    *(const void **)data = value.extended();
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
@@ -373,20 +374,6 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     return wrap_ndobject(c.call_generic(params));
 }
 
-PyObject *pydynd::wrap_ndobject_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
-{
-    WNDObjectCallable *result = (WNDObjectCallable *)WNDObjectCallable_Type->tp_alloc(WNDObjectCallable_Type, 0);
-    if (!result) {
-        return NULL;
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    placement_new(reinterpret_cast<pydynd::ndobject_callable_placement_wrapper &>(result->v));
-    result->v.n = n;
-    result->v.c = c;
-    result->v.funcname = funcname;
-    return (PyObject *)result;
-}
-
 /**
  * Fills all the parameters after the first one from the args/kwargs.
  */
@@ -502,6 +489,20 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
             throw runtime_error(ss.str());
         }
     }
+}
+
+PyObject *pydynd::wrap_ndobject_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
+{
+    WNDObjectCallable *result = (WNDObjectCallable *)WNDObjectCallable_Type->tp_alloc(WNDObjectCallable_Type, 0);
+    if (!result) {
+        return NULL;
+    }
+    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
+    placement_new(reinterpret_cast<pydynd::ndobject_callable_placement_wrapper &>(result->v));
+    result->v.n = n;
+    result->v.c = c;
+    result->v.funcname = funcname;
+    return (PyObject *)result;
 }
 
 PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, PyObject *args, PyObject *kwargs)

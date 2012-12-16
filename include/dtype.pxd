@@ -50,7 +50,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         type_id_t type_id()
         dtype_kind_t get_kind()
         uintptr_t get_alignment()
-        uintptr_t get_element_size()
+        uintptr_t get_data_size()
         dtype& value_dtype(dtype&)
         dtype& operand_dtype(dtype&)
 
@@ -69,7 +69,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         type_id_t type_id()
         dtype_kind_t get_kind()
         int get_alignment()
-        uintptr_t get_element_size()
+        uintptr_t get_data_size()
         extended_dtype* extended()
         string_encoding_t string_encoding() except +translate_exception
         int get_undim()

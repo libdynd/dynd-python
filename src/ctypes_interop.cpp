@@ -242,7 +242,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         // Translate into a either a fixedarray or strided_array
         pyobject_ownref element_dtype_obj(PyObject_GetAttrString(d, "_type_"));
         dtype element_dtype = dtype_from_ctypes_cdatatype(element_dtype_obj);
-        if (element_dtype.get_element_size() != 0) {
+        if (element_dtype.get_data_size() != 0) {
             pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
             return make_fixedarray_dtype(element_dtype, array_length);

@@ -122,7 +122,7 @@ inline PyObject *pydict_getitemstring(PyObject *dp, const char *key)
     return result;
 }
 
-PyObject* intptr_array_as_tuple(int size, const intptr_t *array);
+PyObject* intptr_array_as_tuple(size_t size, const intptr_t *array);
 
 /**
  * Parses the axis argument, which may be either a single index

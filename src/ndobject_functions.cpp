@@ -51,7 +51,7 @@ dynd::ndobject pydynd::ndobject_cast_udtype(const dynd::ndobject& n, const dtype
 
 PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)
 {
-    int ndim = n.get_dtype().get_undim();
+    size_t ndim = n.get_dtype().get_undim();
     dimvector result(ndim);
     n.get_shape(result.get());
     return intptr_array_as_tuple(ndim, result.get());
@@ -59,7 +59,7 @@ PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)
 
 PyObject *pydynd::ndobject_get_strides(const dynd::ndobject& n)
 {
-    int ndim = n.get_dtype().get_undim();
+    size_t ndim = n.get_dtype().get_undim();
     dimvector result(ndim);
     n.get_strides(result.get());
     return intptr_array_as_tuple(ndim, result.get());

@@ -137,14 +137,14 @@ void pydynd::pyobject_as_vector_int(PyObject *list_int, std::vector<int>& vector
     }
 }
 
-PyObject* pydynd::intptr_array_as_tuple(int size, const intptr_t *values)
+PyObject* pydynd::intptr_array_as_tuple(size_t size, const intptr_t *values)
 {
     PyObject *result = PyTuple_New(size);
     if (result == NULL) {
         return NULL;
     }
 
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         PyObject *o = PyLong_FromLongLong(values[i]);
         if (o == NULL) {
             Py_DECREF(result);

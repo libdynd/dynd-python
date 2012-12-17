@@ -34,17 +34,17 @@ void pydynd::add_dtype_names_to_dir_dict(const dtype& dt, PyObject *dict)
 {
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
-        int count;
+        size_t count;
         // Add the dtype properties
         dt.extended()->get_dynamic_dtype_properties(&properties, &count);
-        for (int i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
         }
         // Add the dtype functions
         dt.extended()->get_dynamic_dtype_properties(&properties, &count);
-        for (int i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
@@ -56,13 +56,13 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
 {
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
-        int count;
+        size_t count;
         // Search for a property
         dt.extended()->get_dynamic_dtype_properties(&properties, &count);
         // TODO: We probably want to make some kind of acceleration structure for the name lookup
         if (count > 0) {
             string nstr = pystring_as_string(name);
-            for (int i = 0; i < count; ++i) {
+            for (size_t i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
                     return call_gfunc_callable(nstr, properties[i].second, dt);
                 }
@@ -72,7 +72,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
         dt.extended()->get_dynamic_dtype_functions(&properties, &count);
         if (count > 0) {
             string nstr = pystring_as_string(name);
-            for (int i = 0; i < count; ++i) {
+            for (size_t i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
                     return wrap_dtype_callable(nstr, properties[i].second, dt);
                 }
@@ -89,17 +89,17 @@ void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *d
     dtype dt = n.get_dtype();
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
-        int count;
+        size_t count;
         // Add the ndobject properties
         dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
-        for (int i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
         }
         // Add the ndobject functions
         dt.extended()->get_dynamic_ndobject_functions(&properties, &count);
-        for (int i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
@@ -112,13 +112,13 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
     dtype dt = n.get_dtype();
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
-        int count;
+        size_t count;
         // Search for a property
         dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
         // TODO: We probably want to make some kind of acceleration structure for the name lookup
         if (count > 0) {
             string nstr = pystring_as_string(name);
-            for (int i = 0; i < count; ++i) {
+            for (size_t i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
                     return call_gfunc_callable(nstr, properties[i].second, n);
                 }
@@ -128,7 +128,7 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
         dt.extended()->get_dynamic_ndobject_functions(&properties, &count);
         if (count > 0) {
             string nstr = pystring_as_string(name);
-            for (int i = 0; i < count; ++i) {
+            for (size_t i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
                     return wrap_ndobject_callable(nstr, properties[i].second, n);
                 }

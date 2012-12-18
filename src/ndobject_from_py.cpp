@@ -8,6 +8,7 @@
 
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/array_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
@@ -45,7 +46,8 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
             }
         } else {
             if (shape[current_axis] != size) {
-                throw runtime_error("dynd::ndobject doesn't support arrays with varying dimension sizes yet");
+                // A variable-sized dimension
+                shape[current_axis] = -1;
             }
         }
         
@@ -54,7 +56,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
         }
     } else {
         if (shape.size() != current_axis) {
-            throw runtime_error("dnd:ndobject doesn't yet support dimensions which are sometimes scalars and sometimes arrays");
+            throw runtime_error("dnd:ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
         }
 
         dtype obj_dt = pydynd::deduce_dtype_from_object(obj);
@@ -64,37 +66,40 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
     }
 }
 
-inline void convert_one_pyscalar(dynd_bool *out, PyObject *obj)
+typedef void (*convert_one_pyscalar_function_t)(const dtype& dt, const char *metadata, char *out, PyObject *obj);
+
+inline void convert_one_pyscalar_bool(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
     *out = (PyObject_IsTrue(obj) != 0);
 }
 
-inline void convert_one_pyscalar(int32_t *out, PyObject *obj)
+inline void convert_one_pyscalar_int32(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    *out = static_cast<int32_t>(PyInt_AsLong(obj));
+    *reinterpret_cast<int32_t *>(out) = static_cast<int32_t>(PyInt_AsLong(obj));
 }
 
-inline void convert_one_pyscalar(int64_t *out, PyObject *obj)
+inline void convert_one_pyscalar_int64(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    *out = PyLong_AsLongLong(obj);
+    *reinterpret_cast<int64_t *>(out) = PyLong_AsLongLong(obj);
 }
 
-inline void convert_one_pyscalar(double *out, PyObject *obj)
+inline void convert_one_pyscalar_double(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    *out = PyFloat_AsDouble(obj);
+    *reinterpret_cast<double *>(out) = PyFloat_AsDouble(obj);
 }
 
-inline void convert_one_pyscalar(complex<double> *out, PyObject *obj)
+inline void convert_one_pyscalar_cdouble(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    *out = complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
+    *reinterpret_cast<complex<double> *>(out) = complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
 }
 
 struct ascii_string_ptrs {
     char *begin, *end;
 };
 
-inline void convert_one_string(const char *metadata, ascii_string_ptrs *out, PyObject *obj)
+inline void convert_one_pyscalar_astring(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
+    ascii_string_ptrs *out_asp = reinterpret_cast<ascii_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
     if (PyString_Check(obj)) {
         char *data = NULL;
@@ -104,21 +109,11 @@ inline void convert_one_string(const char *metadata, ascii_string_ptrs *out, PyO
         }
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len, 1, &out->begin, &out->end);
-        memcpy(out->begin, data, len);
+        allocator->allocate(md->blockref, len, 1, &out_asp->begin, &out_asp->end);
+        memcpy(out_asp->begin, data, len);
     } else {
         throw runtime_error("wrong kind of string provided");
     }
-}
-
-inline void convert_one_date_pyscalar(const dtype& dt, char *out, PyObject *obj)
-{
-    if (!PyDate_Check(obj)) {
-        throw runtime_error("input object is not a data as expected");
-    }
-    const date_dtype *dd = static_cast<const date_dtype *>(dt.extended());
-    dd->set_ymd(NULL, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
-                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
 struct pyunicode_string_ptrs {
@@ -129,8 +124,9 @@ struct pyunicode_string_ptrs {
 #endif
 };
 
-inline void convert_one_string(const char *metadata, pyunicode_string_ptrs *out, PyObject *obj)
+inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
+    pyunicode_string_ptrs *out_usp = reinterpret_cast<pyunicode_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
     if (PyString_Check(obj)) {
         char *data = NULL;
@@ -141,9 +137,9 @@ inline void convert_one_string(const char *metadata, pyunicode_string_ptrs *out,
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
         allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
-                        Py_UNICODE_SIZE, (char **)&out->begin, (char **)&out->end);
+                        Py_UNICODE_SIZE, (char **)&out_usp->begin, (char **)&out_usp->end);
         for (Py_ssize_t i = 0; i < len; ++i) {
-            out->begin[i] = data[i];
+            out_usp->begin[i] = data[i];
         }
     } else if (PyUnicode_Check(obj)) {
         const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
@@ -153,73 +149,74 @@ inline void convert_one_string(const char *metadata, pyunicode_string_ptrs *out,
         }
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
         allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
-                        Py_UNICODE_SIZE, (char **)&out->begin, (char **)&out->end);
-        memcpy(out->begin, data, len * Py_UNICODE_SIZE);
+                        Py_UNICODE_SIZE, (char **)&out_usp->begin, (char **)&out_usp->end);
+        memcpy(out_usp->begin, data, len * Py_UNICODE_SIZE);
     } else {
         throw runtime_error("wrong kind of string provided");
     }
 }
 
-template<typename T>
-static T *fill_ndobject_from_pylist(T *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
+inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    if (current_axis == shape.size() - 1) {
-        Py_ssize_t size = PyList_GET_SIZE(obj);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            PyObject *item = PyList_GET_ITEM(obj, i);
-            convert_one_pyscalar(data, item);
-            ++data;
-        }
-    } else {
-        Py_ssize_t size = PyList_GET_SIZE(obj);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            data = fill_ndobject_from_pylist(data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
-        }
+    if (!PyDate_Check(obj)) {
+        throw runtime_error("input object is not a data as expected");
     }
-    return data;
+    const date_dtype *dd = static_cast<const date_dtype *>(dt.extended());
+    dd->set_ymd(metadata, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
-template<typename T>
-static T *fill_string_ndobject_from_pylist(const char *metadata, T *data, PyObject *obj, const vector<intptr_t>& shape,
-                    int current_axis)
+template<convert_one_pyscalar_function_t ConvertOneFn>
+static void fill_ndobject_from_pylist(const dtype& dt, const char *metadata, char *data, PyObject *obj,
+                const intptr_t *shape, int current_axis)
 {
-    metadata += sizeof(strided_array_dtype_metadata);
-
-    if (current_axis == shape.size() - 1) {
-        Py_ssize_t size = PyList_GET_SIZE(obj);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            PyObject *item = PyList_GET_ITEM(obj, i);
-            convert_one_string(metadata, data, item);
-            ++data;
+    Py_ssize_t size = PyList_GET_SIZE(obj);
+    const char *element_metadata = metadata;
+    dtype element_dtype = dt.at_single(0, &element_metadata);
+    if (shape[current_axis] >= 0) {
+        // Fixed-sized dimension
+        const strided_array_dtype_metadata *md = reinterpret_cast<const strided_array_dtype_metadata *>(metadata);
+        intptr_t stride = md->stride;
+        if (element_dtype.is_scalar()) {
+            for (Py_ssize_t i = 0; i < size; ++i) {
+                PyObject *item = PyList_GET_ITEM(obj, i);
+                ConvertOneFn(element_dtype, element_metadata, data, item);
+                data += stride;
+            }
+        } else {
+            for (Py_ssize_t i = 0; i < size; ++i) {
+                fill_ndobject_from_pylist<ConvertOneFn>(element_dtype, element_metadata, data,
+                                PyList_GET_ITEM(obj, i), shape, current_axis + 1);
+                data += stride;
+            }
         }
     } else {
-        Py_ssize_t size = PyList_GET_SIZE(obj);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            data = fill_string_ndobject_from_pylist(metadata, data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
+        // Variable-sized dimension
+        const array_dtype_metadata *md = reinterpret_cast<const array_dtype_metadata *>(metadata);
+        intptr_t stride = md->stride;
+        array_dtype_data *out = reinterpret_cast<array_dtype_data *>(data);
+        char *out_end = NULL;
+
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
+        allocator->allocate(md->blockref, size * stride,
+                        element_dtype.get_alignment(), &out->begin, &out_end);
+        out->size = size;
+        char *element_data = out->begin;
+        if (element_dtype.is_scalar()) {
+            for (Py_ssize_t i = 0; i < size; ++i) {
+                PyObject *item = PyList_GET_ITEM(obj, i);
+                ConvertOneFn(element_dtype, element_metadata, element_data, item);
+                element_data += stride;
+            }
+        } else {
+            for (Py_ssize_t i = 0; i < size; ++i) {
+                fill_ndobject_from_pylist<ConvertOneFn>(element_dtype, element_metadata, element_data,
+                                PyList_GET_ITEM(obj, i), shape, current_axis + 1);
+                element_data += stride;
+            }
         }
     }
-    return data;
 }
-
-char *fill_date_ndobject_from_pylist(const dtype& dt, char *data, PyObject *obj, const vector<intptr_t>& shape, int current_axis)
-{
-    if (current_axis == shape.size() - 1) {
-        size_t element_size = dt.get_data_size();
-        Py_ssize_t size = PyList_GET_SIZE(obj);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            PyObject *item = PyList_GET_ITEM(obj, i);
-            convert_one_date_pyscalar(dt, data, item);
-            data += element_size;
-        }
-    } else {
-        Py_ssize_t size = PyList_GET_SIZE(obj);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            data = fill_date_ndobject_from_pylist(dt, data, PyList_GET_ITEM(obj, i), shape, current_axis + 1);
-        }
-    }
-    return data;
-}
-
 
 static dynd::ndobject ndobject_from_pylist(PyObject *obj)
 {
@@ -240,33 +237,37 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
     // Populate the array with data
     switch (dt.get_type_id()) {
         case bool_type_id:
-            fill_ndobject_from_pylist(reinterpret_cast<dynd_bool *>(result.get_readwrite_originptr()),
-                            obj, shape, 0);
+            fill_ndobject_from_pylist<convert_one_pyscalar_bool>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
             break;
         case int32_type_id:
-            fill_ndobject_from_pylist(reinterpret_cast<int32_t *>(result.get_readwrite_originptr()),
-                            obj, shape, 0);
+            fill_ndobject_from_pylist<convert_one_pyscalar_int32>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
             break;
         case int64_type_id:
-            fill_ndobject_from_pylist(reinterpret_cast<int64_t *>(result.get_readwrite_originptr()),
-                            obj, shape, 0);
+            fill_ndobject_from_pylist<convert_one_pyscalar_int64>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
             break;
         case float64_type_id:
-            fill_ndobject_from_pylist(reinterpret_cast<double *>(result.get_readwrite_originptr()),
-                            obj, shape, 0);
+            fill_ndobject_from_pylist<convert_one_pyscalar_double>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
             break;
         case complex_float64_type_id:
-            fill_ndobject_from_pylist(reinterpret_cast<complex<double> *>(result.get_readwrite_originptr()),
-                            obj, shape, 0);
+            fill_ndobject_from_pylist<convert_one_pyscalar_cdouble>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
             break;
         case string_type_id: {
             const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
             switch (ext->get_encoding()) {
                 case string_encoding_ascii:
-                    fill_string_ndobject_from_pylist(result.get_ndo_meta(),
-                                    reinterpret_cast<ascii_string_ptrs *>(result.get_readwrite_originptr()),
-                                    obj, shape, 0);
-                    result.get_dtype().extended()->metadata_finalize_buffers(result.get_ndo_meta());
+                    fill_ndobject_from_pylist<convert_one_pyscalar_astring>(result.get_dtype(), result.get_ndo_meta(),
+                                    result.get_readwrite_originptr(),
+                                    obj, &shape[0], 0);
                     break;
 #if Py_UNICODE_SIZE == 2
                 case string_encoding_ucs_2:
@@ -274,10 +275,9 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                 case string_encoding_utf_32:
 #endif
                         {
-                    fill_string_ndobject_from_pylist(result.get_ndo_meta(),
-                                    reinterpret_cast<pyunicode_string_ptrs *>(result.get_readwrite_originptr()),
-                                    obj, shape, 0);
-                    result.get_dtype().extended()->metadata_finalize_buffers(result.get_ndo_meta());
+                    fill_ndobject_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(), result.get_ndo_meta(),
+                                    result.get_readwrite_originptr(),
+                                    obj, &shape[0], 0);
                     break;
                 }
                 default:
@@ -288,7 +288,9 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
             break;
         }
         case date_type_id: {
-            fill_date_ndobject_from_pylist(dt, result.get_readwrite_originptr(), obj, shape, 0);
+            fill_ndobject_from_pylist<convert_one_pyscalar_date>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
             break;
         }
         default: {
@@ -297,7 +299,7 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
             throw runtime_error(ss.str());
         }
     }
-
+    result.get_dtype().extended()->metadata_finalize_buffers(result.get_ndo_meta());
     return result;
 }
 

@@ -14,6 +14,7 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     cdef cppclass dtype_callable_wrapper:
         pass
     object dtype_callable_call(dtype_callable_wrapper&, object, object) except +translate_exception
+    object call_dtype_constructor_function(dtype&, object, object) except +translate_exception
 
     void init_w_dtype_callable_typeobject(object)
     cdef struct dtype_callable_placement_wrapper:

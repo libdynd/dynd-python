@@ -72,8 +72,10 @@ void init_w_dtype_callable_typeobject(PyObject *type);
  */
 PyObject *dtype_callable_call(const dtype_callable_wrapper& ccw, PyObject *args, PyObject *kwargs);
 
-
-
+/**
+ * This calls the dynamic __construct__ function attached to the dtype.
+ */
+PyObject *call_dtype_constructor_function(const dynd::dtype& dt, PyObject *args, PyObject *kwargs);
 
 /**
  * Adds all the dynamic names exposed by the dtype to the provided dict.

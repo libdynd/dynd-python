@@ -31,7 +31,7 @@ cdef extern from "<dynd/config.hpp>":
     #   need a corresponding ctypedef statement, but you don't need
     #   to match the type exactly, just use something of the right
     #   general kind (int, float, etc).
-    ctypedef int intptr_t
+    ctypedef Py_ssize_t intptr_t
     ctypedef unsigned int uintptr_t
 
 cdef extern from "<complex>" namespace "std":

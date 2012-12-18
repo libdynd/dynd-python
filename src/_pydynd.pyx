@@ -83,6 +83,9 @@ cdef class w_dtype:
         add_dtype_names_to_dir_dict(GET(self.v), result)
         return result.keys()
 
+    def __call__(self, *args, **kwargs):
+        return call_dtype_constructor_function(GET(self.v), args, kwargs)
+
     def __getattr__(self, name):
         return get_dtype_dynamic_property(GET(self.v), name)
 

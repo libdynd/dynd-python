@@ -65,7 +65,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
         case fixedbytes_type_id:
             return PyBytes_FromStringAndSize(data, d.get_data_size());
         case fixedstring_type_id: {
-            const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(d.extended());
+            const base_string_dtype *esd = static_cast<const base_string_dtype *>(d.extended());
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return PyUnicode_DecodeASCII(data, strnlen(data, d.get_data_size()), NULL);
@@ -100,7 +100,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
         }
         case string_type_id: {
             const char * const *refs = reinterpret_cast<const char * const *>(data);
-            const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(d.extended());
+            const base_string_dtype *esd = static_cast<const base_string_dtype *>(d.extended());
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return PyUnicode_DecodeASCII(refs[0], refs[1] - refs[0], NULL);

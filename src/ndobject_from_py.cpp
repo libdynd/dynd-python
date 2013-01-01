@@ -262,7 +262,7 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                             obj, &shape[0], 0);
             break;
         case string_type_id: {
-            const extended_string_dtype *ext = static_cast<const extended_string_dtype *>(dt.extended());
+            const base_string_dtype *ext = static_cast<const base_string_dtype *>(dt.extended());
             switch (ext->get_encoding()) {
                 case string_encoding_ascii:
                     fill_ndobject_from_pylist<convert_one_pyscalar_astring>(result.get_dtype(), result.get_ndo_meta(),
@@ -371,7 +371,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();
-        extended_dtype_incref(result.get_ndo()->m_dtype);
+        base_dtype_incref(result.get_ndo()->m_dtype);
         // The scalar consists of pointers to the string data
         ((const char **)data_ptr)[0] = data;
         ((const char **)data_ptr)[1] = data + len;
@@ -396,7 +396,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();
-        extended_dtype_incref(result.get_ndo()->m_dtype);
+        base_dtype_incref(result.get_ndo()->m_dtype);
         // The scalar consists of pointers to the string data
         ((const char **)data_ptr)[0] = data;
         ((const char **)data_ptr)[1] = data + Py_UNICODE_SIZE * PyUnicode_GetSize(obj);

@@ -46,7 +46,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         string_encoding_utf_32
         string_encoding_invalid
 
-    cdef cppclass extended_dtype:
+    cdef cppclass base_dtype:
         type_id_t type_id()
         dtype_kind_t get_kind()
         uintptr_t get_alignment()
@@ -70,7 +70,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         dtype_kind_t get_kind()
         size_t get_alignment()
         size_t get_data_size()
-        extended_dtype* extended()
+        base_dtype* extended()
         string_encoding_t string_encoding() except +translate_exception
         size_t get_undim()
         dtype get_udtype()

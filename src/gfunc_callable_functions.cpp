@@ -150,7 +150,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
         ss << " cannot accept a dtype as its value";
         throw runtime_error(ss.str());
     }
-    // The dtype is encoded as either a raw type id, or a pointer to an extended_dtype,
+    // The dtype is encoded as either a raw type id, or a pointer to an base_dtype,
     // just as the gfunc object is expecting.
     *(const void **)data = value.extended();
 }
@@ -330,7 +330,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
             break;
         }
         case string_kind: {
-            const extended_string_dtype *esd = static_cast<const extended_string_dtype *>(paramtype.extended());
+            const base_string_dtype *esd = static_cast<const base_string_dtype *>(paramtype.extended());
             string result = pystring_as_string(value);
             esd->set_utf8_string(metadata, data, assign_error_fractional, result);
             return;

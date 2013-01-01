@@ -1,7 +1,8 @@
-__all__ = ['c_complex_float32', 'c_complex64',
+__all__ = ['c_dynd_bool', 'c_complex_float32', 'c_complex64',
             'c_complex_float64', 'c_complex128']
 
-import ctypes, _ctypes, _pydynd
+import ctypes, _ctypes
+from dynd import _pydynd
 
 class c_dynd_bool(_ctypes._SimpleCData):
     _type_ = "b"
@@ -19,3 +20,7 @@ class c_complex_float64(ctypes.Structure):
 
 c_complex64 = c_complex_float32
 c_complex128 = c_complex_float64
+
+del ctypes
+del _ctypes
+del _pydynd

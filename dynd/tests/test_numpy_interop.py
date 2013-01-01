@@ -1,6 +1,6 @@
 import sys
 import unittest
-from blazedynd import nd
+from dynd import nd, ndt
 import numpy as np
 from numpy.testing import *
 
@@ -13,64 +13,64 @@ class TestNumpyDTypeInterop(unittest.TestCase):
 
     def test_dtype_from_numpy_scalar_types(self):
         """Tests converting numpy scalar types to pydynd dtypes"""
-        self.assertEqual(nd.dt.bool, nd.dtype(np.bool))
-        self.assertEqual(nd.dt.bool, nd.dtype(np.bool_))
-        self.assertEqual(nd.dt.int8, nd.dtype(np.int8))
-        self.assertEqual(nd.dt.int16, nd.dtype(np.int16))
-        self.assertEqual(nd.dt.int32, nd.dtype(np.int32))
-        self.assertEqual(nd.dt.int64, nd.dtype(np.int64))
-        self.assertEqual(nd.dt.uint8, nd.dtype(np.uint8))
-        self.assertEqual(nd.dt.uint16, nd.dtype(np.uint16))
-        self.assertEqual(nd.dt.uint32, nd.dtype(np.uint32))
-        self.assertEqual(nd.dt.uint64, nd.dtype(np.uint64))
-        self.assertEqual(nd.dt.float32, nd.dtype(np.float32))
-        self.assertEqual(nd.dt.float64, nd.dtype(np.float64))
-        self.assertEqual(nd.dt.cfloat32, nd.dtype(np.complex64))
-        self.assertEqual(nd.dt.cfloat64, nd.dtype(np.complex128))
+        self.assertEqual(ndt.bool, nd.dtype(np.bool))
+        self.assertEqual(ndt.bool, nd.dtype(np.bool_))
+        self.assertEqual(ndt.int8, nd.dtype(np.int8))
+        self.assertEqual(ndt.int16, nd.dtype(np.int16))
+        self.assertEqual(ndt.int32, nd.dtype(np.int32))
+        self.assertEqual(ndt.int64, nd.dtype(np.int64))
+        self.assertEqual(ndt.uint8, nd.dtype(np.uint8))
+        self.assertEqual(ndt.uint16, nd.dtype(np.uint16))
+        self.assertEqual(ndt.uint32, nd.dtype(np.uint32))
+        self.assertEqual(ndt.uint64, nd.dtype(np.uint64))
+        self.assertEqual(ndt.float32, nd.dtype(np.float32))
+        self.assertEqual(ndt.float64, nd.dtype(np.float64))
+        self.assertEqual(ndt.cfloat32, nd.dtype(np.complex64))
+        self.assertEqual(ndt.cfloat64, nd.dtype(np.complex128))
 
     def test_dtype_from_numpy_dtype(self):
         """Tests converting numpy dtypes to pydynd dtypes"""
         # native byte order
-        self.assertEqual(nd.dt.bool, nd.dtype(np.dtype(np.bool)))
-        self.assertEqual(nd.dt.int8, nd.dtype(np.dtype(np.int8)))
-        self.assertEqual(nd.dt.int16, nd.dtype(np.dtype(np.int16)))
-        self.assertEqual(nd.dt.int32, nd.dtype(np.dtype(np.int32)))
-        self.assertEqual(nd.dt.int64, nd.dtype(np.dtype(np.int64)))
-        self.assertEqual(nd.dt.uint8, nd.dtype(np.dtype(np.uint8)))
-        self.assertEqual(nd.dt.uint16, nd.dtype(np.dtype(np.uint16)))
-        self.assertEqual(nd.dt.uint32, nd.dtype(np.dtype(np.uint32)))
-        self.assertEqual(nd.dt.uint64, nd.dtype(np.dtype(np.uint64)))
-        self.assertEqual(nd.dt.float32, nd.dtype(np.dtype(np.float32)))
-        self.assertEqual(nd.dt.float64, nd.dtype(np.dtype(np.float64)))
-        self.assertEqual(nd.dt.cfloat32, nd.dtype(np.dtype(np.complex64)))
-        self.assertEqual(nd.dt.cfloat64, nd.dtype(np.dtype(np.complex128)))
-        self.assertEqual(nd.dt.make_fixedstring_dtype('ascii', 10),
+        self.assertEqual(ndt.bool, nd.dtype(np.dtype(np.bool)))
+        self.assertEqual(ndt.int8, nd.dtype(np.dtype(np.int8)))
+        self.assertEqual(ndt.int16, nd.dtype(np.dtype(np.int16)))
+        self.assertEqual(ndt.int32, nd.dtype(np.dtype(np.int32)))
+        self.assertEqual(ndt.int64, nd.dtype(np.dtype(np.int64)))
+        self.assertEqual(ndt.uint8, nd.dtype(np.dtype(np.uint8)))
+        self.assertEqual(ndt.uint16, nd.dtype(np.dtype(np.uint16)))
+        self.assertEqual(ndt.uint32, nd.dtype(np.dtype(np.uint32)))
+        self.assertEqual(ndt.uint64, nd.dtype(np.dtype(np.uint64)))
+        self.assertEqual(ndt.float32, nd.dtype(np.dtype(np.float32)))
+        self.assertEqual(ndt.float64, nd.dtype(np.dtype(np.float64)))
+        self.assertEqual(ndt.cfloat32, nd.dtype(np.dtype(np.complex64)))
+        self.assertEqual(ndt.cfloat64, nd.dtype(np.dtype(np.complex128)))
+        self.assertEqual(ndt.make_fixedstring_dtype('ascii', 10),
                     nd.dtype(np.dtype('S10')))
-        self.assertEqual(nd.dt.make_fixedstring_dtype('utf_32', 10),
+        self.assertEqual(ndt.make_fixedstring_dtype('utf_32', 10),
                     nd.dtype(np.dtype('U10')))
 
         # non-native byte order
         nonnative = self.nonnative
 
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.int16),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.int16),
                 nd.dtype(np.dtype(nonnative + 'i2')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.int32),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.int32),
                 nd.dtype(np.dtype(nonnative + 'i4')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.int64),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.int64),
                 nd.dtype(np.dtype(nonnative + 'i8')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.uint16),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.uint16),
                 nd.dtype(np.dtype(nonnative + 'u2')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.uint32),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.uint32),
                 nd.dtype(np.dtype(nonnative + 'u4')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.uint64),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.uint64),
                 nd.dtype(np.dtype(nonnative + 'u8')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.float32),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.float32),
                 nd.dtype(np.dtype(nonnative + 'f4')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.float64),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.float64),
                 nd.dtype(np.dtype(nonnative + 'f8')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.cfloat32),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.cfloat32),
                 nd.dtype(np.dtype(nonnative + 'c8')))
-        self.assertEqual(nd.dt.make_byteswap_dtype(nd.dt.cfloat64),
+        self.assertEqual(ndt.make_byteswap_dtype(ndt.cfloat64),
                 nd.dtype(np.dtype(nonnative + 'c16')))
 
 class TestNumpyViewInterop(unittest.TestCase):
@@ -86,14 +86,14 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(10, dtype=np.int32)
         n = nd.ndobject(a)
-        self.assertEqual(n.udtype, nd.dt.int32)
+        self.assertEqual(n.udtype, ndt.int32)
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
         a = np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4)
         n = nd.ndobject(a)
-        self.assertEqual(n.udtype, nd.dt.make_byteswap_dtype(nd.dt.int32))
+        self.assertEqual(n.udtype, ndt.make_byteswap_dtype(ndt.int32))
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
@@ -101,7 +101,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=np.int32).reshape(4,3)
         n = nd.ndobject(a)
-        self.assertEqual(n.udtype, nd.dt.make_unaligned_dtype(nd.dt.int32))
+        self.assertEqual(n.udtype, ndt.make_unaligned_dtype(ndt.int32))
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
@@ -110,7 +110,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = a[1:].view(dtype=(nonnative + 'i4')).reshape(2,2,3)
         n = nd.ndobject(a)
         self.assertEqual(n.udtype,
-                nd.dt.make_unaligned_dtype(nd.dt.make_byteswap_dtype(nd.dt.int32)))
+                ndt.make_unaligned_dtype(ndt.make_byteswap_dtype(ndt.int32)))
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
@@ -157,7 +157,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
         b = nd.ndobject(a)
-        self.assertEqual(nd.dt.make_fixedstring_dtype('ascii', 7), b.udtype)
+        self.assertEqual(ndt.make_fixedstring_dtype('ascii', 7), b.udtype)
         self.assertEqual(b.udtype, nd.dtype(a.dtype))
 
         # ASCII dynd -> Numpy
@@ -169,16 +169,16 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a, c)
 
         # ASCII dynd -> UTF32 dynd
-        b_u = b.cast_scalars(nd.dt.make_fixedstring_dtype('utf_32', 7))
+        b_u = b.cast_scalars(ndt.make_fixedstring_dtype('utf_32', 7))
         self.assertEqual(
-                nd.dt.make_convert_dtype(
-                    nd.dt.make_fixedstring_dtype('utf_32', 7),
-                    nd.dt.make_fixedstring_dtype('ascii', 7)),
+                ndt.make_convert_dtype(
+                    ndt.make_fixedstring_dtype('utf_32', 7),
+                    ndt.make_fixedstring_dtype('ascii', 7)),
                 b_u.udtype)
         # Evaluate to its value array
         b_u = b_u.vals()
         self.assertEqual(
-                nd.dt.make_fixedstring_dtype('utf_32', 7),
+                ndt.make_fixedstring_dtype('utf_32', 7),
                 b_u.udtype)
 
         # UTF32 dynd -> Numpy
@@ -194,7 +194,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Therefore numpy makes an object array scalar out of them.
         a = nd.ndobject("abcdef")
         self.assertEqual(
-                nd.dt.make_string_dtype('ascii'),
+                ndt.make_string_dtype('ascii'),
                 a.dtype)
         self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
@@ -221,20 +221,20 @@ class TestNumpyViewInterop(unittest.TestCase):
 
 class TestNumpyScalarInterop(unittest.TestCase):
     def test_numpy_scalar_conversion_dtypes(self):
-        self.assertEqual(nd.ndobject(np.bool_(True)).dtype, nd.dt.bool)
-        self.assertEqual(nd.ndobject(np.bool(True)).dtype, nd.dt.bool)
-        self.assertEqual(nd.ndobject(np.int8(100)).dtype, nd.dt.int8)
-        self.assertEqual(nd.ndobject(np.int16(100)).dtype, nd.dt.int16)
-        self.assertEqual(nd.ndobject(np.int32(100)).dtype, nd.dt.int32)
-        self.assertEqual(nd.ndobject(np.int64(100)).dtype, nd.dt.int64)
-        self.assertEqual(nd.ndobject(np.uint8(100)).dtype, nd.dt.uint8)
-        self.assertEqual(nd.ndobject(np.uint16(100)).dtype, nd.dt.uint16)
-        self.assertEqual(nd.ndobject(np.uint32(100)).dtype, nd.dt.uint32)
-        self.assertEqual(nd.ndobject(np.uint64(100)).dtype, nd.dt.uint64)
-        self.assertEqual(nd.ndobject(np.float32(100.)).dtype, nd.dt.float32)
-        self.assertEqual(nd.ndobject(np.float64(100.)).dtype, nd.dt.float64)
-        self.assertEqual(nd.ndobject(np.complex64(100j)).dtype, nd.dt.cfloat32)
-        self.assertEqual(nd.ndobject(np.complex128(100j)).dtype, nd.dt.cfloat64)
+        self.assertEqual(nd.ndobject(np.bool_(True)).dtype, ndt.bool)
+        self.assertEqual(nd.ndobject(np.bool(True)).dtype, ndt.bool)
+        self.assertEqual(nd.ndobject(np.int8(100)).dtype, ndt.int8)
+        self.assertEqual(nd.ndobject(np.int16(100)).dtype, ndt.int16)
+        self.assertEqual(nd.ndobject(np.int32(100)).dtype, ndt.int32)
+        self.assertEqual(nd.ndobject(np.int64(100)).dtype, ndt.int64)
+        self.assertEqual(nd.ndobject(np.uint8(100)).dtype, ndt.uint8)
+        self.assertEqual(nd.ndobject(np.uint16(100)).dtype, ndt.uint16)
+        self.assertEqual(nd.ndobject(np.uint32(100)).dtype, ndt.uint32)
+        self.assertEqual(nd.ndobject(np.uint64(100)).dtype, ndt.uint64)
+        self.assertEqual(nd.ndobject(np.float32(100.)).dtype, ndt.float32)
+        self.assertEqual(nd.ndobject(np.float64(100.)).dtype, ndt.float64)
+        self.assertEqual(nd.ndobject(np.complex64(100j)).dtype, ndt.cfloat32)
+        self.assertEqual(nd.ndobject(np.complex128(100j)).dtype, ndt.cfloat64)
 
     def test_numpy_scalar_conversion_values(self):
         self.assertEqual(nd.ndobject(np.bool_(True)).as_py(), True)

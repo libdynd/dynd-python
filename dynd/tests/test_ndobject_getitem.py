@@ -1,6 +1,6 @@
 import sys
 import unittest
-from blazedynd import nd
+from dynd import nd, ndt
 
 class TestNDObjectGetItem(unittest.TestCase):
 

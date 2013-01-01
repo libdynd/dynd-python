@@ -1,4 +1,5 @@
-import sys, os, ctypes, dynd_ctypes
+import sys, os, ctypes
+from dynd.ndt import dynd_ctypes
 
 if sys.platform == 'win32':
     libpath = os.path.join(os.path.dirname(__file__), "basic_kernels.dll")

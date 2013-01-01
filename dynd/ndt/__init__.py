@@ -1,4 +1,4 @@
-from _pydynd import w_dtype as dtype, \
+from dynd._pydynd import w_dtype as dtype, \
         make_byteswap_dtype, make_fixedbytes_dtype, make_convert_dtype, \
         make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
         make_pointer_dtype, make_struct_dtype, make_fixedstruct_dtype, \
@@ -28,5 +28,8 @@ complex128 = cfloat64
 
 string = make_string_dtype('utf_8')
 date = dtype('date')
+
+# Includes ctypes definitions
+import dynd_ctypes as ctypes
 
 del dtype

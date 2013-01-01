@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-project(blazedynd)
+project(dynd_python)
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -127,10 +127,10 @@ endif()
 target_link_libraries(_pydynd dynamicndarray)
 
 # Install all the Python scripts
-install(DIRECTORY blazedynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
+install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
-install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blazedynd/nd")
+install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
 # Install the basic_kernels .dll/.so
 get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 # NOTE: This only uses one configuration for the whole Visual Studio
@@ -138,7 +138,7 @@ get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 #       you want to install with.
 string(REPLACE "$(Configuration)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
 string(REPLACE "$(OutDir)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
-install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/blazedynd/nd")
+install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/nd")
 # Install the dynamicndarray lib
 if(NOT WIN32)
     get_property(dynamicndarray_loc TARGET dynamicndarray PROPERTY LOCATION)

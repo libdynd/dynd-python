@@ -1,22 +1,22 @@
 import sys
 import unittest
 from datetime import date
-from blazedynd import nd
+from dynd import nd, ndt
 
 class TestDate(unittest.TestCase):
     def test_date_dtype_properties(self):
-        self.assertEqual(type(nd.dt.date), nd.dtype)
-        self.assertEqual(str(nd.dt.date), 'date')
-        self.assertEqual(nd.dt.date.element_size, 4)
-        self.assertEqual(nd.dt.date.alignment, 4)
-        self.assertEqual(nd.dt.date.canonical_dtype, nd.dt.date)
+        self.assertEqual(type(ndt.date), nd.dtype)
+        self.assertEqual(str(ndt.date), 'date')
+        self.assertEqual(ndt.date.element_size, 4)
+        self.assertEqual(ndt.date.alignment, 4)
+        self.assertEqual(ndt.date.canonical_dtype, ndt.date)
 
     def test_date_properties(self):
         a = nd.ndobject(date(1955,3,13))
         self.assertEqual(str(a), '1955-03-13')
-        self.assertEqual(a.year.vals().dtype, nd.dt.int32)
-        self.assertEqual(a.month.vals().dtype, nd.dt.int32)
-        self.assertEqual(a.day.vals().dtype, nd.dt.int32)
+        self.assertEqual(a.year.vals().dtype, ndt.int32)
+        self.assertEqual(a.month.vals().dtype, ndt.int32)
+        self.assertEqual(a.day.vals().dtype, ndt.int32)
         self.assertEqual(a.year.as_py(), 1955)
         self.assertEqual(a.month.as_py(), 3)
         self.assertEqual(a.day.as_py(), 13)
@@ -24,14 +24,14 @@ class TestDate(unittest.TestCase):
     def test_struct_casting(self):
         a = nd.ndobject([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
-        s = a.cast_scalars(nd.dt.make_fixedstruct_dtype([nd.dt.int64, nd.dt.int16, nd.dt.int8],
+        s = a.cast_scalars(ndt.make_fixedstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
                                         ['year', 'month', 'day']))
         s = s.vals()
         self.assertEqual(s.year.as_py(), [1912, 2002])
         self.assertEqual(s.month.as_py(), [3, 1])
         self.assertEqual(s.day.as_py(), [4, 30])
         # cast from struct back to date
-        d = s.cast_udtype(nd.dt.date)
+        d = s.cast_udtype(ndt.date)
         d = d.vals()
         self.assertEqual(d.as_py(), [date(1912,3,4), date(2002,1,30)])
 
@@ -39,7 +39,7 @@ class TestDate(unittest.TestCase):
         a = nd.ndobject(date(1955,3,13))
         s = a.to_struct().vals()
         self.assertEqual(s.dtype,
-                        nd.dt.make_fixedstruct_dtype([nd.dt.int32, nd.dt.int8, nd.dt.int8],
+                        ndt.make_fixedstruct_dtype([ndt.int32, ndt.int8, ndt.int8],
                                         ['year', 'month', 'day']))
         self.assertEqual(s.year.as_py(), 1955)
         self.assertEqual(s.month.as_py(), 3)

@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-project(dynd_python)
+project(dynd-python)
 
 cmake_minimum_required(VERSION 2.6)
 

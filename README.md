@@ -1,9 +1,10 @@
-Blaze
-=====
+DyND-Python
+===========
 
-Blaze is a distributed data/array system for Python. This preview
-release contains an early version of its primitive computation library,
-Blaze Local.
+DyND-Python is the Python exposure of the DyND library.
 
-See BUILD\_INSTALL.md for details on building and installing this
-preview release of Blaze Local.
+https://github.com/ContinuumIO/dynd
+https://github.com/ContinuumIO/dynd-python
+
+See INSTALL_BUILD.md for details on building and installing this
+preview release.

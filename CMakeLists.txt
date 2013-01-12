@@ -35,22 +35,23 @@ if(NUMPY_VERSION_DECIMAL LESS 10500)
         "Blaze dynd requires NumPy >= 1.5")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynamicndarray/include/dynd/ndarray.hpp")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynd/include/dynd/ndobject.hpp")
 message(FATAL_ERROR
-    "The dynamicndarray C++ library must be placed in\n"
-    "libraries/dynamicndarray.\nRemove any temporary CMake\n"
-    "files, then if you're using git, run 'git submodule init'\n"
-    "and 'git submodule update' to clone it as a submodule.\n"
-    "See INSTALL.txt for more details.")
+    "The dynd C++ library must be placed in\n"
+    "libraries/dynd.\nRemove any temporary CMake\n"
+    "files, then if you're using git, run\n"
+    "'git clone git@github.com:ContinuumIO/dynd.git'\n"
+    "from the libraries directory.\n"
+    "See BUILD_INSTALL.txt for more details.")
 endif()
 
-# For now, we include dynamicndarray as a submodule.
-add_subdirectory(libraries/dynamicndarray)
+# Include dynd in the build
+add_subdirectory(libraries/dynd)
 
 include_directories(
     ${PYTHON_INCLUDE_DIRS}
     ${NUMPY_INCLUDE_DIRS}
-    libraries/dynamicndarray/include
+    libraries/dynd/include
     include
     )
 
@@ -124,7 +125,7 @@ else()
         )
 endif()
 
-target_link_libraries(_pydynd dynamicndarray)
+target_link_libraries(_pydynd dynd)
 
 # Install all the Python scripts
 install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
@@ -139,8 +140,8 @@ get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 string(REPLACE "$(Configuration)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
 string(REPLACE "$(OutDir)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
 install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/nd")
-# Install the dynamicndarray lib
+# Install the dynd lib
 if(NOT WIN32)
-    get_property(dynamicndarray_loc TARGET dynamicndarray PROPERTY LOCATION)
-    install(FILES ${dynamicndarray_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+    get_property(dynd_loc TARGET dynd PROPERTY LOCATION)
+    install(FILES ${dynd_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()

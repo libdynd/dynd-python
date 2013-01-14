@@ -127,9 +127,3 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     ndobject_init_from_pyobject(stop_nd, stop);
     return dynd::linspace(start_nd, stop_nd, count_val);
 }
-
-dynd::ndobject pydynd::ndobject_groupby(const dynd::ndobject& data, const dynd::ndobject& by, const dynd::dtype& groups)
-{
-    throw runtime_error("pydynd::ndobject_groupby not implemented");
-//    return ndobject(make_groupby_node(data.get_node(), by.get_node(), groups));
-}

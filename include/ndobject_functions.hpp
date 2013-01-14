@@ -134,11 +134,6 @@ dynd::ndobject ndobject_arange(PyObject *start, PyObject *stop, PyObject *step);
  */
 dynd::ndobject ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count);
 
-/**
- * Implementation of nd.groupby().
- */
-dynd::ndobject ndobject_groupby(const dynd::ndobject& data, const dynd::ndobject& by, const dynd::dtype& groups);
-
 } // namespace pydynd
 
 #endif // _DYND__NDARRAY_FUNCTIONS_HPP_

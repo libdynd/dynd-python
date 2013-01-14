@@ -417,7 +417,7 @@ def empty_like(w_ndobject rhs, dtype=None):
 def groupby(data, by, groups):
     """Produces an array containing the elements of `data`, grouped according to `by` which has corresponding shape."""
     cdef w_ndobject result = w_ndobject()
-    SET(result.v, ndobject_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
+    SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
 def arange(start, stop=None, step=None):

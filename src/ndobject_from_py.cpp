@@ -8,7 +8,7 @@
 
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/dtypes/strided_array_dtype.hpp>
-#include <dynd/dtypes/array_dtype.hpp>
+#include <dynd/dtypes/var_array_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
@@ -192,9 +192,9 @@ static void fill_ndobject_from_pylist(const dtype& dt, const char *metadata, cha
         }
     } else {
         // Variable-sized dimension
-        const array_dtype_metadata *md = reinterpret_cast<const array_dtype_metadata *>(metadata);
+        const var_array_dtype_metadata *md = reinterpret_cast<const var_array_dtype_metadata *>(metadata);
         intptr_t stride = md->stride;
-        array_dtype_data *out = reinterpret_cast<array_dtype_data *>(data);
+        var_array_dtype_data *out = reinterpret_cast<var_array_dtype_data *>(data);
         char *out_end = NULL;
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);

@@ -18,15 +18,15 @@ uint32 = dtype('uint32')
 uint64 = dtype('uint64')
 float32 = dtype('float32')
 float64 = dtype('float64')
-complex_float32 = dtype('complex<float32>')
-complex_float64 = dtype('complex<float64>')
+complex_float32 = dtype('cfloat32')
+complex_float64 = dtype('cfloat64')
 cfloat32 = complex_float32
 cfloat64 = complex_float64
 # Aliases for people comfortable with the Numpy complex namings
 complex64 = cfloat32
 complex128 = cfloat64
 
-string = make_string_dtype('utf_8')
+string = dtype('string')
 date = dtype('date')
 
 # Includes ctypes definitions

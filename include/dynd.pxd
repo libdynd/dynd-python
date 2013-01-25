@@ -45,6 +45,9 @@ cdef extern from "<iostream>" namespace "std":
 
     extern ostream cout
 
+cdef extern from "<dynd/json_parser.hpp>" namespace "dynd":
+    ndobject dynd_parse_json "dynd::parse_json" (dtype&, ndobject&) except +translate_exception
+
 cdef extern from "utility_functions.hpp" namespace "pydynd":
     object intptr_array_as_tuple(int, intptr_t *)
 

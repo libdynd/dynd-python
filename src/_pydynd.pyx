@@ -436,6 +436,12 @@ def linspace(start, stop, count=50):
     SET(result.v, ndobject_linspace(start, stop, count))
     return result
 
+def parse_json(dtype, json):
+    """Parses an input JSON string as a particular dtype."""
+    cdef w_ndobject result = w_ndobject()
+    SET(result.v, dynd_parse_json(GET(w_dtype(dtype).v), GET(w_ndobject(json).v)))
+    return result
+
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
 

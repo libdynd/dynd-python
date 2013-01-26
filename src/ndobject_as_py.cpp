@@ -11,6 +11,7 @@
 #include "utility_functions.hpp"
 
 #include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 
 using namespace std;
@@ -134,29 +135,57 @@ namespace {
         pyobject_ownref result;
         int index;
     };
+} // anonymous namespace
 
-    static void nested_ndobject_as_py(const dtype& d, char *data, const char *metadata, void *result)
-    {
-        ndobject_as_py_data *r = reinterpret_cast<ndobject_as_py_data *>(result);
+static void nested_ndobject_as_py(const dtype& d, char *data, const char *metadata, void *result);
 
-        ndobject_as_py_data el;
-        if (d.is_scalar()) {
-            el.result.reset(element_as_pyobject(d, data, metadata));
-        } else {
-            intptr_t size = d.get_dim_size(data, metadata);
-            el.result.reset(PyList_New(size));
-            el.index = 0;
+static void nested_struct_as_py(const dtype& d, char *data, const char *metadata, void *result)
+{
+    ndobject_as_py_data *r = reinterpret_cast<ndobject_as_py_data *>(result);
 
-            d.extended()->foreach_leading(data, metadata, &nested_ndobject_as_py, &el);
-        }
+    const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(d.extended());
+    size_t field_count = bsd->get_field_count();
+    const string *field_names = bsd->get_field_names();
+    const dtype *field_types = bsd->get_field_types();
+    const size_t *field_metadata_offsets = bsd->get_metadata_offsets();
+    const size_t *field_data_offsets = bsd->get_data_offsets(metadata);
 
-        if (r->result) {
-            PyList_SET_ITEM(r->result.get(), r->index++, el.result.release());
-        } else {
-            r->result.reset(el.result.release());
+    r->result.reset(PyDict_New());
+    for (size_t i = 0; i != field_count; ++i) {
+        const string& fname = field_names[i];
+        pyobject_ownref key(PyUnicode_DecodeUTF8(fname.data(), fname.size(), NULL));
+        ndobject_as_py_data temp_el;
+        nested_ndobject_as_py(field_types[i], data + field_data_offsets[i],
+                        metadata + field_metadata_offsets[i], &temp_el);
+        if (PyDict_SetItem(r->result.get(), key.get(), temp_el.result.get()) < 0) {
+            throw runtime_error("propagating dict setitem error");
         }
     }
-} // anonymous namespace
+}
+
+static void nested_ndobject_as_py(const dtype& d, char *data, const char *metadata, void *result)
+{
+    ndobject_as_py_data *r = reinterpret_cast<ndobject_as_py_data *>(result);
+
+    ndobject_as_py_data el;
+    if (d.is_scalar()) {
+        el.result.reset(element_as_pyobject(d, data, metadata));
+    } else if (d.get_kind() == struct_kind) {
+        nested_struct_as_py(d, data, metadata, &el);
+    } else {
+        intptr_t size = d.get_dim_size(data, metadata);
+        el.result.reset(PyList_New(size));
+        el.index = 0;
+
+        d.extended()->foreach_leading(data, metadata, &nested_ndobject_as_py, &el);
+    }
+
+    if (r->result) {
+        PyList_SET_ITEM(r->result.get(), r->index++, el.result.release());
+    } else {
+        r->result.reset(el.result.release());
+    }
+}
 
 PyObject* pydynd::ndobject_as_py(const dynd::ndobject& n)
 {

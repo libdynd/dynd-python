@@ -356,7 +356,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     }
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
-            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], dt);
+            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], dt);
     ndobject result = c.call_generic(params);
     if (result.get_dtype().is_scalar()) {
         return ndobject_as_py(result);
@@ -377,7 +377,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     }
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
-            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], n);
+            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], n);
     return wrap_ndobject(c.call_generic(params));
 }
 
@@ -402,7 +402,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
     for (size_t i = 0; i < args_count; ++i) {
         set_single_parameter(funcname, fsdt->get_field_names()[i+1], fsdt->get_field_types()[i+1],
                 out_params.get_ndo_meta() + fsdt->get_metadata_offsets()[i+1],
-                out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[i+1],
+                out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[i+1],
                 PyTuple_GET_ITEM(args, i), out_storage);
     }
 
@@ -428,7 +428,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
                 if (s == fsdt->get_field_names()[i+1]) {
                     set_single_parameter(funcname, fsdt->get_field_names()[i+1], fsdt->get_field_types()[i+1],
                             out_params.get_ndo_meta() + fsdt->get_metadata_offsets()[i+1],
-                            out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[i+1], value, out_storage);
+                            out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[i+1], value, out_storage);
                     filled[i - args_count] = 1;
                     break;
                 }
@@ -453,7 +453,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
                     // Fill in the parameters which haven't been touched yet
                     if (filled[i - args_count] == 0) {
                         size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
-                        size_t data_offset = fsdt->get_data_offsets()[i+1];
+                        size_t data_offset = fsdt->get_data_offsets_vector()[i+1];
                         dtype_copy(fsdt->get_field_types()[i+1],
                                         out_params.get_ndo_meta() + metadata_offset,
                                         out_params.get_ndo()->m_data_pointer + data_offset,
@@ -481,7 +481,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
             if (first_default_param < (int)param_count && first_default_param <= (int)args_count) {
                 for (size_t i = args_count; i < param_count; ++i) {
                     size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
-                    size_t data_offset = fsdt->get_data_offsets()[i+1];
+                    size_t data_offset = fsdt->get_data_offsets_vector()[i+1];
                     dtype_copy(fsdt->get_field_types()[i+1],
                                     out_params.get_ndo_meta() + metadata_offset,
                                     out_params.get_ndo()->m_data_pointer + data_offset,
@@ -524,7 +524,7 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
     // Set the 'self' parameter value
     set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
                 params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
-                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], ncw.n);
+                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], ncw.n);
 
     fill_thiscall_parameters_ndobject(ncw.funcname, ncw.c, args, kwargs, params, storage);
 
@@ -555,7 +555,7 @@ static PyObject *dtype_callable_call(const std::string& funcname, const gfunc::c
     // Set the 'self' parameter value
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
                 params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
-                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets()[0], d);
+                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], d);
 
     fill_thiscall_parameters_ndobject(funcname, c, args, kwargs, params, storage);
 

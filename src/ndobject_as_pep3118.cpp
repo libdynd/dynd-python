@@ -145,11 +145,11 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
         case fixedstruct_type_id: {
             o << "T{";
             const fixedstruct_dtype *tdt = static_cast<const fixedstruct_dtype *>(dt.extended());
-            const vector<dtype>& field_types = tdt->get_field_types();
-            const vector<string>& field_names = tdt->get_field_names();
-            size_t num_fields = field_types.size();
-            const vector<size_t>& offsets = tdt->get_data_offsets();
-            const vector<size_t>& metadata_offsets = tdt->get_metadata_offsets();
+            const dtype *field_types = tdt->get_field_types();
+            const string *field_names = tdt->get_field_names();
+            size_t num_fields = tdt->get_field_count();
+            const size_t *offsets = tdt->get_data_offsets(metadata);
+            const size_t *metadata_offsets = tdt->get_metadata_offsets();
             size_t format_offset = 0;
             for (size_t i = 0; i != num_fields; ++i) {
                 size_t offset = offsets[i];

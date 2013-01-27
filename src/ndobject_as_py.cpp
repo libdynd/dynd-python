@@ -65,53 +65,22 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
             return PyComplex_FromDoubles(*(const double *)data, *((const double *)data + 1));
         case fixedbytes_type_id:
             return PyBytes_FromStringAndSize(data, d.get_data_size());
-        case fixedstring_type_id: {
+        case fixedstring_type_id:
+        case string_type_id:
+        case json_type_id: {
+            const char *begin = NULL, *end = NULL;
             const base_string_dtype *esd = static_cast<const base_string_dtype *>(d.extended());
+            esd->get_string_range(&begin, &end, metadata, data);
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
-                    return PyUnicode_DecodeASCII(data, strnlen(data, d.get_data_size()), NULL);
+                    return PyUnicode_DecodeASCII(begin, end - begin, NULL);
                 case string_encoding_utf_8:
-                    return PyUnicode_DecodeUTF8(data, strnlen(data, d.get_data_size()), NULL);
-                case string_encoding_ucs_2:
-                case string_encoding_utf_16: {
-                    // Get the null-terminated string length
-                    const uint16_t *udata = (const uint16_t *)data;
-                    const uint16_t *udata_end = udata;
-                    intptr_t size = d.get_data_size() / sizeof(uint16_t);
-                    while (size > 0 && *udata_end != 0) {
-                        --size;
-                        ++udata_end;
-                    }
-                    return PyUnicode_DecodeUTF16(data, sizeof(uint16_t) * (udata_end - udata), NULL, NULL);
-                }
-                case string_encoding_utf_32: {
-                    // Get the null-terminated string length
-                    const uint32_t *udata = (const uint32_t *)data;
-                    const uint32_t *udata_end = udata;
-                    intptr_t size = d.get_data_size() / sizeof(uint32_t);
-                    while (size > 0 && *udata_end != 0) {
-                        --size;
-                        ++udata_end;
-                    }
-                    return PyUnicode_DecodeUTF32(data, sizeof(uint32_t) * (udata_end - udata), NULL, NULL);
-                }
-                default:
-                    throw runtime_error("Unrecognized dynd::ndobject string encoding");
-            }
-        }
-        case string_type_id: {
-            const char * const *refs = reinterpret_cast<const char * const *>(data);
-            const base_string_dtype *esd = static_cast<const base_string_dtype *>(d.extended());
-            switch (esd->get_encoding()) {
-                case string_encoding_ascii:
-                    return PyUnicode_DecodeASCII(refs[0], refs[1] - refs[0], NULL);
-                case string_encoding_utf_8:
-                    return PyUnicode_DecodeUTF8(refs[0], refs[1] - refs[0], NULL);
+                    return PyUnicode_DecodeUTF8(begin, end - begin, NULL);
                 case string_encoding_ucs_2:
                 case string_encoding_utf_16:
-                    return PyUnicode_DecodeUTF16(refs[0], refs[1] - refs[0], NULL, NULL);
+                    return PyUnicode_DecodeUTF16(begin, end - begin, NULL, NULL);
                 case string_encoding_utf_32:
-                    return PyUnicode_DecodeUTF32(refs[0], refs[1] - refs[0], NULL, NULL);
+                    return PyUnicode_DecodeUTF32(begin, end - begin, NULL, NULL);
                 default:
                     throw runtime_error("Unrecognized dynd::ndobject string encoding");
             }

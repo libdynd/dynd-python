@@ -13,6 +13,7 @@
 #include <dynd/dtypes/strided_array_dtype.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/bytes_dtype.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -65,6 +66,11 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
             return PyComplex_FromDoubles(*(const double *)data, *((const double *)data + 1));
         case fixedbytes_type_id:
             return PyBytes_FromStringAndSize(data, d.get_data_size());
+        case bytes_type_id: {
+            const bytes_dtype *bd = static_cast<const bytes_dtype *>(d.extended());
+            const bytes_dtype_data *d = reinterpret_cast<const bytes_dtype_data *>(data);
+            return PyBytes_FromStringAndSize(d->begin, d->end - d->begin);
+        }
         case fixedstring_type_id:
         case string_type_id:
         case json_type_id: {

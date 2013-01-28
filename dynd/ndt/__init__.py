@@ -28,6 +28,7 @@ complex128 = cfloat64
 
 string = dtype('string')
 date = dtype('date')
+bytes = dtype('bytes')
 
 # Includes ctypes definitions
 import dynd_ctypes as ctypes

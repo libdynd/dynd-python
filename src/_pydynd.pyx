@@ -442,6 +442,12 @@ def parse_json(dtype, json):
     SET(result.v, dynd_parse_json(GET(w_dtype(dtype).v), GET(w_ndobject(json).v)))
     return result
 
+def format_json(w_ndobject n):
+    """Formats an ndobject as JSON."""
+    cdef w_ndobject result = w_ndobject()
+    SET(result.v, dynd_format_json(GET(n.v)))
+    return result
+
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
 

@@ -342,6 +342,10 @@ cdef class w_ndobject:
             SET(result.v, GET(self.v).get_dtype())
             return result
 
+    property dshape:
+        def __get__(self):
+            return str(dynd_format_datashape(GET(self.v)))
+
     property udtype:
         def __get__(self):
             cdef w_dtype result = w_dtype()

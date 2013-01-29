@@ -51,6 +51,9 @@ cdef extern from "<dynd/json_parser.hpp>" namespace "dynd":
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
     ndobject dynd_format_json "dynd::format_json" (ndobject&) except +translate_exception
 
+cdef extern from "<dynd/dtypes/datashape_formatter.hpp>" namespace "dynd":
+    string dynd_format_datashape "dynd::format_datashape" (ndobject&) except +translate_exception
+
 cdef extern from "utility_functions.hpp" namespace "pydynd":
     object intptr_array_as_tuple(int, intptr_t *)
 

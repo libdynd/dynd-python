@@ -45,39 +45,18 @@ void pydynd::init_w_dtype_typeobject(PyObject *type)
 
 PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
 {
-    switch (d.get_kind()) {
-        case bool_kind:
-            return PyString_FromString("bool");
-        case int_kind:
-            return PyString_FromString("int");
-        case uint_kind:
-            return PyString_FromString("uint");
-        case real_kind:
-            return PyString_FromString("real");
-        case complex_kind:
-            return PyString_FromString("complex");
-        case string_kind:
-            return PyString_FromString("string");
-        case datetime_kind:
-            return PyString_FromString("datetime");
-        case bytes_kind:
-            return PyString_FromString("bytes");
-        case void_kind:
-            return PyString_FromString("void");
-        case struct_kind:
-            return PyString_FromString("struct");
-        case expression_kind:
-            return PyString_FromString("expression");
-        case pattern_kind:
-            return PyString_FromString("pattern");
-        case custom_kind:
-            return PyString_FromString("custom");
-        default: {
-            stringstream ss;
-            ss << "dynd dtype " << d << " has unexpected kind value " << (int)d.get_kind();
-            throw runtime_error(ss.str());
-        }
-    }
+    stringstream ss;
+    ss << d.get_kind();
+    string s = ss.str();
+    return PyString_FromStringAndSize(s.data(), s.size());
+}
+
+PyObject *pydynd::dtype_get_type_id(const dynd::dtype& d)
+{
+    stringstream ss;
+    ss << d.get_type_id();
+    string s = ss.str();
+    return PyString_FromStringAndSize(s.data(), s.size());
 }
 
 dtype pydynd::deduce_dtype_from_object(PyObject* obj)

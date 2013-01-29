@@ -101,6 +101,10 @@ cdef class w_dtype:
         def __get__(self):
             return dtype_get_kind(GET(self.v))
 
+    property type_id:
+        def __get__(self):
+            return dtype_get_type_id(GET(self.v))
+
     property undim:
         """The number of uniform dimensions in the dtype."""
         def __get__(self):

@@ -110,6 +110,7 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     dtype make_dtype_from_object(object) except +translate_exception
 
     object dtype_get_kind(dtype&) except +translate_exception
+    object dtype_get_type_id(dtype&) except +translate_exception
     dtype dtype_getitem(dtype&, object) except +translate_exception
 
     dtype dnd_make_convert_dtype(dtype&, dtype&, object) except +translate_exception

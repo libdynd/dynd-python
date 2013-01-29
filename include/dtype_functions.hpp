@@ -61,6 +61,11 @@ inline std::string dtype_repr(const dynd::dtype& d)
 PyObject *dtype_get_kind(const dynd::dtype& d);
 
 /**
+ * Returns the type id of the dtype, as a Python string.
+ */
+PyObject *dtype_get_type_id(const dynd::dtype& d);
+
+/**
  * Produces a dynd::dtype corresponding to the object's type. This
  * is to determine the dtype of an object that contains a value
  * or values.

@@ -336,6 +336,10 @@ cdef class w_ndobject:
         SET(result.v, GET(self.v).view_scalars(GET(w_dtype(dtype).v)))
         return result
 
+    def flag_as_immutable(self):
+        """When there's still only one reference to an ndobject, can be used to flag it as immutable."""
+        GET(self.v).flag_as_immutable()
+
     property dtype:
         def __get__(self):
             cdef w_dtype result = w_dtype()
@@ -414,6 +418,16 @@ cdef class w_ndobject:
         SET(result.v, ndobject_divide(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
+def empty(shape, dtype=None):
+    """Creates an uninitialized array of the specified (shape, dtype) or just (dtype)."""
+    cdef w_ndobject result = w_ndobject()
+    if dtype is not None:
+        SET(result.v, ndobject_empty(shape, GET(w_dtype(dtype).v)))
+    else:
+        # Interpret the first argument (shape) as a dtype in the one argument case
+        SET(result.v, ndobject_empty(GET(w_dtype(shape).v)))
+    return result
+
 def empty_like(w_ndobject rhs, dtype=None):
     cdef w_ndobject result = w_ndobject()
     if dtype is None:
@@ -447,8 +461,11 @@ def linspace(start, stop, count=50):
 def parse_json(dtype, json):
     """Parses an input JSON string as a particular dtype."""
     cdef w_ndobject result = w_ndobject()
-    SET(result.v, dynd_parse_json(GET(w_dtype(dtype).v), GET(w_ndobject(json).v)))
-    return result
+    if type(dtype) is w_ndobject:
+        dynd_parse_json_ndobject(GET((<w_ndobject>dtype).v), GET(w_ndobject(json).v))
+    else:
+        SET(result.v, dynd_parse_json_dtype(GET(w_dtype(dtype).v), GET(w_ndobject(json).v)))
+        return result
 
 def format_json(w_ndobject n):
     """Formats an ndobject as JSON."""

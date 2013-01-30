@@ -57,6 +57,9 @@ inline void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
 dynd::ndobject ndobject_vals(const dynd::ndobject& n);
 dynd::ndobject ndobject_eval_copy(const dynd::ndobject& n, PyObject* access_flags, const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
 
+dynd::ndobject ndobject_empty(const dynd::dtype& d);
+dynd::ndobject ndobject_empty(PyObject *shape, const dynd::dtype& d);
+
 inline dynd::ndobject ndobject_empty_like(const dynd::ndobject& n)
 {
     return dynd::empty_like(n);

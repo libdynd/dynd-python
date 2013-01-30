@@ -50,6 +50,8 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
 
         ndobject view_scalars(dtype&) except +translate_exception
 
+        void flag_as_immutable() except +translate_exception
+
         void debug_print(ostream&)
 
     ndobject dynd_groupby "dynd::groupby" (ndobject, ndobject, dtype) except +translate_exception
@@ -64,6 +66,8 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     void ndobject_init_from_pyobject(ndobject&, object obj) except +translate_exception
     ndobject ndobject_vals(ndobject&) except +translate_exception
     ndobject ndobject_eval_copy(ndobject&, object) except +translate_exception
+    ndobject ndobject_empty(dtype&) except +translate_exception
+    ndobject ndobject_empty(object, dtype&) except +translate_exception
     ndobject ndobject_empty_like(ndobject&) except +translate_exception
     ndobject ndobject_empty_like(ndobject&, dtype&) except +translate_exception
 

@@ -39,6 +39,19 @@ dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n, PyObject* acc
     }
 }
 
+dynd::ndobject pydynd::ndobject_empty(const dynd::dtype& d)
+{
+    return ndobject(d);
+}
+
+dynd::ndobject pydynd::ndobject_empty(PyObject *shape, const dynd::dtype& d)
+{
+    std::vector<intptr_t> shape_vec;
+    pyobject_as_vector_intp(shape, shape_vec);
+    return ndobject(make_ndobject_memory_block(d, (int)shape_vec.size(),
+                    shape_vec.empty() ? NULL : &shape_vec[0]));
+}
+
 dynd::ndobject pydynd::ndobject_cast_scalars(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
 {
     return n.cast_scalars(dt, pyarg_error_mode(assign_error_obj));

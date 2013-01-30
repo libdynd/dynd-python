@@ -46,7 +46,8 @@ cdef extern from "<iostream>" namespace "std":
     extern ostream cout
 
 cdef extern from "<dynd/json_parser.hpp>" namespace "dynd":
-    ndobject dynd_parse_json "dynd::parse_json" (dtype&, ndobject&) except +translate_exception
+    ndobject dynd_parse_json_dtype "dynd::parse_json" (dtype&, ndobject&) except +translate_exception
+    void dynd_parse_json_ndobject "dynd::parse_json" (ndobject&, ndobject&) except +translate_exception
 
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
     ndobject dynd_format_json "dynd::format_json" (ndobject&) except +translate_exception

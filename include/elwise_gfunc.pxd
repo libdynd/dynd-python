@@ -8,7 +8,7 @@ cdef extern from "<dynd/gfunc/elwise_gfunc.hpp>" namespace "dynd::gfunc":
         string& get_name()
 
 cdef extern from "elwise_gfunc_functions.hpp" namespace "pydynd":
-    void elwise_gfunc_add_kernel(elwise_gfunc&, codegen_cache&, object) except +translate_exception
+#    void elwise_gfunc_add_kernel(elwise_gfunc&, codegen_cache&, object) except +translate_exception
     object elwise_gfunc_call(elwise_gfunc&, object, object) except +translate_exception
     string elwise_gfunc_repr(elwise_gfunc&) except +translate_exception
     string elwise_gfunc_debug_print(elwise_gfunc&) except +translate_exception

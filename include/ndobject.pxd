@@ -55,6 +55,7 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
         void debug_print(ostream&)
 
     ndobject dynd_groupby "dynd::groupby" (ndobject, ndobject, dtype) except +translate_exception
+    ndobject dynd_groupby "dynd::groupby" (ndobject, ndobject) except +translate_exception
 
 cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     void init_w_ndobject_typeobject(object)

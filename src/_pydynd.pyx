@@ -34,7 +34,7 @@ init_w_ndobject_callable_typeobject(w_ndobject_callable)
 init_w_dtype_callable_typeobject(w_dtype_callable)
 
 include "dynd.pxd"
-include "codegen_cache.pxd"
+#include "codegen_cache.pxd"
 include "dtype.pxd"
 include "ndobject.pxd"
 include "elwise_gfunc.pxd"
@@ -56,9 +56,9 @@ if any_diagnostics_enabled():
 from cython.operator import dereference
 
 # Create the codegen cache used by default when making gfuncs
-cdef w_codegen_cache default_cgcache_c = w_codegen_cache()
+#cdef w_codegen_cache default_cgcache_c = w_codegen_cache()
 # Expose it outside the module too
-default_cgcache = default_cgcache_c
+#default_cgcache = default_cgcache_c
 
 cdef class w_dtype:
     # To access the embedded dtype, use "GET(self.v)",
@@ -89,7 +89,7 @@ cdef class w_dtype:
     def __getattr__(self, name):
         return get_dtype_dynamic_property(GET(self.v), name)
 
-    property element_size:
+    property data_size:
         def __get__(self):
             return GET(self.v).get_data_size()
 
@@ -287,7 +287,7 @@ cdef class w_ndobject:
         """Prints a raw representation of the ndobject data."""
         print str(ndobject_debug_print(GET(self.v)).c_str())
 
-    def vals(self):
+    def eval(self):
         """Returns a version of the ndobject with plain values, all expressions evaluated."""
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_vals(GET(self.v)))
@@ -436,10 +436,13 @@ def empty_like(w_ndobject rhs, dtype=None):
         SET(result.v, ndobject_empty_like(GET(rhs.v), GET(w_dtype(dtype).v)))
     return result
 
-def groupby(data, by, groups):
+def groupby(data, by, groups = None):
     """Produces an array containing the elements of `data`, grouped according to `by` which has corresponding shape."""
     cdef w_ndobject result = w_ndobject()
-    SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
+    if groups is None:
+        SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v)))
+    else:
+        SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
 def arange(start, stop=None, step=None):
@@ -485,9 +488,9 @@ cdef class w_elwise_gfunc:
         def __get__(self):
             return str(GET(self.v).get_name().c_str())
 
-    def add_kernel(self, kernel, w_codegen_cache cgcache = default_cgcache_c):
-        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
-        elwise_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel)
+#    def add_kernel(self, kernel, w_codegen_cache cgcache = default_cgcache_c):
+#        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
+#        elwise_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel)
 
     def debug_print(self):
         """Prints a raw representation of the gfunc data."""
@@ -509,14 +512,14 @@ cdef class w_elwise_reduce_gfunc:
         def __get__(self):
             return str(GET(self.v).get_name().c_str())
 
-    def add_kernel(self, kernel, bint associative, bint commutative, identity = None, w_codegen_cache cgcache = default_cgcache_c):
-        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
-        cdef w_ndobject id
-        if identity is None:
-            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, ndobject())
-        else:
-            id = w_ndobject(identity)
-            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
+#    def add_kernel(self, kernel, bint associative, bint commutative, identity = None, w_codegen_cache cgcache = default_cgcache_c):
+#        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
+#        cdef w_ndobject id
+#        if identity is None:
+#            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, ndobject())
+#        else:
+#            id = w_ndobject(identity)
+#            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
 
     def debug_print(self):
         """Prints a raw representation of the gfunc data."""
@@ -526,17 +529,17 @@ cdef class w_elwise_reduce_gfunc:
         """Calls the gfunc."""
         return elwise_reduce_gfunc_call(GET(self.v), args, kwargs)
 
-cdef class w_codegen_cache:
-    cdef codegen_cache_placement_wrapper v
-
-    def __cinit__(self):
-        placement_new(self.v)
-    def __dealloc__(self):
-        placement_delete(self.v)
-
-    def debug_print(self):
-        """Prints a raw representation of the codegen_cache data."""
-        print str(codegen_cache_debug_print(GET(self.v)).c_str())
+#cdef class w_codegen_cache:
+#    cdef codegen_cache_placement_wrapper v
+#
+#    def __cinit__(self):
+#        placement_new(self.v)
+#    def __dealloc__(self):
+#        placement_delete(self.v)
+#
+#    def debug_print(self):
+#        """Prints a raw representation of the codegen_cache data."""
+#        print str(codegen_cache_debug_print(GET(self.v)).c_str())
 
 cdef class w_elwise_program:
     cdef vm_elwise_program_placement_wrapper v

@@ -11,7 +11,7 @@
 
 #include <dynd/dtype.hpp>
 #include <dynd/ndobject.hpp>
-#include <dynd/codegen/codegen_cache.hpp>
+//#include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/vm/elwise_program.hpp>
 #include "gfunc_callable_functions.hpp"
 
@@ -51,7 +51,7 @@ namespace pydynd {
 
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::dtype, dtype, dtype_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndobject, ndobject, ndobject_placement_wrapper);
-DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_placement_wrapper);
+//DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwise_program_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::ndobject_callable_wrapper, ndobject_callable_wrapper,
             ndobject_callable_placement_wrapper);

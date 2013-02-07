@@ -77,12 +77,12 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     # ndobject placement assignment
     void SET(ndobject_placement_wrapper&, ndobject&)
 
-    cdef struct codegen_cache_placement_wrapper:
-        pass
-    void placement_new(codegen_cache_placement_wrapper&) except +translate_exception
-    void placement_delete(codegen_cache_placement_wrapper&)
-    # placement cast
-    codegen_cache& GET(codegen_cache_placement_wrapper&)
+#    cdef struct codegen_cache_placement_wrapper:
+#        pass
+#    void placement_new(codegen_cache_placement_wrapper&) except +translate_exception
+#    void placement_delete(codegen_cache_placement_wrapper&)
+#    # placement cast
+#    codegen_cache& GET(codegen_cache_placement_wrapper&)
 
     cdef struct vm_elwise_program_placement_wrapper:
         pass

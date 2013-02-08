@@ -283,9 +283,9 @@ cdef class w_ndobject:
     def __getattr__(self, name):
         return get_ndobject_dynamic_property(GET(self.v), name)
 
-    def debug_print(self):
-        """Prints a raw representation of the ndobject data."""
-        print str(ndobject_debug_print(GET(self.v)).c_str())
+    def debug_repr(self):
+        """Returns a raw representation of the ndobject data."""
+        return str(ndobject_debug_print(GET(self.v)).c_str())
 
     def eval(self):
         """Returns a version of the ndobject with plain values, all expressions evaluated."""
@@ -492,9 +492,9 @@ cdef class w_elwise_gfunc:
 #        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
 #        elwise_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel)
 
-    def debug_print(self):
+    def debug_repr(self):
         """Prints a raw representation of the gfunc data."""
-        print str(elwise_gfunc_debug_print(GET(self.v)).c_str())
+        return str(elwise_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -521,9 +521,9 @@ cdef class w_elwise_reduce_gfunc:
 #            id = w_ndobject(identity)
 #            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
 
-    def debug_print(self):
-        """Prints a raw representation of the gfunc data."""
-        print str(elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
+    def debug_repr(self):
+        """Returns a raw representation of the gfunc data."""
+        return str(elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -537,9 +537,9 @@ cdef class w_elwise_reduce_gfunc:
 #    def __dealloc__(self):
 #        placement_delete(self.v)
 #
-#    def debug_print(self):
+#    def debug_repr(self):
 #        """Prints a raw representation of the codegen_cache data."""
-#        print str(codegen_cache_debug_print(GET(self.v)).c_str())
+#        return str(codegen_cache_debug_print(GET(self.v)).c_str())
 
 cdef class w_elwise_program:
     cdef vm_elwise_program_placement_wrapper v
@@ -559,9 +559,9 @@ cdef class w_elwise_program:
         """Converts the elementwise VM program into a dict"""
         return vm_elwise_program_as_py(GET(self.v))
 
-    def debug_print(self):
-        """Prints a raw representation of the elwise_program data."""
-        print str(vm_elwise_program_debug_print(GET(self.v)).c_str())
+    def debug_repr(self):
+        """Returns a raw representation of the elwise_program data."""
+        return str(vm_elwise_program_debug_print(GET(self.v)).c_str())
 
 cdef class w_ndobject_callable:
     cdef ndobject_callable_placement_wrapper v

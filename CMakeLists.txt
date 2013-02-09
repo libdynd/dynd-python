@@ -129,7 +129,7 @@ elseif(APPLE)
     set_target_properties(
         _pydynd
         PROPERTIES COMPILE_FLAGS
-        "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function"
+        "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function -Wno-error"
         )
 else()
     # strict aliasing is disabled because Cython generated code

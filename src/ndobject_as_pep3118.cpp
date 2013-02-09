@@ -3,6 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
+#include <Python.h>
+
 #include <dynd/dtypes/strided_array_dtype.hpp>
 #include <dynd/dtypes/fixedarray_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
@@ -115,11 +117,14 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
                     return;
                 }
                 // TODO: Couldn't find documentation for UCS-2 character code?
-                case string_encoding_utf_32:
+                case string_encoding_utf_32: {
                     intptr_t element_size = dt.get_data_size();
                     o << (element_size/4) << "w";
                     out_itemsize = element_size;
                     return;
+                }
+                default:
+                    break;
             }
             // Pass through to error
             break;

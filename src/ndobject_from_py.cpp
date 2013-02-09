@@ -34,7 +34,7 @@ struct init_pydatetime {
 init_pydatetime pdt;
 } // anonymous namespace
 
-static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape, dtype& dt, int current_axis)
+static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape, dtype& dt, size_t current_axis)
 {
     if (PyList_Check(obj)) {
         Py_ssize_t size = PyList_GET_SIZE(obj);
@@ -168,7 +168,7 @@ inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, cha
 
 template<convert_one_pyscalar_function_t ConvertOneFn>
 static void fill_ndobject_from_pylist(const dtype& dt, const char *metadata, char *data, PyObject *obj,
-                const intptr_t *shape, int current_axis)
+                const intptr_t *shape, size_t current_axis)
 {
     Py_ssize_t size = PyList_GET_SIZE(obj);
     const char *element_metadata = metadata;
@@ -361,7 +361,6 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
             throw runtime_error("Error getting string data");
         }
         dtype d = make_string_dtype(string_encoding_ascii);
-        const char *refs[2] = {data, data + len};
         // Python strings are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
         memory_block_ptr stringref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);

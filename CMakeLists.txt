@@ -48,6 +48,22 @@ endif()
 # Include dynd in the build
 add_subdirectory(libraries/dynd)
 
+if(WIN32)
+    # Treat warnings as errors (-WX does this)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX -EHsc")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fomit-frame-pointer -fstrict-aliasing -fPIC -Wall -Wextra -Werror")
+    if (CMAKE_COMPILER_IS_GNUCXX)
+        # The '-fmax-errors' flag was first supported in gcc 4.6
+        # Use the c++0x flag only in 4.6 and later
+        if (NOT GCC_VERSION VERSION_LESS 4.6)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -fmax-errors=20")
+        endif()
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -ferror-limit=20")
+    endif()
+endif()
+
 include_directories(
     ${PYTHON_INCLUDE_DIRS}
     ${NUMPY_INCLUDE_DIRS}

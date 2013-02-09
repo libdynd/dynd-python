@@ -251,6 +251,8 @@ static void set_single_parameter(const std::string& funcname, const std::string&
                 case int64_type_id:
                     *reinterpret_cast<int64_t *>(data) = ll;
                     return;
+                default:
+                    break;
             }
             break;
         }
@@ -294,6 +296,8 @@ static void set_single_parameter(const std::string& funcname, const std::string&
                 case uint64_type_id:
                     *reinterpret_cast<uint64_t *>(data) = ull;
                     break;
+                default:
+                    break;
             }
             break;
         }
@@ -309,6 +313,8 @@ static void set_single_parameter(const std::string& funcname, const std::string&
                 case float64_type_id:
                     *reinterpret_cast<double *>(data) = result;
                     return;
+                default:
+                    break;
             }
             break;
         }
@@ -326,6 +332,8 @@ static void set_single_parameter(const std::string& funcname, const std::string&
                     reinterpret_cast<double *>(data)[0] = result.real;
                     reinterpret_cast<double *>(data)[1] = result.imag;
                     return;
+                default:
+                    break;
             }
             break;
         }

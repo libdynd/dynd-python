@@ -39,7 +39,6 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
 
     PyObject *names = d->names;
     Py_ssize_t names_size = PyTuple_GET_SIZE(names);
-    size_t max_field_alignment = 1;
 
     // The alignment must divide into the total element size,
     // shrink it until it does.
@@ -432,7 +431,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
             const string *field_names = sdt->get_field_names();
             const size_t *metadata_offsets = sdt->get_metadata_offsets();
             const size_t *offsets = sdt->get_data_offsets(metadata);
-            int field_count = (int)sdt->get_field_count();
+            size_t field_count = sdt->get_field_count();
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {

@@ -442,7 +442,13 @@ def groupby(data, by, groups = None):
     if groups is None:
         SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v)))
     else:
-        SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
+        if type(groups) in [list, w_ndobject]:
+            # If groups is a list or ndobject, assume it's a list
+            # of groups for a categorical dtype
+            SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v),
+                            dnd_make_categorical_dtype(GET(w_ndobject(groups).v))))
+        else:
+            SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
 def arange(start, stop=None, step=None):

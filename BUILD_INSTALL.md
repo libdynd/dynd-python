@@ -12,6 +12,7 @@ Before configuring the build with CMake, clone the dynd project
 into the libraries subdirectory of dynd-python with the following
 commands:
 
+    (dynd-python)$ mkdir libraries
     (dynd-python)$ cd libraries
     (dynd-python/libraries) $ git clone https://github.com/ContinuumIO/dynd
 

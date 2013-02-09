@@ -227,7 +227,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
                 strided_array_dtype_metadata *md = reinterpret_cast<strided_array_dtype_metadata *>(metadata);
                 metadata += sizeof(strided_array_dtype_metadata);
                 md->size = pyobject_as_index(adescr->shape);
-                md->stride = PyArray_ITEMSIZE(adescr->base);
+                md->stride = adescr->base->elsize;
                 el = static_cast<const strided_array_dtype *>(dt.extended())->get_element_dtype();
             }
             // Fill the metadata for the array element, if necessary

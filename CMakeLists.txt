@@ -97,8 +97,8 @@ set(pydynd_CPP_SRC
     src/ndobject_functions.cpp
     src/ndobject_from_py.cpp
     src/ndobject_as_pep3118.cpp
-    src/ndobject_as_py.cpp
     src/ndobject_as_numpy.cpp
+    src/ndobject_as_py.cpp
     src/numpy_interop.cpp
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp

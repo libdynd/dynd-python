@@ -82,6 +82,7 @@ set(pydynd_CPP_SRC
     include/ndobject_functions.hpp
     include/ndobject_from_py.hpp
     include/ndobject_as_pep3118.hpp
+    include/ndobject_as_numpy.hpp
     include/ndobject_as_py.hpp
     include/numpy_interop.hpp
     include/elwise_gfunc_functions.hpp
@@ -97,6 +98,7 @@ set(pydynd_CPP_SRC
     src/ndobject_from_py.cpp
     src/ndobject_as_pep3118.cpp
     src/ndobject_as_py.cpp
+    src/ndobject_as_numpy.cpp
     src/numpy_interop.cpp
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp

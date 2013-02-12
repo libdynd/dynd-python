@@ -314,10 +314,6 @@ cdef class w_ndobject:
         cdef w_ndobject n = w_ndobject(obj)
         GET(self.v).val_assign(GET(n.v), assign_error_default)
 
-    def as_py(self):
-        """Evaluates the values, and converts them into native Python types."""
-        return ndobject_as_py(GET(self.v))
-
     def cast_scalars(self, dtype, errmode=None):
         """Converts the ndobject's scalars to the requested dtype, producing a conversion dtype."""
         cdef w_ndobject result = w_ndobject()
@@ -417,6 +413,15 @@ cdef class w_ndobject:
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_divide(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
+
+def as_py(w_ndobject rhs):
+    """Evaluates the dynd ndobject, and converts it into native Python types."""
+    return ndobject_as_py(GET(rhs.v))
+
+def as_numpy(w_ndobject rhs, allow_copy=False):
+    """Evaluates the dynd ndobject, and converts it into a NumPy object."""
+    # TODO: Could also convert dynd dtypes into numpy dtypes
+    return ndobject_as_numpy(rhs, bool(allow_copy))
 
 def empty(shape, dtype=None):
     """Creates an uninitialized array of the specified (shape, dtype) or just (dtype)."""

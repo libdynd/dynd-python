@@ -36,11 +36,11 @@ class pyobject_ownref {
     pyobject_ownref(const pyobject_ownref&);
     pyobject_ownref& operator=(const pyobject_ownref&);
 public:
-    pyobject_ownref()
+    inline pyobject_ownref()
         : m_obj(NULL)
     {
     }
-    explicit pyobject_ownref(PyObject* obj)
+    inline explicit pyobject_ownref(PyObject* obj)
         : m_obj(obj)
     {
         if (obj == NULL) {
@@ -48,17 +48,18 @@ public:
         }
     }
 
-    ~pyobject_ownref()
+    inline ~pyobject_ownref()
     {
         Py_XDECREF(m_obj);
     }
 
-    PyObject *get()
-    {
-        return m_obj;
-    }
-
-    void reset(PyObject* obj)
+    /**
+     * Resets the reference owned by this object to the one provided.
+     * This steals a reference to the input parameter, 'obj'.
+     *
+     * \param obj  The reference to replace the current one in this object.
+     */
+    inline void reset(PyObject* obj)
     {
         if (obj == NULL) {
             throw std::runtime_error("propagating a Python exception...");
@@ -67,8 +68,23 @@ public:
         m_obj = obj;
     }
 
-    // Returns a borrowed reference
-    operator PyObject *()
+    /**
+     * Clears the owned reference to NULL.
+     */
+    inline void clear()
+    {
+        Py_XDECREF(m_obj);
+        m_obj = NULL;
+    }
+
+    /** Returns a borrowed reference. */
+    inline PyObject *get()
+    {
+        return m_obj;
+    }
+
+    /** Returns a borrowed reference. */
+    inline operator PyObject *()
     {
         return m_obj;
     }
@@ -78,7 +94,7 @@ public:
      * use it like "return obj.release()". After the
      * call, this object contains NULL.
      */
-    PyObject *release()
+    inline PyObject *release()
     {
         PyObject *result = m_obj;
         m_obj = NULL;

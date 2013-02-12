@@ -87,6 +87,7 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     ndobject ndobject_cast_scalars(ndobject&, dtype& , object) except +translate_exception
     ndobject ndobject_cast_udtype(ndobject&, dtype& , object) except +translate_exception
     object ndobject_as_py(ndobject&) except +translate_exception
+    object ndobject_as_numpy(object, bint) except +translate_exception
     ndobject ndobject_from_py(object) except +translate_exception
 
     int ndobject_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1

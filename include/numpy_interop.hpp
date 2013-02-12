@@ -44,6 +44,10 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
 
+#ifndef NPY_DATETIME_NAT
+#define NPY_DATETIME_NAT NPY_MIN_INT64
+#endif
+
 namespace pydynd {
 
 inline int import_numpy()

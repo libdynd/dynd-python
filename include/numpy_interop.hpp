@@ -47,6 +47,12 @@
 #ifndef NPY_DATETIME_NAT
 #define NPY_DATETIME_NAT NPY_MIN_INT64
 #endif
+#ifndef NPY_ARRAY_WRITEABLE
+#define NPY_ARRAY_WRITEABLE NPY_WRITEABLE
+#endif
+#ifndef NPY_ARRAY_ALIGNED
+#define NPY_ARRAY_ALIGNED NPY_ALIGNED
+#endif
 
 namespace pydynd {
 

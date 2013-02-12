@@ -1,6 +1,6 @@
 # Expose types and functions directly from the Cython/C++ module
 from dynd._pydynd import w_dtype as dtype, w_ndobject as ndobject, \
-        as_py, empty, empty_like, arange, \
+        as_py, as_numpy, empty, empty_like, arange, \
         linspace, groupby, parse_json, format_json
 
 # All the builtin elementwise gfuncs

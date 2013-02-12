@@ -3,7 +3,10 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#include <Python.h>
+#include "numpy_interop.hpp"
+
+#if DYND_NUMPY_INTEROP
+
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
 
@@ -635,3 +638,5 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
 #endif
     return result.release();
 }
+
+#endif // NUMPY_INTEROP

@@ -196,10 +196,17 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(
                 ndt.make_string_dtype('ascii'),
                 a.dtype)
-        self.assertEqual(np.asarray(a).dtype, np.dtype(object))
+        # Some versions of NumPy produce an error instead,
+        # so this assertion is removed
+        #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
-        a = nd.ndobject(u"abcdef")
-        self.assertEqual(np.asarray(a).dtype, np.dtype(object))
+        a = nd.ndobject(u"abcdef \uc548\ub155")
+        self.assert_(a.dtype in [
+                ndt.make_string_dtype('ucs_2'),
+                ndt.make_string_dtype('utf_32')])
+        # Some versions of NumPy produce an error instead,
+        # so this assertion is removed
+        #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
     def test_readwrite_access_flags(self):
         """Tests that read/write access control is preserved to/from numpy"""

@@ -39,8 +39,9 @@ class TestDate(unittest.TestCase):
         a = nd.ndobject(date(1955,3,13))
         s = a.to_struct().eval()
         self.assertEqual(s.dtype,
-                        ndt.make_fixedstruct_dtype([ndt.int32, ndt.int8, ndt.int8],
-                                        ['year', 'month', 'day']))
+                        ndt.make_fixedstruct_dtype(
+                            [ndt.int32, ndt.int16, ndt.int16],
+                            ['year', 'month', 'day']))
         self.assertEqual(nd.as_py(s.year), 1955)
         self.assertEqual(nd.as_py(s.month), 3)
         self.assertEqual(nd.as_py(s.day), 13)

@@ -176,7 +176,7 @@ class TestNumpyViewInterop(unittest.TestCase):
                     ndt.make_fixedstring_dtype('ascii', 7)),
                 b_u.udtype)
         # Evaluate to its value array
-        b_u = b_u.vals()
+        b_u = b_u.eval()
         self.assertEqual(
                 ndt.make_fixedstring_dtype('utf_32', 7),
                 b_u.udtype)
@@ -208,7 +208,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Writeable
         b = nd.ndobject(a)
         b[0].val_assign(2.0)
-        self.assertEqual(b[0].as_py(), 2.0)
+        self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
 
         # Not writeable
@@ -216,7 +216,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         b = nd.ndobject(a)
         self.assertRaises(RuntimeError, b[0].val_assign, 3.0)
         # should still be 2.0
-        self.assertEqual(b[0].as_py(), 2.0)
+        self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
 
 class TestNumpyScalarInterop(unittest.TestCase):
@@ -237,24 +237,24 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.ndobject(np.complex128(100j)).dtype, ndt.cfloat64)
 
     def test_numpy_scalar_conversion_values(self):
-        self.assertEqual(nd.ndobject(np.bool_(True)).as_py(), True)
-        self.assertEqual(nd.ndobject(np.bool_(False)).as_py(), False)
-        self.assertEqual(nd.ndobject(np.int8(100)).as_py(), 100)
-        self.assertEqual(nd.ndobject(np.int8(-100)).as_py(), -100)
-        self.assertEqual(nd.ndobject(np.int16(20000)).as_py(), 20000)
-        self.assertEqual(nd.ndobject(np.int16(-20000)).as_py(), -20000)
-        self.assertEqual(nd.ndobject(np.int32(1000000000)).as_py(), 1000000000)
-        self.assertEqual(nd.ndobject(np.int64(-1000000000000)).as_py(), -1000000000000)
-        self.assertEqual(nd.ndobject(np.int64(1000000000000)).as_py(), 1000000000000)
-        self.assertEqual(nd.ndobject(np.int32(-1000000000)).as_py(), -1000000000)
-        self.assertEqual(nd.ndobject(np.uint8(200)).as_py(), 200)
-        self.assertEqual(nd.ndobject(np.uint16(50000)).as_py(), 50000)
-        self.assertEqual(nd.ndobject(np.uint32(3000000000)).as_py(), 3000000000)
-        self.assertEqual(nd.ndobject(np.uint64(10000000000000000000)).as_py(), 10000000000000000000)
-        self.assertEqual(nd.ndobject(np.float32(2.5)).as_py(), 2.5)
-        self.assertEqual(nd.ndobject(np.float64(2.5)).as_py(), 2.5)
-        self.assertEqual(nd.ndobject(np.complex64(2.5-1j)).as_py(), 2.5-1j)
-        self.assertEqual(nd.ndobject(np.complex128(2.5-1j)).as_py(), 2.5-1j)
+        self.assertEqual(nd.as_py(nd.ndobject(np.bool_(True))), True)
+        self.assertEqual(nd.as_py(nd.ndobject(np.bool_(False))), False)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int8(100))), 100)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int8(-100))), -100)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int16(20000))), 20000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int16(-20000))), -20000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int32(1000000000))), 1000000000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int64(-1000000000000))), -1000000000000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int64(1000000000000))), 1000000000000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.int32(-1000000000))), -1000000000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.uint8(200))), 200)
+        self.assertEqual(nd.as_py(nd.ndobject(np.uint16(50000))), 50000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.uint32(3000000000))), 3000000000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.uint64(10000000000000000000))), 10000000000000000000)
+        self.assertEqual(nd.as_py(nd.ndobject(np.float32(2.5))), 2.5)
+        self.assertEqual(nd.as_py(nd.ndobject(np.float64(2.5))), 2.5)
+        self.assertEqual(nd.as_py(nd.ndobject(np.complex64(2.5-1j))), 2.5-1j)
+        self.assertEqual(nd.as_py(nd.ndobject(np.complex128(2.5-1j))), 2.5-1j)
 
 if __name__ == '__main__':
     unittest.main()

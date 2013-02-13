@@ -401,24 +401,66 @@ def make_string_dtype(encoding=None):
         The encoding used for storing unicode code points. Supported
         values are 'ascii', 'utf_8', 'utf_16', 'utf_32', 'ucs_2'.
         Default: 'utf_8'.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_string_dtype()
+    ndt.string
+    >>> ndt.make_string_dtype('utf_16')
+    nd.dtype('string<utf_16>')
     """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_string_dtype(encoding))
     return result
 
 def make_pointer_dtype(target_dtype):
-    """Constructs a dtype which is a pointer to the target dtype."""
+    """
+    make_pointer_dtype(target_dtype)
+
+    Constructs a dynd type which is a pointer to the target type.
+
+    Parameters
+    ----------
+    target_dtype : dynd type
+        The type that the pointer points to. This is similar to
+        the '*' in C/C++ type declarations.
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
     return result
 
-def make_strided_array_dtype(element_dtype, ndim=None):
-    """Constructs a strided array dtype"""
+def make_strided_array_dtype(element_dtype, undim=None):
+    """
+    make_strided_array_dtype(element_dtype, undim=1)
+
+    Constructs an array dynd type with one or more strided
+    dimensions. A single strided_array dynd type corresponds
+    to one dimension, so when undim > 1, multipled strided_array
+    dimensions are created.
+
+    Parameters
+    ----------
+    element_dtype : dynd type
+        The type of one element in the strided array.
+    undim : int
+        The number of uniform strided_array dimensions to create.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_strided_array_dtype(ndt.int32)
+    nd.dtype('strided_array<int32>')
+    >>> ndt.make_strided_array_dtype(ndt.int32, 3)
+    nd.dtype('strided_array<strided_array<strided_array<int32>>>')
+    """
     cdef w_dtype result = w_dtype()
-    if (ndim is None):
+    if (undim is None):
         SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v)))
     else:
-        SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v), int(ndim)))
+        SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v), int(undim)))
     return result
 
 def make_fixedarray_dtype(shape, element_dtype, axis_perm=None):
@@ -440,35 +482,132 @@ def make_fixedarray_dtype(shape, element_dtype, axis_perm=None):
         value increases with the size of the strides. [N-1, ..., 0]
         gives C-order, and [0, ..., N-1] gives F-order.
 
-    Returns
-    -------
-    result : dynd type
-        A fixed array dynd type.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_fixedarray_dtype(5, ndt.int32)
+    nd.dtype('fixedarray<5, int32>')
+    >>> ndt.make_fixedarray_dtype((3,5), ndt.int32)
+    nd.dtype('fixedarray<3, fixedarray<5, int32>>')
+    >>> ndt.make_fixedarray_dtype((3,5), ndt.int32, axis_perm=(0,1))
+    nd.dtype('fixedarray<3, stride=4, fixedarray<5, stride=12, int32>>')
     """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_fixedarray_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
     return result
 
-def make_struct_dtype(field_types, field_names):
-    """Constructs a struct dtype"""
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_struct_dtype(field_types, field_names))
-    return result
-
 def make_fixedstruct_dtype(field_types, field_names):
-    """Constructs a struct dtype"""
+    """
+    make_fixedstruct_dtype(field_types, field_names)
+
+    Constructs a fixed_struct dynd type, which has fields with
+    a fixed layout.
+    
+    The fields are laid out in memory in the order they
+    are specified, each field aligned as required
+    by its type, and the total data size padded so that adjacent
+    instances of the type are properly aligned.
+
+    Parameters
+    ----------
+    field_types : list of dynd types
+        A list of types, one for each field.
+    field_names : list of strings
+        A list of names, one for each field, corresponding to 'field_types'.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_fixedstruct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
+    nd.dtype('fixedstruct<int32 x, float64 y>')
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_fixedstruct_dtype(field_types, field_names))
     return result
 
+def make_struct_dtype(field_types, field_names):
+    """
+    make_struct_dtype(field_types, field_names)
+
+    Constructs a struct dynd type, which has fields with a flexible
+    per-ndobject layout.
+    
+    If a subset of fields from a fixed_struct are taken,
+    the result is a struct, with the layout specified
+    in the ndobject's metadata.
+
+    Parameters
+    ----------
+    field_types : list of dynd types
+        A list of types, one for each field.
+    field_names : list of strings
+        A list of names, one for each field, corresponding to 'field_types'.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_struct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
+    nd.dtype('struct<int32 x, float64 y>')
+    """
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dnd_make_struct_dtype(field_types, field_names))
+    return result
+
 def make_categorical_dtype(values):
-    """Constructs a categorical dtype with the specified values as its categories."""
+    """
+    make_categorical_dtype(values)
+
+    Constructs a categorical dynd type with the
+    specified values as its categories.
+
+    Instances of the resulting type are integers, consisting
+    of indices into this values array. The size of the values
+    array controls what kind of integers are used, if there
+    are 256 or fewer categories, a uint8 is used, if 65536 or
+    fewer, a uint16 is used, and otherwise a uint32 is used.
+
+    Parameters
+    ----------
+    values : one-dimensional ndobject
+        This is an array of the values that become the categories
+        of the resulting type. The values must be unique.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_categorical_dtype(['sunny', 'rainy', 'cloudy', 'stormy'])
+    nd.dtype('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_categorical_dtype(GET(w_ndobject(values).v)))
     return result
 
 def factor_categorical_dtype(values):
-    """Constructs a categorical dtype by factoring and sorting the unique values from the provided array."""
+    """
+    factor_categorical_dtype(values)
+
+    Constructs a categorical dynd type with the
+    unique sorted subset of the values as its
+    categories.
+
+    Parameters
+    ----------
+    values : one-dimensional ndobject
+        This is an array of the values that are sorted, with
+        duplicates removed, to produce the categories of
+        the resulting dynd type.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.factor_categorical_dtype(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
+    nd.dtype('categorical<string<ascii>, ["F", "M"]>')
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_factor_categorical_dtype(GET(w_ndobject(values).v)))
     return result

@@ -42,18 +42,7 @@ inline std::string dtype_str(const dynd::dtype& d)
     return ss.str();
 }
 
-inline std::string dtype_repr(const dynd::dtype& d)
-{
-    std::stringstream ss;
-    if (d.is_builtin() &&
-                    d.get_type_id() != dynd::complex_float32_type_id &&
-                    d.get_type_id() != dynd::complex_float64_type_id) {
-        ss << "ndt." << d;
-    } else {
-        ss << "nd.dtype('" << d << "')";
-    }
-    return ss.str();
-}
+std::string dtype_repr(const dynd::dtype& d);
 
 /**
  * Returns the kind of the dtype, as a Python string.

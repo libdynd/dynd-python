@@ -43,6 +43,50 @@ void pydynd::init_w_dtype_typeobject(PyObject *type)
     pydynd::WDType_Type = (PyTypeObject *)type;
 }
 
+std::string pydynd::dtype_repr(const dynd::dtype& d)
+{
+    std::stringstream ss;
+    if (d.is_builtin() &&
+                    d.get_type_id() != dynd::complex_float32_type_id &&
+                    d.get_type_id() != dynd::complex_float64_type_id) {
+        ss << "ndt." << d;
+    } else {
+        switch (d.get_type_id()) {
+            case complex_float32_type_id:
+                ss << "ndt.cfloat32";
+                break;
+            case complex_float64_type_id:
+                ss << "ndt.cfloat64";
+                break;
+            case date_type_id:
+                ss << "ndt.date";
+                break;
+            case json_type_id:
+                ss << "ndt.json";
+                break;
+            case bytes_type_id:
+                if (d.get_alignment() == 1) {
+                    ss << "ndt.bytes";
+                } else {
+                    ss << "nd.dtype('" << d << "')";
+                }
+                break;
+            case string_type_id:
+                if (static_cast<const string_dtype *>(
+                            d.extended())->get_encoding() == string_encoding_utf_8) {
+                    ss << "ndt.string";
+                } else {
+                    ss << "nd.dtype('" << d << "')";
+                }
+                break;
+            default:
+                ss << "nd.dtype('" << d << "')";
+                break;
+        }
+    }
+    return ss.str();
+}
+
 PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
 {
     stringstream ss;

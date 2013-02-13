@@ -44,9 +44,9 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.float64, nd.dtype(np.dtype(np.float64)))
         self.assertEqual(ndt.cfloat32, nd.dtype(np.dtype(np.complex64)))
         self.assertEqual(ndt.cfloat64, nd.dtype(np.dtype(np.complex128)))
-        self.assertEqual(ndt.make_fixedstring_dtype('ascii', 10),
+        self.assertEqual(ndt.make_fixedstring_dtype(10, 'ascii'),
                     nd.dtype(np.dtype('S10')))
-        self.assertEqual(ndt.make_fixedstring_dtype('utf_32', 10),
+        self.assertEqual(ndt.make_fixedstring_dtype(10, 'utf_32'),
                     nd.dtype(np.dtype('U10')))
 
         # non-native byte order
@@ -157,7 +157,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
         b = nd.ndobject(a)
-        self.assertEqual(ndt.make_fixedstring_dtype('ascii', 7), b.udtype)
+        self.assertEqual(ndt.make_fixedstring_dtype(7, 'ascii'), b.udtype)
         self.assertEqual(b.udtype, nd.dtype(a.dtype))
 
         # ASCII dynd -> Numpy
@@ -169,16 +169,16 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a, c)
 
         # ASCII dynd -> UTF32 dynd
-        b_u = b.cast_scalars(ndt.make_fixedstring_dtype('utf_32', 7))
+        b_u = b.cast_scalars(ndt.make_fixedstring_dtype(7, 'utf_32'))
         self.assertEqual(
                 ndt.make_convert_dtype(
-                    ndt.make_fixedstring_dtype('utf_32', 7),
-                    ndt.make_fixedstring_dtype('ascii', 7)),
+                    ndt.make_fixedstring_dtype(7, 'utf_32'),
+                    ndt.make_fixedstring_dtype(7, 'ascii')),
                 b_u.udtype)
         # Evaluate to its value array
         b_u = b_u.eval()
         self.assertEqual(
-                ndt.make_fixedstring_dtype('utf_32', 7),
+                ndt.make_fixedstring_dtype(7, 'utf_32'),
                 b_u.udtype)
 
         # UTF32 dynd -> Numpy

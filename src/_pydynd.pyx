@@ -116,6 +116,8 @@ cdef class w_dtype:
 
     property data_size:
         """
+        a.data_size
+
         The size, in bytes, of the data for an instance
         of this dynd type.
         """
@@ -124,6 +126,8 @@ cdef class w_dtype:
 
     property alignment:
         """
+        a.alignment
+
         The alignment, in bytes, of the data for an
         instance of this dynd type.
         
@@ -136,6 +140,8 @@ cdef class w_dtype:
 
     property kind:
         """
+        a.kind
+
         The kind of this dynd type, as a string.
 
         Example kinds are 'bool', 'int', 'uint',
@@ -147,6 +153,8 @@ cdef class w_dtype:
 
     property type_id:
         """
+        a.type_id
+
         The type id of this dynd type, as a string.
 
         Example type ids are 'bool', 'int8', 'uint32',
@@ -157,6 +165,8 @@ cdef class w_dtype:
 
     property undim:
         """
+        a.undim
+
         The number of uniform dimensions in this dynd type.
 
         This property is roughly equivalent to NumPy
@@ -169,6 +179,8 @@ cdef class w_dtype:
 
     property udtype:
         """
+        a.udtype
+
         The dynd type of the element after the 'undim'
         uniform dimensions are indexed away.
 
@@ -182,6 +194,8 @@ cdef class w_dtype:
 
     property value_dtype:
         """
+        a.value_dtype
+
         If this is an expression dynd type, returns the
         dynd type that values after evaluation have. Otherwise,
         returns this dynd type unchanged.
@@ -193,6 +207,8 @@ cdef class w_dtype:
 
     property operand_dtype:
         """
+        a.operand_dtype
+
         If this is an expression dynd type, returns the
         dynd type that inputs to its expression evaluation
         have. Otherwise, returns this dynd type unchanged.
@@ -204,6 +220,8 @@ cdef class w_dtype:
 
     property canonical_dtype:
         """
+        a.canonical_dtype
+
         Returns a version of this dtype that is canonical,
         where any intermediate pointers are removed and expressions
         are stripped away.
@@ -620,6 +638,42 @@ def factor_categorical_dtype(values):
 #cdef public api class w_ndobject [object WNDArrayObject, type WNDArrayObject_Type]:
 
 cdef class w_ndobject:
+    """
+    ndobject(obj=None, dtype=None)
+
+    Create a dynd ndobject out of the provided object.
+
+    The ndobject is the dynamically typed multi-dimensional
+    object provided by the dynd library. It is similar to
+    NumPy's ndarray, but has its dimensional structure encoded
+    in the dtype, along with the element type.
+
+    When given a NumPy array, the resulting ndobject is a view
+    into the NumPy array data. When given lists of Python object,
+    an attempt is made to deduce an appropriate dynd type for
+    the ndobject, and a conversion is made if possible, or an
+    exception is raised.
+
+    Parameters
+    ----------
+    obj : multi-dimensional object, optional
+        Any object which dynd knows how to interpret as an ndobject.
+    dtype: dynd type
+        If provided, the object gets reinterpreted according to
+        this type.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> nd.ndobject([1, 2, 3, 4, 5])
+    nd.ndobject([1, 2, 3, 4, 5], strided_array<int32>)
+    >>> nd.ndobject([[1, 2], [3, 4, 5.0]])
+    nd.ndobject([[1, 2], [3, 4, 5]], strided_array<var_array<float64>>)
+    >>> from datetime import date
+    >>> nd.ndobject([date(2000,2,14), date(2012,1,1)])
+    nd.ndobject([2000-02-14, 2012-01-01], strided_array<date>)
+    """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the ndobject, and
     # SET(self.v, <ndobject value>), which sets the embeded
@@ -650,79 +704,249 @@ cdef class w_ndobject:
         return get_ndobject_dynamic_property(GET(self.v), name)
 
     def debug_repr(self):
-        """Returns a raw representation of the ndobject data."""
+        """
+        a.debug_repr()
+
+        Returns a raw representation of the ndobject data.
+
+        This can be useful for diagnosing bugs in the ndobject
+        or dtype/metadata/data abstraction ndobjects are based on.
+        """
         return str(ndobject_debug_print(GET(self.v)).c_str())
 
     def eval(self):
-        """Returns a version of the ndobject with plain values, all expressions evaluated."""
+        """
+        a.eval()
+        
+        Returns a version of the ndobject with plain values,
+        all expressions evaluated. This returns the original
+        array back if it has no expression type.
+
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+
+        >>> a = nd.ndobject([1.5, 2, 3])
+        >>> a
+        nd.ndobject([1.5, 2, 3], strided_array<float64>)
+        >>> b = a.cast_scalars(ndt.int16, errmode='none')
+        >>> b
+        nd.ndobject([1, 2, 3], strided_array<convert<to=int16, from=float64, errmode=none>>)
+        >>> b.eval()
+        nd.ndobject([1, 2, 3], strided_array<int16>)
+        """
         cdef w_ndobject result = w_ndobject()
-        SET(result.v, ndobject_vals(GET(self.v)))
+        SET(result.v, ndobject_eval(GET(self.v)))
         return result
 
     def eval_immutable(self):
+        """
+        a.eval_immutable()
+
+        Evaluates into an immutable ndobject. If the ndobject is
+        already immutable and not an expression type, returns it
+        as is.
+        """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).eval_immutable())
         return result
 
-    def eval_copy(self, access_flags = None):
+    def eval_copy(self, access=None):
+        """
+        a.eval_copy(access='readwrite')
+
+        Evaluates into a new ndobject, guaranteeing a copy is made.
+
+        Parameters
+        ----------
+        access : 'readwrite' or 'immutable'
+            Specifies the access control of the resulting copy.
+        """
         cdef w_ndobject result = w_ndobject()
-        SET(result.v, ndobject_eval_copy(GET(self.v), access_flags))
+        SET(result.v, ndobject_eval_copy(GET(self.v), access))
         return result
 
     def storage(self):
-        """Returns a version of the ndobject with its storage dtype, all expressions discarded."""
+        """
+        a.storage()
+
+        Returns a version of the ndobject with its storage dtype,
+        all expressions discarded. For data types that are plain
+        old data, views them as a bytes dtype.
+
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+
+        >>> a = nd.ndobject([1, 2, 3], dtype=ndt.int16)
+        >>> a
+        nd.ndobject([1, 2, 3], strided_array<int16>)
+        >>> a.storage()
+        nd.ndobject([0x0100, 0x0200, 0x0300], strided_array<fixedbytes<2,2>>)
+        """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).storage())
         return result
 
     def val_assign(self, obj):
-        """Assigns to the ndobject by value instead of by reference."""
+        """
+        a.val_assign(obj)
+        
+        Assigns to the ndobject by value instead of by reference.
+        """
         cdef w_ndobject n = w_ndobject(obj)
         GET(self.v).val_assign(GET(n.v), assign_error_default)
 
     def cast_scalars(self, dtype, errmode=None):
-        """Converts the ndobject's scalars to the requested dtype, producing a conversion dtype."""
+        """
+        a.cast_scalars(dtype, errmode='fractional')
+        
+        Converts the ndobject's scalars to the requested dtype,
+        producing a conversion dtype.
+
+        Parameters
+        ----------
+        dtype : dynd type
+            All the scalars are cast into this type.
+        errmode : 'inexact', 'fractional', 'overflow', 'none'
+            How conversion errors are treated. For 'inexact', the value
+            must be preserved precisely. For 'fractional', conversion errors
+            due to precision loss are accepted, but not for loss of the
+            fraction part. For 'overflow', only overflow errors are raised.
+            For 'none', no conversion errors are raised
+
+        """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_cast_scalars(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
     def cast_udtype(self, dtype, errmode=None):
-        """Converts the ndobject's uniform dtype (after all the uniform dimensions) to the requested dtype."""
+        """
+        a.cast_scalars(dtype, errmode='fractional')
+        
+        Converts the ndobject's uniform dtype to the requested dtype,
+        producing a conversion dtype. The uniform dtype is the dtype
+        after the a.undim uniform dimensions.
+
+        Parameters
+        ----------
+        dtype : dynd type
+            The uniform dtype is cast into this type.
+        errmode : 'inexact', 'fractional', 'overflow', 'none'
+            How conversion errors are treated. For 'inexact', the value
+            must be preserved precisely. For 'fractional', conversion errors
+            due to precision loss are accepted, but not for loss of the
+            fraction part. For 'overflow', only overflow errors are raised.
+            For 'none', no conversion errors are raised
+
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+
+        >>> from datetime import date
+        >>> a = nd.ndobject([date(1929,3,13), date(1979,3,22)]).cast_udtype('{month: int32; year: int32; day: float32}')
+        >>> a
+        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_array<convert<to=fixedstruct<int32 month, int32 year, float32 day>, from=date>>)
+        >>> a.eval()
+        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_array<fixedstruct<int32 month, int32 year, float32 day>>)
+        """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_cast_udtype(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
     def view_scalars(self, dtype):
-        """Views the data of the ndobject as the requested dtype, where it makes sense."""
+        """
+        a.view_scalars(dtype)
+        
+        Views the data of the ndobject as the requested dtype,
+        where it makes sense.
+
+        If the ndobject is a one-dimensional contiguous
+        array of plain old data, the new dtype may have a different
+        element size than original one.
+
+        When the ndobject has an expression type, the
+        view is created by layering another view dtype
+        onto the ndobject's existing expression.
+
+        Parameters
+        ----------
+        dtype : dynd type
+            The scalars are viewed as this dtype.
+        """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).view_scalars(GET(w_dtype(dtype).v)))
         return result
 
     def flag_as_immutable(self):
-        """When there's still only one reference to an ndobject, can be used to flag it as immutable."""
+        """
+        a.flag_as_immutable()
+        
+        When there's still only one reference to an
+        ndobject, can be used to flag it as immutable.
+        """
         GET(self.v).flag_as_immutable()
 
     property dtype:
+        """
+        a.dtype
+
+        The dynd type of the ndobject. This is the full
+        data type, including its multi-dimensional structure.
+
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+
+        >>> nd.ndobject([1,2,3,4]).dtype
+        nd.dtype('strided_array<int32>')
+        >>> nd.ndobject([[1,2],[3.0]]).dtype
+        nd.dtype('strided_array<var_array<float64>>')
+        """
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).get_dtype())
             return result
 
     property dshape:
+        """
+        a.dshape
+
+        The Blaze datashape of the ndobject, as a string.
+        """
         def __get__(self):
             return str(dynd_format_datashape(GET(self.v)))
 
     property udtype:
+        """
+        a.udtype
+
+        The uniform dynd type of the ndobject. This is
+        the type after removing all the a.undim uniform
+        dimensions from a.dtype.
+        """
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).get_dtype().get_udtype())
             return result
 
     property undim:
+        """
+        a.undim
+
+        The number of uniform dimensions in the ndobject.
+        This roughly corresponds to the number of dimensions
+        in a NumPy array.
+        """
         def __get__(self):
             return GET(self.v).get_dtype().get_undim()
 
     property is_scalar:
+        """
+        a.is_scalar
+
+        True if the ndobject is a scalar.
+        """
         def __get__(self):
             return GET(self.v).is_scalar()
 
@@ -780,17 +1004,91 @@ cdef class w_ndobject:
         SET(result.v, ndobject_divide(GET(w_ndobject(lhs).v), GET(w_ndobject(rhs).v)))
         return result
 
-def as_py(w_ndobject rhs):
-    """Evaluates the dynd ndobject, and converts it into native Python types."""
-    return ndobject_as_py(GET(rhs.v))
+def as_py(w_ndobject n):
+    """
+    nd.as_py(n)
 
-def as_numpy(w_ndobject rhs, allow_copy=False):
-    """Evaluates the dynd ndobject, and converts it into a NumPy object."""
+    Evaluates the dynd ndobject, converting it into native Python types.
+
+    Uniform dimensions convert into Python lists, struct types convert
+    into Python dicts, scalars convert into the most appropriate Python
+    scalar for their type.
+
+    Parameters
+    ----------
+    n : dynd ndobject
+        The ndobject to convert into native Python types.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> a = nd.ndobject([1, 2, 3, 4.0])
+    >>> a
+    nd.ndobject([1, 2, 3, 4], strided_array<float64>)
+    >>> nd.as_py(a)
+    [1.0, 2.0, 3.0, 4.0]
+    """
+    return ndobject_as_py(GET(n.v))
+
+def as_numpy(w_ndobject n, allow_copy=False):
+    """
+    nd.as_numpy(n, allow_copy=False)
+    
+    Evaluates the dynd ndobject, and converts it into a NumPy object.
+    
+    Parameters
+    ----------
+    n : dynd ndobject
+        The ndobject to convert into native Python types.
+    allow_copy : bool, optional
+        If true, allows a copy to be made when the ndobject types
+        can't be directly viewed as a NumPy array, but with a
+        data-preserving copy they can be.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> import numpy as np
+    >>> a = nd.ndobject([[1, 2, 3], [4, 5, 6]])
+    >>> a
+    nd.ndobject([[1, 2, 3], [4, 5, 6]], strided_array<strided_array<int32>>)
+    >>> nd.as_numpy(a)
+    array([[1, 2, 3],
+           [4, 5, 6]])
+    """
     # TODO: Could also convert dynd dtypes into numpy dtypes
-    return ndobject_as_numpy(rhs, bool(allow_copy))
+    return ndobject_as_numpy(n, bool(allow_copy))
 
 def empty(shape, dtype=None):
-    """Creates an uninitialized array of the specified (shape, dtype) or just (dtype)."""
+    """
+    nd.empty(dtype)
+    nd.empty(shape, dtype)
+    
+    Creates an uninitialized ndobject of the specified
+    (shape, dtype) or just (dtype).
+    
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for the dtype dimensions
+        that don't encode a dimension size themselves, such as
+        strided_array dimensions.
+    dtype : dynd type
+        The data type of the uninitialized array to create. This
+        is the full data type, including the multi-dimensional
+        structure.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> nd.empty('2, 2, int8')
+    nd.ndobject([[0, -24], [0, 4]], fixedarray<2, fixedarray<2, int8>>)
+    >>> nd.empty((2, 2), 'M, N, int16')
+    nd.ndobject([[179, 0], [0, 16816]], strided_array<strided_array<int16>>)
+    """
     cdef w_ndobject result = w_ndobject()
     if dtype is not None:
         SET(result.v, ndobject_empty(shape, GET(w_dtype(dtype).v)))
@@ -799,16 +1097,75 @@ def empty(shape, dtype=None):
         SET(result.v, ndobject_empty(GET(w_dtype(shape).v)))
     return result
 
-def empty_like(w_ndobject rhs, dtype=None):
+def empty_like(w_ndobject prototype, dtype=None):
+    """
+    nd.empty_like(prototype, dtype=None)
+
+    Creates an uninitialized ndobject whose uniform dimensions match
+    the structure of the prototype's uniform dimensions.
+    
+    Parameters
+    ----------
+    prototype : dynd ndobject
+        The ndobject whose structure is to be matched.
+    dtype : dynd type, optional
+        If provided, replaces the prototype's uniform dtype in
+        the result.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> a = nd.ndobject([[1, 2], [3, 4]])
+    >>> a
+    nd.ndobject([[1, 2], [3, 4]], strided_array<strided_array<int32>>)
+    >>> nd.empty_like(a)
+    nd.ndobject([[808529973, 741351468], [0, 0]], strided_array<strided_array<int32>>)
+    >>> nd.empty_like(a, dtype=ndt.float32)
+    nd.ndobject([[1.47949e-041, 0], [0, 0]], strided_array<strided_array<float32>>)
+    """
     cdef w_ndobject result = w_ndobject()
     if dtype is None:
-        SET(result.v, ndobject_empty_like(GET(rhs.v)))
+        SET(result.v, ndobject_empty_like(GET(prototype.v)))
     else:
-        SET(result.v, ndobject_empty_like(GET(rhs.v), GET(w_dtype(dtype).v)))
+        SET(result.v, ndobject_empty_like(GET(prototype.v), GET(w_dtype(dtype).v)))
     return result
 
 def groupby(data, by, groups = None):
-    """Produces an array containing the elements of `data`, grouped according to `by` which has corresponding shape."""
+    """
+    nd.groupby(data, by, groups=None)
+    
+    Produces an array containing the elements of `data`, grouped
+    according to `by` which has corresponding shape.
+    
+    Parameters
+    ----------
+    data : dynd ndobject
+        A one-dimensional array of the data to be copied into
+        the resulting grouped array.
+    by : dynd ndobject
+        A one-dimensional array, of the same size as 'data',
+        with the category values for the grouping.
+    groups : categorical dynd type, optional
+        If provided, the categories of this type are used
+        as the groups for the grouping operation.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'])
+    >>> a.groups
+    nd.ndobject(["F", "M"], strided_array<string<ascii>>)
+    >>> a.eval()
+    nd.ndobject([[2, 5, 6], [1, 3, 4]], fixedarray<2, var_array<int32>>)
+
+    >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
+    >>> a.groups
+    nd.ndobject(["M", "N", "F"], strided_array<string<ascii>>)
+    >>> a.eval()
+    nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixedarray<3, var_array<int32>>)
+    """
     cdef w_ndobject result = w_ndobject()
     if groups is None:
         SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v)))
@@ -823,7 +1180,22 @@ def groupby(data, by, groups = None):
     return result
 
 def arange(start, stop=None, step=None):
-    """Constructs an ndobject representing a stepped range of values."""
+    """
+    nd.arange(stop)
+    nd.arange(start, stop, step=None)
+    
+    Constructs an ndobject representing a stepped range of values.
+    
+    Parameters
+    ----------
+    start : int, optional
+        If provided, this is the first value in the resulting ndobject.
+    stop : int
+        This provides the stopping criteria for the range, and is
+        not included in the resulting ndobject.
+    step : int
+        This is the increment.
+    """
     cdef w_ndobject result = w_ndobject()
     # Move the first argument to 'stop' if stop isn't specified
     if stop is None:
@@ -833,13 +1205,49 @@ def arange(start, stop=None, step=None):
     return result
 
 def linspace(start, stop, count=50):
-    """Constructs a specified count of values interpolating a range."""
+    """
+    nd.linspace(start, stop, count=50)
+    
+    Constructs a specified count of values interpolating a range.
+    
+    Parameters
+    ----------
+    start : floating point scalar
+        The value of the first element of the resulting ndobject.
+    stop : floating point scalar
+        The value of the last element of the resulting ndobject.
+    count : int
+        The number of elements in the resulting ndobject.
+    """
     cdef w_ndobject result = w_ndobject()
     SET(result.v, ndobject_linspace(start, stop, count))
     return result
 
 def parse_json(dtype, json):
-    """Parses an input JSON string as a particular dtype."""
+    """
+    nd.parse_json(dtype, json)
+    
+    Parses an input JSON string as a particular dtype.
+
+    Parameters
+    ----------
+    dtype : dynd type
+        The type to interpret the input JSON as. If the data
+        does not match this type, an error is raised during parsing.
+    json : string or bytes
+        String data the contains the JSON to parse.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> nd.parse_json('VarDim, int8', '[1, 2, 3, 4, 5]')
+    nd.ndobject([1, 2, 3, 4, 5], var_array<int8>)
+    >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
+    nd.ndobject([1, 2, 3, 4], fixedarray<4, int8>)
+    >>> nd.parse_json('2, {x: int8; y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
+    nd.ndobject([[0, 1], [3, 2]], fixedarray<2, fixedstruct<int8 x, int8 y>>)
+    """
     cdef w_ndobject result = w_ndobject()
     if type(dtype) is w_ndobject:
         dynd_parse_json_ndobject(GET((<w_ndobject>dtype).v), GET(w_ndobject(json).v))
@@ -848,7 +1256,26 @@ def parse_json(dtype, json):
         return result
 
 def format_json(w_ndobject n):
-    """Formats an ndobject as JSON."""
+    """
+    nd.format_json(n)
+    
+    Formats an ndobject as JSON.
+
+    Parameters
+    ----------
+    n : dynd ndobject
+        The object to format as JSON.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> a = nd.ndobject([[1, 2, 3], [1, 2]])
+    >>> a
+    nd.ndobject([[1, 2, 3], [1, 2]], strided_array<var_array<int32>>)
+    >>> nd.format_json(a)
+    nd.ndobject("[[1,2,3],[1,2]]", string)
+    """
     cdef w_ndobject result = w_ndobject()
     SET(result.v, dynd_format_json(GET(n.v)))
     return result

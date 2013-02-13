@@ -25,18 +25,19 @@ void pydynd::init_w_ndobject_typeobject(PyObject *type)
     WNDObject_Type = (PyTypeObject *)type;
 }
 
-dynd::ndobject pydynd::ndobject_vals(const dynd::ndobject& n)
+dynd::ndobject pydynd::ndobject_eval(const dynd::ndobject& n)
 {
     return n.vals();
 }
 
-dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n, PyObject* access_flags, const eval::eval_context *ectx)
+dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n,
+                PyObject* access, const eval::eval_context *ectx)
 {
-    if (access_flags == Py_None) {
-        return n.eval_copy(ectx);
-    } else {
-        return n.eval_copy(ectx, pyarg_access_flags(access_flags));
-    }
+    uint32_t access_flags = pyarg_strings_to_int(
+                    access, "access", read_access_flag|write_access_flag,
+                        "readwrite", read_access_flag|write_access_flag,
+                        "immutable", read_access_flag|immutable_access_flag);
+    return n.eval_copy(ectx, access_flags);
 }
 
 dynd::ndobject pydynd::ndobject_empty(const dynd::dtype& d)

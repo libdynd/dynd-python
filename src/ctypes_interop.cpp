@@ -170,7 +170,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             case 'B':
                 return make_dtype<uint8_t>();
             case 'c':
-                return make_fixedstring_dtype(string_encoding_ascii, 1);
+                return make_fixedstring_dtype(1, string_encoding_ascii);
             case 'd':
                 return make_dtype<double>();
             case 'f':
@@ -245,7 +245,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         if (element_dtype.get_data_size() != 0) {
             pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
-            return make_fixedarray_dtype(element_dtype, array_length);
+            return make_fixedarray_dtype(array_length, element_dtype);
         } else {
             return make_strided_array_dtype(element_dtype);
         }

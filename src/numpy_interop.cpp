@@ -91,7 +91,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
             return make_strided_array_dtype(dt, ndim);
         } else {
             // Otherwise make a fixedstruct array
-            return dnd_make_fixedarray_dtype(dt, d->subarray->shape, Py_None);
+            return dnd_make_fixedarray_dtype(d->subarray->shape, dt, Py_None);
         }
     }
 
@@ -142,10 +142,10 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
         dt = make_dtype<complex<double> >();
         break;
     case NPY_STRING:
-        dt = make_fixedstring_dtype(string_encoding_ascii, d->elsize);
+        dt = make_fixedstring_dtype(d->elsize, string_encoding_ascii);
         break;
     case NPY_UNICODE:
-        dt = make_fixedstring_dtype(string_encoding_utf_32, d->elsize / 4);
+        dt = make_fixedstring_dtype(d->elsize / 4, string_encoding_utf_32);
         break;
     case NPY_VOID:
         dt = make_struct_dtype_from_numpy_struct(d, data_alignment);

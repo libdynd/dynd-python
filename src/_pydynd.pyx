@@ -61,6 +61,31 @@ from cython.operator import dereference
 #default_cgcache = default_cgcache_c
 
 cdef class w_dtype:
+    """
+    dtype(obj=None)
+
+    Create a dynd type object.
+
+    A dynd type object describes the dimensional
+    structure and element type of a dynd ndobject.
+
+    Parameters
+    ----------
+    obj : string or other data type, optional
+        A Blaze datashape string or a data type from another
+        system such as NumPy or ctypes.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> nd.dtype('int16')
+    ndt.int16
+    >>> nd.dtype('5, VarDim, float32')
+    nd.dtype('fixedarray<5, var_array<float32>>')
+    >>> nd.dtype('{x: float32; y: float32; z: float32}')
+    nd.dtype('fixedstruct<float32 x, float32 y, float32 z>')
+    """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the dtype, and
     # SET(self.v, <dtype value>), which sets the embeded
@@ -90,49 +115,99 @@ cdef class w_dtype:
         return get_dtype_dynamic_property(GET(self.v), name)
 
     property data_size:
+        """
+        The size, in bytes, of the data for an instance
+        of this dynd type.
+        """
         def __get__(self):
             return GET(self.v).get_data_size()
 
     property alignment:
+        """
+        The alignment, in bytes, of the data for an
+        instance of this dynd type.
+        
+        Data for this dynd type must always be aligned
+        according to this alignment, unaligned data
+        requires an adapter transformation applied.
+        """
         def __get__(self):
             return GET(self.v).get_alignment()
 
     property kind:
+        """
+        The kind of this dynd type, as a string.
+
+        Example kinds are 'bool', 'int', 'uint',
+        'real', 'complex', 'string', 'uniform_array',
+        'expression'.
+        """
         def __get__(self):
             return dtype_get_kind(GET(self.v))
 
     property type_id:
+        """
+        The type id of this dynd type, as a string.
+
+        Example type ids are 'bool', 'int8', 'uint32',
+        'float64', 'complex_float32', 'string', 'byteswap'.
+        """
         def __get__(self):
             return dtype_get_type_id(GET(self.v))
 
     property undim:
-        """The number of uniform dimensions in the dtype."""
+        """
+        The number of uniform dimensions in this dynd type.
+
+        This property is roughly equivalent to NumPy
+        ndarray's 'ndim'. Indexing with [] can in many cases
+        go deeper than just the uniform dimensions, for
+        example structs can be indexed this way.
+        """
         def __get__(self):
             return GET(self.v).get_undim()
 
     property udtype:
-        """The dtype with all the uniform array dimensions stripped from the data shape."""
+        """
+        The dynd type of the element after the 'undim'
+        uniform dimensions are indexed away.
+
+        This property is roughly equivalent to NumPy
+        ndarray's 'dtype'.
+        """
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).get_udtype())
             return result;
 
     property value_dtype:
-        """What this dtype looks like to calculations, printing, etc."""
+        """
+        If this is an expression dynd type, returns the
+        dynd type that values after evaluation have. Otherwise,
+        returns this dynd type unchanged.
+        """
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).value_dtype())
             return result
 
     property operand_dtype:
-        """The next dtype down in the expression dtype chain."""
+        """
+        If this is an expression dynd type, returns the
+        dynd type that inputs to its expression evaluation
+        have. Otherwise, returns this dynd type unchanged.
+        """
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).operand_dtype())
             return result
 
     property canonical_dtype:
-        """The canonical version of the dtype."""
+        """
+        Returns a version of this dtype that is canonical,
+        where any intermediate pointers are removed and expressions
+        are stripped away.
+        """
         def __get__(self):
             cdef w_dtype result = w_dtype()
             SET(result.v, GET(self.v).get_canonical_dtype())
@@ -162,41 +237,171 @@ cdef class w_dtype:
                 return False
         return NotImplemented
 
-def make_byteswap_dtype(native_dtype, operand_dtype=None):
-    """Constructs a byteswap dtype from a builtin one, with data feeding in from an optional operand dtype."""
+def make_byteswap_dtype(builtin_dtype, operand_dtype=None):
+    """
+    make_byteswap_dtype(builtin_dtype, operand_dtype=None)
+
+    Constructs a byteswap dtype from a builtin one, with an
+    optional expression dtype to chain in as the operand.
+
+    Parameters
+    ----------
+    builtin_dtype : dynd type
+        The builtin dynd type (like ndt.int16, ndt.float64) to
+        which to apply the byte swap operation.
+    operand_dtype: dynd type, optional
+        An expression dynd type whose value type is a fixed bytes
+        dynd type with the same data size and alignment as
+        'builtin_dtype'.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_byteswap_dtype(ndt.int16)
+    nd.dtype('byteswap<int16>')
+    """
     cdef w_dtype result = w_dtype()
     if operand_dtype is None:
-        SET(result.v, dnd_make_byteswap_dtype(GET(w_dtype(native_dtype).v)))
+        SET(result.v, dnd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v)))
     else:
-        SET(result.v, dnd_make_byteswap_dtype(GET(w_dtype(native_dtype).v), GET(w_dtype(operand_dtype).v)))
+        SET(result.v, dnd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v), GET(w_dtype(operand_dtype).v)))
     return result
 
-def make_fixedbytes_dtype(int element_size, int alignment):
-    """Constructs a bytes dtype with the specified element size and alignment."""
+def make_fixedbytes_dtype(int data_size, int data_alignment=1):
+    """
+    make_fixedbytes_dtype(data_size, data_alignment=1)
+
+    Constructs a bytes dtype with the specified data size and alignment.
+
+    Parameters
+    ----------
+    data_size : int
+        The number of bytes of one instance of this dynd type.
+    data_alignment : int, optional
+        The required alignment of instances of this dynd type.
+        This value must be a small power of two. Default: 1.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_fixedbytes_dtype(4)
+    nd.dtype('fixedbytes<4,1>')
+    >>> ndt.make_fixedbytes_dtype(6, 2)
+    nd.dtype('fixedbytes<6,2>')
+    """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedbytes_dtype(element_size, alignment))
+    SET(result.v, dnd_make_fixedbytes_dtype(data_size, data_alignment))
     return result
 
 def make_convert_dtype(to_dtype, from_dtype, errmode=None):
-    """Constructs a conversion dtype from the given source and destination dtypes."""
+    """
+    make_convert_dtype(to_dtype, from_dtype, errmode='fractional')
+    
+    Constructs an expression dtype which converts from one
+    dynd type to another, using a specified mode for handling
+    conversion errors.
+
+    Parameters
+    ----------
+    to_type : dynd type
+        The dynd type being converted to. This is the 'value_dtype'
+        of the resulting expression dynd type.
+    from_type : dynd type
+        The dynd type being converted from. This is the 'operand_dtype'
+        of the resulting expression dynd type.
+    errmode : 'inexact', 'fractional', 'overflow', 'none'
+        How conversion errors are treated. For 'inexact', the value
+        must be preserved precisely. For 'fractional', conversion errors
+        due to precision loss are accepted, but not for loss of the
+        fraction part. For 'overflow', only overflow errors are raised.
+        For 'none', no conversion errors are raised
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_convert_dtype(ndt.int16, ndt.float32)
+    nd.dtype('convert<to=int16, from=float32>')
+    >>> ndt.make_convert_dtype(ndt.uint8, ndt.uint16, 'none')
+    nd.dtype('convert<to=uint8, from=uint16, errmode=none>')
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), errmode))
     return result
 
 def make_unaligned_dtype(aligned_dtype):
-    """Constructs a dtype with alignment of 1 from the given dtype."""
+    """
+    make_unaligned_dtype(aligned_dtype)
+
+    Constructs a dtype with alignment of 1 from the given dtype.
+    If the dtype already has alignment 1, just returns it.
+
+    Parameters
+    ----------
+    aligned_dtype : dynd type
+        The dynd type which should be viewed on data that is
+        not properly aligned.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_unaligned_dtype(ndt.int32)
+    nd.dtype('unaligned<int32>')
+    >>> ndt.make_unaligned_dtype(ndt.uint8)
+    ndt.uint8
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_unaligned_dtype(GET(w_dtype(aligned_dtype).v)))
     return result
 
-def make_fixedstring_dtype(encoding, int size):
-    """Constructs a fixed-size string dtype with a specified encoding."""
+def make_fixedstring_dtype(int size, encoding=None):
+    """
+    make_fixedstring_dtype(size, encoding='utf_8')
+
+    Constructs a fixed-size string dtype with a specified encoding,
+    whose size is the specified number of base units for the encoding.
+
+    Parameters
+    ----------
+    size : int
+        The number of base encoding units in the data. For example,
+        for UTF-8, a size of 10 means 10 bytes. For UTF-16, a size
+        of 10 means 20 bytes.
+    encoding : string, optional
+        The encoding used for storing unicode code points. Supported
+        values are 'ascii', 'utf_8', 'utf_16', 'utf_32', 'ucs_2'.
+        Default: 'utf_8'.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_fixedstring_dtype(10)
+    nd.dtype('string<10>')
+    >>> ndt.make_fixedstring_dtype(10, 'utf_32')
+    nd.dtype('string<10,utf_32>')
+    """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedstring_dtype(encoding, size))
+    SET(result.v, dnd_make_fixedstring_dtype(size, encoding))
     return result
 
-def make_string_dtype(encoding):
-    """Constructs a blockref string dtype with a specified encoding."""
+def make_string_dtype(encoding=None):
+    """
+    make_string_dtype(encoding='utf_8')
+    
+    Constructs a variable-sized string dynd type
+    with the specified encoding.
+
+    Parameters
+    ----------
+    encoding : string, optional
+        The encoding used for storing unicode code points. Supported
+        values are 'ascii', 'utf_8', 'utf_16', 'utf_32', 'ucs_2'.
+        Default: 'utf_8'.
+    """
     cdef w_dtype result = w_dtype()
     SET(result.v, dnd_make_string_dtype(encoding))
     return result
@@ -216,10 +421,32 @@ def make_strided_array_dtype(element_dtype, ndim=None):
         SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v), int(ndim)))
     return result
 
-def make_fixedarray_dtype(element_dtype, shape, axis_perm=None):
-    """Constructs a fixedarray dtype of the given shape and axis permutation (C order by default)"""
+def make_fixedarray_dtype(shape, element_dtype, axis_perm=None):
+    """
+    make_fixedarray_dtype(shape, element_dtype, axis_perm=None)
+    
+    Constructs a fixedarray dtype of the given shape and axis permutation
+    (default C order).
+
+    Parameters
+    ----------
+    shape : tuple of int
+        The multi-dimensional shape of the resulting fixed array dtype.
+    element_dtype : dynd type
+        The type of each element in the resulting array type.
+    axis_perm : tuple of int
+        If not provided, C-order is used. Must be a permutation of
+        the integers 0 through len(shape)-1, ordered so each
+        value increases with the size of the strides. [N-1, ..., 0]
+        gives C-order, and [0, ..., N-1] gives F-order.
+
+    Returns
+    -------
+    result : dynd type
+        A fixed array dynd type.
+    """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedarray_dtype(GET(w_dtype(element_dtype).v), shape, axis_perm))
+    SET(result.v, dnd_make_fixedarray_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
     return result
 
 def make_struct_dtype(field_types, field_names):

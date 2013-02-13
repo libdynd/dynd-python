@@ -252,6 +252,8 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     } else if (PyUnicode_Check(encoding_obj)) {
         // TODO: Haven't implemented unicode yet.
         throw std::runtime_error("unicode isn't implemented yet for determining string encodings");
+    } else if (encoding_obj == Py_None) {
+        return string_encoding_utf_8;
     } else {
         throw std::runtime_error("invalid input type for string encoding");
     }
@@ -262,11 +264,12 @@ dynd::dtype pydynd::dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dy
     return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
-dynd::dtype pydynd::dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size)
+dynd::dtype pydynd::dnd_make_fixedstring_dtype(intptr_t size,
+                PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-    return make_fixedstring_dtype(encoding, size);
+    return make_fixedstring_dtype(size, encoding);
 }
 
 dynd::dtype pydynd::dnd_make_string_dtype(PyObject *encoding_obj)
@@ -299,7 +302,7 @@ dynd::dtype pydynd::dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *
     return make_fixedstruct_dtype(field_types_vec, field_names_vec);
 }
 
-dynd::dtype pydynd::dnd_make_fixedarray_dtype(const dtype& element_dtype, PyObject *shape, PyObject *axis_perm)
+dynd::dtype pydynd::dnd_make_fixedarray_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)
 {
     vector<intptr_t> shape_vec;
     if (PySequence_Check(shape)) {
@@ -317,9 +320,9 @@ dynd::dtype pydynd::dnd_make_fixedarray_dtype(const dtype& element_dtype, PyObje
         if (axis_perm_vec.size() != shape_vec.size()) {
             throw runtime_error("Provided axis_perm is a different size than the provided shape");
         }
-        return make_fixedarray_dtype(element_dtype, (int)shape_vec.size(), &shape_vec[0], &axis_perm_vec[0]);
+        return make_fixedarray_dtype(shape_vec.size(), &shape_vec[0], element_dtype, &axis_perm_vec[0]);
     } else {
-        return make_fixedarray_dtype(element_dtype, (int)shape_vec.size(), &shape_vec[0], NULL);
+        return make_fixedarray_dtype(shape_vec.size(), &shape_vec[0], element_dtype, NULL);
     }
 }
 

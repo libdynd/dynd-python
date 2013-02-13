@@ -92,7 +92,7 @@ dynd::dtype dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtyp
 /**
  * Creates a fixed-sized string dtype.
  */
-dynd::dtype dnd_make_fixedstring_dtype(PyObject *encoding_obj, intptr_t size);
+dynd::dtype dnd_make_fixedstring_dtype(intptr_t size, PyObject *encoding_obj);
 
 /**
  * Creates a blockref string dtype.
@@ -106,7 +106,7 @@ dynd::dtype dnd_make_pointer_dtype(const dynd::dtype& target_dtype);
 
 dynd::dtype dnd_make_struct_dtype(PyObject *field_types, PyObject *field_names);
 dynd::dtype dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names);
-dynd::dtype dnd_make_fixedarray_dtype(const dynd::dtype& element_dtype, PyObject *shape, PyObject *axis_perm);
+dynd::dtype dnd_make_fixedarray_dtype(PyObject *shape, const dynd::dtype& element_dtype, PyObject *axis_perm);
 
 /**
  * Implementation of __getitem__ for the wrapped dtype object.

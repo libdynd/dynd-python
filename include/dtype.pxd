@@ -114,9 +114,9 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     dtype dtype_getitem(dtype&, object) except +translate_exception
 
     dtype dnd_make_convert_dtype(dtype&, dtype&, object) except +translate_exception
-    dtype dnd_make_fixedstring_dtype(object, int) except +translate_exception
+    dtype dnd_make_fixedstring_dtype(int, object) except +translate_exception
     dtype dnd_make_string_dtype(object) except +translate_exception
     dtype dnd_make_pointer_dtype(dtype&) except +translate_exception
     dtype dnd_make_struct_dtype(object, object) except +translate_exception
     dtype dnd_make_fixedstruct_dtype(object, object) except +translate_exception
-    dtype dnd_make_fixedarray_dtype(dtype&, object, object) except +translate_exception
+    dtype dnd_make_fixedarray_dtype(object, dtype&, object) except +translate_exception

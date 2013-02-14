@@ -15,7 +15,7 @@
 #include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixedarray_dtype.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
@@ -94,21 +94,21 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 throw runtime_error("NumPy >= 1.6 is required for dynd date dtype interop");
 #endif
             }
-        case strided_array_type_id:
+        case strided_dim_type_id:
         case fixedarray_type_id: {
             if (undim > 0) {
                 // If this is one of the uniform dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
-                if (dt.get_type_id() == strided_array_type_id) {
-                    const strided_array_dtype *sad = static_cast<const strided_array_dtype *>(dt.extended());
+                if (dt.get_type_id() == strided_dim_type_id) {
+                    const strided_dim_dtype *sad = static_cast<const strided_dim_dtype *>(dt.extended());
                     make_numpy_dtype_for_copy(out_numpy_dtype,
                                     undim - 1, sad->get_element_dtype(),
-                                    metadata + sizeof(strided_array_dtype_metadata));
+                                    metadata + sizeof(strided_dim_dtype_metadata));
                 } else {
                     const fixedarray_dtype *fad = static_cast<const fixedarray_dtype *>(dt.extended());
                     make_numpy_dtype_for_copy(out_numpy_dtype,
                                     undim - 1, fad->get_element_dtype(),
-                                    metadata + sizeof(strided_array_dtype_metadata));
+                                    metadata + sizeof(strided_dim_dtype_metadata));
                 }
                 return;
             } else {
@@ -125,12 +125,12 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 dtype element_dtype = dt;
                 while(undim > 0) {
                     size_t dim_size = 0;
-                    if (dt.get_type_id() == strided_array_type_id) {
-                        const strided_array_dtype *sad =
-                                        static_cast<const strided_array_dtype *>(element_dtype.extended());
+                    if (dt.get_type_id() == strided_dim_type_id) {
+                        const strided_dim_dtype *sad =
+                                        static_cast<const strided_dim_dtype *>(element_dtype.extended());
                         dim_size = sad->get_dim_size(NULL, metadata);
                         element_dtype = sad->get_element_dtype();
-                        metadata += sizeof(strided_array_dtype_metadata);
+                        metadata += sizeof(strided_dim_dtype_metadata);
                     } else if (dt.get_type_id() == fixedarray_type_id) {
                         const fixedarray_dtype *fad =
                                         static_cast<const fixedarray_dtype *>(element_dtype.extended());
@@ -302,14 +302,14 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                             (PyArray_Descr *)swapdt.get(), NPY_SWAP));
             return;
         }
-        case strided_array_type_id: {
-            const strided_array_dtype *sad = static_cast<const strided_array_dtype *>(dt.extended());
+        case strided_dim_type_id: {
+            const strided_dim_dtype *sad = static_cast<const strided_dim_dtype *>(dt.extended());
             if (undim > 0) {
                 // If this is one of the uniform dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 as_numpy_analysis(out_numpy_dtype, out_requires_copy,
                                 undim - 1, sad->get_element_dtype(),
-                                metadata + sizeof(strided_array_dtype_metadata));
+                                metadata + sizeof(strided_dim_dtype_metadata));
                 return;
             } else {
                 // If this isn't one of the uniform dimensions, it maps into
@@ -327,7 +327,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 // becomes one of the numpy ndarray dimensions
                 as_numpy_analysis(out_numpy_dtype, out_requires_copy,
                                 undim - 1, fad->get_element_dtype(),
-                                metadata + sizeof(strided_array_dtype_metadata));
+                                metadata + sizeof(strided_dim_dtype_metadata));
                 return;
             } else {
                 // If this isn't one of the uniform dimensions, it maps into

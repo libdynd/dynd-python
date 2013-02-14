@@ -7,7 +7,7 @@
 #include <datetime.h>
 
 #include <dynd/dtypes/string_dtype.hpp>
-#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
@@ -175,7 +175,7 @@ static void fill_ndobject_from_pylist(const dtype& dt, const char *metadata, cha
     dtype element_dtype = dt.at_single(0, &element_metadata);
     if (shape[current_axis] >= 0) {
         // Fixed-sized dimension
-        const strided_array_dtype_metadata *md = reinterpret_cast<const strided_array_dtype_metadata *>(metadata);
+        const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
         intptr_t stride = md->stride;
         if (element_dtype.is_scalar()) {
             for (Py_ssize_t i = 0; i < size; ++i) {

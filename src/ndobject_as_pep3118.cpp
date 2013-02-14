@@ -5,7 +5,7 @@
 
 #include <Python.h>
 
-#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixedarray_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
@@ -310,12 +310,12 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         const char *metadata = n.get_ndo_meta();
         for (int i = 0; i < buffer->ndim; ++i) {
             switch (dt.get_type_id()) {
-                case strided_array_type_id: {
-                    const strided_array_dtype *tdt = static_cast<const strided_array_dtype *>(dt.extended());
-                    const strided_array_dtype_metadata *md = reinterpret_cast<const strided_array_dtype_metadata *>(metadata);
+                case strided_dim_type_id: {
+                    const strided_dim_dtype *tdt = static_cast<const strided_dim_dtype *>(dt.extended());
+                    const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
                     buffer->shape[i] = md->size;
                     buffer->strides[i] = md->stride;
-                    metadata += sizeof(strided_array_dtype_metadata);
+                    metadata += sizeof(strided_dim_dtype_metadata);
                     dt = tdt->get_element_dtype();
                     break;
                 }

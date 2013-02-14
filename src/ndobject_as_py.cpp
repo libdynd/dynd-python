@@ -10,7 +10,7 @@
 #include "ndobject_functions.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>

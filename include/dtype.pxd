@@ -97,9 +97,9 @@ cdef extern from "dynd/dtypes/categorical_dtype.hpp" namespace "dynd":
 cdef extern from "dynd/dtypes/dtype_alignment.hpp" namespace "dynd":
     dtype dnd_make_unaligned_dtype "dynd::make_unaligned_dtype" (dtype&) except +translate_exception
 
-cdef extern from "dynd/dtypes/strided_array_dtype.hpp" namespace "dynd":
-    dtype dnd_make_strided_array_dtype "dynd::make_strided_array_dtype" (dtype&) except +translate_exception
-    dtype dnd_make_strided_array_dtype "dynd::make_strided_array_dtype" (dtype&, intptr_t) except +translate_exception
+cdef extern from "dynd/dtypes/strided_dim_dtype.hpp" namespace "dynd":
+    dtype dnd_make_strided_dim_dtype "dynd::make_strided_dim_dtype" (dtype&) except +translate_exception
+    dtype dnd_make_strided_dim_dtype "dynd::make_strided_dim_dtype" (dtype&, intptr_t) except +translate_exception
 
 cdef extern from "dtype_functions.hpp" namespace "pydynd":
     void init_w_dtype_typeobject(object)

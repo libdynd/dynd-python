@@ -2,7 +2,7 @@ from dynd._pydynd import w_dtype as dtype, \
         make_byteswap_dtype, make_fixedbytes_dtype, make_convert_dtype, \
         make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
         make_pointer_dtype, make_struct_dtype, make_fixedstruct_dtype, \
-        make_strided_array_dtype, make_fixedarray_dtype, \
+        make_strided_dim_dtype, make_fixedarray_dtype, \
         make_categorical_dtype, \
         factor_categorical_dtype
 

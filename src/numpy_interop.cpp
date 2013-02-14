@@ -11,7 +11,7 @@
 #include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
-#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixedarray_dtype.hpp>
@@ -88,7 +88,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
             if (PyTuple_Check(d->subarray->shape)) {
                 ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
             }
-            return make_strided_array_dtype(dt, ndim);
+            return make_strided_dim_dtype(dt, ndim);
         } else {
             // Otherwise make a fixedstruct array
             return dnd_make_fixedarray_dtype(d->subarray->shape, dt, Py_None);
@@ -199,36 +199,36 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
             }
             break;
         }
-        case strided_array_type_id: {
-            // The Numpy subarray becomes a series of strided_array_dtypes, so we
+        case strided_dim_type_id: {
+            // The Numpy subarray becomes a series of strided_dim_dtypes, so we
             // need to copy the strides into the metadata.
             dtype el;
             PyArray_ArrayDescr *adescr = d->subarray;
             if (adescr == NULL) {
                 stringstream ss;
-                ss << "Internal error building dynd metadata: Numpy dtype has NULL subarray corresponding to strided_array type";
+                ss << "Internal error building dynd metadata: Numpy dtype has NULL subarray corresponding to strided_dim type";
                 throw runtime_error(ss.str());
             }
             int ndim;
             if (PyTuple_Check(adescr->shape)) {
                 ndim = (int)PyTuple_GET_SIZE(adescr->shape);
-                strided_array_dtype_metadata *md = reinterpret_cast<strided_array_dtype_metadata *>(metadata);
+                strided_dim_dtype_metadata *md = reinterpret_cast<strided_dim_dtype_metadata *>(metadata);
                 intptr_t stride = adescr->base->elsize;
                 el = dt;
                 for (int i = ndim-1; i >= 0; --i) {
                     md[i].size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));
                     md[i].stride = stride;
                     stride *= md[i].size;
-                    el = static_cast<const strided_array_dtype *>(el.extended())->get_element_dtype();
+                    el = static_cast<const strided_dim_dtype *>(el.extended())->get_element_dtype();
                 }
-                metadata += ndim * sizeof(strided_array_dtype_metadata);
+                metadata += ndim * sizeof(strided_dim_dtype_metadata);
             } else {
                 ndim = 1;
-                strided_array_dtype_metadata *md = reinterpret_cast<strided_array_dtype_metadata *>(metadata);
-                metadata += sizeof(strided_array_dtype_metadata);
+                strided_dim_dtype_metadata *md = reinterpret_cast<strided_dim_dtype_metadata *>(metadata);
+                metadata += sizeof(strided_dim_dtype_metadata);
                 md->size = pyobject_as_index(adescr->shape);
                 md->stride = adescr->base->elsize;
-                el = static_cast<const strided_array_dtype *>(dt.extended())->get_element_dtype();
+                el = static_cast<const strided_dim_dtype *>(dt.extended())->get_element_dtype();
             }
             // Fill the metadata for the array element, if necessary
             if (!el.is_builtin()) {

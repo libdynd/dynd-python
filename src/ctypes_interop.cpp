@@ -9,7 +9,7 @@
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixedarray_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
-#include <dynd/dtypes/strided_array_dtype.hpp>
+#include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
 
@@ -239,7 +239,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             return make_struct_dtype(field_types, field_names);
         }
     } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
-        // Translate into a either a fixedarray or strided_array
+        // Translate into a either a fixedarray or strided_dim
         pyobject_ownref element_dtype_obj(PyObject_GetAttrString(d, "_type_"));
         dtype element_dtype = dtype_from_ctypes_cdatatype(element_dtype_obj);
         if (element_dtype.get_data_size() != 0) {
@@ -247,7 +247,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
             return make_fixedarray_dtype(array_length, element_dtype);
         } else {
-            return make_strided_array_dtype(element_dtype);
+            return make_strided_dim_dtype(element_dtype);
         }
     }
 

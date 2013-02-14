@@ -458,13 +458,13 @@ def make_pointer_dtype(target_dtype):
     SET(result.v, dnd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
     return result
 
-def make_strided_array_dtype(element_dtype, undim=None):
+def make_strided_dim_dtype(element_dtype, undim=None):
     """
-    make_strided_array_dtype(element_dtype, undim=1)
+    make_strided_dim_dtype(element_dtype, undim=1)
 
     Constructs an array dynd type with one or more strided
-    dimensions. A single strided_array dynd type corresponds
-    to one dimension, so when undim > 1, multipled strided_array
+    dimensions. A single strided_dim dynd type corresponds
+    to one dimension, so when undim > 1, multiple strided_dim
     dimensions are created.
 
     Parameters
@@ -472,22 +472,22 @@ def make_strided_array_dtype(element_dtype, undim=None):
     element_dtype : dynd type
         The type of one element in the strided array.
     undim : int
-        The number of uniform strided_array dimensions to create.
+        The number of uniform strided_dim dimensions to create.
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_strided_array_dtype(ndt.int32)
-    nd.dtype('strided_array<int32>')
-    >>> ndt.make_strided_array_dtype(ndt.int32, 3)
-    nd.dtype('strided_array<strided_array<strided_array<int32>>>')
+    >>> ndt.make_strided_dim_dtype(ndt.int32)
+    nd.dtype('strided_dim<int32>')
+    >>> ndt.make_strided_dim_dtype(ndt.int32, 3)
+    nd.dtype('strided_dim<strided_dim<strided_dim<int32>>>')
     """
     cdef w_dtype result = w_dtype()
     if (undim is None):
-        SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v)))
+        SET(result.v, dnd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v)))
     else:
-        SET(result.v, dnd_make_strided_array_dtype(GET(w_dtype(element_dtype).v), int(undim)))
+        SET(result.v, dnd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v), int(undim)))
     return result
 
 def make_fixedarray_dtype(shape, element_dtype, axis_perm=None):
@@ -676,12 +676,12 @@ cdef class w_ndobject:
     >>> from dynd import nd, ndt
 
     >>> nd.ndobject([1, 2, 3, 4, 5])
-    nd.ndobject([1, 2, 3, 4, 5], strided_array<int32>)
+    nd.ndobject([1, 2, 3, 4, 5], strided_dim<int32>)
     >>> nd.ndobject([[1, 2], [3, 4, 5.0]])
-    nd.ndobject([[1, 2], [3, 4, 5]], strided_array<var_dim<float64>>)
+    nd.ndobject([[1, 2], [3, 4, 5]], strided_dim<var_dim<float64>>)
     >>> from datetime import date
     >>> nd.ndobject([date(2000,2,14), date(2012,1,1)])
-    nd.ndobject([2000-02-14, 2012-01-01], strided_array<date>)
+    nd.ndobject([2000-02-14, 2012-01-01], strided_dim<date>)
     """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the ndobject, and
@@ -737,12 +737,12 @@ cdef class w_ndobject:
 
         >>> a = nd.ndobject([1.5, 2, 3])
         >>> a
-        nd.ndobject([1.5, 2, 3], strided_array<float64>)
+        nd.ndobject([1.5, 2, 3], strided_dim<float64>)
         >>> b = a.cast_scalars(ndt.int16, errmode='none')
         >>> b
-        nd.ndobject([1, 2, 3], strided_array<convert<to=int16, from=float64, errmode=none>>)
+        nd.ndobject([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=none>>)
         >>> b.eval()
-        nd.ndobject([1, 2, 3], strided_array<int16>)
+        nd.ndobject([1, 2, 3], strided_dim<int16>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_eval(GET(self.v)))
@@ -789,9 +789,9 @@ cdef class w_ndobject:
 
         >>> a = nd.ndobject([1, 2, 3], dtype=ndt.int16)
         >>> a
-        nd.ndobject([1, 2, 3], strided_array<int16>)
+        nd.ndobject([1, 2, 3], strided_dim<int16>)
         >>> a.storage()
-        nd.ndobject([0x0100, 0x0200, 0x0300], strided_array<fixedbytes<2,2>>)
+        nd.ndobject([0x0100, 0x0200, 0x0300], strided_dim<fixedbytes<2,2>>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).storage())
@@ -855,9 +855,9 @@ cdef class w_ndobject:
         >>> from datetime import date
         >>> a = nd.ndobject([date(1929,3,13), date(1979,3,22)]).cast_udtype('{month: int32; year: int32; day: float32}')
         >>> a
-        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_array<convert<to=fixedstruct<int32 month, int32 year, float32 day>, from=date>>)
+        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=fixedstruct<int32 month, int32 year, float32 day>, from=date>>)
         >>> a.eval()
-        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_array<fixedstruct<int32 month, int32 year, float32 day>>)
+        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<fixedstruct<int32 month, int32 year, float32 day>>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_cast_udtype(GET(self.v), GET(w_dtype(dtype).v), errmode))
@@ -908,9 +908,9 @@ cdef class w_ndobject:
         >>> from dynd import nd, ndt
 
         >>> nd.ndobject([1,2,3,4]).dtype
-        nd.dtype('strided_array<int32>')
+        nd.dtype('strided_dim<int32>')
         >>> nd.ndobject([[1,2],[3.0]]).dtype
-        nd.dtype('strided_array<var_dim<float64>>')
+        nd.dtype('strided_dim<var_dim<float64>>')
         """
         def __get__(self):
             cdef w_dtype result = w_dtype()
@@ -1034,7 +1034,7 @@ def as_py(w_ndobject n):
 
     >>> a = nd.ndobject([1, 2, 3, 4.0])
     >>> a
-    nd.ndobject([1, 2, 3, 4], strided_array<float64>)
+    nd.ndobject([1, 2, 3, 4], strided_dim<float64>)
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
@@ -1062,7 +1062,7 @@ def as_numpy(w_ndobject n, allow_copy=False):
     >>> import numpy as np
     >>> a = nd.ndobject([[1, 2, 3], [4, 5, 6]])
     >>> a
-    nd.ndobject([[1, 2, 3], [4, 5, 6]], strided_array<strided_array<int32>>)
+    nd.ndobject([[1, 2, 3], [4, 5, 6]], strided_dim<strided_dim<int32>>)
     >>> nd.as_numpy(a)
     array([[1, 2, 3],
            [4, 5, 6]])
@@ -1083,7 +1083,7 @@ def empty(shape, dtype=None):
     shape : list of int, optional
         If provided, specifies the shape for the dtype dimensions
         that don't encode a dimension size themselves, such as
-        strided_array dimensions.
+        strided_dim dimensions.
     dtype : dynd type
         The data type of the uninitialized array to create. This
         is the full data type, including the multi-dimensional
@@ -1096,7 +1096,7 @@ def empty(shape, dtype=None):
     >>> nd.empty('2, 2, int8')
     nd.ndobject([[0, -24], [0, 4]], fixedarray<2, fixedarray<2, int8>>)
     >>> nd.empty((2, 2), 'M, N, int16')
-    nd.ndobject([[179, 0], [0, 16816]], strided_array<strided_array<int16>>)
+    nd.ndobject([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
     cdef w_ndobject result = w_ndobject()
     if dtype is not None:
@@ -1127,11 +1127,11 @@ def empty_like(w_ndobject prototype, dtype=None):
 
     >>> a = nd.ndobject([[1, 2], [3, 4]])
     >>> a
-    nd.ndobject([[1, 2], [3, 4]], strided_array<strided_array<int32>>)
+    nd.ndobject([[1, 2], [3, 4]], strided_dim<strided_dim<int32>>)
     >>> nd.empty_like(a)
-    nd.ndobject([[808529973, 741351468], [0, 0]], strided_array<strided_array<int32>>)
+    nd.ndobject([[808529973, 741351468], [0, 0]], strided_dim<strided_dim<int32>>)
     >>> nd.empty_like(a, dtype=ndt.float32)
-    nd.ndobject([[1.47949e-041, 0], [0, 0]], strided_array<strided_array<float32>>)
+    nd.ndobject([[1.47949e-041, 0], [0, 0]], strided_dim<strided_dim<float32>>)
     """
     cdef w_ndobject result = w_ndobject()
     if dtype is None:
@@ -1165,13 +1165,13 @@ def groupby(data, by, groups = None):
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'])
     >>> a.groups
-    nd.ndobject(["F", "M"], strided_array<string<ascii>>)
+    nd.ndobject(["F", "M"], strided_dim<string<ascii>>)
     >>> a.eval()
     nd.ndobject([[2, 5, 6], [1, 3, 4]], fixedarray<2, var_dim<int32>>)
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
     >>> a.groups
-    nd.ndobject(["M", "N", "F"], strided_array<string<ascii>>)
+    nd.ndobject(["M", "N", "F"], strided_dim<string<ascii>>)
     >>> a.eval()
     nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixedarray<3, var_dim<int32>>)
     """
@@ -1281,7 +1281,7 @@ def format_json(w_ndobject n):
 
     >>> a = nd.ndobject([[1, 2, 3], [1, 2]])
     >>> a
-    nd.ndobject([[1, 2, 3], [1, 2]], strided_array<var_dim<int32>>)
+    nd.ndobject([[1, 2, 3], [1, 2]], strided_dim<var_dim<int32>>)
     >>> nd.format_json(a)
     nd.ndobject("[[1,2,3],[1,2]]", string)
     """

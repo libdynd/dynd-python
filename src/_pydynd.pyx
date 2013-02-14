@@ -177,6 +177,15 @@ cdef class w_dtype:
         def __get__(self):
             return GET(self.v).get_undim()
 
+    property dshape:
+        """
+        a.dshape
+
+        The Blaze datashape of the dtype, as a string.
+        """
+        def __get__(self):
+            return str(dynd_format_datashape(GET(self.v)))
+
     property udtype:
         """
         a.udtype

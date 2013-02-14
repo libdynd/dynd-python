@@ -7,5 +7,5 @@ https://github.com/ContinuumIO/dynd
 
 https://github.com/ContinuumIO/dynd-python
 
-See INSTALL_BUILD.md for details on building and installing this
+See BUILD_INSTALL.md for details on building and installing this
 preview release.

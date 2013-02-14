@@ -82,7 +82,7 @@ cdef class w_dtype:
     >>> nd.dtype('int16')
     ndt.int16
     >>> nd.dtype('5, VarDim, float32')
-    nd.dtype('fixedarray<5, var_dim<float32>>')
+    nd.dtype('fixed_dim<5, var_dim<float32>>')
     >>> nd.dtype('{x: float32; y: float32; z: float32}')
     nd.dtype('fixedstruct<float32 x, float32 y, float32 z>')
     """
@@ -490,11 +490,11 @@ def make_strided_dim_dtype(element_dtype, undim=None):
         SET(result.v, dnd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v), int(undim)))
     return result
 
-def make_fixedarray_dtype(shape, element_dtype, axis_perm=None):
+def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     """
-    make_fixedarray_dtype(shape, element_dtype, axis_perm=None)
+    make_fixed_dim_dtype(shape, element_dtype, axis_perm=None)
     
-    Constructs a fixedarray dtype of the given shape and axis permutation
+    Constructs a fixed_dim dtype of the given shape and axis permutation
     (default C order).
 
     Parameters
@@ -513,15 +513,15 @@ def make_fixedarray_dtype(shape, element_dtype, axis_perm=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedarray_dtype(5, ndt.int32)
-    nd.dtype('fixedarray<5, int32>')
-    >>> ndt.make_fixedarray_dtype((3,5), ndt.int32)
-    nd.dtype('fixedarray<3, fixedarray<5, int32>>')
-    >>> ndt.make_fixedarray_dtype((3,5), ndt.int32, axis_perm=(0,1))
-    nd.dtype('fixedarray<3, stride=4, fixedarray<5, stride=12, int32>>')
+    >>> ndt.make_fixed_dim_dtype(5, ndt.int32)
+    nd.dtype('fixed_dim<5, int32>')
+    >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32)
+    nd.dtype('fixed_dim<3, fixed_dim<5, int32>>')
+    >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32, axis_perm=(0,1))
+    nd.dtype('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedarray_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
+    SET(result.v, dnd_make_fixed_dim_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
     return result
 
 def make_fixedstruct_dtype(field_types, field_names):
@@ -1094,7 +1094,7 @@ def empty(shape, dtype=None):
     >>> from dynd import nd, ndt
 
     >>> nd.empty('2, 2, int8')
-    nd.ndobject([[0, -24], [0, 4]], fixedarray<2, fixedarray<2, int8>>)
+    nd.ndobject([[0, -24], [0, 4]], fixed_dim<2, fixed_dim<2, int8>>)
     >>> nd.empty((2, 2), 'M, N, int16')
     nd.ndobject([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
@@ -1167,13 +1167,13 @@ def groupby(data, by, groups = None):
     >>> a.groups
     nd.ndobject(["F", "M"], strided_dim<string<ascii>>)
     >>> a.eval()
-    nd.ndobject([[2, 5, 6], [1, 3, 4]], fixedarray<2, var_dim<int32>>)
+    nd.ndobject([[2, 5, 6], [1, 3, 4]], fixed_dim<2, var_dim<int32>>)
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
     >>> a.groups
     nd.ndobject(["M", "N", "F"], strided_dim<string<ascii>>)
     >>> a.eval()
-    nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixedarray<3, var_dim<int32>>)
+    nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixed_dim<3, var_dim<int32>>)
     """
     cdef w_ndobject result = w_ndobject()
     if groups is None:
@@ -1253,9 +1253,9 @@ def parse_json(dtype, json):
     >>> nd.parse_json('VarDim, int8', '[1, 2, 3, 4, 5]')
     nd.ndobject([1, 2, 3, 4, 5], var_dim<int8>)
     >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
-    nd.ndobject([1, 2, 3, 4], fixedarray<4, int8>)
+    nd.ndobject([1, 2, 3, 4], fixed_dim<4, int8>)
     >>> nd.parse_json('2, {x: int8; y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
-    nd.ndobject([[0, 1], [3, 2]], fixedarray<2, fixedstruct<int8 x, int8 y>>)
+    nd.ndobject([[0, 1], [3, 2]], fixed_dim<2, fixedstruct<int8 x, int8 y>>)
     """
     cdef w_ndobject result = w_ndobject()
     if type(dtype) is w_ndobject:

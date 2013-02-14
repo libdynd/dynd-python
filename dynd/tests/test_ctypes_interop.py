@@ -43,16 +43,16 @@ class TestCTypesDTypeInterop(unittest.TestCase):
                         nd.dtype(DATA))
 
     def test_dtype_from_ctypes_carray(self):
-        self.assertEqual(ndt.make_fixedarray_dtype(10, ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim_dtype(10, ndt.int32),
                 nd.dtype(ctypes.c_int32 * 10))
-        self.assertEqual(ndt.make_fixedarray_dtype((10, 3), ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim_dtype((10, 3), ndt.int32),
                 nd.dtype((ctypes.c_int32 * 3) * 10))
-        self.assertEqual(ndt.make_fixedarray_dtype((10, 3, 4), ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim_dtype((10, 3, 4), ndt.int32),
                 nd.dtype(((ctypes.c_int32 * 4) * 3) * 10))
 
         class POINT(ctypes.Structure):
             _fields_ = [('x', ctypes.c_int32), ('y', ctypes.c_int32)]
-        self.assertEqual(ndt.make_fixedarray_dtype(10, nd.dtype(POINT)),
+        self.assertEqual(ndt.make_fixed_dim_dtype(10, nd.dtype(POINT)),
                 nd.dtype(POINT * 10))
 
 if __name__ == '__main__':

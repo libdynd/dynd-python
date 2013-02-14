@@ -6,7 +6,7 @@
 #include <Python.h>
 
 #include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/fixedarray_dtype.hpp>
+#include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/byteswap_dtype.hpp>
@@ -128,11 +128,11 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             }
             // Pass through to error
             break;
-        case fixedarray_type_id: {
+        case fixed_dim_type_id: {
             dtype child_dt = dt;
             o << "(";
             do {
-                const fixedarray_dtype *tdt = static_cast<const fixedarray_dtype *>(child_dt.extended());
+                const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(child_dt.extended());
                 size_t dim_size = tdt->get_fixed_dim_size();
                 o << dim_size;
                 if (child_dt.get_data_size() != tdt->get_element_dtype().get_data_size() * dim_size) {
@@ -142,7 +142,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
                 }
                 o << ")";
                 child_dt = tdt->get_element_dtype();
-            } while (child_dt.get_type_id() == fixedarray_type_id && (o << ","));
+            } while (child_dt.get_type_id() == fixed_dim_type_id && (o << ","));
             append_pep3118_format(out_itemsize, child_dt, metadata, o);
             out_itemsize = dt.get_data_size();
             return;
@@ -319,8 +319,8 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
                     dt = tdt->get_element_dtype();
                     break;
                 }
-                case fixedarray_type_id: {
-                    const fixedarray_dtype *tdt = static_cast<const fixedarray_dtype *>(dt.extended());
+                case fixed_dim_type_id: {
+                    const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(dt.extended());
                     buffer->shape[i] = tdt->get_fixed_dim_size();
                     buffer->strides[i] = tdt->get_fixed_stride();
                     dt = tdt->get_element_dtype();

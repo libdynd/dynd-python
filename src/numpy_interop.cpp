@@ -14,7 +14,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
-#include <dynd/dtypes/fixedarray_dtype.hpp>
+#include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "dtype_functions.hpp"
@@ -91,7 +91,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
             return make_strided_dim_dtype(dt, ndim);
         } else {
             // Otherwise make a fixedstruct array
-            return dnd_make_fixedarray_dtype(d->subarray->shape, dt, Py_None);
+            return dnd_make_fixed_dim_dtype(d->subarray->shape, dt, Py_None);
         }
     }
 
@@ -366,11 +366,11 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             }
             return result;
         }
-        case fixedarray_type_id: {
+        case fixed_dim_type_id: {
             dtype child_dt = dt;
             vector<intptr_t> shape;
             do {
-                const fixedarray_dtype *tdt = static_cast<const fixedarray_dtype *>(child_dt.extended());
+                const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(child_dt.extended());
                 shape.push_back(tdt->get_fixed_dim_size());
                 if (child_dt.get_data_size() != tdt->get_element_dtype().get_data_size() * shape.back()) {
                     stringstream ss;
@@ -378,7 +378,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
                     throw runtime_error(ss.str());
                 }
                 child_dt = tdt->get_element_dtype();
-            } while (child_dt.get_type_id() == fixedarray_type_id);
+            } while (child_dt.get_type_id() == fixed_dim_type_id);
             pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from_dtype(child_dt));
             pyobject_ownref shape_obj(intptr_array_as_tuple((int)shape.size(), &shape[0]));
             pyobject_ownref tuple_obj(PyTuple_New(2));

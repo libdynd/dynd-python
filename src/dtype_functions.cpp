@@ -15,7 +15,7 @@
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
-#include <dynd/dtypes/fixedarray_dtype.hpp>
+#include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 
@@ -346,7 +346,7 @@ dynd::dtype pydynd::dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *
     return make_fixedstruct_dtype(field_types_vec, field_names_vec);
 }
 
-dynd::dtype pydynd::dnd_make_fixedarray_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)
+dynd::dtype pydynd::dnd_make_fixed_dim_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)
 {
     vector<intptr_t> shape_vec;
     if (PySequence_Check(shape)) {
@@ -364,9 +364,9 @@ dynd::dtype pydynd::dnd_make_fixedarray_dtype(PyObject *shape, const dtype& elem
         if (axis_perm_vec.size() != shape_vec.size()) {
             throw runtime_error("Provided axis_perm is a different size than the provided shape");
         }
-        return make_fixedarray_dtype(shape_vec.size(), &shape_vec[0], element_dtype, &axis_perm_vec[0]);
+        return make_fixed_dim_dtype(shape_vec.size(), &shape_vec[0], element_dtype, &axis_perm_vec[0]);
     } else {
-        return make_fixedarray_dtype(shape_vec.size(), &shape_vec[0], element_dtype, NULL);
+        return make_fixed_dim_dtype(shape_vec.size(), &shape_vec[0], element_dtype, NULL);
     }
 }
 

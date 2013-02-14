@@ -596,8 +596,8 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
     }
 
     if (n.get_dtype().get_type_id() == pointer_type_id ||
-                    n.get_dtype().get_type_id() == var_array_type_id) {
-        // If it's a pointer or var_array, use 0-length indexing to
+                    n.get_dtype().get_type_id() == var_dim_type_id) {
+        // If it's a pointer or var_dim, use 0-length indexing to
         // strip away this leading part so it's compatible with NumPy.
         pyobject_ownref n_tmp(wrap_ndobject(n.at_array(0, NULL)));
         return ndobject_as_numpy(n_tmp.get(), allow_copy);

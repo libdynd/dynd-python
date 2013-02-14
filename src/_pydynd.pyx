@@ -82,7 +82,7 @@ cdef class w_dtype:
     >>> nd.dtype('int16')
     ndt.int16
     >>> nd.dtype('5, VarDim, float32')
-    nd.dtype('fixedarray<5, var_array<float32>>')
+    nd.dtype('fixedarray<5, var_dim<float32>>')
     >>> nd.dtype('{x: float32; y: float32; z: float32}')
     nd.dtype('fixedstruct<float32 x, float32 y, float32 z>')
     """
@@ -181,7 +181,7 @@ cdef class w_dtype:
         """
         a.dshape
 
-        The Blaze datashape of the dtype, as a string.
+        The Blaze datashape of the dynd type, as a string.
         """
         def __get__(self):
             return str(dynd_format_datashape(GET(self.v)))
@@ -678,7 +678,7 @@ cdef class w_ndobject:
     >>> nd.ndobject([1, 2, 3, 4, 5])
     nd.ndobject([1, 2, 3, 4, 5], strided_array<int32>)
     >>> nd.ndobject([[1, 2], [3, 4, 5.0]])
-    nd.ndobject([[1, 2], [3, 4, 5]], strided_array<var_array<float64>>)
+    nd.ndobject([[1, 2], [3, 4, 5]], strided_array<var_dim<float64>>)
     >>> from datetime import date
     >>> nd.ndobject([date(2000,2,14), date(2012,1,1)])
     nd.ndobject([2000-02-14, 2012-01-01], strided_array<date>)
@@ -910,7 +910,7 @@ cdef class w_ndobject:
         >>> nd.ndobject([1,2,3,4]).dtype
         nd.dtype('strided_array<int32>')
         >>> nd.ndobject([[1,2],[3.0]]).dtype
-        nd.dtype('strided_array<var_array<float64>>')
+        nd.dtype('strided_array<var_dim<float64>>')
         """
         def __get__(self):
             cdef w_dtype result = w_dtype()
@@ -1167,13 +1167,13 @@ def groupby(data, by, groups = None):
     >>> a.groups
     nd.ndobject(["F", "M"], strided_array<string<ascii>>)
     >>> a.eval()
-    nd.ndobject([[2, 5, 6], [1, 3, 4]], fixedarray<2, var_array<int32>>)
+    nd.ndobject([[2, 5, 6], [1, 3, 4]], fixedarray<2, var_dim<int32>>)
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
     >>> a.groups
     nd.ndobject(["M", "N", "F"], strided_array<string<ascii>>)
     >>> a.eval()
-    nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixedarray<3, var_array<int32>>)
+    nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixedarray<3, var_dim<int32>>)
     """
     cdef w_ndobject result = w_ndobject()
     if groups is None:
@@ -1251,7 +1251,7 @@ def parse_json(dtype, json):
     >>> from dynd import nd, ndt
 
     >>> nd.parse_json('VarDim, int8', '[1, 2, 3, 4, 5]')
-    nd.ndobject([1, 2, 3, 4, 5], var_array<int8>)
+    nd.ndobject([1, 2, 3, 4, 5], var_dim<int8>)
     >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
     nd.ndobject([1, 2, 3, 4], fixedarray<4, int8>)
     >>> nd.parse_json('2, {x: int8; y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
@@ -1281,7 +1281,7 @@ def format_json(w_ndobject n):
 
     >>> a = nd.ndobject([[1, 2, 3], [1, 2]])
     >>> a
-    nd.ndobject([[1, 2, 3], [1, 2]], strided_array<var_array<int32>>)
+    nd.ndobject([[1, 2, 3], [1, 2]], strided_array<var_dim<int32>>)
     >>> nd.format_json(a)
     nd.ndobject("[[1,2,3],[1,2]]", string)
     """

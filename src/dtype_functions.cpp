@@ -254,7 +254,7 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
         case 5:
             switch (s[1]) {
             case 'c':
-                if (strcmp(s, "ucs_2") == 0) {
+                if (strcmp(s, "ucs_2") == 0 || strcmp(s, "ucs-2") == 0) {
                     encoding = string_encoding_ucs_2;
                 }
                 break;
@@ -264,7 +264,7 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
                 }
                 break;
             case 't':
-                if (strcmp(s, "utf_8") == 0) {
+                if (strcmp(s, "utf_8") == 0 || strcmp(s, "utf-8") == 0) {
                     encoding = string_encoding_utf_8;
                 }
                 break;
@@ -273,12 +273,12 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
         case 6:
             switch (s[4]) {
             case '1':
-                if (strcmp(s, "utf_16") == 0) {
+                if (strcmp(s, "utf_16") == 0 || strcmp(s, "utf-16") == 0) {
                     encoding = string_encoding_utf_16;
                 }
                 break;
             case '3':
-                if (strcmp(s, "utf_32") == 0) {
+                if (strcmp(s, "utf_32") == 0 || strcmp(s, "utf-32") == 0) {
                     encoding = string_encoding_utf_32;
                 }
                 break;
@@ -289,7 +289,7 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
             return encoding;
         } else {
             stringstream ss;
-            ss << "invalid input \"" << s << "\"for string encoding";
+            ss << "invalid input \"" << s << "\" for string encoding";
             throw std::runtime_error(ss.str());
         }
 

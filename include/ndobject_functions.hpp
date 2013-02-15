@@ -97,12 +97,8 @@ inline dynd::ndobject ndobject_divide(const dynd::ndobject& lhs, const dynd::ndo
 //    return lhs / rhs;
 }
 
-inline std::string ndobject_str(const dynd::ndobject& n)
-{
-    std::stringstream ss;
-    n.get_dtype().print_data(ss, n.get_ndo_meta(), n.get_readonly_originptr());
-    return ss.str();
-}
+PyObject *ndobject_str(const dynd::ndobject& n);
+PyObject *ndobject_unicode(const dynd::ndobject& n);
 
 inline std::string ndobject_repr(const dynd::ndobject& n)
 {

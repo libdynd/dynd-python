@@ -968,7 +968,10 @@ cdef class w_ndobject:
             return ndobject_get_strides(GET(self.v))
 
     def __str__(self):
-        return str(ndobject_str(GET(self.v)).c_str())
+        return ndobject_str(GET(self.v))
+
+    def __unicode__(self):
+        return ndobject_unicode(GET(self.v))
 
     def __repr__(self):
         return str(ndobject_repr(GET(self.v)).c_str())

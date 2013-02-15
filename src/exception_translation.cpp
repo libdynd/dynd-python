@@ -6,6 +6,7 @@
 #include <Python.h>
 
 #include <stdexcept>
+#include <sstream>
 
 #include <dynd/exceptions.hpp>
 
@@ -35,6 +36,22 @@ void pydynd::translate_exception()
         PyErr_SetString(PyExc_IndexError, exn.message());
     } catch (const dynd::invalid_type_id& exn) {
         PyErr_SetString(PyExc_TypeError, exn.message());
+    } catch (const dynd::string_encode_error& exn) {
+        std::stringstream ss;
+        ss << exn.encoding();
+        Py_UNICODE dummy[1] = {(Py_UNICODE)exn.cp()};
+        PyErr_SetObject(PyExc_UnicodeEncodeError,
+                        Py_BuildValue("su#nns", ss.str().c_str(),
+                            &dummy[0], 1, 0, 1, exn.message()));
+    } catch (const dynd::string_decode_error& exn) {
+        std::stringstream ss;
+        ss << exn.encoding();
+        // TODO: Add a dynd mechanism for passing the offending
+        //       bytes to the exception
+        char dummy[1] = {0};
+        PyErr_SetObject(PyExc_UnicodeDecodeError,
+                        Py_BuildValue("ss#nns", ss.str().c_str(),
+                            &dummy[0], 1, 0, 1, exn.message()));
     } catch (const std::bad_alloc& exn) {
         PyErr_SetString(PyExc_MemoryError, exn.what());
 //    } catch (const std::bad_cast& exn) {

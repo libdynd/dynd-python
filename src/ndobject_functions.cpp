@@ -25,6 +25,56 @@ void pydynd::init_w_ndobject_typeobject(PyObject *type)
     WNDObject_Type = (PyTypeObject *)type;
 }
 
+PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
+{
+    ndobject n_str;
+    if (n.get_dtype().get_kind() == string_kind &&
+                    static_cast<const base_string_dtype *>(
+                        n.get_dtype().extended())->get_encoding() == string_encoding_ascii) {
+        // If it's already an ASCII string, pass-through
+        n_str = n;
+    } else {
+        // Otherwise, convert to an ASCII string
+        n_str = ndobject(make_string_dtype(string_encoding_ascii));
+        n_str.vals() = n;
+    }
+    const base_string_dtype *bsd =
+                    static_cast<const base_string_dtype *>(n_str.get_dtype().extended());
+    const char *begin = NULL, *end = NULL;
+    bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
+    return PyString_FromStringAndSize(begin, end - begin);
+}
+
+// TODO: Python 3.3 is different
+#if Py_UNICODE_SIZE == 2
+# define DYND_PY_ENCODING (string_encoding_ucs_2)
+#else
+# define DYND_PY_ENCODING (string_encoding_utf_32)
+#endif
+
+PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
+{
+    ndobject n_str;
+    if (n.get_dtype().get_kind() == string_kind &&
+                    static_cast<const base_string_dtype *>(
+                        n.get_dtype().extended())->get_encoding() == DYND_PY_ENCODING) {
+        // If it's already a unicode string, pass-through
+        n_str = n;
+    } else {
+        // Otherwise, convert to a unicode string
+        n_str = ndobject(make_string_dtype(DYND_PY_ENCODING));
+        n_str.vals() = n;
+    }
+    const base_string_dtype *bsd =
+                    static_cast<const base_string_dtype *>(n_str.get_dtype().extended());
+    const char *begin = NULL, *end = NULL;
+    bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
+    return PyUnicode_FromUnicode(reinterpret_cast<const Py_UNICODE *>(begin),
+                    (end - begin) / sizeof(Py_UNICODE));
+}
+
+#undef DYND_PY_ENCODING
+
 dynd::ndobject pydynd::ndobject_eval(const dynd::ndobject& n)
 {
     return n.vals();

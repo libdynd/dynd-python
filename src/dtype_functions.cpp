@@ -350,7 +350,7 @@ dynd::dtype pydynd::dnd_make_fixed_dim_dtype(PyObject *shape, const dtype& eleme
 {
     vector<intptr_t> shape_vec;
     if (PySequence_Check(shape)) {
-        pyobject_as_vector_intp(shape, shape_vec);
+        pyobject_as_vector_intp(shape, shape_vec, false);
     } else {
         shape_vec.push_back(pyobject_as_index(shape));
     }

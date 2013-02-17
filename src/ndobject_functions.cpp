@@ -98,7 +98,7 @@ dynd::ndobject pydynd::ndobject_empty(const dynd::dtype& d)
 dynd::ndobject pydynd::ndobject_empty(PyObject *shape, const dynd::dtype& d)
 {
     std::vector<intptr_t> shape_vec;
-    pyobject_as_vector_intp(shape, shape_vec);
+    pyobject_as_vector_intp(shape, shape_vec, true);
     return ndobject(make_ndobject_memory_block(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]));
 }
@@ -149,13 +149,59 @@ static void pyobject_as_irange_array(intptr_t& out_size, shortvector<irange>& ou
 
 dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subscript)
 {
-    // Convert the pyobject into an array of iranges
-    intptr_t size;
-    shortvector<irange> indices;
-    pyobject_as_irange_array(size, indices, subscript);
+    if (subscript == Py_Ellipsis) {
+        return n.at_array(0, NULL);
+    } else {
+        // Convert the pyobject into an array of iranges
+        intptr_t size;
+        shortvector<irange> indices;
+        pyobject_as_irange_array(size, indices, subscript);
 
-    // Do an indexing operation
-    return n.at_array(size, indices.get());
+        // Do an indexing operation
+        return n.at_array(size, indices.get());
+    }
+}
+
+static void assign_pyobject(const dynd::dtype& dst_dt, const char *dst_metadata, char *dst_data,
+                PyObject *value)
+{
+    // Do some special case assignments
+    if (PyBool_Check(value)) {
+        dynd_bool v = (value == Py_True);
+        dtype_assign(dst_dt, dst_metadata, dst_data,
+                        make_dtype<dynd_bool>(), NULL, reinterpret_cast<const char *>(&v));
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyInt_Check(value)) {
+        long v = PyInt_AS_LONG(value);
+        dtype_assign(dst_dt, dst_metadata, dst_data,
+                        make_dtype<long>(), NULL, reinterpret_cast<const char *>(&v));
+#endif // PY_VERSION_HEX < 0x03000000
+    } else if (PyLong_Check(value)) {
+        PY_LONG_LONG v = PyLong_AsLongLong(value);
+        if (v == -1 && PyErr_Occurred()) {
+            throw runtime_error("error converting int value");
+        }
+        dtype_assign(dst_dt, dst_metadata, dst_data,
+                        make_dtype<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
+    } else if (PyFloat_Check(value)) {
+        double v = PyFloat_AS_DOUBLE(value);
+        dtype_assign(dst_dt, dst_metadata, dst_data,
+                        make_dtype<double>(), NULL, reinterpret_cast<const char *>(&v));
+    } else if (PyComplex_Check(value)) {
+        complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
+        dtype_assign(dst_dt, dst_metadata, dst_data,
+                        make_dtype<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
+    } else {
+        ndobject v = ndobject_from_py(value);
+        dtype_assign(dst_dt, dst_metadata, dst_data,
+                        v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
+    }
+}
+
+static void assign_pyobject(const dynd::ndobject& n, PyObject *value)
+{
+    assign_pyobject(n.get_dtype(), n.get_ndo_meta(), n.get_readwrite_originptr(),
+                    value);
 }
 
 void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value)
@@ -163,12 +209,29 @@ void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyOb
     // TODO: Write a mechanism for assigning directly
     //       from PyObject to ndobject
     if (subscript == Py_Ellipsis) {
-        n.vals() = ndobject_from_py(value);
+        assign_pyobject(n, value);
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyInt_Check(subscript)) {
+        long i = PyInt_AS_LONG(subscript);
+        const char *metadata = n.get_ndo_meta();
+        char *data = n.get_readwrite_originptr();
+        dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
+        assign_pyobject(d, metadata, data, value);
+#endif // PY_VERSION_HEX < 0x03000000
+    } else if (PyLong_Check(subscript)) {
+        PY_LONG_LONG i = PyLong_AsLongLong(subscript);
+        if (i == -1 && PyErr_Occurred()) {
+            throw runtime_error("error converting int value");
+        }
+        const char *metadata = n.get_ndo_meta();
+        char *data = n.get_readwrite_originptr();
+        dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
+        assign_pyobject(d, metadata, data, value);
     } else {
         intptr_t size;
         shortvector<irange> indices;
         pyobject_as_irange_array(size, indices, subscript);
-        n.at_array(size, indices.get(), false).vals() = ndobject_from_py(value);
+        assign_pyobject(n.at_array(size, indices.get(), false), value);
     }
 }
 

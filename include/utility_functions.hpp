@@ -109,7 +109,8 @@ std::string pystring_as_string(PyObject *str);
 
 void pyobject_as_vector_dtype(PyObject *list_dtype, std::vector<dynd::dtype>& vector_dtype);
 void pyobject_as_vector_string(PyObject *list_string, std::vector<std::string>& vector_string);
-void pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>& vector_intp);
+void pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>& vector_intp,
+                bool allow_int);
 void pyobject_as_vector_int(PyObject *list_int, std::vector<int>& vector_int);
 
 /**

@@ -117,8 +117,25 @@ void pydynd::pyobject_as_vector_string(PyObject *list_string, std::vector<std::s
     }
 }
 
-void pydynd::pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>& vector_intp)
+void pydynd::pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>& vector_intp,
+                bool allow_int)
 {
+    if (allow_int) {
+        // If permitted, convert an int into a size-1 list
+        if (PyInt_Check(list_index)) {
+            vector_intp.resize(1);
+            vector_intp[0] = PyInt_AS_LONG(list_index);
+            return;
+        } else if (PyLong_Check(list_index)) {
+            PY_LONG_LONG v = PyLong_AsLongLong(list_index);
+            if (v == -1 && PyErr_Occurred()) {
+                throw runtime_error("error converting int");
+            }
+            vector_intp.resize(1);
+            vector_intp[0] = v;
+            return;
+        }
+    }
     Py_ssize_t size = PySequence_Size(list_index);
     vector_intp.resize(size);
     for (Py_ssize_t i = 0; i < size; ++i) {

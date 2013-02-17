@@ -37,9 +37,6 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
         char* get_readwrite_originptr()
         char* get_readonly_originptr()
 
-        void val_assign(ndobject&, assign_error_mode) except +translate_exception
-        void val_assign(dtype&, char*, assign_error_mode) except +translate_exception
-
         ndobject vals() except +translate_exception
 
         ndobject eval() except +translate_exception
@@ -80,6 +77,7 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     ndobject ndobject_divide(ndobject&, ndobject&) except +translate_exception
 
     ndobject ndobject_getitem(ndobject&, object) except +translate_exception
+    void ndobject_setitem(ndobject&, object, object) except +translate_exception
     object ndobject_get_shape(ndobject&) except +translate_exception
     object ndobject_get_strides(ndobject&) except +translate_exception
 

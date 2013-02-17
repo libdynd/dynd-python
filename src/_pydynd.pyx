@@ -797,15 +797,6 @@ cdef class w_ndobject:
         SET(result.v, GET(self.v).storage())
         return result
 
-    def val_assign(self, obj):
-        """
-        a.val_assign(obj)
-        
-        Assigns to the ndobject by value instead of by reference.
-        """
-        cdef w_ndobject n = w_ndobject(obj)
-        GET(self.v).val_assign(GET(n.v), assign_error_default)
-
     def cast_scalars(self, dtype, errmode=None):
         """
         a.cast_scalars(dtype, errmode='fractional')
@@ -985,6 +976,9 @@ cdef class w_ndobject:
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_getitem(GET(self.v), x))
         return result
+
+    def __setitem__(self, x, y):
+        ndobject_setitem(GET(self.v), x, y)
 
     def __getbuffer__(w_ndobject self, Py_buffer* buffer, int flags):
         # Docstring triggered Cython bug (fixed in master), so it's commented out

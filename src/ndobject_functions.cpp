@@ -129,27 +129,47 @@ PyObject *pydynd::ndobject_get_strides(const dynd::ndobject& n)
     return intptr_array_as_tuple(ndim, result.get());
 }
 
+static void pyobject_as_irange_array(intptr_t& out_size, shortvector<irange>& out_indices,
+                PyObject *subscript)
+{
+    if (!PyTuple_Check(subscript)) {
+        // A single subscript
+        out_size = 1;
+        out_indices.init(1);
+        out_indices[0] = pyobject_as_irange(subscript);
+    } else {
+        out_size = PyTuple_GET_SIZE(subscript);
+        // Tuple of subscripts
+        out_indices.init(out_size);
+        for (Py_ssize_t i = 0; i < out_size; ++i) {
+            out_indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
+        }
+    }
+}
+
 dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges
     intptr_t size;
     shortvector<irange> indices;
-    if (!PyTuple_Check(subscript)) {
-        // A single subscript
-        size = 1;
-        indices.init(1);
-        indices[0] = pyobject_as_irange(subscript);
-    } else {
-        size = PyTuple_GET_SIZE(subscript);
-        // Tuple of subscripts
-        indices.init(size);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
-        }
-    }
+    pyobject_as_irange_array(size, indices, subscript);
 
     // Do an indexing operation
-    return n.at_array((int)size, indices.get());
+    return n.at_array(size, indices.get());
+}
+
+void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value)
+{
+    // TODO: Write a mechanism for assigning directly
+    //       from PyObject to ndobject
+    if (subscript == Py_Ellipsis) {
+        n.vals() = ndobject_from_py(value);
+    } else {
+        intptr_t size;
+        shortvector<irange> indices;
+        pyobject_as_irange_array(size, indices, subscript);
+        n.at_array(size, indices.get(), false).vals() = ndobject_from_py(value);
+    }
 }
 
 ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step)

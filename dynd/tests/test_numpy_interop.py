@@ -214,14 +214,16 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         # Writeable
         b = nd.ndobject(a)
-        b[0].val_assign(2.0)
+        b[0] = 2.0
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
 
         # Not writeable
         a.flags.writeable = False
         b = nd.ndobject(a)
-        self.assertRaises(RuntimeError, b[0].val_assign, 3.0)
+        def assign_to(x,y):
+            x[0] = y
+        self.assertRaises(RuntimeError, assign_to, b, 3.0)
         # should still be 2.0
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)

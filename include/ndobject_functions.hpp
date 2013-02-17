@@ -127,6 +127,11 @@ PyObject *ndobject_get_strides(const dynd::ndobject& n);
 dynd::ndobject ndobject_getitem(const dynd::ndobject& n, PyObject *subscript);
 
 /**
+ * Implementation of __setitem__ for the wrapped ndobject object.
+ */
+void ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value);
+
+/**
  * Implementation of nd.arange().
  */
 dynd::ndobject ndobject_arange(PyObject *start, PyObject *stop, PyObject *step);

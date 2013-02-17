@@ -77,7 +77,7 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
 
 dynd::ndobject pydynd::ndobject_eval(const dynd::ndobject& n)
 {
-    return n.vals();
+    return n.eval();
 }
 
 dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n,
@@ -170,9 +170,9 @@ ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step
     dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(),
             promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
     
-    start_nd = start_nd.cast_scalars(dt, assign_error_none).vals();
-    stop_nd = stop_nd.cast_scalars(dt, assign_error_none).vals();
-    step_nd = step_nd.cast_scalars(dt, assign_error_none).vals();
+    start_nd = start_nd.cast_scalars(dt, assign_error_none).eval();
+    stop_nd = stop_nd.cast_scalars(dt, assign_error_none).eval();
+    step_nd = step_nd.cast_scalars(dt, assign_error_none).eval();
 
     if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
         throw runtime_error("dynd::arange should only be called with scalar parameters");

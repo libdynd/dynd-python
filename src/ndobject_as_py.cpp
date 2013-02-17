@@ -164,7 +164,7 @@ static void nested_ndobject_as_py(const dtype& d, char *data, const char *metada
 PyObject* pydynd::ndobject_as_py(const dynd::ndobject& n)
 {
     // Evaluate the ndobject
-    ndobject nvals = n.vals();
+    ndobject nvals = n.eval();
     ndobject_as_py_data result;
 
     nested_ndobject_as_py(nvals.get_dtype(), nvals.get_ndo()->m_data_pointer, nvals.get_ndo_meta(), &result);

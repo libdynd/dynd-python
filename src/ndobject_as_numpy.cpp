@@ -579,7 +579,7 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
                 // make copies of strings
                 if (n.get_dtype().get_kind() == expression_kind) {
                     // If it's an expression kind
-                    pyobject_ownref n_tmp(wrap_ndobject(n.vals()));
+                    pyobject_ownref n_tmp(wrap_ndobject(n.eval()));
                     return ndobject_as_numpy(n_tmp.get(), true);
                 } else if (n.get_dtype().get_kind() == string_kind) {
                     // If it's a string kind, return it as a Python unicode

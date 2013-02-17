@@ -42,6 +42,7 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
 
         ndobject vals() except +translate_exception
 
+        ndobject eval() except +translate_exception
         ndobject eval_immutable() except +translate_exception
 
         ndobject storage() except +translate_exception

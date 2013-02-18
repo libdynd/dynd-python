@@ -165,7 +165,8 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
         }
         if (strcmp(s, "D") == 0) {
             // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
-            dt = make_property_dtype(make_date_dtype(), "days_after_1970_int64");
+            dt = make_reversed_property_dtype(make_date_dtype(),
+                            make_dtype<int64_t>(), "days_after_1970_int64");
         }
         break;
     }

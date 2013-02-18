@@ -640,3 +640,4 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
 }
 
 #endif // NUMPY_INTEROP
+

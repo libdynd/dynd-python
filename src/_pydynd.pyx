@@ -184,7 +184,7 @@ cdef class w_dtype:
         The Blaze datashape of the dynd type, as a string.
         """
         def __get__(self):
-            return str(dynd_format_datashape(GET(self.v)))
+            return str(dynd_format_datashape(GET(self.v)).c_str())
 
     property udtype:
         """
@@ -915,7 +915,7 @@ cdef class w_ndobject:
         The Blaze datashape of the ndobject, as a string.
         """
         def __get__(self):
-            return str(dynd_format_datashape(GET(self.v)))
+            return str(dynd_format_datashape(GET(self.v)).c_str())
 
     property udtype:
         """

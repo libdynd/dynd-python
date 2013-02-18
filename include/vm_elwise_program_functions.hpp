@@ -37,3 +37,4 @@ inline std::string vm_elwise_program_debug_print(const dynd::vm::elwise_program&
 } // namespace pydynd
 
 #endif // _DYND__VM_ELWISE_PROGRAM_FUNCTIONS_HPP_
+

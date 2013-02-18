@@ -21,3 +21,4 @@ dynd::ndobject ndobject_from_py(PyObject *obj);
 } // namespace pydynd
 
 #endif // _DYND__NDARRAY_FROM_PY_HPP_
+

@@ -227,8 +227,15 @@ static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metada
         buffer->format = NULL;
     }
     buffer->ndim = 1;
+#if PY_VERSION_HEX >= 0x02070000
+    buffer->internal = NULL;
     buffer->shape = &buffer->smalltable[0];
     buffer->strides = &buffer->smalltable[1];
+#else
+    buffer->internal = malloc(2*sizeof(intptr_t));
+    buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
+    buffer->strides = buffer->shape + 1;
+#endif
     buffer->strides[0] = 1;
 
     if (dt.get_type_id() == bytes_type_id) {

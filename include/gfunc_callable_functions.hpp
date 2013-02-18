@@ -134,3 +134,4 @@ PyObject *wrap_dtype_callable(const std::string& funcname, const dynd::gfunc::ca
 } // namespace pydynd
 
 #endif // _DYND__GFUNC_CALLABLE_FUNCTIONS_HPP_
+

@@ -3,7 +3,7 @@ STEP BY STEP BUILD AND INSTALL
 
 1. Check the C++ compiler version.
 
-Ensure you have a suitable C++98 or C++11 compiler. On Windows, Visual
+  Ensure you have a suitable C++98 or C++11 compiler. On Windows, Visual
 Studio 2010 is the recommended compiler, but 2008 has been tested
 as well. On Mac OS X, clang is the recommended compiler. On Linux,
 gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.

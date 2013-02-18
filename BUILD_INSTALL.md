@@ -9,7 +9,7 @@ STEP BY STEP BUILD AND INSTALL
 2. Get the Prerequisites:
 
  * CMake >= 2.6
- * Python 2.7
+ * Python 2.6 or 2.7
  * Cython >= 0.16
  * NumPy >= 1.5
  * git (for cloning the github repositories)
@@ -18,15 +18,15 @@ STEP BY STEP BUILD AND INSTALL
     should work equivalently on Windows and Unix-like operating systems.
 
 ```
-    ~ $ git clone https://github.com/ContinuumIO/dynd-python
-    Cloning into dynd-python...
-    ~ $ cd dynd-python
-    ~/dynd-python $ mkdir libraries
-    ~/dynd-python $ cd libraries
-    ~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/dynd
-    Cloning into dynd...
-    ~/dynd-python/libraries $ cd ..
-    ~/dynd-python $ mkdir build
+~ $ git clone https://github.com/ContinuumIO/dynd-python
+Cloning into dynd-python...
+~ $ cd dynd-python
+~/dynd-python $ mkdir libraries
+~/dynd-python $ cd libraries
+~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/dynd
+Cloning into dynd...
+~/dynd-python/libraries $ cd ..
+~/dynd-python $ mkdir build
 ```
 
 4a. (Windows) Run CMake-gui. For the 'source code' folder, choose the
@@ -53,8 +53,8 @@ STEP BY STEP BUILD AND INSTALL
     to the cmake command.
 
 ```
-    ~/dynd-python $ cd build
-    ~/dynd-python/build $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+~/dynd-python $ cd build
+~/dynd-python/build $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 ```
 
 4c. (Linux) Run cmake as follows.
@@ -66,8 +66,8 @@ STEP BY STEP BUILD AND INSTALL
     to the cmake command.
 
 ```
-    ~/dynd-python $ cd build
-    ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+~/dynd-python $ cd build
+~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 ```
 
 5a. (Windows) Double-click on the 'dynd-python\build\dynd-python.sln'
@@ -78,8 +78,8 @@ STEP BY STEP BUILD AND INSTALL
 5b. (OS X and Linux) From the build directory, run the following.
 
 ```
-    ~/dynd-python/build $ make
-    ~/dynd-python/build $ make install # or "sudo make install"
+~/dynd-python/build $ make
+~/dynd-python/build $ make install # or "sudo make install"
 ```
 
 CONFIGURATION OPTIONS

@@ -22,6 +22,7 @@
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/property_dtype.hpp>
+#include <dynd/shape_tools.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -620,23 +621,46 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
             ss << "cannot view dynd object with dtype " << n.get_dtype();
             ss << " as numpy without making a copy";
             throw runtime_error(ss.str());
-        } else {
-            throw runtime_error("TODO: implement nd.as_numpy() copy functionality");
         }
-    }
+        make_numpy_dtype_for_copy(&numpy_dtype,
+                        undim, n.get_dtype(), n.get_ndo_meta());
 
-    pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
+        // Rebuild the strides so that the copy follows 'KEEPORDER'
+        intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;
+        if (undim == 1) {
+            strides[0] = element_size;
+        } else if (undim > 1) {
+            shortvector<int> axis_perm(undim);
+            strides_to_axis_perm(undim, strides.get(), axis_perm.get());
+            axis_perm_to_strides(undim, axis_perm.get(),
+                            shape.get(), element_size,
+                            strides.get());
+        }
+
+        // Create a new NumPy array, and copy from the dynd ndobject
+        pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
+                        (int)undim, shape.get(), strides.get(), NULL, 0, NULL));
+        // Create a dynd ndobject view of this result
+        ndobject result_dynd = ndobject_from_numpy_array((PyArrayObject *)result.get());
+        // Copy the values using this view
+        result_dynd.vals() = n;
+        // Return the NumPy array
+        return result.release();
+    } else {
+        // Create a view directly to the dynd ndobject
+        pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
                     (int)undim, shape.get(), strides.get(), n.get_ndo()->m_data_pointer,
                     ((n.get_flags()&write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
-    if (PyArray_SetBaseObject((PyArrayObject *)result.get(), n_obj) < 0) {
-        throw runtime_error("propagating python exception");
-    }
+        if (PyArray_SetBaseObject((PyArrayObject *)result.get(), n_obj) < 0) {
+            throw runtime_error("propagating python exception");
+        }
 #else
-    PyArray_BASE(result.get()) = n_obj;
-    Py_INCREF(n_obj);
+        PyArray_BASE(result.get()) = n_obj;
+        Py_INCREF(n_obj);
 #endif
-    return result.release();
+        return result.release();
+    }
 }
 
 #endif // NUMPY_INTEROP

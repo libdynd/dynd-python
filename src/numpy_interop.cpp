@@ -16,6 +16,8 @@
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
+#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/property_dtype.hpp>
 
 #include "dtype_functions.hpp"
 #include "ndobject_functions.hpp"
@@ -150,11 +152,31 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
     case NPY_VOID:
         dt = make_struct_dtype_from_numpy_struct(d, data_alignment);
         break;
-    default: {
+    case NPY_DATETIME: {
+        // Get the dtype info through the CPython API, slower
+        // but lets NumPy's datetime API change without issue.
+        pyobject_ownref mod(PyImport_ImportModule("numpy"));
+        pyobject_ownref dd(PyObject_CallMethod(mod.get(), "datetime_data", "O", d));
+        pyobject_ownref unit(PyTuple_GetItem(dd.get(), 0));
+        char *s = PyString_AsString(unit.get());
+        if (s == NULL) {
+            throw runtime_error("expected a string/bytes as the first "
+                            "item in numpy.datetime_data(d) output");
+        }
+        if (strcmp(s, "D") == 0) {
+            // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
+            dt = make_property_dtype(make_date_dtype(), "days_after_1970_int64");
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    if (dt.get_type_id() == uninitialized_type_id) {
         stringstream ss;
         ss << "unsupported Numpy dtype with type id " << d->type_num;
         throw runtime_error(ss.str());
-        }
     }
 
     if (!PyArray_ISNBO(d->byteorder)) {

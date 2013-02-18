@@ -17,6 +17,7 @@ STEP BY STEP BUILD AND INSTALL
 3. Check out the dynd-python and dynd source code. The following commands
     should work equivalently on Windows and Unix-like operating systems.
 
+```
     ~ $ git clone https://github.com/ContinuumIO/dynd-python
     Cloning into dynd-python...
     ~ $ cd dynd-python
@@ -26,6 +27,7 @@ STEP BY STEP BUILD AND INSTALL
     Cloning into dynd...
     ~/dynd-python/libraries $ cd ..
     ~/dynd-python $ mkdir build
+```
 
 4a. (Windows) Run CMake-gui. For the 'source code' folder, choose the
     dynd-python folder which is the root of the project. For the
@@ -50,8 +52,10 @@ STEP BY STEP BUILD AND INSTALL
     `-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
     to the cmake command.
 
+```
     ~/dynd-python $ cd build
     ~/dynd-python/build $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+```
 
 4c. (Linux) Run cmake as follows.
 
@@ -61,8 +65,10 @@ STEP BY STEP BUILD AND INSTALL
     `-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
     to the cmake command.
 
+```
     ~/dynd-python $ cd build
     ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+```
 
 5a. (Windows) Double-click on the 'dynd-python\build\dynd-python.sln'
     file to open up Visual Studio. Select 'Release' or 'RelWithDebInfo'
@@ -71,8 +77,10 @@ STEP BY STEP BUILD AND INSTALL
 
 5b. (OS X and Linux) From the build directory, run the following.
 
+```
     ~/dynd-python/build $ make
     ~/dynd-python/build $ make install # or "sudo make install"
+```
 
 CONFIGURATION OPTIONS
 =====================

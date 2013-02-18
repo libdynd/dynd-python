@@ -8,11 +8,11 @@ gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
 
 2. Get the Prerequisites:
 
- * CMake >= 2.6
- * Python 2.6 or 2.7
- * Cython >= 0.16
- * NumPy >= 1.5
- * git (for cloning the github repositories)
+    * CMake >= 2.6
+    * Python 2.6 or 2.7
+    * Cython >= 0.16
+    * NumPy >= 1.5
+    * git (for cloning the github repositories)
 
 3. Check out the dynd-python and dynd source code. The following commands
 should work equivalently on Windows and Unix-like operating systems.

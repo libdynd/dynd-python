@@ -17,65 +17,69 @@ gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
 3. Check out the dynd-python and dynd source code. The following commands
 should work equivalently on Windows and Unix-like operating systems.
 
-```
-~ $ git clone https://github.com/ContinuumIO/dynd-python
-Cloning into dynd-python...
-~ $ cd dynd-python
-~/dynd-python $ mkdir libraries
-~/dynd-python $ cd libraries
-~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/dynd
-Cloning into dynd...
-~/dynd-python/libraries $ cd ..
-~/dynd-python $ mkdir build
-```
+    ```
+    ~ $ git clone https://github.com/ContinuumIO/dynd-python
+    Cloning into dynd-python...
+    ~ $ cd dynd-python
+    ~/dynd-python $ mkdir libraries
+    ~/dynd-python $ cd libraries
+    ~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/dynd
+    Cloning into dynd...
+    ~/dynd-python/libraries $ cd ..
+    ~/dynd-python $ mkdir build
+    ```
 
-4a. (Windows) Run CMake-gui. For the 'source code' folder, choose the
+4.
+
+    **(Windows)** Run CMake-gui. For the 'source code' folder, choose the
 dynd-python folder which is the root of the project. For the
 'build the binaries' folder, choose the 'build' subdirectory
 created during step 3.
 
-If you want to control where the installation goes, you can edit
+    If you want to control where the installation goes, you can edit
 the `CMAKE_INSTALL_PREFIX` and `PYTHON_PACKAGE_INSTALL_PREFIX`
 variables in the GUI after clicking 'Configure', then clicking
 'Configure' again to update.
 
-Click on 'Configure' and then 'Generate' to create
+    Click on 'Configure' and then 'Generate' to create
 dynd-python.sln in the 'build' subdirectory.
 
-4b. (OS X) Run cmake as follows. This describes the 64-bit build,
+    **(OS X)** Run cmake as follows. This describes the 64-bit build,
 for a 32-bit build switch the "-DCMAKE\_OSX\_ARCHITECTURES"
 argument below to "i386".
 
-If you want to control where the dynd shared object is
+    If you want to control where the dynd shared object is
 installed, and where the Python module goes, add
 `-DCMAKE_INSTALL_PREFIX=<prefix>` and
 `-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
 to the cmake command.
 
-```
-~/dynd-python $ cd build
-~/dynd-python/build $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-```
+    ```
+    ~/dynd-python $ cd build
+    ~/dynd-python/build $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+    ```
 
-4c. (Linux) Run cmake as follows.
+    **(Linux)** Run cmake as follows.
 
-If you want to control where the dynd shared object is
+    If you want to control where the dynd shared object is
 installed, and where the Python module goes, add
 `-DCMAKE_INSTALL_PREFIX=<prefix>` and
 `-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
 to the cmake command.
 
-```
-~/dynd-python $ cd build
-~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-```
+    ```
+    ~/dynd-python $ cd build
+    ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+    ```
 
-5a. (Windows) Double-click on the 'dynd-python\build\dynd-python.sln'
+5.
+
+    **(Windows)** Double-click on the 'dynd-python\build\dynd-python.sln'
 file to open up Visual Studio. Select 'Release' or 'RelWithDebInfo'
 if you're building for release, and build. To install the targets,
 right click on the INSTALL project and build it.
 
-5b. (OS X and Linux) From the build directory, run the following.
+    **(OS X and Linux)** From the build directory, run the following.
 
 ```
 ~/dynd-python/build $ make

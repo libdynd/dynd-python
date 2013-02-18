@@ -1,20 +1,23 @@
 STEP BY STEP BUILD AND INSTALL
 ==============================
 
-1. Ensure you have a suitable C++98 or C++11 compiler. On Windows, Visual
+1. Check the C++ compiler version.
+
+Ensure you have a suitable C++98 or C++11 compiler. On Windows, Visual
 Studio 2010 is the recommended compiler, but 2008 has been tested
 as well. On Mac OS X, clang is the recommended compiler. On Linux,
 gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
 
-2. Get the Prerequisites:
-
+2. Get the prerequisites.
   * CMake >= 2.6
   * Python 2.6 or 2.7
   * Cython >= 0.16
   * NumPy >= 1.5
   * git (for cloning the github repositories)
 
-3. Check out the dynd-python and dynd source code. The following commands
+3. Get the source code.
+
+  Check out the dynd-python and dynd source code. The following commands
 should work equivalently on Windows and Unix-like operating systems.
 
   ```
@@ -29,7 +32,7 @@ should work equivalently on Windows and Unix-like operating systems.
   ~/dynd-python $ mkdir build
   ```
 
-4.
+4. Use cmake to create the build files.
 
   **(Windows)** Run CMake-gui. For the 'source code' folder, choose the
 dynd-python folder which is the root of the project. For the
@@ -72,7 +75,7 @@ to the cmake command.
   ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
   ```
 
-5.
+5. Run the build and install.
 
   **(Windows)** Double-click on the 'dynd-python\build\dynd-python.sln'
 file to open up Visual Studio. Select 'Release' or 'RelWithDebInfo'

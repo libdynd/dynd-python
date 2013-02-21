@@ -152,6 +152,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
     case NPY_VOID:
         dt = make_struct_dtype_from_numpy_struct(d, data_alignment);
         break;
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
     case NPY_DATETIME: {
         // Get the dtype info through the CPython API, slower
         // but lets NumPy's datetime API change without issue.
@@ -170,6 +171,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
         }
         break;
     }
+#endif // At least NumPy 1.6
     default:
         break;
     }

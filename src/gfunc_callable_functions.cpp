@@ -10,6 +10,7 @@
 #include "placement_wrappers.hpp"
 
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/builtin_dtype_properties.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -110,28 +111,34 @@ void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *d
 PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name)
 {
     dtype dt = n.get_dtype();
+    const std::pair<std::string, gfunc::callable> *properties;
+    size_t count;
+    // Search for a property
     if (!dt.is_builtin()) {
-        const std::pair<std::string, gfunc::callable> *properties;
-        size_t count;
-        // Search for a property
         dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
-        // TODO: We probably want to make some kind of acceleration structure for the name lookup
-        if (count > 0) {
-            string nstr = pystring_as_string(name);
-            for (size_t i = 0; i < count; ++i) {
-                if (properties[i].first == nstr) {
-                    return call_gfunc_callable(nstr, properties[i].second, n);
-                }
+    } else {
+        get_builtin_dtype_dynamic_ndobject_properties(dt.get_type_id(), &properties, &count);
+    }
+    // TODO: We probably want to make some kind of acceleration structure for the name lookup
+    if (count > 0) {
+        string nstr = pystring_as_string(name);
+        for (size_t i = 0; i < count; ++i) {
+            if (properties[i].first == nstr) {
+                return call_gfunc_callable(nstr, properties[i].second, n);
             }
         }
-        // Search for a function
+    }
+    // Search for a function
+    if (!dt.is_builtin()) {
         dt.extended()->get_dynamic_ndobject_functions(&properties, &count);
-        if (count > 0) {
-            string nstr = pystring_as_string(name);
-            for (size_t i = 0; i < count; ++i) {
-                if (properties[i].first == nstr) {
-                    return wrap_ndobject_callable(nstr, properties[i].second, n);
-                }
+    } else {
+        count = 0;
+    }
+    if (count > 0) {
+        string nstr = pystring_as_string(name);
+        for (size_t i = 0; i < count; ++i) {
+            if (properties[i].first == nstr) {
+                return wrap_ndobject_callable(nstr, properties[i].second, n);
             }
         }
     }

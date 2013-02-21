@@ -74,6 +74,17 @@ class TestDType(unittest.TestCase):
         self.assertEqual(ndt.cfloat64.data_size, 16)
         self.assertEqual(ndt.cfloat64.alignment, 8)
 
+    def test_complex_dtype_realimag(self):
+        a = nd.ndobject(1 + 3j)
+        self.assertEqual(ndt.cfloat64, a.dtype)
+        self.assertEqual(1, nd.as_py(a.real))
+        self.assertEqual(3, nd.as_py(a.imag))
+
+        a = nd.ndobject([1 + 2j, 3 + 4j, 5 + 6j])
+        self.assertEqual(nd.dtype('A, cfloat64'), a.dtype)
+        self.assertEqual([1, 3, 5], nd.as_py(a.real))
+        self.assertEqual([2, 4, 6], nd.as_py(a.imag))
+
     def test_fixedstring_dtype_properties(self):
         d = ndt.make_fixedstring_dtype(10, 'ascii')
         self.assertEqual(str(d), "string<10,'ascii'>")

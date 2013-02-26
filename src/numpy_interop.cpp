@@ -67,8 +67,9 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
     }
 
     // Make a fixedstruct if possible, struct otherwise
-    if (is_fixedstruct_compatible_offsets((int)field_types.size(), &field_types[0], &field_offsets[0], d->elsize)) {
-        return make_fixedstruct_dtype(field_types, field_names);
+    if (is_fixedstruct_compatible_offsets(field_types.size(),
+                    &field_types[0], &field_offsets[0], d->elsize)) {
+        return make_fixedstruct_dtype(field_types.size(), &field_types[0], &field_names[0]);
     } else {
         return make_struct_dtype(field_types, field_names);
     }

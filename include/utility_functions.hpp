@@ -48,6 +48,17 @@ public:
         }
     }
 
+    inline pyobject_ownref(PyObject* obj, bool inc_ref)
+        : m_obj(obj)
+    {
+        if (obj == NULL) {
+            throw std::runtime_error("propagating a Python exception...");
+        }
+        if (inc_ref) {
+            Py_INCREF(m_obj);
+        }
+    }
+
     inline ~pyobject_ownref()
     {
         Py_XDECREF(m_obj);
@@ -78,7 +89,7 @@ public:
     }
 
     /** Returns a borrowed reference. */
-    inline PyObject *get()
+    inline PyObject *get() const
     {
         return m_obj;
     }

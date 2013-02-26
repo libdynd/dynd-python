@@ -233,8 +233,9 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         pyobject_ownref total_size_obj(PyObject_CallMethod(ctypes._ctypes, (char *)"sizeof", (char *)"N", d));
         size_t total_size = pyobject_as_index(total_size_obj.get());
 
-        if (is_fixedstruct_compatible_offsets((int)field_count, &field_types[0], &field_offsets[0], total_size)) {
-            return make_fixedstruct_dtype(field_types, field_names);
+        if (is_fixedstruct_compatible_offsets(field_count, &field_types[0],
+                        &field_offsets[0], total_size)) {
+            return make_fixedstruct_dtype(field_count, &field_types[0], &field_names[0]);
         } else {
             return make_struct_dtype(field_types, field_names);
         }

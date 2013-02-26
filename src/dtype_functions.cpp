@@ -343,7 +343,10 @@ dynd::dtype pydynd::dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *
     vector<string> field_names_vec;
     pyobject_as_vector_dtype(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
-    return make_fixedstruct_dtype(field_types_vec, field_names_vec);
+    if (field_types_vec.size() != field_names_vec.size()) {
+        throw runtime_error("The input field types and field names lists must have the same size");
+    }
+    return make_fixedstruct_dtype(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
 }
 
 dynd::dtype pydynd::dnd_make_fixed_dim_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)

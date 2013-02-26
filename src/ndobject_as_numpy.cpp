@@ -470,7 +470,7 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
     }
     ndobject n = ((WNDObject *)n_obj)->v;
     if (n.get_ndo() == NULL) {
-                throw runtime_error("cannot convert NULL dynd ndobject to numpy");
+        throw runtime_error("cannot convert NULL dynd ndobject to numpy");
     }
 
     // If a copy is allowed, convert the builtin scalars to NumPy scalars

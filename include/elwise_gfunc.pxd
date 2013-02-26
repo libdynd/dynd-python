@@ -19,3 +19,6 @@ cdef extern from "elwise_gfunc_functions.hpp" namespace "pydynd":
     void placement_delete(elwise_gfunc_placement_wrapper&)
     # ndarray placement cast
     elwise_gfunc& GET(elwise_gfunc_placement_wrapper&)
+
+cdef extern from "elwise_map.hpp" namespace "pydynd":
+    object dynd_elwise_map "pydynd::elwise_map" (object n_obj, object callable, object dst_type, object src_type)

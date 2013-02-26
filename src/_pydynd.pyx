@@ -1286,6 +1286,37 @@ def format_json(w_ndobject n):
     SET(result.v, dynd_format_json(GET(n.v)))
     return result
 
+def elwise_map(n, callable, dst_type, src_type = None):
+    """
+    nd.elwise_map(n, callable, dst_type, src_type=None)
+
+    Applies a deferred element-wise mapping function to
+    a dynd ndobject 'n'.
+
+    Parameters
+    ----------
+    n : dynd ndobject
+        The object to which the mapping is applied.
+        TODO: A list of ndobjects for supporting multiple
+              source operands.
+    callable : Python callable
+        A Python function which is called as
+        'callable(dst, src[0], ..., src[N-1])', with
+        one-dimensional dynd ndobjects 'dst', 'src[0]',
+        ..., 'src[N-1]'. The function should, in an element-wise
+        fashion, use the values in the different 'src'
+        ndobjects to calculate values that get placed into
+        the 'dst' ndobject. The function must not return a value.
+    dst_type : dynd type
+        The type of the computation's result.
+    src_type : dynd type, optional
+        The type of the source. If the source ndobject has
+        a different type, it will be converted.
+        TODO: A list of types for supporting multiple
+              source operands.
+    """
+    return dynd_elwise_map(n, callable, dst_type, src_type)
+
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
 

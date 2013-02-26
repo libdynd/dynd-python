@@ -85,6 +85,7 @@ set(pydynd_CPP_SRC
     include/do_import_array.hpp
     include/placement_wrappers.hpp
     include/dtype_functions.hpp
+    include/elwise_map.hpp
     include/gfunc_callable_functions.hpp
     include/exception_translation.hpp
     include/ndobject_functions.hpp
@@ -100,6 +101,7 @@ set(pydynd_CPP_SRC
     src/codegen_cache_functions.cpp
     src/ctypes_interop.cpp
     src/dtype_functions.cpp
+    src/elwise_map.cpp
     src/gfunc_callable_functions.cpp
     src/exception_translation.cpp
     src/ndobject_functions.cpp

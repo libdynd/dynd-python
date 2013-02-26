@@ -50,6 +50,18 @@ inline PyObject *wrap_ndobject(const dynd::ndobject& n) {
     result->v = n;
     return (PyObject *)result;
 }
+#ifdef DYND_RVALUE_REFS
+inline PyObject *wrap_ndobject(dynd::ndobject&& n) {
+    WNDObject *result = (WNDObject *)WNDObject_Type->tp_alloc(WNDObject_Type, 0);
+    if (!result) {
+        throw std::runtime_error("");
+    }
+    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
+    pydynd::placement_new(reinterpret_cast<pydynd::ndobject_placement_wrapper &>(result->v));
+    result->v = DYND_MOVE(n);
+    return (PyObject *)result;
+}
+#endif
 
 inline void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
 {

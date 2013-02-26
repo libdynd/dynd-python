@@ -7,6 +7,7 @@
 
 #include <dynd/dtypes/expr_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
+#include <dynd/dtypes/var_dim_dtype.hpp>
 #include <dynd/kernels/expr_kernel_generator.hpp>
 #include <dynd/kernels/elwise_expr_kernels.hpp>
 
@@ -96,6 +97,7 @@ namespace {
             // Put all the ndobjects in a tuple
             pyobject_ownref args(PyTuple_New(src_count + 1));
             for (size_t i = 0; i != src_count + 1; ++i) {
+                Py_INCREF(ndo[i]);
                 PyTuple_SET_ITEM(args.get(), i, (PyObject *)ndo[i]);
             }
             // Call the function
@@ -152,7 +154,8 @@ public:
                 assignment_kernel *out, size_t offset_out,
                 const dtype& dst_dt, const char *dst_metadata,
                 size_t src_count, const dtype *src_dt, const char **src_metadata,
-                kernel_request_t kernreq, const eval::eval_context *ectx) const {
+                kernel_request_t kernreq, const eval::eval_context *ectx) const
+    {
         if (src_count != m_src_dt.size()) {
             stringstream ss;
             ss << "This elwise_map kernel requires " << m_src_dt.size() << " src operands, ";
@@ -205,6 +208,7 @@ public:
         strided_dim_dtype_metadata *md;
         dtype dt = make_strided_dim_dtype(dst_dt);
         ndobject n(make_ndobject_memory_block(dt.get_metadata_size()));
+        n.get_ndo()->m_dtype = dt.release();
         n.get_ndo()->m_flags = write_access_flag;
         md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
         md->size = 1;
@@ -218,6 +222,7 @@ public:
         for (size_t i = 0; i != src_count; ++i) {
             dt = make_strided_dim_dtype(src_dt[i]);
             n.set(make_ndobject_memory_block(dt.get_metadata_size()));
+            n.get_ndo()->m_dtype = dt.release();
             n.get_ndo()->m_flags = read_access_flag;
             md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
             md->size = 1;
@@ -248,22 +253,36 @@ PyObject *pydynd::elwise_map(PyObject *n_obj, PyObject *callable,
     dtype dst_dt;
     vector<dtype> src_dt;
 
-    // Cast to the source dtype if requested
+    dst_dt = make_dtype_from_object(dst_type);
     if (src_type != NULL && src_type != Py_None) {
+        // Cast to the source dtype if requested
         src_dt.push_back(make_dtype_from_object(src_type));
         n = n.cast_udtype(src_dt.back());
     } else {
         src_dt.push_back(n.get_udtype());
     }
 
+    size_t undim = n.get_undim();
+    dimvector result_shape(undim);
+    n.get_shape(result_shape.get());
+    dtype result_vdt = dst_dt;
+    for (size_t i = 0; i != undim; ++i) {
+        if (result_shape[undim - i - 1] == -1) {
+            result_vdt = make_var_dim_dtype(result_vdt);
+        } else {
+            result_vdt = make_strided_dim_dtype(result_vdt);
+        }
+    }
+
     // Create the result
     string field_names[1] = {"arg0"};
     ndobject result = combine_into_struct(1, field_names, &n);
+
     // Because the expr dtype's operand is the result's dtype,
     // we can swap it in as the dtype
-    dst_dt = make_expr_dtype(make_dtype_from_object(dst_type),
+    dtype edt = make_expr_dtype(result_vdt,
                     result.get_dtype(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
-    dst_dt.swap(result.get_ndo()->m_dtype);
+    edt.swap(result.get_ndo()->m_dtype);
     return wrap_ndobject(DYND_MOVE(result));
 }

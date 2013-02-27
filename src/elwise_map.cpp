@@ -5,6 +5,8 @@
 
 #include <Python.h>
 
+#include <iostream>
+
 #include <dynd/dtypes/expr_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
@@ -236,6 +238,20 @@ public:
         }
 
         return offset_out + extra_size;
+    }
+
+    void print_dtype(std::ostream& o) const
+    {
+        o << "elwise_pyfunction<";
+        PyObject *name_obj = PyObject_GetAttrString(m_callable.get(), "__name__");
+        if (name_obj != NULL) {
+            pyobject_ownref name(name_obj);
+            o << pystring_as_string(name.get());
+        } else {
+            PyErr_Clear();
+            o << "[unnamed]";
+        }
+        o << ">";
     }
 };
 

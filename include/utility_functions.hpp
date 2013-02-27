@@ -113,6 +113,21 @@ public:
     }
 };
 
+class PyGILState_RAII {
+    PyGILState_STATE m_gstate;
+
+    PyGILState_RAII(const PyGILState_RAII&);
+    PyGILState_RAII& operator=(const PyGILState_RAII&);
+public:
+    inline PyGILState_RAII() {
+        m_gstate = PyGILState_Ensure();
+    }
+
+    inline ~PyGILState_RAII() {
+        PyGILState_Release(m_gstate);
+    }
+};
+
 intptr_t pyobject_as_index(PyObject *index);
 int pyobject_as_int_index(PyObject *index);
 dynd::irange pyobject_as_irange(PyObject *index);

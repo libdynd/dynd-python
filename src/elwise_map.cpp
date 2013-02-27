@@ -36,8 +36,7 @@ namespace {
         static void single(char *dst, const char * const *src,
                         kernel_data_prefix *extra)
         {
-            PyGILState_STATE gstate;
-            gstate = PyGILState_Ensure();
+            PyGILState_RAII pgs;
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
             WNDObject **ndo = reinterpret_cast<WNDObject **>(e + 1);
@@ -52,6 +51,7 @@ namespace {
             // Put all the ndobjects in a tuple
             pyobject_ownref args(PyTuple_New(src_count + 1));
             for (size_t i = 0; i != src_count + 1; ++i) {
+                Py_INCREF(ndo[i]);
                 PyTuple_SET_ITEM(args.get(), i, (PyObject *)ndo[i]);
             }
             // Call the function
@@ -63,21 +63,35 @@ namespace {
             }
             // Verify that no reference to a temporary ndobject was kept
             for (size_t i = 0; i != src_count + 1; ++i) {
-                if (ndo[i]->ob_refcnt != 1 || ndo[i]->v.get_ndo()->m_memblockdata.m_use_count != 1) {
-                    throw runtime_error("Python callable for elwise_map must not keep a reference "
-                                    "to its arguments");
+                if (ndo[i]->ob_refcnt != 1) {
+                    stringstream ss;
+                    ss << "The elwise_map callable function held onto a reference to the ";
+                    if (i == 0) {
+                        ss << "dst";
+                    } else {
+                        ss << "src_" << i-1 << "";
+                    }
+                    ss << " argument, this is disallowed";
+                    throw runtime_error(ss.str());
+                } else if (ndo[i]->v.get_ndo()->m_memblockdata.m_use_count != 1) {
+                    stringstream ss;
+                    ss << "The elwise_map callable function held onto a reference to the data underlying the ";
+                    if (i == 0) {
+                        ss << "dst";
+                    } else {
+                        ss << "src_" << i-1 << "";
+                    }
+                    ss << " argument, this is disallowed";
+                    throw runtime_error(ss.str());
                 }
             }
-
-            PyGILState_Release(gstate);
         }
 
         static void strided(char *dst, intptr_t dst_stride,
                     const char * const *src, const intptr_t *src_stride,
                     size_t count, kernel_data_prefix *extra)
         {
-            PyGILState_STATE gstate;
-            gstate = PyGILState_Ensure();
+            PyGILState_RAII pgs;
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
             WNDObject **ndo = reinterpret_cast<WNDObject **>(e + 1);
@@ -111,19 +125,33 @@ namespace {
             }
             // Verify that no reference to a temporary ndobject was kept
             for (size_t i = 0; i != src_count + 1; ++i) {
-                if (ndo[i]->ob_refcnt != 1 || ndo[i]->v.get_ndo()->m_memblockdata.m_use_count != 1) {
-                    throw runtime_error("Python callable for elwise_map must not keep a reference "
-                                    "to its arguments");
+                if (ndo[i]->ob_refcnt != 1) {
+                    stringstream ss;
+                    ss << "The elwise_map callable function held onto a reference to the ";
+                    if (i == 0) {
+                        ss << "dst";
+                    } else {
+                        ss << "src_" << i-1 << "";
+                    }
+                    ss << " argument, this is disallowed";
+                    throw runtime_error(ss.str());
+                } else if (ndo[i]->v.get_ndo()->m_memblockdata.m_use_count != 1) {
+                    stringstream ss;
+                    ss << "The elwise_map callable function held onto a reference to the data underlying the ";
+                    if (i == 0) {
+                        ss << "dst";
+                    } else {
+                        ss << "src_" << i-1 << "";
+                    }
+                    ss << " argument, this is disallowed";
+                    throw runtime_error(ss.str());
                 }
             }
-
-            PyGILState_Release(gstate);
         }
 
         static void destruct(kernel_data_prefix *extra)
         {
-            PyGILState_STATE gstate;
-            gstate = PyGILState_Ensure();
+            PyGILState_RAII pgs;
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
             WNDObject **ndo = reinterpret_cast<WNDObject **>(e + 1);
@@ -132,8 +160,6 @@ namespace {
             for (size_t i = 0; i != src_count + 1; ++i) {
                 Py_XDECREF(ndo[i]);
             }
-
-            PyGILState_Release(gstate);
         }
     };
 } // anonymous namespace
@@ -145,7 +171,8 @@ class pyobject_elwise_expr_kernel_generator : public expr_kernel_generator {
 public:
     pyobject_elwise_expr_kernel_generator(PyObject *callable,
                     const dtype& dst_dt, const std::vector<dtype>& src_dt)
-        : m_callable(callable, true), m_dst_dt(dst_dt), m_src_dt(src_dt)
+        : expr_kernel_generator(true), m_callable(callable, true),
+                        m_dst_dt(dst_dt), m_src_dt(src_dt)
     {
     }
 

@@ -1295,10 +1295,8 @@ def elwise_map(n, callable, dst_type, src_type = None):
 
     Parameters
     ----------
-    n : dynd ndobject
-        The object to which the mapping is applied.
-        TODO: A list of ndobjects for supporting multiple
-              source operands.
+    n : list of dynd ndobject
+        A list of objects to which the mapping is applied.
     callable : Python callable
         A Python function which is called as
         'callable(dst, src[0], ..., src[N-1])', with
@@ -1309,11 +1307,10 @@ def elwise_map(n, callable, dst_type, src_type = None):
         the 'dst' ndobject. The function must not return a value.
     dst_type : dynd type
         The type of the computation's result.
-    src_type : dynd type, optional
-        The type of the source. If the source ndobject has
-        a different type, it will be converted.
-        TODO: A list of types for supporting multiple
-              source operands.
+    src_type : list of dynd type, optional
+        A list of types of the source. If a source ndobject has
+        a different type than the one corresponding in this list,
+        it will be converted.
     """
     return dynd_elwise_map(n, callable, dst_type, src_type)
 

@@ -199,7 +199,7 @@ public:
     }
 
     pyobject_elwise_expr_kernel_generator(PyObject *callable,
-                    const dtype& dst_dt, dtype& src_dt)
+                    const dtype& dst_dt, const dtype& src_dt)
         : expr_kernel_generator(true), m_callable(callable, true),
                         m_dst_dt(dst_dt), m_src_dt(1)
     {
@@ -345,7 +345,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
     }
 
     dtype edt = make_unary_expr_dtype(dst_dt, src_dt,
-                    new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
+                    new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_dtype()));
     return wrap_ndobject(n.replace_udtype(edt));
 }
 

@@ -54,6 +54,23 @@ class TestElwiseMap(unittest.TestCase):
         threshold_val = 9
         self.assertRaises(ValueError, b[5:10].eval)
 
+    def test_simple_computed_column(self):
+        def computed_col(dst, src):
+            for d, s in zip(dst, src):
+                d.fullname = nd.as_py(s.firstname) + ' ' + nd.as_py(s.lastname)
+                d.firstname = s.firstname
+                d.lastname = s.lastname
+                d.country = s.country
+        a = nd.parse_json('2, {firstname: string; lastname: string; country: string}',
+                        """[{"firstname":"Mike", "lastname":"Myers", "country":"Canada"},
+                        {"firstname":"Seth", "lastname":"Green", "country":"USA"}]""")
+        b = nd.elwise_map([a], computed_col, nd.dtype(
+                        '{fullname: string; firstname: string; lastname: string; country: string}'))
+        self.assertEqual(nd.as_py(b.fullname), ['Mike Myers', 'Seth Green'])
+        self.assertEqual(nd.as_py(b.firstname), ['Mike', 'Seth'])
+        self.assertEqual(nd.as_py(b.lastname), ['Myers', 'Green'])
+        self.assertEqual(nd.as_py(b.country), ['Canada', 'USA'])
+
     def test_binary_function(self):
         def multiplier(dst, src0, src1):
             for d, s0, s1 in zip(dst, src0, src1):

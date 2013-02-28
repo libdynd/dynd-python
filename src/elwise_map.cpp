@@ -296,8 +296,8 @@ public:
             md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
             md->size = 1;
             md->stride = 0;
-            if (dst_dt.get_metadata_size() > 0) {
-                dst_dt.extended()->metadata_copy_construct(
+            if (src_dt[i].get_metadata_size() > 0) {
+                src_dt[i].extended()->metadata_copy_construct(
                                 n.get_ndo_meta() + sizeof(strided_dim_dtype_metadata),
                                 src_metadata[i], NULL);
             }
@@ -309,6 +309,8 @@ public:
 
     void print_dtype(std::ostream& o) const
     {
+        PyGILState_RAII pgs;
+
         PyObject *name_obj = PyObject_GetAttrString(m_callable.get(), "__name__");
         if (name_obj != NULL) {
             pyobject_ownref name(name_obj);

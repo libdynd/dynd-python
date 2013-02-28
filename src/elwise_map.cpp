@@ -384,6 +384,9 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     }
     dimvector result_shape(undim), tmp_shape(undim);
+    for (size_t j = 0; j != undim; ++j) {
+        result_shape[j] = 1;
+    }
     for (size_t i = 0; i != n.size(); ++i) {
         size_t undim_i = n[i].get_undim();
         if (undim_i > 0) {

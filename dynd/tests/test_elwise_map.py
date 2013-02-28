@@ -54,5 +54,43 @@ class TestElwiseMap(unittest.TestCase):
         threshold_val = 9
         self.assertRaises(ValueError, b[5:10].eval)
 
+    def test_binary_function(self):
+        def multiplier(dst, src0, src1):
+            for d, s0, s1 in zip(dst, src0, src1):
+                d[...] = nd.as_py(s0) * nd.as_py(s1)
+        # 1D array
+        a = nd.arange(5)
+        b = nd.ndobject([1, 3, -2, 4, 12])
+        c = nd.elwise_map([a,b], multiplier, ndt.int32)
+        self.assertEqual(nd.as_py(c), [0, 3, -4, 12, 48])
+        # indexing into the deferred ndobject
+        self.assertEqual(nd.as_py(c[1]), 3)
+        self.assertEqual(nd.as_py(c[3:]), [12, 48])
+        self.assertEqual(nd.as_py(c[1::2]), [3, 12])
+        # Modifying 'a' or 'b' affects 'c'
+        a[1:4] = [-1, 10, -2]
+        self.assertEqual(nd.as_py(c), [0, -3, -20, -8, 48])
+        b[-1] = 100
+        self.assertEqual(nd.as_py(c), [0, -3, -20, -8, 400])
+
+    def test_binary_function_broadcast(self):
+        def multiplier(dst, src0, src1):
+            for d, s0, s1 in zip(dst, src0, src1):
+                d[...] = nd.as_py(s0) * nd.as_py(s1)
+        # 1D array
+        a = nd.arange(5)
+        b = nd.ndobject(12).eval_copy(access='readwrite')
+        c = nd.elwise_map([a,b], multiplier, ndt.int32)
+        self.assertEqual(nd.as_py(c), [0, 12, 24, 36, 48])
+        # indexing into the deferred ndobject
+        self.assertEqual(nd.as_py(c[1]), 12)
+        self.assertEqual(nd.as_py(c[3:]), [36, 48])
+        self.assertEqual(nd.as_py(c[1::2]), [12, 36])
+        # Modifying 'a' or 'b' affects 'c'
+        a[1:4] = [-1, 10, -2]
+        self.assertEqual(nd.as_py(c), [0, -12, 120, -24, 48])
+        b[...] = 100
+        self.assertEqual(nd.as_py(c), [0, -100, 1000, -200, 400])
+
 if __name__ == '__main__':
     unittest.main()

@@ -124,7 +124,7 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
         string nstr = pystring_as_string(name);
         for (size_t i = 0; i < count; ++i) {
             if (properties[i].first == nstr) {
-                return call_gfunc_callable(nstr, properties[i].second, n);
+                return wrap_ndobject(call_gfunc_callable(nstr, properties[i].second, n));
             }
         }
     }
@@ -145,6 +145,33 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
 
     PyErr_SetObject(PyExc_AttributeError, name);
     return NULL;
+}
+
+void pydynd::set_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name, PyObject *value)
+{
+    dtype dt = n.get_dtype();
+    const std::pair<std::string, gfunc::callable> *properties;
+    size_t count;
+    // Search for a property
+    if (!dt.is_builtin()) {
+        dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
+    } else {
+        get_builtin_dtype_dynamic_ndobject_properties(dt.get_type_id(), &properties, &count);
+    }
+    // TODO: We probably want to make some kind of acceleration structure for the name lookup
+    if (count > 0) {
+        string nstr = pystring_as_string(name);
+        for (size_t i = 0; i < count; ++i) {
+            if (properties[i].first == nstr) {
+                ndobject p = call_gfunc_callable(nstr, properties[i].second, n);
+                p.vals() = ndobject_from_py(value);
+                return;
+            }
+        }
+    }
+
+    PyErr_SetObject(PyExc_AttributeError, name);
+    throw exception();
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
@@ -380,7 +407,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     }
 }
 
-PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
+ndobject pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
 {
     const dtype& pdt = c.get_parameters_dtype();
     ndobject params(pdt);
@@ -393,7 +420,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
             params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], n);
-    return wrap_ndobject(c.call_generic(params));
+    return c.call_generic(params);
 }
 
 /**

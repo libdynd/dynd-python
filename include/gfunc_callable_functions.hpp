@@ -94,6 +94,10 @@ void add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *dict);
  * Retrieves a dynamic property from the ndobject.
  */
 PyObject *get_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name);
+/**
+ * Sets a dynamic property of the ndobject.
+ */
+void set_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name, PyObject *value);
 
 /**
  * Calls the callable with the single dtype parameter
@@ -111,7 +115,7 @@ PyObject *call_gfunc_callable(const std::string& funcname, const dynd::gfunc::ca
  * \param c  The callable.
  * \param n  The first parameter for the callable.
  */
-PyObject *call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n);
+dynd::ndobject call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n);
 
 /**
  * Returns a wrapper for the callable with the ndobject as the first parameter.

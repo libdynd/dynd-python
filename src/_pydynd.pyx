@@ -712,6 +712,9 @@ cdef class w_ndobject:
     def __getattr__(self, name):
         return get_ndobject_dynamic_property(GET(self.v), name)
 
+    def __setattr__(self, name, value):
+        set_ndobject_dynamic_property(GET(self.v), name, value)
+
     def debug_repr(self):
         """
         a.debug_repr()

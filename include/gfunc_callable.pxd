@@ -9,6 +9,7 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
 
     void add_ndobject_names_to_dir_dict(ndobject&, object) except +translate_exception
     object get_ndobject_dynamic_property(ndobject&, object) except +translate_exception
+    void set_ndobject_dynamic_property(ndobject&, object, object) except +translate_exception
 
     # Function property of dtype
     cdef cppclass dtype_callable_wrapper:

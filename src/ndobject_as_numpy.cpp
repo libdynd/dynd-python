@@ -129,7 +129,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                     if (dt.get_type_id() == strided_dim_type_id) {
                         const strided_dim_dtype *sad =
                                         static_cast<const strided_dim_dtype *>(element_dtype.extended());
-                        dim_size = sad->get_dim_size(NULL, metadata);
+                        dim_size = sad->get_dim_size(metadata, NULL);
                         element_dtype = sad->get_element_dtype();
                         metadata += sizeof(strided_dim_dtype_metadata);
                     } else if (dt.get_type_id() == fixed_dim_type_id) {

@@ -147,7 +147,7 @@ static void nested_ndobject_as_py(const dtype& d, char *data, const char *metada
     } else if (d.get_kind() == struct_kind) {
         nested_struct_as_py(d, data, metadata, &el);
     } else {
-        intptr_t size = d.get_dim_size(data, metadata);
+        intptr_t size = d.get_dim_size(metadata, data);
         el.result.reset(PyList_New(size));
         el.index = 0;
 

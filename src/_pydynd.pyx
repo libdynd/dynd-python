@@ -240,6 +240,16 @@ cdef class w_dtype:
             SET(result.v, GET(self.v).get_canonical_dtype())
             return result
 
+    property property_names:
+        """
+        a.property_names
+
+        Returns the names of properties exposed by ndobjects
+        of this dtype.
+        """
+        def __get__(self):
+            return dtype_ndobject_property_names(GET(self.v))
+
     def __getitem__(self, x):
         cdef w_dtype result = w_dtype()
         SET(result.v, dtype_getitem(GET(self.v), x))

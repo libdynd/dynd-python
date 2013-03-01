@@ -105,6 +105,17 @@ void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *d
                 throw runtime_error("");
             }
         }
+    } else {
+        const std::pair<std::string, gfunc::callable> *properties;
+        size_t count;
+        // Add the ndobject properties
+        get_builtin_dtype_dynamic_ndobject_properties(dt.get_type_id(), &properties, &count);
+        for (size_t i = 0; i < count; ++i) {
+            if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
+                throw runtime_error("");
+            }
+        }
+        // TODO: Add the ndobject functions
     }
 }
 

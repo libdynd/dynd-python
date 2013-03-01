@@ -18,6 +18,7 @@
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/shape_tools.hpp>
+#include <dynd/dtypes/builtin_dtype_properties.hpp>
 
 // Python's datetime C API
 #include "datetime.h"
@@ -394,4 +395,21 @@ dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
 
     // Do an indexing operation
     return d.at_array((int)size, indices.get());
+}
+
+PyObject *pydynd::dtype_ndobject_property_names(const dtype& d)
+{
+    const std::pair<std::string, gfunc::callable> *properties;
+    size_t count;
+    if (!d.is_builtin()) {
+        d.extended()->get_dynamic_ndobject_properties(&properties, &count);
+    } else {
+        get_builtin_dtype_dynamic_ndobject_properties(d.get_type_id(), &properties, &count);
+    }
+    pyobject_ownref result(PyList_New(count));
+    for (size_t i = 0; i != count; ++i) {
+        const string& s = properties[i].first;
+        PyList_SET_ITEM(result.get(), i, PyString_FromStringAndSize(s.data(), s.size()));
+    }
+    return result.release();
 }

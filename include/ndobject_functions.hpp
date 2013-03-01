@@ -126,6 +126,9 @@ inline std::string ndobject_debug_print(const dynd::ndobject& n)
     return ss.str();
 }
 
+bool ndobject_contains(const dynd::ndobject& n, PyObject *x);
+
+
 dynd::ndobject ndobject_cast_scalars(const dynd::ndobject& n, const dynd::dtype& dt, PyObject *assign_error_obj);
 dynd::ndobject ndobject_cast_udtype(const dynd::ndobject& n, const dynd::dtype& dt, PyObject *assign_error_obj);
 

@@ -10,6 +10,7 @@
 #include "numpy_interop.hpp"
 
 #include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/base_uniform_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/ndobject_arange.hpp>
 #include <dynd/dtype_promotion.hpp>
@@ -101,6 +102,79 @@ dynd::ndobject pydynd::ndobject_empty(PyObject *shape, const dynd::dtype& d)
     pyobject_as_vector_intp(shape, shape_vec, true);
     return ndobject(make_ndobject_memory_block(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]));
+}
+
+namespace {
+    struct contains_data {
+        const char *x_data;
+        comparison_kernel *k;
+        bool found;
+    };
+
+    void contains_callback(const dtype &DYND_UNUSED(dt), char *data,
+                    const char *DYND_UNUSED(metadata), void *callback_data)
+    {
+        contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
+        if (!cd->found && (*cd->k)(cd->x_data, data)) {
+            cd->found = true;
+        }
+    }
+
+} // anonymous namespace
+
+bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
+{
+    if (n.get_ndo() == NULL) {
+        return false;
+    }
+    if (n.get_undim() == 0) {
+        // TODO: Allow for struct types, etc?
+        throw runtime_error("cannot call __contains__ on a scalar ndobject");
+    }
+
+    // Turn 'n' into dtype/metadata/data with a uniform_dim leading dimension
+    ndobject tmp;
+    dtype dt;
+    const base_uniform_dim_dtype *budd;
+    const char *metadata, *data;
+    if (n.get_dtype().get_kind() == uniform_dim_kind) {
+        dt = n.get_dtype();
+        budd = static_cast<const base_uniform_dim_dtype *>(dt.extended());
+        metadata = n.get_ndo_meta();
+        data = n.get_readonly_originptr();
+    } else {
+        tmp = n.eval();
+        if (tmp.get_dtype().get_kind() != uniform_dim_kind) {
+            throw runtime_error("internal error in ndobject_contains: expected uniform_dim kind after eval() call");
+        }
+        dt = tmp.get_dtype();
+        budd = static_cast<const base_uniform_dim_dtype *>(dt.extended());
+        metadata = tmp.get_ndo_meta();
+        data = tmp.get_readonly_originptr();
+    }
+
+    // Turn 'x' into an ndobject, and make a comparison kernel
+    ndobject x_ndo = ndobject_from_py(x);
+    const dtype& x_dt = x_ndo.get_dtype();
+    const char *x_metadata = x_ndo.get_ndo_meta();
+    const char *x_data = x_ndo.get_readonly_originptr();
+    const dtype& child_dt = budd->get_element_dtype();
+    const char *child_metadata = metadata + budd->get_element_metadata_offset();
+    comparison_kernel k;
+    try {
+        make_comparison_kernel(&k, 0,
+                    x_dt, x_metadata, child_dt, child_metadata,
+                    comparison_type_equal, &eval::default_eval_context);
+    } catch(const not_comparable_error&) {
+        return false;
+    }
+
+    contains_data aux;
+    aux.x_data = x_data;
+    aux.k = &k;
+    aux.found = false;
+    budd->foreach_leading(const_cast<char *>(data), metadata, &contains_callback, &aux);
+    return aux.found;
 }
 
 dynd::ndobject pydynd::ndobject_cast_scalars(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)

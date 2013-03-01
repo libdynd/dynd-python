@@ -715,6 +715,9 @@ cdef class w_ndobject:
     def __setattr__(self, name, value):
         set_ndobject_dynamic_property(GET(self.v), name, value)
 
+    def __contains__(self, x):
+        return ndobject_contains(GET(self.v), x)
+
     def debug_repr(self):
         """
         a.debug_repr()

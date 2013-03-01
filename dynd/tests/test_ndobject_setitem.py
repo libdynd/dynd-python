@@ -23,3 +23,6 @@ class TestNDObjectSetItem(unittest.TestCase):
         self.assertEqual(nd.as_py(a[3]), -10)
         a[4] = 101.0 + 0j
         self.assertEqual(nd.as_py(a[4]), 101)
+
+if __name__ == '__main__':
+    unittest.main()

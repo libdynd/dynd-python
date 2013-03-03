@@ -3,9 +3,13 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+cmake_minimum_required(VERSION 2.6)
 project(dynd-python)
 
-cmake_minimum_required(VERSION 2.6)
+# For the Git SHA1/version code
+list(APPEND CMAKE_MODULE_PATH
+    "${CMAKE_CURRENT_SOURCE_DIR}/libraries/dynd/cmake/")
+include(GetGitRevisionDescriptionDyND)
 
 # Force the default build type to be Release, because a Debug
 # build doesn't work properly with the default Python build
@@ -48,6 +52,13 @@ endif()
 # Include dynd in the build
 add_subdirectory(libraries/dynd)
 
+# Get the git revision
+get_git_head_revision("${CMAKE_CURRENT_SOURCE_DIR}" GIT_REFSPEC DYND_PYTHON_GIT_SHA1)
+git_describe("${CMAKE_CURRENT_SOURCE_DIR}" DYND_PYTHON_VERSION_STRING --dirty)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/git_version.cpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp" @ONLY)
+
 if(WIN32)
     # Treat warnings as errors (-WX does this)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX -EHsc")
@@ -86,8 +97,9 @@ set(pydynd_CPP_SRC
     include/placement_wrappers.hpp
     include/dtype_functions.hpp
     include/elwise_map.hpp
-    include/gfunc_callable_functions.hpp
     include/exception_translation.hpp
+    include/gfunc_callable_functions.hpp
+    include/git_version.hpp
     include/ndobject_functions.hpp
     include/ndobject_from_py.hpp
     include/ndobject_as_pep3118.hpp
@@ -112,6 +124,8 @@ set(pydynd_CPP_SRC
     src/numpy_interop.cpp
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp
+    src/git_version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp
     src/utility_functions.cpp
     src/vm_elwise_program_functions.cpp
     )

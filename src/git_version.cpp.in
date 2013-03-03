@@ -1,0 +1,19 @@
+//
+// Copyright (C) 2011-13, DyND Developers
+// BSD 2-Clause License, see LICENSE.txt
+//
+
+// NOTE: Only modify git_version.cpp.in, not the generated git_version.cpp.
+
+#include "git_version.hpp"
+
+#define DYND_PYTHON_GIT_SHA1 "@DYND_PYTHON_GIT_SHA1@"
+#define DYND_PYTHON_VERSION_STRING "@DYND_PYTHON_VERSION_STRING@"
+
+namespace pydynd {
+
+const char dynd_python_git_sha1[] = DYND_PYTHON_GIT_SHA1;
+const char dynd_python_version_string[] = DYND_PYTHON_VERSION_STRING;
+
+} // namespace dynd
+

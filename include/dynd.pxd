@@ -34,6 +34,14 @@ cdef extern from "<dynd/config.hpp>":
     ctypedef Py_ssize_t intptr_t
     ctypedef unsigned int uintptr_t
 
+cdef extern from "<dynd/config.hpp>" namespace "dynd":
+    extern char[] dynd_version_string
+    extern char[] dynd_git_sha1
+
+cdef extern from "git_version.hpp" namespace "pydynd":
+    extern char[] dynd_python_version_string
+    extern char[] dynd_python_git_sha1
+
 cdef extern from "<complex>" namespace "std":
     cdef cppclass complex[T]:
         T real()

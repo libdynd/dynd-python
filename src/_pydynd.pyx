@@ -60,6 +60,12 @@ from cython.operator import dereference
 # Expose it outside the module too
 #default_cgcache = default_cgcache_c
 
+# Expose the git hashes and version numbers of this build
+_dynd_version_string = str(dynd_version_string)
+_dynd_git_sha1 = str(dynd_git_sha1)
+_dynd_python_version_string = str(dynd_python_version_string)
+_dynd_python_git_sha1 = str(dynd_python_git_sha1)
+
 cdef class w_dtype:
     """
     dtype(obj=None)

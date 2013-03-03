@@ -12,7 +12,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
             self.nonnative = '<'
 
     def test_dtype_from_numpy_scalar_types(self):
-        """Tests converting numpy scalar types to pydynd dtypes"""
+        # Tests converting numpy scalar types to pydynd dtypes
         self.assertEqual(ndt.bool, nd.dtype(np.bool))
         self.assertEqual(ndt.bool, nd.dtype(np.bool_))
         self.assertEqual(ndt.int8, nd.dtype(np.int8))
@@ -29,7 +29,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.cfloat64, nd.dtype(np.complex128))
 
     def test_dtype_from_numpy_dtype(self):
-        """Tests converting numpy dtypes to pydynd dtypes"""
+        # Tests converting numpy dtypes to pydynd dtypes
         # native byte order
         self.assertEqual(ndt.bool, nd.dtype(np.dtype(np.bool)))
         self.assertEqual(ndt.int8, nd.dtype(np.dtype(np.int8)))
@@ -81,7 +81,7 @@ class TestNumpyViewInterop(unittest.TestCase):
             self.nonnative = '<'
 
     def test_dynd_view_of_numpy_array(self):
-        """Tests viewing a numpy array as a dynd.ndobject"""
+        # Tests viewing a numpy array as a dynd.ndobject
         nonnative = self.nonnative
 
         a = np.arange(10, dtype=np.int32)
@@ -116,7 +116,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(n.strides, a.strides)
 
     def test_numpy_view_of_dynd_array(self):
-        """Tests viewing a dynd.ndobject as a numpy array"""
+        # Tests viewing a dynd.ndobject as a numpy array
         nonnative = self.nonnative
 
         n = nd.ndobject(np.arange(10, dtype=np.int32))
@@ -153,7 +153,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.strides, n.strides)
 
     def test_numpy_dynd_fixedstring_interop(self):
-        """Tests converting fixed-size string arrays to/from numpy"""
+        # Tests converting fixed-size string arrays to/from numpy
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
         b = nd.ndobject(a)
@@ -209,7 +209,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
     def test_readwrite_access_flags(self):
-        """Tests that read/write access control is preserved to/from numpy"""
+        # Tests that read/write access control is preserved to/from numpy
         a = np.arange(10.)
 
         # Writeable

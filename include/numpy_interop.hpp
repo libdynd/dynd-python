@@ -22,7 +22,7 @@
 
 // Don't use the deprecated Numpy functions
 #ifdef NPY_1_7_API_VERSION
-# define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+# define NPY_NO_DEPRECATED_API 8 // NPY_1_7_API_VERSION
 #else
 # define NPY_ARRAY_NOTSWAPPED   NPY_NOTSWAPPED
 # define NPY_ARRAY_ALIGNED      NPY_ALIGNED

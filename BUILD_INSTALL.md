@@ -14,6 +14,7 @@ gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
   * Cython >= 0.16
   * NumPy >= 1.5
   * git (for cloning the github repositories)
+  * Nose (Only for generating xunit .xml output when running tests)
 
 3. Get the source code.
 

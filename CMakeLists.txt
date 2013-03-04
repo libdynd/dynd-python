@@ -54,7 +54,7 @@ add_subdirectory(libraries/dynd)
 
 # Get the git revision
 get_git_head_revision("${CMAKE_CURRENT_SOURCE_DIR}" GIT_REFSPEC DYND_PYTHON_GIT_SHA1)
-git_describe("${CMAKE_CURRENT_SOURCE_DIR}" DYND_PYTHON_VERSION_STRING --dirty)
+git_describe("${CMAKE_CURRENT_SOURCE_DIR}" DYND_PYTHON_VERSION_STRING --dirty --match "v[0-9]*")
 message(STATUS "DyND-Python version: ${DYND_PYTHON_VERSION_STRING}")
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/git_version.cpp.in"

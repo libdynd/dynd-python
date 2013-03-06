@@ -160,6 +160,9 @@ elseif(APPLE)
     # disable that specifically for this project.
     set_target_properties(
         _pydynd
+        #SOVERSION ${DYND_PYTHON_VERSION}
+        #VERSION ${DYND_PYTHON_VERSION}
+        #INSTALL_RPATH ""
         PROPERTIES COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function -Wno-error"
         )
@@ -168,9 +171,6 @@ else()
     # which made g++ 4.6.1 complain
     set_target_properties(
         _pydynd
-        SOVERSION ${DYND_PYTHON_VERSION}
-        VERSION ${DYND_PYTHON_VERSION}
-        INSTALL_RPATH ""
         PROPERTIES COMPILE_FLAGS
             "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
         )

@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2011-13, DyND Developers
+# BSD 2-Clause License, see LICENSE.txt
+#
+#
+# This is a Jenkins build + test script that builds
+# the DyND Python bindings, runs its tests, then
+# creates a conda package from the build.
+#
+# Requirements: Anaconda must be installed in ~/anaconda
+#
+
+# Check out DyND in the directory structure. In the future,
+# maybe change this to depend on the results of another Jenkins
+# build.
+rm -rf libraries
+mkdir libraries
+pushd libraries
+git clone https://github.com/ContinuumIO/dynd.git
+popd
+
+# Create a conda environment for the build, and put it
+# at the front of the path so the CMake configuration
+# finds it.
+rm -rf ${WORKSPACE}/build/pyenv
+~/anaconda/bin/conda create --yes -p ${WORKSPACE}/build/pyenv cython scipy
+export PATH=${WORKSPACE}/build/pyenv/bin:${PATH}
+
+# Build, and install into the conda environment we created
+mkdir -p build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/build/pyenv ..
+make -j5
+make install
+
+# Run the tests and generate xml results - Need to OR with /bin/true so it doesn't fail the build
+${WORKSPACE}/build/pyenv/bin/python -c 'import dynd;dynd.test(xunitfile="../pydynd_tests.xml", exit=1)' || /bin/true
+
+# Retrieve the version number
+export PYDYND_VERSION=`${WORKSPACE}/build/pyenv/bin/python -c 'import dynd;print(dynd.__version_string__)'`
+
+# Create a conda package from the build
+cd ${WORKSPACE}
+~/anaconda/bin/conda package -p ${WORKSPACE}/build/pyenv --pkg-name=dynd --pkg-version=${PYDYND_VERSION//-/_}
+
+# Clean up the build artifacts for next build
+cd ${WORKSPACE}
+rm -rf ${WORKSPACE}/build
+

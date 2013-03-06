@@ -407,7 +407,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
     } else if (PyDate_Check(obj)) {
         dtype d = make_date_dtype();
         const date_dtype *dd = static_cast<const date_dtype *>(d.extended());
-        ndobject result(d);
+        ndobject result = empty(d);
         dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
                     PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
         return result;

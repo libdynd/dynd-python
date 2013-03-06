@@ -60,6 +60,11 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/git_version.cpp.in"
     "${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp" @ONLY)
 
+# Extract the version number from the version string
+string(REPLACE "v" "" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
+string(REPLACE "-" ";" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
+list(GET DYND_PYTHON_VERSION 0 "${DYND_PYTHON_VERSION}")
+
 if(WIN32)
     # Treat warnings as errors (-WX does this)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX -EHsc")
@@ -163,8 +168,11 @@ else()
     # which made g++ 4.6.1 complain
     set_target_properties(
         _pydynd
+        SOVERSION ${DYND_PYTHON_VERSION}
+        VERSION ${DYND_PYTHON_VERSION}
+        INSTALL_RPATH ""
         PROPERTIES COMPILE_FLAGS
-        "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
+            "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
         )
 endif()
 

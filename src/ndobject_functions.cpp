@@ -36,7 +36,7 @@ PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
         n_str = n;
     } else {
         // Otherwise, convert to an ASCII string
-        n_str = ndobject(make_string_dtype(string_encoding_ascii));
+        n_str = empty(make_string_dtype(string_encoding_ascii));
         n_str.vals() = n;
     }
     const base_string_dtype *bsd =
@@ -63,7 +63,7 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
         n_str = n;
     } else {
         // Otherwise, convert to a unicode string
-        n_str = ndobject(make_string_dtype(DYND_PY_ENCODING));
+        n_str = empty(make_string_dtype(DYND_PY_ENCODING));
         n_str.vals() = n;
     }
     const base_string_dtype *bsd =
@@ -93,7 +93,7 @@ dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n,
 
 dynd::ndobject pydynd::ndobject_empty(const dynd::dtype& d)
 {
-    return ndobject(d);
+    return empty(d);
 }
 
 dynd::ndobject pydynd::ndobject_empty(PyObject *shape, const dynd::dtype& d)

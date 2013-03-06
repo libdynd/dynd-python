@@ -400,7 +400,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
 PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dtype& dt)
 {
     const dtype& pdt = c.get_parameters_dtype();
-    ndobject params(pdt);
+    ndobject params = empty(pdt);
     const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
     if (fsdt->get_field_count() != 1) {
         stringstream ss;
@@ -421,7 +421,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
 ndobject pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
 {
     const dtype& pdt = c.get_parameters_dtype();
-    ndobject params(pdt);
+    ndobject params = empty(pdt);
     const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
     if (fsdt->get_field_count() != 1) {
         stringstream ss;
@@ -495,7 +495,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
         }
         // Fill in missing parameters from the defaults
         const ndobject& default_parameters = c.get_default_parameters();
-        if (!default_parameters.empty()) {
+        if (!default_parameters.is_empty()) {
             // Figure out where to start filling in default parameters
             int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count) {
@@ -528,7 +528,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
     } else if (args_count < param_count) {
         // Fill in missing parameters from the defaults
         const ndobject& default_parameters = c.get_default_parameters();
-        if (!default_parameters.empty()) {
+        if (!default_parameters.is_empty()) {
             // Figure out where to start filling in default parameters
             int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count && first_default_param <= (int)args_count) {
@@ -572,7 +572,7 @@ PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, P
 {
     const dtype& pdt = ncw.c.get_parameters_dtype();
     vector<ndobject> storage;
-    ndobject params(pdt);
+    ndobject params = empty(pdt);
     const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
     // Set the 'self' parameter value
     set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
@@ -603,7 +603,7 @@ static PyObject *dtype_callable_call(const std::string& funcname, const gfunc::c
 {
     const dtype& pdt = c.get_parameters_dtype();
     vector<ndobject> storage;
-    ndobject params(pdt);
+    ndobject params = empty(pdt);
     const fixedstruct_dtype *fsdt = static_cast<const fixedstruct_dtype *>(pdt.extended());
     // Set the 'self' parameter value
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],

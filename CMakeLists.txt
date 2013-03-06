@@ -62,7 +62,7 @@ configure_file(
 
 # Extract the version number from the version string
 string(REPLACE "v" "" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
-string(REPLACE "-" ";" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
+string(REPLACE "-" ";" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION}")
 list(GET DYND_PYTHON_VERSION 0 "${DYND_PYTHON_VERSION}")
 
 if(WIN32)
@@ -159,13 +159,17 @@ elseif(APPLE)
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.
     set_target_properties(
-        _pydynd
+        _pydynd PROPERTIES
         #SOVERSION ${DYND_PYTHON_VERSION}
         #VERSION ${DYND_PYTHON_VERSION}
-        #INSTALL_RPATH ""
-        PROPERTIES COMPILE_FLAGS
+        COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function -Wno-error"
         )
+    add_custom_command(TARGET _pydynd
+        POST_BUILD COMMAND
+        ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@loader_path/../../../"
+        $<TARGET_FILE:_pydynd>)
+
 else()
     # strict aliasing is disabled because Cython generated code
     # which made g++ 4.6.1 complain

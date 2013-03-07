@@ -17,6 +17,7 @@
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 #include <dynd/dtypes/builtin_dtype_properties.hpp>
 
@@ -169,7 +170,22 @@ dtype pydynd::deduce_dtype_from_object(PyObject* obj)
 #endif
     } else if (PyDate_Check(obj)) {
         return make_date_dtype();
+    } else if (WDType_Check(obj)) {
+        return make_dtype_dtype();
+    } else if (PyType_Check(obj)) {
+        return make_dtype_dtype();
+#if DYND_NUMPY_INTEROP
+    } else if (PyArray_DescrCheck(obj)) {
+        return make_dtype_dtype();
+#endif // DYND_NUMPY_INTEROP
     }
+
+#if DYND_NUMPY_INTEROP
+    dtype result;
+    if (dtype_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
+        return make_dtype_dtype();
+    }
+#endif // DYND_NUMPY_INTEROP
 
     throw std::runtime_error("could not deduce pydynd dtype from the python object");
 }
@@ -233,13 +249,6 @@ dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
     ss << PyString_AsString(repr.get());
     ss << " into a dynd::dtype";
     throw std::runtime_error(ss.str());
-}
-
-PyObject *pydynd::dtype_as_pyobject(const dynd::dtype& dt)
-{
-    pyobject_ownref obj(_PyObject_New(WDType_Type));
-    ((WDType *)obj.get())->v = dt;
-    return obj.release();
 }
 
 static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)

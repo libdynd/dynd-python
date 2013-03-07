@@ -10,6 +10,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/dtype_promotion.hpp>
@@ -166,6 +167,13 @@ inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, cha
                     PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
+inline void convert_one_pyscalar_dtype(const dtype& DYND_UNUSED(dt),
+                const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
+{
+    dtype dt = make_dtype_from_object(obj);
+    dt.swap(reinterpret_cast<dtype_dtype_data *>(out)->dt);
+}
+
 template<convert_one_pyscalar_function_t ConvertOneFn>
 static void fill_ndobject_from_pylist(const dtype& dt, const char *metadata, char *data, PyObject *obj,
                 const intptr_t *shape, size_t current_axis)
@@ -293,6 +301,12 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                             obj, &shape[0], 0);
             break;
         }
+        case dtype_type_id: {
+            fill_ndobject_from_pylist<convert_one_pyscalar_dtype>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
+            break;
+        }
         default: {
             stringstream ss;
             ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd::ndobject conversion function yet";
@@ -411,9 +425,24 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
                     PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
         return result;
+    } else if (WDType_Check(obj)) {
+        return ndobject(((WDType *)obj)->v);
     } else if (PyList_Check(obj)) {
         return ndobject_from_pylist(obj);
-    } else {
-        throw std::runtime_error("could not convert python object into a dynd::ndobject");
+    } else if (PyType_Check(obj)) {
+        return ndobject(make_dtype_from_object(obj));
+#if DYND_NUMPY_INTEROP
+    } else if (PyArray_DescrCheck(obj)) {
+        return ndobject(make_dtype_from_object(obj));
+#endif // DYND_NUMPY_INTEROP
     }
+
+#if DYND_NUMPY_INTEROP
+    dtype result;
+    if (dtype_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
+        return ndobject(result);
+    }
+#endif // DYND_NUMPY_INTEROP
+
+    throw std::runtime_error("could not convert python object into a dynd::ndobject");
 }

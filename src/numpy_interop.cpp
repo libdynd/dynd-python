@@ -609,7 +609,7 @@ ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
         Py_INCREF(obj);
         memblock = make_external_memory_block(obj, py_decref_function);
     } else {
-        if (WNDObject_Check(base)) {
+        if (WNDObject_CheckExact(base)) {
             // If the base of the numpy array is an ndobject, skip the Python reference
             memblock = ((WNDObject *)base)->v.get_data_memblock();
         } else {

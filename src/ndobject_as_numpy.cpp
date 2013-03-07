@@ -652,6 +652,7 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
                     (int)undim, shape.get(), strides.get(), n.get_ndo()->m_data_pointer,
                     ((n.get_flags()&write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
+        Py_INCREF(n_obj);
         if (PyArray_SetBaseObject((PyArrayObject *)result.get(), n_obj) < 0) {
             throw runtime_error("propagating python exception");
         }

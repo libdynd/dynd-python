@@ -10,4 +10,6 @@ from dynd._pydynd import w_dtype as dtype, w_ndobject as ndobject, \
 # All the builtin elementwise reduce gfuncs
 #from elwise_reduce_gfuncs import *
 
+from computed_fields import add_computed_fields
+
 import vm

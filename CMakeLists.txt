@@ -169,7 +169,6 @@ elseif(APPLE)
         POST_BUILD COMMAND
         ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@loader_path/../../../"
         $<TARGET_FILE:_pydynd>)
-
 else()
     # strict aliasing is disabled because Cython generated code
     # which made g++ 4.6.1 complain

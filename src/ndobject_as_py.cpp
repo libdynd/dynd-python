@@ -8,12 +8,14 @@
 
 #include "ndobject_as_py.hpp"
 #include "ndobject_functions.hpp"
+#include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
+#include <dynd/dtypes/dtype_dtype.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -95,6 +97,10 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
             int32_t year, month, day;
             dd->get_ymd(metadata, data, year, month, day);
             return PyDate_FromDate(year, month, day);
+        }
+        case dtype_type_id: {
+            dtype dt(reinterpret_cast<const dtype_dtype_data *>(data)->dt, true);
+            return wrap_dtype(DYND_MOVE(dt));
         }
         default: {
             stringstream ss;

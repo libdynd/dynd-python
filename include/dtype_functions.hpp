@@ -83,14 +83,14 @@ PyObject *dtype_get_type_id(const dynd::dtype& d);
  * is to determine the dtype of an object that contains a value
  * or values.
  */
-dynd::dtype deduce_dtype_from_object(PyObject* obj);
+dynd::dtype deduce_dtype_from_pyobject(PyObject* obj);
 
 /**
  * Converts a Python type, Numpy dtype, or string
  * into a dtype. This raises an error if given an object
  * which contains values, it is for dtype-like things only.
  */
-dynd::dtype make_dtype_from_object(PyObject* obj);
+dynd::dtype make_dtype_from_pyobject(PyObject* obj);
 
 /**
  * Creates a convert dtype.

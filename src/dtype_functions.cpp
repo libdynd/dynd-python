@@ -105,7 +105,7 @@ PyObject *pydynd::dtype_get_type_id(const dynd::dtype& d)
     return PyString_FromStringAndSize(s.data(), s.size());
 }
 
-dtype pydynd::deduce_dtype_from_object(PyObject* obj)
+dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 {
 #if DYND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
@@ -180,13 +180,6 @@ dtype pydynd::deduce_dtype_from_object(PyObject* obj)
 #endif // DYND_NUMPY_INTEROP
     }
 
-#if DYND_NUMPY_INTEROP
-    dtype result;
-    if (dtype_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
-        return make_dtype_dtype();
-    }
-#endif // DYND_NUMPY_INTEROP
-
     throw std::runtime_error("could not deduce pydynd dtype from the python object");
 }
 
@@ -213,7 +206,7 @@ static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
     throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");
 }
 
-dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
+dynd::dtype pydynd::make_dtype_from_pyobject(PyObject* obj)
 {
     if (WDType_Check(obj)) {
         return ((WDType *)obj)->v;
@@ -227,6 +220,8 @@ dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
     } else if (PyUnicode_Check(obj)) {
         // TODO: Haven't implemented unicode yet.
         throw std::runtime_error("unicode to dynd::dtype conversion isn't implemented yet");
+    } else if (WNDObject_Check(obj)) {
+        return ((WNDObject *)obj)->v.as<dtype>();
     } else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP
         dtype result;
@@ -236,6 +231,7 @@ dynd::dtype pydynd::make_dtype_from_object(PyObject* obj)
 #endif // DYND_NUMPY_INTEROP
         return make_dtype_from_pytypeobject((PyTypeObject *)obj);
     }
+
 
 #if DYND_NUMPY_INTEROP
     if (PyArray_DescrCheck(obj)) {

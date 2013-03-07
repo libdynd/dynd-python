@@ -151,7 +151,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         PyErr_Clear();
     } else {
         pyobject_ownref dynd_type(dynd_type_obj);
-        return make_dtype_from_object(dynd_type);
+        return make_dtype_from_pyobject(dynd_type);
     }
 
     // The simple C data types

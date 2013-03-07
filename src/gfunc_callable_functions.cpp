@@ -11,6 +11,7 @@
 
 #include <dynd/dtypes/fixedstruct_dtype.hpp>
 #include <dynd/dtypes/builtin_dtype_properties.hpp>
+#include <dynd/dtypes/dtype_dtype.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -188,8 +189,7 @@ void pydynd::set_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *na
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
             const dtype& paramtype, char *metadata, char *data, const dtype& value)
 {
-    // TODO: Need dtype_dtype
-    if (paramtype.get_type_id() != void_pointer_type_id) {
+    if (paramtype.get_type_id() != dtype_type_id) {
         stringstream ss;
         ss << "parameter \"" << paramname << "\" of dynd callable \"" << funcname << "\" with type " << paramtype;
         ss << " cannot accept a dtype as its value";
@@ -197,7 +197,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
     }
     // The dtype is encoded as either a raw type id, or a pointer to an base_dtype,
     // just as the gfunc object is expecting.
-    *(const void **)data = value.extended();
+    dtype(value).swap(reinterpret_cast<dtype_dtype_data *>(data)->dt);
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,

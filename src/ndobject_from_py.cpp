@@ -60,7 +60,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj, vector<intptr_t>& shape
             throw runtime_error("dnd:ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
         }
 
-        dtype obj_dt = pydynd::deduce_dtype_from_object(obj);
+        dtype obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
         if (dt != obj_dt) {
             dt = dynd::promote_dtypes_arithmetic(obj_dt, dt);
         }
@@ -170,7 +170,7 @@ inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, cha
 inline void convert_one_pyscalar_dtype(const dtype& DYND_UNUSED(dt),
                 const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
 {
-    dtype dt = make_dtype_from_object(obj);
+    dtype dt = make_dtype_from_pyobject(obj);
     dt.swap(reinterpret_cast<dtype_dtype_data *>(out)->dt);
 }
 
@@ -430,19 +430,12 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
     } else if (PyList_Check(obj)) {
         return ndobject_from_pylist(obj);
     } else if (PyType_Check(obj)) {
-        return ndobject(make_dtype_from_object(obj));
+        return ndobject(make_dtype_from_pyobject(obj));
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_DescrCheck(obj)) {
-        return ndobject(make_dtype_from_object(obj));
+        return ndobject(make_dtype_from_pyobject(obj));
 #endif // DYND_NUMPY_INTEROP
     }
-
-#if DYND_NUMPY_INTEROP
-    dtype result;
-    if (dtype_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
-        return ndobject(result);
-    }
-#endif // DYND_NUMPY_INTEROP
 
     throw std::runtime_error("could not convert python object into a dynd::ndobject");
 }

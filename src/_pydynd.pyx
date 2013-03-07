@@ -102,7 +102,7 @@ cdef class w_dtype:
         placement_new(self.v)
         init_w_dtype_typeobject(type(self))
         if rep is not None:
-            SET(self.v, make_dtype_from_object(rep))
+            SET(self.v, make_dtype_from_pyobject(rep))
     def __dealloc__(self):
         placement_delete(self.v)
 

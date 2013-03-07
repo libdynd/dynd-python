@@ -103,7 +103,7 @@ void pydynd::pyobject_as_vector_dtype(PyObject *list_dtype, std::vector<dynd::dt
     vector_dtype.resize(size);
     for (Py_ssize_t i = 0; i < size; ++i) {
         pyobject_ownref item(PySequence_GetItem(list_dtype, i));
-        vector_dtype[i] = make_dtype_from_object(item.get());
+        vector_dtype[i] = make_dtype_from_pyobject(item.get());
     }
 }
 

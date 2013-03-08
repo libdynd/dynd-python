@@ -2,6 +2,7 @@ import sys
 import unittest
 from dynd import nd, ndt
 import numpy as np
+from datetime import date
 from numpy.testing import *
 
 class TestNumpyDTypeInterop(unittest.TestCase):
@@ -244,6 +245,8 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.ndobject(np.float64(100.)).dtype, ndt.float64)
         self.assertEqual(nd.ndobject(np.complex64(100j)).dtype, ndt.cfloat32)
         self.assertEqual(nd.ndobject(np.complex128(100j)).dtype, ndt.cfloat64)
+        if np.__version__ >= '1.7':
+            self.assertEqual(nd.ndobject(np.datetime64('2000-12-13')).dtype, ndt.date)
 
     def test_numpy_scalar_conversion_values(self):
         self.assertEqual(nd.as_py(nd.ndobject(np.bool_(True))), True)
@@ -264,6 +267,16 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.as_py(nd.ndobject(np.float64(2.5))), 2.5)
         self.assertEqual(nd.as_py(nd.ndobject(np.complex64(2.5-1j))), 2.5-1j)
         self.assertEqual(nd.as_py(nd.ndobject(np.complex128(2.5-1j))), 2.5-1j)
+        if np.__version__ >= '1.7':
+            self.assertEqual(nd.as_py(nd.ndobject(np.datetime64('2000-12-13'))), date(2000, 12, 13))
+
+    def test_expr_struct_conversion(self):
+        a = nd.ndobject([date(2000, 12, 13), date(1995, 5, 2)]).to_struct()
+        b = nd.as_numpy(a, allow_copy=True)
+        # Use the NumPy assertions which support arrays
+        assert_equal(b['year'], [2000, 1995])
+        assert_equal(b['month'], [12, 5])
+        assert_equal(b['day'], [13, 2])
 
 if __name__ == '__main__':
     unittest.main()

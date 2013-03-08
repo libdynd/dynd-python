@@ -665,6 +665,24 @@ dynd::ndobject pydynd::ndobject_from_numpy_scalar(PyObject* obj)
     } else if (PyArray_IsScalar(obj, CDouble)) {
         npy_cdouble& val = ((PyCDoubleScalarObject *)obj)->obval;
         return ndobject(complex<double>(val.real, val.imag));
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+    } else if (PyArray_IsScalar(obj, Datetime)) {
+        const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
+        int64_t val = scalar->obval;
+        if (scalar->obmeta.base == NPY_FR_D) {
+            ndobject result = empty(make_date_dtype());
+            if (val == NPY_DATETIME_NAT) {
+                *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
+                            DYND_DATE_NA;
+            } else {
+                *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
+                            static_cast<int32_t>(val);
+            }
+            return result;
+        } else {
+            throw runtime_error("Unsupported NumPy datetime unit");
+        }
+#endif
     }
 
     throw std::runtime_error("could not create a dynd::ndobject from the numpy scalar object");

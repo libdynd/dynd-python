@@ -190,11 +190,12 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 make_numpy_dtype_for_copy(&field_numpy_dtype,
                                 0, field_types[i], metadata);
                 size_t field_alignment = ((PyArray_Descr *)field_numpy_dtype.get())->alignment;
+                size_t field_size = ((PyArray_Descr *)field_numpy_dtype.get())->elsize;
                 standard_offset = inc_to_alignment(standard_offset, field_alignment);
                 standard_alignment = max(standard_alignment, field_alignment);
-                standard_offset += ((PyArray_Descr *)field_numpy_dtype.get())->elsize;
                 PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.release());
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(standard_offset));
+                standard_offset += field_size;
             }
             // Get the full element size
             standard_offset = inc_to_alignment(standard_offset, standard_alignment);

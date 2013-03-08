@@ -210,16 +210,8 @@ dynd::dtype pydynd::make_dtype_from_pyobject(PyObject* obj)
 {
     if (WDType_Check(obj)) {
         return ((WDType *)obj)->v;
-    } else if (PyString_Check(obj)) {
-        char *s = NULL;
-        Py_ssize_t len = 0;
-        if (PyString_AsStringAndSize(obj, &s, &len) < 0) {
-            throw std::runtime_error("error processing string input to make dynd::dtype");
-        }
-        return dtype(string(s, len));
-    } else if (PyUnicode_Check(obj)) {
-        // TODO: Haven't implemented unicode yet.
-        throw std::runtime_error("unicode to dynd::dtype conversion isn't implemented yet");
+    } else if (PyString_Check(obj) || PyUnicode_Check(obj)) {
+        return dtype(pystring_as_string(obj));
     } else if (WNDObject_Check(obj)) {
         return ((WNDObject *)obj)->v.as<dtype>();
     } else if (PyType_Check(obj)) {

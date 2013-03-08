@@ -53,7 +53,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
         keeping the value.
     fnname : string, optional
         The function name, which affects how the resulting
-        deferred expression is printed.
+        deferred expression's dtype is printed.
 
     Examples
     --------
@@ -70,7 +70,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     >>> y.dtype
     nd.dtype('strided_dim<expr<fixedstruct<float64 r, float64 theta>, op0=fixedstruct<float64 x, float64 y>, expr=topolar(op0)>>')
     >>> y.eval()
-    nd.ndobject([[100, 3.14159], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<fixedstruct<float64 r, float64 theta>>)
+    nd.ndobject([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<fixedstruct<float64 r, float64 theta>>)
     >>> x[0] = (-100, 0)
     >>> y[0].eval()
     nd.ndobject([100, 3.14159], fixedstruct<float64 r, float64 theta>)

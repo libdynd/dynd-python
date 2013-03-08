@@ -156,5 +156,6 @@ class TestDType(unittest.TestCase):
 
     def test_fixedstruct_dtype(self):
         self.assertFalse(nd.dtype('{x: int32}') == nd.dtype('{y: int32}'))
+
 if __name__ == '__main__':
     unittest.main()

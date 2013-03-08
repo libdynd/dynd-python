@@ -24,7 +24,14 @@ class FieldExpr:
         # Create a locals dict with all the fields
         lcl = {}
         for i, name in enumerate(self.src_field_names):
-            lcl[str(name)] = as_numpy(src[:, i])
+            s = src[:, i]
+            # For types which NumPy doesn't support, leave
+            # them as DyND arrays
+            try:
+                s = as_numpy(s)
+            except RuntimeError:
+                pass
+            lcl[str(name)] = s
         
         # Evaluate all the field exprs
         for i, expr in enumerate(self.dst_field_expr):

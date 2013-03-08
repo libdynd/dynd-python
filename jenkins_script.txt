@@ -38,10 +38,12 @@ ${WORKSPACE}/build/pyenv/bin/python -c 'import dynd;dynd.test(xunitfile="../pydy
 
 # Retrieve the version number
 export PYDYND_VERSION=`${WORKSPACE}/build/pyenv/bin/python -c 'import dynd;print(dynd.__version_string__)'`
+export PYDYND_VERSION=${PYDYND_VERSION//-/_}
+export PYDYND_VERSION=${PYDYND_VERSION:1}
 
 # Create a conda package from the build
 cd ${WORKSPACE}
-~/anaconda/bin/conda package -p ${WORKSPACE}/build/pyenv --pkg-name=dynd --pkg-version=${PYDYND_VERSION//-/_}
+~/anaconda/bin/conda package -p ${WORKSPACE}/build/pyenv --pkg-name=dynd --pkg-version=${PYDYND_VERSION}
 
 # Clean up the build artifacts for next build
 cd ${WORKSPACE}

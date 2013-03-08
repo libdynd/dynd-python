@@ -140,5 +140,19 @@ class TestDType(unittest.TestCase):
         # Alignment must divide into the data_size
         self.assertRaises(RuntimeError, ndt.make_fixedbytes_dtype, 6, 4)
 
+    def test_dtype_dtype(self):
+        d = nd.dtype('dtype')
+        self.assertEqual(str(d), 'dtype')
+
+        # Creating an ndobject out of a dtype
+        # results in it having the dtype 'dtype'
+        n = nd.ndobject(d)
+        self.assertEqual(n.dtype, d)
+
+        # Python float type converts to float64
+        n = nd.ndobject(float)
+        self.assertEqual(n.dtype, d)
+        self.assertEqual(nd.as_py(n), ndt.float64)
+
 if __name__ == '__main__':
     unittest.main()

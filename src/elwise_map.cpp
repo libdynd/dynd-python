@@ -341,7 +341,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
     if (src_type != Py_None) {
         // Cast to the source dtype if requested
         src_dt = make_dtype_from_pyobject(src_type);
-        n = n.cast_udtype(src_dt);
+        n = n.ucast(src_dt);
     } else {
         src_dt = n.get_udtype();
     }
@@ -370,7 +370,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         for (size_t i = 0; i != n.size(); ++i) {
             // Cast to the source dtype if requested
             src_dt[i] = make_dtype_from_pyobject(PyList_GET_ITEM(src_type_list, i));
-            n[i] = n[i].cast_udtype(src_dt[i]);
+            n[i] = n[i].ucast(src_dt[i]);
         }
     } else {
         for (size_t i = 0; i != n.size(); ++i) {

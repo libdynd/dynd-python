@@ -182,9 +182,9 @@ dynd::ndobject pydynd::ndobject_cast_scalars(const dynd::ndobject& n, const dtyp
     return n.cast_scalars(dt, pyarg_error_mode(assign_error_obj));
 }
 
-dynd::ndobject pydynd::ndobject_cast_udtype(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
+dynd::ndobject pydynd::ndobject_ucast(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
 {
-    return n.cast_udtype(dt, pyarg_error_mode(assign_error_obj));
+    return n.ucast(dt, pyarg_error_mode(assign_error_obj));
 }
 
 PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)

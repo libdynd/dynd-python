@@ -15,7 +15,7 @@ class TestNDObjectIn(unittest.TestCase):
         self.assertFalse(7 in a)
 
     def test_integer_expression(self):
-        a = nd.ndobject(['1979-03-22', '1932-12-12', '1999-01-04']).cast_udtype(ndt.date)
+        a = nd.ndobject(['1979-03-22', '1932-12-12', '1999-01-04']).ucast(ndt.date)
         self.assertTrue(1979 in a.year)
         self.assertTrue(1980 not in a.year)
         self.assertTrue(1932 in a.year)
@@ -36,7 +36,7 @@ class TestNDObjectIn(unittest.TestCase):
         self.assertFalse(u'' in a)
 
     def test_strings_different_encoding(self):
-        a = nd.ndobject(['this', 'is', 'a', 'test']).cast_udtype(ndt.make_string_dtype('utf_8'))
+        a = nd.ndobject(['this', 'is', 'a', 'test']).ucast(ndt.make_string_dtype('utf_8'))
         self.assertTrue('this' in a)
         self.assertTrue('is' in a)
         self.assertTrue('a' in a)

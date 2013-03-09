@@ -19,7 +19,7 @@ class TestElwiseMap(unittest.TestCase):
         self.assertEqual(nd.as_py(b), [0, -2, 20, -4, 8])
 
     def test_unary_function_chained(self):
-        a = nd.arange(3).cast_udtype(ndt.float32)
+        a = nd.arange(3).ucast(ndt.float32)
         def multiscale(dst, src):
             dst.once = src
             dst.twice = [2 * nd.as_py(x) for x in src]

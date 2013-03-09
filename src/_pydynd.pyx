@@ -842,11 +842,11 @@ cdef class w_ndobject:
         SET(result.v, ndobject_cast_scalars(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
-    def cast_udtype(self, dtype, errmode=None):
+    def ucast(self, dtype, errmode=None):
         """
-        a.cast_scalars(dtype, errmode='fractional')
+        a.ucast(dtype, errmode='fractional')
         
-        Converts the ndobject's uniform dtype to the requested dtype,
+        Casts the ndobject's uniform dtype to the requested dtype,
         producing a conversion dtype. The uniform dtype is the dtype
         after the a.undim uniform dimensions.
 
@@ -866,14 +866,14 @@ cdef class w_ndobject:
         >>> from dynd import nd, ndt
 
         >>> from datetime import date
-        >>> a = nd.ndobject([date(1929,3,13), date(1979,3,22)]).cast_udtype('{month: int32; year: int32; day: float32}')
+        >>> a = nd.ndobject([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32; year: int32; day: float32}')
         >>> a
         nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=fixedstruct<int32 month, int32 year, float32 day>, from=date>>)
         >>> a.eval()
         nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<fixedstruct<int32 month, int32 year, float32 day>>)
         """
         cdef w_ndobject result = w_ndobject()
-        SET(result.v, ndobject_cast_udtype(GET(self.v), GET(w_dtype(dtype).v), errmode))
+        SET(result.v, ndobject_ucast(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
     def view_scalars(self, dtype):

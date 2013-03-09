@@ -711,9 +711,9 @@ cdef class w_ndobject:
             # Get the array data
             ndobject_init_from_pyobject(GET(self.v), obj)
 
-            # If a specific dtype is requested, use cast_scalars to switch types
+            # If a specific dtype is requested, use ucast to switch types
             if dtype is not None:
-                SET(self.v, GET(self.v).cast_scalars(GET(w_dtype(dtype).v), assign_error_default).eval())
+                SET(self.v, GET(self.v).ucast(GET(w_dtype(dtype).v), assign_error_default).eval())
     def __dealloc__(self):
         placement_delete(self.v)
 
@@ -760,7 +760,7 @@ cdef class w_ndobject:
         >>> a = nd.ndobject([1.5, 2, 3])
         >>> a
         nd.ndobject([1.5, 2, 3], strided_dim<float64>)
-        >>> b = a.cast_scalars(ndt.int16, errmode='none')
+        >>> b = a.ucast(ndt.int16, errmode='none')
         >>> b
         nd.ndobject([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=none>>)
         >>> b.eval()
@@ -817,29 +817,6 @@ cdef class w_ndobject:
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).storage())
-        return result
-
-    def cast_scalars(self, dtype, errmode=None):
-        """
-        a.cast_scalars(dtype, errmode='fractional')
-        
-        Converts the ndobject's scalars to the requested dtype,
-        producing a conversion dtype.
-
-        Parameters
-        ----------
-        dtype : dynd type
-            All the scalars are cast into this type.
-        errmode : 'inexact', 'fractional', 'overflow', 'none'
-            How conversion errors are treated. For 'inexact', the value
-            must be preserved precisely. For 'fractional', conversion errors
-            due to precision loss are accepted, but not for loss of the
-            fraction part. For 'overflow', only overflow errors are raised.
-            For 'none', no conversion errors are raised
-
-        """
-        cdef w_ndobject result = w_ndobject()
-        SET(result.v, ndobject_cast_scalars(GET(self.v), GET(w_dtype(dtype).v), errmode))
         return result
 
     def ucast(self, dtype, errmode=None):

@@ -15,4 +15,4 @@ class TestUnicode(unittest.TestCase):
 
     def test_ascii_decode_error(self):
         a = nd.ndobject(128, dtype=ndt.uint8).view_scalars("string(1,'A')")
-        self.assertRaises(UnicodeDecodeError, a.cast_scalars("string").eval)
+        self.assertRaises(UnicodeDecodeError, a.ucast("string").eval)

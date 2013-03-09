@@ -44,9 +44,9 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
 
         ndobject storage() except +translate_exception
 
-        ndobject cast_scalars(dtype&, assign_error_mode) except +translate_exception
-
         ndobject view_scalars(dtype&) except +translate_exception
+        ndobject ucast(dtype&) except +translate_exception
+        ndobject ucast(dtype&, assign_error_mode) except +translate_exception
 
         void flag_as_immutable() except +translate_exception
 
@@ -85,7 +85,6 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     ndobject ndobject_arange(object, object, object) except +translate_exception
     ndobject ndobject_linspace(object, object, object) except +translate_exception
 
-    ndobject ndobject_cast_scalars(ndobject&, dtype& , object) except +translate_exception
     ndobject ndobject_ucast(ndobject&, dtype& , object) except +translate_exception
     object ndobject_as_py(ndobject&) except +translate_exception
     object ndobject_as_numpy(object, bint) except +translate_exception

@@ -177,11 +177,6 @@ bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
     return aux.found;
 }
 
-dynd::ndobject pydynd::ndobject_cast_scalars(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
-{
-    return n.cast_scalars(dt, pyarg_error_mode(assign_error_obj));
-}
-
 dynd::ndobject pydynd::ndobject_ucast(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
 {
     return n.ucast(dt, pyarg_error_mode(assign_error_obj));
@@ -327,9 +322,9 @@ ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step
     dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(),
             promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
     
-    start_nd = start_nd.cast_scalars(dt, assign_error_none).eval();
-    stop_nd = stop_nd.cast_scalars(dt, assign_error_none).eval();
-    step_nd = step_nd.cast_scalars(dt, assign_error_none).eval();
+    start_nd = start_nd.ucast(dt, assign_error_none).eval();
+    stop_nd = stop_nd.ucast(dt, assign_error_none).eval();
+    step_nd = step_nd.ucast(dt, assign_error_none).eval();
 
     if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
         throw runtime_error("dynd::arange should only be called with scalar parameters");

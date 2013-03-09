@@ -129,7 +129,6 @@ inline std::string ndobject_debug_print(const dynd::ndobject& n)
 bool ndobject_contains(const dynd::ndobject& n, PyObject *x);
 
 
-dynd::ndobject ndobject_cast_scalars(const dynd::ndobject& n, const dynd::dtype& dt, PyObject *assign_error_obj);
 dynd::ndobject ndobject_ucast(const dynd::ndobject& n, const dynd::dtype& dt, PyObject *assign_error_obj);
 
 PyObject *ndobject_get_shape(const dynd::ndobject& n);

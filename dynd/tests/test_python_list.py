@@ -76,7 +76,7 @@ class TestPythonList(unittest.TestCase):
         self.assertEqual(a.dtype.udtype, ndt.date)
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), lst)
-        self.assertEqual(nd.as_py(a.cast_scalars(ndt.string)), lststr)
+        self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)
 
 if __name__ == '__main__':
     unittest.main()

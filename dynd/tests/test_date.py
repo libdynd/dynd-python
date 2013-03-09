@@ -24,7 +24,7 @@ class TestDate(unittest.TestCase):
     def test_struct_casting(self):
         a = nd.ndobject([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
-        s = a.cast_scalars(ndt.make_fixedstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
+        s = a.ucast(ndt.make_fixedstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
                                         ['year', 'month', 'day']))
         s = s.eval()
         self.assertEqual(nd.as_py(s.year), [1912, 2002])

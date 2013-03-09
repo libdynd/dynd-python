@@ -170,7 +170,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a, c)
 
         # ASCII dynd -> UTF32 dynd
-        b_u = b.cast_scalars(ndt.make_fixedstring_dtype(7, 'utf_32'))
+        b_u = b.ucast(ndt.make_fixedstring_dtype(7, 'utf_32'))
         self.assertEqual(
                 ndt.make_convert_dtype(
                     ndt.make_fixedstring_dtype(7, 'utf_32'),

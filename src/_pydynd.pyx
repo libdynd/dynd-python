@@ -1190,6 +1190,10 @@ def arange(start=None, stop=None, step=None, dtype=None):
     nd.arange(start, stop, step=None, dtype=None)
     
     Constructs an ndobject representing a stepped range of values.
+
+    This function assumes that (stop-start)/step is approximately
+    an integer, so as to be able to produce reasonable values with
+    fractional steps which can't be exactly represented, such as 0.1.
     
     Parameters
     ----------

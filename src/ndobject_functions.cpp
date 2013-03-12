@@ -304,9 +304,11 @@ void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyOb
     }
 }
 
-ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step)
+ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt)
 {
     ndobject start_nd, stop_nd, step_nd;
+    dtype dt_nd;
+
     if (start != Py_None) {
         ndobject_init_from_pyobject(start_nd, start);
     } else {
@@ -318,28 +320,37 @@ ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step
     } else {
         step_nd = 1;
     }
+
+    if (dt != Py_None) {
+        dt_nd = make_dtype_from_pyobject(dt);
+    } else {
+        dt_nd = promote_dtypes_arithmetic(start_nd.get_dtype(),
+                    promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
+    }
     
-    dtype dt = promote_dtypes_arithmetic(start_nd.get_dtype(),
-            promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
-    
-    start_nd = start_nd.ucast(dt, assign_error_none).eval();
-    stop_nd = stop_nd.ucast(dt, assign_error_none).eval();
-    step_nd = step_nd.ucast(dt, assign_error_none).eval();
+    start_nd = start_nd.ucast(dt_nd).eval();
+    stop_nd = stop_nd.ucast(dt_nd).eval();
+    step_nd = step_nd.ucast(dt_nd).eval();
 
     if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
         throw runtime_error("dynd::arange should only be called with scalar parameters");
     }
 
-    return arange(dt, start_nd.get_readonly_originptr(),
+    return arange(dt_nd, start_nd.get_readonly_originptr(),
             stop_nd.get_readonly_originptr(),
             step_nd.get_readonly_originptr());
 }
 
-dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count)
+dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count, PyObject *dt)
 {
     ndobject start_nd, stop_nd;
     intptr_t count_val = pyobject_as_index(count);
-    ndobject_init_from_pyobject(start_nd, start);
-    ndobject_init_from_pyobject(stop_nd, stop);
+    start_nd = ndobject_from_py(start);
+    stop_nd = ndobject_from_py(stop);
+    if (dt != Py_None) {
+        dtype dt_nd = make_dtype_from_pyobject(dt);
+        start_nd = start_nd.ucast(dt_nd).eval();
+        stop_nd = stop_nd.ucast(dt_nd).eval();
+    }
     return dynd::linspace(start_nd, stop_nd, count_val);
 }

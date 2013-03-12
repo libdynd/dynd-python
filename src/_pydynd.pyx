@@ -1184,10 +1184,10 @@ def groupby(data, by, groups = None):
             SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
-def arange(start, stop=None, step=None):
+def arange(start, stop=None, step=None, dtype=None):
     """
-    nd.arange(stop)
-    nd.arange(start, stop, step=None)
+    nd.arange(stop, dtype=None)
+    nd.arange(start, stop, step=None, dtype=None)
     
     Constructs an ndobject representing a stepped range of values.
     
@@ -1200,18 +1200,21 @@ def arange(start, stop=None, step=None):
         not included in the resulting ndobject.
     step : int
         This is the increment.
+    dtype : dynd type, optional
+        If provided, it must be a scalar type, and the result
+        is of this type.
     """
     cdef w_ndobject result = w_ndobject()
     # Move the first argument to 'stop' if stop isn't specified
     if stop is None:
-        SET(result.v, ndobject_arange(None, start, step))
+        SET(result.v, ndobject_arange(None, start, step, dtype))
     else:
-        SET(result.v, ndobject_arange(start, stop, step))
+        SET(result.v, ndobject_arange(start, stop, step, dtype))
     return result
 
-def linspace(start, stop, count=50):
+def linspace(start, stop, count=50, dtype=None):
     """
-    nd.linspace(start, stop, count=50)
+    nd.linspace(start, stop, count=50, dtype=None)
     
     Constructs a specified count of values interpolating a range.
     
@@ -1221,11 +1224,14 @@ def linspace(start, stop, count=50):
         The value of the first element of the resulting ndobject.
     stop : floating point scalar
         The value of the last element of the resulting ndobject.
-    count : int
+    count : int, optional
         The number of elements in the resulting ndobject.
+    dtype : dynd type, optional
+        If provided, it must be a scalar type, and the result
+        is of this type.
     """
     cdef w_ndobject result = w_ndobject()
-    SET(result.v, ndobject_linspace(start, stop, count))
+    SET(result.v, ndobject_linspace(start, stop, count, dtype))
     return result
 
 def parse_json(dtype, json):

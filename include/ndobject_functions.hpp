@@ -148,12 +148,12 @@ void ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *va
 /**
  * Implementation of nd.arange().
  */
-dynd::ndobject ndobject_arange(PyObject *start, PyObject *stop, PyObject *step);
+dynd::ndobject ndobject_arange(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt);
 
 /**
  * Implementation of nd.linspace().
  */
-dynd::ndobject ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count);
+dynd::ndobject ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count, PyObject *dt);
 
 } // namespace pydynd
 

@@ -347,10 +347,9 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     intptr_t count_val = pyobject_as_index(count);
     start_nd = ndobject_from_py(start);
     stop_nd = ndobject_from_py(stop);
-    if (dt != Py_None) {
-        dtype dt_nd = make_dtype_from_pyobject(dt);
-        start_nd = start_nd.ucast(dt_nd).eval();
-        stop_nd = stop_nd.ucast(dt_nd).eval();
+    if (dt == Py_None) {
+        return dynd::linspace(start_nd, stop_nd, count_val);
+    } else {
+        return dynd::linspace(start_nd, stop_nd, count_val, make_dtype_from_pyobject(dt));
     }
-    return dynd::linspace(start_nd, stop_nd, count_val);
 }

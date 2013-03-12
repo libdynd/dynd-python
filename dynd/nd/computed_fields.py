@@ -21,21 +21,27 @@ class FieldExpr:
         self.glbl.update(scipy.__dict__)
 
     def __call__(self, dst, src):
-        # Create a locals dict with all the fields
-        lcl = {}
-        for i, name in enumerate(self.src_field_names):
-            s = src[:, i]
-            # For types which NumPy doesn't support, leave
-            # them as DyND arrays
-            try:
-                s = as_numpy(s)
-            except RuntimeError:
-                pass
-            lcl[str(name)] = s
+        # Loop element by element
+        for dst_itm, src_itm in zip(dst, src):
+            # Put all the src fields in a locals dict
+            lcl = {}
+            for i, name in enumerate(self.src_field_names):
+                s = src_itm[i]
+                if s.undim > 0 or s.dtype.kind == 'struct':
+                    # For types which NumPy doesn't support, leave
+                    # them as DyND arrays
+                    try:
+                        s = as_numpy(s)
+                    except RuntimeError:
+                        pass
+                else:
+                    s = as_py(s)
+
+                lcl[str(name)] = s
         
-        # Evaluate all the field exprs
-        for i, expr in enumerate(self.dst_field_expr):
-            dst[:, i] = eval(expr, self.glbl, lcl)
+            # Evaluate all the field exprs
+            for i, expr in enumerate(self.dst_field_expr):
+                dst_itm[i] = eval(expr, self.glbl, lcl)
 
 def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     """

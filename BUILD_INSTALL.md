@@ -76,6 +76,18 @@ to the cmake command.
   ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
   ```
 
+  If you want to build with a different compiler, or use
+  the static analyzer in clang, you can customize the compiler
+  at this step.
+
+  ```
+  ~/dynd-python $ mkdir build-analyze
+  ~/dynd-python $ cd build-analyze
+  ~/dynd-python/build $ export CCC_CC=clang
+  ~/dynd-python/build $ export CCC_CXX=clang++
+  ~/dynd-python/build $ cmake -DCMAKE_CXX_COMPILER=c++-analyzer -DCMAKE_C_COMPILER=ccc-analyzer ..
+  ```
+
 5. Run the build and install.
 
   **(Windows)** Double-click on the 'dynd-python\build\dynd-python.sln'

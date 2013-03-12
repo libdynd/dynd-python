@@ -90,8 +90,8 @@ else()
 endif()
 
 include_directories(
-    ${PYTHON_INCLUDE_DIRS}
     ${NUMPY_INCLUDE_DIRS}
+    ${PYTHON_INCLUDE_DIRS}
     libraries/dynd/include
     include
     )

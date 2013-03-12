@@ -27,6 +27,7 @@ def test(verbosity=1, xunitfile=None, exit=False):
         error code after the tests are finished.
     """
     import os, sys, subprocess
+    import numpy
     from tests import get_tst_module
     import unittest
 
@@ -38,6 +39,7 @@ def test(verbosity=1, xunitfile=None, exit=False):
     print('DyND-Python git sha1: %s' % __git_sha1__)
     print('DyND Library version: %s' % __dynd_version_string__)
     print('DyND Library git sha1: %s' % __dynd_git_sha1__)
+    print('NumPy version: %s' % numpy.__version__)
     sys.stdout.flush()
     if xunitfile is None:
         # Run all the tests

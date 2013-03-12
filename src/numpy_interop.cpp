@@ -235,9 +235,8 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
                 ss << "Internal error building dynd metadata: Numpy dtype has NULL subarray corresponding to strided_dim type";
                 throw runtime_error(ss.str());
             }
-            int ndim;
             if (PyTuple_Check(adescr->shape)) {
-                ndim = (int)PyTuple_GET_SIZE(adescr->shape);
+                int ndim = (int)PyTuple_GET_SIZE(adescr->shape);
                 strided_dim_dtype_metadata *md = reinterpret_cast<strided_dim_dtype_metadata *>(metadata);
                 intptr_t stride = adescr->base->elsize;
                 el = dt;
@@ -249,7 +248,6 @@ void pydynd::fill_metadata_from_numpy_dtype(const dtype& dt, PyArray_Descr *d, c
                 }
                 metadata += ndim * sizeof(strided_dim_dtype_metadata);
             } else {
-                ndim = 1;
                 strided_dim_dtype_metadata *md = reinterpret_cast<strided_dim_dtype_metadata *>(metadata);
                 metadata += sizeof(strided_dim_dtype_metadata);
                 md->size = pyobject_as_index(adescr->shape);

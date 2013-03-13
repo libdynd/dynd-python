@@ -63,10 +63,9 @@ inline PyObject *wrap_ndobject(dynd::ndobject&& n) {
 }
 #endif
 
-inline void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
-{
-    n = ndobject_from_py(obj);
-}
+void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj, PyObject *dt, bool uniform);
+void ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj);
+
 dynd::ndobject ndobject_eval(const dynd::ndobject& n);
 dynd::ndobject ndobject_eval_copy(const dynd::ndobject& n,
                 PyObject* access,

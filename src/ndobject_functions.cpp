@@ -5,6 +5,7 @@
 
 #include "ndobject_functions.hpp"
 #include "ndobject_from_py.hpp"
+#include "ndobject_assign_from_py.hpp"
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
@@ -75,6 +76,16 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
 }
 
 #undef DYND_PY_ENCODING
+
+void pydynd::ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj, PyObject *dt, bool uniform)
+{
+    n = ndobject_from_py(obj, make_dtype_from_pyobject(dt), uniform);
+}
+
+void pydynd::ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
+{
+    n = ndobject_from_py(obj);
+}
 
 dynd::ndobject pydynd::ndobject_eval(const dynd::ndobject& n)
 {
@@ -231,61 +242,19 @@ dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subsc
     }
 }
 
-static void assign_pyobject(const dynd::dtype& dst_dt, const char *dst_metadata, char *dst_data,
-                PyObject *value)
-{
-    // Do some special case assignments
-    if (PyBool_Check(value)) {
-        dynd_bool v = (value == Py_True);
-        dtype_assign(dst_dt, dst_metadata, dst_data,
-                        make_dtype<dynd_bool>(), NULL, reinterpret_cast<const char *>(&v));
-#if PY_VERSION_HEX < 0x03000000
-    } else if (PyInt_Check(value)) {
-        long v = PyInt_AS_LONG(value);
-        dtype_assign(dst_dt, dst_metadata, dst_data,
-                        make_dtype<long>(), NULL, reinterpret_cast<const char *>(&v));
-#endif // PY_VERSION_HEX < 0x03000000
-    } else if (PyLong_Check(value)) {
-        PY_LONG_LONG v = PyLong_AsLongLong(value);
-        if (v == -1 && PyErr_Occurred()) {
-            throw runtime_error("error converting int value");
-        }
-        dtype_assign(dst_dt, dst_metadata, dst_data,
-                        make_dtype<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
-    } else if (PyFloat_Check(value)) {
-        double v = PyFloat_AS_DOUBLE(value);
-        dtype_assign(dst_dt, dst_metadata, dst_data,
-                        make_dtype<double>(), NULL, reinterpret_cast<const char *>(&v));
-    } else if (PyComplex_Check(value)) {
-        complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
-        dtype_assign(dst_dt, dst_metadata, dst_data,
-                        make_dtype<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
-    } else {
-        ndobject v = ndobject_from_py(value);
-        dtype_assign(dst_dt, dst_metadata, dst_data,
-                        v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
-    }
-}
-
-static void assign_pyobject(const dynd::ndobject& n, PyObject *value)
-{
-    assign_pyobject(n.get_dtype(), n.get_ndo_meta(), n.get_readwrite_originptr(),
-                    value);
-}
-
 void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value)
 {
     // TODO: Write a mechanism for assigning directly
     //       from PyObject to ndobject
     if (subscript == Py_Ellipsis) {
-        assign_pyobject(n, value);
+        ndobject_broadcast_assign_from_py(n, value);
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(subscript)) {
         long i = PyInt_AS_LONG(subscript);
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
         dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
-        assign_pyobject(d, metadata, data, value);
+        ndobject_broadcast_assign_from_py(d, metadata, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
         PY_LONG_LONG i = PyLong_AsLongLong(subscript);
@@ -295,12 +264,12 @@ void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyOb
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
         dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
-        assign_pyobject(d, metadata, data, value);
+        ndobject_broadcast_assign_from_py(d, metadata, data, value);
     } else {
         intptr_t size;
         shortvector<irange> indices;
         pyobject_as_irange_array(size, indices, subscript);
-        assign_pyobject(n.at_array(size, indices.get(), false), value);
+        ndobject_broadcast_assign_from_py(n.at_array(size, indices.get(), false), value);
     }
 }
 
@@ -310,13 +279,13 @@ ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step
     dtype dt_nd;
 
     if (start != Py_None) {
-        ndobject_init_from_pyobject(start_nd, start);
+        start_nd = ndobject_from_py(start);
     } else {
         start_nd = 0;
     }
-    ndobject_init_from_pyobject(stop_nd, stop);
+    stop_nd = ndobject_from_py(stop);
     if (step != Py_None) {
-        ndobject_init_from_pyobject(step_nd, step);
+        step_nd = ndobject_from_py(step);
     } else {
         step_nd = 1;
     }

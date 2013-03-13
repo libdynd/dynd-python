@@ -108,6 +108,7 @@ set(pydynd_CPP_SRC
     include/git_version.hpp
     include/ndobject_functions.hpp
     include/ndobject_from_py.hpp
+    include/ndobject_assign_from_py.hpp
     include/ndobject_as_pep3118.hpp
     include/ndobject_as_numpy.hpp
     include/ndobject_as_py.hpp
@@ -124,6 +125,7 @@ set(pydynd_CPP_SRC
     src/exception_translation.cpp
     src/ndobject_functions.cpp
     src/ndobject_from_py.cpp
+    src/ndobject_assign_from_py.cpp
     src/ndobject_as_pep3118.cpp
     src/ndobject_as_numpy.cpp
     src/ndobject_as_py.cpp

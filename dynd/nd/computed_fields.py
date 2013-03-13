@@ -29,7 +29,7 @@ class FieldExpr:
                 s = src_itm[i]
                 if s.undim > 0 or s.dtype.kind == 'struct':
                     # For types which NumPy doesn't support, leave
-                    # them as DyND arrays
+                    # them as DyND ndobjects
                     try:
                         s = as_numpy(s)
                     except RuntimeError:

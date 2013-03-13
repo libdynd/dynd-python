@@ -664,7 +664,7 @@ def factor_categorical_dtype(values):
 
 cdef class w_ndobject:
     """
-    ndobject(obj=None, dtype=None)
+    ndobject(obj=None, udtype=None, dtype=None)
 
     Create a dynd ndobject out of the provided object.
 
@@ -683,9 +683,14 @@ cdef class w_ndobject:
     ----------
     obj : multi-dimensional object, optional
         Any object which dynd knows how to interpret as an ndobject.
+    udtype: dynd type
+        If provided, the type is used as the uniform type for the
+        input, and the shape of the leading dimensions is deduced.
+        This parameter cannot be used together with 'dtype'.
     dtype: dynd type
-        If provided, the object gets reinterpreted according to
-        this type.
+        If provided, the type is used as the full type for the input.
+        If needed by the type, the shape is deduced from the input.
+        This parameter cannot be used together with 'udtype'.
 
     Examples
     --------
@@ -705,15 +710,19 @@ cdef class w_ndobject:
     # ndobject's value.
     cdef ndobject_placement_wrapper v
 
-    def __cinit__(self, obj=None, dtype=None):
+    def __cinit__(self, obj=None, udtype=None, dtype=None):
         placement_new(self.v)
         if obj is not None:
             # Get the array data
-            ndobject_init_from_pyobject(GET(self.v), obj)
+            if udtype is not None:
+                if dtype is not None:
+                    raise ValueError('Must provide only one of udtype or dtype, not both')
+                ndobject_init_from_pyobject(GET(self.v), obj, udtype, True)
+            elif dtype is not None:
+                ndobject_init_from_pyobject(GET(self.v), obj, dtype, False)
+            else:
+                ndobject_init_from_pyobject(GET(self.v), obj)
 
-            # If a specific dtype is requested, use ucast to switch types
-            if dtype is not None:
-                SET(self.v, GET(self.v).ucast(GET(w_dtype(dtype).v), assign_error_default).eval())
     def __dealloc__(self):
         placement_delete(self.v)
 
@@ -1253,7 +1262,7 @@ def parse_json(dtype, json):
         The type to interpret the input JSON as. If the data
         does not match this type, an error is raised during parsing.
     json : string or bytes
-        String data the contains the JSON to parse.
+        String that contains the JSON to parse.
 
     Examples
     --------

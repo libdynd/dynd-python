@@ -30,7 +30,7 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static size_t get_pyseq_ndim(PyObject *seq, bool ends_in_dict)
+static size_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
 {
     size_t ndim = 0;
     pyobject_ownref obj(seq, true);
@@ -38,7 +38,10 @@ static size_t get_pyseq_ndim(PyObject *seq, bool ends_in_dict)
     ends_in_dict = false;
     do {
         // Iteratively index the first element until we run out of dimensions
-        if (PySequence_Check(obj.get())) {
+        if (PyDict_Check(obj.get())) {
+            ends_in_dict = true;
+            seqsize = 0;
+        } else if (PySequence_Check(obj.get()) && !PyString_Check(obj.get()) && !PyUnicode_Check(obj.get())) {
             Py_ssize_t size = PySequence_Size(obj.get());
             if (size == -1 && PyErr_Occurred()) {
                 seqsize = 0;
@@ -51,9 +54,6 @@ static size_t get_pyseq_ndim(PyObject *seq, bool ends_in_dict)
                 }
             }
         } else {
-            if (PyDict_Check(obj.get())) {
-                ends_in_dict = true;
-            }
             seqsize = 0;
         }
     } while (seqsize > 0);
@@ -368,7 +368,7 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
         // Increase the dst_undim to count the first field
         // of any structs as uniform, to match up with how
         // get_pyseq_ndim works.
-        dtype udt = dt.get_udtype();
+        dtype udt = dt.get_udtype().value_dtype();
         size_t original_dst_undim = dst_undim;
         if (!ends_in_dict && udt.get_kind() == struct_kind) {
             while (true) {
@@ -392,9 +392,9 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
             dtype partial_dt = dt.get_dtype_at_dimension(NULL, dst_undim - seq_undim).get_canonical_dtype();
             ndobject tmp(make_ndobject_memory_block(partial_dt, original_dst_undim - (dst_undim - seq_undim),
                             shape.get() + (dst_undim - seq_undim)));
-            ndobject_assign_from_value(partial_dt, tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
+            ndobject_assign_from_value(tmp.get_dtype(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
                             value);
-            dtype_assign(dt, metadata, data, partial_dt, tmp.get_ndo_meta(), tmp.get_readonly_originptr());
+            dtype_assign(dt, metadata, data, tmp.get_dtype(), tmp.get_ndo_meta(), tmp.get_readonly_originptr());
         } else {
             ndobject_assign_from_value(dt, metadata, data, value);
         }

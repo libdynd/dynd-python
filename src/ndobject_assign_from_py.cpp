@@ -4,7 +4,6 @@
 //
 
 #include <Python.h>
-#include <datetime.h>
 
 #include <dynd/dtype_assign.hpp>
 #include <dynd/dtypes/string_dtype.hpp>
@@ -193,7 +192,7 @@ static void ndobject_assign_strided_from_pyseq(const dynd::dtype& element_dt,
                 PyObject *seq, size_t seqsize)
 {
     // Raise a broadcast error if it doesn't work
-    if (seqsize != 1 && dst_size != (intptr_t)dst_size) {
+    if (seqsize != 1 && dst_size != seqsize) {
         throw broadcast_error(element_dt, element_metadata, "nested python sequence object");
     }
     if (seqsize == 1 && dst_size > 1) {
@@ -212,7 +211,7 @@ static void ndobject_assign_strided_from_pyseq(const dynd::dtype& element_dt,
                         dst_data, 0, dst_size - 1, kdp);
     } else {
         // Loop through the dst array and assign values
-        for (intptr_t i = 0; i != dst_size; ++i) {
+        for (size_t i = 0; i != dst_size; ++i) {
             pyobject_ownref item(PySequence_GetItem(seq, i));
             ndobject_assign_from_value(element_dt, element_metadata,
                             dst_data + i * dst_stride, item.get());
@@ -327,7 +326,6 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
         case fixedstruct_type_id: {
             const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
             size_t field_count = fsd->get_field_count();
-            const string *field_names = fsd->get_field_names();
             const dtype *field_types = fsd->get_field_types();
             const size_t *data_offsets = fsd->get_data_offsets(metadata);
             const size_t *metadata_offsets = fsd->get_metadata_offsets();

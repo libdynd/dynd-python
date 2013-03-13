@@ -30,11 +30,12 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static size_t get_pyseq_ndim(PyObject *seq)
+static size_t get_pyseq_ndim(PyObject *seq, bool ends_in_dict)
 {
     size_t ndim = 0;
     pyobject_ownref obj(seq, true);
     Py_ssize_t seqsize = 0;
+    ends_in_dict = false;
     do {
         // Iteratively index the first element until we run out of dimensions
         if (PySequence_Check(obj.get())) {
@@ -50,6 +51,9 @@ static size_t get_pyseq_ndim(PyObject *seq)
                 }
             }
         } else {
+            if (PyDict_Check(obj.get())) {
+                ends_in_dict = true;
+            }
             seqsize = 0;
         }
     } while (seqsize > 0);
@@ -58,6 +62,8 @@ static size_t get_pyseq_ndim(PyObject *seq)
 
 static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *seq, size_t seqsize);
+static void ndobject_assign_from_pydict(const dynd::dtype& dt,
+                const char *metadata, char *data, PyObject *value);
 
 static void ndobject_assign_from_value(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value)
@@ -160,7 +166,20 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
             const dtype& v = make_dtype_from_pyobject(value);
             dtype_assign(dt, metadata, data,
                         make_dtype_dtype(), NULL, reinterpret_cast<const char *>(&v));
+        } else if (PyDict_Check(value)) {
+            ndobject_assign_from_pydict(dt, metadata, data, value);
         } else {
+            // Check if the value is a sequence
+            if (PySequence_Check(value)) {
+                Py_ssize_t seqsize = PySequence_Size(value);
+                if (seqsize == -1 && PyErr_Occurred()) {
+                    PyErr_Clear();
+                } else {
+                    ndobject_assign_from_pyseq(dt, metadata, data, value, seqsize);
+                    return;
+                }
+            }
+
             // Fall back strategy, where we convert to ndobject, then assign
             ndobject v = ndobject_from_py(value);
             dtype_assign(dt, metadata, data,
@@ -198,6 +217,59 @@ static void ndobject_assign_strided_from_pyseq(const dynd::dtype& element_dt,
             ndobject_assign_from_value(element_dt, element_metadata,
                             dst_data + i * dst_stride, item.get());
         }
+    }
+}
+
+static void ndobject_assign_from_pydict(const dynd::dtype& dt,
+                const char *metadata, char *data, PyObject *value)
+{
+    if (dt.get_kind() == struct_kind) {
+        const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
+        size_t field_count = fsd->get_field_count();
+        const string *field_names = fsd->get_field_names();
+        const dtype *field_types = fsd->get_field_types();
+        const size_t *data_offsets = fsd->get_data_offsets(metadata);
+        const size_t *metadata_offsets = fsd->get_metadata_offsets();
+
+        // Keep track of which fields we've seen
+        shortvector<bool> populated_fields(field_count);
+        memset(populated_fields.get(), 0, sizeof(bool) * field_count);
+
+        PyObject *dict_key = NULL, *dict_value = NULL;
+        Py_ssize_t dict_pos = 0;
+
+        while (PyDict_Next(value, &dict_pos, &dict_key, &dict_value)) {
+            string name = pystring_as_string(dict_key);
+            intptr_t i = fsd->get_field_index(name);
+            // TODO: Add an error policy of whether to throw an error
+            //       or not. For now, just raise an error
+            if (i != -1) {
+                ndobject_assign_from_value(field_types[i], metadata + metadata_offsets[i],
+                                data + data_offsets[i], dict_value);
+                populated_fields[i] = true;
+            } else {
+                stringstream ss;
+                ss << "Input python dict has key ";
+                print_escaped_utf8_string(ss, name);
+                ss << ", but no such field is in destination dynd type " << dt;
+                throw runtime_error(ss.str());
+            }
+        }
+
+        for (size_t i = 0; i < field_count; ++i) {
+            if (!populated_fields[i]) {
+                stringstream ss;
+                ss << "python dict does not contain the field ";
+                print_escaped_utf8_string(ss, field_names[i]);
+                ss << " as required by the data type " << dt;
+                throw runtime_error(ss.str());
+            }
+        }
+    } else {
+        // TODO support assigning to date_dtype as well
+        stringstream ss;
+        ss << "Cannot assign python dict to dynd type " << dt;
+        throw runtime_error(ss.str());
     }
 }
 
@@ -251,6 +323,28 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
                             d->begin + md->offset, md->stride, d->size, seq, seqsize);
             break;
         }
+        case struct_type_id:
+        case fixedstruct_type_id: {
+            const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
+            size_t field_count = fsd->get_field_count();
+            const string *field_names = fsd->get_field_names();
+            const dtype *field_types = fsd->get_field_types();
+            const size_t *data_offsets = fsd->get_data_offsets(metadata);
+            const size_t *metadata_offsets = fsd->get_metadata_offsets();
+
+            if (seqsize != field_count) {
+                stringstream ss;
+                ss << "Cannot assign sequence of size " << seqsize;
+                ss << " to dynd type " << dt;
+                throw runtime_error(ss.str());
+            }
+            for (size_t i = 0; i != seqsize; ++i) {
+                pyobject_ownref item(PySequence_GetItem(seq, i));
+                ndobject_assign_from_value(field_types[i], metadata + metadata_offsets[i],
+                                data + data_offsets[i], item.get());
+            }
+            break;
+        }
         default: {
             stringstream ss;
             ss << "Assigning from nested python sequence object to dynd type " << dt;
@@ -264,19 +358,40 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     size_t dst_undim = dt.get_undim();
+    bool ends_in_dict = false;
     if (dst_undim == 0) {
         ndobject_assign_from_value(dt, metadata, data, value);
     } else {
-        size_t seq_undim = get_pyseq_ndim(value);
-        if (dst_undim < seq_undim) {
-            throw broadcast_error(dt, metadata, "nested python sequence object");
-        }  else if (dst_undim > seq_undim || dt.is_expression()) {
+        size_t seq_undim = get_pyseq_ndim(value, ends_in_dict);
+        // Special handling when the destination is a struct,
+        // and there was no dict at the end of the seq chain.
+        // Increase the dst_undim to count the first field
+        // of any structs as uniform, to match up with how
+        // get_pyseq_ndim works.
+        dtype udt = dt.get_udtype();
+        size_t original_dst_undim = dst_undim;
+        if (!ends_in_dict && udt.get_kind() == struct_kind) {
+            while (true) {
+                if (udt.get_undim() > 0) {
+                    dst_undim += udt.get_undim();
+                    udt = udt.get_udtype();
+                } else if (udt.get_kind() == struct_kind) {
+                    ++dst_undim;
+                    udt = static_cast<const base_struct_dtype *>(udt.extended())->get_field_types()[0];
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (dst_undim > seq_undim || dt.is_expression()) {
             // Make a temporary value with just the trailing dimensions, then
             // assign to the output
-            dimvector shape(dst_undim);
+            dimvector shape(original_dst_undim);
             dt.extended()->get_shape(0, shape.get(), metadata);
             dtype partial_dt = dt.get_dtype_at_dimension(NULL, dst_undim - seq_undim).get_canonical_dtype();
-            ndobject tmp(make_ndobject_memory_block(partial_dt, seq_undim, shape.get() + (dst_undim - seq_undim)));
+            ndobject tmp(make_ndobject_memory_block(partial_dt, original_dst_undim - (dst_undim - seq_undim),
+                            shape.get() + (dst_undim - seq_undim)));
             ndobject_assign_from_value(partial_dt, tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
                             value);
             dtype_assign(dt, metadata, data, partial_dt, tmp.get_ndo_meta(), tmp.get_readonly_originptr());
@@ -286,6 +401,10 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
     }
 }
 
+void pydynd::ndobject_nodim_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value)
+{
+    ndobject_assign_from_value(dt, metadata, data, value);
+}
 
 void pydynd::ndobject_broadcast_assign_from_py(const dynd::ndobject& n, PyObject *value)
 {

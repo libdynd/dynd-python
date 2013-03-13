@@ -23,7 +23,7 @@ void ndobject_broadcast_assign_from_py(const dynd::ndobject& n, PyObject *value)
 
 /**
  * Assigns the values from 'obj' to the 'dt/metadata/data' raw ndobject, broadcasting
- * the input if requested.
+ * the input.
  *
  * \param dt  The dtype of the destination.
  * \param metadata  The metadata of the destination.
@@ -31,6 +31,17 @@ void ndobject_broadcast_assign_from_py(const dynd::ndobject& n, PyObject *value)
  * \param value The PyObject for the source data.
  */
 void ndobject_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value);
+
+/**
+ * Assigns the values from 'obj' to the 'dt/metadata/data' raw ndobject, broadcasting
+ * the individual input dimensions, but not broadcasting by skipping dimensions.
+ *
+ * \param dt  The dtype of the destination.
+ * \param metadata  The metadata of the destination.
+ * \param data  The data of the destination.
+ * \param value The PyObject for the source data.
+ */
+void ndobject_nodim_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value);
 
 } // namespace pydynd
 

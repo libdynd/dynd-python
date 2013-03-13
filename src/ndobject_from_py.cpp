@@ -122,7 +122,7 @@ static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_
 static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
                 std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis)
 {
-    bool is_sequence = (PySequence_Check(obj) != 0);
+    bool is_sequence = (PySequence_Check(obj) != 0 && !PyString_Check(obj) && !PyUnicode_Check(obj));
     Py_ssize_t size = 0;
     if (is_sequence) {
         size = PySequence_Size(obj);
@@ -139,7 +139,7 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
             } else if (udt.get_kind() == struct_kind) {
                 // Signal that this is a dimension which is sometimes scalar, to allow for
                 // raggedness in the struct dtype's fields
-                shape[current_axis] = shape_signal_ragged;
+                shape.push_back(shape_signal_ragged);
             } else {
                 throw runtime_error("dynd ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
             }
@@ -162,35 +162,11 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
                 shape[current_axis] = shape_signal_dict;
             }
         } else if (shape.size() != current_axis) {
-            throw runtime_error("dynd ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
-        }
-    }
-
-    // If it's a struct, and this is the first axis, figure out
-    // where to put the struct udt
-    if (current_axis == 0 && udt.get_kind() == struct_kind) {
-        size_t ndim, ndim_end = shape.size();
-        for (ndim = 1; ndim < ndim_end; ++ndim) {
-            if (shape[ndim] == shape_signal_ragged) {
-                // Match up the number of dimensions which aren't
-                // ragged in udt with the number of dimensions
-                // which are nonragged in the input data
-                size_t dt_nonragged = get_nonragged_dim_count(udt);
-                if (dt_nonragged <= ndim) {
-                    ndim -= dt_nonragged;
-                } else {
-                    ndim = 0;
-                }
-                break;
-            } else if (shape[ndim] == shape_signal_dict) {
-                break;
+            if (udt.get_kind() == struct_kind) {
+                shape[current_axis] = shape_signal_ragged;
+            } else {
+                throw runtime_error("dynd ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
             }
-        }
-        if (ndim == ndim_end || shape[ndim] != shape_signal_dict) {
-            // The struct dtype might have to consume multiple dimensions to be filled correctly
-        } else {
-            // In the case of shape_signal_dict, assume it's where the struct starts
-            shape.resize(ndim);
         }
     }
 }
@@ -639,6 +615,37 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj, const dtype& dt, bool uni
                     pyobject_ownref item(PySequence_GetItem(obj, i));
                     deduce_pyseq_shape_with_udtype(item.get(), dt, shape, true, 1);
                 }
+                // If it's a struct, fix up the ndim to let the struct absorb
+                // some of the sequences
+                if (dt.get_kind() == struct_kind) {
+                    size_t ndim, ndim_end = shape.size();
+                    for (ndim = 0; ndim != ndim_end; ++ndim) {
+                        if (shape[ndim] == shape_signal_ragged) {
+                            // Match up the number of dimensions which aren't
+                            // ragged in udt with the number of dimensions
+                            // which are nonragged in the input data
+                            size_t dt_nonragged = get_nonragged_dim_count(dt);
+                            if (dt_nonragged <= ndim) {
+                                ndim -= dt_nonragged;
+                            } else {
+                                ndim = 0;
+                            }
+                            break;
+                        } else if (shape[ndim] == shape_signal_dict) {
+                            break;
+                        }
+                    }
+                    if (ndim == ndim_end) {
+                        size_t dt_nonragged = get_nonragged_dim_count(dt);
+                        if (dt_nonragged <= ndim) {
+                            ndim -= dt_nonragged;
+                        } else {
+                            ndim = 0;
+                        }
+                    }
+                    shape.resize(ndim);
+                }
+
                 result = make_strided_ndobject(dt, shape.size(), &shape[0]);
             }
         } else {
@@ -656,6 +663,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj, const dtype& dt, bool uni
         result = empty(dt);
     }
 
-    ndobject_broadcast_assign_from_py(result, obj);
+    ndobject_nodim_broadcast_assign_from_py(result.get_dtype(),
+                    result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
     return result;
 }

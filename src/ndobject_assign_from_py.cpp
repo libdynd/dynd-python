@@ -355,6 +355,21 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
 void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value)
 {
+    // Special-case assigning from known array types
+    if (WNDObject_Check(value)) {
+        const ndobject& n = ((WNDObject *)value)->v;
+        dtype_assign(dt, metadata, data,
+                        n.get_dtype(), n.get_ndo_meta(), n.get_readonly_originptr());
+        return;
+#if DYND_NUMPY_INTEROP
+    } else if (PyArray_Check(value)) {
+        const ndobject& v = ndobject_from_numpy_array((PyArrayObject *)value);
+        dtype_assign(dt, metadata, data,
+                    v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
+        return;
+#endif // DYND_NUMPY_INTEROP
+    }
+
     size_t dst_undim = dt.get_undim();
     bool ends_in_dict = false;
     if (dst_undim == 0) {

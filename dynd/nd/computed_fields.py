@@ -21,6 +21,8 @@ class FieldExpr:
         self.glbl.update(datetime.__dict__)
         self.glbl.update(numpy.__dict__)
         self.glbl.update(scipy.__dict__)
+        self.glbl['as_py'] = as_py
+        self.glbl['as_numpy'] = as_numpy
 
     def __call__(self, dst, src):
         # Loop element by element
@@ -28,12 +30,12 @@ class FieldExpr:
             # Put all the src fields in a locals dict
             lcl = {}
             for i, name in enumerate(self.src_field_names):
-                s = src_itm[i]
+                s = src_itm[i].eval()
                 if s.undim > 0 or s.dtype.kind == 'struct':
                     # For types which NumPy doesn't support, leave
                     # them as DyND ndobjects
                     try:
-                        s = as_numpy(s)
+                        s = as_numpy(s, allow_copy=True)
                     except RuntimeError:
                         pass
                 else:
@@ -43,7 +45,8 @@ class FieldExpr:
         
             # Evaluate all the field exprs
             for i, expr in enumerate(self.dst_field_expr):
-                dst_itm[i] = eval(expr, self.glbl, lcl)
+                v = eval(expr, self.glbl, lcl)
+                dst_itm[i] = v
 
 def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     """
@@ -91,7 +94,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     nd.ndobject([100, 3.14159], fixedstruct<float64 r, float64 theta>)
     """
     n = ndobject(n)
-    udt = n.udtype
+    udt = n.udtype.value_dtype
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 

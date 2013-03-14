@@ -14,9 +14,11 @@ class FieldExpr:
         self.src_field_names = src_field_names
         # Create a globals dict containing numpy and scipy
         # for the expressions to use
+        import datetime
         import numpy
         import scipy
         self.glbl = {}
+        self.glbl.update(datetime.__dict__)
         self.glbl.update(numpy.__dict__)
         self.glbl.update(scipy.__dict__)
 

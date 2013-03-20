@@ -122,7 +122,8 @@ static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_
 static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
                 std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis)
 {
-    bool is_sequence = (PySequence_Check(obj) != 0 && !PyString_Check(obj) && !PyUnicode_Check(obj));
+    bool is_sequence = (PySequence_Check(obj) != 0 &&
+                    !PyString_Check(obj) && !PyUnicode_Check(obj));
     Py_ssize_t size = 0;
     if (is_sequence) {
         size = PySequence_Size(obj);
@@ -141,7 +142,8 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
                 // raggedness in the struct dtype's fields
                 shape.push_back(shape_signal_ragged);
             } else {
-                throw runtime_error("dynd ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
+                throw runtime_error("dynd ndobject doesn't support dimensions"
+                                " which are sometimes scalars and sometimes arrays");
             }
         } else {
             if (shape[current_axis] != size && shape[current_axis] >= 0) {
@@ -152,7 +154,8 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
 
         for (Py_ssize_t i = 0; i < size; ++i) {
             pyobject_ownref item(PySequence_GetItem(obj, i));
-            deduce_pyseq_shape_with_udtype(item.get(), udt, shape, i == 0 && initial_pass, current_axis + 1);
+            deduce_pyseq_shape_with_udtype(item.get(), udt,
+                            shape, i == 0 && initial_pass, current_axis + 1);
         }
     } else {
         if (PyDict_Check(obj) && udt.get_kind() == struct_kind) {
@@ -165,7 +168,8 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
             if (udt.get_kind() == struct_kind) {
                 shape[current_axis] = shape_signal_ragged;
             } else {
-                throw runtime_error("dynd ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
+                throw runtime_error("dynd ndobject doesn't support dimensions"
+                                " which are sometimes scalars and sometimes arrays");
             }
         }
     }
@@ -198,12 +202,14 @@ static void deduce_pyseq_shape(PyObject *obj, size_t undim, intptr_t *shape)
             }
         }
     } else {
-        throw runtime_error("not enough dimensions in python object for the provided dynd type");
+        throw runtime_error("not enough dimensions in"
+                        " python object for the provided dynd type");
     }
 }
 
 
-typedef void (*convert_one_pyscalar_function_t)(const dtype& dt, const char *metadata, char *out, PyObject *obj);
+typedef void (*convert_one_pyscalar_function_t)(const dtype& dt,
+                const char *metadata, char *out, PyObject *obj);
 
 inline void convert_one_pyscalar_bool(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {

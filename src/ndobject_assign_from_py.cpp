@@ -40,7 +40,9 @@ static size_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
         if (PyDict_Check(obj.get())) {
             ends_in_dict = true;
             seqsize = 0;
-        } else if (PySequence_Check(obj.get()) && !PyString_Check(obj.get()) && !PyUnicode_Check(obj.get())) {
+        } else if (PySequence_Check(obj.get()) &&
+                        !PyString_Check(obj.get()) &&
+                        !PyUnicode_Check(obj.get())) {
             Py_ssize_t size = PySequence_Size(obj.get());
             if (size == -1 && PyErr_Occurred()) {
                 seqsize = 0;

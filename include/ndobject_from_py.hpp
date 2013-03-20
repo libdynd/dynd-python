@@ -14,7 +14,8 @@ namespace pydynd {
 
 /**
  * Converts a Python object into an ndobject using
- * the default settings.
+ * the default settings. This function automatically
+ * detects the dtype to use from the input Python object.
  *
  * \param obj  The PyObject to convert to an ndobject.
  */

@@ -158,7 +158,8 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
         // Get the dtype info through the CPython API, slower
         // but lets NumPy's datetime API change without issue.
         pyobject_ownref mod(PyImport_ImportModule("numpy"));
-        pyobject_ownref dd(PyObject_CallMethod(mod.get(), "datetime_data", "O", d));
+        pyobject_ownref dd(PyObject_CallMethod(mod.get(),
+                        const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
         pyobject_ownref unit(PyTuple_GetItem(dd.get(), 0));
         char *s = PyString_AsString(unit.get());
         if (s == NULL) {

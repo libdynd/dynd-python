@@ -5,7 +5,7 @@ import numpy as np
 
 class TestDTypeDataShape(unittest.TestCase):
     def test_scalars(self):
-        """Tests making Blaze atom types from strings"""
+        # Tests making Blaze atom types from strings
         self.assertEqual(ndt.void, nd.dtype('void'))
         self.assertEqual(ndt.bool, nd.dtype('bool'))
         self.assertEqual(ndt.int8, nd.dtype('int8'))
@@ -28,11 +28,18 @@ class TestDTypeDataShape(unittest.TestCase):
         self.assertEqual(ndt.bytes, nd.dtype('bytes'))
 
     def test_fixed_array(self):
-        """Tests of datashapes that produce the DyND fixed array dtype"""
+        # Tests of datashapes that produce the DyND fixed array dtype
         self.assertEqual(ndt.make_fixed_dim_dtype(3, ndt.int32),
                         nd.dtype('3, int32'))
         self.assertEqual(ndt.make_fixed_dim_dtype((5, 2), ndt.float64),
                         nd.dtype('5, 2, float64'))
+
+    def test_struct(self):
+        # Tests of struct datashape
+        dt = nd.dtype('{x: 3, int32; y: string}')
+        self.assertEqual(dt.type_id, 'fixedstruct')
+        self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
+
 
 if __name__ == '__main__':
     unittest.main()

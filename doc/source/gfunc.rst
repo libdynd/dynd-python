@@ -1,5 +1,8 @@
-Blaze-Local GFuncs
-==================
+DyND GFuncs
+===========
+
+NOTE: GFuncs are not currently operational due to refactoring
+of the core object representation.
 
 GFuncs are the array-programming primitive functions created and
 used by blaze-local. They are currently in a very preliminary form,

@@ -94,13 +94,12 @@ cdef class w_dtype:
     """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the dtype, and
-    # SET(self.v, <dtype value>), which sets the embeded
+    # SET(self.v, <dtype value>), which sets the embedded
     # dtype's value.
     cdef dtype_placement_wrapper v
 
     def __cinit__(self, rep=None):
         placement_new(self.v)
-        init_w_dtype_typeobject(type(self))
         if rep is not None:
             SET(self.v, make_dtype_from_pyobject(rep))
     def __dealloc__(self):

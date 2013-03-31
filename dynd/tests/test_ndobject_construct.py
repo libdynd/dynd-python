@@ -3,6 +3,26 @@ import unittest
 from datetime import date
 from dynd import nd, ndt
 
+class TestStringConstruct(unittest.TestCase):
+    def test_string_array(self):
+        a = nd.ndobject(['this', 'is', 'a', 'test'],
+                        udtype=ndt.string)
+        self.assertEqual(a.dtype, nd.dtype('N, string'))
+        self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
+
+        a = nd.ndobject(['this', 'is', 'a', 'test'],
+                        udtype='string("U16")')
+        self.assertEqual(a.dtype, nd.dtype('N, string("U16")'))
+        self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
+
+    def test_fixedstring_array(self):
+        a = nd.ndobject(['a', 'b', 'c'],
+                        udtype='string(1,"A")')
+        self.assertEqual(a[0].dtype.type_id, 'fixedstring')
+        self.assertEqual(a[0].dtype.data_size, 1)
+        self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
+        
+
 class TestStructConstruct(unittest.TestCase):
     def test_single_struct(self):
         a = nd.ndobject([12, 'test', True], dtype='{x:int32; y:string; z:bool}')

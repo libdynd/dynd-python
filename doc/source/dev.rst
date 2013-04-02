@@ -36,6 +36,15 @@ by one.
 See http://docs.cython.org/src/userguide/wrapping_CPlusPlus.html
 for the Cython documentation about wrapping C++.
 
+Only Thin Wrappers in Cython
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This was a choice made after trying to do a few things in
+Cython, and running into troubles with Cython's support
+of C++ features like pointers, references, and operator
+overloading. The Cython .pyx file mostly consists of
+class definitions, docstrings, and calls to C++ functions.
+
 Inline Functions
 ~~~~~~~~~~~~~~~~
 
@@ -154,16 +163,6 @@ the Cython classes from C++, which is that calling the
         return (PyObject *)result;
     }
 
-Only Thin Wrappers in Cython
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This was a choice made after trying to do a few things in
-Cython, and running into troubles with Cython's support
-of C++ features like pointers, references, and operator
-overloading. In a nearly universal fashion, the Cython .pyx
-file only contains the class definitions, docstrings,
-and calls to C++ functions.
-
 Translating C++ Exceptions to Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -225,3 +224,57 @@ and the corresponding C++ code::
 
 Accessing CTypes Structures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CTypes doesn't define a C API for accessing its objects, so
+to provide integration with CTypes requires some additional
+work. This is done by defining a struct with all the needed
+`PyTypeObject` instances from CTypes, and initializing them
+using the CPython API at startup.::
+
+    /**
+     * Struct with data about the _ctypes module.
+     */
+    struct ctypes_info {
+        // The _ctypes module (for C-implementation details)
+        PyObject *_ctypes;
+        // These match the corresponding names within _ctypes.c
+        PyObject *PyCData_Type;
+        PyObject *PyCStructType_Type;
+        PyObject *UnionType_Type;
+        PyObject *PyCPointerType_Type;
+        PyObject *PyCArrayType_Type;
+        PyObject *PyCSimpleType_Type;
+        PyObject *PyCFuncPtrType_Type;
+    };
+
+    extern ctypes_info ctypes;
+
+    /**
+     * Should be called at module initialization, this
+     * stores some internal information about the ctypes
+     * classes for later.
+     */
+    void init_ctypes_interop();
+
+PEP 3118 / Python Buffer Protocol
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For images and matrices, the buffer protocol introduced
+in Python 2.6 is a great way to expose and consume regular
+array data. This mechanism supports communicating multi-dimensional
+arrays between C modules. For any module, like DyND, which exposes
+images, matrices, or other multi-dimensional strided data,
+supporting this is mandatory to interoperate properly with NumPy,
+Cython, and other Python numerical libraries.
+
+There are still some rough edges in the specification and
+implementation. In the official Python 3.3 documentation, the
+buffer protocol refers to the `struct` module for the specification
+of the `format` string, but the `struct` module doesn't
+include some of the additions proposed in PEP 3118, such as
+complex numbers. Because most programs are still using this
+protocol for low-level communication of arrays, supporting
+16-bit floating point, complex, and other types specified
+in PEP 3118 is possible without requiring the Python `struct`
+module to support everything.
+

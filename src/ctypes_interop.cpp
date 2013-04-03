@@ -98,6 +98,8 @@ calling_convention_t pydynd::get_ctypes_calling_convention(PyCFuncPtrObject* cfu
     } else {
         return win32_stdcall_callconv;
     }
+# else
+    return cdecl_callconv;
 # endif
 #else
     return cdecl_callconv;

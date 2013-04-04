@@ -336,6 +336,7 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
                 stringstream ss;
                 ss << "Cannot assign sequence of size " << seqsize;
                 ss << " to dynd type " << dt;
+                ss << " because it requires " << field_count << " values";
                 throw runtime_error(ss.str());
             }
             for (size_t i = 0; i != seqsize; ++i) {

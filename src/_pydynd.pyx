@@ -1249,6 +1249,25 @@ def linspace(start, stop, count=50, dtype=None):
     SET(result.v, ndobject_linspace(start, stop, count, dtype))
     return result
 
+def fields(w_ndobject struct_array, *fields_list):
+    """
+    nd.fields(struct_array, *fields_list)
+
+    Selects fields from an array of structs.
+
+    Parameters
+    ----------
+    struct_array : dynd ndobject with struct udtype
+        An ndobject whose uniform dtype has kind 'struct'. This
+        could be a single struct instance, or an array of structs.
+    *fields_list : string
+        The remaining parameters must all be strings, and are the field
+        names to select.
+    """
+    cdef w_ndobject result = w_ndobject()
+    SET(result.v, nd_fields(GET(struct_array.v), fields_list))
+    return result
+
 def parse_json(dtype, json):
     """
     nd.parse_json(dtype, json)

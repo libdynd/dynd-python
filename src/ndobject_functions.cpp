@@ -15,6 +15,8 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/ndobject_arange.hpp>
 #include <dynd/dtype_promotion.hpp>
+#include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/struct_dtype.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -321,4 +323,95 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     } else {
         return dynd::linspace(start_nd, stop_nd, count_val, make_dtype_from_pyobject(dt));
     }
+}
+
+dynd::ndobject pydynd::nd_fields(const ndobject& n, PyObject *field_list)
+{
+    vector<string> selected_fields;
+    pyobject_as_vector_string(field_list, selected_fields);
+
+    // TODO: Move this implementation into dynd
+    dtype fdt = n.get_udtype();
+    if (fdt.get_kind() != struct_kind) {
+        stringstream ss;
+        ss << "nd.fields must be given an ndobject of 'struct' kind, not ";
+        ss << fdt;
+        throw runtime_error(ss.str());
+    }
+    const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(fdt.extended());
+    const dtype *field_types = bsd->get_field_types();
+
+    if (selected_fields.empty()) {
+        throw runtime_error("nd.fields requires at least one field name to be specified");
+    }
+    // Construct the field mapping and output field dtypes
+    vector<intptr_t> selected_index(selected_fields.size());
+    vector<dtype> selected_dtypes(selected_fields.size());
+    for (size_t i = 0; i != selected_fields.size(); ++i) {
+        selected_index[i] = bsd->get_field_index(selected_fields[i]);
+        if (selected_index[i] < 0) {
+            stringstream ss;
+            ss << "field name ";
+            print_escaped_utf8_string(ss, selected_fields[i]);
+            ss << " does not exist in dtype " << fdt;
+            throw runtime_error(ss.str());
+        }
+        selected_dtypes[i] = field_types[selected_index[i]];
+    }
+    // Create the result udt
+    dtype rudt = make_struct_dtype(selected_dtypes, selected_fields);
+    dtype rdt = n.get_dtype().with_replaced_udtype(rudt);
+    const base_struct_dtype *rudt_bsd = static_cast<const base_struct_dtype *>(rudt.extended());
+
+    // Allocate the new memory block.
+    size_t metadata_size = rdt.get_metadata_size();
+    ndobject result(make_ndobject_memory_block(metadata_size));
+
+    // Clone the data pointer
+    result.get_ndo()->m_data_pointer = n.get_ndo()->m_data_pointer;
+    result.get_ndo()->m_data_reference = n.get_ndo()->m_data_reference;
+    if (result.get_ndo()->m_data_reference == NULL) {
+        result.get_ndo()->m_data_reference = n.get_memblock().get();
+    }
+    memory_block_incref(result.get_ndo()->m_data_reference);
+
+    // Copy the flags
+    result.get_ndo()->m_flags = n.get_ndo()->m_flags;
+
+    // Set the dtype and transform the metadata
+    result.get_ndo()->m_dtype = dtype(rdt).release();
+    // First copy all the uniform dtype metadata
+    dtype tmp_dt = rdt;
+    char *dst_metadata = result.get_ndo_meta();
+    const char *src_metadata = n.get_ndo_meta();
+    while (tmp_dt.get_undim() > 0) {
+        if (tmp_dt.get_kind() != uniform_dim_kind) {
+            throw runtime_error("nd.fields doesn't support dimensions with pointers yet");
+        }
+        const base_uniform_dim_dtype *budd = static_cast<const base_uniform_dim_dtype *>(
+                        tmp_dt.extended());
+        size_t offset = budd->metadata_copy_construct_onedim(dst_metadata, src_metadata,
+                        n.get_memblock().get());
+        dst_metadata += offset;
+        src_metadata += offset;
+        tmp_dt = budd->get_element_dtype();
+    }
+    // Then create the metadata for the new struct
+    const size_t *metadata_offsets = bsd->get_metadata_offsets();
+    const size_t *result_metadata_offsets = rudt_bsd->get_metadata_offsets();
+    const size_t *data_offsets = bsd->get_data_offsets(src_metadata);
+    size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_metadata);
+    for (size_t i = 0; i != selected_fields.size(); ++i) {
+        const dtype& dt = selected_dtypes[i];
+        // Copy the data offset
+        result_data_offsets[i] = data_offsets[selected_index[i]];
+        // Copy the metadata for this field
+        if (dt.get_metadata_size() > 0) {
+            dt.extended()->metadata_copy_construct(dst_metadata + result_metadata_offsets[i],
+                            src_metadata + metadata_offsets[selected_index[i]],
+                            n.get_memblock().get());
+        }
+    }
+
+    return result;
 }

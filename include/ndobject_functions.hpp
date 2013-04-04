@@ -154,6 +154,11 @@ dynd::ndobject ndobject_arange(PyObject *start, PyObject *stop, PyObject *step, 
  */
 dynd::ndobject ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count, PyObject *dt);
 
+/**
+ * Implementation of nd.fields().
+ */
+dynd::ndobject nd_fields(const dynd::ndobject& n, PyObject *field_list);
+
 } // namespace pydynd
 
 #endif // _DYND__NDARRAY_FUNCTIONS_HPP_

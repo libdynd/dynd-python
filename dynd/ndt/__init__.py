@@ -3,7 +3,7 @@ from dynd._pydynd import w_dtype as dtype, \
         make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
         make_pointer_dtype, make_struct_dtype, make_fixedstruct_dtype, \
         make_strided_dim_dtype, make_fixed_dim_dtype, make_var_dim_dtype, \
-        make_categorical_dtype, replace_udtype, \
+        make_categorical_dtype, replace_udtype, extract_udtype, \
         factor_categorical_dtype
 
 void = dtype('void')

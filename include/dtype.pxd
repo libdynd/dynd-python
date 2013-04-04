@@ -74,6 +74,7 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         string_encoding_t string_encoding() except +translate_exception
         size_t get_undim()
         dtype get_udtype()
+        dtype get_udtype(size_t)
 
         dtype with_replaced_udtype(dtype, size_t) except +translate_exception
 

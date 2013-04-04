@@ -312,6 +312,36 @@ def replace_udtype(w_dtype dt, replacement_dt, size_t replace_undim=0):
     SET(result.v, GET(dt.v).with_replaced_udtype(GET(w_dtype(replacement_dt).v), replace_undim))
     return result
 
+def extract_udtype(dt, size_t keep_undim=0):
+    """
+    extract_udtype(dt, keep_undim=0)
+
+    Extracts the uniform type from the provided
+    dynd type. If `keep_undim` is positive, that
+    many uniform dimensions are kept in the result.
+
+    Parameters
+    ----------
+    dt : dynd type
+        The dtype whose uniform dtype is to be extracted.
+    keep_undim : integer, optional
+        If positive, this is the number of uniform
+        dimensions which are kept in addition to
+        the uniform dtype.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> d = nd.dtype('3, VarDim, int32')
+    >>> ndt.extract_udtype(d)
+    ndt.int32
+    >>> ndt.extract_udtype(d, 1)
+    nd.dtype('var_dim<int32>')
+    """
+    cdef w_dtype result = w_dtype()
+    SET(result.v, GET(w_dtype(dt).v).get_udtype(keep_undim))
+    return result
 
 def make_byteswap_dtype(builtin_dtype, operand_dtype=None):
     """

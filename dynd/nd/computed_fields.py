@@ -124,3 +124,27 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
     return elwise_map([n], fieldexpr, result_udt)
+
+def make_computed_fields(n, replace_undim, fields, fnname=None):
+    n = ndobject(n)
+    udt = n.udtype.value_dtype
+    if udt.kind != 'struct':
+        raise ValueError("parameter 'n' must have kind 'struct'")
+
+    # The field names and types of the input struct
+    field_names = as_py(udt.field_names)
+    field_types = as_py(udt.field_types)
+
+    # Create the output struct dtype and corresponding expressions
+    new_field_names = []
+    new_field_types = []
+    new_field_expr = []
+    for fn, ft, fe in fields:
+        new_field_names.append(fn)
+        new_field_types.append(ft)
+        new_field_expr.append(fe)
+
+    result_udt = make_fixedstruct_dtype(new_field_types, new_field_names)
+    fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
+
+    return elwise_map([n], fieldexpr, result_udt)

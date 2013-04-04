@@ -301,12 +301,12 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     }
 }
 
-dynd::dtype pydynd::dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode)
+dynd::dtype pydynd::dynd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode)
 {
     return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
-dynd::dtype pydynd::dnd_make_fixedstring_dtype(intptr_t size,
+dynd::dtype pydynd::dynd_make_fixedstring_dtype(intptr_t size,
                 PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
@@ -314,19 +314,19 @@ dynd::dtype pydynd::dnd_make_fixedstring_dtype(intptr_t size,
     return make_fixedstring_dtype(size, encoding);
 }
 
-dynd::dtype pydynd::dnd_make_string_dtype(PyObject *encoding_obj)
+dynd::dtype pydynd::dynd_make_string_dtype(PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
     return make_string_dtype(encoding);
 }
 
-dynd::dtype pydynd::dnd_make_pointer_dtype(const dtype& target_dtype)
+dynd::dtype pydynd::dynd_make_pointer_dtype(const dtype& target_dtype)
 {
     return make_pointer_dtype(target_dtype);
 }
 
-dynd::dtype pydynd::dnd_make_struct_dtype(PyObject *field_types, PyObject *field_names)
+dynd::dtype pydynd::dynd_make_struct_dtype(PyObject *field_types, PyObject *field_names)
 {
     vector<dtype> field_types_vec;
     vector<string> field_names_vec;
@@ -335,7 +335,7 @@ dynd::dtype pydynd::dnd_make_struct_dtype(PyObject *field_types, PyObject *field
     return make_struct_dtype(field_types_vec, field_names_vec);
 }
 
-dynd::dtype pydynd::dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names)
+dynd::dtype pydynd::dynd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names)
 {
     vector<dtype> field_types_vec;
     vector<string> field_names_vec;
@@ -347,7 +347,7 @@ dynd::dtype pydynd::dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *
     return make_fixedstruct_dtype(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
 }
 
-dynd::dtype pydynd::dnd_make_fixed_dim_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)
+dynd::dtype pydynd::dynd_make_fixed_dim_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)
 {
     vector<intptr_t> shape_vec;
     if (PySequence_Check(shape)) {

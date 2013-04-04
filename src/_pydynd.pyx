@@ -305,9 +305,9 @@ def make_byteswap_dtype(builtin_dtype, operand_dtype=None):
     """
     cdef w_dtype result = w_dtype()
     if operand_dtype is None:
-        SET(result.v, dnd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v)))
+        SET(result.v, dynd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v)))
     else:
-        SET(result.v, dnd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v), GET(w_dtype(operand_dtype).v)))
+        SET(result.v, dynd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v), GET(w_dtype(operand_dtype).v)))
     return result
 
 def make_fixedbytes_dtype(int data_size, int data_alignment=1):
@@ -334,7 +334,7 @@ def make_fixedbytes_dtype(int data_size, int data_alignment=1):
     nd.dtype('fixedbytes<6,2>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedbytes_dtype(data_size, data_alignment))
+    SET(result.v, dynd_make_fixedbytes_dtype(data_size, data_alignment))
     return result
 
 def make_convert_dtype(to_dtype, from_dtype, errmode=None):
@@ -370,7 +370,7 @@ def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     nd.dtype('convert<to=uint8, from=uint16, errmode=none>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), errmode))
+    SET(result.v, dynd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), errmode))
     return result
 
 def make_unaligned_dtype(aligned_dtype):
@@ -396,7 +396,7 @@ def make_unaligned_dtype(aligned_dtype):
     ndt.uint8
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_unaligned_dtype(GET(w_dtype(aligned_dtype).v)))
+    SET(result.v, dynd_make_unaligned_dtype(GET(w_dtype(aligned_dtype).v)))
     return result
 
 def make_fixedstring_dtype(int size, encoding=None):
@@ -427,7 +427,7 @@ def make_fixedstring_dtype(int size, encoding=None):
     nd.dtype('string<10,utf_32>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedstring_dtype(size, encoding))
+    SET(result.v, dynd_make_fixedstring_dtype(size, encoding))
     return result
 
 def make_string_dtype(encoding=None):
@@ -454,7 +454,7 @@ def make_string_dtype(encoding=None):
     nd.dtype('string<utf_16>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_string_dtype(encoding))
+    SET(result.v, dynd_make_string_dtype(encoding))
     return result
 
 def make_pointer_dtype(target_dtype):
@@ -470,7 +470,7 @@ def make_pointer_dtype(target_dtype):
         the '*' in C/C++ type declarations.
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
+    SET(result.v, dynd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
     return result
 
 def make_strided_dim_dtype(element_dtype, undim=None):
@@ -500,9 +500,9 @@ def make_strided_dim_dtype(element_dtype, undim=None):
     """
     cdef w_dtype result = w_dtype()
     if (undim is None):
-        SET(result.v, dnd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v)))
+        SET(result.v, dynd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v)))
     else:
-        SET(result.v, dnd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v), int(undim)))
+        SET(result.v, dynd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v), int(undim)))
     return result
 
 def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
@@ -536,7 +536,7 @@ def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     nd.dtype('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixed_dim_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
+    SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
     return result
 
 def make_fixedstruct_dtype(field_types, field_names):
@@ -566,7 +566,7 @@ def make_fixedstruct_dtype(field_types, field_names):
     nd.dtype('fixedstruct<int32 x, float64 y>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_fixedstruct_dtype(field_types, field_names))
+    SET(result.v, dynd_make_fixedstruct_dtype(field_types, field_names))
     return result
 
 def make_struct_dtype(field_types, field_names):
@@ -595,7 +595,29 @@ def make_struct_dtype(field_types, field_names):
     nd.dtype('struct<int32 x, float64 y>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_struct_dtype(field_types, field_names))
+    SET(result.v, dynd_make_struct_dtype(field_types, field_names))
+    return result
+
+def make_var_dim_dtype(element_dtype):
+    """
+    make_fixed_dim_dtype(element_dtype)
+    
+    Constructs a var_dim dtype.
+
+    Parameters
+    ----------
+    element_dtype : dynd type
+        The type of each element in the resulting array type.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_var_dim_dtype(ndt.float32)
+    nd.dtype('var_dim<float32>')
+    """
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dynd_make_var_dim_dtype(GET(w_dtype(element_dtype).v)))
     return result
 
 def make_categorical_dtype(values):
@@ -625,7 +647,7 @@ def make_categorical_dtype(values):
     nd.dtype('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_make_categorical_dtype(GET(w_ndobject(values).v)))
+    SET(result.v, dynd_make_categorical_dtype(GET(w_ndobject(values).v)))
     return result
 
 def factor_categorical_dtype(values):
@@ -651,7 +673,7 @@ def factor_categorical_dtype(values):
     nd.dtype('categorical<string<ascii>, ["F", "M"]>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dnd_factor_categorical_dtype(GET(w_ndobject(values).v)))
+    SET(result.v, dynd_factor_categorical_dtype(GET(w_ndobject(values).v)))
     return result
 
 ##############################################################################
@@ -1187,7 +1209,7 @@ def groupby(data, by, groups = None):
             # If groups is a list or ndobject, assume it's a list
             # of groups for a categorical dtype
             SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v),
-                            dnd_make_categorical_dtype(GET(w_ndobject(groups).v))))
+                            dynd_make_categorical_dtype(GET(w_ndobject(groups).v))))
         else:
             SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result

@@ -95,26 +95,26 @@ dynd::dtype make_dtype_from_pyobject(PyObject* obj);
 /**
  * Creates a convert dtype.
  */
-dynd::dtype dnd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode);
+dynd::dtype dynd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode);
 
 /**
  * Creates a fixed-sized string dtype.
  */
-dynd::dtype dnd_make_fixedstring_dtype(intptr_t size, PyObject *encoding_obj);
+dynd::dtype dynd_make_fixedstring_dtype(intptr_t size, PyObject *encoding_obj);
 
 /**
  * Creates a blockref string dtype.
  */
-dynd::dtype dnd_make_string_dtype(PyObject *encoding_obj);
+dynd::dtype dynd_make_string_dtype(PyObject *encoding_obj);
 
 /**
  * Creates a blockref pointer dtype.
  */
-dynd::dtype dnd_make_pointer_dtype(const dynd::dtype& target_dtype);
+dynd::dtype dynd_make_pointer_dtype(const dynd::dtype& target_dtype);
 
-dynd::dtype dnd_make_struct_dtype(PyObject *field_types, PyObject *field_names);
-dynd::dtype dnd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names);
-dynd::dtype dnd_make_fixed_dim_dtype(PyObject *shape, const dynd::dtype& element_dtype, PyObject *axis_perm);
+dynd::dtype dynd_make_struct_dtype(PyObject *field_types, PyObject *field_names);
+dynd::dtype dynd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names);
+dynd::dtype dynd_make_fixed_dim_dtype(PyObject *shape, const dynd::dtype& element_dtype, PyObject *axis_perm);
 
 /**
  * Implementation of __getitem__ for the wrapped dtype object.

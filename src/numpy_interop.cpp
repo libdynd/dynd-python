@@ -94,7 +94,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
             return make_strided_dim_dtype(dt, ndim);
         } else {
             // Otherwise make a fixedstruct array
-            return dnd_make_fixed_dim_dtype(d->subarray->shape, dt, Py_None);
+            return dynd_make_fixed_dim_dtype(d->subarray->shape, dt, Py_None);
         }
     }
 

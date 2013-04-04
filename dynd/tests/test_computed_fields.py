@@ -36,5 +36,25 @@ class TestComputedFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.product), [2, -1, 10])
         self.assertEqual(nd.as_py(b.complex), [1+2j, -1+1j, 2+5j])
 
+    def test_aggregate(self):
+        a = nd.ndobject([
+            ('A', 1, 2),
+            ('A', 3, 4),
+            ('B', 1.5, 2.5),
+            ('A', 0.5, 9),
+            ('C', 1, 5),
+            ('B', 2, 2)],
+            udtype='{cat: string; x: float32; y: float32}')
+        gb = nd.groupby(a, nd.fields(a, 'cat')).eval()
+        b = nd.make_computed_fields(gb, 1,
+                fields=[('sum_x', ndt.float32, 'sum(x)'),
+                        ('mean_y', ndt.float32, 'mean(y)'),
+                        ('max_x', ndt.float32, 'max(x)'),
+                        ('max_y', ndt.float32, 'max(y)')])
+        self.assertEqual(nd.as_py(b.sum_x), [4.5, 3.5, 1])
+        self.assertEqual(nd.as_py(b.mean_y), [5, 2.25, 5])
+        self.assertEqual(nd.as_py(b.max_x), [3, 2, 1])
+        self.assertEqual(nd.as_py(b.max_y), [9, 2.5, 5])
+
 if __name__ == '__main__':
     unittest.main()

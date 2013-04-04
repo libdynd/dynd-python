@@ -349,7 +349,8 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
 
     dtype edt = make_unary_expr_dtype(dst_dt, src_dt,
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_dtype()));
-    return wrap_ndobject(n.replace_udtype(edt));
+    ndobject result = n.replace_udtype(edt, src_dt.get_undim());
+    return wrap_ndobject(result);
 }
 
 static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,

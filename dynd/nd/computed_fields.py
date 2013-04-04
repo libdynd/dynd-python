@@ -2,7 +2,7 @@ __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_dtype as dtype, \
                 w_ndobject as ndobject, make_fixedstruct_dtype, \
-                elwise_map
+                elwise_map, extract_udtype
 
 class FieldExpr:
     def __init__(self, dst_field_expr, src_field_names, fnname):
@@ -30,7 +30,7 @@ class FieldExpr:
             # Put all the src fields in a locals dict
             lcl = {}
             for i, name in enumerate(self.src_field_names):
-                s = src_itm[i].eval()
+                s = getattr(src_itm, name).eval()
                 if s.undim > 0 or s.dtype.kind == 'struct':
                     # For types which NumPy doesn't support, leave
                     # them as DyND ndobjects
@@ -145,6 +145,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
         new_field_expr.append(fe)
 
     result_udt = make_fixedstruct_dtype(new_field_types, new_field_names)
+    src_udt = extract_udtype(n.dtype, replace_undim)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
-    return elwise_map([n], fieldexpr, result_udt)
+    return elwise_map([n], fieldexpr, result_udt, [src_udt])

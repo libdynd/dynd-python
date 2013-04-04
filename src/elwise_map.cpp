@@ -341,7 +341,8 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
     if (src_type != Py_None) {
         // Cast to the source dtype if requested
         src_dt = make_dtype_from_pyobject(src_type);
-        n = n.ucast(src_dt);
+        // Do the ucast in a way to match up the dimensions
+        n = n.ucast(src_dt, src_dt.get_undim());
     } else {
         src_dt = n.get_udtype();
     }

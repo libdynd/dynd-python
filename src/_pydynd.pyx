@@ -279,6 +279,40 @@ cdef class w_dtype:
                 return False
         return NotImplemented
 
+def replace_udtype(w_dtype dt, replacement_dt, size_t replace_undim=0):
+    """
+    replace_udtype(dt, replacement_dt, replace_undim=0)
+
+    Replaces the uniform dtype with the replacement.
+    If `replace_undim` is positive, that number of uniform
+    dimensions are replaced as well.
+
+    Parameters
+    ----------
+    dt : dynd type
+        The dtype whose uniform dtype is to be replaced.
+    replacement_dt : dynd type
+        The replacement dynd type.
+    replace_undim : integer, optional
+        If positive, this is the number of uniform
+        dimensions which are replaced in addition to
+        the uniform dtype.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> d = nd.dtype('3, VarDim, int32')
+    >>> ndt.replace_udtype(d, 'M, float64')
+    nd.dtype('fixed_dim<3, var_dim<strided_dim<float64>>>')
+    >>> ndt.replace_udtype(d, '{x: int32; y:int32}', 1)
+    nd.dtype('fixed_dim<3, fixedstruct<int32 x, int32 y>>')
+    """
+    cdef w_dtype result = w_dtype()
+    SET(result.v, GET(dt.v).with_replaced_udtype(GET(w_dtype(replacement_dt).v), replace_undim))
+    return result
+
+
 def make_byteswap_dtype(builtin_dtype, operand_dtype=None):
     """
     make_byteswap_dtype(builtin_dtype, operand_dtype=None)
@@ -849,9 +883,9 @@ cdef class w_ndobject:
         SET(result.v, GET(self.v).storage())
         return result
 
-    def ucast(self, dtype, errmode=None):
+    def ucast(self, dtype, int replace_undim=0, errmode=None):
         """
-        a.ucast(dtype, errmode='fractional')
+        a.ucast(dtype, replace_undim=0, errmode='fractional')
         
         Casts the ndobject's uniform dtype to the requested dtype,
         producing a conversion dtype. The uniform dtype is the dtype
@@ -861,6 +895,11 @@ cdef class w_ndobject:
         ----------
         dtype : dynd type
             The uniform dtype is cast into this type.
+            If `replace_undim` is not zero, then that many
+            dimensions are included in what is cast as well.
+        replace_undim : integer, optional
+            The number of uniform dimensions to replace in doing
+            the cast.
         errmode : 'inexact', 'fractional', 'overflow', 'none'
             How conversion errors are treated. For 'inexact', the value
             must be preserved precisely. For 'fractional', conversion errors
@@ -880,7 +919,7 @@ cdef class w_ndobject:
         nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<fixedstruct<int32 month, int32 year, float32 day>>)
         """
         cdef w_ndobject result = w_ndobject()
-        SET(result.v, ndobject_ucast(GET(self.v), GET(w_dtype(dtype).v), errmode))
+        SET(result.v, ndobject_ucast(GET(self.v), GET(w_dtype(dtype).v), replace_undim, errmode))
         return result
 
     def view_scalars(self, dtype):

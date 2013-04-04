@@ -75,6 +75,8 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         size_t get_undim()
         dtype get_udtype()
 
+        dtype with_replaced_udtype(dtype, size_t) except +translate_exception
+
 cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
         assign_error_none

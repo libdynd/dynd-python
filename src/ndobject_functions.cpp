@@ -190,9 +190,10 @@ bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
     return aux.found;
 }
 
-dynd::ndobject pydynd::ndobject_ucast(const dynd::ndobject& n, const dtype& dt, PyObject *assign_error_obj)
+dynd::ndobject pydynd::ndobject_ucast(const dynd::ndobject& n, const dtype& dt,
+                size_t replace_undim, PyObject *assign_error_obj)
 {
-    return n.ucast(dt, pyarg_error_mode(assign_error_obj));
+    return n.ucast(dt, replace_undim, pyarg_error_mode(assign_error_obj));
 }
 
 PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)

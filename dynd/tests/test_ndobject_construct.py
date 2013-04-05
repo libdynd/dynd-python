@@ -4,6 +4,12 @@ from datetime import date
 from dynd import nd, ndt
 
 class TestStringConstruct(unittest.TestCase):
+    def test_string(self):
+        a = nd.ndobject('abc', dtype=ndt.string)
+        self.assertEqual(a.dtype, ndt.string)
+        a = nd.ndobject('abc', udtype=ndt.string)
+        self.assertEqual(a.dtype, ndt.string)
+
     def test_string_array(self):
         a = nd.ndobject(['this', 'is', 'a', 'test'],
                         udtype=ndt.string)

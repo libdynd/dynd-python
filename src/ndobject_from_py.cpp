@@ -609,7 +609,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj, const dtype& dt, bool uni
             ss << dt << " already has a uniform dim";
             throw runtime_error(ss.str());
         }
-        if (PySequence_Check(obj)) {
+        if (PySequence_Check(obj) && !PyString_Check(obj) && !PyUnicode_Check(obj)) {
             vector<intptr_t> shape;
             Py_ssize_t size = PySequence_Size(obj);
             if (size == -1 && PyErr_Occurred()) {

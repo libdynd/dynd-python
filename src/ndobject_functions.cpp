@@ -16,6 +16,7 @@
 #include <dynd/ndobject_arange.hpp>
 #include <dynd/dtype_promotion.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/base_bytes_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 
 using namespace std;
@@ -91,6 +92,70 @@ PyObject *pydynd::ndobject_index(const dynd::ndobject& n)
                             "dynd ndobject must have kind 'int'"
                             " or 'uint' to be used as an index");
             return NULL;
+    }
+}
+
+PyObject *pydynd::ndobject_nonzero(const dynd::ndobject& n)
+{
+    // Implements the nonzero/conversion to boolean slot
+    switch (n.get_dtype().value_dtype().get_kind()) {
+        case bool_kind:
+        case int_kind:
+        case uint_kind:
+        case real_kind:
+        case complex_kind:
+            // Follow Python in not raising errors here
+            if (n.as<bool>(assign_error_none)) {
+                Py_INCREF(Py_True);
+                return Py_True;
+            } else {
+                Py_INCREF(Py_False);
+                return Py_False;
+            }
+        case string_kind: {
+            // Follow Python, return True if the string is nonempty, False otherwise
+            ndobject n_eval = n.eval();
+            const base_string_dtype *bsd = static_cast<const base_string_dtype *>(n_eval.get_dtype().extended());
+            const char *begin = NULL, *end = NULL;
+            bsd->get_string_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
+            if (begin != end) {
+                Py_INCREF(Py_True);
+                return Py_True;
+            } else {
+                Py_INCREF(Py_False);
+                return Py_False;
+            }
+        }
+        case bytes_kind: {
+            // Return True if there is a non-zero byte, False otherwise
+            ndobject n_eval = n.eval();
+            const base_bytes_dtype *bbd = static_cast<const base_bytes_dtype *>(n_eval.get_dtype().extended());
+            const char *begin = NULL, *end = NULL;
+            bbd->get_bytes_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
+            while (begin != end) {
+                if (*begin != 0) {
+                    Py_INCREF(Py_True);
+                    return Py_True;
+                } else {
+                    ++begin;
+                }
+            }
+            Py_INCREF(Py_False);
+            return Py_False;
+        }
+        case datetime_kind: {
+            // Dates and datetimes are never zero
+            // TODO: What to do with NA value?
+            Py_INCREF(Py_True);
+            return Py_True;
+        }
+        default:
+            // TODO: Implement nd.any and nd.all, mention them
+            //       here like NumPy does.
+            PyErr_SetString(PyExc_ValueError,
+                            "the truth value of a dynd array with "
+                            "non-scalar type is ambiguous");
+            throw exception();
     }
 }
 

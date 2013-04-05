@@ -1065,6 +1065,9 @@ cdef class w_ndobject:
     def __index__(self):
         return ndobject_index(GET(self.v))
 
+    def __nonzero__(self):
+        return ndobject_nonzero(GET(self.v))
+
     def __repr__(self):
         return str(ndobject_repr(GET(self.v)).c_str())
 

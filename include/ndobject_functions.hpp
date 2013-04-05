@@ -111,6 +111,7 @@ inline dynd::ndobject ndobject_divide(const dynd::ndobject& lhs, const dynd::ndo
 PyObject *ndobject_str(const dynd::ndobject& n);
 PyObject *ndobject_unicode(const dynd::ndobject& n);
 PyObject *ndobject_index(const dynd::ndobject& n);
+PyObject *ndobject_nonzero(const dynd::ndobject& n);
 
 inline std::string ndobject_repr(const dynd::ndobject& n)
 {

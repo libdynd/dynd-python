@@ -79,6 +79,21 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
 
 #undef DYND_PY_ENCODING
 
+PyObject *pydynd::ndobject_index(const dynd::ndobject& n)
+{
+    // Implements the nb_index slot
+    switch (n.get_dtype().get_kind()) {
+        case int_kind:
+        case uint_kind:
+            return ndobject_as_py(n);
+        default:
+            PyErr_SetString(PyExc_TypeError,
+                            "dynd ndobject must have kind 'int'"
+                            " or 'uint' to be used as an index");
+            return NULL;
+    }
+}
+
 void pydynd::ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj, PyObject *dt, bool uniform)
 {
     n = ndobject_from_py(obj, make_dtype_from_pyobject(dt), uniform);

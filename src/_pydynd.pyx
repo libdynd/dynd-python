@@ -1062,6 +1062,9 @@ cdef class w_ndobject:
     def __unicode__(self):
         return ndobject_unicode(GET(self.v))
 
+    def __index__(self):
+        return ndobject_index(GET(self.v))
+
     def __repr__(self):
         return str(ndobject_repr(GET(self.v)).c_str())
 

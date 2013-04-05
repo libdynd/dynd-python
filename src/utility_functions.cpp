@@ -92,6 +92,16 @@ std::string pydynd::pystring_as_string(PyObject *str)
             throw runtime_error("Error getting string data");
         }
         return string(data, len);
+    } else if (WNDObject_Check(str)) {
+        const ndobject& n = ((WNDObject *)str)->v;
+        if (n.get_dtype().value_dtype().get_kind() == string_kind) {
+            return n.as<string>();
+        } else {
+            stringstream ss;
+            ss << "Cannot implicitly convert object of type ";
+            ss << n.get_dtype() << " to string";
+            throw runtime_error(ss.str());
+        }
     } else {
         throw runtime_error("Cannot convert pyobject to string");
     }

@@ -86,26 +86,22 @@ inline dynd::ndobject ndobject_empty_like(const dynd::ndobject& n, const dynd::d
 
 inline dynd::ndobject ndobject_add(const dynd::ndobject& lhs, const dynd::ndobject& rhs)
 {
-    throw std::runtime_error("TODO: ndobject_add");
-//    return lhs + rhs;
+    return lhs + rhs;
 }
 
 inline dynd::ndobject ndobject_subtract(const dynd::ndobject& lhs, const dynd::ndobject& rhs)
 {
-    throw std::runtime_error("TODO: ndobject_subtract");
-//    return lhs - rhs;
+    return lhs - rhs;
 }
 
 inline dynd::ndobject ndobject_multiply(const dynd::ndobject& lhs, const dynd::ndobject& rhs)
 {
-    throw std::runtime_error("TODO: ndobject_multiply");
-//    return lhs * rhs;
+    return lhs * rhs;
 }
 
 inline dynd::ndobject ndobject_divide(const dynd::ndobject& lhs, const dynd::ndobject& rhs)
 {
-    throw std::runtime_error("TODO: ndobject_divide");
-//    return lhs / rhs;
+    return lhs / rhs;
 }
 
 PyObject *ndobject_str(const dynd::ndobject& n);

@@ -231,8 +231,9 @@ public:
             }
         }
         // If the dtypes don't match the ones for this generator,
-        // call the elementwise dimension handler to handle one dimension,
-        // giving 'this' as the next kernel generator to call
+        // call the elementwise dimension handler to handle one dimension
+        // or handle input/output buffering, giving 'this' as the next
+        // kernel generator to call
         if (require_elwise) {
             return make_elwise_dimension_expr_kernel(out, offset_out,
                             dst_dt, dst_metadata,

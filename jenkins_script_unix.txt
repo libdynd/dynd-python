@@ -7,6 +7,8 @@
 # the DyND Python bindings, runs its tests, then
 # creates a conda package from the build.
 #
+# Platform: Unix/OSX shell script
+#
 # Requirements: Anaconda must be installed in ~/anaconda
 #
 

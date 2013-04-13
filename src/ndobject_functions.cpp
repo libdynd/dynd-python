@@ -340,7 +340,7 @@ void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyOb
         ndobject_broadcast_assign_from_py(d, metadata, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
-        PY_LONG_LONG i = PyLong_AsLongLong(subscript);
+        intptr_t i = PyLong_AsSsize_t(subscript);
         if (i == -1 && PyErr_Occurred()) {
             throw runtime_error("error converting int value");
         }

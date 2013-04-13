@@ -36,7 +36,7 @@ void pydynd::py_decref_function(void* obj)
 intptr_t pydynd::pyobject_as_index(PyObject *index)
 {
     pyobject_ownref start_obj(PyNumber_Index(index));
-    intptr_t result = PyLong_AsLongLong(start_obj);
+    intptr_t result = PyLong_AsSsize_t(start_obj);
     if (result == -1 && PyErr_Occurred()) {
         throw exception();
     }
@@ -137,7 +137,7 @@ void pydynd::pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>
             vector_intp[0] = PyInt_AS_LONG(list_index);
             return;
         } else if (PyLong_Check(list_index)) {
-            PY_LONG_LONG v = PyLong_AsLongLong(list_index);
+            intptr_t v = PyLong_AsSsize_t(list_index);
             if (v == -1 && PyErr_Occurred()) {
                 throw runtime_error("error converting int");
             }

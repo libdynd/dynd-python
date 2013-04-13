@@ -36,7 +36,14 @@ void pydynd::py_decref_function(void* obj)
 intptr_t pydynd::pyobject_as_index(PyObject *index)
 {
     pyobject_ownref start_obj(PyNumber_Index(index));
-    intptr_t result = PyLong_AsSsize_t(start_obj);
+    intptr_t result;
+    if (PyInt_Check(start_obj.get())) {
+        result = PyInt_AS_LONG(start_obj.get());
+    } else if (PyLong_Check(start_obj.get())) {
+        result = PyLong_AsSsize_t(start_obj.get());
+    } else {
+        throw runtime_error("Value returned from PyNumber_Index is not an int or long");
+    }
     if (result == -1 && PyErr_Occurred()) {
         throw exception();
     }

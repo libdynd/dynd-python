@@ -184,7 +184,7 @@ else()
         # TODO: The rpath used is Anaconda-specific, should make sure it
         #       works more generally.
         INSTALL_RPATH
-        "$ORIGIN/../../../.."
+        "$ORIGIN/../../.."
         )
 endif()
 

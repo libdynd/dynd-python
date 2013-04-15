@@ -147,12 +147,14 @@ else()
     else()
         set(_PYTHON_LIBS_SEARCH "${PYTHON_PREFIX}/lib")
     endif()
+    message(STATUS "Searching for Python libs in ${_PYTHON_LIBS_SEARCH}")
     # Probably this needs to be more involved. It would be nice if the config
     # information the python interpreter itself gave us were more complete.
     find_library(PYTHON_LIBRARY
         NAMES "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
         PATHS ${_PYTHON_LIBS_SEARCH}
         NO_DEFAULT_PATH)
+    message(STATUS "Found Python lib ${PYTHON_LIBRARY}")
 endif()
 
 # For backward compatibility, set PYTHON_INCLUDE_PATH, but make it internal.

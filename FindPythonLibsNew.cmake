@@ -152,7 +152,7 @@ else()
     find_library(PYTHON_LIBRARY
         NAMES "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
         PATHS ${_PYTHON_LIBS_SEARCH}
-        NO_SYSTEM_ENVIRONMENT_PATH)
+        NO_DEFAULT_PATH)
 endif()
 
 # For backward compatibility, set PYTHON_INCLUDE_PATH, but make it internal.

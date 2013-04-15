@@ -167,6 +167,8 @@ elseif(APPLE)
         COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function -Wno-error"
         )
+    # TODO: The rpath used is Anaconda-specific, should make sure it
+    #       works more generally.
     add_custom_command(TARGET _pydynd
         POST_BUILD COMMAND
         ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@loader_path/../../../"
@@ -176,8 +178,13 @@ else()
     # which made g++ 4.6.1 complain
     set_target_properties(
         _pydynd
-        PROPERTIES COMPILE_FLAGS
-            "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
+        PROPERTIES
+        COMPILE_FLAGS
+        "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
+        # TODO: The rpath used is Anaconda-specific, should make sure it
+        #       works more generally.
+        INSTALL_RPATH
+        "$ORIGIN/../../../.."
         )
 endif()
 

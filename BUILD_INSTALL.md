@@ -9,7 +9,7 @@ as well. On Mac OS X, clang is the recommended compiler. On Linux,
 gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
 
 2. Get the prerequisites.
-  * CMake >= 2.6
+  * CMake >= 2.8
   * Python 2.6 or 2.7
   * Cython >= 0.16
   * NumPy >= 1.5

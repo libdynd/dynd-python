@@ -79,9 +79,10 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 {
     dtype dt;
 
-    if (data_alignment == 0) {
-        data_alignment = d->alignment;
-    }
+    // We ignore d->alignment, because on some platforms dynd's alignmkent
+    // is more strict than the platform/numpy's alignment.
+    // E.g. On 32-bit linux, int64 is aligned to 8-bytes in dynd,
+    // but 4-bytes on the platform.
 
     if (d->subarray) {
         dt = dtype_from_numpy_dtype(d->subarray->base, data_alignment);

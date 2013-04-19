@@ -32,6 +32,10 @@ void pydynd::init_w_ndobject_typeobject(PyObject *type)
 
 PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
 {
+#if PY_VERSION_HEX >= 0x03000000
+    // In Python 3, str is unicode
+    return ndobject_unicode(n);
+#else
     ndobject n_str;
     if (n.get_dtype().get_kind() == string_kind &&
                     static_cast<const base_string_dtype *>(
@@ -48,13 +52,17 @@ PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
     const char *begin = NULL, *end = NULL;
     bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
     return PyString_FromStringAndSize(begin, end - begin);
+#endif
 }
 
-// TODO: Python 3.3 is different
-#if Py_UNICODE_SIZE == 2
-# define DYND_PY_ENCODING (string_encoding_ucs_2)
+#if PY_VERSION_HEX >= 0x03030000
+#  define DYND_PY_ENCODING (string_encoding_utf_8)
 #else
-# define DYND_PY_ENCODING (string_encoding_utf_32)
+#  if Py_UNICODE_SIZE == 2
+#    define DYND_PY_ENCODING (string_encoding_ucs_2)
+#  else
+#    define DYND_PY_ENCODING (string_encoding_utf_32)
+#  endif
 #endif
 
 PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
@@ -74,8 +82,14 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
                     static_cast<const base_string_dtype *>(n_str.get_dtype().extended());
     const char *begin = NULL, *end = NULL;
     bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
+#if PY_VERSION_HEX >= 0x03030000
+    // TODO: Might be more efficient to use a different Python 3 API,
+    //       avoiding the creation of intermediate UTF-8
+    return PyUnicode_FromStringAndSize(begin, end - begin);
+#else
     return PyUnicode_FromUnicode(reinterpret_cast<const Py_UNICODE *>(begin),
                     (end - begin) / sizeof(Py_UNICODE));
+#endif
 }
 
 #undef DYND_PY_ENCODING

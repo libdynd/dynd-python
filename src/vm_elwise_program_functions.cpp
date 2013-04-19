@@ -47,28 +47,25 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
             throw runtime_error("Each instruction in the VM program must have at least an opcode");
         }
         // The opcode
-        char *opcode_str;
-        Py_ssize_t opcode_size;
+        string opcode_str = pystring_as_string(PyTuple_GET_ITEM(instr.get(), 0));
         int opcode = -1;
-        if (PyString_AsStringAndSize(PyTuple_GET_ITEM(instr.get(), 0), &opcode_str, &opcode_size) < 0)
-            throw exception();
-        switch (opcode_size) {
+        switch (opcode_str.size()) {
             case 3:
-                if (!strcmp(opcode_str, "add"))
+                if (opcode_str == "add")
                     opcode = vm::opcode_add;
                 break;
             case 4:
-                if (!strcmp(opcode_str, "copy"))
+                if (opcode_str == "copy")
                     opcode = vm::opcode_copy;
                 break;
             case 7:
-                if (!strcmp(opcode_str, "divide"))
+                if (opcode_str == "divide")
                     opcode = vm::opcode_divide;
                 break;
             case 8:
-                if (!strcmp(opcode_str, "subtract"))
+                if (opcode_str == "subtract")
                     opcode = vm::opcode_subtract;
-                else if (!strcmp(opcode_str, "multiply"))
+                else if (opcode_str == "multiply")
                     opcode = vm::opcode_multiply;
                 break;
         }
@@ -92,7 +89,7 @@ PyObject *pydynd::vm_elwise_program_as_py(dynd::vm::elwise_program& ep)
 {
     pyobject_ownref regtypes_obj(PyList_New(ep.get_register_types().size()));
     pyobject_ownref program_obj(PyList_New(ep.get_instruction_count()));
-    pyobject_ownref input_count(PyInt_FromLong(ep.get_input_count()));
+    pyobject_ownref input_count(PyLong_FromLong(ep.get_input_count()));
 
     // Set the list of register types
     for (size_t i = 0; i < ep.get_register_types().size(); ++i) {
@@ -105,9 +102,14 @@ PyObject *pydynd::vm_elwise_program_as_py(dynd::vm::elwise_program& ep)
         int opcode = ep.get_program()[ip];
         int arity = vm::opcode_info[opcode].arity;
         pyobject_ownref instr(PyTuple_New(arity + 2));
-        PyTuple_SET_ITEM(instr.get(), 0, PyString_FromString(vm::opcode_info[opcode].name));
+#if PY_VERSION_HEX >= 0x03000000
+        pyobject_ownref name_str(PyUnicode_FromString(vm::opcode_info[opcode].name));
+#else
+        pyobject_ownref name_str(PyString_FromString(vm::opcode_info[opcode].name));
+#endif
+        PyTuple_SET_ITEM(instr.get(), 0, name_str.release());
         for (int j = 1; j < 2 + arity; ++j) {
-            PyTuple_SET_ITEM(instr.get(), j, PyInt_FromLong(ep.get_program()[ip + j]));
+            PyTuple_SET_ITEM(instr.get(), j, PyLong_FromLong(ep.get_program()[ip + j]));
         }
         PyList_SET_ITEM(program_obj.get(), i, instr.release());
         ip += 2 + arity;

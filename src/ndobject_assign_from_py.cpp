@@ -41,7 +41,9 @@ static size_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
             ends_in_dict = true;
             seqsize = 0;
         } else if (PySequence_Check(obj.get()) &&
+#if PY_VERSION_HEX < 0x03000000
                         !PyString_Check(obj.get()) &&
+#endif
                         !PyUnicode_Check(obj.get())) {
             Py_ssize_t size = PySequence_Size(obj.get());
             if (size == -1 && PyErr_Occurred()) {
@@ -115,7 +117,9 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
             complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
             dtype_assign(dt, metadata, data,
                         make_dtype<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
-        } else if (PyString_Check(value)) { // TODO: On Python 3, PyBytes should become a dnd bytes array
+        // TODO: On Python 3, PyBytes should become a dnd bytes array
+#if PY_VERSION_HEX < 0x03000000
+        } else if (PyString_Check(value)) {
             char *pystr_data = NULL;
             intptr_t pystr_len = 0;
             if (PyString_AsStringAndSize(value, &pystr_data, &pystr_len) < 0) {
@@ -131,16 +135,43 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
 
             dtype_assign(dt, metadata, data,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
-        } else if (PyUnicode_Check(value)) { // TODO: On Python 3, PyBytes should become a dnd bytes array
-    #if Py_UNICODE_SIZE == 2
+#endif
+        } else if (PyUnicode_Check(value)) {
+#if PY_VERSION_HEX >= 0x03030000
+            if (PyUnicode_READY(value) < 0) {
+                throw exception();
+            }
+            dtype str_dt;
+            switch (PyUnicode_KIND(value)) {
+                case PyUnicode_1BYTE_KIND:
+                    str_dt = make_string_dtype(string_encoding_ascii);
+                    break;
+                case PyUnicode_2BYTE_KIND:
+                    str_dt = make_string_dtype(string_encoding_ucs_2);
+                    break;
+                case PyUnicode_4BYTE_KIND:
+                    str_dt = make_string_dtype(string_encoding_utf_32);
+                    break;
+                default: {
+                    stringstream ss;
+                    ss << "python string has an invalid unicode kind '" << (int)PyUnicode_KIND(value);
+                    throw runtime_error(ss.str());
+                }
+            }
+#elif Py_UNICODE_SIZE == 2
             dtype str_dt = make_string_dtype(string_encoding_ucs_2);
-    #else
+#else
             dtype str_dt = make_string_dtype(string_encoding_utf_32);
-    #endif
+#endif
             string_dtype_data str_d;
             string_dtype_metadata str_md;
+#if PY_VERSION_HEX >= 0x03030000
+            str_d.begin = reinterpret_cast<char *>(PyUnicode_DATA(value));
+            str_d.end = str_d.begin + PyUnicode_GET_LENGTH(value) * PyUnicode_KIND(value);
+#else
             str_d.begin = reinterpret_cast<char *>(PyUnicode_AsUnicode(value));
             str_d.end = str_d.begin + Py_UNICODE_SIZE * PyUnicode_GetSize(value);
+#endif
             str_md.blockref = NULL;
 
             dtype_assign(dt, metadata, data,

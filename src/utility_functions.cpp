@@ -37,10 +37,12 @@ intptr_t pydynd::pyobject_as_index(PyObject *index)
 {
     pyobject_ownref start_obj(PyNumber_Index(index));
     intptr_t result;
-    if (PyInt_Check(start_obj.get())) {
-        result = PyInt_AS_LONG(start_obj.get());
-    } else if (PyLong_Check(start_obj.get())) {
+    if (PyLong_Check(start_obj.get())) {
         result = PyLong_AsSsize_t(start_obj.get());
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyInt_Check(start_obj.get())) {
+        result = PyInt_AS_LONG(start_obj.get());
+#endif
     } else {
         throw runtime_error("Value returned from PyNumber_Index is not an int or long");
     }
@@ -53,7 +55,11 @@ intptr_t pydynd::pyobject_as_index(PyObject *index)
 int pydynd::pyobject_as_int_index(PyObject *index)
 {
     pyobject_ownref start_obj(PyNumber_Index(index));
+#if PY_VERSION_HEX >= 0x03000000
+    long result = PyLong_AsLong(start_obj);
+#else
     long result = PyInt_AsLong(start_obj);
+#endif
     if (result == -1 && PyErr_Occurred()) {
         throw exception();
     }
@@ -87,18 +93,24 @@ std::string pydynd::pystring_as_string(PyObject *str)
 {
     char *data = NULL;
     Py_ssize_t len = 0;
-    if (PyString_Check(str)) {
+    if (PyUnicode_Check(str)) {
+        pyobject_ownref utf8(PyUnicode_AsUTF8String(str));
+
+#if PY_VERSION_HEX >= 0x03000000
+        if (PyBytes_AsStringAndSize(utf8.get(), &data, &len) < 0) {
+#else
+        if (PyString_AsStringAndSize(utf8.get(), &data, &len) < 0) {
+#endif
+            throw runtime_error("Error getting string data");
+        }
+        return string(data, len);
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyString_Check(str)) {
         if (PyString_AsStringAndSize(str, &data, &len) < 0) {
             throw runtime_error("Error getting string data");
         }
         return string(data, len);
-    } else if (PyUnicode_Check(str)) {
-        pyobject_ownref utf8(PyUnicode_AsUTF8String(str));
-
-        if (PyString_AsStringAndSize(utf8.get(), &data, &len) < 0) {
-            throw runtime_error("Error getting string data");
-        }
-        return string(data, len);
+#endif
     } else if (WNDObject_Check(str)) {
         const ndobject& n = ((WNDObject *)str)->v;
         if (n.get_dtype().value_dtype().get_kind() == string_kind) {
@@ -139,11 +151,7 @@ void pydynd::pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>
 {
     if (allow_int) {
         // If permitted, convert an int into a size-1 list
-        if (PyInt_Check(list_index)) {
-            vector_intp.resize(1);
-            vector_intp[0] = PyInt_AS_LONG(list_index);
-            return;
-        } else if (PyLong_Check(list_index)) {
+        if (PyLong_Check(list_index)) {
             intptr_t v = PyLong_AsSsize_t(list_index);
             if (v == -1 && PyErr_Occurred()) {
                 throw runtime_error("error converting int");
@@ -151,6 +159,32 @@ void pydynd::pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>
             vector_intp.resize(1);
             vector_intp[0] = v;
             return;
+        }
+#if PY_VERSION_HEX < 0x03000000
+        if (PyInt_Check(list_index)) {
+            vector_intp.resize(1);
+            vector_intp[0] = PyInt_AS_LONG(list_index);
+            return;
+        }
+#endif
+        if (PyIndex_Check(list_index)) {
+            PyObject *idx_obj = PyNumber_Index(list_index);
+            if (idx_obj != NULL) {
+                intptr_t v = PyLong_AsSsize_t(idx_obj);
+                Py_DECREF(idx_obj);
+                if (v == -1 && PyErr_Occurred()) {
+                    throw exception();
+                }
+                vector_intp.resize(1);
+                vector_intp[0] = v;
+                return;
+            } else if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+                // Swallow a type error, fall through to the sequence code
+                PyErr_Clear();
+            } else {
+                // Propagate the error
+                throw exception();
+            }
         }
     }
     Py_ssize_t size = PySequence_Size(list_index);

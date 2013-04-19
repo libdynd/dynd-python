@@ -91,7 +91,7 @@ namespace {
             }
             // Verify that no reference to a temporary ndobject was kept
             for (size_t i = 0; i != src_count + 1; ++i) {
-                if (ndo[i]->ob_refcnt != 1) {
+                if (Py_REFCNT(ndo[i]) != 1) {
                     stringstream ss;
                     ss << "The elwise_map callable function held onto a reference to the ";
                     if (i == 0) {

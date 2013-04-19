@@ -162,12 +162,8 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
         pyobject_ownref dd(PyObject_CallMethod(mod.get(),
                         const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
         pyobject_ownref unit(PyTuple_GetItem(dd.get(), 0));
-        char *s = PyString_AsString(unit.get());
-        if (s == NULL) {
-            throw runtime_error("expected a string/bytes as the first "
-                            "item in numpy.datetime_data(d) output");
-        }
-        if (strcmp(s, "D") == 0) {
+        string s = pystring_as_string(unit.get());
+        if (s == "D") {
             // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
             dt = make_reversed_property_dtype(make_date_dtype(),
                             make_dtype<int64_t>(), "days_after_1970_int64");
@@ -363,7 +359,14 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyList_SET_ITEM((PyObject *)names_obj, i, PyString_FromString(field_names[i].c_str()));
+#if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref name_str(PyUnicode_FromStringAndSize(
+                                field_names[i].data(), field_names[i].size()));
+#else
+                pyobject_ownref name_str(PyString_FromStringAndSize(
+                                field_names[i].data(), field_names[i].size()));
+#endif
+                PyList_SET_ITEM((PyObject *)names_obj, i, name_str.release());
             }
 
             pyobject_ownref formats_obj(PyList_New(field_count));
@@ -461,7 +464,14 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyList_SET_ITEM((PyObject *)names_obj, i, PyString_FromString(field_names[i].c_str()));
+#if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref name_str(PyUnicode_FromStringAndSize(
+                                field_names[i].data(), field_names[i].size()));
+#else
+                pyobject_ownref name_str(PyString_FromStringAndSize(
+                                field_names[i].data(), field_names[i].size()));
+#endif
+                PyList_SET_ITEM((PyObject *)names_obj, i, name_str.release());
             }
 
             pyobject_ownref formats_obj(PyList_New(field_count));

@@ -122,8 +122,10 @@ static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_
 static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
                 std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis)
 {
-    bool is_sequence = (PySequence_Check(obj) != 0 &&
-                    !PyString_Check(obj) && !PyUnicode_Check(obj));
+    bool is_sequence = (PySequence_Check(obj) != 0 && !PyUnicode_Check(obj));
+#if PY_VERSION_HEX < 0x03000000
+    is_sequence = is_sequence && !PyString_Check(obj);
+#endif
     Py_ssize_t size = 0;
     if (is_sequence) {
         size = PySequence_Size(obj);
@@ -218,7 +220,11 @@ inline void convert_one_pyscalar_bool(const dtype& dt, const char *metadata, cha
 
 inline void convert_one_pyscalar_int32(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
+#if PY_VERSION_HEX >= 0x03000000
+    *reinterpret_cast<int32_t *>(out) = static_cast<int32_t>(PyLong_AsLong(obj));
+#else
     *reinterpret_cast<int32_t *>(out) = static_cast<int32_t>(PyInt_AsLong(obj));
+#endif
 }
 
 inline void convert_one_pyscalar_int64(const dtype& dt, const char *metadata, char *out, PyObject *obj)
@@ -233,9 +239,11 @@ inline void convert_one_pyscalar_double(const dtype& dt, const char *metadata, c
 
 inline void convert_one_pyscalar_cdouble(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    *reinterpret_cast<complex<double> *>(out) = complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
+    *reinterpret_cast<complex<double> *>(out) = complex<double>(
+                    PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
 }
 
+#if PY_VERSION_HEX < 0x03000000
 struct ascii_string_ptrs {
     char *begin, *end;
 };
@@ -258,20 +266,52 @@ inline void convert_one_pyscalar_astring(const dtype& dt, const char *metadata, 
         throw runtime_error("wrong kind of string provided");
     }
 }
-
-struct pyunicode_string_ptrs {
-#if Py_UNICODE_SIZE == 2
-        uint16_t *begin, *end;
-#else
-        uint32_t *begin, *end;
 #endif
+
+#if PY_VERSION_HEX >= 0x03030000
+struct pyunicode_string_ptrs {
+    char *begin, *end;
 };
+#else
+struct pyunicode_string_ptrs {
+#  if Py_UNICODE_SIZE == 2
+    uint16_t *begin, *end;
+#  else
+    uint32_t *begin, *end;
+#  endif
+};
+#endif
 
 inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
     pyunicode_string_ptrs *out_usp = reinterpret_cast<pyunicode_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
-    if (PyString_Check(obj)) {
+    if (PyUnicode_Check(obj)) {
+#if PY_VERSION_HEX >= 0x03000000
+        // Get it as UTF8
+        pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
+        char *s = NULL;
+        Py_ssize_t len = 0;
+        if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
+            throw exception();
+        }
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
+        allocator->allocate(md->blockref, len,
+                        1, (char **)&out_usp->begin, (char **)&out_usp->end);
+        memcpy(out_usp->begin, s, len);
+#else
+        const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
+        Py_ssize_t len = PyUnicode_GetSize(obj);
+        if (data == NULL || len == -1) {
+            throw runtime_error("Error getting unicode string data");
+        }
+        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
+        allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
+                        Py_UNICODE_SIZE, (char **)&out_usp->begin, (char **)&out_usp->end);
+        memcpy(out_usp->begin, data, len * Py_UNICODE_SIZE);
+#endif
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyString_Check(obj)) {
         char *data = NULL;
         Py_ssize_t len = 0;
         if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
@@ -284,16 +324,7 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
         for (Py_ssize_t i = 0; i < len; ++i) {
             out_usp->begin[i] = data[i];
         }
-    } else if (PyUnicode_Check(obj)) {
-        const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
-        Py_ssize_t len = PyUnicode_GetSize(obj);
-        if (data == NULL || len == -1) {
-            throw runtime_error("Error getting unicode string data");
-        }
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
-                        Py_UNICODE_SIZE, (char **)&out_usp->begin, (char **)&out_usp->end);
-        memcpy(out_usp->begin, data, len * Py_UNICODE_SIZE);
+#endif
     } else {
         throw runtime_error("wrong kind of string provided");
     }
@@ -414,18 +445,23 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
         case string_type_id: {
             const base_string_dtype *ext = static_cast<const base_string_dtype *>(dt.extended());
             switch (ext->get_encoding()) {
+#if PY_VERSION_HEX < 0x03000000
                 case string_encoding_ascii:
                     fill_ndobject_from_pylist<convert_one_pyscalar_astring>(result.get_dtype(), result.get_ndo_meta(),
                                     result.get_readwrite_originptr(),
                                     obj, &shape[0], 0);
                     break;
-#if Py_UNICODE_SIZE == 2
+#endif
+#if PY_VERSION_HEX >= 0x03030000
+                case string_encoding_utf_8:
+#elif Py_UNICODE_SIZE == 2
                 case string_encoding_ucs_2:
 #else
                 case string_encoding_utf_32:
 #endif
                         {
-                    fill_ndobject_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(), result.get_ndo_meta(),
+                    fill_ndobject_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(),
+                                    result.get_ndo_meta(),
                                     result.get_readwrite_originptr(),
                                     obj, &shape[0], 0);
                     break;
@@ -510,7 +546,9 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         return PyFloat_AS_DOUBLE(obj);
     } else if (PyComplex_Check(obj)) {
         return complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
-    } else if (PyString_Check(obj)) { // TODO: On Python 3, PyBytes should become a dnd bytes array
+    // TODO: On Python 3, PyBytes should become a dynd bytes array
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyString_Check(obj)) {
         char *data = NULL;
         intptr_t len = 0;
         if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
@@ -535,16 +573,44 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         md->blockref = stringref.release();
         result.get_ndo()->m_flags = immutable_access_flag|read_access_flag;
         return result;
+#endif
     } else if (PyUnicode_Check(obj)) {
-#if Py_UNICODE_SIZE == 2
+#if PY_VERSION_HEX >= 0x03030000
+        if (PyUnicode_READY(obj) < 0) {
+            throw exception();
+        }
+        dtype d;
+        switch (PyUnicode_KIND(obj)) {
+            case PyUnicode_1BYTE_KIND:
+                d = make_string_dtype(string_encoding_ascii);
+                break;
+            case PyUnicode_2BYTE_KIND:
+                d = make_string_dtype(string_encoding_ucs_2);
+                break;
+            case PyUnicode_4BYTE_KIND:
+                d = make_string_dtype(string_encoding_utf_32);
+                break;
+            default: {
+                stringstream ss;
+                ss << "python string has an invalid unicode kind '" << (int)PyUnicode_KIND(obj);
+                throw runtime_error(ss.str());
+            }
+        }
+#elif Py_UNICODE_SIZE == 2
         dtype d = make_string_dtype(string_encoding_ucs_2);
 #else
         dtype d = make_string_dtype(string_encoding_utf_32);
 #endif
-        const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
+        const char *data;
+#if PY_VERSION_HEX >= 0x03030000
+        data = reinterpret_cast<char *>(PyUnicode_DATA(obj));
+#else
+        data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
+#endif
         // Python strings are immutable, so simply use the existing memory with an external memory block
         Py_INCREF(obj);
-        memory_block_ptr stringdata = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
+        memory_block_ptr stringdata = make_external_memory_block(
+                        reinterpret_cast<void *>(obj), &py_decref_function);
         char *data_ptr;
         ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
                     d.get_data_size(), d.get_alignment(), &data_ptr));
@@ -554,7 +620,11 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         base_dtype_incref(result.get_ndo()->m_dtype);
         // The scalar consists of pointers to the string data
         ((const char **)data_ptr)[0] = data;
+#if PY_VERSION_HEX >= 0x03030000
+        ((const char **)data_ptr)[1] = data + PyUnicode_GET_LENGTH(obj) * PyUnicode_KIND(obj);
+#else
         ((const char **)data_ptr)[1] = data + Py_UNICODE_SIZE * PyUnicode_GetSize(obj);
+#endif
         // The metadata
         string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
         md->blockref = stringdata.release();
@@ -609,7 +679,11 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj, const dtype& dt, bool uni
             ss << dt << " already has a uniform dim";
             throw runtime_error(ss.str());
         }
-        if (PySequence_Check(obj) && !PyString_Check(obj) && !PyUnicode_Check(obj)) {
+        if (PySequence_Check(obj)
+#if PY_VERSION_HEX < 0x03000000
+                        && !PyString_Check(obj)
+#endif
+                        && !PyUnicode_Check(obj)) {
             vector<intptr_t> shape;
             Py_ssize_t size = PySequence_Size(obj);
             if (size == -1 && PyErr_Occurred()) {

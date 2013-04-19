@@ -43,17 +43,37 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
                 return Py_False;
             }
         case int8_type_id:
+#if PY_VERSION_HEX >= 0x03000000
+            return PyLong_FromLong(*(const int8_t *)data);
+#else
             return PyInt_FromLong(*(const int8_t *)data);
+#endif
         case int16_type_id:
+#if PY_VERSION_HEX >= 0x03000000
+            return PyLong_FromLong(*(const int16_t *)data);
+#else
             return PyInt_FromLong(*(const int16_t *)data);
+#endif
         case int32_type_id:
+#if PY_VERSION_HEX >= 0x03000000
+            return PyLong_FromLong(*(const int32_t *)data);
+#else
             return PyInt_FromLong(*(const int32_t *)data);
+#endif
         case int64_type_id:
             return PyLong_FromLongLong(*(const int64_t *)data);
         case uint8_type_id:
+#if PY_VERSION_HEX >= 0x03000000
+            return PyLong_FromLong(*(const uint8_t *)data);
+#else
             return PyInt_FromLong(*(const uint8_t *)data);
+#endif
         case uint16_type_id:
+#if PY_VERSION_HEX >= 0x03000000
+            return PyLong_FromLong(*(const uint16_t *)data);
+#else
             return PyInt_FromLong(*(const uint16_t *)data);
+#endif
         case uint32_type_id:
             return PyLong_FromUnsignedLong(*(const uint32_t *)data);
         case uint64_type_id:

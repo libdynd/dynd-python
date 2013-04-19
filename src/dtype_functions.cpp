@@ -94,7 +94,11 @@ PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
     stringstream ss;
     ss << d.get_kind();
     string s = ss.str();
+#if PY_VERSION_HEX >= 0x03000000
+    return PyUnicode_FromStringAndSize(s.data(), s.size());
+#else
     return PyString_FromStringAndSize(s.data(), s.size());
+#endif
 }
 
 PyObject *pydynd::dtype_get_type_id(const dynd::dtype& d)
@@ -102,7 +106,11 @@ PyObject *pydynd::dtype_get_type_id(const dynd::dtype& d)
     stringstream ss;
     ss << d.get_type_id();
     string s = ss.str();
+#if PY_VERSION_HEX >= 0x03000000
+    return PyUnicode_FromStringAndSize(s.data(), s.size());
+#else
     return PyString_FromStringAndSize(s.data(), s.size());
+#endif
 }
 
 dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
@@ -158,15 +166,38 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
     } else if (PyComplex_Check(obj)) {
         // Python complex
         return make_dtype<complex<double> >();
+#if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         // Python ascii string
         return make_string_dtype(string_encoding_ascii);
+#endif
     } else if (PyUnicode_Check(obj)) {
         // Python unicode string
-#if Py_UNICODE_SIZE == 2
-        return make_string_dtype(string_encoding_ucs_2);
+#if PY_VERSION_HEX >= 0x03003000
+        if (PyUnicode_READY(obj) < 0) {
+            throw exception();
+        }
+        // In Python 3.3, the string representation is
+        // no longer with a fixed base char size
+        switch (PyUnicode_KIND(obj)) {
+            case PyUnicode_1BYTE_KIND:
+                return make_string_dtype(string_encoding_ascii);
+            case PyUnicode_2BYTE_KIND:
+                return make_string_dtype(string_encoding_ucs_2);
+            case PyUnicode_4BYTE_KIND:
+                return make_string_dtype(string_encoding_utf_32);
+            default: {
+                stringstream ss;
+                ss << "python string has an invalid unicode kind '" << (int)PyUnicode_KIND(obj);
+                throw runtime_error(ss.str());
+            }
+        }
 #else
+#  if Py_UNICODE_SIZE == 2
+        return make_string_dtype(string_encoding_ucs_2);
+#  else
         return make_string_dtype(string_encoding_utf_32);
+#  endif
 #endif
     } else if (PyDate_Check(obj)) {
         return make_date_dtype();
@@ -190,7 +221,11 @@ static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
 {
     if (obj == &PyBool_Type) {
         return make_dtype<dynd_bool>();
-    } else if (obj == &PyInt_Type || obj == &PyLong_Type) {
+#if PY_VERSION_HEX < 0x03000000
+    } else if (obj == &PyInt_Type) {
+        return make_dtype<int32_t>();
+#endif
+    } else if (obj == &PyLong_Type) {
         return make_dtype<int32_t>();
     } else if (obj == &PyFloat_Type) {
         return make_dtype<double>();
@@ -210,7 +245,11 @@ dynd::dtype pydynd::make_dtype_from_pyobject(PyObject* obj)
 {
     if (WDType_Check(obj)) {
         return ((WDType *)obj)->v;
-    } else if (PyString_Check(obj) || PyUnicode_Check(obj)) {
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyString_Check(obj)) {
+        return dtype(pystring_as_string(obj));
+#endif
+    } else if (PyUnicode_Check(obj)) {
         return dtype(pystring_as_string(obj));
     } else if (WNDObject_Check(obj)) {
         return ((WNDObject *)obj)->v.as<dtype>();
@@ -234,70 +273,61 @@ dynd::dtype pydynd::make_dtype_from_pyobject(PyObject* obj)
     stringstream ss;
     ss << "could not convert the object ";
     pyobject_ownref repr(PyObject_Repr(obj));
-    ss << PyString_AsString(repr.get());
+    ss << pystring_as_string(repr.get());
     ss << " into a dynd::dtype";
     throw std::runtime_error(ss.str());
 }
 
 static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
 {
+    // Default is utf-8
+    if (encoding_obj == Py_None) {
+        return string_encoding_utf_8;
+    }
+
     string_encoding_t encoding = string_encoding_invalid;
-    if (PyString_Check(encoding_obj)) {
-        char *s = NULL;
-        Py_ssize_t len = 0;
-        if (PyString_AsStringAndSize(encoding_obj, &s, &len) < 0) {
-            throw std::runtime_error("error processing string input to process string encoding");
-        }
-        switch (len) {
-        case 5:
-            switch (s[1]) {
-            case 'c':
-                if (strcmp(s, "ucs_2") == 0 || strcmp(s, "ucs-2") == 0) {
-                    encoding = string_encoding_ucs_2;
-                }
-                break;
-            case 's':
-                if (strcmp(s, "ascii") == 0) {
-                    encoding = string_encoding_ascii;
-                }
-                break;
-            case 't':
-                if (strcmp(s, "utf_8") == 0 || strcmp(s, "utf-8") == 0) {
-                    encoding = string_encoding_utf_8;
-                }
-                break;
+    string encoding_str = pystring_as_string(encoding_obj);
+    switch (encoding_str.size()) {
+    case 5:
+        switch (encoding_str[1]) {
+        case 'c':
+            if (encoding_str == "ucs_2" || encoding_str == "ucs-2") {
+                encoding = string_encoding_ucs_2;
             }
             break;
-        case 6:
-            switch (s[4]) {
-            case '1':
-                if (strcmp(s, "utf_16") == 0 || strcmp(s, "utf-16") == 0) {
-                    encoding = string_encoding_utf_16;
-                }
-                break;
-            case '3':
-                if (strcmp(s, "utf_32") == 0 || strcmp(s, "utf-32") == 0) {
-                    encoding = string_encoding_utf_32;
-                }
-                break;
+        case 's':
+            if (encoding_str == "ascii") {
+                encoding = string_encoding_ascii;
             }
+            break;
+        case 't':
+            if (encoding_str == "utf_8" || encoding_str == "utf-8") {
+                encoding = string_encoding_utf_8;
+            }
+            break;
         }
-
-        if (encoding != string_encoding_invalid) {
-            return encoding;
-        } else {
-            stringstream ss;
-            ss << "invalid input \"" << s << "\" for string encoding";
-            throw std::runtime_error(ss.str());
+        break;
+    case 6:
+        switch (encoding_str[4]) {
+        case '1':
+            if (encoding_str == "utf_16" || encoding_str == "utf-16") {
+                encoding = string_encoding_utf_16;
+            }
+            break;
+        case '3':
+            if (encoding_str == "utf_32" || encoding_str == "utf-32") {
+                encoding = string_encoding_utf_32;
+            }
+            break;
         }
+    }
 
-    } else if (PyUnicode_Check(encoding_obj)) {
-        // TODO: Haven't implemented unicode yet.
-        throw std::runtime_error("unicode isn't implemented yet for determining string encodings");
-    } else if (encoding_obj == Py_None) {
-        return string_encoding_utf_8;
+    if (encoding != string_encoding_invalid) {
+        return encoding;
     } else {
-        throw std::runtime_error("invalid input type for string encoding");
+        stringstream ss;
+        ss << "invalid input \"" << encoding_str << "\" for string encoding";
+        throw std::runtime_error(ss.str());
     }
 }
 
@@ -406,7 +436,12 @@ PyObject *pydynd::dtype_ndobject_property_names(const dtype& d)
     pyobject_ownref result(PyList_New(count));
     for (size_t i = 0; i != count; ++i) {
         const string& s = properties[i].first;
-        PyList_SET_ITEM(result.get(), i, PyString_FromStringAndSize(s.data(), s.size()));
+#if PY_VERSION_HEX >= 0x03000000
+        pyobject_ownref str_obj(PyUnicode_FromStringAndSize(s.data(), s.size()));
+#else
+        pyobject_ownref str_obj(PyString_FromStringAndSize(s.data(), s.size()));
+#endif
+        PyList_SET_ITEM(result.get(), i, str_obj.release());
     }
     return result.release();
 }

@@ -67,7 +67,15 @@ calling_convention_t pydynd::get_ctypes_calling_convention(PyCFuncPtrObject* cfu
     // custom-placed in the typeobject's dict by ctypes.
     pyobject_ownref flags_obj(PyObject_GetAttrString((PyObject *)Py_TYPE(cfunc), "_flags_"));
 
-    long flags = PyInt_AsLong(flags_obj);
+    long flags;
+#if PY_VERSION_HEX >= 0x03000000
+    // TODO: Need to look at the ctypes implementation to validate that
+    //       the internals haven't changed in a way which affects what
+    //       we're doing here.
+    flags = PyLong_AsLong(flags_obj);
+#else
+    flags = PyInt_AsLong(flags_obj);
+#endif
     if (flags == -1 && PyErr_Occurred()) {
         throw std::runtime_error("Error getting ctypes function flags");
     }
@@ -160,12 +168,10 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
 
     // The simple C data types
     if (PyObject_IsSubclass(d, ctypes.PyCSimpleType_Type)) {
-        char *proto_str = NULL;
-        Py_ssize_t proto_len = 0;
         pyobject_ownref proto(PyObject_GetAttrString(d, "_type_"));
-        if (PyString_AsStringAndSize(proto, &proto_str, &proto_len) < 0 ||
-                            proto_len != 1) {
-            throw std::runtime_error("invalid ctypes type");
+        string proto_str = pystring_as_string(proto);
+        if (proto_str.size() != 1) {
+            throw std::runtime_error("invalid ctypes type, its _type_ value is incorrect");
         }
 
         switch (proto_str[0]) {

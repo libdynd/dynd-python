@@ -218,7 +218,8 @@ std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const dtype& dt,
     return result.str();
 }
 
-static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metadata, char *data, Py_buffer *buffer, int flags)
+static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metadata,
+                char *data, Py_buffer *buffer, int flags)
 {
     buffer->itemsize = 1;
     if (flags&PyBUF_FORMAT) {
@@ -227,7 +228,7 @@ static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metada
         buffer->format = NULL;
     }
     buffer->ndim = 1;
-#if PY_VERSION_HEX >= 0x02070000
+#if PY_VERSION_HEX == 0x02070000
     buffer->internal = NULL;
     buffer->shape = &buffer->smalltable[0];
     buffer->strides = &buffer->smalltable[1];

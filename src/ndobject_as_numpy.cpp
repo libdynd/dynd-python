@@ -85,7 +85,11 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             case date_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
                 PyArray_Descr *datedt = NULL;
+#  if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref M8str(PyUnicode_FromString("M8[D]"));
+#  else
                 pyobject_ownref M8str(PyString_FromString("M8[D]"));
+#  endif
                 if (!PyArray_DescrConverter(M8str.get(), &datedt)) {
                     throw runtime_error("Failed to create NumPy datetime64[D] dtype");
                 }
@@ -177,8 +181,14 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyList_SET_ITEM(names_obj.get(), i, PyString_FromStringAndSize(
+#if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref name_str(PyUnicode_FromStringAndSize(
                                 field_names[i].data(), field_names[i].size()));
+#else
+                pyobject_ownref name_str(PyString_FromStringAndSize(
+                                field_names[i].data(), field_names[i].size()));
+#endif
+                PyList_SET_ITEM(names_obj.get(), i, name_str.release());
             }
 
             pyobject_ownref formats_obj(PyList_New(field_count));
@@ -284,7 +294,11 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             if (pd->is_reversed_property() && pd->get_value_dtype().get_type_id() == date_type_id &&
                             pd->get_operand_dtype().get_type_id() == int64_type_id) {
                 PyArray_Descr *datedt = NULL;
+#  if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref M8str(PyUnicode_FromString("M8[D]"));
+#  else
                 pyobject_ownref M8str(PyString_FromString("M8[D]"));
+#  endif
                 if (!PyArray_DescrConverter(M8str.get(), &datedt)) {
                     throw runtime_error("Failed to create NumPy datetime64[D] dtype");
                 }
@@ -402,8 +416,14 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyList_SET_ITEM(names_obj.get(), i, PyString_FromStringAndSize(
+#if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref name_str(PyUnicode_FromStringAndSize(
                                 field_names[i].data(), field_names[i].size()));
+#else
+                pyobject_ownref name_str(PyString_FromStringAndSize(
+                                field_names[i].data(), field_names[i].size()));
+#endif
+                PyList_SET_ITEM(names_obj.get(), i, name_str.release());
             }
 
             pyobject_ownref formats_obj(PyList_New(field_count));

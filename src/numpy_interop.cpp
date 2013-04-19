@@ -191,7 +191,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 
     // If the data this dtype is for isn't aligned enough,
     // make an unaligned version.
-    if (data_alignment < dt.get_alignment()) {
+    if (data_alignment != 0 && data_alignment < dt.get_alignment()) {
         dt = make_unaligned_dtype(dt);
     }
 

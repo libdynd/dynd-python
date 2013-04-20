@@ -1,6 +1,8 @@
-import nd, ndt
+from __future__ import absolute_import
 
-from _pydynd import _dynd_version_string as __dynd_version_string__, \
+from . import nd, ndt
+
+from ._pydynd import _dynd_version_string as __dynd_version_string__, \
                 _dynd_python_version_string as __version_string__, \
                 _dynd_git_sha1 as __dynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__
@@ -28,7 +30,7 @@ def test(verbosity=1, xunitfile=None, exit=False):
     """
     import os, sys, subprocess
     import numpy
-    from tests import get_tst_module
+    from .tests import get_tst_module
     import unittest
 
     print('Running unit tests for the DyND Python bindings')

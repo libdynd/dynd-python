@@ -58,7 +58,7 @@ class TestDate(unittest.TestCase):
  
     def test_weekday(self):
         self.assertEqual(nd.as_py(nd.ndobject(date(1955,3,13)).weekday()), 6)
-        self.assertEqual(nd.as_py(nd.ndobject(date(2002,12,04)).weekday()), 2)
+        self.assertEqual(nd.as_py(nd.ndobject(date(2002,12,4)).weekday()), 2)
 
     def test_replace(self):
         a = nd.ndobject(date(1955,3,13))

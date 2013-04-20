@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from dynd._pydynd import w_dtype as dtype, \
         make_byteswap_dtype, make_fixedbytes_dtype, make_convert_dtype, \
         make_unaligned_dtype, make_fixedstring_dtype, make_string_dtype, \
@@ -32,6 +34,6 @@ json = dtype('json')
 bytes = dtype('bytes')
 
 # Includes ctypes definitions
-import dynd_ctypes as ctypes
+from . import dynd_ctypes as ctypes
 
 del dtype

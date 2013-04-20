@@ -3,6 +3,8 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+# cython: c_string_type=str, c_string_encoding=ascii
+
 cdef extern from "exception_translation.hpp" namespace "pydynd":
     void translate_exception()
     void set_broadcast_exception(object)
@@ -51,7 +53,7 @@ if any_diagnostics_enabled():
     class PerformanceWarning(Warning):
         pass
     warnings.warn("Performance is reduced because of enabled diagnostics:\n" +
-                str(which_diagnostics_enabled().c_str()), PerformanceWarning)
+                str(<char *>which_diagnostics_enabled().c_str()), PerformanceWarning)
 
 from cython.operator import dereference
 
@@ -61,10 +63,12 @@ from cython.operator import dereference
 #default_cgcache = default_cgcache_c
 
 # Expose the git hashes and version numbers of this build
-_dynd_version_string = str(dynd_version_string)
-_dynd_git_sha1 = str(dynd_git_sha1)
-_dynd_python_version_string = str(dynd_python_version_string)
-_dynd_python_git_sha1 = str(dynd_python_git_sha1)
+# NOTE: Cython generates code which is not const-correct, so
+#       have to cast it away.
+_dynd_version_string = str(<char *>dynd_version_string)
+_dynd_git_sha1 = str(<char *>dynd_git_sha1)
+_dynd_python_version_string = str(<char *>dynd_python_version_string)
+_dynd_python_git_sha1 = str(<char *>dynd_python_git_sha1)
 
 cdef class w_dtype:
     """
@@ -189,7 +193,7 @@ cdef class w_dtype:
         The Blaze datashape of the dynd type, as a string.
         """
         def __get__(self):
-            return str(dynd_format_datashape(GET(self.v)).c_str())
+            return str(<char *>dynd_format_datashape(GET(self.v)).c_str())
 
     property udtype:
         """
@@ -261,10 +265,10 @@ cdef class w_dtype:
         return result
 
     def __str__(self):
-        return str(dtype_str(GET(self.v)).c_str())
+        return str(<char *>dtype_str(GET(self.v)).c_str())
 
     def __repr__(self):
-        return str(dtype_repr(GET(self.v)).c_str())
+        return str(<char *>dtype_repr(GET(self.v)).c_str())
 
     def __richcmp__(lhs, rhs, int op):
         if op == Py_EQ:
@@ -837,7 +841,7 @@ cdef class w_ndobject:
         This can be useful for diagnosing bugs in the ndobject
         or dtype/metadata/data abstraction ndobjects are based on.
         """
-        return str(ndobject_debug_print(GET(self.v)).c_str())
+        return str(<char *>ndobject_debug_print(GET(self.v)).c_str())
 
     def eval(self):
         """
@@ -1013,7 +1017,7 @@ cdef class w_ndobject:
         The Blaze datashape of the ndobject, as a string.
         """
         def __get__(self):
-            return str(dynd_format_datashape(GET(self.v)).c_str())
+            return str(<char *>dynd_format_datashape(GET(self.v)).c_str())
 
     property udtype:
         """
@@ -1069,7 +1073,7 @@ cdef class w_ndobject:
         return ndobject_nonzero(GET(self.v))
 
     def __repr__(self):
-        return str(ndobject_repr(GET(self.v)).c_str())
+        return str(<char *>ndobject_repr(GET(self.v)).c_str())
 
     def __len__(self):
         if GET(self.v).is_scalar():
@@ -1460,7 +1464,7 @@ cdef class w_elwise_gfunc:
 
     property name:
         def __get__(self):
-            return str(GET(self.v).get_name().c_str())
+            return str(<char *>GET(self.v).get_name().c_str())
 
 #    def add_kernel(self, kernel, w_codegen_cache cgcache = default_cgcache_c):
 #        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
@@ -1468,7 +1472,7 @@ cdef class w_elwise_gfunc:
 
     def debug_repr(self):
         """Prints a raw representation of the gfunc data."""
-        return str(elwise_gfunc_debug_print(GET(self.v)).c_str())
+        return str(<char *>elwise_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -1484,7 +1488,7 @@ cdef class w_elwise_reduce_gfunc:
 
     property name:
         def __get__(self):
-            return str(GET(self.v).get_name().c_str())
+            return str(<char *>GET(self.v).get_name().c_str())
 
 #    def add_kernel(self, kernel, bint associative, bint commutative, identity = None, w_codegen_cache cgcache = default_cgcache_c):
 #        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
@@ -1497,7 +1501,7 @@ cdef class w_elwise_reduce_gfunc:
 
     def debug_repr(self):
         """Returns a raw representation of the gfunc data."""
-        return str(elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
+        return str(<char *>elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -1513,7 +1517,7 @@ cdef class w_elwise_reduce_gfunc:
 #
 #    def debug_repr(self):
 #        """Prints a raw representation of the codegen_cache data."""
-#        return str(codegen_cache_debug_print(GET(self.v)).c_str())
+#        return str(<char *>codegen_cache_debug_print(GET(self.v)).c_str())
 
 cdef class w_elwise_program:
     cdef vm_elwise_program_placement_wrapper v
@@ -1535,7 +1539,7 @@ cdef class w_elwise_program:
 
     def debug_repr(self):
         """Returns a raw representation of the elwise_program data."""
-        return str(vm_elwise_program_debug_print(GET(self.v)).c_str())
+        return str(<char *>vm_elwise_program_debug_print(GET(self.v)).c_str())
 
 cdef class w_ndobject_callable:
     cdef ndobject_callable_placement_wrapper v

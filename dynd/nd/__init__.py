@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 # Expose types and functions directly from the Cython/C++ module
 from dynd._pydynd import w_dtype as dtype, w_ndobject as ndobject, \
         as_py, as_numpy, empty, empty_like, arange, \
@@ -10,6 +12,6 @@ from dynd._pydynd import w_dtype as dtype, w_ndobject as ndobject, \
 # All the builtin elementwise reduce gfuncs
 #from elwise_reduce_gfuncs import *
 
-from computed_fields import add_computed_fields, make_computed_fields
+from .computed_fields import add_computed_fields, make_computed_fields
 
-import vm
+from . import vm

@@ -62,9 +62,9 @@ class TestLinspace(unittest.TestCase):
     def test_simple(self):
         # Default is a count of 50. For these simple cases of integers,
         # the result should be exact
-        self.assertEqual(nd.as_py(nd.linspace(0, 49)), range(50))
-        self.assertEqual(nd.as_py(nd.linspace(49, 0)), range(49, -1, -1))
-        self.assertEqual(nd.as_py(nd.linspace(0, 10, count=11)), range(11))
+        self.assertEqual(nd.as_py(nd.linspace(0, 49)), list(range(50)))
+        self.assertEqual(nd.as_py(nd.linspace(49, 0)), list(range(49, -1, -1)))
+        self.assertEqual(nd.as_py(nd.linspace(0, 10, count=11)), list(range(11)))
         self.assertEqual(nd.as_py(nd.linspace(1, -1, count=2)), [1, -1])
         self.assertEqual(nd.as_py(nd.linspace(1j, 50j)), [i*1j for i in range(1, 51)])
 

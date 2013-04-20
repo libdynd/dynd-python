@@ -3,6 +3,9 @@ import unittest
 from dynd import nd, ndt
 from datetime import date
 
+if sys.version_info >= (3, 0):
+    unicode = str
+
 class TestPythonScalar(unittest.TestCase):
     def test_bool(self):
         # Boolean true/false
@@ -62,9 +65,13 @@ class TestPythonScalar(unittest.TestCase):
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), u'abcdef')
         a = nd.ndobject(u'abcdef')
-        # Could be UTF 16 or 32 depending on the Python build configuration
-        self.assertTrue(a.dtype == ndt.make_string_dtype('ucs_2') or
-                    a.dtype == ndt.make_string_dtype('utf_32'))
+        if sys.version_info >= (3, 3):
+            # In Python 3.3, it chooses the smallest representation (ascii here)
+            self.assertEqual(a.dtype, ndt.make_string_dtype('ascii'))
+        else:
+            # Could be UTF 16 or 32 depending on the Python build configuration
+            self.assertTrue(a.dtype in [ndt.make_string_dtype('ucs_2'),
+                            ndt.make_string_dtype('utf_32')])
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), u'abcdef')
 

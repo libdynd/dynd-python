@@ -158,8 +158,15 @@ class TestNumpyViewInterop(unittest.TestCase):
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
         b = nd.ndobject(a)
-        self.assertEqual(ndt.make_fixedstring_dtype(7, 'ascii'), b.udtype)
+        if sys.version_info >= (3, 0):
+            self.assertEqual(ndt.make_fixedstring_dtype(7, 'utf_32'), b.udtype)
+        else:
+            self.assertEqual(ndt.make_fixedstring_dtype(7, 'ascii'), b.udtype)
         self.assertEqual(b.udtype, nd.dtype(a.dtype))
+        
+        # Make sure it's ascii
+        a = a.astype('S7')
+        b = nd.ndobject(a)
 
         # ASCII dynd -> Numpy
         c = np.asarray(b)
@@ -185,7 +192,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # UTF32 dynd -> Numpy
         c_u = np.asarray(b_u)
         self.assertEqual(b_u.udtype, nd.dtype(c_u.dtype))
-        assert_array_equal(a, c_u)
+        assert_array_equal(a.astype('U'), c_u)
         # 'a' and 'c_u' are not looking at the same data
         a[1] = 'diff'
         self.assertFalse(np.all(a == c_u))

@@ -4,11 +4,11 @@ from dynd import nd, ndt
 
 class TestArange(unittest.TestCase):
     def test_simple(self):
-        self.assertEqual(nd.as_py(nd.arange(10)), range(10))
-        self.assertEqual(nd.as_py(nd.arange(5, 10)), range(5, 10))
-        self.assertEqual(nd.as_py(nd.arange(5, 10, 3)), range(5, 10, 3))
-        self.assertEqual(nd.as_py(nd.arange(10, 5, -1)), range(10, 5, -1))
-        self.assertEqual(nd.as_py(nd.arange(stop=10, step=2)), range(0, 10, 2))
+        self.assertEqual(nd.as_py(nd.arange(10)), list(range(10)))
+        self.assertEqual(nd.as_py(nd.arange(5, 10)), list(range(5, 10)))
+        self.assertEqual(nd.as_py(nd.arange(5, 10, 3)), list(range(5, 10, 3)))
+        self.assertEqual(nd.as_py(nd.arange(10, 5, -1)), list(range(10, 5, -1)))
+        self.assertEqual(nd.as_py(nd.arange(stop=10, step=2)), list(range(0, 10, 2)))
 
     def test_default_dtype(self):
         # Defaults to int32 when given ints

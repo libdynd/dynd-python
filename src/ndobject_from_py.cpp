@@ -73,7 +73,17 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
             throw runtime_error("dynd ndobject doesn't support dimensions which are sometimes scalars and sometimes arrays");
         }
 
-        dtype obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
+        dtype obj_dt;
+#if PY_VERSION_HEX >= 0x03000000
+        if (PyUnicode_Check(obj)) {
+            obj_dt = make_string_dtype(string_encoding_utf_8);
+        } else {
+            obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
+        }
+#else
+        obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
+#endif
+
         if (dt != obj_dt) {
             dt = dynd::promote_dtypes_arithmetic(obj_dt, dt);
         }

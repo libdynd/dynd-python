@@ -76,6 +76,12 @@ void pydynd::translate_exception()
         PyErr_SetString(PyExc_ArithmeticError, exn.what());
     } catch (const std::underflow_error& exn) {
         PyErr_SetString(PyExc_ArithmeticError, exn.what());
+    } catch (const std::runtime_error& exn) {
+        // In some circumstances (built on OSX 10.7,
+        // run on OSX 10.8), this exception wasn't being
+        // caught by the "std::exception" catch, so
+        // redundantly also catch runtime_error.
+        PyErr_SetString(PyExc_RuntimeError, exn.what());
     } catch (const std::exception& exn) {
         PyErr_SetString(PyExc_RuntimeError, exn.what());
     }

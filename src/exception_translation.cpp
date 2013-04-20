@@ -39,6 +39,10 @@ void pydynd::translate_exception()
     } catch (const dynd::string_encode_error& exn) {
         std::stringstream ss;
         ss << exn.encoding();
+        // TODO: In Python 3.3, Py_UNICODE might be 16-bit, but
+        //       the string still supports 32-bit, should fix
+        //       this up to generate an appropriate unicode
+        //       string in that case.
         Py_UNICODE dummy[1] = {(Py_UNICODE)exn.cp()};
         PyErr_SetObject(PyExc_UnicodeEncodeError,
                         Py_BuildValue("su#nns", ss.str().c_str(),
@@ -46,12 +50,16 @@ void pydynd::translate_exception()
     } catch (const dynd::string_decode_error& exn) {
         std::stringstream ss;
         ss << exn.encoding();
-        // TODO: Add a dynd mechanism for passing the offending
-        //       bytes to the exception
-        char dummy[1] = {0};
+        const std::string& bytes = exn.bytes();
+#if PY_VERSION_HEX >= 0x03000000
+        PyErr_SetObject(PyExc_UnicodeDecodeError,
+                        Py_BuildValue("sy#nns", ss.str().c_str(),
+                            bytes.data(), bytes.size(), 0, (int)bytes.size(), exn.message()));
+#else
         PyErr_SetObject(PyExc_UnicodeDecodeError,
                         Py_BuildValue("ss#nns", ss.str().c_str(),
-                            &dummy[0], 1, 0, 1, exn.message()));
+                            bytes.data(), bytes.size(), 0, (int)bytes.size(), exn.message()));
+#endif
     } catch (const std::bad_alloc& exn) {
         PyErr_SetString(PyExc_MemoryError, exn.what());
 //    } catch (const std::bad_cast& exn) {

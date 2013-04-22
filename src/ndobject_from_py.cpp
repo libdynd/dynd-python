@@ -297,7 +297,6 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
     pyunicode_string_ptrs *out_usp = reinterpret_cast<pyunicode_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
     if (PyUnicode_Check(obj)) {
-#if PY_VERSION_HEX >= 0x03000000
         // Get it as UTF8
         pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
         char *s = NULL;
@@ -309,17 +308,6 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
         allocator->allocate(md->blockref, len,
                         1, (char **)&out_usp->begin, (char **)&out_usp->end);
         memcpy(out_usp->begin, s, len);
-#else
-        const char *data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
-        Py_ssize_t len = PyUnicode_GetSize(obj);
-        if (data == NULL || len == -1) {
-            throw runtime_error("Error getting unicode string data");
-        }
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
-                        Py_UNICODE_SIZE, (char **)&out_usp->begin, (char **)&out_usp->end);
-        memcpy(out_usp->begin, data, len * Py_UNICODE_SIZE);
-#endif
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         char *data = NULL;
@@ -585,61 +573,13 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         return result;
 #endif
     } else if (PyUnicode_Check(obj)) {
-#if PY_VERSION_HEX >= 0x03030000
-        if (PyUnicode_READY(obj) < 0) {
+        pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
+        char *s = NULL;
+        Py_ssize_t len = 0;
+        if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
             throw exception();
         }
-        dtype d;
-        switch (PyUnicode_KIND(obj)) {
-            case PyUnicode_1BYTE_KIND:
-                d = make_string_dtype(string_encoding_ascii);
-                break;
-            case PyUnicode_2BYTE_KIND:
-                d = make_string_dtype(string_encoding_ucs_2);
-                break;
-            case PyUnicode_4BYTE_KIND:
-                d = make_string_dtype(string_encoding_utf_32);
-                break;
-            default: {
-                stringstream ss;
-                ss << "python string has an invalid unicode kind '" << (int)PyUnicode_KIND(obj);
-                throw runtime_error(ss.str());
-            }
-        }
-#elif Py_UNICODE_SIZE == 2
-        dtype d = make_string_dtype(string_encoding_ucs_2);
-#else
-        dtype d = make_string_dtype(string_encoding_utf_32);
-#endif
-        const char *data;
-#if PY_VERSION_HEX >= 0x03030000
-        data = reinterpret_cast<char *>(PyUnicode_DATA(obj));
-#else
-        data = reinterpret_cast<const char *>(PyUnicode_AsUnicode(obj));
-#endif
-        // Python strings are immutable, so simply use the existing memory with an external memory block
-        Py_INCREF(obj);
-        memory_block_ptr stringdata = make_external_memory_block(
-                        reinterpret_cast<void *>(obj), &py_decref_function);
-        char *data_ptr;
-        ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
-                    d.get_data_size(), d.get_alignment(), &data_ptr));
-        result.get_ndo()->m_data_pointer = data_ptr;
-        result.get_ndo()->m_data_reference = NULL;
-        result.get_ndo()->m_dtype = d.extended();
-        base_dtype_incref(result.get_ndo()->m_dtype);
-        // The scalar consists of pointers to the string data
-        ((const char **)data_ptr)[0] = data;
-#if PY_VERSION_HEX >= 0x03030000
-        ((const char **)data_ptr)[1] = data + PyUnicode_GET_LENGTH(obj) * PyUnicode_KIND(obj);
-#else
-        ((const char **)data_ptr)[1] = data + Py_UNICODE_SIZE * PyUnicode_GetSize(obj);
-#endif
-        // The metadata
-        string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
-        md->blockref = stringdata.release();
-        result.get_ndo()->m_flags = immutable_access_flag|read_access_flag;
-        return result;
+        return make_utf8_ndobject(s, len);
     } else if (PyDate_Check(obj)) {
         dtype d = make_date_dtype();
         const date_dtype *dd = static_cast<const date_dtype *>(d.extended());

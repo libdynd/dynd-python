@@ -61,17 +61,11 @@ class TestPythonScalar(unittest.TestCase):
     def test_string(self):
         # String/Unicode TODO: Python 3 bytes becomes a bytes<> dtype
         a = nd.ndobject('abcdef')
-        self.assertEqual(a.dtype, ndt.make_string_dtype('ascii'))
+        self.assertEqual(a.dtype, ndt.string)
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), u'abcdef')
         a = nd.ndobject(u'abcdef')
-        if sys.version_info >= (3, 3):
-            # In Python 3.3, it chooses the smallest representation (ascii here)
-            self.assertEqual(a.dtype, ndt.make_string_dtype('ascii'))
-        else:
-            # Could be UTF 16 or 32 depending on the Python build configuration
-            self.assertTrue(a.dtype in [ndt.make_string_dtype('ucs_2'),
-                            ndt.make_string_dtype('utf_32')])
+        self.assertEqual(a.dtype, ndt.string)
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), u'abcdef')
 

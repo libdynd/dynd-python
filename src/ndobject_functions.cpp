@@ -341,8 +341,6 @@ dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subsc
 
 void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value)
 {
-    // TODO: Write a mechanism for assigning directly
-    //       from PyObject to ndobject
     if (subscript == Py_Ellipsis) {
         ndobject_broadcast_assign_from_py(n, value);
 #if PY_VERSION_HEX < 0x03000000

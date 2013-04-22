@@ -137,41 +137,20 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
 #endif
         } else if (PyUnicode_Check(value)) {
-#if PY_VERSION_HEX >= 0x03030000
-            if (PyUnicode_READY(value) < 0) {
+            // Go through UTF8 (was accessing the cpython uniocde values directly
+            // before, but on Python 3.3 OS X it didn't work correctly.)
+            pyobject_ownref utf8(PyUnicode_AsUTF8String(value));
+            char *s = NULL;
+            Py_ssize_t len = 0;
+            if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
                 throw exception();
             }
-            dtype str_dt;
-            switch (PyUnicode_KIND(value)) {
-                case PyUnicode_1BYTE_KIND:
-                    str_dt = make_string_dtype(string_encoding_ascii);
-                    break;
-                case PyUnicode_2BYTE_KIND:
-                    str_dt = make_string_dtype(string_encoding_ucs_2);
-                    break;
-                case PyUnicode_4BYTE_KIND:
-                    str_dt = make_string_dtype(string_encoding_utf_32);
-                    break;
-                default: {
-                    stringstream ss;
-                    ss << "python string has an invalid unicode kind '" << (int)PyUnicode_KIND(value);
-                    throw runtime_error(ss.str());
-                }
-            }
-#elif Py_UNICODE_SIZE == 2
-            dtype str_dt = make_string_dtype(string_encoding_ucs_2);
-#else
-            dtype str_dt = make_string_dtype(string_encoding_utf_32);
-#endif
+
+            dtype str_dt = make_string_dtype(string_encoding_utf_8);
             string_dtype_data str_d;
             string_dtype_metadata str_md;
-#if PY_VERSION_HEX >= 0x03030000
-            str_d.begin = reinterpret_cast<char *>(PyUnicode_DATA(value));
-            str_d.end = str_d.begin + PyUnicode_GET_LENGTH(value) * PyUnicode_KIND(value);
-#else
-            str_d.begin = reinterpret_cast<char *>(PyUnicode_AsUnicode(value));
-            str_d.end = str_d.begin + Py_UNICODE_SIZE * PyUnicode_GetSize(value);
-#endif
+            str_d.begin = s;
+            str_d.end = s + len;
             str_md.blockref = NULL;
 
             dtype_assign(dt, metadata, data,

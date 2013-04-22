@@ -165,7 +165,7 @@ elseif(APPLE)
         #SOVERSION ${DYND_PYTHON_VERSION}
         #VERSION ${DYND_PYTHON_VERSION}
         COMPILE_FLAGS
-        "-Wno-unused-parameter -Wno-self-assign -Wno-unused-function -Wno-error"
+        "-Wno-unused-parameter -Wno-unused-function -Wno-error"
         )
     # TODO: The rpath used is Anaconda-specific, should make sure it
     #       works more generally.

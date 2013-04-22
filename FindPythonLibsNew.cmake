@@ -152,6 +152,7 @@ else()
     # information the python interpreter itself gave us were more complete.
     find_library(PYTHON_LIBRARY
         NAMES "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
+            "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}m"
         PATHS ${_PYTHON_LIBS_SEARCH}
         NO_DEFAULT_PATH)
     message(STATUS "Found Python lib ${PYTHON_LIBRARY}")

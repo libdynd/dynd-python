@@ -10,8 +10,8 @@ gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
 
 2. Get the prerequisites.
   * CMake >= 2.8
-  * Python 2.6 or 2.7
-  * Cython >= 0.16
+  * Python 2.6, 2.7, or 3.3
+  * Cython >= 0.16 (>= 0.19 required for Python 3.3)
   * NumPy >= 1.5
   * git (for cloning the github repositories)
   * Nose (Only for generating xunit .xml output when running tests)

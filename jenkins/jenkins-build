@@ -1,4 +1,53 @@
 #!/bin/bash
+#
+#
+# Copyright (C) 2011-13, DyND Developers
+# BSD 2-Clause License, see LICENSE.txt
+#
+#
+#
+# This is the master linux/osx build + test script for building
+# the dynd python bindings on jenkins.
+#
+# Jenkins Requirements:
+#   - Anaconda should be installed in ~/anaconda
+#   - Use a jenkins build matrix for multiple
+#     platforms/python versions
+#   - Use the XShell plugin to launch this script
+#   - Call the script from the root workspace
+#     directory as ./jenkins/jenkins-build
+#
 
-echo Hello from the bash script!
+# Remove the build subdirectory from last time
+rm -rf build
+
+# Get libdynd into the libraries subdirectory
+# TODO: Build libdynd in a separate jenkins project,
+#       and use its build artifact here.
+./jenkins/checkout_libdynd.sh
+
+# Use conda to create a conda environment of the required
+# python version and containing the dependencies.
+export PYENV_PREFIX=${WORKSPACE}/build/pyenv
+./jenkins/create_conda_pyenv.sh 2.7 ${PYENV_PREFIX}
+export PATH=${PYENV_PREFIX}/bin:${PATH}
+
+# Create a fresh makefile with cmake, and do the build/install
+mkdir -p build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} ..
+make -j5
+make install
+
+# Run the unit tests
+${PYENV_PREFIX}/bin/python -c 'import dynd;dynd.test(xunitfile="../test_results.xml", exit=1)'
+
+# Retrieve the version number
+export PYDYND_VERSION=`${PYENV_PREFIX}/bin/python -c 'import dynd;print(dynd.__version_string__)'`
+export PYDYND_VERSION=${PYDYND_VERSION//-/_}
+export PYDYND_VERSION=${PYDYND_VERSION:1}
+
+# Create a conda package from the build
+cd ..
+~/anaconda/bin/conda package -p ${WORKSPACE}/build/pyenv --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION}
 

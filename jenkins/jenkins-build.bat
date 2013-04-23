@@ -39,7 +39,7 @@ call .\jenkins\checkout_libdynd.bat
 REM Use conda to create a conda environment of the required
 REM python version and containing the dependencies.
 SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
-call .\jenkins\create_conda_pyenv.bat 2.7 ${PYENV_PREFIX}
+call .\jenkins\create_conda_pyenv.bat 2.7 %PYENV_PREFIX%
 echo on
 export PATH=%PYENV_PREFIX%;%PYENV_PREFIX%\Scripts;%PATH%
 

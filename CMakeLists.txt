@@ -8,7 +8,7 @@ project(dynd-python)
 
 # For the Git SHA1/version code
 list(APPEND CMAKE_MODULE_PATH
-    "${CMAKE_CURRENT_SOURCE_DIR}/libraries/dynd/cmake/")
+    "${CMAKE_CURRENT_SOURCE_DIR}/libraries/libdynd/cmake/")
 include(GetGitRevisionDescriptionDyND)
 
 # Force the default build type to be Release, because a Debug
@@ -36,21 +36,21 @@ endif()
 # Require version >= 1.5
 if(NUMPY_VERSION_DECIMAL LESS 10500)
     message(FATAL_ERROR,
-        "Blaze dynd requires NumPy >= 1.5")
+        "DyND-Python requires NumPy >= 1.5")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/dynd/include/dynd/ndobject.hpp")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/ndobject.hpp")
 message(FATAL_ERROR
-    "The dynd C++ library must be placed in\n"
-    "libraries/dynd.\nRemove any temporary CMake\n"
-    "files, then if you're using git, run\n"
-    "'git clone git@github.com:ContinuumIO/dynd.git'\n"
-    "from the libraries directory.\n"
-    "See BUILD_INSTALL.txt for more details.")
+    "The libdynd C++ library must be placed inlibraries/libdynd."
+    "Remove any temporary CMake"
+    "files, then if you're using git, run"
+    "'git clone git@github.com:ContinuumIO/libdynd.git'"
+    "from the libraries directory."
+    "See BUILD_INSTALL.md for more details.")
 endif()
 
 # Include dynd in the build
-add_subdirectory(libraries/dynd)
+add_subdirectory(libraries/libdynd)
 
 # Get the git revision
 get_git_head_revision("${CMAKE_CURRENT_SOURCE_DIR}" GIT_REFSPEC DYND_PYTHON_GIT_SHA1)
@@ -92,7 +92,7 @@ endif()
 include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
-    libraries/dynd/include
+    libraries/libdynd/include
     include
     )
 
@@ -188,7 +188,7 @@ else()
         )
 endif()
 
-target_link_libraries(_pydynd dynd)
+target_link_libraries(_pydynd libdynd)
 
 # Install all the Python scripts
 install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
@@ -203,8 +203,8 @@ get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
 string(REPLACE "$(Configuration)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
 string(REPLACE "$(OutDir)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
 install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/nd")
-# Install the dynd lib
+# Install the libdynd binary
 if(NOT WIN32)
-    get_property(dynd_loc TARGET dynd PROPERTY LOCATION)
+    get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)
     install(FILES ${dynd_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()

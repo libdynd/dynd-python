@@ -41,10 +41,10 @@ mkdir build
 REM Create a conda environment for the build, and put it
 REM at the front of the path so the CMake configuration
 REM finds it.
-rd /q /s %WORKSPACE%\build\pyenv
-call conda create --yes -p %WORKSPACE%\build\pyenv cython scipy
+export PYENV_PREFIX=%WORKSPACE%/build/pyenv
+call conda create --yes -p %PYENV_PREFIX% cython scipy
 echo on
-set PATH=%WORKSPACE%\build\pyenv;%WORKSPACE%\build\pyenv\Scripts;%PATH%
+set PATH=%PYENV_PREFIX%;%PYENV_PREFIX%Scripts;%PATH%
 
 REM Build, and install into the conda environment we created
 cd build
@@ -64,12 +64,14 @@ echo Version %PYDYND_VERSION%
 
 cd %WORKSPACE%
 
-REM We put the conda package by itself in the directory 'pkgs'
+RM Put the conda package by itself in the directory pkgs
+cd ..
 rd /q /s pkgs
 mkdir pkgs
+cd pkgs
 
 # Create a conda package from the build
-call conda package -p %WORKSPACE%\build\pyenv --pkg-name=dynd --pkg-version=%PYDYND_VERSION%
+call conda package -p %PYENV_PREFIX% --pkg-name=dynd --pkg-version=%PYDYND_VERSION%
 echo on
-move dynd-*%PYDYND_VERSION%*.tar.bz2 pkgs
+cd ..
 

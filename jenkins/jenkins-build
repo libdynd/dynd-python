@@ -28,12 +28,10 @@ rm -rf build
 
 # Use conda to create a conda environment of the required
 # python version and containing the dependencies.
-export PYENV_PREFIX=${WORKSPACE}/build/pyenv
 ./jenkins/create_conda_pyenv.sh 2.7 ${PYENV_PREFIX}
 export PATH=${PYENV_PREFIX}/bin:${PATH}
 
 # Create a fresh makefile with cmake, and do the build/install
-mkdir -p build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} ..
 make -j5
@@ -47,7 +45,13 @@ export PYDYND_VERSION=`${PYENV_PREFIX}/bin/python -c 'import dynd;print(dynd.__v
 export PYDYND_VERSION=${PYDYND_VERSION//-/_}
 export PYDYND_VERSION=${PYDYND_VERSION:1}
 
-# Create a conda package from the build
+# Put the conda package by itself in the directory pkgs
 cd ..
-~/anaconda/bin/conda package -p ${WORKSPACE}/build/pyenv --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION}
+rm -rf pkgs
+mkdir pkgs
+cd pkgs
 
+# Create a conda package from the build
+~/anaconda/bin/conda package -p ${PYENV_PREFIX} --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION}
+
+cd ..

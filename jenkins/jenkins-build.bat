@@ -81,11 +81,14 @@ FOR /F "delims=" %%i IN ('python -c "import dynd;print(dynd.__version_string__)"
 set PYDYND_VERSION=%PYDYND_VERSION:-=_%
 set PYDYND_VERSION=%PYDYND_VERSION:~1%
 
-REM Put the conda package by itself in the directory pkgs
+REM Put the conda package by itself in the directory pkgs/<anaconda-arch>
 cd ..
 rd /q /s pkgs
 mkdir pkgs
 cd pkgs
+if "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-64; cd win-64
+if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-32; cd win-32
+
 
 REM Create a conda package from the build
 call conda package -p %PYENV_PREFIX% --pkg-name=dynd --pkg-version=%PYDYND_VERSION%

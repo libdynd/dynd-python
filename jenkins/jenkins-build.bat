@@ -86,8 +86,10 @@ cd ..
 rd /q /s pkgs
 mkdir pkgs
 cd pkgs
-if "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-64; cd win-64
-if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-32; cd win-32
+if "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-64
+if "%PROCESSOR_ARCHITECTURE%" == "AMD64" cd win-64
+if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-32
+if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" cd win-32
 
 
 REM Create a conda package from the build

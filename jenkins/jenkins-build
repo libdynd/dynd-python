@@ -18,28 +18,43 @@
 #     directory as ./jenkins/jenkins-build
 #
 
+# Require a version of Python to be selected
+if [ "${PYTHON_VERSION}" == "" ]; then
+ echo You must select a Python version with the PYTHON_VERSION variable.
+ exit 1
+fi
+
 # Remove the build subdirectory from last time
 rm -rf build
 
 # Get libdynd into the libraries subdirectory
 # TODO: Build libdynd in a separate jenkins project,
 #       and use its build artifact here.
-./jenkins/checkout_libdynd.sh
+./jenkins/checkout_libdynd.sh || exit 1
 
 # Use conda to create a conda environment of the required
 # python version and containing the dependencies.
 export PYENV_PREFIX=${WORKSPACE}/build/pyenv
-./jenkins/create_conda_pyenv.sh 2.7 ${PYENV_PREFIX}
+./jenkins/create_conda_pyenv.sh ${PYTHON_VERSION} ${PYENV_PREFIX} || exit 1
 export PATH=${PYENV_PREFIX}/bin:${PATH}
+
+if [ -f "${PYENV_PREFIX}/bin/python" ]; then
+ export PYTHON_EXECUTABLE=${PYENV_PREFIX}/bin/python
+elif [ -f "${PYENV_PREFIX}/bin/python3" ]; then
+ export PYTHON_EXECUTABLE=${PYENV_PREFIX}/bin/python3
+else
+ echo Conda environment creation failed.
+ exit 1
+fi
 
 # Create a fresh makefile with cmake, and do the build/install
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} ..
-make -j5
-make install
+cmake -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} .. || exit 1
+make -j5 || exit 1
+make install || exit 1
 
 # Run the unit tests
-${PYENV_PREFIX}/bin/python -c 'import dynd;dynd.test(xunitfile="../test_results.xml", exit=1)'
+${PYENV_PREFIX}/bin/python -c 'import dynd;dynd.test(xunitfile="../test_results.xml", exit=1)' || exit 1
 
 # Retrieve the version number
 export PYDYND_VERSION=`${PYENV_PREFIX}/bin/python -c 'import dynd;print(dynd.__version_string__)'`
@@ -53,6 +68,6 @@ mkdir pkgs
 cd pkgs
 
 # Create a conda package from the build
-~/anaconda/bin/conda package -p ${PYENV_PREFIX} --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION}
+~/anaconda/bin/conda package -p ${PYENV_PREFIX} --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION} || exit 1
 
 cd ..

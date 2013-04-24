@@ -12,12 +12,13 @@ REM     platforms/python versions
 REM   - Use the XShell plugin to launch this script
 REM   - Call the script from the root workspace
 REM     directory as ./jenkins/jenkins-build
+REM   - Use a user-defined axis to select python versions with PYTHON_VERSION
 REM
 
 REM If no MSVC version is selected, choose 2010
 if "%MSVC_VERSION%" == "" set MSVC_VERSION=10.0
-REM If no PYTHON version is selected, choose 2.7
-if "%PYTHON_VERSION%" == "" set PYTHON_VERSION=2.7
+REM Require a version of Python to be selected
+if "%PYTHON_VERSION%" == "" exit /b 1
 
 REM Jenkins has '/' in its workspace. Fix it to '\' to simplify the DOS commands.
 set WORKSPACE=%WORKSPACE:/=\%
@@ -61,7 +62,6 @@ SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
 call .\jenkins\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
-REM export PATH=%PYENV_PREFIX%;%PYENV_PREFIX%\Scripts;%PATH%
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build

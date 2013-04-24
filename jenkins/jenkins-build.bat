@@ -72,7 +72,7 @@ devenv dynd-python.sln /Build "RelWithDebInfo|%MSVC_BUILD_PLATFORM%" /Project IN
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 REM Run the tests and generate xml results
-python -c "import dynd;dynd.test(xunitfile='../test_results.xml', exit=1)"
+%PYTHON_EXECUTABLE% -c "import dynd;dynd.test(xunitfile='../test_results.xml', exit=1)"
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 REM Get the version number and process it into a suitable form

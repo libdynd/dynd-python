@@ -22,6 +22,17 @@
 if [ "${PYTHON_VERSION}" == "" ]; then
  echo You must select a Python version with the PYTHON_VERSION variable.
  exit 1
+fi 
+
+if [ `uname` == Darwin ]; then
+ # Use gcc instead of clang for now, there was a strange
+ # interaction with exception handling/libunwind/cython's
+ # exception translation mechanism on clang.
+ export CC=gcc
+ export CXX=g++
+else
+ export CC=cc
+ export CXX=c++
 fi
 
 # Remove the build subdirectory from last time
@@ -49,7 +60,7 @@ fi
 
 # Create a fresh makefile with cmake, and do the build/install
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} .. || exit 1
+cmake -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} .. || exit 1
 make -j5 || exit 1
 make install || exit 1
 

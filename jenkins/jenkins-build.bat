@@ -81,13 +81,13 @@ FOR /F "delims=" %%i IN ('python -c "import dynd;print(dynd.__version_string__)"
 set PYDYND_VERSION=%PYDYND_VERSION:-=_%
 set PYDYND_VERSION=%PYDYND_VERSION:~1%
 
-RM Put the conda package by itself in the directory pkgs
+REM Put the conda package by itself in the directory pkgs
 cd ..
 rd /q /s pkgs
 mkdir pkgs
 cd pkgs
 
-# Create a conda package from the build
+REM Create a conda package from the build
 call conda package -p %PYENV_PREFIX% --pkg-name=dynd --pkg-version=%PYDYND_VERSION%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on

@@ -31,10 +31,8 @@ if "%PROCESSOR_ARCHITECTURE%" == "AMD64" goto :amd64
  if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11"
 goto :notamd64
 :amd64
- set MSVC_VERSION=10.0
  set MSVC_VCVARS_PLATFORM=amd64
  set MSVC_BUILD_PLATFORM=x64
- set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
  if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008 Win64"
  if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
  if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11 Win64"
@@ -93,7 +91,7 @@ if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" cd win-32
 
 
 REM Create a conda package from the build
-call conda package -p %PYENV_PREFIX% --pkg-name=dynd --pkg-version=%PYDYND_VERSION%
+call conda package -p %PYENV_PREFIX% --pkg-name=dynd-python --pkg-version=%PYDYND_VERSION%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
 

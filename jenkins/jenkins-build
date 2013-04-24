@@ -51,7 +51,7 @@ export PATH=${PYENV_PREFIX}/bin:${PATH}
 
 if [ -f "${PYENV_PREFIX}/bin/python" ]; then
  export PYTHON_EXECUTABLE=${PYENV_PREFIX}/bin/python
-else if [ -f "${PYENV_PREFIX}/bin/python3" ]; then
+elif [ -f "${PYENV_PREFIX}/bin/python3" ]; then
  export PYTHON_EXECUTABLE=${PYENV_PREFIX}/bin/python3
 else
  echo Conda environment creation failed.
@@ -80,7 +80,7 @@ cd pkgs
 if [ `uname` == Darwin ]; then
  mkdir osx-64
  cd osx-64
-else if [ `uname -m` == x86_64 ]; then
+elif [ `uname -m` == x86_64 ]; then
  mkdir linux-64
  cd linux-64
 else

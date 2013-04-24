@@ -3,12 +3,14 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(dynd-python)
+
+option(USE_SEPARATE_LIBDYND "Use a libdynd built separately." OFF)
 
 # For the Git SHA1/version code
 list(APPEND CMAKE_MODULE_PATH
-    "${CMAKE_CURRENT_SOURCE_DIR}/libraries/libdynd/cmake/")
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescriptionDyND)
 
 # Force the default build type to be Release, because a Debug
@@ -19,8 +21,6 @@ if(NOT CMAKE_BUILD_TYPE)
 RelWithDebInfo MinSizeRel."
       FORCE)
 endif()
-
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)
@@ -39,18 +39,24 @@ if(NUMPY_VERSION_DECIMAL LESS 10500)
         "DyND-Python requires NumPy >= 1.5")
 endif()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/ndobject.hpp")
-message(FATAL_ERROR
-    "The libdynd C++ library must be placed inlibraries/libdynd."
-    "Remove any temporary CMake"
-    "files, then if you're using git, run"
-    "'git clone git@github.com:ContinuumIO/libdynd.git'"
-    "from the libraries directory."
-    "See BUILD_INSTALL.md for more details.")
-endif()
+if (USE_SEPARATE_LIBDYND)
+    find_package(LibDyND REQUIRED)
+else()
+    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/ndobject.hpp")
+        message(FATAL_ERROR
+            "The libdynd C++ library must be placed inlibraries/libdynd."
+            "Remove any temporary CMake"
+            "files, then if you're using git, run"
+            "'git clone git@github.com:ContinuumIO/libdynd.git'"
+            "from the libraries directory."
+            "See BUILD_INSTALL.md for more details.")
+    endif()
 
-# Include dynd in the build
-add_subdirectory(libraries/libdynd)
+    # Include libdynd in the build
+    add_subdirectory(libraries/libdynd)
+
+    set(LIBDYND_INCLUDE_DIRS "libraries/libdynd/include")
+endif()
 
 # Get the git revision
 get_git_head_revision("${CMAKE_CURRENT_SOURCE_DIR}" GIT_REFSPEC DYND_PYTHON_GIT_SHA1)
@@ -92,7 +98,7 @@ endif()
 include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
-    libraries/libdynd/include
+    ${LIBDYND_INCLUDE_DIRS}
     include
     )
 
@@ -188,23 +194,19 @@ else()
         )
 endif()
 
-target_link_libraries(_pydynd libdynd)
+if (USE_SEPARATE_LIBDYND)
+    target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}")
+else()
+    target_link_libraries(_pydynd libdynd)
+endif()
 
 # Install all the Python scripts
 install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
 install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
-# Install the basic_kernels .dll/.so
-get_property(basic_kernels_loc TARGET basic_kernels PROPERTY LOCATION)
-# NOTE: This only uses one configuration for the whole Visual Studio
-#       solution, so CMAKE_BUILD_TYPE must match the build target
-#       you want to install with.
-string(REPLACE "$(Configuration)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
-string(REPLACE "$(OutDir)" ${CMAKE_BUILD_TYPE} basic_kernels_loc ${basic_kernels_loc})
-install(FILES ${basic_kernels_loc} DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/nd")
-# Install the libdynd binary
-if(NOT WIN32)
+# Install the libdynd binary if on unix and libdynd wasn't built separately
+if(NOT USE_SEPARATE_LIBDYND AND NOT WIN32)
     get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)
     install(FILES ${dynd_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()

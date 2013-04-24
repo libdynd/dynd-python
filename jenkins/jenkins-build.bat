@@ -63,7 +63,8 @@ echo on
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=install -G %CMAKE_BUILD_TARGET% -DPYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe ..
+set PYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe
+cmake -DCMAKE_INSTALL_PREFIX=install -G %CMAKE_BUILD_TARGET% -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% ..
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 devenv dynd-python.sln /Build "RelWithDebInfo|%MSVC_BUILD_PLATFORM%"
 IF %ERRORLEVEL% NEQ 0 exit /b 1
@@ -75,7 +76,7 @@ python -c "import dynd;dynd.test(xunitfile='../test_results.xml', exit=1)"
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 REM Get the version number and process it into a suitable form
-FOR /F "delims=" %%i IN ('python -c "import dynd;print(dynd.__version_string__)"') DO set PYDYND_VERSION=%%i
+FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import dynd;print(dynd.__version_string__)"') DO set PYDYND_VERSION=%%i
 set PYDYND_VERSION=%PYDYND_VERSION:-=_%
 set PYDYND_VERSION=%PYDYND_VERSION:~1%
 

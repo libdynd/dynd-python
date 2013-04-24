@@ -17,10 +17,18 @@ REM
 REM Jenkins has '/' in its workspace. Fix it to '\' to simplify the DOS commands.
 set WORKSPACE=%WORKSPACE:/=\%
 
-set MSVC_VERSION=10.0
-set MSVC_VCVARS_PLATFORM=amd64
-set MSVC_BUILD_PLATFORM=x64
-set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
+if "%PROCESSOR_ARCHITECTURE%" == "AMD64" goto :amd64
+ set MSVC_VERSION=10.0
+ set MSVC_VCVARS_PLATFORM=x86
+ set MSVC_BUILD_PLATFORM=x86
+ set CMAKE_BUILD_TARGET="Visual Studio 10"
+goto :notamd64
+:amd64
+ set MSVC_VERSION=10.0
+ set MSVC_VCVARS_PLATFORM=amd64
+ set MSVC_BUILD_PLATFORM=x64
+ set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
+:notamd64
 
 REM Configure the appropriate visual studio command line environment
 if "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES%\Microsoft Visual Studio %MSVC_VERSION%\VC

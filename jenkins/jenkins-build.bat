@@ -6,7 +6,7 @@ REM This is the master windows build + test script for building
 REM the dynd python bindings on jenkins.
 REM
 REM Jenkins Requirements:
-REM   - Anaconda should be installed and in the path
+REM   - Anaconda should be installed in C:\Anaconda.
 REM   - Use a jenkins build matrix for multiple
 REM     platforms/python versions
 REM   - Use the XShell plugin to launch this script
@@ -60,6 +60,7 @@ SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
 call .\jenkins\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
+set PATH=%PYENV_PREFIX%;%PYENV_PREFIX%\Scripts;%PATH%
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build
@@ -92,7 +93,7 @@ if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" cd win-32
 
 
 REM Create a conda package from the build
-call conda package -p %PYENV_PREFIX% --pkg-name=dynd-python --pkg-version=%PYDYND_VERSION%
+call C:\Anaconda\Scripts\conda package -p %PYENV_PREFIX% --pkg-name=dynd-python --pkg-version=%PYDYND_VERSION%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
 

@@ -177,7 +177,9 @@ elseif(APPLE)
     #       works more generally.
     add_custom_command(TARGET _pydynd
         POST_BUILD COMMAND
-        ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@loader_path/../../../"
+        ${CMAKE_INSTALL_NAME_TOOL} -change
+                   "${LIBDYND_LIBRARIES}"
+                   "@loader_path/../../../${LIBDYND_LIBRARIES}"
         $<TARGET_FILE:_pydynd>)
 else()
     # strict aliasing is disabled because Cython generated code

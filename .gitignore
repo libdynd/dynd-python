@@ -1,5 +1,5 @@
 *.pyc
 *.swp
-
+bld.bat
 build
 libraries/dynd

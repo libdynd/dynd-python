@@ -2,13 +2,15 @@ from __future__ import absolute_import
 
 from . import nd, ndt
 
-from ._pydynd import _dynd_version_string as __dynd_version_string__, \
-                _dynd_python_version_string as __version_string__, \
-                _dynd_git_sha1 as __dynd_git_sha1__, \
+from ._pydynd import _dynd_version_string as __libdynd_version__, \
+                _dynd_python_version_string as __version__, \
+                _dynd_git_sha1 as __libdynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__
 
-__version__ = [int(x) for x in __version_string__.strip('v').split('-')[0].split('.')]
-__dynd_version__ = [int(x) for x in __dynd_version_string__.strip('v').split('-')[0].split('.')]
+__version__ = __version__.lstrip('v')
+__libdynd_version__ = __libdynd_version__.lstrip('v')
+__version_info__ = tuple([int(x) for x in __version__.split('-')[0].split('.')])
+__libdynd_version_info__ = tuple([int(x) for x in __libdynd_version__.split('-')[0].split('.')])
 
 def test(verbosity=1, xunitfile=None, exit=False):
     """
@@ -37,10 +39,10 @@ def test(verbosity=1, xunitfile=None, exit=False):
     print('Python version: %s' % sys.version)
     print('Python prefix: %s' % sys.prefix)
     print('DyND-Python module: %s' % os.path.dirname(__file__))
-    print('DyND-Python version: %s' % __version_string__)
+    print('DyND-Python version: %s' % __version__)
     print('DyND-Python git sha1: %s' % __git_sha1__)
-    print('DyND Library version: %s' % __dynd_version_string__)
-    print('DyND Library git sha1: %s' % __dynd_git_sha1__)
+    print('LibDyND version: %s' % __libdynd_version__)
+    print('LibDyND git sha1: %s' % __libdynd_git_sha1__)
     print('NumPy version: %s' % numpy.__version__)
     sys.stdout.flush()
     if xunitfile is None:

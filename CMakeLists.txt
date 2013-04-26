@@ -182,19 +182,13 @@ elseif(APPLE)
                    "@loader_path/../../../${LIBDYND_LIBRARIES}"
         $<TARGET_FILE:_pydynd>)
 else()
-    # Disable -Werror just for _pydynd
-    set_target_properties(
-        _pydynd PROPERTIES
-        COMPILE_FLAGS
-        "-Wno-error"
-        )
-    # strict aliasing is disabled because Cython generated code
-    # which made g++ 4.6.1 complain
+    # We compile with -Werror, and Cython's code generates warnings, so
+    # disable that specifically for this project.
     set_target_properties(
         _pydynd
         PROPERTIES
         COMPILE_FLAGS
-        "-Wno-unused-parameter -Wno-unused-function -fno-strict-aliasing"
+        "-Wno-error"
         # TODO: The rpath used is Anaconda-specific, should make sure it
         #       works more generally.
         INSTALL_RPATH

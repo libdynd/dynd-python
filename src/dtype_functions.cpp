@@ -37,8 +37,8 @@ struct init_pydatetime {
 #else
         // The Python 2 API isn't const-correct, was causing build failures on some configurations
         // This is a copy/paste of the macro to here, with an explicit cast added.
-        PyDateTimeAPI = (PyDateTime_CAPI*) PyCObject_Import("datetime",
-                                                            "datetime_CAPI");
+        PyDateTimeAPI = (PyDateTime_CAPI*) PyCObject_Import((char *) "datetime",
+                                                            (char *) "datetime_CAPI");
 #endif
     }
 };

@@ -32,7 +32,7 @@ using namespace pydynd;
 namespace {
 struct init_pydatetime {
     init_pydatetime() {
-#if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 6
+#if !(PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 6)
         PyDateTime_IMPORT;
 #else
         // The Python 2 API isn't const-correct, was causing build failures on some configurations

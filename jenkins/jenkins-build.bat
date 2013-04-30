@@ -38,6 +38,7 @@ SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
 call .\jenkins\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
+set PYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe
 set PATH=%PYENV_PREFIX%;%PYENV_PREFIX%\Scripts;%PATH%
 
 REM Select the correct compiler, by first getting whether
@@ -67,7 +68,6 @@ echo on
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build
-set PYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe
 cmake -DCMAKE_INSTALL_PREFIX=install -G %CMAKE_BUILD_TARGET% -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% ..
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 devenv dynd-python.sln /Build "RelWithDebInfo|%MSVC_BUILD_PLATFORM%"

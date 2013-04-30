@@ -23,28 +23,6 @@ if "%PYTHON_VERSION%" == "" exit /b 1
 REM Jenkins has '/' in its workspace. Fix it to '\' to simplify the DOS commands.
 set WORKSPACE=%WORKSPACE:/=\%
 
-if "%PROCESSOR_ARCHITECTURE%" == "AMD64" goto :amd64
- set MSVC_VCVARS_PLATFORM=x86
- set MSVC_BUILD_PLATFORM=Win32
- if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008"
- if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10"
- if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11"
-goto :notamd64
-:amd64
- set MSVC_VCVARS_PLATFORM=amd64
- set MSVC_BUILD_PLATFORM=x64
- if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008 Win64"
- if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
- if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11 Win64"
-:notamd64
-
-REM Configure the appropriate visual studio command line environment
-if "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES%\Microsoft Visual Studio %MSVC_VERSION%\VC
-if NOT "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES(X86)%\Microsoft Visual Studio %MSVC_VERSION%\VC
-call "%VCDIR%\vcvarsall.bat" %MSVC_VCVARS_PLATFORM%
-IF %ERRORLEVEL% NEQ 0 exit /b 1
-echo on
-
 REM Remove the build subdirectory from last time
 rd /q /s build
 
@@ -61,6 +39,31 @@ call .\jenkins\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
 set PATH=%PYENV_PREFIX%;%PYENV_PREFIX%\Scripts;%PATH%
+
+REM Select the correct compiler, by first getting whether
+REM the Python is 32-bit or 64-bit.
+FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import ctypes;print(8*ctypes.sizeof(ctypes.c_void_p))"') DO set PYTHON_BITS=%%i
+if "%PYTHON_BITS%" == "64" goto :python64
+ set MSVC_VCVARS_PLATFORM=x86
+ set MSVC_BUILD_PLATFORM=Win32
+ if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008"
+ if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10"
+ if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11"
+goto :python32
+:python64
+ set MSVC_VCVARS_PLATFORM=amd64
+ set MSVC_BUILD_PLATFORM=x64
+ if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008 Win64"
+ if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
+ if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11 Win64"
+:python32
+
+REM Configure the appropriate visual studio command line environment
+if "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES%\Microsoft Visual Studio %MSVC_VERSION%\VC
+if NOT "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES(X86)%\Microsoft Visual Studio %MSVC_VERSION%\VC
+call "%VCDIR%\vcvarsall.bat" %MSVC_VCVARS_PLATFORM%
+IF %ERRORLEVEL% NEQ 0 exit /b 1
+echo on
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build

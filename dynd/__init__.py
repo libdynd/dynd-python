@@ -62,6 +62,7 @@ def test(verbosity=1, xunitfile=None, exit=False):
         # Use nose to run the tests and produce an XML file
         import nose
         return nose.main(argv=['nosetests',
+                        '--verbosity=%d' % verbosity,
                         '--with-xunit',
                         '--xunit-file=%s' % xunitfile,
                         os.path.join(os.path.dirname(__file__), 'tests')],

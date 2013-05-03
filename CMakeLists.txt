@@ -201,6 +201,7 @@ elseif(APPLE)
         "-Wno-unused-parameter -Wno-unused-function -Wno-error"
         )
     if(USE_RELATIVE_RPATH)
+        message(STATUS "Adding relative rpath to _pydynd for linking libdynd")
         # TODO: The rpath used is Anaconda-specific, should calculate
         #       the relative install path instead of using "../../..".
         add_custom_command(TARGET _pydynd

@@ -80,7 +80,8 @@ REM Run the tests and generate xml results
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 REM Get the version number and process it into a suitable form
-FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import dynd;print(dynd.__version_string__)"') DO set PYDYND_VERSION=%%i
+FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import dynd;print(dynd.__version__)"') DO set PYDYND_VERSION=%%i
+if "%PYDYND_VERSION%" == "" exit /b 1
 set PYDYND_VERSION=%PYDYND_VERSION:-=_%
 set PYDYND_VERSION=%PYDYND_VERSION:~1%
 

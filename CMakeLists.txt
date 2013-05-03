@@ -223,6 +223,7 @@ else()
     else()
         set(DYND_SHARED_LIB ON)
     endif()
+    # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
     set(DYND_INSTALL_LIB OFF)
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 endif()

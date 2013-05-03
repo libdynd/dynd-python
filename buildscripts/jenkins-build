@@ -68,7 +68,11 @@ make install || exit 1
 ${PYTHON_EXECUTABLE} -c 'import dynd;dynd.test(xunitfile="../test_results.xml", exit=1)' || exit 1
 
 # Retrieve the version number
-export PYDYND_VERSION=`${PYTHON_EXECUTABLE} -c 'import dynd;print(dynd.__version_string__)'`
+export PYDYND_VERSION=`${PYTHON_EXECUTABLE} -c 'import dynd;print(dynd.__version__)'`
+if [ '${PYDYND_VERSION}' == '' ]; then
+    echo Could not determine the dynd-python version.
+    exit 1
+fi
 export PYDYND_VERSION=${PYDYND_VERSION//-/_}
 export PYDYND_VERSION=${PYDYND_VERSION:1}
 

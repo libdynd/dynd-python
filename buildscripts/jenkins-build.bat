@@ -11,7 +11,7 @@ REM   - Use a jenkins build matrix for multiple
 REM     platforms/python versions
 REM   - Use the XShell plugin to launch this script
 REM   - Call the script from the root workspace
-REM     directory as ./jenkins/jenkins-build
+REM     directory as buildscripts/jenkins-build
 REM   - Use a user-defined axis to select python versions with PYTHON_VERSION
 REM
 
@@ -29,13 +29,13 @@ rd /q /s build
 REM Get libdynd into the libraries subdirectory
 REM TODO: Build libdynd in a separate jenkins project,
 REM       and use its build artifact here.
-call .\jenkins\checkout_libdynd.bat
+call .\buildscripts\checkout_libdynd.bat
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 REM Use conda to create a conda environment of the required
 REM python version and containing the dependencies.
 SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
-call .\jenkins\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
+call .\buildscripts\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
 set PYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe

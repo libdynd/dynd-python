@@ -15,14 +15,14 @@
 #     platforms/python versions
 #   - Use the XShell plugin to launch this script
 #   - Call the script from the root workspace
-#     directory as ./jenkins/jenkins-build
+#     directory as buildscripts/jenkins-build
 #
 
 # Require a version of Python to be selected
 if [ "${PYTHON_VERSION}" == "" ]; then
  echo You must select a Python version with the PYTHON_VERSION variable.
  exit 1
-fi 
+fi
 
 if [ `uname` == Darwin ]; then
  # Use gcc instead of clang for now, there was a strange
@@ -41,12 +41,12 @@ rm -rf build
 # Get libdynd into the libraries subdirectory
 # TODO: Build libdynd in a separate jenkins project,
 #       and use its build artifact here.
-./jenkins/checkout_libdynd.sh || exit 1
+./buildscripts/checkout_libdynd.sh || exit 1
 
 # Use conda to create a conda environment of the required
 # python version and containing the dependencies.
 export PYENV_PREFIX=${WORKSPACE}/build/pyenv
-./jenkins/create_conda_pyenv.sh ${PYTHON_VERSION} ${PYENV_PREFIX} || exit 1
+./buildscripts/create_conda_pyenv.sh ${PYTHON_VERSION} ${PYENV_PREFIX} || exit 1
 export PATH=${PYENV_PREFIX}/bin:${PATH}
 
 if [ -f "${PYENV_PREFIX}/bin/python" ]; then

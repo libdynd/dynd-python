@@ -217,6 +217,14 @@ if (USE_SEPARATE_LIBDYND)
     target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}")
 else()
     target_link_libraries(_pydynd libdynd)
+    # Set some options used by the libdynd CMakeLists.txt
+    if(WIN32)
+        set(DYND_SHARED_LIB OFF)
+    else()
+        set(DYND_SHARED_LIB ON)
+    endif()
+    set(DYND_INSTALL_LIB OFF)
+    option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 endif()
 
 # Install all the Python scripts

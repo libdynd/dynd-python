@@ -6,7 +6,24 @@
 cmake_minimum_required(VERSION 2.8)
 project(dynd-python)
 
-option(USE_SEPARATE_LIBDYND "Use a libdynd built separately." OFF)
+################################################
+# Some options configurable from the CMAKE command execution
+#
+# -DUSE_SEPARATE_LIBDYND=ON/OFF, Use a libdynd which has been built
+#   and installed separately. This is for linking against a libdynd
+#   which was configured with the -DDYND_INSTALL_LIB=ON.
+option(USE_SEPARATE_LIBDYND
+    "Use a libdynd built separately."
+    OFF)
+# -DUSE_RELATIVE_RPATH=ON/OFF, For OSX, to use the @rpath mechanism
+#   for creating a build which is linked with relative paths. The
+#   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
+if(APPLE)
+    option(USE_RELATIVE_RPATH
+        "OSX: Add a relative rpath for libdynd to the dynd python extension module."
+        OFF)
+endif()
+################################################
 
 # For the Git SHA1/version code
 list(APPEND CMAKE_MODULE_PATH
@@ -173,14 +190,14 @@ elseif(APPLE)
         COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-unused-function -Wno-error"
         )
-    # TODO: The rpath used is Anaconda-specific, should make sure it
-    #       works more generally.
-    add_custom_command(TARGET _pydynd
-        POST_BUILD COMMAND
-        ${CMAKE_INSTALL_NAME_TOOL} -change
-                   "${LIBDYND_LIBRARIES}"
-                   "@loader_path/../../../${LIBDYND_LIBRARIES}"
-        $<TARGET_FILE:_pydynd>)
+    if(USE_RELATIVE_RPATH)
+        # TODO: The rpath used is Anaconda-specific, should calculate
+        #       the relative install path instead of using "../../..".
+        add_custom_command(TARGET _pydynd
+            POST_BUILD COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                -add_rpath "@loader_path/../../.."
+                $<TARGET_FILE:_pydynd>)
+    endif()
 else()
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.

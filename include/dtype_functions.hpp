@@ -98,6 +98,11 @@ dynd::dtype make_dtype_from_pyobject(PyObject* obj);
 dynd::dtype dynd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode);
 
 /**
+ * Creates a view dtype.
+ */
+dynd::dtype dynd_make_view_dtype(const dynd::dtype& value_dtype, const dynd::dtype& operand_dtype);
+
+/**
  * Creates a fixed-sized string dtype.
  */
 dynd::dtype dynd_make_fixedstring_dtype(intptr_t size, PyObject *encoding_obj);

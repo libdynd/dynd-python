@@ -100,3 +100,7 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     # placement cast
     elwise_program& GET(vm_elwise_program_placement_wrapper&)
     void SET(vm_elwise_program_placement_wrapper&, elwise_program&)
+
+cdef extern from "py_lowlevel_api.hpp":
+    void *dynd_get_lowlevel_api()
+    void *dynd_get_py_lowlevel_api()

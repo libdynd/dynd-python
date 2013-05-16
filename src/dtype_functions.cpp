@@ -343,6 +343,11 @@ dynd::dtype pydynd::dynd_make_convert_dtype(const dynd::dtype& to_dtype, const d
     return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
+dynd::dtype pydynd::dynd_make_view_dtype(const dynd::dtype& value_dtype, const dynd::dtype& operand_dtype)
+{
+    return make_view_dtype(value_dtype, operand_dtype);
+}
+
 dynd::dtype pydynd::dynd_make_fixedstring_dtype(intptr_t size,
                 PyObject *encoding_obj)
 {

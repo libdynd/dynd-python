@@ -146,6 +146,7 @@ set(pydynd_CPP_SRC
     include/ndobject_as_numpy.hpp
     include/ndobject_as_py.hpp
     include/numpy_interop.hpp
+    include/py_lowlevel_api.hpp
     include/elwise_gfunc_functions.hpp
     include/elwise_reduce_gfunc_functions.hpp
     include/utility_functions.hpp
@@ -163,6 +164,7 @@ set(pydynd_CPP_SRC
     src/ndobject_as_numpy.cpp
     src/ndobject_as_py.cpp
     src/numpy_interop.cpp
+    src/py_lowlevel_api.cpp
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp
     src/git_version.cpp.in

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+# dynd.lowlevel is not imported by default
 from . import nd, ndt
 
 from ._pydynd import _dynd_version_string as __libdynd_version__, \
@@ -9,8 +10,10 @@ from ._pydynd import _dynd_version_string as __libdynd_version__, \
 
 __version__ = __version__.lstrip('v')
 __libdynd_version__ = __libdynd_version__.lstrip('v')
-__version_info__ = tuple([int(x) for x in __version__.split('-')[0].split('.')])
-__libdynd_version_info__ = tuple([int(x) for x in __libdynd_version__.split('-')[0].split('.')])
+__version_info__ = tuple(int(x)
+                for x in __version__.split('-')[0].split('.'))
+__libdynd_version_info__ = tuple(int(x)
+                for x in __libdynd_version__.split('-')[0].split('.'))
 
 def test(verbosity=1, xunitfile=None, exit=False):
     """

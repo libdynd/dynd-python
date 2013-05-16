@@ -2,4 +2,4 @@
 *.swp
 bld.bat
 build
-libraries/dynd
+libraries/libdynd

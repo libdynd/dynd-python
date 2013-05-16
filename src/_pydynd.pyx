@@ -70,6 +70,12 @@ _dynd_git_sha1 = str(<char *>dynd_git_sha1)
 _dynd_python_version_string = str(<char *>dynd_python_version_string)
 _dynd_python_git_sha1 = str(<char *>dynd_python_git_sha1)
 
+def _get_lowlevel_api():
+    return <size_t>dynd_get_lowlevel_api()
+
+def _get_py_lowlevel_api():
+    return <size_t>dynd_get_py_lowlevel_api()
+
 cdef class w_dtype:
     """
     dtype(obj=None)
@@ -439,6 +445,33 @@ def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     """
     cdef w_dtype result = w_dtype()
     SET(result.v, dynd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), errmode))
+    return result
+
+def make_view_dtype(value_dtype, operand_dtype):
+    """
+    make_view_dtype(value_dtype, operand_dtype)
+    
+    Constructs an expression dtype which views the bytes of
+    one dtype as another.
+
+    Parameters
+    ----------
+    value_dtype : dynd type
+        The dynd type to interpret the bytes as. This is the 'value_dtype'
+        of the resulting expression dynd type.
+    operand_dtype : dynd type
+        The dynd type the memory originally was. This is the 'operand_dtype'
+        of the resulting expression dynd type.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_view_dtype(ndt.int32, ndt.uint32)
+    nd.dtype('view<as=int32, original=uint32>')
+    """
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dynd_make_view_dtype(GET(w_dtype(value_dtype).v), GET(w_dtype(operand_dtype).v)))
     return result
 
 def make_unaligned_dtype(aligned_dtype):

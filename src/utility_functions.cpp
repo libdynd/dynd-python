@@ -33,6 +33,16 @@ void pydynd::py_decref_function(void* obj)
     }
 }
 
+size_t pydynd::pyobject_as_size_t(PyObject *obj)
+{
+    pyobject_ownref ind_obj(PyNumber_Index(obj));
+    size_t result = PyLong_AsSize_t(ind_obj);
+    if (result == -1 && PyErr_Occurred()) {
+        throw exception();
+    }
+    return result;
+}
+
 intptr_t pydynd::pyobject_as_index(PyObject *index)
 {
     pyobject_ownref start_obj(PyNumber_Index(index));

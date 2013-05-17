@@ -126,6 +126,9 @@ inline std::string ndobject_debug_print(const dynd::ndobject& n)
 bool ndobject_contains(const dynd::ndobject& n, PyObject *x);
 
 
+dynd::ndobject ndobject_cast(const dynd::ndobject& n, const dynd::dtype& dt,
+                PyObject *assign_error_obj);
+
 dynd::ndobject ndobject_ucast(const dynd::ndobject& n, const dynd::dtype& dt,
                 size_t replace_undim, PyObject *assign_error_obj);
 
@@ -157,6 +160,8 @@ dynd::ndobject ndobject_linspace(PyObject *start, PyObject *stop, PyObject *coun
  * Implementation of nd.fields().
  */
 dynd::ndobject nd_fields(const dynd::ndobject& n, PyObject *field_list);
+
+PyObject *ndobject_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access);
 
 } // namespace pydynd
 

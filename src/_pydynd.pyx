@@ -950,6 +950,31 @@ cdef class w_ndobject:
         SET(result.v, GET(self.v).storage())
         return result
 
+    def cast(self, dtype, errmode=None):
+        """
+        a.cast(dtype, errmode='fractional')
+
+        Casts the ndobject's dtype to the requested dtype,
+        producing a conversion dtype. If the data for the
+        new dtype is identical, it is used directly to avoid
+        the conversion.
+
+        Parameters
+        ----------
+        dtype : dynd type
+            The dtype is cast into this type.
+        errmode : 'inexact', 'fractional', 'overflow', 'none'
+            How conversion errors are treated. For 'inexact', the value
+            must be preserved precisely. For 'fractional', conversion errors
+            due to precision loss are accepted, but not for loss of the
+            fraction part. For 'overflow', only overflow errors are raised.
+            For 'none', no conversion errors are raised
+
+        """
+        cdef w_ndobject result = w_ndobject()
+        SET(result.v, ndobject_cast(GET(self.v), GET(w_dtype(dtype).v), errmode))
+        return result
+
     def ucast(self, dtype, int replace_undim=0, errmode=None):
         """
         a.ucast(dtype, replace_undim=0, errmode='fractional')
@@ -1486,6 +1511,32 @@ def elwise_map(n, callable, dst_type, src_type = None):
         it will be converted.
     """
     return dynd_elwise_map(n, callable, dst_type, src_type)
+
+def ndobject_from_ptr(dt, ptr, owner, access):
+    """
+    nd.ndobject_from_ptr(dt, ptr, owner, access)
+
+    This low level function constructs an ndobject
+    of the specified dtype. An object which holds a
+    reference to the data should be passed as the owner.
+
+    Parameters
+    ----------
+    dt : dynd type
+        The dynd type of the ndobject to create. It should
+        have metadata_size of 0.
+    ptr : int
+        The memory address of the ndobject to create.
+    owner : object
+        An object which owns a reference to the data contained
+        in the pointer. This allows dynd to make sure the
+        memory is kept alive as long as the ndobject still
+        exists.
+    access : 'readwrite' | 'readonly' | 'immutable'
+        This specifies the access flags the resulting ndobject
+        has.
+    """
+    return dynd_ndobject_from_ptr(dt, ptr, owner, access)
 
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v

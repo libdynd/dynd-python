@@ -128,6 +128,7 @@ public:
     }
 };
 
+size_t pyobject_as_size_t(PyObject *obj);
 intptr_t pyobject_as_index(PyObject *index);
 int pyobject_as_int_index(PyObject *index);
 dynd::irange pyobject_as_irange(PyObject *index);

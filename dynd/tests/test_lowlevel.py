@@ -91,5 +91,26 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(nd.dtype('dtype')),
                         lowlevel.DTYPE_TYPE_ID)
 
+    def test_ndobject_from_ptr(self):
+        a = (ctypes.c_int32 * 3)()
+        a[0] = 3
+        a[1] = 6
+        a[2] = 9
+        # Readwrite version
+        b = lowlevel.ndobject_from_ptr(nd.dtype('3, int32'), ctypes.addressof(a),
+                        a, 'readwrite')
+        self.assertEqual(lowlevel.data_address_of(b), ctypes.addressof(a))
+        self.assertEqual(b.dshape, '3, int32')
+        self.assertEqual(nd.as_py(b), [3, 6, 9])
+        b[1] = 10
+        self.assertEqual(a[1], 10)
+        # Readonly version
+        b = lowlevel.ndobject_from_ptr(nd.dtype('3, int32'), ctypes.addressof(a),
+                        a, 'readonly')
+        self.assertEqual(nd.as_py(b), [3, 10, 9])
+        def assign_to(b):
+            b[1] = 100
+        self.assertRaises(RuntimeError, assign_to, b)
+
 if __name__ == '__main__':
     unittest.main()

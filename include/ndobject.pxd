@@ -88,6 +88,7 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     ndobject ndobject_linspace(object, object, object, object) except +translate_exception
     ndobject nd_fields(ndobject&, object) except +translate_exception
 
+    ndobject ndobject_cast(ndobject&, dtype&, object) except +translate_exception
     ndobject ndobject_ucast(ndobject&, dtype&, size_t, object) except +translate_exception
     object ndobject_as_py(ndobject&) except +translate_exception
     object ndobject_as_numpy(object, bint) except +translate_exception
@@ -95,3 +96,6 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
 
     int ndobject_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1
     int ndobject_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
+
+    object dynd_ndobject_from_ptr "pydynd::ndobject_from_ptr" (object dt, object ptr,
+                    object owner, object access) except +translate_exception

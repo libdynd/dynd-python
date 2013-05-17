@@ -36,8 +36,12 @@ void pydynd::py_decref_function(void* obj)
 size_t pydynd::pyobject_as_size_t(PyObject *obj)
 {
     pyobject_ownref ind_obj(PyNumber_Index(obj));
+#if PY_VERSION_HEX >= 0x03000000
     size_t result = PyLong_AsSize_t(ind_obj);
-    if (result == -1 && PyErr_Occurred()) {
+#else
+    size_t result = (size_t)PyLong_AsUnsignedLongLong(ind_obj);
+#endif
+    if (result == (size_t)-1 && PyErr_Occurred()) {
         throw exception();
     }
     return result;

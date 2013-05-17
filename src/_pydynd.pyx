@@ -1047,6 +1047,16 @@ cdef class w_ndobject:
         """
         GET(self.v).flag_as_immutable()
 
+    property access_flags:
+        """
+        a.access_flags
+
+        The access flags of the ndobject, as a string.
+        Returns 'immutable', 'readonly', or 'readwrite'
+        """
+        def __get__(self):
+            return str(<char *>ndobject_access_flags_string(GET(self.v)))
+
     property dtype:
         """
         a.dtype

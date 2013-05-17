@@ -99,3 +99,4 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
 
     object dynd_ndobject_from_ptr "pydynd::ndobject_from_ptr" (object dt, object ptr,
                     object owner, object access) except +translate_exception
+    const char *ndobject_access_flags_string(ndobject&) except +translate_exception

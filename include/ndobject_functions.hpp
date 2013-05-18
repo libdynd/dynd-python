@@ -161,8 +161,6 @@ dynd::ndobject ndobject_linspace(PyObject *start, PyObject *stop, PyObject *coun
  */
 dynd::ndobject nd_fields(const dynd::ndobject& n, PyObject *field_list);
 
-PyObject *ndobject_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access);
-
 inline const char *ndobject_access_flags_string(const dynd::ndobject& n) {
     switch (n.get_access_flags()) {
         case dynd::read_access_flag|dynd::immutable_access_flag:

@@ -97,7 +97,7 @@ class TestLowLevel(unittest.TestCase):
         a[1] = 6
         a[2] = 9
         # Readwrite version
-        b = lowlevel.ndobject_from_ptr(nd.dtype('3, int32'), ctypes.addressof(a),
+        b = lowlevel.py_api.ndobject_from_ptr(nd.dtype('3, int32'), ctypes.addressof(a),
                         a, 'readwrite')
         self.assertEqual(lowlevel.data_address_of(b), ctypes.addressof(a))
         self.assertEqual(b.dshape, '3, int32')
@@ -105,12 +105,19 @@ class TestLowLevel(unittest.TestCase):
         b[1] = 10
         self.assertEqual(a[1], 10)
         # Readonly version
-        b = lowlevel.ndobject_from_ptr(nd.dtype('3, int32'), ctypes.addressof(a),
+        b = lowlevel.py_api.ndobject_from_ptr(nd.dtype('3, int32'), ctypes.addressof(a),
                         a, 'readonly')
         self.assertEqual(nd.as_py(b), [3, 10, 9])
         def assign_to(b):
             b[1] = 100
         self.assertRaises(RuntimeError, assign_to, b)
+
+    def test_ndobject_from_ptr_error(self):
+        # Should raise an exception if the dtype has metadata
+        a = (ctypes.c_int32 * 4)()
+        self.assertRaises(RuntimeError, lowlevel.py_api.ndobject_from_ptr,
+                        nd.dtype('M, int32'), ctypes.addressof(a),
+                        a, 'readwrite')
 
 if __name__ == '__main__':
     unittest.main()

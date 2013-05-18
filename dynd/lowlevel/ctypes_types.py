@@ -74,6 +74,11 @@ class PyLowLevelAPI(ctypes.Structure):
                 # const dynd::base_dtype *get_base_dtype_ptr(WDType *obj);
                 ('get_base_dtype_ptr',
                  ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
+                # object ndobject_from_ptr(dt, ptr, owner, access)
+                ('ndobject_from_ptr',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object)),
                 # void make_assignment_kernel(dst_dt, src_dt, kerntype, &dki)
                 ('make_assignment_kernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,

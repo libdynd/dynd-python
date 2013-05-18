@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include <dynd/kernels/assignment_kernels.hpp>
+#include<dynd/memblock/external_memory_block.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "utility_functions.hpp"
@@ -24,6 +25,36 @@ namespace {
     const dynd::base_dtype *get_base_dtype_ptr(WDType *obj)
     {
         return obj->v.extended();
+    }
+
+    PyObject *ndobject_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access)
+    {
+        try {
+            dtype d = make_dtype_from_pyobject(dt);
+            size_t ptr_val = pyobject_as_size_t(ptr);
+            uint32_t access_flags = pyarg_strings_to_int(
+                            access, "access", read_access_flag,
+                                "readwrite", read_access_flag|write_access_flag,
+                                "readonly", read_access_flag,
+                                "immutable", read_access_flag|immutable_access_flag);
+            if (d.get_metadata_size() != 0) {
+                stringstream ss;
+                ss << "Cannot create an ndobject from a raw pointer with non-empty metadata, dtype: ";
+                ss << d;
+                throw runtime_error(ss.str());
+            }
+            ndobject result(make_ndobject_memory_block(0));
+            d.swap(result.get_ndo()->m_dtype);
+            result.get_ndo()->m_data_pointer = reinterpret_cast<char *>(ptr_val);
+            memory_block_ptr owner_memblock = make_external_memory_block(owner, &py_decref_function);
+            Py_INCREF(owner);
+            result.get_ndo()->m_data_reference = owner_memblock.release();
+            result.get_ndo()->m_flags = access_flags;
+            return wrap_ndobject(DYND_MOVE(result));
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
     }
 
     PyObject *make_assignment_kernel(PyObject *dst_dt_obj, PyObject *src_dt_obj, PyObject *kerntype_obj, void *out_dki_ptr)
@@ -79,6 +110,7 @@ namespace {
         0, // version, should increment this everytime the struct changes
         &get_ndobject_ptr,
         &get_base_dtype_ptr,
+        &ndobject_from_ptr,
         &make_assignment_kernel,
     };
 } // anonymous namespace

@@ -1522,32 +1522,6 @@ def elwise_map(n, callable, dst_type, src_type = None):
     """
     return dynd_elwise_map(n, callable, dst_type, src_type)
 
-def ndobject_from_ptr(dt, ptr, owner, access):
-    """
-    nd.ndobject_from_ptr(dt, ptr, owner, access)
-
-    This low level function constructs an ndobject
-    of the specified dtype. An object which holds a
-    reference to the data should be passed as the owner.
-
-    Parameters
-    ----------
-    dt : dynd type
-        The dynd type of the ndobject to create. It should
-        have metadata_size of 0.
-    ptr : int
-        The memory address of the ndobject to create.
-    owner : object
-        An object which owns a reference to the data contained
-        in the pointer. This allows dynd to make sure the
-        memory is kept alive as long as the ndobject still
-        exists.
-    access : 'readwrite' | 'readonly' | 'immutable'
-        This specifies the access flags the resulting ndobject
-        has.
-    """
-    return dynd_ndobject_from_ptr(dt, ptr, owner, access)
-
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
 

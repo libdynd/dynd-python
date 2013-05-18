@@ -27,6 +27,7 @@ struct py_lowlevel_api_t {
     // These functions do not check the type of the arguments.
     dynd::ndobject_preamble *(*get_ndobject_ptr)(WNDObject *obj);
     const dynd::base_dtype *(*get_base_dtype_ptr)(WDType *obj);
+    PyObject *(*ndobject_from_ptr)(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access);
     PyObject *(*make_single_assignment_kernel)(PyObject *dst_dt_obj, PyObject *src_dt_obj, PyObject *kerntype, void *out_dki_ptr);
 };
 

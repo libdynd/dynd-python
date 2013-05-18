@@ -20,10 +20,10 @@ namespace {
 void pydynd::translate_exception()
 {
     try {
-        if (PyErr_Occurred())
-            ; // let the latest Python exn pass through and ignore the current one
-        else
+        // let any Python exn pass through, otherwise translate the C++ one
+        if (!PyErr_Occurred()) {
             throw;
+        }
     } catch (const dynd::broadcast_error& exn) {
         PyErr_SetString(BroadcastException, exn.message());
     } catch (const dynd::too_many_indices& exn) {

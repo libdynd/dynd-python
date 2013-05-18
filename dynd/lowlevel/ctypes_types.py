@@ -36,7 +36,8 @@ class NDObjectPreamble(ctypes.Structure):
 # void pointer parameters to avoid the copies
 # of structures and values ctypes makes in various places.
 class LowLevelAPI(ctypes.Structure):
-    _fields_ = [('version', ctypes.c_size_t),
+    _fields_ = [
+                ('version', ctypes.c_size_t),
                 # void memory_block_incref(memory_block_data *mbd);
                 ('memory_block_incref',
                  ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
@@ -58,16 +59,24 @@ class LowLevelAPI(ctypes.Structure):
                 # const base_dtype_members *get_base_dtype_members(
                 #                               const base_dtype *bd);
                 ('get_base_dtype_members',
-                 ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p))]
+                 ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p)),
+               ]
 
 # The low level API functions are declared with all
 # void pointer parameters to avoid the copies
 # of structures and values ctypes makes in various places.
 class PyLowLevelAPI(ctypes.Structure):
-    _fields_ = [('version', ctypes.c_size_t),
+    _fields_ = [
+                ('version', ctypes.c_size_t),
                 # dynd::ndobject_preamble *get_ndobject_ptr(WNDObject *obj);
                 ('get_ndobject_ptr',
-                 ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
+                 ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
                 # const dynd::base_dtype *get_base_dtype_ptr(WDType *obj);
                 ('get_base_dtype_ptr',
-                 ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.py_object))]
+                 ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
+                # void make_assignment_kernel(dst_dt, src_dt, kerntype, &dki)
+                ('make_assignment_kernel',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object, ctypes.c_void_p)),
+               ]

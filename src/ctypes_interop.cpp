@@ -6,7 +6,7 @@
 #include <Python.h>
 
 #include <dynd/dtypes/fixedstring_dtype.hpp>
-#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/cstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
@@ -213,7 +213,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         dtype target_dtype = dtype_from_ctypes_cdatatype(target_dtype_obj);
         return make_pointer_dtype(target_dtype);
     } else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
-        // Translate into a fixedstruct or struct dtype
+        // Translate into a cstruct or struct dtype
         pyobject_ownref fields_list_obj(PyObject_GetAttrString(d, "_fields_"));
         if (!PyList_Check(fields_list_obj.get())) {
             throw runtime_error("The _fields_ member of the ctypes C struct is not a list");
@@ -243,9 +243,9 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         pyobject_ownref total_size_obj(PyObject_CallMethod(ctypes._ctypes, (char *)"sizeof", (char *)"N", d));
         size_t total_size = pyobject_as_index(total_size_obj.get());
 
-        if (is_fixedstruct_compatible_offsets(field_count, &field_types[0],
+        if (is_cstruct_compatible_offsets(field_count, &field_types[0],
                         &field_offsets[0], total_size)) {
-            return make_fixedstruct_dtype(field_count, &field_types[0], &field_names[0]);
+            return make_cstruct_dtype(field_count, &field_types[0], &field_names[0]);
         } else {
             return make_struct_dtype(field_types, field_names);
         }

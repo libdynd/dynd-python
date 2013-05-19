@@ -24,7 +24,7 @@ class TestDate(unittest.TestCase):
     def test_struct_casting(self):
         a = nd.ndobject([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
-        s = a.ucast(ndt.make_fixedstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
+        s = a.ucast(ndt.make_cstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
                                         ['year', 'month', 'day']))
         s = s.eval()
         self.assertEqual(nd.as_py(s.year), [1912, 2002])
@@ -39,7 +39,7 @@ class TestDate(unittest.TestCase):
         a = nd.ndobject(date(1955,3,13))
         s = a.to_struct().eval()
         self.assertEqual(s.dtype,
-                        ndt.make_fixedstruct_dtype(
+                        ndt.make_cstruct_dtype(
                             [ndt.int32, ndt.int16, ndt.int16],
                             ['year', 'month', 'day']))
         self.assertEqual(nd.as_py(s.year), 1955)
@@ -55,7 +55,7 @@ class TestDate(unittest.TestCase):
         a = nd.ndobject([date(1931,12,12), date(2013,5,14), date(2012,12,25)])
         self.assertEqual(nd.as_py(a.strftime('%Y-%m-%d %j %U %w %W')),
                         ['1931-12-12 346 49 6 49', '2013-05-14 134 19 2 19', '2012-12-25 360 52 2 52'])
- 
+
     def test_weekday(self):
         self.assertEqual(nd.as_py(nd.ndobject(date(1955,3,13)).weekday()), 6)
         self.assertEqual(nd.as_py(nd.ndobject(date(2002,12,4)).weekday()), 2)

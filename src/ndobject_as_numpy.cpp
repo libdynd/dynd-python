@@ -172,7 +172,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             }
             break;
         }
-        case fixedstruct_type_id:
+        case cstruct_type_id:
         case struct_type_id: {
             const base_struct_dtype *bs = static_cast<const base_struct_dtype *>(dt.extended());
             const dtype *field_types = bs->get_field_types();
@@ -400,7 +400,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             }
             break;
         }
-        case fixedstruct_type_id:
+        case cstruct_type_id:
         case struct_type_id: {
             if (dt.get_type_id() == struct_type_id && metadata == NULL) {
                 // If it's a struct dtype with no metadata, a copy is required

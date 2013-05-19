@@ -335,7 +335,7 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
             break;
         }
         case struct_type_id:
-        case fixedstruct_type_id: {
+        case cstruct_type_id: {
             const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
             size_t field_count = fsd->get_field_count();
             const dtype *field_types = fsd->get_field_types();

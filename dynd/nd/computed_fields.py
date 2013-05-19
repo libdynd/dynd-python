@@ -1,7 +1,7 @@
 __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_dtype as dtype, \
-                w_ndobject as ndobject, make_fixedstruct_dtype, \
+                w_ndobject as ndobject, make_cstruct_dtype, \
                 elwise_map, extract_udtype
 
 class FieldExpr:
@@ -42,7 +42,7 @@ class FieldExpr:
                     s = as_py(s)
 
                 lcl[str(name)] = s
-        
+
             # Evaluate all the field exprs
             for i, expr in enumerate(self.dst_field_expr):
                 v = eval(expr, self.glbl, lcl)
@@ -52,12 +52,12 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     """
     Adds one or more new fields to a struct ndobject,
     using nd.elwise_map to create the deferred object.
-    
+
     Each field_expr should be a string or bit of code
     that can be evaluated with an 'eval' call. It is called
     with numpy/scipy in the globals, and the input
     fields in the locals.
-    
+
     Parameters
     ----------
     n : ndobject
@@ -86,12 +86,12 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     ...         rm_fields=['x', 'y'],
     ...         fnname='topolar')
     >>> y.dtype
-    nd.dtype('strided_dim<expr<fixedstruct<float64 r, float64 theta>, op0=fixedstruct<float64 x, float64 y>, expr=topolar(op0)>>')
+    nd.dtype('strided_dim<expr<cstruct<float64 r, float64 theta>, op0=cstruct<float64 x, float64 y>, expr=topolar(op0)>>')
     >>> y.eval()
-    nd.ndobject([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<fixedstruct<float64 r, float64 theta>>)
+    nd.ndobject([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<cstruct<float64 r, float64 theta>>)
     >>> x[0] = (-100, 0)
     >>> y[0].eval()
-    nd.ndobject([100, 3.14159], fixedstruct<float64 r, float64 theta>)
+    nd.ndobject([100, 3.14159], cstruct<float64 r, float64 theta>)
     """
     n = ndobject(n)
     udt = n.udtype.value_dtype
@@ -120,7 +120,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
         new_field_types.append(ft)
         new_field_expr.append(fe)
 
-    result_udt = make_fixedstruct_dtype(new_field_types, new_field_names)
+    result_udt = make_cstruct_dtype(new_field_types, new_field_names)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
     return elwise_map([n], fieldexpr, result_udt)
@@ -131,12 +131,12 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
     on the input fields. Leaves the requested number of
     uniform dimensions in place, so the result has fewer
     than the input if positive.
-    
+
     Each field_expr should be a string or bit of code
     that can be evaluated with an 'eval' call. It is called
     with numpy/scipy in the globals, and the input
     fields in the locals.
-    
+
     Parameters
     ----------
     n : ndobject
@@ -196,7 +196,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
         new_field_types.append(ft)
         new_field_expr.append(fe)
 
-    result_udt = make_fixedstruct_dtype(new_field_types, new_field_names)
+    result_udt = make_cstruct_dtype(new_field_types, new_field_names)
     src_udt = extract_udtype(n.dtype, replace_undim)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 

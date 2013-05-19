@@ -100,7 +100,7 @@ cdef class w_dtype:
     >>> nd.dtype('5, VarDim, float32')
     nd.dtype('fixed_dim<5, var_dim<float32>>')
     >>> nd.dtype('{x: float32; y: float32; z: float32}')
-    nd.dtype('fixedstruct<float32 x, float32 y, float32 z>')
+    nd.dtype('cstruct<float32 x, float32 y, float32 z>')
     """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the dtype, and
@@ -316,7 +316,7 @@ def replace_udtype(w_dtype dt, replacement_dt, size_t replace_undim=0):
     >>> ndt.replace_udtype(d, 'M, float64')
     nd.dtype('fixed_dim<3, var_dim<strided_dim<float64>>>')
     >>> ndt.replace_udtype(d, '{x: int32; y:int32}', 1)
-    nd.dtype('fixed_dim<3, fixedstruct<int32 x, int32 y>>')
+    nd.dtype('fixed_dim<3, cstruct<int32 x, int32 y>>')
     """
     cdef w_dtype result = w_dtype()
     SET(result.v, GET(dt.v).with_replaced_udtype(GET(w_dtype(replacement_dt).v), replace_undim))
@@ -640,9 +640,9 @@ def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
     return result
 
-def make_fixedstruct_dtype(field_types, field_names):
+def make_cstruct_dtype(field_types, field_names):
     """
-    make_fixedstruct_dtype(field_types, field_names)
+    make_cstruct_dtype(field_types, field_names)
 
     Constructs a fixed_struct dynd type, which has fields with
     a fixed layout.
@@ -663,11 +663,11 @@ def make_fixedstruct_dtype(field_types, field_names):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedstruct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
-    nd.dtype('fixedstruct<int32 x, float64 y>')
+    >>> ndt.make_cstruct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
+    nd.dtype('cstruct<int32 x, float64 y>')
     """
     cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_fixedstruct_dtype(field_types, field_names))
+    SET(result.v, dynd_make_cstruct_dtype(field_types, field_names))
     return result
 
 def make_struct_dtype(field_types, field_names):
@@ -1006,9 +1006,9 @@ cdef class w_ndobject:
         >>> from datetime import date
         >>> a = nd.ndobject([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32; year: int32; day: float32}')
         >>> a
-        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=fixedstruct<int32 month, int32 year, float32 day>, from=date>>)
+        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=cstruct<int32 month, int32 year, float32 day>, from=date>>)
         >>> a.eval()
-        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<fixedstruct<int32 month, int32 year, float32 day>>)
+        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<cstruct<int32 month, int32 year, float32 day>>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_ucast(GET(self.v), GET(w_dtype(dtype).v), replace_undim, errmode))
@@ -1460,7 +1460,7 @@ def parse_json(dtype, json):
     >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
     nd.ndobject([1, 2, 3, 4], fixed_dim<4, int8>)
     >>> nd.parse_json('2, {x: int8; y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
-    nd.ndobject([[0, 1], [3, 2]], fixed_dim<2, fixedstruct<int8 x, int8 y>>)
+    nd.ndobject([[0, 1], [3, 2]], fixed_dim<2, cstruct<int8 x, int8 y>>)
     """
     cdef w_ndobject result = w_ndobject()
     if type(dtype) is w_ndobject:

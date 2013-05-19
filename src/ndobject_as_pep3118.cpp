@@ -7,7 +7,7 @@
 
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
-#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/cstruct_dtype.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/byteswap_dtype.hpp>
 #include <dynd/dtypes/view_dtype.hpp>
@@ -147,9 +147,9 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             out_itemsize = dt.get_data_size();
             return;
         }
-        case fixedstruct_type_id: {
+        case cstruct_type_id: {
             o << "T{";
-            const fixedstruct_dtype *tdt = static_cast<const fixedstruct_dtype *>(dt.extended());
+            const cstruct_dtype *tdt = static_cast<const cstruct_dtype *>(dt.extended());
             const dtype *field_types = tdt->get_field_types();
             const string *field_names = tdt->get_field_names();
             size_t num_fields = tdt->get_field_count();

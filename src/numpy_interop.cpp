@@ -13,7 +13,7 @@
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
-#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/cstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
@@ -66,10 +66,10 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
         field_offsets.push_back(offset);
     }
 
-    // Make a fixedstruct if possible, struct otherwise
-    if (is_fixedstruct_compatible_offsets(field_types.size(),
+    // Make a cstruct if possible, struct otherwise
+    if (is_cstruct_compatible_offsets(field_types.size(),
                     &field_types[0], &field_offsets[0], d->elsize)) {
-        return make_fixedstruct_dtype(field_types.size(), &field_types[0], &field_names[0]);
+        return make_cstruct_dtype(field_types.size(), &field_types[0], &field_names[0]);
     } else {
         return make_struct_dtype(field_types, field_names);
     }
@@ -94,7 +94,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
             }
             return make_strided_dim_dtype(dt, ndim);
         } else {
-            // Otherwise make a fixedstruct array
+            // Otherwise make a cstruct array
             return dynd_make_fixed_dim_dtype(d->subarray->shape, dt, Py_None);
         }
     }
@@ -350,8 +350,8 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt)
             return result;
         }
         */
-        case fixedstruct_type_id: {
-            const fixedstruct_dtype *tdt = static_cast<const fixedstruct_dtype *>(dt.extended());
+        case cstruct_type_id: {
+            const cstruct_dtype *tdt = static_cast<const cstruct_dtype *>(dt.extended());
             const dtype *field_types = tdt->get_field_types();
             const string *field_names = tdt->get_field_names();
             const vector<size_t>& offsets = tdt->get_data_offsets_vector();

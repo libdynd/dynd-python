@@ -107,7 +107,7 @@ namespace {
     }
 
     const py_lowlevel_api_t py_lowlevel_api = {
-        0, // version, should increment this everytime the struct changes
+        0, // version, should increment this every time the struct changes at a release
         &get_ndobject_ptr,
         &get_base_dtype_ptr,
         &ndobject_from_ptr,

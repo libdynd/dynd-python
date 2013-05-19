@@ -14,7 +14,7 @@
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
-#include <dynd/dtypes/fixedstruct_dtype.hpp>
+#include <dynd/dtypes/cstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
@@ -377,7 +377,7 @@ dynd::dtype pydynd::dynd_make_struct_dtype(PyObject *field_types, PyObject *fiel
     return make_struct_dtype(field_types_vec, field_names_vec);
 }
 
-dynd::dtype pydynd::dynd_make_fixedstruct_dtype(PyObject *field_types, PyObject *field_names)
+dynd::dtype pydynd::dynd_make_cstruct_dtype(PyObject *field_types, PyObject *field_names)
 {
     vector<dtype> field_types_vec;
     vector<string> field_names_vec;
@@ -386,7 +386,7 @@ dynd::dtype pydynd::dynd_make_fixedstruct_dtype(PyObject *field_types, PyObject 
     if (field_types_vec.size() != field_names_vec.size()) {
         throw runtime_error("The input field types and field names lists must have the same size");
     }
-    return make_fixedstruct_dtype(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
+    return make_cstruct_dtype(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
 }
 
 dynd::dtype pydynd::dynd_make_fixed_dim_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)

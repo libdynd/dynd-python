@@ -18,7 +18,7 @@ gcc 4.6.1, gcc 4.7.0, and clang 3.3-svn have been tested.
 
 3. Get the source code.
 
-  Check out the dynd-python and dynd source code. The following commands
+  Check out the dynd-python and libdynd source code. The following commands
 should work equivalently on Windows and Unix-like operating systems.
 
   ```
@@ -27,8 +27,8 @@ should work equivalently on Windows and Unix-like operating systems.
   ~ $ cd dynd-python
   ~/dynd-python $ mkdir libraries
   ~/dynd-python $ cd libraries
-  ~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/dynd
-  Cloning into dynd...
+  ~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/libdynd
+  Cloning into libdynd...
   ~/dynd-python/libraries $ cd ..
   ~/dynd-python $ mkdir build
   ```
@@ -52,7 +52,7 @@ dynd-python.sln in the 'build' subdirectory.
 for a 32-bit build switch the "-DCMAKE\_OSX\_ARCHITECTURES"
 argument below to "i386".
 
-  If you want to control where the dynd shared object is
+  If you want to control where the libdynd shared object is
 installed, and where the Python module goes, add
 `-DCMAKE_INSTALL_PREFIX=<prefix>` and
 `-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`

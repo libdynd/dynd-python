@@ -27,7 +27,7 @@ class TestStringConstruct(unittest.TestCase):
         self.assertEqual(a[0].dtype.type_id, 'fixedstring')
         self.assertEqual(a[0].dtype.data_size, 1)
         self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
-        
+
 
 class TestStructConstruct(unittest.TestCase):
     def test_single_struct(self):
@@ -63,23 +63,23 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(a.dtype, nd.dtype('N, {x:int32; y:int32}'))
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
-        
+
         a = nd.ndobject([{'x':0,'y':0}, {'x':3,'y':5}, {'x':12,'y':10}],
                     udtype='{x:int32; y:int32}')
         self.assertEqual(a.dtype, nd.dtype('N, {x:int32; y:int32}'))
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
-        
+
         a = nd.ndobject([[(3, 'X')], [(10, 'L'), (12, 'M')]],
                         udtype='{count:int32; size:string(1,"A")}')
-        self.assertEqual(a.dtype, nd.dtype('N, VarDim, {count:int32; size:string(1,"A")}'))
+        self.assertEqual(a.dtype, nd.dtype('N, Var, {count:int32; size:string(1,"A")}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
-        
+
         a = nd.ndobject([[{'count':3, 'size':'X'}],
                         [{'count':10, 'size':'L'}, {'count':12, 'size':'M'}]],
                         udtype='{count:int32; size:string(1,"A")}')
-        self.assertEqual(a.dtype, nd.dtype('N, VarDim, {count:int32; size:string(1,"A")}'))
+        self.assertEqual(a.dtype, nd.dtype('N, Var, {count:int32; size:string(1,"A")}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
@@ -103,7 +103,7 @@ class TestStructConstruct(unittest.TestCase):
         a = nd.ndobject([[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]],
                         udtype='{count:int32; size:{name:string(1,"A"); id: int8}}')
         self.assertEqual(a.dtype,
-                    nd.dtype('N, VarDim, {count:int32; size:{name:string(1,"A"); id: int8}}'))
+                    nd.dtype('N, Var, {count:int32; size:{name:string(1,"A"); id: int8}}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])
         self.assertEqual(nd.as_py(a.size.id), [[10], [7, 5]])

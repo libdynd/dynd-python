@@ -37,16 +37,16 @@ class TestStructAssign(unittest.TestCase):
         a[...] = [(0,0), (3,5), (12,10)]
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
-        
+
         a[...] = [{'x':1,'y':2}, {'x':4,'y':7}, {'x':14,'y':190}]
         self.assertEqual(nd.as_py(a.x), [1, 4, 14])
         self.assertEqual(nd.as_py(a.y), [2, 7, 190])
-        
-        a = nd.empty('2, VarDim, {count:int32; size:string(1,"A")}')
+
+        a = nd.empty('2, Var, {count:int32; size:string(1,"A")}')
         a[...] = [[(3, 'X')], [(10, 'L'), (12, 'M')]]
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
-        
+
         a[...] = [[{'count':6, 'size':'M'}],
                         [{'count':3, 'size':'F'}, {'count':16, 'size':'D'}]]
         self.assertEqual(nd.as_py(a.count), [[6], [3, 16]])
@@ -74,7 +74,7 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.x.b), [2, 6, 110])
         self.assertEqual(nd.as_py(a.y), [5, 7, 110])
 
-        a = nd.empty('2, VarDim, {count:int32; size:{name:string(1,"A"); id: int8}}')
+        a = nd.empty('2, Var, {count:int32; size:{name:string(1,"A"); id: int8}}')
         a[...] = [[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]]
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])

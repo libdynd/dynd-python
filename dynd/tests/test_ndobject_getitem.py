@@ -35,11 +35,11 @@ class TestNDObjectGetItem(unittest.TestCase):
         self.assertRaises(IndexError, lambda x : x[100], a)
         self.assertRaises(IndexError, lambda x : x[-101:], a)
         self.assertRaises(IndexError, lambda x : x[-5:101:2], a)
-        
+
     def test_var_dim(self):
-        a = nd.empty('VarDim, int32')
+        a = nd.empty('Var, int32')
         a[...] = nd.arange(100)
-        self.assertEqual(a.dtype, nd.dtype('VarDim, int32'))
+        self.assertEqual(a.dtype, nd.dtype('Var, int32'))
         self.assertEqual(a[...].dtype, nd.dtype('A, int32'))
         self.assertEqual(a[0].dtype, ndt.int32)
         self.assertEqual(a[0:1].dtype, nd.dtype('A, int32'))

@@ -48,7 +48,7 @@ class TestFields(unittest.TestCase):
                 [(7, 8, 'alpha', 'beta'),
                  (9, 10, 'X', 'Y'),
                  (11, 12, 'the', 'end')]],
-                dtype='3, VarDim, {x: int32; y: int32; z: string; w: string}')
+                dtype='3, Var, {x: int32; y: int32; z: string; w: string}')
         # Selecting a single field
         b = nd.fields(a, 'x')
         self.assertEqual(b.dtype, ndt.make_fixed_dim_dtype(3,

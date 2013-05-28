@@ -62,11 +62,18 @@ def test(verbosity=1, xunitfile=None, exit=False):
         else:
             return result
     else:
-        # Use nose to run the tests and produce an XML file
         import nose
-        return nose.main(argv=['nosetests',
-                        '--verbosity=%d' % verbosity,
-                        '--with-xunit',
-                        '--xunit-file=%s' % xunitfile,
-                        os.path.join(os.path.dirname(__file__), 'tests')],
-                     exit=exit)
+        import os
+        argv = ['nosetests', '--verbosity=%d' % verbosity]
+        # Output an xunit file if requested
+        if xunitfile:
+            argv.extend(['--with-xunit', '--xunit-file=%s' % xunitfile])
+        # Add all 'tests' subdirectories to the options
+        rootdir = os.path.dirname(__file__)
+        for root, dirs, files in os.walk(rootdir):
+            if 'tests' in dirs:
+                testsdir = os.path.join(root, 'tests')
+                argv.append(testsdir)
+                print('Test dir: %s' % testsdir[len(rootdir)+1:])
+        # Ask nose to do its thing
+        return nose.main(argv=argv, exit=exit)

@@ -29,7 +29,7 @@ class TestDType(unittest.TestCase):
         self.assertEqual(type(ndt.int64), nd.dtype)
         self.assertEqual(str(ndt.int64), 'int64')
         self.assertEqual(ndt.int64.data_size, 8)
-        self.assertEqual(ndt.int64.alignment, 8)
+        self.assertTrue(ndt.int64.alignment in [4,8])
 
     def test_uint_dtype_properties(self):
         self.assertEqual(type(ndt.uint8), nd.dtype)
@@ -50,7 +50,7 @@ class TestDType(unittest.TestCase):
         self.assertEqual(type(ndt.uint64), nd.dtype)
         self.assertEqual(str(ndt.uint64), 'uint64')
         self.assertEqual(ndt.uint64.data_size, 8)
-        self.assertEqual(ndt.uint64.alignment, 8)
+        self.assertTrue(ndt.uint64.alignment in [4,8])
 
     def test_float_dtype_properties(self):
         self.assertEqual(type(ndt.float32), nd.dtype)
@@ -61,7 +61,7 @@ class TestDType(unittest.TestCase):
         self.assertEqual(type(ndt.float64), nd.dtype)
         self.assertEqual(str(ndt.float64), 'float64')
         self.assertEqual(ndt.float64.data_size, 8)
-        self.assertEqual(ndt.float64.alignment, 8)
+        self.assertTrue(ndt.float64.alignment in [4,8])
 
     def test_complex_dtype_properties(self):
         self.assertEqual(type(ndt.cfloat32), nd.dtype)
@@ -72,7 +72,7 @@ class TestDType(unittest.TestCase):
         self.assertEqual(type(ndt.cfloat64), nd.dtype)
         self.assertEqual(str(ndt.cfloat64), 'complex<float64>')
         self.assertEqual(ndt.cfloat64.data_size, 16)
-        self.assertEqual(ndt.cfloat64.alignment, 8)
+        self.assertTrue(ndt.cfloat64.alignment in [4,8])
 
     def test_complex_dtype_realimag(self):
         a = nd.ndobject(1 + 3j)

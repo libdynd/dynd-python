@@ -35,12 +35,16 @@ static int dynd_to_numpy_type_id[builtin_type_id_count] = {
     NPY_INT16,
     NPY_INT32,
     NPY_INT64,
+    NPY_NOTYPE, // INT128
     NPY_UINT8,
     NPY_UINT16,
     NPY_UINT32,
     NPY_UINT64,
+    NPY_NOTYPE, // UINT128
+    NPY_FLOAT16,
     NPY_FLOAT32,
     NPY_FLOAT64,
+    NPY_NOTYPE, // FLOAT128
     NPY_COMPLEX64,
     NPY_COMPLEX128,
     NPY_NOTYPE

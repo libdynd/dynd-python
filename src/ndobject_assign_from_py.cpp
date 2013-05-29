@@ -414,7 +414,7 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
             // Make a temporary value with just the trailing dimensions, then
             // assign to the output
             dimvector shape(original_dst_undim);
-            dt.extended()->get_shape(0, shape.get(), metadata);
+            dt.extended()->get_shape(original_dst_undim, 0, shape.get(), metadata);
             dtype partial_dt = dt.get_dtype_at_dimension(NULL, dst_undim - seq_undim).get_canonical_dtype();
             ndobject tmp(make_ndobject_memory_block(partial_dt, original_dst_undim - (dst_undim - seq_undim),
                             shape.get() + (dst_undim - seq_undim)));

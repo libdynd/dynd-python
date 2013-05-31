@@ -82,7 +82,7 @@ class TestLowLevel(unittest.TestCase):
                         lowlevel.FIXED_DIM_TYPE_ID)
         self.assertEqual(self.type_id_of(nd.dtype('M, int32')),
                         lowlevel.STRIDED_DIM_TYPE_ID)
-        self.assertEqual(self.type_id_of(nd.dtype('Var, int32')),
+        self.assertEqual(self.type_id_of(nd.dtype('var, int32')),
                         lowlevel.VAR_DIM_TYPE_ID)
         # GroupBy
         self.assertEqual(self.type_id_of(nd.groupby([1, 2], ['a', 'a']).dtype),

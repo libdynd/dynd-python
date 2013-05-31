@@ -97,7 +97,7 @@ cdef class w_dtype:
 
     >>> nd.dtype('int16')
     ndt.int16
-    >>> nd.dtype('5, Var, float32')
+    >>> nd.dtype('5, var, float32')
     nd.dtype('fixed_dim<5, var_dim<float32>>')
     >>> nd.dtype('{x: float32; y: float32; z: float32}')
     nd.dtype('cstruct<float32 x, float32 y, float32 z>')
@@ -312,7 +312,7 @@ def replace_udtype(w_dtype dt, replacement_dt, size_t replace_undim=0):
     --------
     >>> from dynd import nd, ndt
 
-    >>> d = nd.dtype('3, Var, int32')
+    >>> d = nd.dtype('3, var, int32')
     >>> ndt.replace_udtype(d, 'M, float64')
     nd.dtype('fixed_dim<3, var_dim<strided_dim<float64>>>')
     >>> ndt.replace_udtype(d, '{x: int32; y:int32}', 1)
@@ -343,7 +343,7 @@ def extract_udtype(dt, size_t keep_undim=0):
     --------
     >>> from dynd import nd, ndt
 
-    >>> d = nd.dtype('3, Var, int32')
+    >>> d = nd.dtype('3, var, int32')
     >>> ndt.extract_udtype(d)
     ndt.int32
     >>> ndt.extract_udtype(d, 1)
@@ -1455,7 +1455,7 @@ def parse_json(dtype, json):
     --------
     >>> from dynd import nd, ndt
 
-    >>> nd.parse_json('Var, int8', '[1, 2, 3, 4, 5]')
+    >>> nd.parse_json('var, int8', '[1, 2, 3, 4, 5]')
     nd.ndobject([1, 2, 3, 4, 5], var_dim<int8>)
     >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
     nd.ndobject([1, 2, 3, 4], fixed_dim<4, int8>)

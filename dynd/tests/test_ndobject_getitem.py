@@ -37,9 +37,9 @@ class TestNDObjectGetItem(unittest.TestCase):
         self.assertRaises(IndexError, lambda x : x[-5:101:2], a)
 
     def test_var_dim(self):
-        a = nd.empty('Var, int32')
+        a = nd.empty('var, int32')
         a[...] = nd.arange(100)
-        self.assertEqual(a.dtype, nd.dtype('Var, int32'))
+        self.assertEqual(a.dtype, nd.dtype('var, int32'))
         self.assertEqual(a[...].dtype, nd.dtype('A, int32'))
         self.assertEqual(a[0].dtype, ndt.int32)
         self.assertEqual(a[0:1].dtype, nd.dtype('A, int32'))

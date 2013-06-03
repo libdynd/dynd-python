@@ -9,7 +9,7 @@ from dynd._pydynd import _get_lowlevel_api, _get_py_lowlevel_api
 # The low level API functions are declared with all
 # void pointer parameters to avoid the copies
 # of structures and values ctypes makes in various places.
-class LowLevelAPI(ctypes.Structure):
+class _LowLevelAPI(ctypes.Structure):
     _fields_ = [
                 ('version', ctypes.c_size_t),
                 # void memory_block_incref(memory_block_data *mbd);
@@ -39,7 +39,7 @@ class LowLevelAPI(ctypes.Structure):
 # The low level API functions are declared with all
 # void pointer parameters to avoid the copies
 # of structures and values ctypes makes in various places.
-class PyLowLevelAPI(ctypes.Structure):
+class _PyLowLevelAPI(ctypes.Structure):
     _fields_ = [
                 ('version', ctypes.c_size_t),
                 # dynd::ndobject_preamble *get_ndobject_ptr(WNDObject *obj);
@@ -60,5 +60,5 @@ class PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.c_void_p)),
                ]
 
-api = LowLevelAPI.from_address(_get_lowlevel_api())
-py_api = PyLowLevelAPI.from_address(_get_py_lowlevel_api())
+api = _LowLevelAPI.from_address(_get_lowlevel_api())
+py_api = _PyLowLevelAPI.from_address(_get_py_lowlevel_api())

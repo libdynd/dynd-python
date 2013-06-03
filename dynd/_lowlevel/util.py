@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-__all__ = ['data_address_of', 'metadata_address_of', 'metadata_struct_of']
+__all__ = ['ndobject_preamble_of', 'data_address_of',
+            'metadata_address_of', 'metadata_struct_of']
 
 import ctypes
 
@@ -8,6 +9,18 @@ from dynd import nd, ndt
 from .ctypes_types import NDObjectPreamble
 from .api import py_api
 from .metadata_struct import build_metadata_struct
+
+def ndobject_preamble_of(ndo):
+    """
+    This low level function returns a ctypes structure
+    exposing the ndobject preamble of the ndobject. Note that
+    this struct is not holding on to a reference to 'ndo',
+    so the caller must ensure the lifetime of the
+    structure is not longer than that of 'ndo'.
+    """
+    if not isinstance(ndo, nd.ndobject):
+        raise TypeError('Object is not a dynd ndobject')
+    return NDObjectPreamble.from_address(py_api.get_ndobject_ptr(ndo))
 
 def data_address_of(ndo):
     """

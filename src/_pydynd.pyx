@@ -875,17 +875,6 @@ cdef class w_ndobject:
     def __contains__(self, x):
         return ndobject_contains(GET(self.v), x)
 
-    def debug_repr(self):
-        """
-        a.debug_repr()
-
-        Returns a raw representation of the ndobject data.
-
-        This can be useful for diagnosing bugs in the ndobject
-        or dtype/metadata/data abstraction ndobjects are based on.
-        """
-        return str(<char *>ndobject_debug_print(GET(self.v)).c_str())
-
     def eval(self):
         """
         a.eval()
@@ -1532,6 +1521,33 @@ def elwise_map(n, callable, dst_type, src_type = None):
     """
     return dynd_elwise_map(n, callable, dst_type, src_type)
 
+class DebugReprObj(object):
+    def __init__(self, repr_str):
+        self.repr_str = repr_str
+
+    def __str__(self):
+        return self.repr_str
+
+    def __repr__(self):
+        return self.repr_str
+
+def debug_repr(obj):
+    """
+    nd.debug_repr(a)
+
+    Returns a raw representation of ndobject data.
+
+    This can be useful for diagnosing bugs in the ndobject
+    or dtype/metadata/data abstraction ndobjects are based on.
+
+    Parameters
+    ----------
+    a : dynd ndobject
+        The object whose debug repr is desired
+    """
+    if isinstance(obj, w_ndobject):
+        return DebugReprObj(str(<char *>ndobject_debug_print(GET((<w_ndobject>obj).v)).c_str()))
+
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
 
@@ -1548,9 +1564,9 @@ cdef class w_elwise_gfunc:
 #        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
 #        elwise_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel)
 
-    def debug_repr(self):
-        """Prints a raw representation of the gfunc data."""
-        return str(<char *>elwise_gfunc_debug_print(GET(self.v)).c_str())
+    #def debug_repr(self):
+    #    """Prints a raw representation of the gfunc data."""
+    #    return str(<char *>elwise_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -1577,9 +1593,9 @@ cdef class w_elwise_reduce_gfunc:
 #            id = w_ndobject(identity)
 #            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
 
-    def debug_repr(self):
-        """Returns a raw representation of the gfunc data."""
-        return str(<char *>elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
+    #def debug_repr(self):
+    #    """Returns a raw representation of the gfunc data."""
+    #    return str(<char *>elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
 
     def __call__(self, *args, **kwargs):
         """Calls the gfunc."""
@@ -1615,9 +1631,9 @@ cdef class w_elwise_program:
         """Converts the elementwise VM program into a dict"""
         return vm_elwise_program_as_py(GET(self.v))
 
-    def debug_repr(self):
-        """Returns a raw representation of the elwise_program data."""
-        return str(<char *>vm_elwise_program_debug_print(GET(self.v)).c_str())
+    #def debug_repr(self):
+    #    """Returns a raw representation of the elwise_program data."""
+    #    return str(<char *>vm_elwise_program_debug_print(GET(self.v)).c_str())
 
 cdef class w_ndobject_callable:
     cdef ndobject_callable_placement_wrapper v

@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from dynd._pydynd import w_dtype as dtype, w_ndobject as ndobject, \
         as_py, as_numpy, empty, empty_like, arange, \
         linspace, fields, groupby, elwise_map, \
-        parse_json, format_json
+        parse_json, format_json, debug_repr
 
 # All the builtin elementwise gfuncs
 #from elwise_gfuncs import *

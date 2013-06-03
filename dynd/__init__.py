@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-# dynd.lowlevel is not imported by default
+# dynd._lowlevel is not imported by default
 from . import nd, ndt
 
 from ._pydynd import _dynd_version_string as __libdynd_version__, \

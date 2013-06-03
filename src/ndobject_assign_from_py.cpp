@@ -326,7 +326,7 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
                     // Allocate the output array data
                     char *dst_end = NULL;
                     allocator->allocate(memblock, seqsize * dst_stride,
-                                element_dt.get_alignment(), &d->begin, &dst_end);
+                                element_dt.get_data_alignment(), &d->begin, &dst_end);
                 }
                 d->size = seqsize;
             }

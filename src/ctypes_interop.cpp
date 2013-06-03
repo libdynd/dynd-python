@@ -236,7 +236,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             pyobject_ownref field_data_offset_obj(PyObject_GetAttrString(field_data_obj.get(), "offset"));
             field_offsets.push_back(pyobject_as_index(field_data_offset_obj.get()));
             // If the field isn't aligned as the dtype requires, make it into an unaligned version
-            if (!offset_is_aligned(field_offsets.back(), field_types.back().get_alignment())) {
+            if (!offset_is_aligned(field_offsets.back(), field_types.back().get_data_alignment())) {
                 field_types.back() = make_unaligned_dtype(field_types.back());
             }
         }

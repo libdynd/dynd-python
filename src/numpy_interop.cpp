@@ -59,7 +59,7 @@ dtype make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignmen
         }
         field_types.push_back(dtype_from_numpy_dtype(fld_dtype, data_alignment));
         // If the field isn't aligned enough, turn it into an unaligned type
-        if (!offset_is_aligned(offset | data_alignment, field_types.back().get_alignment())) {
+        if (!offset_is_aligned(offset | data_alignment, field_types.back().get_data_alignment())) {
             field_types.back() = make_unaligned_dtype(field_types.back());
         }
         field_names.push_back(pystring_as_string(key));
@@ -187,7 +187,7 @@ dtype pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 
     // If the data this dtype is for isn't aligned enough,
     // make an unaligned version.
-    if (data_alignment != 0 && data_alignment < dt.get_alignment()) {
+    if (data_alignment != 0 && data_alignment < dt.get_data_alignment()) {
         dt = make_unaligned_dtype(dt);
     }
 

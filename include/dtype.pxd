@@ -49,8 +49,8 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
     cdef cppclass base_dtype:
         type_id_t type_id()
         dtype_kind_t get_kind()
-        uintptr_t get_alignment()
         uintptr_t get_data_size()
+        uintptr_t get_data_alignment()
         dtype& value_dtype(dtype&)
         dtype& operand_dtype(dtype&)
 
@@ -68,8 +68,9 @@ cdef extern from "dynd/dtype.hpp" namespace "dynd":
         dtype get_canonical_dtype()
         type_id_t type_id()
         dtype_kind_t get_kind()
-        size_t get_alignment()
         size_t get_data_size()
+        size_t get_data_alignment()
+        size_t get_metadata_size()
         base_dtype* extended()
         string_encoding_t string_encoding() except +translate_exception
         size_t get_undim()

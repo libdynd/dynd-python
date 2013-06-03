@@ -378,7 +378,7 @@ static void fill_ndobject_from_pylist(const dtype& dt, const char *metadata, cha
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
         allocator->allocate(md->blockref, size * stride,
-                        element_dtype.get_alignment(), &out->begin, &out_end);
+                        element_dtype.get_data_alignment(), &out->begin, &out_end);
         out->size = size;
         char *element_data = out->begin;
         if (element_dtype.is_scalar()) {
@@ -558,7 +558,7 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
         memory_block_ptr stringref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
         char *data_ptr;
         ndobject result(make_ndobject_memory_block(d.extended()->get_metadata_size(),
-                        d.get_data_size(), d.get_alignment(), &data_ptr));
+                        d.get_data_size(), d.get_data_alignment(), &data_ptr));
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();

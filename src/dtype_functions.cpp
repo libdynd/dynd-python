@@ -74,7 +74,7 @@ std::string pydynd::dtype_repr(const dynd::dtype& d)
                 ss << "ndt.json";
                 break;
             case bytes_type_id:
-                if (d.get_alignment() == 1) {
+                if (d.get_data_alignment() == 1) {
                     ss << "ndt.bytes";
                 } else {
                     ss << "nd.dtype('" << d << "')";

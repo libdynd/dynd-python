@@ -129,6 +129,15 @@ cdef class w_dtype:
     def __getattr__(self, name):
         return get_dtype_dynamic_property(GET(self.v), name)
 
+    property dshape:
+        """
+        a.dshape
+
+        The blaze datashape of the dynd type, as a string.
+        """
+        def __get__(self):
+            return str(<char *>dynd_format_datashape(GET(self.v)).c_str())
+
     property data_size:
         """
         a.data_size
@@ -139,9 +148,9 @@ cdef class w_dtype:
         def __get__(self):
             return GET(self.v).get_data_size()
 
-    property alignment:
+    property data_alignment:
         """
-        a.alignment
+        a.data_alignment
 
         The alignment, in bytes, of the data for an
         instance of this dynd type.
@@ -151,7 +160,17 @@ cdef class w_dtype:
         requires an adapter transformation applied.
         """
         def __get__(self):
-            return GET(self.v).get_alignment()
+            return GET(self.v).get_data_alignment()
+
+    property metadata_size:
+        """
+        a.metadata_size
+
+        The size, in bytes, of the metadata for
+        this dynd type.
+        """
+        def __get__(self):
+            return GET(self.v).get_metadata_size()
 
     property kind:
         """
@@ -191,15 +210,6 @@ cdef class w_dtype:
         """
         def __get__(self):
             return GET(self.v).get_undim()
-
-    property dshape:
-        """
-        a.dshape
-
-        The Blaze datashape of the dynd type, as a string.
-        """
-        def __get__(self):
-            return str(<char *>dynd_format_datashape(GET(self.v)).c_str())
 
     property udtype:
         """

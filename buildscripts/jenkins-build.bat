@@ -89,11 +89,8 @@ cd ..
 rd /q /s pkgs
 mkdir pkgs
 cd pkgs
-if "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-64
-if "%PROCESSOR_ARCHITECTURE%" == "AMD64" cd win-64
-if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" mkdir win-32
-if NOT "%PROCESSOR_ARCHITECTURE%" == "AMD64" cd win-32
-
+mkdir win-%PYTHON_BITS%
+cd win-%PYTHON_BITS%
 
 REM Create a conda package from the build
 call C:\Anaconda\Scripts\conda package -p %PYENV_PREFIX% --pkg-name=dynd-python --pkg-version=%PYDYND_VERSION%

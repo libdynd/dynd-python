@@ -36,6 +36,13 @@ channels:
   - http://repo.continuum.io/pkgs/gpl
 ```
 
+It may work best to install DyND into an environment instead of
+the main Anaconda directory. You can do this with a command like:
+
+```
+C:\>conda create -n dynd-env python=3.3 dynd-python numpy scipy ipython
+```
+
 Developing DyND
 ---------------
 

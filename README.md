@@ -39,6 +39,6 @@ channels:
 Developing DyND
 ---------------
 
-See BUILD_INSTALL.md for details on building and installing
-the software for environments not supported by Anaconda, or
+See the [build and install instructions](BUILD_INSTALL.md) for details on
+building the software for environments not supported by Anaconda, or
 if you would like to modify or contribute to the project.

@@ -111,7 +111,7 @@ list(GET _PYTHON_VALUES 6 PYTHON_SIZEOF_VOID_P)
 list(GET _PYTHON_VALUES 7 PYTHON_LIBRARY_SUFFIX)
 
 # Make sure the Python has the same pointer-size as the chosen compiler
-# Skip the check on OS X, it doesn't have CMAKE_SIZEOF_VOID_P defined
+# Skip the check on OS X, it doesn't consistently have CMAKE_SIZEOF_VOID_P defined
 if((NOT APPLE) AND (NOT "${PYTHON_SIZEOF_VOID_P}" STREQUAL "${CMAKE_SIZEOF_VOID_P}"))
     if(PythonLibsNew_FIND_REQUIRED)
         math(EXPR _PYTHON_BITS "${PYTHON_SIZEOF_VOID_P} * 8")
@@ -144,11 +144,12 @@ if(CMAKE_HOST_WIN32)
     set(PYTHON_LIBRARY
         "${PYTHON_PREFIX}/libs/Python${PYTHON_LIBRARY_SUFFIX}.lib")
 elseif(APPLE)
-    # Seems to require "-undefined dynamic_lookup" instead of linking
-    # against the .dylib, otherwise it crashes. This flag is added
-    # below
-    set(PYTHON_LIBRARY
-        "${PYTHON_PREFIX}/lib/libpython${PYTHON_LIBRARY_SUFFIX}.dylib")
+     # Seems to require "-undefined dynamic_lookup" instead of linking
+     # against the .dylib, otherwise it crashes. This flag is added
+     # below
+    set(PYTHON_LIBRARY "")
+    #set(PYTHON_LIBRARY
+    #    "${PYTHON_PREFIX}/lib/libpython${PYTHON_LIBRARY_SUFFIX}.dylib")
 else()
     if(${PYTHON_SIZEOF_VOID_P} MATCHES 8)
         set(_PYTHON_LIBS_SEARCH "${PYTHON_PREFIX}/lib64" "${PYTHON_PREFIX}/lib")
@@ -213,8 +214,14 @@ FUNCTION(PYTHON_ADD_MODULE _NAME )
 
     SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_MODULES_LIST ${_NAME})
     ADD_LIBRARY(${_NAME} ${PY_MODULE_TYPE} ${ARGN})
-    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
-
+    IF(APPLE)
+      # On OS X, linking against the Python libraries causes
+      # segfaults, so do this dynamic lookup instead.
+      SET_TARGET_PROPERTIES(${_NAME} PROPERTIES LINK_FLAGS
+                          "-undefined dynamic_lookup")
+    ELSE()
+      TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
+    ENDIF()
     IF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
       SET_TARGET_PROPERTIES(${_NAME} PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}")
       SET_TARGET_PROPERTIES(${_NAME} PROPERTIES SUFFIX "${PYTHON_MODULE_EXTENSION}")

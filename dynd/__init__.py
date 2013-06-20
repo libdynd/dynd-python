@@ -8,11 +8,11 @@ from ._pydynd import _dynd_version_string as __libdynd_version__, \
                 _dynd_git_sha1 as __libdynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__
 
-__version__ = __version__.lstrip('v').replace('-', '.', 1)
-__libdynd_version__ = __libdynd_version__.lstrip('v')
-__version_info__ = tuple(int(x)
+__version__ = __version__.lstrip('v').replace('-', '.post', 1)
+__libdynd_version__ = __libdynd_version__.lstrip('v').replace('-', '.post', 1)
+__version_info__ = tuple(int(x.lstrip('post'))
                 for x in __version__.split('-')[0].split('.'))
-__libdynd_version_info__ = tuple(int(x)
+__libdynd_version_info__ = tuple(int(x.lstrip('post'))
                 for x in __libdynd_version__.split('-')[0].split('.'))
 
 def test(verbosity=1, xunitfile=None, exit=False):

@@ -39,16 +39,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="379.30314"
-     inkscape:cy="95.24581"
+     inkscape:zoom="2"
+     inkscape:cx="254.06178"
+     inkscape:cy="147.47676"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1102"
      inkscape:window-height="689"
-     inkscape:window-x="84"
-     inkscape:window-y="5"
+     inkscape:window-x="209"
+     inkscape:window-y="7"
      inkscape:window-maximized="0"
      fit-margin-top="30"
      fit-margin-left="30"
@@ -205,14 +205,18 @@
       <text
          sodipodi:linespacing="125%"
          id="text3927"
-         y="250.8085"
-         x="147.43208"
-         style="font-size:16px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         y="245.42807"
+         x="198.83833"
+         style="font-size:16px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
          xml:space="preserve"><tspan
-           y="250.8085"
-           x="147.43208"
+           y="245.42807"
+           x="198.83833"
            id="tspan3929"
-           sodipodi:role="line">Kernel Factory</tspan></text>
+           sodipodi:role="line">Kernel Factory/</tspan><tspan
+           y="265.42807"
+           x="198.83833"
+           sodipodi:role="line"
+           id="tspan3339">Linker</tspan></text>
       <path
          d="m 277.79195,246.76553 c 0,17.0157 -34.82407,30.80966 -77.78174,30.80966 -42.95767,0 -77.78175,-13.79396 -77.78175,-30.80966 0,-17.0157 34.82408,-30.80965 77.78175,-30.80965 42.95767,0 77.78174,13.79395 77.78174,30.80965 z"
          sodipodi:ry="30.809652"
@@ -505,7 +509,7 @@
          sodipodi:role="line"
          id="tspan5061"
          x="50.50518"
-         y="37.68417">Step 1 - Create Kernel</tspan></text>
+         y="37.68417">Step 1 - Link Kernel</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:15.61214542px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"

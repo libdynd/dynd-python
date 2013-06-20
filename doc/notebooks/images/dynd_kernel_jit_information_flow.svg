@@ -40,7 +40,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="562.36517"
+     inkscape:cx="304.0321"
      inkscape:cy="191.98542"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -62,7 +62,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -254,7 +254,7 @@
          sodipodi:role="line"
          id="tspan4400"
          x="78.776176"
-         y="242.79999">Cached Kernel Function</tspan><tspan
+         y="242.79999">Unbound Kernel Function</tspan><tspan
          sodipodi:role="line"
          x="78.776176"
          y="256.70169"
@@ -497,7 +497,7 @@
          sodipodi:role="line"
          id="tspan5061"
          x="51.898472"
-         y="38.463074">Step 1 - JIT Kernel Function</tspan></text>
+         y="38.463074">Step 1 - JIT Compile Function</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:16.68202782px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
@@ -508,7 +508,7 @@
          sodipodi:role="line"
          id="tspan5065"
          x="292.19916"
-         y="38.463074">Step 2 - Create Kernel</tspan></text>
+         y="38.463074">Step 2 - Bind Kernel</tspan></text>
     <rect
        ry="15.798181"
        rx="0.091252074"
@@ -528,7 +528,7 @@
          y="154.42494"
          x="367.73273"
          id="tspan5075"
-         sodipodi:role="line">Cached Kernel Function</tspan><tspan
+         sodipodi:role="line">Unbound Kernel Function</tspan><tspan
          id="tspan5077"
          y="168.32663"
          x="367.73273"
@@ -562,15 +562,19 @@
        id="g5087">
       <text
          xml:space="preserve"
-         style="font-size:16px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-         x="147.43208"
-         y="250.8085"
+         style="font-size:16px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         x="198.83833"
+         y="243.61513"
          id="text5089"
          sodipodi:linespacing="125%"><tspan
            sodipodi:role="line"
-           id="tspan5091"
-           x="147.43208"
-           y="250.8085">Kernel Factory</tspan></text>
+           x="198.83833"
+           y="243.61513"
+           id="tspan3333">Kernel Factory/</tspan><tspan
+           sodipodi:role="line"
+           x="198.83833"
+           y="263.61514"
+           id="tspan3337">Linker</tspan></text>
       <path
          sodipodi:type="arc"
          style="fill:none;stroke:#000000;stroke-width:2;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"

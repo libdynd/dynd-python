@@ -108,6 +108,9 @@ cdef extern from "dynd/dtypes/strided_dim_dtype.hpp" namespace "dynd":
 cdef extern from "dynd/dtypes/var_dim_dtype.hpp" namespace "dynd":
     dtype dynd_make_var_dim_dtype "dynd::make_var_dim_dtype" (dtype&) except +translate_exception
 
+cdef extern from "dynd/dtypes/bytes_dtype.hpp" namespace "dynd":
+    dtype dynd_make_bytes_dtype "dynd::make_bytes_dtype" (size_t) except +translate_exception
+
 cdef extern from "dtype_functions.hpp" namespace "pydynd":
     void init_w_dtype_typeobject(object)
 

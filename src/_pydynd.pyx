@@ -568,6 +568,31 @@ def make_string_dtype(encoding=None):
     SET(result.v, dynd_make_string_dtype(encoding))
     return result
 
+def make_bytes_dtype(size_t alignment=1):
+    """
+    make_bytes_dtype(alignment=1)
+
+    Constructs a variable-sized bytes dynd type
+    with the specified alignment.
+
+    Parameters
+    ----------
+    alignment : int, optional
+        The byte alignment of the raw binary data.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_bytes_dtype()
+    ndt.bytes
+    >>> ndt.make_string_dtype(4)
+    nd.dtype('bytes<align=4>')
+    """
+    cdef w_dtype result = w_dtype()
+    SET(result.v, dynd_make_bytes_dtype(alignment))
+    return result
+
 def make_pointer_dtype(target_dtype):
     """
     make_pointer_dtype(target_dtype)

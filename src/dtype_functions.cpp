@@ -12,6 +12,7 @@
 #include <dynd/dtypes/convert_dtype.hpp>
 #include <dynd/dtypes/fixedstring_dtype.hpp>
 #include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/cstruct_dtype.hpp>
@@ -74,7 +75,7 @@ std::string pydynd::dtype_repr(const dynd::dtype& d)
                 ss << "ndt.json";
                 break;
             case bytes_type_id:
-                if (d.get_data_alignment() == 1) {
+                if (static_cast<const bytes_dtype *>(d.extended())->get_target_alignment() == 1) {
                     ss << "ndt.bytes";
                 } else {
                     ss << "nd.dtype('" << d << "')";

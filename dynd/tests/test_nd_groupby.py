@@ -4,7 +4,7 @@ from dynd import nd, ndt
 
 class TestGroupBy(unittest.TestCase):
     def test_immutable(self):
-        a = nd.ndobject([
+        a = nd.array([
                 ('x', 0),
                 ('y', 1),
                 ('x', 2),

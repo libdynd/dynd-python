@@ -42,14 +42,14 @@ class _LowLevelAPI(ctypes.Structure):
 class _PyLowLevelAPI(ctypes.Structure):
     _fields_ = [
                 ('version', ctypes.c_size_t),
-                # dynd::ndobject_preamble *get_ndobject_ptr(WNDObject *obj);
-                ('get_ndobject_ptr',
+                # dynd::array_preamble *get_array_ptr(WNDObject *obj);
+                ('get_array_ptr',
                  ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
                 # const dynd::base_dtype *get_base_dtype_ptr(WDType *obj);
                 ('get_base_dtype_ptr',
                  ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
-                # object ndobject_from_ptr(dt, ptr, owner, access)
-                ('ndobject_from_ptr',
+                # object array_from_ptr(dt, ptr, owner, access)
+                ('array_from_ptr',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),

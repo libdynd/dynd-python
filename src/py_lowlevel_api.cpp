@@ -17,7 +17,7 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-    dynd::ndobject_preamble *get_ndobject_ptr(WNDObject *obj)
+    dynd::ndobject_preamble *get_array_ptr(WNDObject *obj)
     {
         return obj->v.get_ndo();
     }
@@ -27,7 +27,7 @@ namespace {
         return obj->v.extended();
     }
 
-    PyObject *ndobject_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access)
+    PyObject *array_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access)
     {
         try {
             dtype d = make_dtype_from_pyobject(dt);
@@ -39,7 +39,7 @@ namespace {
                                 "immutable", read_access_flag|immutable_access_flag);
             if (d.get_metadata_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create an ndobject from a raw pointer with non-empty metadata, dtype: ";
+                ss << "Cannot create a dynd array from a raw pointer with non-empty metadata, dtype: ";
                 ss << d;
                 throw runtime_error(ss.str());
             }
@@ -108,9 +108,9 @@ namespace {
 
     const py_lowlevel_api_t py_lowlevel_api = {
         0, // version, should increment this every time the struct changes at a release
-        &get_ndobject_ptr,
+        &get_array_ptr,
         &get_base_dtype_ptr,
-        &ndobject_from_ptr,
+        &array_from_ptr,
         &make_assignment_kernel,
     };
 } // anonymous namespace

@@ -1,7 +1,7 @@
 __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_dtype as dtype, \
-                w_ndobject as ndobject, make_cstruct_dtype, \
+                w_ndobject as array, make_cstruct_dtype, \
                 elwise_map, extract_udtype
 
 class FieldExpr:
@@ -33,7 +33,7 @@ class FieldExpr:
                 s = getattr(src_itm, name).eval()
                 if s.undim > 0 or s.dtype.kind == 'struct':
                     # For types which NumPy doesn't support, leave
-                    # them as DyND ndobjects
+                    # them as DyND arrays
                     try:
                         s = as_numpy(s, allow_copy=True)
                     except RuntimeError:
@@ -50,7 +50,7 @@ class FieldExpr:
 
 def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     """
-    Adds one or more new fields to a struct ndobject,
+    Adds one or more new fields to a struct array,
     using nd.elwise_map to create the deferred object.
 
     Each field_expr should be a string or bit of code
@@ -60,7 +60,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
 
     Parameters
     ----------
-    n : ndobject
+    n : dynd array
         This should have a uniform struct dtype. The
         result will be a view of this data.
     fields : list of (field_name, field_type, field_expr)
@@ -88,12 +88,12 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     >>> y.dtype
     nd.dtype('strided_dim<expr<cstruct<float64 r, float64 theta>, op0=cstruct<float64 x, float64 y>, expr=topolar(op0)>>')
     >>> y.eval()
-    nd.ndobject([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<cstruct<float64 r, float64 theta>>)
+    nd.array([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<cstruct<float64 r, float64 theta>>)
     >>> x[0] = (-100, 0)
     >>> y[0].eval()
-    nd.ndobject([100, 3.14159], cstruct<float64 r, float64 theta>)
+    nd.array([100, 3.14159], cstruct<float64 r, float64 theta>)
     """
-    n = ndobject(n)
+    n = array(n)
     udt = n.udtype.value_dtype
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
@@ -139,7 +139,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
 
     Parameters
     ----------
-    n : ndobject
+    n : dynd array
         This should have a uniform struct dtype. The
         result will be a view of this data.
     replace_undim : integer
@@ -158,14 +158,14 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
     Examples
     --------
     >>> from dynd import nd, ndt
-    >>> a = nd.ndobject([
+    >>> a = nd.array([
     ...  ('A', 1, 2), ('A', 3, 4),
     ...  ('B', 1.5, 2.5), ('A', 0.5, 9),
     ...  ('C', 1, 5), ('B', 2, 2)],
     ...  udtype='{cat: string; x: float32; y: float32}')
     >>> gb = nd.groupby(a, a.cat)
     >>> gb.groups
-    nd.ndobject(["A", "B", "C"], strided_dim<string>)
+    nd.array(["A", "B", "C"], strided_dim<string>)
     >>> b = nd.make_computed_fields(gb.eval(), 1,
     ...                 fields=[('sum_x', ndt.float32, 'sum(x)'),
     ...                         ('mean_y', ndt.float32, 'mean(y)'),
@@ -178,7 +178,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
      {u'max_x': 2.0, u'max_y': 2.5, u'mean_y': 2.25, u'min_y': 2.0, u'sum_x': 3.5},
      {u'max_x': 1.0, u'max_y': 5.0, u'mean_y': 5.0, u'min_y': 5.0, u'sum_x': 1.0}]
     """
-    n = ndobject(n)
+    n = array(n)
     udt = n.udtype.value_dtype
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")

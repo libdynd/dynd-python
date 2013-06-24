@@ -75,12 +75,12 @@ class TestDType(unittest.TestCase):
         self.assertTrue(ndt.cfloat64.data_alignment in [4,8])
 
     def test_complex_dtype_realimag(self):
-        a = nd.ndobject(1 + 3j)
+        a = nd.array(1 + 3j)
         self.assertEqual(ndt.cfloat64, a.dtype)
         self.assertEqual(1, nd.as_py(a.real))
         self.assertEqual(3, nd.as_py(a.imag))
 
-        a = nd.ndobject([1 + 2j, 3 + 4j, 5 + 6j])
+        a = nd.array([1 + 2j, 3 + 4j, 5 + 6j])
         self.assertEqual(nd.dtype('A, cfloat64'), a.dtype)
         self.assertEqual([1, 3, 5], nd.as_py(a.real))
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
@@ -144,13 +144,13 @@ class TestDType(unittest.TestCase):
         d = nd.dtype('dtype')
         self.assertEqual(str(d), 'dtype')
 
-        # Creating an ndobject out of a dtype
+        # Creating a dynd array out of a dtype
         # results in it having the dtype 'dtype'
-        n = nd.ndobject(d)
+        n = nd.array(d)
         self.assertEqual(n.dtype, d)
 
         # Python float type converts to float64
-        n = nd.ndobject(float)
+        n = nd.array(float)
         self.assertEqual(n.dtype, d)
         self.assertEqual(nd.as_py(n), ndt.float64)
 

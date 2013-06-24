@@ -4,7 +4,7 @@ from dynd import nd, ndt
 
 class TestFields(unittest.TestCase):
     def test_simple(self):
-        a = nd.ndobject([
+        a = nd.array([
                 (1, 2, 'a', 'b'),
                 (3, 4, 'ab', 'cd'),
                 (5, 6, 'def', 'ghi')],
@@ -41,7 +41,7 @@ class TestFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.z), nd.as_py(a.z))
 
     def test_fixed_var(self):
-        a = nd.ndobject([
+        a = nd.array([
                 [(1, 2, 'a', 'b'),
                  (3, 4, 'ab', 'cd')],
                 [(5, 6, 'def', 'ghi')],
@@ -85,7 +85,7 @@ class TestFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.z), nd.as_py(a.z))
 
     def test_bad_field_name(self):
-        a = nd.ndobject([
+        a = nd.array([
                 (1, 2, 'a', 'b'),
                 (3, 4, 'ab', 'cd'),
                 (5, 6, 'def', 'ghi')],

@@ -853,13 +853,13 @@ cdef class w_ndobject:
     --------
     >>> from dynd import nd, ndt
 
-    >>> nd.ndobject([1, 2, 3, 4, 5])
-    nd.ndobject([1, 2, 3, 4, 5], strided_dim<int32>)
-    >>> nd.ndobject([[1, 2], [3, 4, 5.0]])
-    nd.ndobject([[1, 2], [3, 4, 5]], strided_dim<var_dim<float64>>)
+    >>> nd.array([1, 2, 3, 4, 5])
+    nd.array([1, 2, 3, 4, 5], strided_dim<int32>)
+    >>> nd.array([[1, 2], [3, 4, 5.0]])
+    nd.array([[1, 2], [3, 4, 5]], strided_dim<var_dim<float64>>)
     >>> from datetime import date
-    >>> nd.ndobject([date(2000,2,14), date(2012,1,1)])
-    nd.ndobject([2000-02-14, 2012-01-01], strided_dim<date>)
+    >>> nd.array([date(2000,2,14), date(2012,1,1)])
+    nd.array([2000-02-14, 2012-01-01], strided_dim<date>)
     """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the ndobject, and
@@ -912,14 +912,14 @@ cdef class w_ndobject:
         --------
         >>> from dynd import nd, ndt
 
-        >>> a = nd.ndobject([1.5, 2, 3])
+        >>> a = nd.array([1.5, 2, 3])
         >>> a
-        nd.ndobject([1.5, 2, 3], strided_dim<float64>)
+        nd.array([1.5, 2, 3], strided_dim<float64>)
         >>> b = a.ucast(ndt.int16, errmode='none')
         >>> b
-        nd.ndobject([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=none>>)
+        nd.array([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=none>>)
         >>> b.eval()
-        nd.ndobject([1, 2, 3], strided_dim<int16>)
+        nd.array([1, 2, 3], strided_dim<int16>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_eval(GET(self.v)))
@@ -964,11 +964,11 @@ cdef class w_ndobject:
         --------
         >>> from dynd import nd, ndt
 
-        >>> a = nd.ndobject([1, 2, 3], dtype=ndt.int16)
+        >>> a = nd.array([1, 2, 3], dtype=ndt.int16)
         >>> a
-        nd.ndobject([1, 2, 3], strided_dim<int16>)
+        nd.array([1, 2, 3], strided_dim<int16>)
         >>> a.storage()
-        nd.ndobject([0x0100, 0x0200, 0x0300], strided_dim<fixedbytes<2,2>>)
+        nd.array([0x0100, 0x0200, 0x0300], strided_dim<fixedbytes<2,2>>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, GET(self.v).storage())
@@ -1028,11 +1028,11 @@ cdef class w_ndobject:
         >>> from dynd import nd, ndt
 
         >>> from datetime import date
-        >>> a = nd.ndobject([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32; year: int32; day: float32}')
+        >>> a = nd.array([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32; year: int32; day: float32}')
         >>> a
-        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=cstruct<int32 month, int32 year, float32 day>, from=date>>)
+        nd.array([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=cstruct<int32 month, int32 year, float32 day>, from=date>>)
         >>> a.eval()
-        nd.ndobject([[3, 1929, 13], [3, 1979, 22]], strided_dim<cstruct<int32 month, int32 year, float32 day>>)
+        nd.array([[3, 1929, 13], [3, 1979, 22]], strided_dim<cstruct<int32 month, int32 year, float32 day>>)
         """
         cdef w_ndobject result = w_ndobject()
         SET(result.v, ndobject_ucast(GET(self.v), GET(w_dtype(dtype).v), replace_undim, errmode))
@@ -1092,9 +1092,9 @@ cdef class w_ndobject:
         --------
         >>> from dynd import nd, ndt
 
-        >>> nd.ndobject([1,2,3,4]).dtype
+        >>> nd.array([1,2,3,4]).dtype
         nd.dtype('strided_dim<int32>')
-        >>> nd.ndobject([[1,2],[3.0]]).dtype
+        >>> nd.array([[1,2],[3.0]]).dtype
         nd.dtype('strided_dim<var_dim<float64>>')
         """
         def __get__(self):
@@ -1229,9 +1229,9 @@ def as_py(w_ndobject n):
     --------
     >>> from dynd import nd, ndt
 
-    >>> a = nd.ndobject([1, 2, 3, 4.0])
+    >>> a = nd.array([1, 2, 3, 4.0])
     >>> a
-    nd.ndobject([1, 2, 3, 4], strided_dim<float64>)
+    nd.array([1, 2, 3, 4], strided_dim<float64>)
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
@@ -1257,9 +1257,9 @@ def as_numpy(w_ndobject n, allow_copy=False):
     >>> from dynd import nd, ndt
 
     >>> import numpy as np
-    >>> a = nd.ndobject([[1, 2, 3], [4, 5, 6]])
+    >>> a = nd.array([[1, 2, 3], [4, 5, 6]])
     >>> a
-    nd.ndobject([[1, 2, 3], [4, 5, 6]], strided_dim<strided_dim<int32>>)
+    nd.array([[1, 2, 3], [4, 5, 6]], strided_dim<strided_dim<int32>>)
     >>> nd.as_numpy(a)
     array([[1, 2, 3],
            [4, 5, 6]])
@@ -1291,9 +1291,9 @@ def empty(shape, dtype=None):
     >>> from dynd import nd, ndt
 
     >>> nd.empty('2, 2, int8')
-    nd.ndobject([[0, -24], [0, 4]], fixed_dim<2, fixed_dim<2, int8>>)
+    nd.array([[0, -24], [0, 4]], fixed_dim<2, fixed_dim<2, int8>>)
     >>> nd.empty((2, 2), 'M, N, int16')
-    nd.ndobject([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
+    nd.array([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
     cdef w_ndobject result = w_ndobject()
     if dtype is not None:
@@ -1322,13 +1322,13 @@ def empty_like(w_ndobject prototype, dtype=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> a = nd.ndobject([[1, 2], [3, 4]])
+    >>> a = nd.array([[1, 2], [3, 4]])
     >>> a
-    nd.ndobject([[1, 2], [3, 4]], strided_dim<strided_dim<int32>>)
+    nd.array([[1, 2], [3, 4]], strided_dim<strided_dim<int32>>)
     >>> nd.empty_like(a)
-    nd.ndobject([[808529973, 741351468], [0, 0]], strided_dim<strided_dim<int32>>)
+    nd.array([[808529973, 741351468], [0, 0]], strided_dim<strided_dim<int32>>)
     >>> nd.empty_like(a, dtype=ndt.float32)
-    nd.ndobject([[1.47949e-041, 0], [0, 0]], strided_dim<strided_dim<float32>>)
+    nd.array([[1.47949e-041, 0], [0, 0]], strided_dim<strided_dim<float32>>)
     """
     cdef w_ndobject result = w_ndobject()
     if dtype is None:
@@ -1362,15 +1362,15 @@ def groupby(data, by, groups = None):
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'])
     >>> a.groups
-    nd.ndobject(["F", "M"], strided_dim<string<ascii>>)
+    nd.array(["F", "M"], strided_dim<string<ascii>>)
     >>> a.eval()
-    nd.ndobject([[2, 5, 6], [1, 3, 4]], fixed_dim<2, var_dim<int32>>)
+    nd.array([[2, 5, 6], [1, 3, 4]], fixed_dim<2, var_dim<int32>>)
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
     >>> a.groups
-    nd.ndobject(["M", "N", "F"], strided_dim<string<ascii>>)
+    nd.array(["M", "N", "F"], strided_dim<string<ascii>>)
     >>> a.eval()
-    nd.ndobject([[1, 3, 4], [], [2, 5, 6]], fixed_dim<3, var_dim<int32>>)
+    nd.array([[1, 3, 4], [], [2, 5, 6]], fixed_dim<3, var_dim<int32>>)
     """
     cdef w_ndobject result = w_ndobject()
     if groups is None:
@@ -1480,11 +1480,11 @@ def parse_json(dtype, json):
     >>> from dynd import nd, ndt
 
     >>> nd.parse_json('var, int8', '[1, 2, 3, 4, 5]')
-    nd.ndobject([1, 2, 3, 4, 5], var_dim<int8>)
+    nd.array([1, 2, 3, 4, 5], var_dim<int8>)
     >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
-    nd.ndobject([1, 2, 3, 4], fixed_dim<4, int8>)
+    nd.array([1, 2, 3, 4], fixed_dim<4, int8>)
     >>> nd.parse_json('2, {x: int8; y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
-    nd.ndobject([[0, 1], [3, 2]], fixed_dim<2, cstruct<int8 x, int8 y>>)
+    nd.array([[0, 1], [3, 2]], fixed_dim<2, cstruct<int8 x, int8 y>>)
     """
     cdef w_ndobject result = w_ndobject()
     if type(dtype) is w_ndobject:
@@ -1508,11 +1508,11 @@ def format_json(w_ndobject n):
     --------
     >>> from dynd import nd, ndt
 
-    >>> a = nd.ndobject([[1, 2, 3], [1, 2]])
+    >>> a = nd.array([[1, 2, 3], [1, 2]])
     >>> a
-    nd.ndobject([[1, 2, 3], [1, 2]], strided_dim<var_dim<int32>>)
+    nd.array([[1, 2, 3], [1, 2]], strided_dim<var_dim<int32>>)
     >>> nd.format_json(a)
-    nd.ndobject("[[1,2,3],[1,2]]", string)
+    nd.array("[[1,2,3],[1,2]]", string)
     """
     cdef w_ndobject result = w_ndobject()
     SET(result.v, dynd_format_json(GET(n.v)))

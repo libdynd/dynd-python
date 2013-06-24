@@ -12,7 +12,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(ndt.date.canonical_dtype, ndt.date)
 
     def test_date_properties(self):
-        a = nd.ndobject(date(1955,3,13))
+        a = nd.array(date(1955,3,13))
         self.assertEqual(str(a), '1955-03-13')
         self.assertEqual(a.year.eval().dtype, ndt.int32)
         self.assertEqual(a.month.eval().dtype, ndt.int32)
@@ -22,7 +22,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.day), 13)
 
     def test_struct_casting(self):
-        a = nd.ndobject([date(1912,3,4), date(2002,1,30)])
+        a = nd.array([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
         s = a.ucast(ndt.make_cstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
                                         ['year', 'month', 'day']))
@@ -36,7 +36,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(d), [date(1912,3,4), date(2002,1,30)])
 
     def test_struct_function(self):
-        a = nd.ndobject(date(1955,3,13))
+        a = nd.array(date(1955,3,13))
         s = a.to_struct().eval()
         self.assertEqual(s.dtype,
                         ndt.make_cstruct_dtype(
@@ -47,21 +47,21 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(s.day), 13)
 
     def test_strftime(self):
-        a = nd.ndobject(date(1955,3,13))
+        a = nd.array(date(1955,3,13))
         self.assertEqual(nd.as_py(a.strftime('%Y')), '1955')
         self.assertEqual(nd.as_py(a.strftime('%m/%d/%y')), '03/13/55')
         self.assertEqual(nd.as_py(a.strftime('%Y and %j')), '1955 and 072')
 
-        a = nd.ndobject([date(1931,12,12), date(2013,5,14), date(2012,12,25)])
+        a = nd.array([date(1931,12,12), date(2013,5,14), date(2012,12,25)])
         self.assertEqual(nd.as_py(a.strftime('%Y-%m-%d %j %U %w %W')),
                         ['1931-12-12 346 49 6 49', '2013-05-14 134 19 2 19', '2012-12-25 360 52 2 52'])
 
     def test_weekday(self):
-        self.assertEqual(nd.as_py(nd.ndobject(date(1955,3,13)).weekday()), 6)
-        self.assertEqual(nd.as_py(nd.ndobject(date(2002,12,4)).weekday()), 2)
+        self.assertEqual(nd.as_py(nd.array(date(1955,3,13)).weekday()), 6)
+        self.assertEqual(nd.as_py(nd.array(date(2002,12,4)).weekday()), 2)
 
     def test_replace(self):
-        a = nd.ndobject(date(1955,3,13))
+        a = nd.array(date(1955,3,13))
         self.assertEqual(nd.as_py(a.replace(2013)), date(2013,3,13))
         self.assertEqual(nd.as_py(a.replace(2012,12)), date(2012,12,13))
         self.assertEqual(nd.as_py(a.replace(2012,12,15)), date(2012,12,15))

@@ -37,7 +37,7 @@ class TestComputedFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.complex), [1+2j, -1+1j, 2+5j])
 
     def test_aggregate(self):
-        a = nd.ndobject([
+        a = nd.array([
             ('A', 1, 2),
             ('A', 3, 4),
             ('B', 1.5, 2.5),

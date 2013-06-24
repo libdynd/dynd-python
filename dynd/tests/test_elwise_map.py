@@ -10,7 +10,7 @@ class TestElwiseMap(unittest.TestCase):
         a = nd.arange(5)
         b = nd.elwise_map([a], doubler, ndt.int32)
         self.assertEqual(nd.as_py(b), [0, 2, 4, 6, 8])
-        # indexing into the deferred ndobject
+        # indexing into the deferred dynd array
         self.assertEqual(nd.as_py(b[1]), 2)
         self.assertEqual(nd.as_py(b[3:]), [6, 8])
         self.assertEqual(nd.as_py(b[1::2]), [2, 6])
@@ -77,10 +77,10 @@ class TestElwiseMap(unittest.TestCase):
                 d[...] = nd.as_py(s0) * nd.as_py(s1)
         # 1D array
         a = nd.arange(5)
-        b = nd.ndobject([1, 3, -2, 4, 12])
+        b = nd.array([1, 3, -2, 4, 12])
         c = nd.elwise_map([a,b], multiplier, ndt.int32)
         self.assertEqual(nd.as_py(c), [0, 3, -4, 12, 48])
-        # indexing into the deferred ndobject
+        # indexing into the deferred dynd array
         self.assertEqual(nd.as_py(c[1]), 3)
         self.assertEqual(nd.as_py(c[3:]), [12, 48])
         self.assertEqual(nd.as_py(c[1::2]), [3, 12])
@@ -96,10 +96,10 @@ class TestElwiseMap(unittest.TestCase):
                 d[...] = nd.as_py(s0) * nd.as_py(s1)
         # 1D array
         a = nd.arange(5)
-        b = nd.ndobject(12).eval_copy(access='readwrite')
+        b = nd.array(12).eval_copy(access='readwrite')
         c = nd.elwise_map([a,b], multiplier, ndt.int32)
         self.assertEqual(nd.as_py(c), [0, 12, 24, 36, 48])
-        # indexing into the deferred ndobject
+        # indexing into the deferred dynd array
         self.assertEqual(nd.as_py(c[1]), 12)
         self.assertEqual(nd.as_py(c[3:]), [36, 48])
         self.assertEqual(nd.as_py(c[1::2]), [12, 36])

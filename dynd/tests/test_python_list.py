@@ -1,6 +1,6 @@
 import sys
 import unittest
-from datetime import date
+from datetime import date, datetime
 from dynd import nd, ndt
 
 class TestPythonList(unittest.TestCase):
@@ -74,6 +74,19 @@ class TestPythonList(unittest.TestCase):
         lststr = ['2011-03-15', '1933-12-25', '1979-03-22']
         a = nd.array(lst)
         self.assertEqual(a.dtype.udtype, ndt.date)
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a), lst)
+        self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)
+
+    def test_datetime(self):
+        lst = [datetime(2011, 3, 15, 3, 15, 12, 123456),
+               datetime(1933, 12, 25),
+               datetime(1979, 3, 22, 14, 30)]
+        lststr = ['2011-03-15T03:15:12.123456',
+                  '1933-12-25T00:00:00.000000',
+                  '1979-03-22T14:30:00.000000']
+        a = nd.array(lst)
+        self.assertEqual(a.dtype.udtype, nd.dtype('datetime("usec")'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), lst)
         self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)

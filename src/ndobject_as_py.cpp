@@ -14,6 +14,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 
@@ -117,6 +118,21 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
             int32_t year, month, day;
             dd->get_ymd(metadata, data, year, month, day);
             return PyDate_FromDate(year, month, day);
+        }
+        case datetime_type_id: {
+            const datetime_dtype *dd = static_cast<const datetime_dtype *>(d.extended());
+            int32_t year, month, day, hour, minute, second, nsecond;
+            dd->get_cal(metadata, data, year, month, day, hour, minute, second, nsecond);
+            int32_t usecond = nsecond / 1000;
+            if (usecond * 1000 != nsecond) {
+                stringstream ss;
+                ss << "cannot convert dynd value of type " << d;
+                ss << " with value ";
+                dd->print_data(ss, metadata, data);
+                ss << " to python without precision loss";
+                throw runtime_error(ss.str());
+            }
+            return PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
         }
         case dtype_type_id: {
             dtype dt(reinterpret_cast<const dtype_dtype_data *>(data)->dt, true);

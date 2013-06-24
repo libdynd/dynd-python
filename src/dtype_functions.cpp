@@ -18,6 +18,7 @@
 #include <dynd/dtypes/cstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 #include <dynd/dtypes/builtin_dtype_properties.hpp>
@@ -207,6 +208,12 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         return make_string_dtype(string_encoding_utf_32);
 #  endif
 #endif
+    } else if (PyDateTime_Check(obj)) {
+        if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+                        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+            throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
+        }
+        return make_datetime_dtype(datetime_unit_usecond, tz_abstract);
     } else if (PyDate_Check(obj)) {
         return make_date_dtype();
     } else if (WDType_Check(obj)) {

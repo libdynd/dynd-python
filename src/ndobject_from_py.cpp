@@ -12,6 +12,7 @@
 #include <dynd/dtypes/var_dim_dtype.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
@@ -331,11 +332,27 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
 inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
     if (!PyDate_Check(obj)) {
-        throw runtime_error("input object is not a data as expected");
+        throw runtime_error("input object is not a date as expected");
     }
     const date_dtype *dd = static_cast<const date_dtype *>(dt.extended());
     dd->set_ymd(metadata, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
                     PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+}
+
+inline void convert_one_pyscalar_datetime(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+{
+    if (!PyDateTime_Check(obj)) {
+        throw runtime_error("input object is not a datetime as expected");
+    }
+    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+                    ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+        throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
+    }
+    const datetime_dtype *dd = static_cast<const datetime_dtype *>(dt.extended());
+    dd->set_cal(metadata, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
+                    PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
+                    PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
 }
 
 inline void convert_one_pyscalar_dtype(const dtype& DYND_UNUSED(dt),
@@ -477,6 +494,12 @@ static dynd::ndobject ndobject_from_pylist(PyObject *obj)
                             obj, &shape[0], 0);
             break;
         }
+        case datetime_type_id: {
+            fill_ndobject_from_pylist<convert_one_pyscalar_datetime>(result.get_dtype(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
+            break;
+        }
         case dtype_type_id: {
             fill_ndobject_from_pylist<convert_one_pyscalar_dtype>(result.get_dtype(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
@@ -580,6 +603,19 @@ dynd::ndobject pydynd::ndobject_from_py(PyObject *obj)
             throw exception();
         }
         return make_utf8_ndobject(s, len);
+    } else if (PyDateTime_Check(obj)) {
+        if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+                        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+            throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
+        }
+        dtype d = make_datetime_dtype(datetime_unit_usecond, tz_abstract);
+        const datetime_dtype *dd = static_cast<const datetime_dtype *>(d.extended());
+        ndobject result = empty(d);
+        dd->set_cal(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
+                    PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
+                    PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
+                    PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
+        return result;
     } else if (PyDate_Check(obj)) {
         dtype d = make_date_dtype();
         const date_dtype *dd = static_cast<const date_dtype *>(d.extended());

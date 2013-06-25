@@ -1,6 +1,14 @@
 DyND-Python Release Notes
 ===================
 
+DyND-Python 0.4.0
+-----------------
+
+ - Updates to notebooks and other documentation
+ - Some API tweaks, like adding ndt.make_bytes_dtype
+ - Rename nd.ndobject to nd.array
+ - Add initial basic datetime type, with 64-bit int storage
+
 DyND-Python 0.3.1
 -----------------
 

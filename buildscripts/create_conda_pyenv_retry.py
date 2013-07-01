@@ -34,7 +34,7 @@ def main(pyversion, envdir):
             if "LOCKERROR" in stderr:
                 print "Conda is locked. Trying again in 60 seconds"
                 print
-                time.sleep(1)
+                time.sleep(60)
             else:
                 sys.exit(p.returncode)
         else:

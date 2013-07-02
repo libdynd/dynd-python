@@ -45,7 +45,7 @@ rm -rf build
 # Use conda to create a conda environment of the required
 # python version and containing the dependencies.
 export PYENV_PREFIX=${WORKSPACE}/build/pyenv
-./buildscripts/create_conda_pyenv.sh ${PYTHON_VERSION} ${PYENV_PREFIX} || exit 1
+~/anaconda/bin/python ./buildscripts/create_conda_pyenv_retry.py ${PYTHON_VERSION} ${PYENV_PREFIX} || exit 1
 export PATH=${PYENV_PREFIX}/bin:${PATH}
 
 if [ -f "${PYENV_PREFIX}/bin/python" ]; then

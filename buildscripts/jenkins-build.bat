@@ -35,7 +35,7 @@ IF %ERRORLEVEL% NEQ 0 exit /b 1
 REM Use conda to create a conda environment of the required
 REM python version and containing the dependencies.
 SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
-call .\buildscripts\create_conda_pyenv.bat %PYTHON_VERSION% %PYENV_PREFIX%
+C:\Anaconda\python .\buildscripts\create_conda_pyenv_retry.py %PYTHON_VERSION% %PYENV_PREFIX%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
 set PYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe

@@ -27,7 +27,7 @@ def main(pyversion, envdir):
 
     while True:
         p = subprocess.Popen(['conda', 'create', '--yes', '-p', envdir,
-            'python=%s' % pyversion] + packages, stderr=subprocess.PIPE)
+            'python=%s' % pyversion] + packages, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
             print >> sys.stderr, stderr

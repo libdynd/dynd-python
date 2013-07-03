@@ -7,7 +7,7 @@ class TestElwiseMap(unittest.TestCase):
         def doubler(dst, src):
             dst[...] = [2 * nd.as_py(x) for x in src]
         # 1D array
-        a = nd.arange(5)
+        a = nd.range(5)
         b = nd.elwise_map([a], doubler, ndt.int32)
         self.assertEqual(nd.as_py(b), [0, 2, 4, 6, 8])
         # indexing into the deferred dynd array
@@ -19,7 +19,7 @@ class TestElwiseMap(unittest.TestCase):
         self.assertEqual(nd.as_py(b), [0, -2, 20, -4, 8])
 
     def test_unary_function_chained(self):
-        a = nd.arange(3).ucast(ndt.float32)
+        a = nd.range(3).ucast(ndt.float32)
         def multiscale(dst, src):
             dst.once = src
             dst.twice = [2 * nd.as_py(x) for x in src]
@@ -44,7 +44,7 @@ class TestElwiseMap(unittest.TestCase):
                 if nd.as_py(x) >= threshold_val:
                     raise ValueError("Bad value %s" % x)
                 dst[...] = src
-        a = nd.arange(20)
+        a = nd.range(20)
         b = nd.elwise_map([a], threshold_raise, ndt.int32)
         # Should raise when the whole array is evaluated
         self.assertRaises(ValueError, b.eval)
@@ -76,7 +76,7 @@ class TestElwiseMap(unittest.TestCase):
             for d, s0, s1 in zip(dst, src0, src1):
                 d[...] = nd.as_py(s0) * nd.as_py(s1)
         # 1D array
-        a = nd.arange(5)
+        a = nd.range(5)
         b = nd.array([1, 3, -2, 4, 12])
         c = nd.elwise_map([a,b], multiplier, ndt.int32)
         self.assertEqual(nd.as_py(c), [0, 3, -4, 12, 48])
@@ -95,7 +95,7 @@ class TestElwiseMap(unittest.TestCase):
             for d, s0, s1 in zip(dst, src0, src1):
                 d[...] = nd.as_py(s0) * nd.as_py(s1)
         # 1D array
-        a = nd.arange(5)
+        a = nd.range(5)
         b = nd.array(12).eval_copy(access='readwrite')
         c = nd.elwise_map([a,b], multiplier, ndt.int32)
         self.assertEqual(nd.as_py(c), [0, 12, 24, 36, 48])

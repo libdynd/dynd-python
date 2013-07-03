@@ -84,7 +84,7 @@ cdef extern from "ndobject_functions.hpp" namespace "pydynd":
     object ndobject_get_shape(ndobject&) except +translate_exception
     object ndobject_get_strides(ndobject&) except +translate_exception
 
-    ndobject ndobject_arange(object, object, object, object) except +translate_exception
+    ndobject ndobject_range(object, object, object, object) except +translate_exception
     ndobject ndobject_linspace(object, object, object, object) except +translate_exception
     ndobject nd_fields(ndobject&, object) except +translate_exception
 

@@ -147,9 +147,9 @@ dynd::ndobject ndobject_getitem(const dynd::ndobject& n, PyObject *subscript);
 void ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value);
 
 /**
- * Implementation of nd.arange().
+ * Implementation of nd.range().
  */
-dynd::ndobject ndobject_arange(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt);
+dynd::ndobject ndobject_range(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt);
 
 /**
  * Implementation of nd.linspace().

@@ -6,7 +6,7 @@ class TestNDObjectSetItem(unittest.TestCase):
 
     def test_strided_dim(self):
         a = nd.empty(100, 'A, int32')
-        a[...] = nd.arange(100)
+        a[...] = nd.range(100)
         a[0] = 1000
         self.assertEqual(nd.as_py(a[0]), 1000)
         a[1:8:3] = 120

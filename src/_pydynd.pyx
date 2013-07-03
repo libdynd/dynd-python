@@ -1385,10 +1385,10 @@ def groupby(data, by, groups = None):
             SET(result.v, dynd_groupby(GET(w_ndobject(data).v), GET(w_ndobject(by).v), GET(w_dtype(groups).v)))
     return result
 
-def arange(start=None, stop=None, step=None, dtype=None):
+def range(start=None, stop=None, step=None, dtype=None):
     """
-    nd.arange(stop, dtype=None)
-    nd.arange(start, stop, step=None, dtype=None)
+    nd.range(stop, dtype=None)
+    nd.range(start, stop, step=None, dtype=None)
     
     Constructs an ndobject representing a stepped range of values.
 
@@ -1413,11 +1413,11 @@ def arange(start=None, stop=None, step=None, dtype=None):
     # Move the first argument to 'stop' if stop isn't specified
     if stop is None:
         if start is not None:
-            SET(result.v, ndobject_arange(None, start, step, dtype))
+            SET(result.v, ndobject_range(None, start, step, dtype))
         else:
             raise ValueError("No value provided for 'stop'")
     else:
-        SET(result.v, ndobject_arange(start, stop, step, dtype))
+        SET(result.v, ndobject_range(start, stop, step, dtype))
     return result
 
 def linspace(start, stop, count=50, dtype=None):

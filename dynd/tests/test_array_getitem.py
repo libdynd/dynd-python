@@ -6,7 +6,7 @@ class TestNDObjectGetItem(unittest.TestCase):
 
     def test_strided_dim(self):
         a = nd.empty(100, 'A, int32')
-        a[...] = nd.arange(100)
+        a[...] = nd.range(100)
         self.assertEqual(a.dtype, nd.dtype('A, int32'))
         self.assertEqual(a[...].dtype, nd.dtype('A, int32'))
         self.assertEqual(a[0].dtype, ndt.int32)
@@ -22,7 +22,7 @@ class TestNDObjectGetItem(unittest.TestCase):
 
     def test_fixed_dim(self):
         a = nd.empty('100, int32')
-        a[...] = nd.arange(100)
+        a[...] = nd.range(100)
         self.assertEqual(a.dtype, nd.dtype('100, int32'))
         self.assertEqual(a[...].dtype, nd.dtype('100, int32'))
         self.assertEqual(a[0].dtype, ndt.int32)
@@ -38,7 +38,7 @@ class TestNDObjectGetItem(unittest.TestCase):
 
     def test_var_dim(self):
         a = nd.empty('var, int32')
-        a[...] = nd.arange(100)
+        a[...] = nd.range(100)
         self.assertEqual(a.dtype, nd.dtype('var, int32'))
         self.assertEqual(a[...].dtype, nd.dtype('var, int32'))
         self.assertEqual(a[:].dtype, nd.dtype('M, int32'))

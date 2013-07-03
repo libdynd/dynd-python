@@ -13,7 +13,7 @@
 #include <dynd/dtypes/string_dtype.hpp>
 #include <dynd/dtypes/base_uniform_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/ndobject_arange.hpp>
+#include <dynd/ndobject_range.hpp>
 #include <dynd/dtype_promotion.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/base_bytes_dtype.hpp>
@@ -374,7 +374,7 @@ void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyOb
     }
 }
 
-ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt)
+ndobject pydynd::ndobject_range(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt)
 {
     ndobject start_nd, stop_nd, step_nd;
     dtype dt_nd;
@@ -403,10 +403,10 @@ ndobject pydynd::ndobject_arange(PyObject *start, PyObject *stop, PyObject *step
     step_nd = step_nd.ucast(dt_nd).eval();
 
     if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
-        throw runtime_error("dynd::arange should only be called with scalar parameters");
+        throw runtime_error("nd::range should only be called with scalar parameters");
     }
 
-    return arange(dt_nd, start_nd.get_readonly_originptr(),
+    return nd::range(dt_nd, start_nd.get_readonly_originptr(),
             stop_nd.get_readonly_originptr(),
             step_nd.get_readonly_originptr());
 }
@@ -418,9 +418,9 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     start_nd = ndobject_from_py(start);
     stop_nd = ndobject_from_py(stop);
     if (dt == Py_None) {
-        return dynd::linspace(start_nd, stop_nd, count_val);
+        return nd::linspace(start_nd, stop_nd, count_val);
     } else {
-        return dynd::linspace(start_nd, stop_nd, count_val, make_dtype_from_pyobject(dt));
+        return nd::linspace(start_nd, stop_nd, count_val, make_dtype_from_pyobject(dt));
     }
 }
 

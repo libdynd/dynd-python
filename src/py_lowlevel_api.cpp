@@ -17,7 +17,7 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-    dynd::ndobject_preamble *get_array_ptr(WNDObject *obj)
+    dynd::array_preamble *get_array_ptr(WArray *obj)
     {
         return obj->v.get_ndo();
     }
@@ -33,24 +33,24 @@ namespace {
             dtype d = make_dtype_from_pyobject(dt);
             size_t ptr_val = pyobject_as_size_t(ptr);
             uint32_t access_flags = pyarg_strings_to_int(
-                            access, "access", read_access_flag,
-                                "readwrite", read_access_flag|write_access_flag,
-                                "readonly", read_access_flag,
-                                "immutable", read_access_flag|immutable_access_flag);
+                            access, "access", nd::read_access_flag,
+                                "readwrite", nd::read_access_flag|nd::write_access_flag,
+                                "readonly", nd::read_access_flag,
+                                "immutable", nd::read_access_flag|nd::immutable_access_flag);
             if (d.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create a dynd array from a raw pointer with non-empty metadata, dtype: ";
                 ss << d;
                 throw runtime_error(ss.str());
             }
-            ndobject result(make_ndobject_memory_block(0));
+            nd::array result(make_array_memory_block(0));
             d.swap(result.get_ndo()->m_dtype);
             result.get_ndo()->m_data_pointer = reinterpret_cast<char *>(ptr_val);
             memory_block_ptr owner_memblock = make_external_memory_block(owner, &py_decref_function);
             Py_INCREF(owner);
             result.get_ndo()->m_data_reference = owner_memblock.release();
             result.get_ndo()->m_flags = access_flags;
-            return wrap_ndobject(DYND_MOVE(result));
+            return wrap_array(DYND_MOVE(result));
         } catch(...) {
             translate_exception();
             return NULL;

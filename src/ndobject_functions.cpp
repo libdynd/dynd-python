@@ -23,20 +23,20 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WNDObject_Type;
+PyTypeObject *pydynd::WArray_Type;
 
-void pydynd::init_w_ndobject_typeobject(PyObject *type)
+void pydynd::init_w_array_typeobject(PyObject *type)
 {
-    WNDObject_Type = (PyTypeObject *)type;
+    WArray_Type = (PyTypeObject *)type;
 }
 
-PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
+PyObject *pydynd::array_str(const dynd::nd::array& n)
 {
 #if PY_VERSION_HEX >= 0x03000000
     // In Python 3, str is unicode
-    return ndobject_unicode(n);
+    return array_unicode(n);
 #else
-    ndobject n_str;
+    nd::array n_str;
     if (n.get_dtype().get_kind() == string_kind &&
                     static_cast<const base_string_dtype *>(
                         n.get_dtype().extended())->get_encoding() == string_encoding_ascii) {
@@ -44,7 +44,7 @@ PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
         n_str = n;
     } else {
         // Otherwise, convert to an ASCII string
-        n_str = empty(make_string_dtype(string_encoding_ascii));
+        n_str = nd::empty(make_string_dtype(string_encoding_ascii));
         n_str.vals() = n;
     }
     const base_string_dtype *bsd =
@@ -65,9 +65,9 @@ PyObject *pydynd::ndobject_str(const dynd::ndobject& n)
 #  endif
 #endif
 
-PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
+PyObject *pydynd::array_unicode(const dynd::nd::array& n)
 {
-    ndobject n_str;
+    nd::array n_str;
     if (n.get_dtype().get_kind() == string_kind &&
                     static_cast<const base_string_dtype *>(
                         n.get_dtype().extended())->get_encoding() == DYND_PY_ENCODING) {
@@ -75,7 +75,7 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
         n_str = n;
     } else {
         // Otherwise, convert to a unicode string
-        n_str = empty(make_string_dtype(DYND_PY_ENCODING));
+        n_str = nd::empty(make_string_dtype(DYND_PY_ENCODING));
         n_str.vals() = n;
     }
     const base_string_dtype *bsd =
@@ -94,22 +94,22 @@ PyObject *pydynd::ndobject_unicode(const dynd::ndobject& n)
 
 #undef DYND_PY_ENCODING
 
-PyObject *pydynd::ndobject_index(const dynd::ndobject& n)
+PyObject *pydynd::array_index(const dynd::nd::array& n)
 {
     // Implements the nb_index slot
     switch (n.get_dtype().get_kind()) {
         case int_kind:
         case uint_kind:
-            return ndobject_as_py(n);
+            return array_as_py(n);
         default:
             PyErr_SetString(PyExc_TypeError,
-                            "dynd ndobject must have kind 'int'"
+                            "dynd array must have kind 'int'"
                             " or 'uint' to be used as an index");
             return NULL;
     }
 }
 
-PyObject *pydynd::ndobject_nonzero(const dynd::ndobject& n)
+PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
 {
     // Implements the nonzero/conversion to boolean slot
     switch (n.get_dtype().value_dtype().get_kind()) {
@@ -128,7 +128,7 @@ PyObject *pydynd::ndobject_nonzero(const dynd::ndobject& n)
             }
         case string_kind: {
             // Follow Python, return True if the string is nonempty, False otherwise
-            ndobject n_eval = n.eval();
+            nd::array n_eval = n.eval();
             const base_string_dtype *bsd = static_cast<const base_string_dtype *>(n_eval.get_dtype().extended());
             const char *begin = NULL, *end = NULL;
             bsd->get_string_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
@@ -142,7 +142,7 @@ PyObject *pydynd::ndobject_nonzero(const dynd::ndobject& n)
         }
         case bytes_kind: {
             // Return True if there is a non-zero byte, False otherwise
-            ndobject n_eval = n.eval();
+            nd::array n_eval = n.eval();
             const base_bytes_dtype *bbd = static_cast<const base_bytes_dtype *>(n_eval.get_dtype().extended());
             const char *begin = NULL, *end = NULL;
             bbd->get_bytes_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
@@ -173,41 +173,41 @@ PyObject *pydynd::ndobject_nonzero(const dynd::ndobject& n)
     }
 }
 
-void pydynd::ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj, PyObject *dt, bool uniform)
+void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform)
 {
-    n = ndobject_from_py(obj, make_dtype_from_pyobject(dt), uniform);
+    n = array_from_py(obj, make_dtype_from_pyobject(dt), uniform);
 }
 
-void pydynd::ndobject_init_from_pyobject(dynd::ndobject& n, PyObject* obj)
+void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj)
 {
-    n = ndobject_from_py(obj);
+    n = array_from_py(obj);
 }
 
-dynd::ndobject pydynd::ndobject_eval(const dynd::ndobject& n)
+dynd::nd::array pydynd::array_eval(const dynd::nd::array& n)
 {
     return n.eval();
 }
 
-dynd::ndobject pydynd::ndobject_eval_copy(const dynd::ndobject& n,
+dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
                 PyObject* access, const eval::eval_context *ectx)
 {
     uint32_t access_flags = pyarg_strings_to_int(
-                    access, "access", read_access_flag|write_access_flag,
-                        "readwrite", read_access_flag|write_access_flag,
-                        "immutable", read_access_flag|immutable_access_flag);
+                    access, "access", nd::read_access_flag|nd::write_access_flag,
+                        "readwrite", nd::read_access_flag|nd::write_access_flag,
+                        "immutable", nd::read_access_flag|nd::immutable_access_flag);
     return n.eval_copy(ectx, access_flags);
 }
 
-dynd::ndobject pydynd::ndobject_empty(const dynd::dtype& d)
+dynd::nd::array pydynd::array_empty(const dynd::dtype& d)
 {
-    return empty(d);
+    return nd::empty(d);
 }
 
-dynd::ndobject pydynd::ndobject_empty(PyObject *shape, const dynd::dtype& d)
+dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::dtype& d)
 {
     std::vector<intptr_t> shape_vec;
     pyobject_as_vector_intp(shape, shape_vec, true);
-    return ndobject(make_ndobject_memory_block(d, (int)shape_vec.size(),
+    return nd::array(make_array_memory_block(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]));
 }
 
@@ -229,18 +229,18 @@ namespace {
 
 } // anonymous namespace
 
-bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
+bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
 {
     if (n.get_ndo() == NULL) {
         return false;
     }
     if (n.get_undim() == 0) {
         // TODO: Allow for struct types, etc?
-        throw runtime_error("cannot call __contains__ on a scalar ndobject");
+        throw runtime_error("cannot call __contains__ on a scalar dynd array");
     }
 
     // Turn 'n' into dtype/metadata/data with a uniform_dim leading dimension
-    ndobject tmp;
+    nd::array tmp;
     dtype dt;
     const base_uniform_dim_dtype *budd;
     const char *metadata, *data;
@@ -252,7 +252,7 @@ bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
     } else {
         tmp = n.eval();
         if (tmp.get_dtype().get_kind() != uniform_dim_kind) {
-            throw runtime_error("internal error in ndobject_contains: expected uniform_dim kind after eval() call");
+            throw runtime_error("internal error in array_contains: expected uniform_dim kind after eval() call");
         }
         dt = tmp.get_dtype();
         budd = static_cast<const base_uniform_dim_dtype *>(dt.extended());
@@ -260,8 +260,8 @@ bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
         data = tmp.get_readonly_originptr();
     }
 
-    // Turn 'x' into an ndobject, and make a comparison kernel
-    ndobject x_ndo = ndobject_from_py(x);
+    // Turn 'x' into a dynd array, and make a comparison kernel
+    nd::array x_ndo = array_from_py(x);
     const dtype& x_dt = x_ndo.get_dtype();
     const char *x_metadata = x_ndo.get_ndo_meta();
     const char *x_data = x_ndo.get_readonly_originptr();
@@ -284,19 +284,19 @@ bool pydynd::ndobject_contains(const dynd::ndobject& n, PyObject *x)
     return aux.found;
 }
 
-dynd::ndobject pydynd::ndobject_cast(const dynd::ndobject& n, const dtype& dt,
+dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const dtype& dt,
                 PyObject *assign_error_obj)
 {
     return n.cast(dt, pyarg_error_mode(assign_error_obj));
 }
 
-dynd::ndobject pydynd::ndobject_ucast(const dynd::ndobject& n, const dtype& dt,
+dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const dtype& dt,
                 size_t replace_undim, PyObject *assign_error_obj)
 {
     return n.ucast(dt, replace_undim, pyarg_error_mode(assign_error_obj));
 }
 
-PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)
+PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
 {
     size_t ndim = n.get_dtype().get_undim();
     dimvector result(ndim);
@@ -304,7 +304,7 @@ PyObject *pydynd::ndobject_get_shape(const dynd::ndobject& n)
     return intptr_array_as_tuple(ndim, result.get());
 }
 
-PyObject *pydynd::ndobject_get_strides(const dynd::ndobject& n)
+PyObject *pydynd::array_get_strides(const dynd::nd::array& n)
 {
     size_t ndim = n.get_dtype().get_undim();
     dimvector result(ndim);
@@ -330,7 +330,7 @@ static void pyobject_as_irange_array(intptr_t& out_size, shortvector<irange>& ou
     }
 }
 
-dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subscript)
+dynd::nd::array pydynd::array_getitem(const dynd::nd::array& n, PyObject *subscript)
 {
     if (subscript == Py_Ellipsis) {
         return n.at_array(0, NULL);
@@ -345,17 +345,17 @@ dynd::ndobject pydynd::ndobject_getitem(const dynd::ndobject& n, PyObject *subsc
     }
 }
 
-void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyObject *value)
+void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObject *value)
 {
     if (subscript == Py_Ellipsis) {
-        ndobject_broadcast_assign_from_py(n, value);
+        array_broadcast_assign_from_py(n, value);
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(subscript)) {
         long i = PyInt_AS_LONG(subscript);
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
         dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
-        ndobject_broadcast_assign_from_py(d, metadata, data, value);
+        array_broadcast_assign_from_py(d, metadata, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
         intptr_t i = PyLong_AsSsize_t(subscript);
@@ -365,28 +365,28 @@ void pydynd::ndobject_setitem(const dynd::ndobject& n, PyObject *subscript, PyOb
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
         dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
-        ndobject_broadcast_assign_from_py(d, metadata, data, value);
+        array_broadcast_assign_from_py(d, metadata, data, value);
     } else {
         intptr_t size;
         shortvector<irange> indices;
         pyobject_as_irange_array(size, indices, subscript);
-        ndobject_broadcast_assign_from_py(n.at_array(size, indices.get(), false), value);
+        array_broadcast_assign_from_py(n.at_array(size, indices.get(), false), value);
     }
 }
 
-ndobject pydynd::ndobject_range(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt)
+nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt)
 {
-    ndobject start_nd, stop_nd, step_nd;
+    nd::array start_nd, stop_nd, step_nd;
     dtype dt_nd;
 
     if (start != Py_None) {
-        start_nd = ndobject_from_py(start);
+        start_nd = array_from_py(start);
     } else {
         start_nd = 0;
     }
-    stop_nd = ndobject_from_py(stop);
+    stop_nd = array_from_py(stop);
     if (step != Py_None) {
-        step_nd = ndobject_from_py(step);
+        step_nd = array_from_py(step);
     } else {
         step_nd = 1;
     }
@@ -411,12 +411,12 @@ ndobject pydynd::ndobject_range(PyObject *start, PyObject *stop, PyObject *step,
             step_nd.get_readonly_originptr());
 }
 
-dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObject *count, PyObject *dt)
+dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop, PyObject *count, PyObject *dt)
 {
-    ndobject start_nd, stop_nd;
+    nd::array start_nd, stop_nd;
     intptr_t count_val = pyobject_as_index(count);
-    start_nd = ndobject_from_py(start);
-    stop_nd = ndobject_from_py(stop);
+    start_nd = array_from_py(start);
+    stop_nd = array_from_py(stop);
     if (dt == Py_None) {
         return nd::linspace(start_nd, stop_nd, count_val);
     } else {
@@ -424,7 +424,7 @@ dynd::ndobject pydynd::ndobject_linspace(PyObject *start, PyObject *stop, PyObje
     }
 }
 
-dynd::ndobject pydynd::nd_fields(const ndobject& n, PyObject *field_list)
+dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
 {
     vector<string> selected_fields;
     pyobject_as_vector_string(field_list, selected_fields);
@@ -433,7 +433,7 @@ dynd::ndobject pydynd::nd_fields(const ndobject& n, PyObject *field_list)
     dtype fdt = n.get_udtype();
     if (fdt.get_kind() != struct_kind) {
         stringstream ss;
-        ss << "nd.fields must be given an ndobject of 'struct' kind, not ";
+        ss << "nd.fields must be given a dynd array of 'struct' kind, not ";
         ss << fdt;
         throw runtime_error(ss.str());
     }
@@ -464,7 +464,7 @@ dynd::ndobject pydynd::nd_fields(const ndobject& n, PyObject *field_list)
 
     // Allocate the new memory block.
     size_t metadata_size = rdt.get_metadata_size();
-    ndobject result(make_ndobject_memory_block(metadata_size));
+    nd::array result(make_array_memory_block(metadata_size));
 
     // Clone the data pointer
     result.get_ndo()->m_data_pointer = n.get_ndo()->m_data_pointer;

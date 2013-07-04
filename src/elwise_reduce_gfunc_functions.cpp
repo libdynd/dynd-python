@@ -19,7 +19,7 @@ using namespace dynd;
 using namespace pydynd;
 
 static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache,
-            PyCFuncPtrObject *cfunc, bool associative, bool commutative, const ndobject& identity,
+            PyCFuncPtrObject *cfunc, bool associative, bool commutative, const nd::array& identity,
             dynd::gfunc::elwise_reduce_kernel& out_kernel)
 {
 #if 0 // TODO reenable
@@ -71,13 +71,13 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
     if (!identity.empty()) {
         out_kernel.m_identity = identity.cast_scalars(returntype).eval_immutable();
     } else {
-        out_kernel.m_identity = ndobject();
+        out_kernel.m_identity = nd::array();
     }
 #endif // TODO reenable
 }
 
 void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dynd::ndobject& identity)
+                            bool associative, bool commutative, const dynd::nd::array& identity)
 {
 #if 0 // TODO reenable
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
@@ -100,8 +100,8 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
     Py_ssize_t nargs = PySequence_Size(args);
     if (nargs == 1) {
         pyobject_ownref arg0_obj(PySequence_GetItem(args, 0));
-        ndobject arg0;
-        ndobject_init_from_pyobject(arg0, arg0_obj);
+        nd::array arg0;
+        array_init_from_pyobject(arg0, arg0_obj);
         int ndim = arg0.get_dtype().get_undim();
 
         shortvector<dynd_bool> reduce_axes(ndim);
@@ -128,12 +128,12 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
             }
             throw std::runtime_error("pydynd::elwise_reduce_gfunc_call isn't implemented presently");
             /*
-            ndobject result(make_elwise_reduce_kernel_node_copy_kernel(
+            nd::array result(make_elwise_reduce_kernel_node_copy_kernel(
                         ergk->m_returntype, arg0.get_node(), reduce_axes.get(), rightassoc, keepdims, ergk->m_identity.get_node(),
                         (!rightassoc || ergk->m_commutative) ? ergk->m_left_associative_reduction_kernel :
                                 ergk->m_right_associative_reduction_kernel));
-            pyobject_ownref result_obj(WNDObject_Type->tp_alloc(WNDObject_Type, 0));
-            ((WNDObject *)result_obj.get())->v.swap(result);
+            pyobject_ownref result_obj(WArray_Type->tp_alloc(WArray_Type, 0));
+            ((WArray *)result_obj.get())->v.swap(result);
             return result_obj.release();
             */
         } else {

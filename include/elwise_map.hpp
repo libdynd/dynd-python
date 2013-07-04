@@ -14,18 +14,18 @@ namespace pydynd {
 
 /**
  * Applies a Python callable of a specific form to every
- * element of the provided ndobject.
+ * element of the provided nd::array.
  *
  * The Python callable should have the following structure.
- * It is called with two corresponding one-dimensional ndobjects,
+ * It is called with two corresponding one-dimensional nd::arrays,
  * with 'dst_type' and 'src_type' respectively. The code must
- * not retain any references to the ndobjects, as they are temporary,
+ * not retain any references to the nd::arrays, as they are temporary,
  * reused shells just for providing the data to the function.
  *
  *      def my_mapper(dst, src):
  *          dst[...] = some_operaton(src)
  *
- * \param n_obj  A WNDObject containing the ndobject to wrap.
+ * \param n_obj  A WArray containing the nd::array to wrap.
  * \param callable  The Python callable which does the mapping.
  * \param dst_type  A dynd type for the destination elements.
  * \param src_type  A dynd type for the source elements.

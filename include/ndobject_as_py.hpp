@@ -13,10 +13,10 @@
 namespace pydynd {
 
 /**
- * Converts an ndobject into a Python object
+ * Converts an nd::array into a Python object
  * using the default settings.
  */
-PyObject *ndobject_as_py(const dynd::ndobject& n);
+PyObject *array_as_py(const dynd::nd::array& n);
 
 } // namespace pydynd
 

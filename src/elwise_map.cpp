@@ -31,14 +31,14 @@ namespace {
         kernel_data_prefix base;
         size_t src_count;
         PyObject *callable;
-        // After this are 1 + src_count shell WNDObjects,
+        // After this are 1 + src_count shell WArrays,
         // whose guts are replaced for each call of
         // the kernel
 
         inline PyObject *set_data_pointers(char *dst, const char * const *src)
         {
-            WNDObject **ndo = reinterpret_cast<WNDObject **>(this + 1);
-            // Modify the temporary ndobjects to point at the data.
+            WArray **ndo = reinterpret_cast<WArray **>(this + 1);
+            // Modify the temporary arrays to point at the data.
             // The constructor sets the metadata to be a size-1 array,
             // so no need to modify any of it.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
@@ -46,7 +46,7 @@ namespace {
                 ndo[i+1]->v.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
             }
 
-            // Put all the ndobjects in a tuple
+            // Put all the arrays in a tuple
             pyobject_ownref args(PyTuple_New(src_count + 1));
             for (size_t i = 0; i != src_count + 1; ++i) {
                 Py_INCREF(ndo[i]);
@@ -59,9 +59,9 @@ namespace {
                         const char * const *src, const intptr_t *src_stride,
                         size_t count)
         {
-            WNDObject **ndo = reinterpret_cast<WNDObject **>(this + 1);
+            WArray **ndo = reinterpret_cast<WArray **>(this + 1);
             strided_dim_dtype_metadata *md;
-            // Modify the temporary ndobjects to point at the data.
+            // Modify the temporary arrays to point at the data.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
             md = reinterpret_cast<strided_dim_dtype_metadata *>(ndo[0]->v.get_ndo_meta());
             md->size = count;
@@ -73,7 +73,7 @@ namespace {
                 md->stride = src_stride[i];
             }
 
-            // Put all the ndobjects in a tuple
+            // Put all the arrays in a tuple
             pyobject_ownref args(PyTuple_New(src_count + 1));
             for (size_t i = 0; i != src_count + 1; ++i) {
                 Py_INCREF(ndo[i]);
@@ -84,12 +84,12 @@ namespace {
 
         inline void verify_postcall_consistency(PyObject *res)
         {
-            WNDObject **ndo = reinterpret_cast<WNDObject **>(this + 1);
+            WArray **ndo = reinterpret_cast<WArray **>(this + 1);
             // Verify that nothing was returned
             if (res != Py_None) {
                 throw runtime_error("Python callable for elwise_map must not return a value, got an object");
             }
-            // Verify that no reference to a temporary ndobject was kept
+            // Verify that no reference to a temporary array was kept
             for (size_t i = 0; i != src_count + 1; ++i) {
                 if (Py_REFCNT(ndo[i]) != 1) {
                     stringstream ss;
@@ -148,7 +148,7 @@ namespace {
             PyGILState_RAII pgs;
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
-            // Put all the ndobjects in a tuple
+            // Put all the arrays in a tuple
             pyobject_ownref args(e->set_data_pointers(dst, dst_stride, &src, &src_stride, count));
             // Call the function
             pyobject_ownref res(PyObject_Call(e->callable, args.get(), NULL));
@@ -163,7 +163,7 @@ namespace {
             PyGILState_RAII pgs;
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
-            // Put all the ndobjects in a tuple
+            // Put all the arrays in a tuple
             pyobject_ownref args(e->set_data_pointers(dst, dst_stride, src, src_stride, count));
             // Call the function
             pyobject_ownref res(PyObject_Call(e->callable, args.get(), NULL));
@@ -176,7 +176,7 @@ namespace {
             PyGILState_RAII pgs;
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
-            WNDObject **ndo = reinterpret_cast<WNDObject **>(e + 1);
+            WArray **ndo = reinterpret_cast<WArray **>(e + 1);
             size_t src_count = e->src_count;
             Py_XDECREF(e->callable);
             for (size_t i = 0; i != src_count + 1; ++i) {
@@ -243,10 +243,10 @@ public:
         }
 
         size_t extra_size = sizeof(pyobject_expr_kernel_extra) +
-                        (src_count + 1) * sizeof(WNDObject *);
+                        (src_count + 1) * sizeof(WArray *);
         out->ensure_capacity_leaf(offset_out + extra_size);
         pyobject_expr_kernel_extra *e = out->get_at<pyobject_expr_kernel_extra>(offset_out);
-        WNDObject **ndo = reinterpret_cast<WNDObject **>(e + 1);
+        WArray **ndo = reinterpret_cast<WArray **>(e + 1);
         switch (kernreq) {
             case kernel_request_single:
                 if (src_count == 1) {
@@ -274,12 +274,12 @@ public:
         e->src_count = src_count;
         e->callable = m_callable.get();
         Py_INCREF(e->callable);
-        // Create shell WNDObjects which are used to give the kernel data to Python
+        // Create shell WArrays which are used to give the kernel data to Python
         strided_dim_dtype_metadata *md;
         dtype dt = make_strided_dim_dtype(dst_dt);
-        ndobject n(make_ndobject_memory_block(dt.get_metadata_size()));
+        nd::array n(make_array_memory_block(dt.get_metadata_size()));
         n.get_ndo()->m_dtype = dt.release();
-        n.get_ndo()->m_flags = write_access_flag;
+        n.get_ndo()->m_flags = nd::write_access_flag;
         md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
         md->size = 1;
         md->stride = 0;
@@ -288,12 +288,12 @@ public:
                             n.get_ndo_meta() + sizeof(strided_dim_dtype_metadata),
                             dst_metadata, NULL);
         }
-        ndo[0] = (WNDObject *)wrap_ndobject(DYND_MOVE(n));
+        ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
         for (size_t i = 0; i != src_count; ++i) {
             dt = make_strided_dim_dtype(src_dt[i]);
-            n.set(make_ndobject_memory_block(dt.get_metadata_size()));
+            n.set(make_array_memory_block(dt.get_metadata_size()));
             n.get_ndo()->m_dtype = dt.release();
-            n.get_ndo()->m_flags = read_access_flag;
+            n.get_ndo()->m_flags = nd::read_access_flag;
             md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
             md->size = 1;
             md->stride = 0;
@@ -302,7 +302,7 @@ public:
                                 n.get_ndo_meta() + sizeof(strided_dim_dtype_metadata),
                                 src_metadata[i], NULL);
             }
-            ndo[i+1] = (WNDObject *)wrap_ndobject(DYND_MOVE(n));
+            ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));
         }
 
         return offset_out + extra_size;
@@ -331,9 +331,9 @@ public:
 static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
                 PyObject *dst_type, PyObject *src_type)
 {
-    ndobject n = ndobject_from_py(n_obj);
+    nd::array n = array_from_py(n_obj);
     if (n.get_ndo() == NULL) {
-        throw runtime_error("elwise_map received a NULL ndobject");
+        throw runtime_error("elwise_map received a NULL dynd array");
     }
 
     dtype dst_dt, src_dt;
@@ -350,18 +350,18 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
 
     dtype edt = make_unary_expr_dtype(dst_dt, src_dt,
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_dtype()));
-    ndobject result = n.replace_udtype(edt, src_dt.get_undim());
-    return wrap_ndobject(result);
+    nd::array result = n.replace_udtype(edt, src_dt.get_undim());
+    return wrap_array(result);
 }
 
 static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
                 PyObject *dst_type, PyObject *src_type_list)
 {
-    vector<ndobject> n(PyList_Size(n_list));
+    vector<nd::array> n(PyList_Size(n_list));
     for (size_t i = 0; i != n.size(); ++i) {
-        n[i] = ndobject_from_py(PyList_GET_ITEM(n_list, i));
+        n[i] = array_from_py(PyList_GET_ITEM(n_list, i));
         if (n[i].get_ndo() == NULL) {
-            throw runtime_error("elwise_map received a NULL ndobject");
+            throw runtime_error("elwise_map received a NULL dynd array");
         }
     }
 
@@ -416,7 +416,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         ss << "arg" << i;
         field_names[i] = ss.str();
     }
-    ndobject result = combine_into_struct(n.size(), &field_names[0], &n[0]);
+    nd::array result = combine_into_struct(n.size(), &field_names[0], &n[0]);
 
     // Because the expr dtype's operand is the result's dtype,
     // we can swap it in as the dtype
@@ -424,7 +424,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
                     result.get_dtype(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
     edt.swap(result.get_ndo()->m_dtype);
-    return wrap_ndobject(DYND_MOVE(result));
+    return wrap_array(DYND_MOVE(result));
 }
 
 PyObject *pydynd::elwise_map(PyObject *n_obj, PyObject *callable,
@@ -432,7 +432,7 @@ PyObject *pydynd::elwise_map(PyObject *n_obj, PyObject *callable,
 {
     if (!PyList_Check(n_obj)) {
         PyErr_SetString(PyExc_TypeError, "First parameter to elwise_map, 'n', "
-                        "is not a list of dynd ndobjects");
+                        "is not a list of dynd arrays");
         return NULL;
     }
     if (src_type != Py_None) {

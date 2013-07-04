@@ -24,14 +24,14 @@ namespace pydynd {
 std::string make_pep3118_format(intptr_t& out_itemsize, const dynd::dtype& dt, const char *metadata = NULL);
 
 /**
- * \brief Converts an ndobject into a PEP3118 buffer.
+ * \brief Converts an nd::array into a PEP3118 buffer.
  */
-int ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags);
+int array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags);
 
 /**
  * \brief Frees a previously created PEP3118 buffer.
  */
-int ndobject_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer);
+int array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer);
 
 } // namespace pydynd
 

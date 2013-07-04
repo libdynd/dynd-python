@@ -15,34 +15,34 @@
 
 namespace pydynd {
 
-struct ndobject_callable_wrapper {
-    dynd::ndobject n;
+struct array_callable_wrapper {
+    dynd::nd::array n;
     dynd::gfunc::callable c;
     std::string funcname;
 };
 
 /**
- * This is the typeobject and struct of w_ndobject_callable from Cython.
+ * This is the typeobject and struct of w_array_callable from Cython.
  */
-extern PyTypeObject *WNDObjectCallable_Type;
-inline bool WNDObjectCallable_CheckExact(PyObject *obj) {
-    return Py_TYPE(obj) == WNDObjectCallable_Type;
+extern PyTypeObject *WArrayCallable_Type;
+inline bool WArrayCallable_CheckExact(PyObject *obj) {
+    return Py_TYPE(obj) == WArrayCallable_Type;
 }
-inline bool WNDObjectCallable_Check(PyObject *obj) {
-    return PyObject_TypeCheck(obj, WNDObjectCallable_Type);
+inline bool WArrayCallable_Check(PyObject *obj) {
+    return PyObject_TypeCheck(obj, WArrayCallable_Type);
 }
-struct WNDObjectCallable {
+struct WArrayCallable {
   PyObject_HEAD;
-  // This is ndobject_placement_wrapper in Cython-land
-  ndobject_callable_wrapper v;
+  // This is array_placement_wrapper in Cython-land
+  array_callable_wrapper v;
 };
-void init_w_ndobject_callable_typeobject(PyObject *type);
+void init_w_array_callable_typeobject(PyObject *type);
 
 /**
- * This calls the callable in the ndobject_callable_wrapper, which was
- * returned as a property of an ndobject.
+ * This calls the callable in the array_callable_wrapper, which was
+ * returned as a property of an array.
  */
-PyObject *ndobject_callable_call(const ndobject_callable_wrapper& ncw, PyObject *args, PyObject *kwargs);
+PyObject *array_callable_call(const array_callable_wrapper& ncw, PyObject *args, PyObject *kwargs);
 
 struct dtype_callable_wrapper {
     dynd::dtype d;
@@ -87,17 +87,17 @@ void add_dtype_names_to_dir_dict(const dynd::dtype& dt, PyObject *dict);
 PyObject *get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *name);
 
 /**
- * Adds all the dynamic names exposed by the ndobject to the provided dict.
+ * Adds all the dynamic names exposed by the array to the provided dict.
  */
-void add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *dict);
+void add_array_names_to_dir_dict(const dynd::nd::array& n, PyObject *dict);
 /**
- * Retrieves a dynamic property from the ndobject.
+ * Retrieves a dynamic property from the nd::array.
  */
-PyObject *get_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name);
+PyObject *get_array_dynamic_property(const dynd::nd::array& n, PyObject *name);
 /**
- * Sets a dynamic property of the ndobject.
+ * Sets a dynamic property of the nd::array.
  */
-void set_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name, PyObject *value);
+void set_array_dynamic_property(const dynd::nd::array& n, PyObject *name, PyObject *value);
 
 /**
  * Calls the callable with the single dtype parameter
@@ -109,22 +109,22 @@ void set_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name, PyOb
 PyObject *call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::dtype& dt);
 
 /**
- * Calls the callable with the single ndobject parameter
+ * Calls the callable with the single nd::array parameter
  *
  * \param funcname  The callable name.
  * \param c  The callable.
  * \param n  The first parameter for the callable.
  */
-dynd::ndobject call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n);
+dynd::nd::array call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::nd::array& n);
 
 /**
- * Returns a wrapper for the callable with the ndobject as the first parameter.
+ * Returns a wrapper for the callable with the nd::array as the first parameter.
  *
  * \param funcname  The callable name.
  * \param c  The callable.
  * \param n  The first parameter for the callable.
  */
-PyObject *wrap_ndobject_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n);
+PyObject *wrap_array_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::nd::array& n);
 
 /**
  * Returns a wrapper for the callable with the dtype as the first parameter.

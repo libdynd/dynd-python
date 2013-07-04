@@ -63,12 +63,12 @@ static size_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
     return ndim;
 }
 
-static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
+static void array_assign_from_pyseq(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *seq, size_t seqsize);
-static void ndobject_assign_from_pydict(const dynd::dtype& dt,
+static void array_assign_from_pydict(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value);
 
-static void ndobject_assign_from_value(const dynd::dtype& dt,
+static void array_assign_from_value(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     if (dt.get_undim() > 0) {
@@ -77,7 +77,7 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
             if (seqsize == -1 && PyErr_Occurred()) {
                 PyErr_Clear();
             } else {
-                ndobject_assign_from_pyseq(dt, metadata, data, value, seqsize);
+                array_assign_from_pyseq(dt, metadata, data, value, seqsize);
                 return;
             }
         }
@@ -88,8 +88,8 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
         throw runtime_error(ss.str());
     } else {
         // Do some special case assignments
-        if (WNDObject_Check(value)) {
-            const ndobject& v = ((WNDObject *)value)->v;
+        if (WArray_Check(value)) {
+            const nd::array& v = ((WArray *)value)->v;
             dtype_assign(dt, metadata, data,
                         v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyBool_Check(value)) {
@@ -157,11 +157,11 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
     #if DYND_NUMPY_INTEROP
         } else if (PyArray_Check(value)) {
-            const ndobject& v = ndobject_from_numpy_array((PyArrayObject *)value);
+            const nd::array& v = array_from_numpy_array((PyArrayObject *)value);
             dtype_assign(dt, metadata, data,
                         v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_IsScalar(value, Generic)) {
-            const ndobject& v = ndobject_from_numpy_scalar(value);
+            const nd::array& v = array_from_numpy_scalar(value);
             dtype_assign(dt, metadata, data,
                         v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_DescrCheck(value)) {
@@ -178,7 +178,7 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
             dtype_assign(dt, metadata, data,
                         make_dtype_dtype(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyDict_Check(value)) {
-            ndobject_assign_from_pydict(dt, metadata, data, value);
+            array_assign_from_pydict(dt, metadata, data, value);
         } else {
             // Check if the value is a sequence
             if (PySequence_Check(value)) {
@@ -186,20 +186,20 @@ static void ndobject_assign_from_value(const dynd::dtype& dt,
                 if (seqsize == -1 && PyErr_Occurred()) {
                     PyErr_Clear();
                 } else {
-                    ndobject_assign_from_pyseq(dt, metadata, data, value, seqsize);
+                    array_assign_from_pyseq(dt, metadata, data, value, seqsize);
                     return;
                 }
             }
 
-            // Fall back strategy, where we convert to ndobject, then assign
-            ndobject v = ndobject_from_py(value);
+            // Fall back strategy, where we convert to nd::array, then assign
+            nd::array v = array_from_py(value);
             dtype_assign(dt, metadata, data,
                             v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
         }
     }
 }
 
-static void ndobject_assign_strided_from_pyseq(const dynd::dtype& element_dt,
+static void array_assign_strided_from_pyseq(const dynd::dtype& element_dt,
                 const char *element_metadata, char *dst_data, intptr_t dst_stride, size_t dst_size,
                 PyObject *seq, size_t seqsize)
 {
@@ -211,7 +211,7 @@ static void ndobject_assign_strided_from_pyseq(const dynd::dtype& element_dt,
         // If there's one input value and many outputs,
         // convert it from Python once and copy to the rest
         pyobject_ownref item(PySequence_GetItem(seq, 0));
-        ndobject_assign_from_value(element_dt, element_metadata, dst_data, item.get());
+        array_assign_from_value(element_dt, element_metadata, dst_data, item.get());
         // Get a strided kernel, and use it to assign from the first element to the rest of them
         assignment_kernel k;
         make_assignment_kernel(&k, 0, element_dt, element_metadata,
@@ -225,13 +225,13 @@ static void ndobject_assign_strided_from_pyseq(const dynd::dtype& element_dt,
         // Loop through the dst array and assign values
         for (size_t i = 0; i != dst_size; ++i) {
             pyobject_ownref item(PySequence_GetItem(seq, i));
-            ndobject_assign_from_value(element_dt, element_metadata,
+            array_assign_from_value(element_dt, element_metadata,
                             dst_data + i * dst_stride, item.get());
         }
     }
 }
 
-static void ndobject_assign_from_pydict(const dynd::dtype& dt,
+static void array_assign_from_pydict(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     if (dt.get_kind() == struct_kind) {
@@ -255,7 +255,7 @@ static void ndobject_assign_from_pydict(const dynd::dtype& dt,
             // TODO: Add an error policy of whether to throw an error
             //       or not. For now, just raise an error
             if (i != -1) {
-                ndobject_assign_from_value(field_types[i], metadata + metadata_offsets[i],
+                array_assign_from_value(field_types[i], metadata + metadata_offsets[i],
                                 data + data_offsets[i], dict_value);
                 populated_fields[i] = true;
             } else {
@@ -284,20 +284,20 @@ static void ndobject_assign_from_pydict(const dynd::dtype& dt,
     }
 }
 
-static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
+static void array_assign_from_pyseq(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *seq, size_t seqsize)
 {
     switch (dt.get_type_id()) {
         case fixed_dim_type_id: {
             const fixed_dim_dtype *fdd = static_cast<const fixed_dim_dtype *>(dt.extended());
-            ndobject_assign_strided_from_pyseq(fdd->get_element_dtype(), metadata,
+            array_assign_strided_from_pyseq(fdd->get_element_dtype(), metadata,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), seq, seqsize);
             break;
         }
         case strided_dim_type_id: {
             const dtype& element_dt = static_cast<const strided_dim_dtype *>(dt.extended())->get_element_dtype();
             const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
-            ndobject_assign_strided_from_pyseq(element_dt, metadata + sizeof(strided_dim_dtype_metadata),
+            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(strided_dim_dtype_metadata),
                             data, md->stride, md->size, seq, seqsize);
             break;
         }
@@ -330,7 +330,7 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
                 }
                 d->size = seqsize;
             }
-            ndobject_assign_strided_from_pyseq(element_dt, metadata + sizeof(var_dim_dtype_metadata),
+            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(var_dim_dtype_metadata),
                             d->begin + md->offset, md->stride, d->size, seq, seqsize);
             break;
         }
@@ -351,7 +351,7 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
             }
             for (size_t i = 0; i != seqsize; ++i) {
                 pyobject_ownref item(PySequence_GetItem(seq, i));
-                ndobject_assign_from_value(field_types[i], metadata + metadata_offsets[i],
+                array_assign_from_value(field_types[i], metadata + metadata_offsets[i],
                                 data + data_offsets[i], item.get());
             }
             break;
@@ -365,18 +365,18 @@ static void ndobject_assign_from_pyseq(const dynd::dtype& dt,
     }
 }
 
-void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
+void pydynd::array_broadcast_assign_from_py(const dynd::dtype& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     // Special-case assigning from known array types
-    if (WNDObject_Check(value)) {
-        const ndobject& n = ((WNDObject *)value)->v;
+    if (WArray_Check(value)) {
+        const nd::array& n = ((WArray *)value)->v;
         dtype_assign(dt, metadata, data,
                         n.get_dtype(), n.get_ndo_meta(), n.get_readonly_originptr());
         return;
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_Check(value)) {
-        const ndobject& v = ndobject_from_numpy_array((PyArrayObject *)value);
+        const nd::array& v = array_from_numpy_array((PyArrayObject *)value);
         dtype_assign(dt, metadata, data,
                     v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
         return;
@@ -386,7 +386,7 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
     size_t dst_undim = dt.get_undim();
     bool ends_in_dict = false;
     if (dst_undim == 0) {
-        ndobject_assign_from_value(dt, metadata, data, value);
+        array_assign_from_value(dt, metadata, data, value);
     } else {
         size_t seq_undim = get_pyseq_ndim(value, ends_in_dict);
         // Special handling when the destination is a struct,
@@ -416,23 +416,23 @@ void pydynd::ndobject_broadcast_assign_from_py(const dynd::dtype& dt,
             dimvector shape(original_dst_undim);
             dt.extended()->get_shape(original_dst_undim, 0, shape.get(), metadata);
             dtype partial_dt = dt.get_dtype_at_dimension(NULL, dst_undim - seq_undim).get_canonical_dtype();
-            ndobject tmp(make_ndobject_memory_block(partial_dt, original_dst_undim - (dst_undim - seq_undim),
+            nd::array tmp(make_array_memory_block(partial_dt, original_dst_undim - (dst_undim - seq_undim),
                             shape.get() + (dst_undim - seq_undim)));
-            ndobject_assign_from_value(tmp.get_dtype(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
+            array_assign_from_value(tmp.get_dtype(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
                             value);
             dtype_assign(dt, metadata, data, tmp.get_dtype(), tmp.get_ndo_meta(), tmp.get_readonly_originptr());
         } else {
-            ndobject_assign_from_value(dt, metadata, data, value);
+            array_assign_from_value(dt, metadata, data, value);
         }
     }
 }
 
-void pydynd::ndobject_nodim_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value)
+void pydynd::array_nodim_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value)
 {
-    ndobject_assign_from_value(dt, metadata, data, value);
+    array_assign_from_value(dt, metadata, data, value);
 }
 
-void pydynd::ndobject_broadcast_assign_from_py(const dynd::ndobject& n, PyObject *value)
+void pydynd::array_broadcast_assign_from_py(const dynd::nd::array& n, PyObject *value)
 {
-    ndobject_broadcast_assign_from_py(n.get_dtype(), n.get_ndo_meta(), n.get_readwrite_originptr(), value);
+    array_broadcast_assign_from_py(n.get_dtype(), n.get_ndo_meta(), n.get_readwrite_originptr(), value);
 }

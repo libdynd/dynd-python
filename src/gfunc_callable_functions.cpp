@@ -17,11 +17,11 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WNDObjectCallable_Type;
+PyTypeObject *pydynd::WArrayCallable_Type;
 
-void pydynd::init_w_ndobject_callable_typeobject(PyObject *type)
+void pydynd::init_w_array_callable_typeobject(PyObject *type)
 {
-    WNDObjectCallable_Type = (PyTypeObject *)type;
+    WArrayCallable_Type = (PyTypeObject *)type;
 }
 
 PyTypeObject *pydynd::WDTypeCallable_Type;
@@ -86,21 +86,21 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::dtype& dt, PyObject *na
     return NULL;
 }
 
-void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *dict)
+void pydynd::add_array_names_to_dir_dict(const dynd::nd::array& n, PyObject *dict)
 {
     dtype dt = n.get_dtype();
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
-        // Add the ndobject properties
-        dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
+        // Add the array properties
+        dt.extended()->get_dynamic_array_properties(&properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
         }
-        // Add the ndobject functions
-        dt.extended()->get_dynamic_ndobject_functions(&properties, &count);
+        // Add the array functions
+        dt.extended()->get_dynamic_array_functions(&properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
@@ -109,40 +109,40 @@ void pydynd::add_ndobject_names_to_dir_dict(const dynd::ndobject& n, PyObject *d
     } else {
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
-        // Add the ndobject properties
-        get_builtin_dtype_dynamic_ndobject_properties(dt.get_type_id(), &properties, &count);
+        // Add the array properties
+        get_builtin_dtype_dynamic_array_properties(dt.get_type_id(), &properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
         }
-        // TODO: Add the ndobject functions
+        // TODO: Add the array functions
     }
 }
 
-PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name)
+PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array& n, PyObject *name)
 {
     dtype dt = n.get_dtype();
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;
     // Search for a property
     if (!dt.is_builtin()) {
-        dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
+        dt.extended()->get_dynamic_array_properties(&properties, &count);
     } else {
-        get_builtin_dtype_dynamic_ndobject_properties(dt.get_type_id(), &properties, &count);
+        get_builtin_dtype_dynamic_array_properties(dt.get_type_id(), &properties, &count);
     }
     // TODO: We probably want to make some kind of acceleration structure for the name lookup
     if (count > 0) {
         string nstr = pystring_as_string(name);
         for (size_t i = 0; i < count; ++i) {
             if (properties[i].first == nstr) {
-                return wrap_ndobject(call_gfunc_callable(nstr, properties[i].second, n));
+                return wrap_array(call_gfunc_callable(nstr, properties[i].second, n));
             }
         }
     }
     // Search for a function
     if (!dt.is_builtin()) {
-        dt.extended()->get_dynamic_ndobject_functions(&properties, &count);
+        dt.extended()->get_dynamic_array_functions(&properties, &count);
     } else {
         count = 0;
     }
@@ -150,7 +150,7 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
         string nstr = pystring_as_string(name);
         for (size_t i = 0; i < count; ++i) {
             if (properties[i].first == nstr) {
-                return wrap_ndobject_callable(nstr, properties[i].second, n);
+                return wrap_array_callable(nstr, properties[i].second, n);
             }
         }
     }
@@ -159,24 +159,24 @@ PyObject *pydynd::get_ndobject_dynamic_property(const dynd::ndobject& n, PyObjec
     return NULL;
 }
 
-void pydynd::set_ndobject_dynamic_property(const dynd::ndobject& n, PyObject *name, PyObject *value)
+void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name, PyObject *value)
 {
     dtype dt = n.get_dtype();
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;
     // Search for a property
     if (!dt.is_builtin()) {
-        dt.extended()->get_dynamic_ndobject_properties(&properties, &count);
+        dt.extended()->get_dynamic_array_properties(&properties, &count);
     } else {
-        get_builtin_dtype_dynamic_ndobject_properties(dt.get_type_id(), &properties, &count);
+        get_builtin_dtype_dynamic_array_properties(dt.get_type_id(), &properties, &count);
     }
     // TODO: We probably want to make some kind of acceleration structure for the name lookup
     if (count > 0) {
         string nstr = pystring_as_string(name);
         for (size_t i = 0; i < count; ++i) {
             if (properties[i].first == nstr) {
-                ndobject p = call_gfunc_callable(nstr, properties[i].second, n);
-                p.vals() = ndobject_from_py(value);
+                nd::array p = call_gfunc_callable(nstr, properties[i].second, n);
+                p.vals() = array_from_py(value);
                 return;
             }
         }
@@ -201,9 +201,9 @@ static void set_single_parameter(const std::string& funcname, const std::string&
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
-            const dtype& paramtype, char *metadata, char *data, const ndobject& value)
+            const dtype& paramtype, char *metadata, char *data, const nd::array& value)
 {
-    // TODO: Need ndobject_dtype (but then we can get circular references, and need garbage collection :P)
+    // TODO: Need array_dtype (but then we can get circular references, and need garbage collection :P)
     if (paramtype.get_type_id() != void_pointer_type_id) {
         stringstream ss;
         ss << "parameter \"" << paramname << "\" of dynd callable \"" << funcname << "\" with type " << paramtype;
@@ -220,23 +220,23 @@ static void set_single_parameter(const std::string& funcname, const std::string&
  * \param out_storage  This is a hack because dynd doesn't support object lifetime management
  */
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
-            const dtype& paramtype, char *metadata, char *data, PyObject *value, vector<ndobject>& out_storage)
+            const dtype& paramtype, char *metadata, char *data, PyObject *value, vector<nd::array>& out_storage)
 {
-    // Handle ndobject specially
-    if (WNDObject_Check(value)) {
+    // Handle nd::array specially
+    if (WArray_Check(value)) {
         if (paramtype.get_type_id() == void_pointer_type_id) {
             // Pass raw ndo pointers (with a borrowed reference) to void pointer params
-            // TODO: Need ndobject_dtype (but then we can get circular references, and need garbage collection :P)
-            *(const void **)data = ((WNDObject *)value)->v.get_ndo();
+            // TODO: Need array_dtype (but then we can get circular references, and need garbage collection :P)
+            *(const void **)data = ((WArray *)value)->v.get_ndo();
         } else {
             // Copy the value using the default mechanism
-            const ndobject& n = ((WNDObject *)value)->v;
+            const nd::array& n = ((WArray *)value)->v;
             dtype_assign(paramtype, metadata, data, n.get_dtype(), n.get_ndo_meta(), n.get_readonly_originptr());
         }
         return;
     } else if (paramtype.get_type_id() == void_pointer_type_id) {
-        out_storage.push_back(ndobject_from_py(value));
-        // TODO: Need ndobject_dtype (but then we can get circular references, and need garbage collection :P)
+        out_storage.push_back(array_from_py(value));
+        // TODO: Need array_dtype (but then we can get circular references, and need garbage collection :P)
         *(const void **)data = out_storage.back().get_ndo();
         return;
     }
@@ -392,15 +392,15 @@ static void set_single_parameter(const std::string& funcname, const std::string&
             break;
     }
 
-    // Final, slow attempt to make it work, convert the input to an ndobject, then copy that value
-    ndobject n = ndobject_from_py(value);
+    // Final, slow attempt to make it work, convert the input to an array, then copy that value
+    nd::array n = array_from_py(value);
     dtype_assign(paramtype, metadata, data, n.get_dtype(), n.get_ndo_meta(), n.get_readonly_originptr());
 }
 
 PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dtype& dt)
 {
     const dtype& pdt = c.get_parameters_dtype();
-    ndobject params = empty(pdt);
+    nd::array params = nd::empty(pdt);
     const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
     if (fsdt->get_field_count() != 1) {
         stringstream ss;
@@ -410,18 +410,18 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
             params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], dt);
-    ndobject result = c.call_generic(params);
+    nd::array result = c.call_generic(params);
     if (result.get_dtype().is_scalar()) {
-        return ndobject_as_py(result);
+        return array_as_py(result);
     } else {
-        return wrap_ndobject(result);
+        return wrap_array(result);
     }
 }
 
-ndobject pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
+nd::array pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::nd::array& n)
 {
     const dtype& pdt = c.get_parameters_dtype();
-    ndobject params = empty(pdt);
+    nd::array params = nd::empty(pdt);
     const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
     if (fsdt->get_field_count() != 1) {
         stringstream ss;
@@ -439,8 +439,8 @@ ndobject pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gf
  *
  * \param out_storage  This is a hack because dynd doesn't support object lifetime management
  */
-static void fill_thiscall_parameters_ndobject(const string& funcname, const gfunc::callable &c, PyObject *args, PyObject *kwargs,
-                ndobject& out_params, vector<ndobject>& out_storage)
+static void fill_thiscall_parameters_array(const string& funcname, const gfunc::callable &c, PyObject *args, PyObject *kwargs,
+                nd::array& out_params, vector<nd::array>& out_storage)
 {
     const dtype& pdt = c.get_parameters_dtype();
     const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
@@ -494,7 +494,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
             }
         }
         // Fill in missing parameters from the defaults
-        const ndobject& default_parameters = c.get_default_parameters();
+        const nd::array& default_parameters = c.get_default_parameters();
         if (!default_parameters.is_empty()) {
             // Figure out where to start filling in default parameters
             int first_default_param = c.get_first_default_parameter() - 1;
@@ -527,7 +527,7 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
         }
     } else if (args_count < param_count) {
         // Fill in missing parameters from the defaults
-        const ndobject& default_parameters = c.get_default_parameters();
+        const nd::array& default_parameters = c.get_default_parameters();
         if (!default_parameters.is_empty()) {
             // Figure out where to start filling in default parameters
             int first_default_param = c.get_first_default_parameter() - 1;
@@ -554,34 +554,34 @@ static void fill_thiscall_parameters_ndobject(const string& funcname, const gfun
     }
 }
 
-PyObject *pydynd::wrap_ndobject_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndobject& n)
+PyObject *pydynd::wrap_array_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::nd::array& n)
 {
-    WNDObjectCallable *result = (WNDObjectCallable *)WNDObjectCallable_Type->tp_alloc(WNDObjectCallable_Type, 0);
+    WArrayCallable *result = (WArrayCallable *)WArrayCallable_Type->tp_alloc(WArrayCallable_Type, 0);
     if (!result) {
         return NULL;
     }
     // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    placement_new(reinterpret_cast<pydynd::ndobject_callable_placement_wrapper &>(result->v));
+    placement_new(reinterpret_cast<pydynd::array_callable_placement_wrapper &>(result->v));
     result->v.n = n;
     result->v.c = c;
     result->v.funcname = funcname;
     return (PyObject *)result;
 }
 
-PyObject *pydynd::ndobject_callable_call(const ndobject_callable_wrapper& ncw, PyObject *args, PyObject *kwargs)
+PyObject *pydynd::array_callable_call(const array_callable_wrapper& ncw, PyObject *args, PyObject *kwargs)
 {
     const dtype& pdt = ncw.c.get_parameters_dtype();
-    vector<ndobject> storage;
-    ndobject params = empty(pdt);
+    vector<nd::array> storage;
+    nd::array params = nd::empty(pdt);
     const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
     // Set the 'self' parameter value
     set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
                 params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
                 params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], ncw.n);
 
-    fill_thiscall_parameters_ndobject(ncw.funcname, ncw.c, args, kwargs, params, storage);
+    fill_thiscall_parameters_array(ncw.funcname, ncw.c, args, kwargs, params, storage);
 
-    return wrap_ndobject(ncw.c.call_generic(params));
+    return wrap_array(ncw.c.call_generic(params));
 }
 
 PyObject *pydynd::wrap_dtype_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::dtype& d)
@@ -602,17 +602,17 @@ static PyObject *dtype_callable_call(const std::string& funcname, const gfunc::c
                 const dtype& d, PyObject *args, PyObject *kwargs)
 {
     const dtype& pdt = c.get_parameters_dtype();
-    vector<ndobject> storage;
-    ndobject params = empty(pdt);
+    vector<nd::array> storage;
+    nd::array params = nd::empty(pdt);
     const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
     // Set the 'self' parameter value
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
                 params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
                 params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], d);
 
-    fill_thiscall_parameters_ndobject(funcname, c, args, kwargs, params, storage);
+    fill_thiscall_parameters_array(funcname, c, args, kwargs, params, storage);
 
-    return wrap_ndobject(c.call_generic(params));
+    return wrap_array(c.call_generic(params));
 }
 
 PyObject *pydynd::dtype_callable_call(const dtype_callable_wrapper& dcw, PyObject *args, PyObject *kwargs)
@@ -638,7 +638,7 @@ PyObject *pydynd::call_dtype_constructor_function(const dynd::dtype& dt, PyObjec
     }
 
     stringstream ss;
-    ss << "dynd dtype " << dt << " has no ndobject constructor function";
+    ss << "dynd dtype " << dt << " has no array constructor function";
     PyErr_SetString(PyExc_TypeError, ss.str().c_str());
     return NULL;
 }

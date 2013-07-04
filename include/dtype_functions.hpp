@@ -126,7 +126,7 @@ dynd::dtype dynd_make_fixed_dim_dtype(PyObject *shape, const dynd::dtype& elemen
  */
 dynd::dtype dtype_getitem(const dynd::dtype& d, PyObject *subscript);
 
-PyObject *dtype_ndobject_property_names(const dynd::dtype& d);
+PyObject *dtype_array_property_names(const dynd::dtype& d);
 
 } // namespace pydynd
 

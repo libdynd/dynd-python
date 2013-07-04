@@ -452,7 +452,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::dtype& dt, const char 
         case struct_type_id: {
             if (metadata == NULL) {
                 stringstream ss;
-                ss << "Can only convert dynd dtype " << dt << " into a numpy dtype with ndobject metadata";
+                ss << "Can only convert dynd dtype " << dt << " into a numpy dtype with array metadata";
                 throw runtime_error(ss.str());
             }
             const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
@@ -607,7 +607,7 @@ inline size_t get_alignment_of(PyArrayObject* obj)
     return get_alignment_of(align_bits);
 }
 
-ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
+nd::array pydynd::array_from_numpy_array(PyArrayObject* obj)
 {
     // Get the dtype of the array
     dtype d = pydynd::dtype_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
@@ -619,20 +619,20 @@ ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
         Py_INCREF(obj);
         memblock = make_external_memory_block(obj, py_decref_function);
     } else {
-        if (WNDObject_CheckExact(base)) {
-            // If the base of the numpy array is an ndobject, skip the Python reference
-            memblock = ((WNDObject *)base)->v.get_data_memblock();
+        if (WArray_CheckExact(base)) {
+            // If the base of the numpy array is an nd::array, skip the Python reference
+            memblock = ((WArray *)base)->v.get_data_memblock();
         } else {
             Py_INCREF(base);
             memblock = make_external_memory_block(base, py_decref_function);
         }
     }
 
-    // Create the result ndobject
+    // Create the result nd::array
     char *metadata = NULL;
-    ndobject result = make_strided_ndobject_from_data(d, PyArray_NDIM(obj),
+    nd::array result = nd::make_strided_array_from_data(d, PyArray_NDIM(obj),
                     PyArray_DIMS(obj), PyArray_STRIDES(obj),
-                    read_access_flag | (PyArray_ISWRITEABLE(obj) ? write_access_flag : 0),
+                    nd::read_access_flag | (PyArray_ISWRITEABLE(obj) ? nd::write_access_flag : 0),
                     PyArray_BYTES(obj), DYND_MOVE(memblock), &metadata);
     if (d.get_type_id() == struct_type_id) {
         // If it's a struct, there's additional metadata that needs to be populated
@@ -641,46 +641,46 @@ ndobject pydynd::ndobject_from_numpy_array(PyArrayObject* obj)
     return result;
 }
 
-dynd::ndobject pydynd::ndobject_from_numpy_scalar(PyObject* obj)
+dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
-        return ndobject((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
+        return nd::array((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
     } else if (PyArray_IsScalar(obj, Byte)) {
-        return ndobject(((PyByteScalarObject *)obj)->obval);
+        return nd::array(((PyByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UByte)) {
-        return ndobject(((PyUByteScalarObject *)obj)->obval);
+        return nd::array(((PyUByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Short)) {
-        return ndobject(((PyShortScalarObject *)obj)->obval);
+        return nd::array(((PyShortScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UShort)) {
-        return ndobject(((PyUShortScalarObject *)obj)->obval);
+        return nd::array(((PyUShortScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Int)) {
-        return ndobject(((PyIntScalarObject *)obj)->obval);
+        return nd::array(((PyIntScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UInt)) {
-        return ndobject(((PyUIntScalarObject *)obj)->obval);
+        return nd::array(((PyUIntScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Long)) {
-        return ndobject(((PyLongScalarObject *)obj)->obval);
+        return nd::array(((PyLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, ULong)) {
-        return ndobject(((PyULongScalarObject *)obj)->obval);
+        return nd::array(((PyULongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, LongLong)) {
-        return ndobject(((PyLongLongScalarObject *)obj)->obval);
+        return nd::array(((PyLongLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, ULongLong)) {
-        return ndobject(((PyULongLongScalarObject *)obj)->obval);
+        return nd::array(((PyULongLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Float)) {
-        return ndobject(((PyFloatScalarObject *)obj)->obval);
+        return nd::array(((PyFloatScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Double)) {
-        return ndobject(((PyDoubleScalarObject *)obj)->obval);
+        return nd::array(((PyDoubleScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, CFloat)) {
         npy_cfloat& val = ((PyCFloatScalarObject *)obj)->obval;
-        return ndobject(complex<float>(val.real, val.imag));
+        return nd::array(complex<float>(val.real, val.imag));
     } else if (PyArray_IsScalar(obj, CDouble)) {
         npy_cdouble& val = ((PyCDoubleScalarObject *)obj)->obval;
-        return ndobject(complex<double>(val.real, val.imag));
+        return nd::array(complex<double>(val.real, val.imag));
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     } else if (PyArray_IsScalar(obj, Datetime)) {
         const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
         int64_t val = scalar->obval;
         if (scalar->obmeta.base == NPY_FR_D) {
-            ndobject result = empty(make_date_dtype());
+            nd::array result = nd::empty(make_date_dtype());
             if (val == NPY_DATETIME_NAT) {
                 *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
                             DYND_DATE_NA;
@@ -695,7 +695,7 @@ dynd::ndobject pydynd::ndobject_from_numpy_scalar(PyObject* obj)
 #endif
     }
 
-    throw std::runtime_error("could not create a dynd::ndobject from the numpy scalar object");
+    throw std::runtime_error("could not create a dynd array from the numpy scalar object");
 }
 
 char pydynd::numpy_kindchar_of(const dynd::dtype& d)

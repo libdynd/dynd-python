@@ -218,7 +218,7 @@ std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const dtype& dt,
     return result.str();
 }
 
-static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metadata,
+static void array_getbuffer_pep3118_bytes(const dtype& dt, const char *metadata,
                 char *data, Py_buffer *buffer, int flags)
 {
     buffer->itemsize = 1;
@@ -251,7 +251,7 @@ static void ndobject_getbuffer_pep3118_bytes(const dtype& dt, const char *metada
     buffer->shape[0] = buffer->len;
 }
 
-int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
+int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 {
     //debug_print_getbuffer_flags(cout, flags);
     try {
@@ -262,22 +262,22 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         buffer->obj = ndo;
         buffer->internal = NULL;
         Py_INCREF(ndo);
-        if (!WNDObject_Check(ndo)) {
-            throw runtime_error("ndobject_getbuffer_pep3118 called on a non-ndobject");
+        if (!WArray_Check(ndo)) {
+            throw runtime_error("array_getbuffer_pep3118 called on a non-array");
         }
-        ndobject& n = ((WNDObject *)ndo)->v;
-        ndobject_preamble *preamble = n.get_ndo();
+        nd::array& n = ((WArray *)ndo)->v;
+        array_preamble *preamble = n.get_ndo();
         dtype dt = n.get_dtype();
 
         // Check if a writeable buffer is requested
-        if ((flags&PyBUF_WRITABLE) && !(n.get_access_flags()&write_access_flag)) {
-            throw runtime_error("dynd ndobject is not writeable");
+        if ((flags&PyBUF_WRITABLE) && !(n.get_access_flags()&nd::write_access_flag)) {
+            throw runtime_error("dynd array is not writeable");
         }
-        buffer->readonly = ((n.get_access_flags()&write_access_flag) == 0);
+        buffer->readonly = ((n.get_access_flags()&nd::write_access_flag) == 0);
         buffer->buf = preamble->m_data_pointer;
 
         if (dt.get_type_id() == bytes_type_id || dt.get_type_id() == fixedbytes_type_id) {
-            ndobject_getbuffer_pep3118_bytes(dt, n.get_ndo_meta(), n.get_ndo()->m_data_pointer, buffer, flags);
+            array_getbuffer_pep3118_bytes(dt, n.get_ndo_meta(), n.get_ndo()->m_data_pointer, buffer, flags);
             return 0;
         }
 
@@ -351,16 +351,16 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
         // Check that any contiguity requirements are satisfied
         if ((flags&PyBUF_C_CONTIGUOUS) || (flags&PyBUF_STRIDES) == 0) {
             if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
-                throw runtime_error("dynd ndobject is not C-contiguous as requested for PEP 3118 buffer");
+                throw runtime_error("dynd array is not C-contiguous as requested for PEP 3118 buffer");
             }
         } else if (flags&PyBUF_F_CONTIGUOUS) {
             if (!strides_are_f_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
-                throw runtime_error("dynd ndobject is not F-contiguous as requested for PEP 3118 buffer");
+                throw runtime_error("dynd array is not F-contiguous as requested for PEP 3118 buffer");
             }
         } else if (flags&PyBUF_ANY_CONTIGUOUS) {
             if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides) &&
                     !strides_are_f_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
-                throw runtime_error("dynd ndobject is not C-contiguous nor F-contiguous as requested for PEP 3118 buffer");
+                throw runtime_error("dynd array is not C-contiguous nor F-contiguous as requested for PEP 3118 buffer");
             }
         }
 
@@ -381,7 +381,7 @@ int pydynd::ndobject_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int fla
     }
 }
 
-int pydynd::ndobject_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer)
+int pydynd::array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer)
 {
     try {
         if (buffer->internal != NULL) {

@@ -2,7 +2,7 @@ import sys
 import unittest
 from dynd import nd, ndt
 
-class TestNDObjectGetItem(unittest.TestCase):
+class TestArrayGetItem(unittest.TestCase):
 
     def test_strided_dim(self):
         a = nd.empty(100, 'A, int32')

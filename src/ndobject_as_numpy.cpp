@@ -488,14 +488,14 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
 }
 
 
-PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
+PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
 {
-    if (!WNDObject_Check(n_obj)) {
-        throw runtime_error("can only call dynd's as_numpy on dynd ndobjects");
+    if (!WArray_Check(n_obj)) {
+        throw runtime_error("can only call dynd's as_numpy on dynd arrays");
     }
-    ndobject n = ((WNDObject *)n_obj)->v;
+    nd::array n = ((WArray *)n_obj)->v;
     if (n.get_ndo() == NULL) {
-        throw runtime_error("cannot convert NULL dynd ndobject to numpy");
+        throw runtime_error("cannot convert NULL dynd array to numpy");
     }
 
     // If a copy is allowed, convert the builtin scalars to NumPy scalars
@@ -503,9 +503,9 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
         pyobject_ownref result;
         switch (n.get_dtype().get_type_id()) {
             case uninitialized_type_id:
-                throw runtime_error("cannot convert uninitialized dynd ndobject to numpy");
+                throw runtime_error("cannot convert uninitialized dynd array to numpy");
             case void_type_id:
-                throw runtime_error("cannot convert void dynd ndobject to numpy");
+                throw runtime_error("cannot convert void dynd array to numpy");
             case bool_type_id:
                 if (*n.get_readonly_originptr()) {
                     Py_INCREF(PyArrayScalar_True);
@@ -605,11 +605,11 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
                 // make copies of strings
                 if (n.get_dtype().get_kind() == expression_kind) {
                     // If it's an expression kind
-                    pyobject_ownref n_tmp(wrap_ndobject(n.eval()));
-                    return ndobject_as_numpy(n_tmp.get(), true);
+                    pyobject_ownref n_tmp(wrap_array(n.eval()));
+                    return array_as_numpy(n_tmp.get(), true);
                 } else if (n.get_dtype().get_kind() == string_kind) {
                     // If it's a string kind, return it as a Python unicode
-                    return ndobject_as_py(n);
+                    return array_as_py(n);
                 }
                 stringstream ss;
                 ss << "dynd as_numpy could not convert dynd type ";
@@ -625,11 +625,11 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
                     n.get_dtype().get_type_id() == var_dim_type_id) {
         // If it's a pointer or var_dim, use 0-length indexing to
         // strip away this leading part so it's compatible with NumPy.
-        pyobject_ownref n_tmp(wrap_ndobject(n.at_array(0, NULL)));
-        return ndobject_as_numpy(n_tmp.get(), allow_copy);
+        pyobject_ownref n_tmp(wrap_array(n.at_array(0, NULL)));
+        return array_as_numpy(n_tmp.get(), allow_copy);
     }
 
-    // Do a recursive analysis of the ndobject for how to
+    // Do a recursive analysis of the dynd array for how to
     // convert it to NumPy
     bool requires_copy = false;
     pyobject_ownref numpy_dtype;
@@ -662,20 +662,20 @@ PyObject *pydynd::ndobject_as_numpy(PyObject *n_obj, bool allow_copy)
                             strides.get());
         }
 
-        // Create a new NumPy array, and copy from the dynd ndobject
+        // Create a new NumPy array, and copy from the dynd array
         pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
                         (int)undim, shape.get(), strides.get(), NULL, 0, NULL));
-        // Create a dynd ndobject view of this result
-        ndobject result_dynd = ndobject_from_numpy_array((PyArrayObject *)result.get());
+        // Create a dynd array view of this result
+        nd::array result_dynd = array_from_numpy_array((PyArrayObject *)result.get());
         // Copy the values using this view
         result_dynd.vals() = n;
         // Return the NumPy array
         return result.release();
     } else {
-        // Create a view directly to the dynd ndobject
+        // Create a view directly to the dynd array
         pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
                     (int)undim, shape.get(), strides.get(), n.get_ndo()->m_data_pointer,
-                    ((n.get_flags()&write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
+                    ((n.get_flags()&nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
         Py_INCREF(n_obj);
         if (PyArray_SetBaseObject((PyArrayObject *)result.get(), n_obj) < 0) {

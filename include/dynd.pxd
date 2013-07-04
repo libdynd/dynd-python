@@ -54,14 +54,14 @@ cdef extern from "<iostream>" namespace "std":
     extern ostream cout
 
 cdef extern from "<dynd/json_parser.hpp>" namespace "dynd":
-    ndobject dynd_parse_json_dtype "dynd::parse_json" (dtype&, ndobject&) except +translate_exception
-    void dynd_parse_json_ndobject "dynd::parse_json" (ndobject&, ndobject&) except +translate_exception
+    ndarray dynd_parse_json_dtype "dynd::parse_json" (dtype&, ndarray&) except +translate_exception
+    void dynd_parse_json_array "dynd::parse_json" (ndarray&, ndarray&) except +translate_exception
 
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
-    ndobject dynd_format_json "dynd::format_json" (ndobject&) except +translate_exception
+    ndarray dynd_format_json "dynd::format_json" (ndarray&) except +translate_exception
 
 cdef extern from "<dynd/dtypes/datashape_formatter.hpp>" namespace "dynd":
-    string dynd_format_datashape "dynd::format_datashape" (ndobject&) except +translate_exception
+    string dynd_format_datashape "dynd::format_datashape" (ndarray&) except +translate_exception
     string dynd_format_datashape "dynd::format_datashape" (dtype&) except +translate_exception
 
 cdef extern from "utility_functions.hpp" namespace "pydynd":
@@ -77,14 +77,14 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     # dtype placement assignment
     void SET(dtype_placement_wrapper&, dtype&)
 
-    cdef struct ndobject_placement_wrapper:
+    cdef struct array_placement_wrapper:
         pass
-    void placement_new(ndobject_placement_wrapper&) except +translate_exception
-    void placement_delete(ndobject_placement_wrapper&)
-    # ndobject placement cast
-    ndobject& GET(ndobject_placement_wrapper&)
-    # ndobject placement assignment
-    void SET(ndobject_placement_wrapper&, ndobject&)
+    void placement_new(array_placement_wrapper&) except +translate_exception
+    void placement_delete(array_placement_wrapper&)
+    # nd::array placement cast
+    ndarray& GET(array_placement_wrapper&)
+    # nd::array placement assignment
+    void SET(array_placement_wrapper&, ndarray&)
 
 #    cdef struct codegen_cache_placement_wrapper:
 #        pass

@@ -7,9 +7,9 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void add_dtype_names_to_dir_dict(dtype&, object) except +translate_exception
     object get_dtype_dynamic_property(dtype&, object) except +translate_exception
 
-    void add_ndobject_names_to_dir_dict(ndobject&, object) except +translate_exception
-    object get_ndobject_dynamic_property(ndobject&, object) except +translate_exception
-    void set_ndobject_dynamic_property(ndobject&, object, object) except +translate_exception
+    void add_array_names_to_dir_dict(ndarray&, object) except +translate_exception
+    object get_array_dynamic_property(ndarray&, object) except +translate_exception
+    void set_array_dynamic_property(ndarray&, object, object) except +translate_exception
 
     # Function property of dtype
     cdef cppclass dtype_callable_wrapper:
@@ -25,15 +25,15 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     # ndarray placement cast
     dtype_callable_wrapper& GET(dtype_callable_placement_wrapper&)
 
-    # Function property of ndobject
-    cdef cppclass ndobject_callable_wrapper:
+    # Function property of nd::array
+    cdef cppclass array_callable_wrapper:
         pass
-    object ndobject_callable_call(ndobject_callable_wrapper&, object, object) except +translate_exception
+    object array_callable_call(array_callable_wrapper&, object, object) except +translate_exception
 
-    void init_w_ndobject_callable_typeobject(object)
-    cdef struct ndobject_callable_placement_wrapper:
+    void init_w_array_callable_typeobject(object)
+    cdef struct array_callable_placement_wrapper:
         pass
-    void placement_new(ndobject_callable_placement_wrapper&)
-    void placement_delete(ndobject_callable_placement_wrapper&)
+    void placement_new(array_callable_placement_wrapper&)
+    void placement_delete(array_callable_placement_wrapper&)
     # ndarray placement cast
-    ndobject_callable_wrapper& GET(ndobject_callable_placement_wrapper&)
+    array_callable_wrapper& GET(array_callable_placement_wrapper&)

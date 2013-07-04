@@ -95,8 +95,8 @@ cdef extern from "dynd/dtypes/byteswap_dtype.hpp" namespace "dynd":
     dtype dynd_make_byteswap_dtype "dynd::make_byteswap_dtype" (dtype&, dtype&) except +translate_exception
 
 cdef extern from "dynd/dtypes/categorical_dtype.hpp" namespace "dynd":
-    dtype dynd_make_categorical_dtype "dynd::make_categorical_dtype" (ndobject&) except +translate_exception
-    dtype dynd_factor_categorical_dtype "dynd::factor_categorical_dtype" (ndobject&) except +translate_exception
+    dtype dynd_make_categorical_dtype "dynd::make_categorical_dtype" (ndarray&) except +translate_exception
+    dtype dynd_factor_categorical_dtype "dynd::factor_categorical_dtype" (ndarray&) except +translate_exception
 
 cdef extern from "dynd/dtypes/dtype_alignment.hpp" namespace "dynd":
     dtype dynd_make_unaligned_dtype "dynd::make_unaligned_dtype" (dtype&) except +translate_exception
@@ -122,7 +122,7 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     object dtype_get_kind(dtype&) except +translate_exception
     object dtype_get_type_id(dtype&) except +translate_exception
     dtype dtype_getitem(dtype&, object) except +translate_exception
-    object dtype_ndobject_property_names(dtype&) except +translate_exception
+    object dtype_array_property_names(dtype&) except +translate_exception
 
     dtype dynd_make_convert_dtype(dtype&, dtype&, object) except +translate_exception
     dtype dynd_make_view_dtype(dtype&, dtype&) except +translate_exception

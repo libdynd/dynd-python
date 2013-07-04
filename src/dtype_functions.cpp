@@ -266,8 +266,8 @@ dynd::dtype pydynd::make_dtype_from_pyobject(PyObject* obj)
 #endif
     } else if (PyUnicode_Check(obj)) {
         return dtype(pystring_as_string(obj));
-    } else if (WNDObject_Check(obj)) {
-        return ((WNDObject *)obj)->v.as<dtype>();
+    } else if (WArray_Check(obj)) {
+        return ((WArray *)obj)->v.as<dtype>();
     } else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP
         dtype result;
@@ -444,14 +444,14 @@ dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
     return d.at_array((int)size, indices.get());
 }
 
-PyObject *pydynd::dtype_ndobject_property_names(const dtype& d)
+PyObject *pydynd::dtype_array_property_names(const dtype& d)
 {
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;
     if (!d.is_builtin()) {
-        d.extended()->get_dynamic_ndobject_properties(&properties, &count);
+        d.extended()->get_dynamic_array_properties(&properties, &count);
     } else {
-        get_builtin_dtype_dynamic_ndobject_properties(d.get_type_id(), &properties, &count);
+        get_builtin_dtype_dynamic_array_properties(d.get_type_id(), &properties, &count);
     }
     pyobject_ownref result(PyList_New(count));
     for (size_t i = 0; i != count; ++i) {

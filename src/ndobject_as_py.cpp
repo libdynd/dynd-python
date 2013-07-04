@@ -110,7 +110,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
                 case string_encoding_utf_32:
                     return PyUnicode_DecodeUTF32(begin, end - begin, NULL, NULL);
                 default:
-                    throw runtime_error("Unrecognized dynd::ndobject string encoding");
+                    throw runtime_error("Unrecognized dynd array string encoding");
             }
         }
         case date_type_id: {
@@ -140,24 +140,24 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
         }
         default: {
             stringstream ss;
-            ss << "Cannot convert dynd::ndobject with dtype " << d << " into python object";
+            ss << "Cannot convert dynd array with dtype " << d << " into python object";
             throw runtime_error(ss.str());
         }
     }
 }
 
 namespace {
-    struct ndobject_as_py_data {
+    struct array_as_py_data {
         pyobject_ownref result;
         int index;
     };
 } // anonymous namespace
 
-static void nested_ndobject_as_py(const dtype& d, char *data, const char *metadata, void *result);
+static void nested_array_as_py(const dtype& d, char *data, const char *metadata, void *result);
 
 static void nested_struct_as_py(const dtype& d, char *data, const char *metadata, void *result)
 {
-    ndobject_as_py_data *r = reinterpret_cast<ndobject_as_py_data *>(result);
+    array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 
     const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(d.extended());
     size_t field_count = bsd->get_field_count();
@@ -170,8 +170,8 @@ static void nested_struct_as_py(const dtype& d, char *data, const char *metadata
     for (size_t i = 0; i != field_count; ++i) {
         const string& fname = field_names[i];
         pyobject_ownref key(PyUnicode_DecodeUTF8(fname.data(), fname.size(), NULL));
-        ndobject_as_py_data temp_el;
-        nested_ndobject_as_py(field_types[i], data + field_data_offsets[i],
+        array_as_py_data temp_el;
+        nested_array_as_py(field_types[i], data + field_data_offsets[i],
                         metadata + field_metadata_offsets[i], &temp_el);
         if (PyDict_SetItem(r->result.get(), key.get(), temp_el.result.get()) < 0) {
             throw runtime_error("propagating dict setitem error");
@@ -179,11 +179,11 @@ static void nested_struct_as_py(const dtype& d, char *data, const char *metadata
     }
 }
 
-static void nested_ndobject_as_py(const dtype& d, char *data, const char *metadata, void *result)
+static void nested_array_as_py(const dtype& d, char *data, const char *metadata, void *result)
 {
-    ndobject_as_py_data *r = reinterpret_cast<ndobject_as_py_data *>(result);
+    array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 
-    ndobject_as_py_data el;
+    array_as_py_data el;
     if (d.is_scalar()) {
         el.result.reset(element_as_pyobject(d, data, metadata));
     } else if (d.get_kind() == struct_kind) {
@@ -193,7 +193,7 @@ static void nested_ndobject_as_py(const dtype& d, char *data, const char *metada
         el.result.reset(PyList_New(size));
         el.index = 0;
 
-        d.extended()->foreach_leading(data, metadata, &nested_ndobject_as_py, &el);
+        d.extended()->foreach_leading(data, metadata, &nested_array_as_py, &el);
     }
 
     if (r->result) {
@@ -203,13 +203,13 @@ static void nested_ndobject_as_py(const dtype& d, char *data, const char *metada
     }
 }
 
-PyObject* pydynd::ndobject_as_py(const dynd::ndobject& n)
+PyObject* pydynd::array_as_py(const dynd::nd::array& n)
 {
-    // Evaluate the ndobject
-    ndobject nvals = n.eval();
-    ndobject_as_py_data result;
+    // Evaluate the nd::array
+    nd::array nvals = n.eval();
+    array_as_py_data result;
 
-    nested_ndobject_as_py(nvals.get_dtype(), nvals.get_ndo()->m_data_pointer, nvals.get_ndo_meta(), &result);
+    nested_array_as_py(nvals.get_dtype(), nvals.get_ndo()->m_data_pointer, nvals.get_ndo_meta(), &result);
     return result.result.release();
 }
 

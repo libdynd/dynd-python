@@ -2,7 +2,7 @@
 // Copyright (C) 2011-13 Mark Wiebe, DyND Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
-// This header defines some placement wrappers of dtype and ndobject
+// This header defines some placement wrappers of dtype and nd::array
 // to enable wrapping them without adding extra indirection layers.
 //
 
@@ -50,11 +50,11 @@
 namespace pydynd {
 
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::dtype, dtype, dtype_placement_wrapper);
-DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndobject, ndobject, ndobject_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(dynd::nd::array, array, array_placement_wrapper);
 //DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwise_program_placement_wrapper);
-DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::ndobject_callable_wrapper, ndobject_callable_wrapper,
-            ndobject_callable_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::array_callable_wrapper, array_callable_wrapper,
+            array_callable_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::dtype_callable_wrapper, dtype_callable_wrapper,
             dtype_callable_placement_wrapper);
 

@@ -125,8 +125,8 @@ std::string pydynd::pystring_as_string(PyObject *str)
         }
         return string(data, len);
 #endif
-    } else if (WNDObject_Check(str)) {
-        const ndobject& n = ((WNDObject *)str)->v;
+    } else if (WArray_Check(str)) {
+        const nd::array& n = ((WArray *)str)->v;
         if (n.get_dtype().value_dtype().get_kind() == string_kind) {
             return n.as<string>();
         } else {
@@ -419,9 +419,9 @@ uint32_t pydynd::pyarg_access_flags(PyObject* obj)
     while ((item_raw = PyIter_Next(iterator))) {
         pyobject_ownref item(item_raw);
         result |= (uint32_t)pyarg_strings_to_int(item, "access_flags", 0,
-                    "read", read_access_flag,
-                    "write", write_access_flag,
-                    "immutable", immutable_access_flag);
+                    "read", nd::read_access_flag,
+                    "write", nd::write_access_flag,
+                    "immutable", nd::immutable_access_flag);
     }
 
     if (PyErr_Occurred()) {

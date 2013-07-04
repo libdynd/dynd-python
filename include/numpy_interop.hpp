@@ -83,7 +83,7 @@ dynd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
 /**
  * When the function dtype_from_numpy_dtype returns a dtype which requires
  * additional metadata to be filled in, this function should be called to populate
- * that metadata in a created ndobject.
+ * that metadata in a created nd::array.
  *
  * \param dt  The dtype returned by dtype_from_numpy_dtype.
  * \param d  The numpy dtype passed to dtype_from_numpy_dtype.
@@ -121,14 +121,14 @@ int dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d);
 dynd::dtype dtype_of_numpy_scalar(PyObject* obj);
 
 /**
- * Views a Numpy PyArrayObject as a dynd::ndobject.
+ * Views a Numpy PyArrayObject as an nd::array.
  */
-dynd::ndobject ndobject_from_numpy_array(PyArrayObject* obj);
+dynd::nd::array array_from_numpy_array(PyArrayObject* obj);
 
 /**
- * Creates a dynd::ndobject from a numpy scalar.
+ * Creates a dynd::nd::array from a numpy scalar.
  */
-dynd::ndobject ndobject_from_numpy_scalar(PyObject* obj);
+dynd::nd::array array_from_numpy_scalar(PyObject* obj);
 
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.

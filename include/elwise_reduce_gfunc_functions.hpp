@@ -21,7 +21,7 @@
 namespace pydynd {
 
 void elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dynd::ndobject& identity);
+                            bool associative, bool commutative, const dynd::nd::array& identity);
 
 PyObject *elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs);
 

@@ -13,27 +13,27 @@
 namespace pydynd {
 
 /**
- * Converts a Python object into an ndobject using
+ * Converts a Python object into an nd::array using
  * the default settings. This function automatically
  * detects the dtype to use from the input Python object.
  *
- * \param obj  The PyObject to convert to an ndobject.
+ * \param obj  The PyObject to convert to an nd::array.
  */
-dynd::ndobject ndobject_from_py(PyObject *obj);
+dynd::nd::array array_from_py(PyObject *obj);
 
 /**
- * Converts a Python object into an ndobject using
+ * Converts a Python object into an nd::array using
  * the default settings, using the provided dtype as a
  * uniform dtype.
  *
- * \param obj  The PyObject to convert to an ndobject.
+ * \param obj  The PyObject to convert to an nd::array.
  * \param dt  The dtype to use. Additional uniform dimensions
  *            may be prepended to this dtype.
  * \param uniform  If True, then 'dt' must be a zero-dimensional dtype,
  *                 and the shape is automatically deduced. If False,
  *                 then 'dt' must already contain all the uniform dimensions.
  */
-dynd::ndobject ndobject_from_py(PyObject *obj, const dynd::dtype& dt, bool uniform);
+dynd::nd::array array_from_py(PyObject *obj, const dynd::dtype& dt, bool uniform);
 
 } // namespace pydynd
 

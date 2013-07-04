@@ -8,12 +8,21 @@ from ._pydynd import _dynd_version_string as __libdynd_version__, \
                 _dynd_git_sha1 as __libdynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__
 
-__version__ = __version__.lstrip('v').replace('-', '.post', 1)
-__libdynd_version__ = __libdynd_version__.lstrip('v').replace('-', '.post', 1)
-__version_info__ = tuple(int(x.lstrip('post'))
-                for x in __version__.split('-')[0].split('.'))
-__libdynd_version_info__ = tuple(int(x.lstrip('post'))
-                for x in __libdynd_version__.split('-')[0].split('.'))
+def fix_version(v):
+    vlst = v.lstrip('v').split('.')
+    vlst = vlst[:-1] + vlst[-1].split('-')
+    if len(vlst) <= 3:
+        vtup = tuple(int(x) for x in vlst)
+    else:
+        vtup = tuple(int(x) for x in vlst[:4])
+        # Zero pad the post version #, so it sorts lexicographically
+        vlst[3] = 'post%02d' % int(vlst[3])
+    return '.'.join(vlst), vtup
+
+__version__, __version_info__ = fix_version(__version__)
+__libdynd_version__, __libdynd_version_info__ = fix_version(__libdynd_version__)
+
+del fix_version
 
 def test(verbosity=1, xunitfile=None, exit=False):
     """

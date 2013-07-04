@@ -139,12 +139,12 @@ set(pydynd_CPP_SRC
     include/exception_translation.hpp
     include/gfunc_callable_functions.hpp
     include/git_version.hpp
-    include/ndobject_functions.hpp
-    include/ndobject_from_py.hpp
-    include/ndobject_assign_from_py.hpp
-    include/ndobject_as_pep3118.hpp
-    include/ndobject_as_numpy.hpp
-    include/ndobject_as_py.hpp
+    include/array_functions.hpp
+    include/array_from_py.hpp
+    include/array_assign_from_py.hpp
+    include/array_as_pep3118.hpp
+    include/array_as_numpy.hpp
+    include/array_as_py.hpp
     include/numpy_interop.hpp
     include/py_lowlevel_api.hpp
     include/elwise_gfunc_functions.hpp
@@ -157,12 +157,12 @@ set(pydynd_CPP_SRC
     src/elwise_map.cpp
     src/gfunc_callable_functions.cpp
     src/exception_translation.cpp
-    src/ndobject_functions.cpp
-    src/ndobject_from_py.cpp
-    src/ndobject_assign_from_py.cpp
-    src/ndobject_as_pep3118.cpp
-    src/ndobject_as_numpy.cpp
-    src/ndobject_as_py.cpp
+    src/array_functions.cpp
+    src/array_from_py.cpp
+    src/array_assign_from_py.cpp
+    src/array_as_pep3118.cpp
+    src/array_as_numpy.cpp
+    src/array_as_py.cpp
     src/numpy_interop.cpp
     src/py_lowlevel_api.cpp
     src/elwise_gfunc_functions.cpp
@@ -177,7 +177,7 @@ set(pydynd_CYTHON_SRC
     include/codegen_cache.pxd
     include/dynd.pxd
     include/dtype.pxd
-    include/ndobject.pxd
+    include/array.pxd
     include/gfunc_callable.pxd
     include/elwise_gfunc.pxd
     include/elwise_reduce_gfunc.pxd

@@ -8,7 +8,7 @@
 
 #include <dynd/lowlevel_api.hpp>
 
-#include "ndobject_functions.hpp"
+#include "array_functions.hpp"
 #include "dtype_functions.hpp"
 
 namespace pydynd {

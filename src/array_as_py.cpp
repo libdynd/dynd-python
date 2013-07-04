@@ -6,8 +6,8 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include "ndobject_as_py.hpp"
-#include "ndobject_functions.hpp"
+#include "array_as_py.hpp"
+#include "array_functions.hpp"
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 

@@ -15,10 +15,10 @@
 
 #include <dynd/ndobject.hpp>
 
-#include "ndobject_from_py.hpp"
-#include "ndobject_as_py.hpp"
-#include "ndobject_as_numpy.hpp"
-#include "ndobject_as_pep3118.hpp"
+#include "array_from_py.hpp"
+#include "array_as_py.hpp"
+#include "array_as_numpy.hpp"
+#include "array_as_pep3118.hpp"
 #include "placement_wrappers.hpp"
 
 namespace pydynd {

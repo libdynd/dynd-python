@@ -17,7 +17,7 @@
 
 #include "utility_functions.hpp"
 #include "elwise_map.hpp"
-#include "ndobject_functions.hpp"
+#include "array_functions.hpp"
 #include "dtype_functions.hpp"
 
 using namespace std;

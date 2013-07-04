@@ -3,9 +3,9 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#include "ndobject_functions.hpp"
-#include "ndobject_from_py.hpp"
-#include "ndobject_assign_from_py.hpp"
+#include "array_functions.hpp"
+#include "array_from_py.hpp"
+#include "array_assign_from_py.hpp"
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"

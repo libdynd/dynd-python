@@ -4,7 +4,7 @@
 //
 
 #include "dtype_functions.hpp"
-#include "ndobject_functions.hpp"
+#include "array_functions.hpp"
 #include "numpy_interop.hpp"
 #include "ctypes_interop.hpp"
 #include "utility_functions.hpp"

@@ -20,7 +20,7 @@
 #include <dynd/dtypes/property_dtype.hpp>
 
 #include "dtype_functions.hpp"
-#include "ndobject_functions.hpp"
+#include "array_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <numpy/arrayscalars.h>

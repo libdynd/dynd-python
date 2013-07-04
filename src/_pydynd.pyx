@@ -38,7 +38,7 @@ init_w_dtype_callable_typeobject(w_dtype_callable)
 include "dynd.pxd"
 #include "codegen_cache.pxd"
 include "dtype.pxd"
-include "ndobject.pxd"
+include "array.pxd"
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 include "vm_elwise_program.pxd"

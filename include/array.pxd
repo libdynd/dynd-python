@@ -54,7 +54,7 @@ cdef extern from "dynd/ndobject.hpp" namespace "dynd":
     ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&, dtype) except +translate_exception
     ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&) except +translate_exception
 
-cdef extern from "ndobject_functions.hpp" namespace "pydynd":
+cdef extern from "array_functions.hpp" namespace "pydynd":
     void init_w_array_typeobject(object)
 
     object array_str(ndarray&) except +translate_exception

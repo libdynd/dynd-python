@@ -10,9 +10,9 @@
 #include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
 
-#include "ndobject_as_numpy.hpp"
+#include "array_as_numpy.hpp"
 #include "numpy_interop.hpp"
-#include "ndobject_functions.hpp"
+#include "array_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <dynd/dtypes/strided_dim_dtype.hpp>

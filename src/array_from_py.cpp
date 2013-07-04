@@ -18,9 +18,9 @@
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/dtype_promotion.hpp>
 
-#include "ndobject_from_py.hpp"
-#include "ndobject_assign_from_py.hpp"
-#include "ndobject_functions.hpp"
+#include "array_from_py.hpp"
+#include "array_assign_from_py.hpp"
+#include "array_functions.hpp"
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"

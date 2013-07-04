@@ -13,8 +13,8 @@
 #include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/shape_tools.hpp>
 
-#include "ndobject_as_pep3118.hpp"
-#include "ndobject_functions.hpp"
+#include "array_as_pep3118.hpp"
+#include "array_functions.hpp"
 #include "utility_functions.hpp"
 
 using namespace std;

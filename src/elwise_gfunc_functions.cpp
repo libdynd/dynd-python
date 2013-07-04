@@ -10,7 +10,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 
 #include "elwise_gfunc_functions.hpp"
-#include "ndobject_functions.hpp"
+#include "array_functions.hpp"
 #include "utility_functions.hpp"
 #include "ctypes_interop.hpp"
 

@@ -5,8 +5,8 @@
 
 #include "gfunc_callable_functions.hpp"
 #include "utility_functions.hpp"
-#include "ndobject_functions.hpp"
-#include "ndobject_as_py.hpp"
+#include "array_functions.hpp"
+#include "array_as_py.hpp"
 #include "placement_wrappers.hpp"
 
 #include <dynd/dtypes/cstruct_dtype.hpp>

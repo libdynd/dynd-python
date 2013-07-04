@@ -13,7 +13,7 @@
 
 #include <sstream>
 
-#include <dynd/ndobject.hpp>
+#include <dynd/array.hpp>
 
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"

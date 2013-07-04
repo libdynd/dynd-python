@@ -8,7 +8,7 @@
 #include "array_functions.hpp"
 
 #include <dynd/exceptions.hpp>
-#include <dynd/ndobject.hpp>
+#include <dynd/array.hpp>
 
 #include <Python.h>
 

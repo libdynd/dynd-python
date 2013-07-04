@@ -10,7 +10,7 @@
 #define _DYND__PLACEMENT_WRAPPERS_HPP_
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndobject.hpp>
+#include <dynd/array.hpp>
 //#include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/vm/elwise_program.hpp>
 #include "gfunc_callable_functions.hpp"

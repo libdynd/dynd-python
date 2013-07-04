@@ -69,9 +69,9 @@ else()
     set(DYND_INSTALL_LIB OFF)
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/ndobject.hpp")
+    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/array.hpp")
         message(FATAL_ERROR
-            "The libdynd C++ library must be placed inlibraries/libdynd."
+            "The libdynd C++ library must be placed in libraries/libdynd."
             "Remove any temporary CMake"
             "files, then if you're using git, run"
             "'git clone git@github.com:ContinuumIO/libdynd.git'"

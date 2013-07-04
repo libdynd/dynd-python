@@ -13,7 +13,7 @@
 #include <vector>
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndobject.hpp>
+#include <dynd/array.hpp>
 #include <dynd/kernels/kernel_instance.hpp>
 #include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/gfunc/elwise_reduce_gfunc.hpp>

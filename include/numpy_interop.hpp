@@ -39,7 +39,7 @@
 #include <sstream>
 
 #include <dynd/dtype.hpp>
-#include <dynd/ndobject.hpp>
+#include <dynd/array.hpp>
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>

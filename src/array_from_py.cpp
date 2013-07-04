@@ -366,6 +366,10 @@ template<convert_one_pyscalar_function_t ConvertOneFn>
 static void fill_array_from_pylist(const dtype& dt, const char *metadata, char *data, PyObject *obj,
                 const intptr_t *shape, size_t current_axis)
 {
+    if (shape[current_axis] == 0) {
+        return;
+    }
+
     Py_ssize_t size = PyList_GET_SIZE(obj);
     const char *element_metadata = metadata;
     dtype element_dtype = dt.at_single(0, &element_metadata);
@@ -424,6 +428,10 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     shape.push_back(size);
     for (Py_ssize_t i = 0; i < size; ++i) {
         deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, dt, 1);
+    }
+    // If no type was deduced, e.g. a size-zero list, default to double/float64
+    if (dt.get_type_id() == void_type_id) {
+        dt = make_dtype<double>();
     }
 
     // Create the array

@@ -53,5 +53,23 @@ class TestBasics(unittest.TestCase):
         self.assertRaises(ValueError, bool, nd.array([1, 2, 3]))
         self.assertRaises(ValueError, bool, nd.array(['abc', 3], dtype='{x:string; y:int32}'))
 
+    def test_iter(self):
+        # Iteration of a 1D array
+        a = nd.array([1, 2, 3])
+        self.assertEqual([nd.as_py(x) for x in a], [1, 2, 3])
+        # Iteration of a 2D array
+        a = nd.array([[1, 2, 3], [4,5,6]])
+        self.assertEqual([nd.as_py(x) for x in a], [[1, 2, 3], [4,5,6]])
+
+    def test_iter_fixed_dim(self):
+        # Iteration of a 1D array
+        a = nd.array([1, 2, 3], dtype='3, int64')
+        self.assertEqual(len(a), 3)
+        self.assertEqual([nd.as_py(x) for x in a], [1, 2, 3])
+        # Iteration of a 2D array
+        a = nd.array([[1, 2, 3], [4,5,6]], dtype='2, 3, int64')
+        self.assertEqual(len(a), 2)
+        self.assertEqual([nd.as_py(x) for x in a], [[1, 2, 3], [4,5,6]])
+
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

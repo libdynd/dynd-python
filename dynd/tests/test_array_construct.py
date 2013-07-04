@@ -4,6 +4,16 @@ from datetime import date
 from dynd import nd, ndt
 
 class TestStringConstruct(unittest.TestCase):
+    def test_empty_array(self):
+        # Empty arrays default to float64
+        # TODO: Is there a better default, e.g. "void"?
+        a = nd.array([])
+        self.assertEqual(a.dtype, nd.dtype('M, float64'))
+        self.assertEqual(a.shape, (0,))
+        a = nd.array([[], [], []])
+        self.assertEqual(a.dtype, nd.dtype('M, N, float64'))
+        self.assertEqual(a.shape, (3, 0))
+
     def test_string(self):
         a = nd.array('abc', dtype=ndt.string)
         self.assertEqual(a.dtype, ndt.string)

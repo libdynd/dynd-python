@@ -94,5 +94,66 @@ class TestStructAssign(unittest.TestCase):
         self.assertRaises(RuntimeError, assign, a, [0, 1, 2, 3])
         self.assertRaises(RuntimeError, assign, a, {'x':0,'y':1,'z':2,'w':3})
 
+class TestIteratorAssign(unittest.TestCase):
+    def test_simple_var_dim(self):
+        # Assign to a var dim from a generator
+        a = nd.empty('var, int32')
+        a[...] = (x + 2 for x in range(10))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [x + 2 for x in range(10)])
+        # If we assign from a generator with one element, it broadcasts
+        a[...] = (x + 3 for x in range(5,6))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [8]*10)
+
+        def assign(x, y):
+            x[...] = y
+        # If we assign from a generator with too few elements, it errors
+        self.assertRaises(nd.BroadcastError, assign, a,
+                        (x + 2 for x in range(9)))
+        # If we assign from a generator with too many elements, it errors
+        self.assertRaises(nd.BroadcastError, assign, a,
+                        (x + 2 for x in range(11)))
+
+    def test_simple_strided_dim(self):
+        # Assign to a strided dim from a generator
+        a = nd.empty(10, 'M, int32')
+        a[...] = (x + 2 for x in range(10))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [x + 2 for x in range(10)])
+        # If we assign from a generator with one element, it broadcasts
+        a[...] = (x + 3 for x in range(5,6))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [8]*10)
+
+        def assign(x, y):
+            x[...] = y
+        # If we assign from a generator with too few elements, it errors
+        self.assertRaises(nd.BroadcastError, assign, a,
+                        (x + 2 for x in range(9)))
+        # If we assign from a generator with too many elements, it errors
+        self.assertRaises(nd.BroadcastError, assign, a,
+                        (x + 2 for x in range(11)))
+
+    def test_simple_fixed_dim(self):
+        # Assign to a strided dim from a generator
+        a = nd.empty('10, int32')
+        a[...] = (x + 2 for x in range(10))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [x + 2 for x in range(10)])
+        # If we assign from a generator with one element, it broadcasts
+        a[...] = (x + 3 for x in range(5,6))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [8]*10)
+
+        def assign(x, y):
+            x[...] = y
+        # If we assign from a generator with too few elements, it errors
+        self.assertRaises(nd.BroadcastError, assign, a,
+                        (x + 2 for x in range(9)))
+        # If we assign from a generator with too many elements, it errors
+        self.assertRaises(nd.BroadcastError, assign, a,
+                        (x + 2 for x in range(11)))
+
 if __name__ == '__main__':
     unittest.main()

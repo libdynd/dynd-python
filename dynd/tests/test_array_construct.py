@@ -38,7 +38,6 @@ class TestStringConstruct(unittest.TestCase):
         self.assertEqual(a[0].dtype.data_size, 1)
         self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
 
-
 class TestStructConstruct(unittest.TestCase):
     def test_single_struct(self):
         a = nd.array([12, 'test', True], dtype='{x:int32; y:string; z:bool}')
@@ -129,6 +128,51 @@ class TestStructConstruct(unittest.TestCase):
                         [0, 1, 2, 3], udtype='{x:int32; y:int32; z:int32}')
         self.assertRaises(RuntimeError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, udtype='{x:int32; y:int32; z:int32}')
+
+class TestIteratorConstruct(unittest.TestCase):
+    # Test dynd construction from iterators
+    # NumPy's np.fromiter(x, dtype) becomes nd.array(x, dtype='var, <dtype>')
+
+    def test_simple_fromiter(self):
+        # Var dimension construction from a generator
+        a = nd.array((2*x + 5 for x in range(10)), dtype='var, int32')
+        self.assertEqual(a.dtype, nd.dtype('var, int32'))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
+        # Fixed dimension construction from a generator
+        a = nd.array((2*x + 5 for x in range(10)), dtype='10, int32')
+        self.assertEqual(a.dtype, nd.dtype('10, int32'))
+        self.assertEqual(len(a), 10)
+        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
+        # Produce an error if it's a fixed dimension with too few elements
+        self.assertRaises(nd.BroadcastError, nd.array,
+                        (2*x + 5 for x in range(10)), dtype='11, int32')
+        # Produce an error if it's a fixed dimension with too many elements
+        self.assertRaises(nd.BroadcastError, nd.array,
+                        (2*x + 5 for x in range(10)), dtype='9, int32')
+        # Produce an error if it's a strided dimension
+        self.assertRaises(RuntimeError, nd.array,
+                        (2*x + 5 for x in range(10)), dtype='M, int32')
+
+    def test_simple_fromiter_medsize(self):
+        # A bigger input to exercise the dynamic resizing a bit
+        a = nd.array((2*x + 5 for x in range(100000)), dtype='var, int32')
+        self.assertEqual(a.dtype, nd.dtype('var, int32'))
+        self.assertEqual(len(a), 100000)
+        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(100000)])
+
+    def test_ragged_fromiter(self):
+        # Strided array of var from list of iterators
+        a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
+                        [2, 10]], dtype='M, var, int32')
+        self.assertEqual(a.dtype, nd.dtype('M, var, int32'))
+        self.assertEqual(nd.as_py(a),
+                        [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
+        # Var array of var from iterator of iterators
+        a = nd.array(((2*x for x in range(y)) for y in range(4)),
+                        dtype='var, var, int32')
+        self.assertEqual(a.dtype, nd.dtype('var, var, int32'))
+        self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
 
 if __name__ == '__main__':
     unittest.main()

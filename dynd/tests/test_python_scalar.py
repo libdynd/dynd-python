@@ -59,7 +59,6 @@ class TestPythonScalar(unittest.TestCase):
         self.assertEqual(nd.as_py(a), date(2012,12,12))
 
     def test_string(self):
-        # String/Unicode TODO: Python 3 bytes becomes a bytes<> dtype
         a = nd.array('abcdef')
         self.assertEqual(a.dtype, ndt.string)
         self.assertEqual(type(nd.as_py(a)), unicode)

@@ -217,8 +217,23 @@ static void deduce_pyseq_shape(PyObject *obj, size_t undim, intptr_t *shape)
             }
         }
     } else {
-        throw runtime_error("not enough dimensions in"
-                        " python object for the provided dynd type");
+        // If it's an iterator, error checking needs to be done later
+        // during actual value assignment.
+        PyObject *iter = PyObject_GetIter(obj);
+        if (iter == NULL) {
+            if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+                PyErr_Clear();
+                throw runtime_error("not enough dimensions in"
+                                " python object for the provided dynd type");
+            } else {
+                // Propagate the exception
+                throw exception();
+            }
+        } else {
+            Py_DECREF(iter);
+        }
+        // It must be a variable-sized dimension
+        shape[0] = shape_signal_var;
     }
 }
 

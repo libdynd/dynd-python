@@ -4,7 +4,8 @@ from __future__ import absolute_import
 from dynd._pydynd import w_dtype as dtype, w_array as array, \
         as_py, as_numpy, empty, empty_like, range, \
         linspace, fields, groupby, elwise_map, \
-        parse_json, format_json, debug_repr
+        parse_json, format_json, debug_repr, \
+        BroadcastError
 
 # All the builtin elementwise gfuncs
 #from elwise_gfuncs import *

@@ -1,6 +1,13 @@
 DyND-Python Release Notes
 ===================
 
+DyND-Python 0.4.1
+-----------------
+
+ - Rename nd.arange to nd.range, the "a" prefix is unneeded because
+   the nd namespace is always used.
+ - Finish the rename of nd.ndobject to nd.array throughout the system.
+
 DyND-Python 0.4.0
 -----------------
 

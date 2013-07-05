@@ -177,37 +177,16 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         return make_dtype<complex<double> >();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
-        // Python ascii string
-        return make_string_dtype(string_encoding_ascii);
+        // Python string
+        return make_string_dtype();
+#else
+    } else if (PyBytes_Check(obj)) {
+        // Python bytes string
+        return make_bytes_dtype(1);
 #endif
     } else if (PyUnicode_Check(obj)) {
-        // Python unicode string
-#if PY_VERSION_HEX >= 0x03003000
-        if (PyUnicode_READY(obj) < 0) {
-            throw exception();
-        }
-        // In Python 3.3, the string representation is
-        // no longer with a fixed base char size
-        switch (PyUnicode_KIND(obj)) {
-            case PyUnicode_1BYTE_KIND:
-                return make_string_dtype(string_encoding_ascii);
-            case PyUnicode_2BYTE_KIND:
-                return make_string_dtype(string_encoding_ucs_2);
-            case PyUnicode_4BYTE_KIND:
-                return make_string_dtype(string_encoding_utf_32);
-            default: {
-                stringstream ss;
-                ss << "python string has an invalid unicode kind '" << (int)PyUnicode_KIND(obj);
-                throw runtime_error(ss.str());
-            }
-        }
-#else
-#  if Py_UNICODE_SIZE == 2
-        return make_string_dtype(string_encoding_ucs_2);
-#  else
-        return make_string_dtype(string_encoding_utf_32);
-#  endif
-#endif
+        // Python string
+        return make_string_dtype();
     } else if (PyDateTime_Check(obj)) {
         if (((PyDateTime_DateTime *)obj)->hastzinfo &&
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {

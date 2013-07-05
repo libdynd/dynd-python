@@ -7,6 +7,7 @@
 
 #include <dynd/dtype_assign.hpp>
 #include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
@@ -117,7 +118,6 @@ static void array_assign_from_value(const dynd::dtype& dt,
             complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
             dtype_assign(dt, metadata, data,
                         make_dtype<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
-        // TODO: On Python 3, PyBytes should become a dnd bytes array
 #if PY_VERSION_HEX < 0x03000000
         } else if (PyString_Check(value)) {
             char *pystr_data = NULL;
@@ -126,7 +126,14 @@ static void array_assign_from_value(const dynd::dtype& dt,
                 throw runtime_error("Error getting string data");
             }
 
-            dtype str_dt = make_string_dtype(string_encoding_ascii);
+            dtype str_dt;
+            // Choose between bytes or ascii string based on the destination type
+            dtype_kind_t kind = dt.get_udtype().get_kind();
+            if (kind == bytes_kind) {
+                str_dt = make_bytes_dtype(1);
+            } else { 
+                str_dt = make_string_dtype(string_encoding_ascii);
+            }
             string_dtype_data str_d;
             string_dtype_metadata str_md;
             str_d.begin = pystr_data;
@@ -135,6 +142,23 @@ static void array_assign_from_value(const dynd::dtype& dt,
 
             dtype_assign(dt, metadata, data,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
+#else
+        } else if (PyBytes_Check(value)) {
+            char *pybytes_data = NULL;
+            intptr_t pybytes_len = 0;
+            if (PyBytes_AsStringAndSize(value, &pybytes_data, &pybytes_len) < 0) {
+                throw runtime_error("Error getting byte string data");
+            }
+
+            dtype bytes_dt = make_bytes_dtype(1);
+            string_dtype_data bytes_d;
+            string_dtype_metadata bytes_md;
+            bytes_d.begin = pybytes_data;
+            bytes_d.end = pybytes_data + pybytes_len;
+            bytes_md.blockref = NULL;
+
+            dtype_assign(dt, metadata, data,
+                        bytes_dt, reinterpret_cast<const char *>(&bytes_md), reinterpret_cast<const char *>(&bytes_d));
 #endif
         } else if (PyUnicode_Check(value)) {
             // Go through UTF8 (was accessing the cpython uniocde values directly

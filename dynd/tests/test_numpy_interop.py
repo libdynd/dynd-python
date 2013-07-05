@@ -201,10 +201,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Blockref strings don't have a corresponding Numpy construct
         # Therefore numpy makes an object array scalar out of them.
         a = nd.array("abcdef")
-        if sys.version_info >= (3, 0):
-            self.assertEqual(a.dtype, ndt.string)
-        else:
-            self.assertEqual(a.dtype, ndt.make_string_dtype('ascii'))
+        self.assertEqual(a.dtype, ndt.string)
         # Some versions of NumPy produce an error instead,
         # so this assertion is removed
         #self.assertEqual(np.asarray(a).dtype, np.dtype(object))

@@ -7,6 +7,7 @@
 #include <datetime.h>
 
 #include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
@@ -17,6 +18,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/dtype_promotion.hpp>
+#include <dynd/exceptions.hpp>
 
 #include "array_from_py.hpp"
 #include "array_assign_from_py.hpp"
@@ -254,44 +256,40 @@ inline void convert_one_pyscalar_cdouble(const dtype& dt, const char *metadata, 
                     PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
 }
 
-#if PY_VERSION_HEX < 0x03000000
-struct ascii_string_ptrs {
+struct bytes_string_ptrs {
     char *begin, *end;
 };
 
-inline void convert_one_pyscalar_astring(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_bytes(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
-    ascii_string_ptrs *out_asp = reinterpret_cast<ascii_string_ptrs *>(out);
+    bytes_string_ptrs *out_asp = reinterpret_cast<bytes_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
+#if PY_VERSION_HEX >= 0x03000000
+    if (PyBytes_Check(obj)) {
+#else
     if (PyString_Check(obj)) {
+#endif
         char *data = NULL;
         intptr_t len = 0;
+#if PY_VERSION_HEX >= 0x03000000
+        if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
+#else
         if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
-            throw runtime_error("Error getting string data");
+#endif
+            throw runtime_error("Error getting byte string data");
         }
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
         allocator->allocate(md->blockref, len, 1, &out_asp->begin, &out_asp->end);
         memcpy(out_asp->begin, data, len);
     } else {
-        throw runtime_error("wrong kind of string provided");
+        throw runtime_error("wrong kind of string provided (require byte string for dynd bytes type)");
     }
 }
-#endif
 
-#if PY_VERSION_HEX >= 0x03030000
 struct pyunicode_string_ptrs {
     char *begin, *end;
 };
-#else
-struct pyunicode_string_ptrs {
-#  if Py_UNICODE_SIZE == 2
-    uint16_t *begin, *end;
-#  else
-    uint32_t *begin, *end;
-#  endif
-};
-#endif
 
 inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, char *out, PyObject *obj)
 {
@@ -307,7 +305,7 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
         }
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
         allocator->allocate(md->blockref, len,
-                        1, (char **)&out_usp->begin, (char **)&out_usp->end);
+                        1, &out_usp->begin, &out_usp->end);
         memcpy(out_usp->begin, s, len);
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
@@ -318,9 +316,13 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
         }
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len * Py_UNICODE_SIZE,
-                        Py_UNICODE_SIZE, (char **)&out_usp->begin, (char **)&out_usp->end);
+        allocator->allocate(md->blockref, len,
+                        1, &out_usp->begin, &out_usp->end);
         for (Py_ssize_t i = 0; i < len; ++i) {
+            // Only let valid ascii get through
+            if ((unsigned char)data[i] >= 128) {
+                throw string_decode_error(data+i, data+i+1, string_encoding_ascii);
+            }
             out_usp->begin[i] = data[i];
         }
 #endif
@@ -465,34 +467,23 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
+        case bytes_type_id:
+            fill_array_from_pylist<convert_one_pyscalar_bytes>(result.get_dtype(),
+                            result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
+            break;
         case string_type_id: {
             const base_string_dtype *ext = static_cast<const base_string_dtype *>(dt.extended());
-            switch (ext->get_encoding()) {
-#if PY_VERSION_HEX < 0x03000000
-                case string_encoding_ascii:
-                    fill_array_from_pylist<convert_one_pyscalar_astring>(result.get_dtype(), result.get_ndo_meta(),
-                                    result.get_readwrite_originptr(),
-                                    obj, &shape[0], 0);
-                    break;
-#endif
-#if PY_VERSION_HEX >= 0x03030000
-                case string_encoding_utf_8:
-#elif Py_UNICODE_SIZE == 2
-                case string_encoding_ucs_2:
-#else
-                case string_encoding_utf_32:
-#endif
-                        {
-                    fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(),
-                                    result.get_ndo_meta(),
-                                    result.get_readwrite_originptr(),
-                                    obj, &shape[0], 0);
-                    break;
-                }
-                default:
-                    stringstream ss;
-                    ss << "Deduced type from Python list, " << dt << ", doesn't have a dynd array conversion function yet";
-                    throw runtime_error(ss.str());
+            if (ext->get_encoding() == string_encoding_utf_8) {
+                fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(),
+                                result.get_ndo_meta(),
+                                result.get_readwrite_originptr(),
+                                obj, &shape[0], 0);
+            } else {
+                stringstream ss;
+                ss << "Internal error: deduced type from Python list, " << dt << ", doesn't have a dynd array conversion";
+                throw runtime_error(ss.str());
             }
             break;
         }
@@ -575,18 +566,33 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         return PyFloat_AS_DOUBLE(obj);
     } else if (PyComplex_Check(obj)) {
         return complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
-    // TODO: On Python 3, PyBytes should become a dynd bytes array
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         char *data = NULL;
-        intptr_t len = 0;
+        Py_ssize_t len = 0;
         if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
             throw runtime_error("Error getting string data");
         }
-        dtype d = make_string_dtype(string_encoding_ascii);
-        // Python strings are immutable, so simply use the existing memory with an external memory 
+
+        for (Py_ssize_t i = 0; i < len; ++i) {
+            // Only let valid ascii get through
+            if ((unsigned char)data[i] >= 128) {
+                throw string_decode_error(data+i, data+i+1, string_encoding_ascii);
+            }
+        }
+
+        return nd::make_utf8_array(data, len);
+#else
+    } else if (PyBytes_Check(obj)) {
+        char *data = NULL;
+        intptr_t len = 0;
+        if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
+            throw runtime_error("Error getting byte string data");
+        }
+        dtype d = make_bytes_dtype(1);
+        // Python bytes are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
-        memory_block_ptr stringref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
+        memory_block_ptr bytesref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
         char *data_ptr;
         nd::array result(make_array_memory_block(d.extended()->get_metadata_size(),
                         d.get_data_size(), d.get_data_alignment(), &data_ptr));
@@ -594,12 +600,12 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();
         base_dtype_incref(result.get_ndo()->m_dtype);
-        // The scalar consists of pointers to the string data
+        // The scalar consists of pointers to the byte string data
         ((const char **)data_ptr)[0] = data;
         ((const char **)data_ptr)[1] = data + len;
         // The metadata
         string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
-        md->blockref = stringref.release();
+        md->blockref = bytesref.release();
         result.get_ndo()->m_flags = nd::immutable_access_flag|nd::read_access_flag;
         return result;
 #endif

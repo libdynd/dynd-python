@@ -61,10 +61,7 @@ class TestPythonScalar(unittest.TestCase):
     def test_string(self):
         # String/Unicode TODO: Python 3 bytes becomes a bytes<> dtype
         a = nd.array('abcdef')
-        if sys.version_info >= (3, 0):
-            self.assertEqual(a.dtype, ndt.string)
-        else:
-            self.assertEqual(a.dtype, ndt.make_string_dtype('ascii'))
+        self.assertEqual(a.dtype, ndt.string)
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), u'abcdef')
         a = nd.array(u'abcdef')

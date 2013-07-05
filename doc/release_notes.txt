@@ -7,6 +7,8 @@ DyND-Python 0.4.1
  - Rename nd.arange to nd.range, the "a" prefix is unneeded because
    the nd namespace is always used.
  - Finish the rename of nd.ndobject to nd.array throughout the system.
+ - Change string/bytes conversion and assignment to be similar to
+   Python 3 on both Python 2 and 3.
 
 DyND-Python 0.4.0
 -----------------

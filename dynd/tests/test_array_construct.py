@@ -6,7 +6,6 @@ from dynd import nd, ndt
 class TestStringConstruct(unittest.TestCase):
     def test_empty_array(self):
         # Empty arrays default to float64
-        # TODO: Is there a better default, e.g. "void"?
         a = nd.array([])
         self.assertEqual(a.dtype, nd.dtype('M, float64'))
         self.assertEqual(a.shape, (0,))
@@ -132,6 +131,13 @@ class TestStructConstruct(unittest.TestCase):
 class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators
     # NumPy's np.fromiter(x, dtype) becomes nd.array(x, dtype='var, <dtype>')
+
+    def test_without_specified_dtype(self):
+        # Constructing from an iterator with no specified dtype
+        # defaults to float64
+        a = nd.array(2*x + 1 for x in range(10))
+        self.assertEqual(a.dtype, nd.dtype('var, float64'))
+        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(10)])
 
     def test_simple_fromiter(self):
         # Var dimension construction from a generator

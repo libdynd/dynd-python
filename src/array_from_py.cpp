@@ -664,6 +664,28 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
 #endif // DYND_NUMPY_INTEROP
     }
 
+    // Special case if it's an iterator: convert to a datashape of 'var, float64'.
+    // This is based on NumPy's default np.fromiter(it) behavior when no dtype
+    // is specified
+    PyObject *iter = PyObject_GetIter(obj);
+    if (iter != NULL) {
+        // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
+        Py_DECREF(iter);
+        nd::array result = nd::empty(make_var_dim_dtype(make_dtype<double>()));
+        array_nodim_broadcast_assign_from_py(result.get_dtype(),
+                        result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
+        return result;
+    } else {
+        if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+            // A TypeError indicates that the object doesn't support
+            // the iterator protocol
+            PyErr_Clear();
+        } else {
+            // Propagate the error
+            throw exception();
+        }
+    }
+
     throw std::runtime_error("could not convert python object into a dynd array");
 }
 

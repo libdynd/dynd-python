@@ -174,5 +174,11 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(a.dtype, nd.dtype('var, var, int32'))
         self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
 
+    def test_uniform_fromiter(self):
+        # Specify uniform type instead of full type
+        a = nd.array((2*x + 1 for x in range(7)), udtype=ndt.int32)
+        self.assertEqual(a.dtype, nd.dtype('var, int32'))
+        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
+
 if __name__ == '__main__':
     unittest.main()

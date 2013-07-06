@@ -694,11 +694,14 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const dtype& dt, bool unifo
             ss << dt << " already has a uniform dim";
             throw runtime_error(ss.str());
         }
-        if (PySequence_Check(obj)
+        if (PyUnicode_Check(obj)
 #if PY_VERSION_HEX < 0x03000000
-                        && !PyString_Check(obj)
+                        || PyString_Check(obj)
 #endif
-                        && !PyUnicode_Check(obj)) {
+                        ) {
+            // Special case strings, because they act as sequences too
+            result = nd::empty(dt);
+        } else if (PySequence_Check(obj)) {
             vector<intptr_t> shape;
             Py_ssize_t size = PySequence_Size(obj);
             if (size == -1 && PyErr_Occurred()) {
@@ -744,7 +747,24 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const dtype& dt, bool unifo
                 result = nd::make_strided_array(dt, shape.size(), &shape[0]);
             }
         } else {
-            result = nd::empty(dt);
+            // If the object is an iterator and the dtype doesn't already have
+            // a uniform dim, prepend a var dim as a special case
+            PyObject *iter = PyObject_GetIter(obj);
+            if (iter != NULL) {
+                result = nd::empty(make_var_dim_dtype(dt));
+            } else {
+                if (PyErr_Occurred()) {
+                    if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+                        // TypeError signals it doesn't support iteration
+                        PyErr_Clear();
+                    } else {
+                        // Propagate errors
+                        throw exception();
+                    }
+                }
+                // If it wasn't a sequence or iterator, just use the type directly
+                result = nd::empty(dt);
+            }
         }
     } else if (dt.get_undim() > 0 && dtype_requires_shape(dt)) {
         size_t undim = dt.get_undim();

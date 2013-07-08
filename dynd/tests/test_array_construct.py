@@ -186,5 +186,11 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(a.dtype, nd.dtype('var, int32'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
 
+class TestConstructErrors(unittest.TestCase):
+    def test_bad_shape(self):
+        # Too many dimensions should raise an error
+        self.assertRaises(RuntimeError, nd.empty, (2,), ndt.int32)
+        self.assertRaises(RuntimeError, nd.empty, (2,3), 'var, int64')
+
 if __name__ == '__main__':
     unittest.main()

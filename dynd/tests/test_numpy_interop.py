@@ -276,10 +276,21 @@ class TestNumpyScalarInterop(unittest.TestCase):
     def test_expr_struct_conversion(self):
         a = nd.array([date(2000, 12, 13), date(1995, 5, 2)]).to_struct()
         b = nd.as_numpy(a, allow_copy=True)
+        self.assertTrue(isinstance(b, np.ndarray))
         # Use the NumPy assertions which support arrays
         assert_equal(b['year'], [2000, 1995])
         assert_equal(b['month'], [12, 5])
         assert_equal(b['day'], [13, 2])
+
+    def test_var_dim_conversion(self):
+        # A simple instantiated var_dim array should be
+        # vieable with numpy without changes
+        a = nd.array([1, 2, 3, 4, 5], dtype='var, int32')
+        b = nd.as_numpy(a)
+        self.assertTrue(isinstance(b, np.ndarray))
+        self.assertEqual(b.dtype, np.dtype('int32'))
+        # Use the NumPy assertions which support arrays
+        assert_equal(b, [1, 2, 3, 4, 5])
 
 if __name__ == '__main__':
     unittest.main()

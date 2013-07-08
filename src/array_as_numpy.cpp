@@ -621,13 +621,14 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
         return result.release();
     }
 
-    if (n.get_dtype().get_type_id() == pointer_type_id ||
-                    n.get_dtype().get_type_id() == var_dim_type_id) {
-        // If it's a pointer or var_dim, use 0-length indexing to
+    if (n.get_dtype().get_type_id() == var_dim_type_id) {
+        // If it's a var_dim, use "[:]" indexing to
         // strip away this leading part so it's compatible with NumPy.
-        pyobject_ownref n_tmp(wrap_array(n.at_array(0, NULL)));
+        pyobject_ownref n_tmp(wrap_array(n(irange())));
         return array_as_numpy(n_tmp.get(), allow_copy);
     }
+    // TODO: Handle pointer type nicely as well
+    //n.get_dtype().get_type_id() == pointer_type_id
 
     // Do a recursive analysis of the dynd array for how to
     // convert it to NumPy

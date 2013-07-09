@@ -136,7 +136,7 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
         }
         case dtype_type_id: {
             ndt::type dt(reinterpret_cast<const dtype_dtype_data *>(data)->dt, true);
-            return wrap_dtype(DYND_MOVE(dt));
+            return wrap_ndt_type(DYND_MOVE(dt));
         }
         default: {
             stringstream ss;

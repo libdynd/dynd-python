@@ -176,7 +176,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 throw runtime_error("Error getting byte string data");
             }
 
-            dtype bytes_dt = make_bytes_dtype(1);
+            ndt::type bytes_dt = make_bytes_dtype(1);
             string_dtype_data bytes_d;
             string_dtype_metadata bytes_md;
             bytes_d.begin = pybytes_data;

@@ -604,7 +604,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
             throw runtime_error("Error getting byte string data");
         }
-        dtype d = make_bytes_dtype(1);
+        ndt::type d = make_bytes_dtype(1);
         // Python bytes are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
         memory_block_ptr bytesref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);

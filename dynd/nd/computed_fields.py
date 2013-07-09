@@ -1,6 +1,6 @@
 __all__ = ['add_computed_fields']
 
-from dynd._pydynd import as_py, as_numpy, w_dtype as dtype, \
+from dynd._pydynd import as_py, as_numpy, w_type, \
                 w_array as array, make_cstruct_dtype, \
                 elwise_map, extract_udtype
 
@@ -86,7 +86,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     ...         rm_fields=['x', 'y'],
     ...         fnname='topolar')
     >>> y.dtype
-    nd.dtype('strided_dim<expr<cstruct<float64 r, float64 theta>, op0=cstruct<float64 x, float64 y>, expr=topolar(op0)>>')
+    ndt.type('strided_dim<expr<cstruct<float64 r, float64 theta>, op0=cstruct<float64 x, float64 y>, expr=topolar(op0)>>')
     >>> y.eval()
     nd.array([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<cstruct<float64 r, float64 theta>>)
     >>> x[0] = (-100, 0)
@@ -94,7 +94,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     nd.array([100, 3.14159], cstruct<float64 r, float64 theta>)
     """
     n = array(n)
-    udt = n.udtype.value_dtype
+    udt = n.udtype.value_type
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
@@ -104,9 +104,9 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     # Put the new field names in a dict as well
     new_field_dict = {}
     for fn, ft, fe in fields:
-        new_field_dict[fn] = dtype(ft)
+        new_field_dict[fn] = w_type(ft)
 
-    # Create the output struct dtype and corresponding expressions
+    # Create the output struct type and corresponding expressions
     new_field_names = []
     new_field_types = []
     new_field_expr = []
@@ -127,7 +127,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
 
 def make_computed_fields(n, replace_undim, fields, fnname=None):
     """
-    Creates a new struct dtype, with fields computed based
+    Creates a new struct type, with fields computed based
     on the input fields. Leaves the requested number of
     uniform dimensions in place, so the result has fewer
     than the input if positive.
@@ -140,7 +140,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
     Parameters
     ----------
     n : dynd array
-        This should have a uniform struct dtype. The
+        This should have a uniform struct type. The
         result will be a view of this data.
     replace_undim : integer
         The number of uniform dimensions to leave in the
@@ -153,7 +153,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
         No fields are retained from the input.
     fnname : string, optional
         The function name, which affects how the resulting
-        deferred expression's dtype is printed.
+        deferred expression's type is printed.
 
     Examples
     --------
@@ -179,7 +179,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
      {u'max_x': 1.0, u'max_y': 5.0, u'mean_y': 5.0, u'min_y': 5.0, u'sum_x': 1.0}]
     """
     n = array(n)
-    udt = n.udtype.value_dtype
+    udt = n.udtype.value_type
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
@@ -187,7 +187,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
     field_names = as_py(udt.field_names)
     field_types = as_py(udt.field_types)
 
-    # Create the output struct dtype and corresponding expressions
+    # Create the output struct type and corresponding expressions
     new_field_names = []
     new_field_types = []
     new_field_expr = []

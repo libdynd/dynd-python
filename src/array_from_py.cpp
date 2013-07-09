@@ -51,7 +51,7 @@ namespace {
 };
 
 static void deduce_pylist_shape_and_dtype(PyObject *obj,
-                vector<intptr_t>& shape, dtype& dt, size_t current_axis)
+                vector<intptr_t>& shape, ndt::type& dt, size_t current_axis)
 {
     if (PyList_Check(obj)) {
         Py_ssize_t size = PyList_GET_SIZE(obj);
@@ -76,7 +76,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
             throw runtime_error("dynd array doesn't support dimensions which are sometimes scalars and sometimes arrays");
         }
 
-        dtype obj_dt;
+        ndt::type obj_dt;
 #if PY_VERSION_HEX >= 0x03000000
         if (PyUnicode_Check(obj)) {
             obj_dt = make_string_dtype(string_encoding_utf_8);
@@ -95,9 +95,9 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
 
 /**
  * Returns the number of dimensions without raggedness, where
- * structs and uniform dimensions are non-scalar.
+ * structs and array dimensions are non-scalar.
  */
-static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_limits<size_t>::max())
+static size_t get_nonragged_dim_count(const ndt::type& dt, size_t max_count=numeric_limits<size_t>::max())
 {
     switch (dt.get_kind()) {    
         case uniform_dim_kind:
@@ -107,7 +107,7 @@ static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_
                 return min(max_count,
                         1 + get_nonragged_dim_count(
                             static_cast<const base_uniform_dim_dtype *>(
-                                dt.extended())->get_element_dtype(), max_count - 1));
+                                dt.extended())->get_element_type(), max_count - 1));
             }
         case struct_kind:
             if (max_count <= 1) {
@@ -115,7 +115,7 @@ static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_
             } else {
                 const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(dt.extended());
                 size_t field_count = bsd->get_field_count();
-                const dtype *field_types = bsd->get_field_types();
+                const ndt::type *field_types = bsd->get_field_types();
                 for (size_t i = 0; i != field_count; ++i) {
                     size_t candidate = 1 + get_nonragged_dim_count(field_types[i], max_count - 1);
                     if (candidate < max_count) {
@@ -132,7 +132,7 @@ static size_t get_nonragged_dim_count(const dtype& dt, size_t max_count=numeric_
     }
 }
 
-static void deduce_pyseq_shape_with_udtype(PyObject *obj, const dtype& udt,
+static void deduce_pyseq_shape_with_udtype(PyObject *obj, const ndt::type& udt,
                 std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis)
 {
     bool is_sequence = (PySequence_Check(obj) != 0 && !PyUnicode_Check(obj));
@@ -238,15 +238,15 @@ static void deduce_pyseq_shape(PyObject *obj, size_t undim, intptr_t *shape)
 }
 
 
-typedef void (*convert_one_pyscalar_function_t)(const dtype& dt,
+typedef void (*convert_one_pyscalar_function_t)(const ndt::type& dt,
                 const char *metadata, char *out, PyObject *obj);
 
-inline void convert_one_pyscalar_bool(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_bool(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     *out = (PyObject_IsTrue(obj) != 0);
 }
 
-inline void convert_one_pyscalar_int32(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_int32(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
 #if PY_VERSION_HEX >= 0x03000000
     *reinterpret_cast<int32_t *>(out) = static_cast<int32_t>(PyLong_AsLong(obj));
@@ -255,17 +255,17 @@ inline void convert_one_pyscalar_int32(const dtype& dt, const char *metadata, ch
 #endif
 }
 
-inline void convert_one_pyscalar_int64(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_int64(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     *reinterpret_cast<int64_t *>(out) = PyLong_AsLongLong(obj);
 }
 
-inline void convert_one_pyscalar_double(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_double(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     *reinterpret_cast<double *>(out) = PyFloat_AsDouble(obj);
 }
 
-inline void convert_one_pyscalar_cdouble(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_cdouble(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     *reinterpret_cast<complex<double> *>(out) = complex<double>(
                     PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
@@ -275,7 +275,7 @@ struct bytes_string_ptrs {
     char *begin, *end;
 };
 
-inline void convert_one_pyscalar_bytes(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_bytes(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     bytes_string_ptrs *out_asp = reinterpret_cast<bytes_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
@@ -306,7 +306,7 @@ struct pyunicode_string_ptrs {
     char *begin, *end;
 };
 
-inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_ustring(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     pyunicode_string_ptrs *out_usp = reinterpret_cast<pyunicode_string_ptrs *>(out);
     const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
@@ -346,7 +346,7 @@ inline void convert_one_pyscalar_ustring(const dtype& dt, const char *metadata, 
     }
 }
 
-inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_date(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     if (!PyDate_Check(obj)) {
         throw runtime_error("input object is not a date as expected");
@@ -356,7 +356,7 @@ inline void convert_one_pyscalar_date(const dtype& dt, const char *metadata, cha
                     PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
-inline void convert_one_pyscalar_datetime(const dtype& dt, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_datetime(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     if (!PyDateTime_Check(obj)) {
         throw runtime_error("input object is not a datetime as expected");
@@ -372,15 +372,15 @@ inline void convert_one_pyscalar_datetime(const dtype& dt, const char *metadata,
                     PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
 }
 
-inline void convert_one_pyscalar_dtype(const dtype& DYND_UNUSED(dt),
+inline void convert_one_pyscalar_dtype(const ndt::type& DYND_UNUSED(dt),
                 const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
 {
-    dtype dt = make_dtype_from_pyobject(obj);
+    ndt::type dt = make_dtype_from_pyobject(obj);
     dt.swap(reinterpret_cast<dtype_dtype_data *>(out)->dt);
 }
 
 template<convert_one_pyscalar_function_t ConvertOneFn>
-static void fill_array_from_pylist(const dtype& dt, const char *metadata, char *data, PyObject *obj,
+static void fill_array_from_pylist(const ndt::type& dt, const char *metadata, char *data, PyObject *obj,
                 const intptr_t *shape, size_t current_axis)
 {
     if (shape[current_axis] == 0) {
@@ -389,7 +389,7 @@ static void fill_array_from_pylist(const dtype& dt, const char *metadata, char *
 
     Py_ssize_t size = PyList_GET_SIZE(obj);
     const char *element_metadata = metadata;
-    dtype element_dtype = dt.at_single(0, &element_metadata);
+    ndt::type element_dtype = dt.at_single(0, &element_metadata);
     if (shape[current_axis] >= 0) {
         // Fixed-sized dimension
         const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
@@ -440,7 +440,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     // TODO: Add ability to specify access flags (e.g. immutable)
     // Do a pass through all the data to deduce its dtype and shape
     vector<intptr_t> shape;
-    dtype dt(void_type_id);
+    ndt::type dt(void_type_id);
     Py_ssize_t size = PyList_GET_SIZE(obj);
     shape.push_back(size);
     for (Py_ssize_t i = 0; i < size; ++i) {
@@ -448,7 +448,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     }
     // If no type was deduced, e.g. a size-zero list, default to double/float64
     if (dt.get_type_id() == void_type_id) {
-        dt = make_dtype<double>();
+        dt = ndt::make_dtype<double>();
     }
 
     // Create the array
@@ -637,7 +637,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
             throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
         }
-        dtype d = make_datetime_dtype(datetime_unit_usecond, tz_abstract);
+        ndt::type d = make_datetime_dtype(datetime_unit_usecond, tz_abstract);
         const datetime_dtype *dd = static_cast<const datetime_dtype *>(d.extended());
         nd::array result = nd::empty(d);
         dd->set_cal(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
@@ -646,14 +646,14 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                     PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
         return result;
     } else if (PyDate_Check(obj)) {
-        dtype d = make_date_dtype();
+        ndt::type d = make_date_dtype();
         const date_dtype *dd = static_cast<const date_dtype *>(d.extended());
         nd::array result = nd::empty(d);
         dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
                     PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
         return result;
-    } else if (WDType_Check(obj)) {
-        return nd::array(((WDType *)obj)->v);
+    } else if (WType_Check(obj)) {
+        return nd::array(((WType *)obj)->v);
     } else if (PyList_Check(obj)) {
         return array_from_pylist(obj);
     } else if (PyType_Check(obj)) {
@@ -671,7 +671,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     if (iter != NULL) {
         // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
         Py_DECREF(iter);
-        nd::array result = nd::empty(make_var_dim_dtype(make_dtype<double>()));
+        nd::array result = nd::empty(make_var_dim_dtype(ndt::make_dtype<double>()));
         array_nodim_broadcast_assign_from_py(result.get_dtype(),
                         result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
         return result;
@@ -689,7 +689,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     throw std::runtime_error("could not convert python object into a dynd array");
 }
 
-static bool dtype_requires_shape(const dtype& dt)
+static bool dtype_requires_shape(const ndt::type& dt)
 {
     if (dt.get_undim() > 0) {
         switch (dt.get_type_id()) {
@@ -697,7 +697,7 @@ static bool dtype_requires_shape(const dtype& dt)
             case var_dim_type_id:
                 return dtype_requires_shape(
                                 static_cast<const base_uniform_dim_dtype *>(
-                                    dt.extended())->get_element_dtype());
+                                    dt.extended())->get_element_type());
             default:
                 return true;
         }
@@ -706,7 +706,7 @@ static bool dtype_requires_shape(const dtype& dt)
     }
 }
 
-dynd::nd::array pydynd::array_from_py(PyObject *obj, const dtype& dt, bool uniform)
+dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool uniform)
 {
     nd::array result;
     if (uniform) {

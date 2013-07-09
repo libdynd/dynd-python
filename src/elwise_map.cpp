@@ -188,18 +188,18 @@ namespace {
 
 class pyobject_elwise_expr_kernel_generator : public expr_kernel_generator {
     pyobject_ownref m_callable;
-    dtype m_dst_dt;
-    vector<dtype> m_src_dt;
+    ndt::type m_dst_dt;
+    vector<ndt::type> m_src_dt;
 public:
     pyobject_elwise_expr_kernel_generator(PyObject *callable,
-                    const dtype& dst_dt, const std::vector<dtype>& src_dt)
+                    const ndt::type& dst_dt, const std::vector<ndt::type>& src_dt)
         : expr_kernel_generator(true), m_callable(callable, true),
                         m_dst_dt(dst_dt), m_src_dt(src_dt)
     {
     }
 
     pyobject_elwise_expr_kernel_generator(PyObject *callable,
-                    const dtype& dst_dt, const dtype& src_dt)
+                    const ndt::type& dst_dt, const ndt::type& src_dt)
         : expr_kernel_generator(true), m_callable(callable, true),
                         m_dst_dt(dst_dt), m_src_dt(1)
     {
@@ -211,8 +211,8 @@ public:
 
     size_t make_expr_kernel(
                 hierarchical_kernel *out, size_t offset_out,
-                const dtype& dst_dt, const char *dst_metadata,
-                size_t src_count, const dtype *src_dt, const char **src_metadata,
+                const ndt::type& dst_dt, const char *dst_metadata,
+                size_t src_count, const ndt::type *src_dt, const char **src_metadata,
                 kernel_request_t kernreq, const eval::eval_context *ectx) const
     {
         if (src_count != m_src_dt.size()) {
@@ -276,7 +276,7 @@ public:
         Py_INCREF(e->callable);
         // Create shell WArrays which are used to give the kernel data to Python
         strided_dim_dtype_metadata *md;
-        dtype dt = make_strided_dim_dtype(dst_dt);
+        ndt::type dt = make_strided_dim_dtype(dst_dt);
         nd::array n(make_array_memory_block(dt.get_metadata_size()));
         n.get_ndo()->m_dtype = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
@@ -336,7 +336,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
         throw runtime_error("elwise_map received a NULL dynd array");
     }
 
-    dtype dst_dt, src_dt;
+    ndt::type dst_dt, src_dt;
 
     dst_dt = make_dtype_from_pyobject(dst_type);
     if (src_type != Py_None) {
@@ -348,8 +348,8 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
         src_dt = n.get_udtype();
     }
 
-    dtype edt = make_unary_expr_dtype(dst_dt, src_dt,
-                    new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_dtype()));
+    ndt::type edt = make_unary_expr_dtype(dst_dt, src_dt,
+                    new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_type()));
     nd::array result = n.replace_udtype(edt, src_dt.get_undim());
     return wrap_array(result);
 }
@@ -365,13 +365,13 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     }
 
-    dtype dst_dt;
-    vector<dtype> src_dt(n.size());
+    ndt::type dst_dt;
+    vector<ndt::type> src_dt(n.size());
 
     dst_dt = make_dtype_from_pyobject(dst_type);
     if (src_type_list != Py_None) {
         for (size_t i = 0; i != n.size(); ++i) {
-            // Cast to the source dtype if requested
+            // Cast to the source type if requested
             src_dt[i] = make_dtype_from_pyobject(PyList_GET_ITEM(src_type_list, i));
             n[i] = n[i].ucast(src_dt[i]);
         }
@@ -400,7 +400,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     }
 
-    dtype result_vdt = dst_dt;
+    ndt::type result_vdt = dst_dt;
     for (size_t j = 0; j != undim; ++j) {
         if (result_shape[undim - j - 1] == -1) {
             result_vdt = make_var_dim_dtype(result_vdt);
@@ -418,9 +418,9 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     }
     nd::array result = combine_into_struct(n.size(), &field_names[0], &n[0]);
 
-    // Because the expr dtype's operand is the result's dtype,
-    // we can swap it in as the dtype
-    dtype edt = make_expr_dtype(result_vdt,
+    // Because the expr type's operand is the result's type,
+    // we can swap it in as the type
+    ndt::type edt = make_expr_dtype(result_vdt,
                     result.get_dtype(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
     edt.swap(result.get_ndo()->m_dtype);

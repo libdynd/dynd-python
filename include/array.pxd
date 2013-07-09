@@ -20,8 +20,8 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         ndarray(double value)
         ndarray(complex[float] value)
         ndarray(complex[double] value)
-        ndarray(dtype&)
-        ndarray(dtype, int, intptr_t *, int *)
+        ndarray(ndt_type&)
+        ndarray(ndt_type, int, intptr_t *, int *)
 
         # Cython bug: operator overloading doesn't obey "except +"
         # TODO: Report this bug
@@ -30,7 +30,7 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         #ndarray operator*(ndarray&) except +translate_exception
         #ndarray operator/(ndarray&) except +translate_exception
 
-        dtype get_dtype()
+        ndt_type get_dtype()
         bint is_scalar()
         intptr_t get_dim_size()
 
@@ -44,14 +44,14 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
 
         ndarray storage() except +translate_exception
 
-        ndarray view_scalars(dtype&) except +translate_exception
-        ndarray ucast(dtype&, size_t, assign_error_mode) except +translate_exception
+        ndarray view_scalars(ndt_type&) except +translate_exception
+        ndarray ucast(ndt_type&, size_t, assign_error_mode) except +translate_exception
 
         void flag_as_immutable() except +translate_exception
 
         void debug_print(ostream&)
 
-    ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&, dtype) except +translate_exception
+    ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&, ndt_type) except +translate_exception
     ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&) except +translate_exception
 
 cdef extern from "array_functions.hpp" namespace "pydynd":
@@ -69,10 +69,10 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     void array_init_from_pyobject(ndarray&, object) except +translate_exception
     ndarray array_eval(ndarray&) except +translate_exception
     ndarray array_eval_copy(ndarray&, object) except +translate_exception
-    ndarray array_empty(dtype&) except +translate_exception
-    ndarray array_empty(object, dtype&) except +translate_exception
+    ndarray array_empty(ndt_type&) except +translate_exception
+    ndarray array_empty(object, ndt_type&) except +translate_exception
     ndarray array_empty_like(ndarray&) except +translate_exception
-    ndarray array_empty_like(ndarray&, dtype&) except +translate_exception
+    ndarray array_empty_like(ndarray&, ndt_type&) except +translate_exception
 
     ndarray array_add(ndarray&, ndarray&) except +translate_exception
     ndarray array_subtract(ndarray&, ndarray&) except +translate_exception
@@ -88,8 +88,8 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     ndarray array_linspace(object, object, object, object) except +translate_exception
     ndarray nd_fields(ndarray&, object) except +translate_exception
 
-    ndarray array_cast(ndarray&, dtype&, object) except +translate_exception
-    ndarray array_ucast(ndarray&, dtype&, size_t, object) except +translate_exception
+    ndarray array_cast(ndarray&, ndt_type&, object) except +translate_exception
+    ndarray array_ucast(ndarray&, ndt_type&, size_t, object) except +translate_exception
     object array_as_py(ndarray&) except +translate_exception
     object array_as_numpy(object, bint) except +translate_exception
     ndarray array_from_py(object) except +translate_exception

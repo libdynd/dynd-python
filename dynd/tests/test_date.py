@@ -5,7 +5,7 @@ from dynd import nd, ndt
 
 class TestDate(unittest.TestCase):
     def test_date_dtype_properties(self):
-        self.assertEqual(type(ndt.date), nd.dtype)
+        self.assertEqual(type(ndt.date), ndt.type)
         self.assertEqual(str(ndt.date), 'date')
         self.assertEqual(ndt.date.data_size, 4)
         self.assertEqual(ndt.date.data_alignment, 4)

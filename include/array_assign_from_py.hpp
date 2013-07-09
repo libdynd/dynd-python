@@ -30,7 +30,7 @@ void array_broadcast_assign_from_py(const dynd::nd::array& n, PyObject *value);
  * \param data  The data of the destination.
  * \param value The PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value);
+void array_broadcast_assign_from_py(const dynd::ndt::type& dt, const char *metadata, char *data, PyObject *value);
 
 /**
  * Assigns the values from 'obj' to the 'dt/metadata/data' raw nd::array, broadcasting
@@ -41,7 +41,7 @@ void array_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata,
  * \param data  The data of the destination.
  * \param value The PyObject for the source data.
  */
-void array_nodim_broadcast_assign_from_py(const dynd::dtype& dt, const char *metadata, char *data, PyObject *value);
+void array_nodim_broadcast_assign_from_py(const dynd::ndt::type& dt, const char *metadata, char *data, PyObject *value);
 
 } // namespace pydynd
 

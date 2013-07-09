@@ -86,7 +86,7 @@ class TestPythonList(unittest.TestCase):
                   '1933-12-25T00:00:00.000000',
                   '1979-03-22T14:30:00.000000']
         a = nd.array(lst)
-        self.assertEqual(a.dtype.udtype, nd.dtype('datetime("usec")'))
+        self.assertEqual(a.dtype.udtype, ndt.type('datetime("usec")'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), lst)
         self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)

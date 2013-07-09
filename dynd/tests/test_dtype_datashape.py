@@ -6,37 +6,37 @@ import numpy as np
 class TestDTypeDataShape(unittest.TestCase):
     def test_scalars(self):
         # Tests making Blaze atom types from strings
-        self.assertEqual(ndt.void, nd.dtype('void'))
-        self.assertEqual(ndt.bool, nd.dtype('bool'))
-        self.assertEqual(ndt.int8, nd.dtype('int8'))
-        self.assertEqual(ndt.int16, nd.dtype('int16'))
-        self.assertEqual(ndt.int32, nd.dtype('int32'))
-        self.assertEqual(ndt.int64, nd.dtype('int64'))
-        self.assertEqual(ndt.uint8, nd.dtype('uint8'))
-        self.assertEqual(ndt.uint16, nd.dtype('uint16'))
-        self.assertEqual(ndt.uint32, nd.dtype('uint32'))
-        self.assertEqual(ndt.uint64, nd.dtype('uint64'))
-        self.assertEqual(ndt.float32, nd.dtype('float32'))
-        self.assertEqual(ndt.float64, nd.dtype('float64'))
-        self.assertEqual(ndt.cfloat32, nd.dtype('cfloat32'))
-        self.assertEqual(ndt.cfloat64, nd.dtype('cfloat64'))
-        self.assertEqual(ndt.cfloat32, nd.dtype('complex64'))
-        self.assertEqual(ndt.cfloat64, nd.dtype('complex128'))
-        self.assertEqual(ndt.string, nd.dtype('string'))
-        self.assertEqual(ndt.date, nd.dtype('date'))
-        self.assertEqual(ndt.json, nd.dtype('json'))
-        self.assertEqual(ndt.bytes, nd.dtype('bytes'))
+        self.assertEqual(ndt.void, ndt.type('void'))
+        self.assertEqual(ndt.bool, ndt.type('bool'))
+        self.assertEqual(ndt.int8, ndt.type('int8'))
+        self.assertEqual(ndt.int16, ndt.type('int16'))
+        self.assertEqual(ndt.int32, ndt.type('int32'))
+        self.assertEqual(ndt.int64, ndt.type('int64'))
+        self.assertEqual(ndt.uint8, ndt.type('uint8'))
+        self.assertEqual(ndt.uint16, ndt.type('uint16'))
+        self.assertEqual(ndt.uint32, ndt.type('uint32'))
+        self.assertEqual(ndt.uint64, ndt.type('uint64'))
+        self.assertEqual(ndt.float32, ndt.type('float32'))
+        self.assertEqual(ndt.float64, ndt.type('float64'))
+        self.assertEqual(ndt.cfloat32, ndt.type('cfloat32'))
+        self.assertEqual(ndt.cfloat64, ndt.type('cfloat64'))
+        self.assertEqual(ndt.cfloat32, ndt.type('complex64'))
+        self.assertEqual(ndt.cfloat64, ndt.type('complex128'))
+        self.assertEqual(ndt.string, ndt.type('string'))
+        self.assertEqual(ndt.date, ndt.type('date'))
+        self.assertEqual(ndt.json, ndt.type('json'))
+        self.assertEqual(ndt.bytes, ndt.type('bytes'))
 
     def test_fixed_array(self):
-        # Tests of datashapes that produce the DyND fixed array dtype
+        # Tests of datashapes that produce the DyND fixed array type
         self.assertEqual(ndt.make_fixed_dim_dtype(3, ndt.int32),
-                        nd.dtype('3, int32'))
+                        ndt.type('3, int32'))
         self.assertEqual(ndt.make_fixed_dim_dtype((5, 2), ndt.float64),
-                        nd.dtype('5, 2, float64'))
+                        ndt.type('5, 2, float64'))
 
     def test_struct(self):
         # Tests of struct datashape
-        dt = nd.dtype('{x: 3, int32; y: string}')
+        dt = ndt.type('{x: 3, int32; y: string}')
         self.assertEqual(dt.type_id, 'cstruct')
         self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
 

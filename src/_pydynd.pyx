@@ -31,9 +31,9 @@ init_ctypes_interop()
 
 # Initialize C++ access to the Cython type objects
 init_w_array_typeobject(w_array)
-init_w_dtype_typeobject(w_dtype)
+init_w_type_typeobject(w_type)
 init_w_array_callable_typeobject(w_array_callable)
-init_w_dtype_callable_typeobject(w_dtype_callable)
+init_w_ndt_type_callable_typeobject(w_type_callable)
 
 include "dynd.pxd"
 #include "codegen_cache.pxd"
@@ -76,7 +76,7 @@ def _get_lowlevel_api():
 def _get_py_lowlevel_api():
     return <size_t>dynd_get_py_lowlevel_api()
 
-cdef class w_dtype:
+cdef class w_type:
     """
     dtype(obj=None)
 
@@ -106,7 +106,7 @@ cdef class w_dtype:
     # which returns a reference to the dtype, and
     # SET(self.v, <dtype value>), which sets the embedded
     # dtype's value.
-    cdef dtype_placement_wrapper v
+    cdef ndt_type_placement_wrapper v
 
     def __cinit__(self, rep=None):
         placement_new(self.v)
@@ -118,7 +118,7 @@ cdef class w_dtype:
     def __dir__(self):
         # Customize dir() so that additional properties of various dtypes
         # will show up in IPython tab-complete, for example.
-        result = dict(w_dtype.__dict__)
+        result = dict(w_type.__dict__)
         result.update(object.__dict__)
         add_dtype_names_to_dir_dict(GET(self.v), result)
         return result.keys()
@@ -201,11 +201,11 @@ cdef class w_dtype:
         """
         a.undim
 
-        The number of uniform dimensions in this dynd type.
+        The number of array dimensions in this dynd type.
 
         This property is roughly equivalent to NumPy
         ndarray's 'ndim'. Indexing with [] can in many cases
-        go deeper than just the uniform dimensions, for
+        go deeper than just the array dimensions, for
         example structs can be indexed this way.
         """
         def __get__(self):
@@ -216,40 +216,40 @@ cdef class w_dtype:
         a.udtype
 
         The dynd type of the element after the 'undim'
-        uniform dimensions are indexed away.
+        array dimensions are indexed away.
 
         This property is roughly equivalent to NumPy
         ndarray's 'dtype'.
         """
         def __get__(self):
-            cdef w_dtype result = w_dtype()
+            cdef w_type result = w_type()
             SET(result.v, GET(self.v).get_udtype())
             return result;
 
-    property value_dtype:
+    property value_type:
         """
-        a.value_dtype
+        a.value_type
 
         If this is an expression dynd type, returns the
         dynd type that values after evaluation have. Otherwise,
         returns this dynd type unchanged.
         """
         def __get__(self):
-            cdef w_dtype result = w_dtype()
-            SET(result.v, GET(self.v).value_dtype())
+            cdef w_type result = w_type()
+            SET(result.v, GET(self.v).value_type())
             return result
 
-    property operand_dtype:
+    property operand_type:
         """
-        a.operand_dtype
+        a.operand_type
 
         If this is an expression dynd type, returns the
         dynd type that inputs to its expression evaluation
         have. Otherwise, returns this dynd type unchanged.
         """
         def __get__(self):
-            cdef w_dtype result = w_dtype()
-            SET(result.v, GET(self.v).operand_dtype())
+            cdef w_type result = w_type()
+            SET(result.v, GET(self.v).operand_type())
             return result
 
     property canonical_dtype:
@@ -261,8 +261,8 @@ cdef class w_dtype:
         are stripped away.
         """
         def __get__(self):
-            cdef w_dtype result = w_dtype()
-            SET(result.v, GET(self.v).get_canonical_dtype())
+            cdef w_type result = w_type()
+            SET(result.v, GET(self.v).get_canonical_type())
             return result
 
     property property_names:
@@ -276,7 +276,7 @@ cdef class w_dtype:
             return dtype_array_property_names(GET(self.v))
 
     def __getitem__(self, x):
-        cdef w_dtype result = w_dtype()
+        cdef w_type result = w_type()
         SET(result.v, dtype_getitem(GET(self.v), x))
         return result
 
@@ -288,35 +288,35 @@ cdef class w_dtype:
 
     def __richcmp__(lhs, rhs, int op):
         if op == Py_EQ:
-            if type(lhs) == w_dtype and type(rhs) == w_dtype:
-                return GET((<w_dtype>lhs).v) == GET((<w_dtype>rhs).v)
+            if type(lhs) == w_type and type(rhs) == w_type:
+                return GET((<w_type>lhs).v) == GET((<w_type>rhs).v)
             else:
                 return False
         elif op == Py_NE:
-            if type(lhs) == w_dtype and type(rhs) == w_dtype:
-                return GET((<w_dtype>lhs).v) != GET((<w_dtype>rhs).v)
+            if type(lhs) == w_type and type(rhs) == w_type:
+                return GET((<w_type>lhs).v) != GET((<w_type>rhs).v)
             else:
                 return False
         return NotImplemented
 
-def replace_udtype(w_dtype dt, replacement_dt, size_t replace_undim=0):
+def replace_udtype(w_type dt, replacement_dt, size_t replace_undim=0):
     """
     replace_udtype(dt, replacement_dt, replace_undim=0)
 
-    Replaces the uniform dtype with the replacement.
+    Replaces the array data type with the replacement.
     If `replace_undim` is positive, that number of uniform
     dimensions are replaced as well.
 
     Parameters
     ----------
     dt : dynd type
-        The dtype whose uniform dtype is to be replaced.
+        The dtype whose array data type is to be replaced.
     replacement_dt : dynd type
         The replacement dynd type.
     replace_undim : integer, optional
         If positive, this is the number of uniform
         dimensions which are replaced in addition to
-        the uniform dtype.
+        the array data type.
 
     Examples
     --------
@@ -328,8 +328,8 @@ def replace_udtype(w_dtype dt, replacement_dt, size_t replace_undim=0):
     >>> ndt.replace_udtype(d, '{x: int32; y:int32}', 1)
     nd.dtype('fixed_dim<3, cstruct<int32 x, int32 y>>')
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, GET(dt.v).with_replaced_udtype(GET(w_dtype(replacement_dt).v), replace_undim))
+    cdef w_type result = w_type()
+    SET(result.v, GET(dt.v).with_replaced_udtype(GET(w_type(replacement_dt).v), replace_undim))
     return result
 
 def extract_udtype(dt, size_t keep_undim=0):
@@ -338,16 +338,16 @@ def extract_udtype(dt, size_t keep_undim=0):
 
     Extracts the uniform type from the provided
     dynd type. If `keep_undim` is positive, that
-    many uniform dimensions are kept in the result.
+    many array dimensions are kept in the result.
 
     Parameters
     ----------
     dt : dynd type
-        The dtype whose uniform dtype is to be extracted.
+        The dtype whose array data type is to be extracted.
     keep_undim : integer, optional
         If positive, this is the number of uniform
         dimensions which are kept in addition to
-        the uniform dtype.
+        the array data type.
 
     Examples
     --------
@@ -359,23 +359,23 @@ def extract_udtype(dt, size_t keep_undim=0):
     >>> ndt.extract_udtype(d, 1)
     nd.dtype('var_dim<int32>')
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, GET(w_dtype(dt).v).get_udtype(keep_undim))
+    cdef w_type result = w_type()
+    SET(result.v, GET(w_type(dt).v).get_udtype(keep_undim))
     return result
 
-def make_byteswap_dtype(builtin_dtype, operand_dtype=None):
+def make_byteswap_dtype(builtin_dtype, operand_type=None):
     """
-    make_byteswap_dtype(builtin_dtype, operand_dtype=None)
+    make_byteswap_dtype(builtin_dtype, operand_type=None)
 
     Constructs a byteswap dtype from a builtin one, with an
-    optional expression dtype to chain in as the operand.
+    optional expression type to chain in as the operand.
 
     Parameters
     ----------
     builtin_dtype : dynd type
         The builtin dynd type (like ndt.int16, ndt.float64) to
         which to apply the byte swap operation.
-    operand_dtype: dynd type, optional
+    operand_type: dynd type, optional
         An expression dynd type whose value type is a fixed bytes
         dynd type with the same data size and alignment as
         'builtin_dtype'.
@@ -387,11 +387,11 @@ def make_byteswap_dtype(builtin_dtype, operand_dtype=None):
     >>> ndt.make_byteswap_dtype(ndt.int16)
     nd.dtype('byteswap<int16>')
     """
-    cdef w_dtype result = w_dtype()
-    if operand_dtype is None:
-        SET(result.v, dynd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v)))
+    cdef w_type result = w_type()
+    if operand_type is None:
+        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_dtype).v)))
     else:
-        SET(result.v, dynd_make_byteswap_dtype(GET(w_dtype(builtin_dtype).v), GET(w_dtype(operand_dtype).v)))
+        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_dtype).v), GET(w_type(operand_type).v)))
     return result
 
 def make_fixedbytes_dtype(int data_size, int data_alignment=1):
@@ -417,7 +417,7 @@ def make_fixedbytes_dtype(int data_size, int data_alignment=1):
     >>> ndt.make_fixedbytes_dtype(6, 2)
     nd.dtype('fixedbytes<6,2>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedbytes_dtype(data_size, data_alignment))
     return result
 
@@ -425,17 +425,17 @@ def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     """
     make_convert_dtype(to_dtype, from_dtype, errmode='fractional')
     
-    Constructs an expression dtype which converts from one
+    Constructs an expression type which converts from one
     dynd type to another, using a specified mode for handling
     conversion errors.
 
     Parameters
     ----------
     to_type : dynd type
-        The dynd type being converted to. This is the 'value_dtype'
+        The dynd type being converted to. This is the 'value_type'
         of the resulting expression dynd type.
     from_type : dynd type
-        The dynd type being converted from. This is the 'operand_dtype'
+        The dynd type being converted from. This is the 'operand_type'
         of the resulting expression dynd type.
     errmode : 'inexact', 'fractional', 'overflow', 'none'
         How conversion errors are treated. For 'inexact', the value
@@ -453,24 +453,24 @@ def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     >>> ndt.make_convert_dtype(ndt.uint8, ndt.uint16, 'none')
     nd.dtype('convert<to=uint8, from=uint16, errmode=none>')
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_convert_dtype(GET(w_dtype(to_dtype).v), GET(w_dtype(from_dtype).v), errmode))
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_convert_dtype(GET(w_type(to_dtype).v), GET(w_type(from_dtype).v), errmode))
     return result
 
-def make_view_dtype(value_dtype, operand_dtype):
+def make_view_dtype(value_type, operand_type):
     """
-    make_view_dtype(value_dtype, operand_dtype)
+    make_view_dtype(value_type, operand_type)
     
-    Constructs an expression dtype which views the bytes of
+    Constructs an expression type which views the bytes of
     one dtype as another.
 
     Parameters
     ----------
-    value_dtype : dynd type
-        The dynd type to interpret the bytes as. This is the 'value_dtype'
+    value_type : dynd type
+        The dynd type to interpret the bytes as. This is the 'value_type'
         of the resulting expression dynd type.
-    operand_dtype : dynd type
-        The dynd type the memory originally was. This is the 'operand_dtype'
+    operand_type : dynd type
+        The dynd type the memory originally was. This is the 'operand_type'
         of the resulting expression dynd type.
 
     Examples
@@ -480,8 +480,8 @@ def make_view_dtype(value_dtype, operand_dtype):
     >>> ndt.make_view_dtype(ndt.int32, ndt.uint32)
     nd.dtype('view<as=int32, original=uint32>')
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_view_dtype(GET(w_dtype(value_dtype).v), GET(w_dtype(operand_dtype).v)))
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_view_dtype(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
     return result
 
 def make_unaligned_dtype(aligned_dtype):
@@ -506,8 +506,8 @@ def make_unaligned_dtype(aligned_dtype):
     >>> ndt.make_unaligned_dtype(ndt.uint8)
     ndt.uint8
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_unaligned_dtype(GET(w_dtype(aligned_dtype).v)))
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_unaligned_dtype(GET(w_type(aligned_dtype).v)))
     return result
 
 def make_fixedstring_dtype(int size, encoding=None):
@@ -537,7 +537,7 @@ def make_fixedstring_dtype(int size, encoding=None):
     >>> ndt.make_fixedstring_dtype(10, 'utf_32')
     nd.dtype('string<10,utf_32>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedstring_dtype(size, encoding))
     return result
 
@@ -564,7 +564,7 @@ def make_string_dtype(encoding=None):
     >>> ndt.make_string_dtype('utf_16')
     nd.dtype('string<utf_16>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_string_dtype(encoding))
     return result
 
@@ -589,7 +589,7 @@ def make_bytes_dtype(size_t alignment=1):
     >>> ndt.make_string_dtype(4)
     nd.dtype('bytes<align=4>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_bytes_dtype(alignment))
     return result
 
@@ -605,8 +605,8 @@ def make_pointer_dtype(target_dtype):
         The type that the pointer points to. This is similar to
         the '*' in C/C++ type declarations.
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_pointer_dtype(GET(w_dtype(target_dtype).v)))
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_pointer_dtype(GET(w_type(target_dtype).v)))
     return result
 
 def make_strided_dim_dtype(element_dtype, undim=None):
@@ -634,11 +634,11 @@ def make_strided_dim_dtype(element_dtype, undim=None):
     >>> ndt.make_strided_dim_dtype(ndt.int32, 3)
     nd.dtype('strided_dim<strided_dim<strided_dim<int32>>>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     if (undim is None):
-        SET(result.v, dynd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v)))
+        SET(result.v, dynd_make_strided_dim_dtype(GET(w_type(element_dtype).v)))
     else:
-        SET(result.v, dynd_make_strided_dim_dtype(GET(w_dtype(element_dtype).v), int(undim)))
+        SET(result.v, dynd_make_strided_dim_dtype(GET(w_type(element_dtype).v), int(undim)))
     return result
 
 def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
@@ -671,8 +671,8 @@ def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32, axis_perm=(0,1))
     nd.dtype('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_dtype(element_dtype).v), axis_perm))
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_type(element_dtype).v), axis_perm))
     return result
 
 def make_cstruct_dtype(field_types, field_names):
@@ -701,7 +701,7 @@ def make_cstruct_dtype(field_types, field_names):
     >>> ndt.make_cstruct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
     nd.dtype('cstruct<int32 x, float64 y>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_cstruct_dtype(field_types, field_names))
     return result
 
@@ -730,7 +730,7 @@ def make_struct_dtype(field_types, field_names):
     >>> ndt.make_struct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
     nd.dtype('struct<int32 x, float64 y>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_struct_dtype(field_types, field_names))
     return result
 
@@ -752,8 +752,8 @@ def make_var_dim_dtype(element_dtype):
     >>> ndt.make_var_dim_dtype(ndt.float32)
     nd.dtype('var_dim<float32>')
     """
-    cdef w_dtype result = w_dtype()
-    SET(result.v, dynd_make_var_dim_dtype(GET(w_dtype(element_dtype).v)))
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_var_dim_dtype(GET(w_type(element_dtype).v)))
     return result
 
 def make_categorical_dtype(values):
@@ -782,7 +782,7 @@ def make_categorical_dtype(values):
     >>> ndt.make_categorical_dtype(['sunny', 'rainy', 'cloudy', 'stormy'])
     nd.dtype('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_make_categorical_dtype(GET(w_array(values).v)))
     return result
 
@@ -808,7 +808,7 @@ def factor_categorical_dtype(values):
     >>> ndt.factor_categorical_dtype(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
     nd.dtype('categorical<string<ascii>, ["F", "M"]>')
     """
-    cdef w_dtype result = w_dtype()
+    cdef w_type result = w_type()
     SET(result.v, dynd_factor_categorical_dtype(GET(w_array(values).v)))
     return result
 
@@ -996,25 +996,25 @@ cdef class w_array:
 
         """
         cdef w_array result = w_array()
-        SET(result.v, array_cast(GET(self.v), GET(w_dtype(dtype).v), errmode))
+        SET(result.v, array_cast(GET(self.v), GET(w_type(dtype).v), errmode))
         return result
 
     def ucast(self, dtype, int replace_undim=0, errmode=None):
         """
         a.ucast(dtype, replace_undim=0, errmode='fractional')
         
-        Casts the dynd array's uniform dtype to the requested dtype,
-        producing a conversion dtype. The uniform dtype is the dtype
-        after the a.undim uniform dimensions.
+        Casts the dynd array's array data type to the requested dtype,
+        producing a conversion dtype. The array data type is the dtype
+        after the a.undim array dimensions.
 
         Parameters
         ----------
         dtype : dynd type
-            The uniform dtype is cast into this type.
+            The array data type is cast into this type.
             If `replace_undim` is not zero, then that many
             dimensions are included in what is cast as well.
         replace_undim : integer, optional
-            The number of uniform dimensions to replace in doing
+            The number of array dimensions to replace in doing
             the cast.
         errmode : 'inexact', 'fractional', 'overflow', 'none'
             How conversion errors are treated. For 'inexact', the value
@@ -1035,7 +1035,7 @@ cdef class w_array:
         nd.array([[3, 1929, 13], [3, 1979, 22]], strided_dim<cstruct<int32 month, int32 year, float32 day>>)
         """
         cdef w_array result = w_array()
-        SET(result.v, array_ucast(GET(self.v), GET(w_dtype(dtype).v), replace_undim, errmode))
+        SET(result.v, array_ucast(GET(self.v), GET(w_type(dtype).v), replace_undim, errmode))
         return result
 
     def view_scalars(self, dtype):
@@ -1059,7 +1059,7 @@ cdef class w_array:
             The scalars are viewed as this dtype.
         """
         cdef w_array result = w_array()
-        SET(result.v, GET(self.v).view_scalars(GET(w_dtype(dtype).v)))
+        SET(result.v, GET(self.v).view_scalars(GET(w_type(dtype).v)))
         return result
 
     def flag_as_immutable(self):
@@ -1098,7 +1098,7 @@ cdef class w_array:
         nd.dtype('strided_dim<var_dim<float64>>')
         """
         def __get__(self):
-            cdef w_dtype result = w_dtype()
+            cdef w_type result = w_type()
             SET(result.v, GET(self.v).get_dtype())
             return result
 
@@ -1120,7 +1120,7 @@ cdef class w_array:
         dimensions from a.dtype.
         """
         def __get__(self):
-            cdef w_dtype result = w_dtype()
+            cdef w_type result = w_type()
             SET(result.v, GET(self.v).get_dtype().get_udtype())
             return result
 
@@ -1128,7 +1128,7 @@ cdef class w_array:
         """
         a.undim
 
-        The number of uniform dimensions in the dynd array.
+        The number of array dimensions in the dynd array.
         This roughly corresponds to the number of dimensions
         in a NumPy array.
         """
@@ -1264,7 +1264,7 @@ def as_numpy(w_array n, allow_copy=False):
     array([[1, 2, 3],
            [4, 5, 6]])
     """
-    # TODO: Could also convert dynd dtypes into numpy dtypes
+    # TODO: Could also convert dynd types into numpy dtypes
     return array_as_numpy(n, bool(allow_copy))
 
 def empty(shape, dtype=None):
@@ -1297,25 +1297,25 @@ def empty(shape, dtype=None):
     """
     cdef w_array result = w_array()
     if dtype is not None:
-        SET(result.v, array_empty(shape, GET(w_dtype(dtype).v)))
+        SET(result.v, array_empty(shape, GET(w_type(dtype).v)))
     else:
         # Interpret the first argument (shape) as a dtype in the one argument case
-        SET(result.v, array_empty(GET(w_dtype(shape).v)))
+        SET(result.v, array_empty(GET(w_type(shape).v)))
     return result
 
 def empty_like(w_array prototype, dtype=None):
     """
     nd.empty_like(prototype, dtype=None)
 
-    Creates an uninitialized array whose uniform dimensions match
-    the structure of the prototype's uniform dimensions.
+    Creates an uninitialized array whose array dimensions match
+    the structure of the prototype's array dimensions.
     
     Parameters
     ----------
     prototype : dynd array
         The array whose structure is to be matched.
     dtype : dynd type, optional
-        If provided, replaces the prototype's uniform dtype in
+        If provided, replaces the prototype's array data type in
         the result.
 
     Examples
@@ -1334,7 +1334,7 @@ def empty_like(w_array prototype, dtype=None):
     if dtype is None:
         SET(result.v, array_empty_like(GET(prototype.v)))
     else:
-        SET(result.v, array_empty_like(GET(prototype.v), GET(w_dtype(dtype).v)))
+        SET(result.v, array_empty_like(GET(prototype.v), GET(w_type(dtype).v)))
     return result
 
 def groupby(data, by, groups = None):
@@ -1382,7 +1382,7 @@ def groupby(data, by, groups = None):
             SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v),
                             dynd_make_categorical_dtype(GET(w_array(groups).v))))
         else:
-            SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v), GET(w_dtype(groups).v)))
+            SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v), GET(w_type(groups).v)))
     return result
 
 def range(start=None, stop=None, step=None, dtype=None):
@@ -1451,7 +1451,7 @@ def fields(w_array struct_array, *fields_list):
     Parameters
     ----------
     struct_array : dynd array with struct udtype
-        A dynd array whose uniform dtype has kind 'struct'. This
+        A dynd array whose array data type has kind 'struct'. This
         could be a single struct instance, or an array of structs.
     *fields_list : string
         The remaining parameters must all be strings, and are the field
@@ -1490,7 +1490,7 @@ def parse_json(dtype, json):
     if type(dtype) is w_array:
         dynd_parse_json_array(GET((<w_array>dtype).v), GET(w_array(json).v))
     else:
-        SET(result.v, dynd_parse_json_dtype(GET(w_dtype(dtype).v), GET(w_array(json).v)))
+        SET(result.v, dynd_parse_json_dtype(GET(w_type(dtype).v), GET(w_array(json).v)))
         return result
 
 def format_json(w_array n):
@@ -1563,7 +1563,7 @@ def debug_repr(obj):
     Returns a raw representation of dynd array data.
 
     This can be useful for diagnosing bugs in the dynd array
-    or dtype/metadata/data abstraction arrays are based on.
+    or type/metadata/data abstraction arrays are based on.
 
     Parameters
     ----------
@@ -1671,8 +1671,8 @@ cdef class w_array_callable:
     def __call__(self, *args, **kwargs):
         return array_callable_call(GET(self.v), args, kwargs)
 
-cdef class w_dtype_callable:
-    cdef dtype_callable_placement_wrapper v
+cdef class w_type_callable:
+    cdef ndt_type_callable_placement_wrapper v
 
     def __cinit__(self):
         placement_new(self.v)
@@ -1680,4 +1680,4 @@ cdef class w_dtype_callable:
         placement_delete(self.v)
 
     def __call__(self, *args, **kwargs):
-        return dtype_callable_call(GET(self.v), args, kwargs)
+        return ndt_type_callable_call(GET(self.v), args, kwargs)

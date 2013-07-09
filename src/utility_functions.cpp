@@ -127,7 +127,7 @@ std::string pydynd::pystring_as_string(PyObject *str)
 #endif
     } else if (WArray_Check(str)) {
         const nd::array& n = ((WArray *)str)->v;
-        if (n.get_dtype().value_dtype().get_kind() == string_kind) {
+        if (n.get_dtype().value_type().get_kind() == string_kind) {
             return n.as<string>();
         } else {
             stringstream ss;
@@ -140,7 +140,7 @@ std::string pydynd::pystring_as_string(PyObject *str)
     }
 }
 
-void pydynd::pyobject_as_vector_dtype(PyObject *list_dtype, std::vector<dynd::dtype>& vector_dtype)
+void pydynd::pyobject_as_vector_dtype(PyObject *list_dtype, std::vector<dynd::ndt::type>& vector_dtype)
 {
     Py_ssize_t size = PySequence_Size(list_dtype);
     vector_dtype.resize(size);

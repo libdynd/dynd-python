@@ -32,7 +32,7 @@ struct init_pydatetime {
 init_pydatetime pdt;
 } // anonymous namespace
 
-static PyObject* element_as_pyobject(const dtype& d, const char *data, const char *metadata)
+static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const char *metadata)
 {
     switch (d.get_type_id()) {
         case bool_type_id:
@@ -135,7 +135,7 @@ static PyObject* element_as_pyobject(const dtype& d, const char *data, const cha
             return PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
         }
         case dtype_type_id: {
-            dtype dt(reinterpret_cast<const dtype_dtype_data *>(data)->dt, true);
+            ndt::type dt(reinterpret_cast<const dtype_dtype_data *>(data)->dt, true);
             return wrap_dtype(DYND_MOVE(dt));
         }
         default: {
@@ -153,16 +153,16 @@ namespace {
     };
 } // anonymous namespace
 
-static void nested_array_as_py(const dtype& d, char *data, const char *metadata, void *result);
+static void nested_array_as_py(const ndt::type& d, char *data, const char *metadata, void *result);
 
-static void nested_struct_as_py(const dtype& d, char *data, const char *metadata, void *result)
+static void nested_struct_as_py(const ndt::type& d, char *data, const char *metadata, void *result)
 {
     array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 
     const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(d.extended());
     size_t field_count = bsd->get_field_count();
     const string *field_names = bsd->get_field_names();
-    const dtype *field_types = bsd->get_field_types();
+    const ndt::type *field_types = bsd->get_field_types();
     const size_t *field_metadata_offsets = bsd->get_metadata_offsets();
     const size_t *field_data_offsets = bsd->get_data_offsets(metadata);
 
@@ -179,7 +179,7 @@ static void nested_struct_as_py(const dtype& d, char *data, const char *metadata
     }
 }
 
-static void nested_array_as_py(const dtype& d, char *data, const char *metadata, void *result)
+static void nested_array_as_py(const ndt::type& d, char *data, const char *metadata, void *result)
 {
     array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 

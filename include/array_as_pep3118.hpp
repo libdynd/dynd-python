@@ -13,7 +13,7 @@
 namespace pydynd {
 
 /**
- * \brief Converts a dynd dtype into a PEP 3118 format string.
+ * \brief Converts a dynd type into a PEP 3118 format string.
  *
  * \param dt  The dtype to convert.
  * \param metadata  If non-NULL, dtype metadata to provide additional strides/offsets
@@ -21,7 +21,7 @@ namespace pydynd {
  *
  * \returns  A PEP3118 format string.
  */
-std::string make_pep3118_format(intptr_t& out_itemsize, const dynd::dtype& dt, const char *metadata = NULL);
+std::string make_pep3118_format(intptr_t& out_itemsize, const dynd::ndt::type& dt, const char *metadata = NULL);
 
 /**
  * \brief Converts an nd::array into a PEP3118 buffer.

@@ -112,7 +112,7 @@ PyObject *pydynd::array_index(const dynd::nd::array& n)
 PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
 {
     // Implements the nonzero/conversion to boolean slot
-    switch (n.get_dtype().value_dtype().get_kind()) {
+    switch (n.get_dtype().value_type().get_kind()) {
         case bool_kind:
         case int_kind:
         case uint_kind:
@@ -198,12 +198,12 @@ dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
     return n.eval_copy(ectx, access_flags);
 }
 
-dynd::nd::array pydynd::array_empty(const dynd::dtype& d)
+dynd::nd::array pydynd::array_empty(const dynd::ndt::type& d)
 {
     return nd::empty(d);
 }
 
-dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::dtype& d)
+dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type& d)
 {
     std::vector<intptr_t> shape_vec;
     pyobject_as_vector_intp(shape, shape_vec, true);
@@ -218,7 +218,7 @@ namespace {
         bool found;
     };
 
-    void contains_callback(const dtype &DYND_UNUSED(dt), char *data,
+    void contains_callback(const ndt::type &DYND_UNUSED(dt), char *data,
                     const char *DYND_UNUSED(metadata), void *callback_data)
     {
         contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
@@ -239,9 +239,9 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
         throw runtime_error("cannot call __contains__ on a scalar dynd array");
     }
 
-    // Turn 'n' into dtype/metadata/data with a uniform_dim leading dimension
+    // Turn 'n' into type/metadata/data with a uniform_dim leading dimension
     nd::array tmp;
-    dtype dt;
+    ndt::type dt;
     const base_uniform_dim_dtype *budd;
     const char *metadata, *data;
     if (n.get_dtype().get_kind() == uniform_dim_kind) {
@@ -262,10 +262,10 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
 
     // Turn 'x' into a dynd array, and make a comparison kernel
     nd::array x_ndo = array_from_py(x);
-    const dtype& x_dt = x_ndo.get_dtype();
+    const ndt::type& x_dt = x_ndo.get_dtype();
     const char *x_metadata = x_ndo.get_ndo_meta();
     const char *x_data = x_ndo.get_readonly_originptr();
-    const dtype& child_dt = budd->get_element_dtype();
+    const ndt::type& child_dt = budd->get_element_type();
     const char *child_metadata = metadata + budd->get_element_metadata_offset();
     comparison_kernel k;
     try {
@@ -284,13 +284,13 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     return aux.found;
 }
 
-dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const dtype& dt,
+dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt,
                 PyObject *assign_error_obj)
 {
     return n.cast(dt, pyarg_error_mode(assign_error_obj));
 }
 
-dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const dtype& dt,
+dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const ndt::type& dt,
                 size_t replace_undim, PyObject *assign_error_obj)
 {
     return n.ucast(dt, replace_undim, pyarg_error_mode(assign_error_obj));
@@ -354,7 +354,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         long i = PyInt_AS_LONG(subscript);
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
-        dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
+        ndt::type d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
         array_broadcast_assign_from_py(d, metadata, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
@@ -364,7 +364,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         }
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
-        dtype d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
+        ndt::type d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
         array_broadcast_assign_from_py(d, metadata, data, value);
     } else {
         intptr_t size;
@@ -377,7 +377,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
 nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, PyObject *dt)
 {
     nd::array start_nd, stop_nd, step_nd;
-    dtype dt_nd;
+    ndt::type dt_nd;
 
     if (start != Py_None) {
         start_nd = array_from_py(start);
@@ -430,7 +430,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     pyobject_as_vector_string(field_list, selected_fields);
 
     // TODO: Move this implementation into dynd
-    dtype fdt = n.get_udtype();
+    ndt::type fdt = n.get_udtype();
     if (fdt.get_kind() != struct_kind) {
         stringstream ss;
         ss << "nd.fields must be given a dynd array of 'struct' kind, not ";
@@ -438,14 +438,14 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         throw runtime_error(ss.str());
     }
     const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(fdt.extended());
-    const dtype *field_types = bsd->get_field_types();
+    const ndt::type *field_types = bsd->get_field_types();
 
     if (selected_fields.empty()) {
         throw runtime_error("nd.fields requires at least one field name to be specified");
     }
     // Construct the field mapping and output field dtypes
     vector<intptr_t> selected_index(selected_fields.size());
-    vector<dtype> selected_dtypes(selected_fields.size());
+    vector<ndt::type> selected_dtypes(selected_fields.size());
     for (size_t i = 0; i != selected_fields.size(); ++i) {
         selected_index[i] = bsd->get_field_index(selected_fields[i]);
         if (selected_index[i] < 0) {
@@ -458,8 +458,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         selected_dtypes[i] = field_types[selected_index[i]];
     }
     // Create the result udt
-    dtype rudt = make_struct_dtype(selected_dtypes, selected_fields);
-    dtype rdt = n.get_dtype().with_replaced_udtype(rudt);
+    ndt::type rudt = make_struct_dtype(selected_dtypes, selected_fields);
+    ndt::type rdt = n.get_dtype().with_replaced_udtype(rudt);
     const base_struct_dtype *rudt_bsd = static_cast<const base_struct_dtype *>(rudt.extended());
 
     // Allocate the new memory block.
@@ -478,9 +478,9 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     result.get_ndo()->m_flags = n.get_ndo()->m_flags;
 
     // Set the dtype and transform the metadata
-    result.get_ndo()->m_dtype = dtype(rdt).release();
-    // First copy all the uniform dtype metadata
-    dtype tmp_dt = rdt;
+    result.get_ndo()->m_dtype = ndt::type(rdt).release();
+    // First copy all the array data type metadata
+    ndt::type tmp_dt = rdt;
     char *dst_metadata = result.get_ndo_meta();
     const char *src_metadata = n.get_ndo_meta();
     while (tmp_dt.get_undim() > 0) {
@@ -493,7 +493,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
                         n.get_memblock().get());
         dst_metadata += offset;
         src_metadata += offset;
-        tmp_dt = budd->get_element_dtype();
+        tmp_dt = budd->get_element_type();
     }
     // Then create the metadata for the new struct
     const size_t *metadata_offsets = bsd->get_metadata_offsets();
@@ -501,7 +501,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     const size_t *data_offsets = bsd->get_data_offsets(src_metadata);
     size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_metadata);
     for (size_t i = 0; i != selected_fields.size(); ++i) {
-        const dtype& dt = selected_dtypes[i];
+        const ndt::type& dt = selected_dtypes[i];
         // Copy the data offset
         result_data_offsets[i] = data_offsets[selected_index[i]];
         // Copy the metadata for this field

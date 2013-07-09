@@ -12,7 +12,7 @@
 #include <deque>
 #include <vector>
 
-#include <dynd/dtype.hpp>
+#include <dynd/type.hpp>
 #include <dynd/array.hpp>
 #include <dynd/kernels/kernel_instance.hpp>
 #include <dynd/codegen/codegen_cache.hpp>

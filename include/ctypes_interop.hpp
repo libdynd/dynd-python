@@ -11,7 +11,7 @@
 
 #include <Python.h>
 
-#include <dynd/dtype.hpp>
+#include <dynd/type.hpp>
 #include <dynd/codegen/calling_conventions.hpp>
 
 namespace pydynd {
@@ -45,7 +45,7 @@ void init_ctypes_interop();
  * Constructs a dtype from a ctypes type object, such
  * as ctypes.c_int, ctypes.c_float, etc.
  */
-dynd::dtype dtype_from_ctypes_cdatatype(PyObject *d);
+dynd::ndt::type dtype_from_ctypes_cdatatype(PyObject *d);
 
 //////////////////////////////////////////////////////////
 // The following emulates a lot of the internal ctypes.h
@@ -138,7 +138,7 @@ dynd::calling_convention_t get_ctypes_calling_convention(PyCFuncPtrObject* cfunc
  * @out_returntype  The return type is placed here
  * @out_paramtypes  This is populated with the parameter types
  */
-void get_ctypes_signature(PyCFuncPtrObject* cfunc, dynd::dtype& out_returntype, std::vector<dynd::dtype>& out_paramtypes);
+void get_ctypes_signature(PyCFuncPtrObject* cfunc, dynd::ndt::type& out_returntype, std::vector<dynd::ndt::type>& out_paramtypes);
 
 } // namespace pydynd
 

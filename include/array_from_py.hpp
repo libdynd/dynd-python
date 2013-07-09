@@ -24,16 +24,16 @@ dynd::nd::array array_from_py(PyObject *obj);
 /**
  * Converts a Python object into an nd::array using
  * the default settings, using the provided dtype as a
- * uniform dtype.
+ * array data type.
  *
  * \param obj  The PyObject to convert to an nd::array.
- * \param dt  The dtype to use. Additional uniform dimensions
+ * \param dt  The dtype to use. Additional array dimensions
  *            may be prepended to this dtype.
  * \param uniform  If True, then 'dt' must be a zero-dimensional dtype,
  *                 and the shape is automatically deduced. If False,
- *                 then 'dt' must already contain all the uniform dimensions.
+ *                 then 'dt' must already contain all the array dimensions.
  */
-dynd::nd::array array_from_py(PyObject *obj, const dynd::dtype& dt, bool uniform);
+dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type& dt, bool uniform);
 
 } // namespace pydynd
 

@@ -14,65 +14,65 @@ class TestNumpyDTypeInterop(unittest.TestCase):
 
     def test_dtype_from_numpy_scalar_types(self):
         # Tests converting numpy scalar types to pydynd dtypes
-        self.assertEqual(ndt.bool, nd.dtype(np.bool))
-        self.assertEqual(ndt.bool, nd.dtype(np.bool_))
-        self.assertEqual(ndt.int8, nd.dtype(np.int8))
-        self.assertEqual(ndt.int16, nd.dtype(np.int16))
-        self.assertEqual(ndt.int32, nd.dtype(np.int32))
-        self.assertEqual(ndt.int64, nd.dtype(np.int64))
-        self.assertEqual(ndt.uint8, nd.dtype(np.uint8))
-        self.assertEqual(ndt.uint16, nd.dtype(np.uint16))
-        self.assertEqual(ndt.uint32, nd.dtype(np.uint32))
-        self.assertEqual(ndt.uint64, nd.dtype(np.uint64))
-        self.assertEqual(ndt.float32, nd.dtype(np.float32))
-        self.assertEqual(ndt.float64, nd.dtype(np.float64))
-        self.assertEqual(ndt.cfloat32, nd.dtype(np.complex64))
-        self.assertEqual(ndt.cfloat64, nd.dtype(np.complex128))
+        self.assertEqual(ndt.bool, ndt.type(np.bool))
+        self.assertEqual(ndt.bool, ndt.type(np.bool_))
+        self.assertEqual(ndt.int8, ndt.type(np.int8))
+        self.assertEqual(ndt.int16, ndt.type(np.int16))
+        self.assertEqual(ndt.int32, ndt.type(np.int32))
+        self.assertEqual(ndt.int64, ndt.type(np.int64))
+        self.assertEqual(ndt.uint8, ndt.type(np.uint8))
+        self.assertEqual(ndt.uint16, ndt.type(np.uint16))
+        self.assertEqual(ndt.uint32, ndt.type(np.uint32))
+        self.assertEqual(ndt.uint64, ndt.type(np.uint64))
+        self.assertEqual(ndt.float32, ndt.type(np.float32))
+        self.assertEqual(ndt.float64, ndt.type(np.float64))
+        self.assertEqual(ndt.cfloat32, ndt.type(np.complex64))
+        self.assertEqual(ndt.cfloat64, ndt.type(np.complex128))
 
     def test_dtype_from_numpy_dtype(self):
         # Tests converting numpy dtypes to pydynd dtypes
         # native byte order
-        self.assertEqual(ndt.bool, nd.dtype(np.dtype(np.bool)))
-        self.assertEqual(ndt.int8, nd.dtype(np.dtype(np.int8)))
-        self.assertEqual(ndt.int16, nd.dtype(np.dtype(np.int16)))
-        self.assertEqual(ndt.int32, nd.dtype(np.dtype(np.int32)))
-        self.assertEqual(ndt.int64, nd.dtype(np.dtype(np.int64)))
-        self.assertEqual(ndt.uint8, nd.dtype(np.dtype(np.uint8)))
-        self.assertEqual(ndt.uint16, nd.dtype(np.dtype(np.uint16)))
-        self.assertEqual(ndt.uint32, nd.dtype(np.dtype(np.uint32)))
-        self.assertEqual(ndt.uint64, nd.dtype(np.dtype(np.uint64)))
-        self.assertEqual(ndt.float32, nd.dtype(np.dtype(np.float32)))
-        self.assertEqual(ndt.float64, nd.dtype(np.dtype(np.float64)))
-        self.assertEqual(ndt.cfloat32, nd.dtype(np.dtype(np.complex64)))
-        self.assertEqual(ndt.cfloat64, nd.dtype(np.dtype(np.complex128)))
+        self.assertEqual(ndt.bool, ndt.type(np.dtype(np.bool)))
+        self.assertEqual(ndt.int8, ndt.type(np.dtype(np.int8)))
+        self.assertEqual(ndt.int16, ndt.type(np.dtype(np.int16)))
+        self.assertEqual(ndt.int32, ndt.type(np.dtype(np.int32)))
+        self.assertEqual(ndt.int64, ndt.type(np.dtype(np.int64)))
+        self.assertEqual(ndt.uint8, ndt.type(np.dtype(np.uint8)))
+        self.assertEqual(ndt.uint16, ndt.type(np.dtype(np.uint16)))
+        self.assertEqual(ndt.uint32, ndt.type(np.dtype(np.uint32)))
+        self.assertEqual(ndt.uint64, ndt.type(np.dtype(np.uint64)))
+        self.assertEqual(ndt.float32, ndt.type(np.dtype(np.float32)))
+        self.assertEqual(ndt.float64, ndt.type(np.dtype(np.float64)))
+        self.assertEqual(ndt.cfloat32, ndt.type(np.dtype(np.complex64)))
+        self.assertEqual(ndt.cfloat64, ndt.type(np.dtype(np.complex128)))
         self.assertEqual(ndt.make_fixedstring_dtype(10, 'ascii'),
-                    nd.dtype(np.dtype('S10')))
+                    ndt.type(np.dtype('S10')))
         self.assertEqual(ndt.make_fixedstring_dtype(10, 'utf_32'),
-                    nd.dtype(np.dtype('U10')))
+                    ndt.type(np.dtype('U10')))
 
         # non-native byte order
         nonnative = self.nonnative
 
         self.assertEqual(ndt.make_byteswap_dtype(ndt.int16),
-                nd.dtype(np.dtype(nonnative + 'i2')))
+                ndt.type(np.dtype(nonnative + 'i2')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.int32),
-                nd.dtype(np.dtype(nonnative + 'i4')))
+                ndt.type(np.dtype(nonnative + 'i4')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.int64),
-                nd.dtype(np.dtype(nonnative + 'i8')))
+                ndt.type(np.dtype(nonnative + 'i8')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.uint16),
-                nd.dtype(np.dtype(nonnative + 'u2')))
+                ndt.type(np.dtype(nonnative + 'u2')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.uint32),
-                nd.dtype(np.dtype(nonnative + 'u4')))
+                ndt.type(np.dtype(nonnative + 'u4')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.uint64),
-                nd.dtype(np.dtype(nonnative + 'u8')))
+                ndt.type(np.dtype(nonnative + 'u8')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.float32),
-                nd.dtype(np.dtype(nonnative + 'f4')))
+                ndt.type(np.dtype(nonnative + 'f4')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.float64),
-                nd.dtype(np.dtype(nonnative + 'f8')))
+                ndt.type(np.dtype(nonnative + 'f8')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.cfloat32),
-                nd.dtype(np.dtype(nonnative + 'c8')))
+                ndt.type(np.dtype(nonnative + 'c8')))
         self.assertEqual(ndt.make_byteswap_dtype(ndt.cfloat64),
-                nd.dtype(np.dtype(nonnative + 'c16')))
+                ndt.type(np.dtype(nonnative + 'c16')))
 
 class TestNumpyViewInterop(unittest.TestCase):
     def setUp(self):
@@ -162,7 +162,7 @@ class TestNumpyViewInterop(unittest.TestCase):
             self.assertEqual(ndt.make_fixedstring_dtype(7, 'utf_32'), b.udtype)
         else:
             self.assertEqual(ndt.make_fixedstring_dtype(7, 'ascii'), b.udtype)
-        self.assertEqual(b.udtype, nd.dtype(a.dtype))
+        self.assertEqual(b.udtype, ndt.type(a.dtype))
 
         # Make sure it's ascii
         a = a.astype('S7')
@@ -191,7 +191,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         # UTF32 dynd -> Numpy
         c_u = np.asarray(b_u)
-        self.assertEqual(b_u.udtype, nd.dtype(c_u.dtype))
+        self.assertEqual(b_u.udtype, ndt.type(c_u.dtype))
         assert_array_equal(a.astype('U'), c_u)
         # 'a' and 'c_u' are not looking at the same data
         a[1] = 'diff'

@@ -13,7 +13,7 @@ using namespace pydynd;
 
 void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& out_ep)
 {
-    vector<dtype> regtypes;
+    vector<ndt::type> regtypes;
     vector<int> program;
     int input_count;
 
@@ -93,7 +93,7 @@ PyObject *pydynd::vm_elwise_program_as_py(dynd::vm::elwise_program& ep)
 
     // Set the list of register types
     for (size_t i = 0; i < ep.get_register_types().size(); ++i) {
-        PyList_SET_ITEM(regtypes_obj.get(), i, wrap_dtype(ep.get_register_types()[i]));
+        PyList_SET_ITEM(regtypes_obj.get(), i, wrap_ndt_type(ep.get_register_types()[i]));
     }
 
     // Set the list of instructions

@@ -21,8 +21,8 @@ using namespace pydynd;
 static void create_elwise_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache, PyCFuncPtrObject *cfunc, dynd::gfunc::elwise_kernel& out_kernel)
 {
 #if 0 // TODO reenable
-    dtype& returntype = out_kernel.m_returntype;
-    vector<dtype> &paramtypes = out_kernel.m_paramtypes;
+    ndt::type& returntype = out_kernel.m_returntype;
+    vector<ndt::type> &paramtypes = out_kernel.m_paramtypes;
     get_ctypes_signature(cfunc, returntype, paramtypes);
 
     if (returntype.get_type_id() == void_type_id) {
@@ -70,11 +70,11 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
 
     // Convert the args into nd::arrays, and get the value dtypes
     vector<nd::array> array_args(nargs);
-    vector<dtype> argtypes(nargs);
+    vector<ndt::type> argtypes(nargs);
     for (Py_ssize_t i = 0; i < nargs; ++i) {
         pyobject_ownref arg_obj(PySequence_GetItem(args, i));
         array_init_from_pyobject(array_args[i], arg_obj);
-        argtypes[i] = array_args[i].get_dtype().value_dtype();
+        argtypes[i] = array_args[i].get_dtype().value_type();
     }
 
     const gfunc::elwise_kernel *egk;

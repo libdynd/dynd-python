@@ -23,8 +23,8 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
             dynd::gfunc::elwise_reduce_kernel& out_kernel)
 {
 #if 0 // TODO reenable
-    dtype& returntype = out_kernel.m_returntype;
-    vector<dtype> &paramtypes = out_kernel.m_paramtypes;
+    ndt::type& returntype = out_kernel.m_returntype;
+    vector<ndt::type> &paramtypes = out_kernel.m_paramtypes;
     get_ctypes_signature(cfunc, returntype, paramtypes);
 
     out_kernel.m_associative = associative;
@@ -117,8 +117,8 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
         // keepdims
         bool keepdims = pyarg_bool(PyDict_GetItemString(kwargs, "keepdims"), "keepdims", false);
 
-        vector<dtype> argtypes(1);
-        argtypes[0] = arg0.get_dtype().value_dtype();
+        vector<ndt::type> argtypes(1);
+        argtypes[0] = arg0.get_dtype().value_type();
         const gfunc::elwise_reduce_kernel *ergk = gf.find_matching_kernel(argtypes);
         if (ergk != NULL) {
             if (axis_count > 1 && !ergk->m_commutative) {

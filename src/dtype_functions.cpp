@@ -47,14 +47,14 @@ struct init_pydatetime {
 init_pydatetime pdt;
 } // anonymous namespace
 
-PyTypeObject *pydynd::WDType_Type;
+PyTypeObject *pydynd::WType_Type;
 
-void pydynd::init_w_dtype_typeobject(PyObject *type)
+void pydynd::init_w_type_typeobject(PyObject *type)
 {
-    pydynd::WDType_Type = (PyTypeObject *)type;
+    pydynd::WType_Type = (PyTypeObject *)type;
 }
 
-std::string pydynd::dtype_repr(const dynd::dtype& d)
+std::string pydynd::dtype_repr(const dynd::ndt::type& d)
 {
     std::stringstream ss;
     if (d.is_builtin() &&
@@ -98,7 +98,7 @@ std::string pydynd::dtype_repr(const dynd::dtype& d)
     return ss.str();
 }
 
-PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
+PyObject *pydynd::dtype_get_kind(const dynd::ndt::type& d)
 {
     stringstream ss;
     ss << d.get_kind();
@@ -110,7 +110,7 @@ PyObject *pydynd::dtype_get_kind(const dynd::dtype& d)
 #endif
 }
 
-PyObject *pydynd::dtype_get_type_id(const dynd::dtype& d)
+PyObject *pydynd::dtype_get_type_id(const dynd::ndt::type& d)
 {
     stringstream ss;
     ss << d.get_type_id();
@@ -122,7 +122,7 @@ PyObject *pydynd::dtype_get_type_id(const dynd::dtype& d)
 #endif
 }
 
-dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
+ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 {
 #if DYND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
@@ -137,7 +137,7 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
     
     if (PyBool_Check(obj)) {
         // Python bool
-        return make_dtype<dynd_bool>();
+        return ndt::make_dtype<dynd_bool>();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(obj)) {
         // Python integer
@@ -147,12 +147,12 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         // is independent of sizeof(long), and is the same on 32-bit
         // and 64-bit platforms.
         if (value >= INT_MIN && value <= INT_MAX) {
-            return make_dtype<int>();
+            return ndt::make_dtype<int>();
         } else {
-            return make_dtype<long>();
+            return ndt::make_dtype<long>();
         }
 # else
-        return make_dtype<int>();
+        return ndt::make_dtype<int>();
 # endif
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(obj)) {
@@ -165,16 +165,16 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         // is independent of sizeof(long), and is the same on 32-bit
         // and 64-bit platforms.
         if (value >= INT_MIN && value <= INT_MAX) {
-            return make_dtype<int>();
+            return ndt::make_dtype<int>();
         } else {
-            return make_dtype<PY_LONG_LONG>();
+            return ndt::make_dtype<PY_LONG_LONG>();
         }
     } else if (PyFloat_Check(obj)) {
         // Python float
-        return make_dtype<double>();
+        return ndt::make_dtype<double>();
     } else if (PyComplex_Check(obj)) {
         // Python complex
-        return make_dtype<complex<double> >();
+        return ndt::make_dtype<complex<double> >();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         // Python string
@@ -195,7 +195,7 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         return make_datetime_dtype(datetime_unit_usecond, tz_abstract);
     } else if (PyDate_Check(obj)) {
         return make_date_dtype();
-    } else if (WDType_Check(obj)) {
+    } else if (WType_Check(obj)) {
         return make_dtype_dtype();
     } else if (PyType_Check(obj)) {
         return make_dtype_dtype();
@@ -205,26 +205,26 @@ dtype pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 #endif // DYND_NUMPY_INTEROP
     }
 
-    throw std::runtime_error("could not deduce pydynd dtype from the python object");
+    throw std::runtime_error("could not deduce pydynd type from the python object");
 }
 
 /**
  * Creates a dynd::dtype out of typical Python typeobjects.
  */
-static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
+static dynd::ndt::type make_dtype_from_pytypeobject(PyTypeObject* obj)
 {
     if (obj == &PyBool_Type) {
-        return make_dtype<dynd_bool>();
+        return ndt::make_dtype<dynd_bool>();
 #if PY_VERSION_HEX < 0x03000000
     } else if (obj == &PyInt_Type) {
-        return make_dtype<int32_t>();
+        return ndt::make_dtype<int32_t>();
 #endif
     } else if (obj == &PyLong_Type) {
-        return make_dtype<int32_t>();
+        return ndt::make_dtype<int32_t>();
     } else if (obj == &PyFloat_Type) {
-        return make_dtype<double>();
+        return ndt::make_dtype<double>();
     } else if (obj == &PyComplex_Type) {
-        return make_dtype<complex<double> >();
+        return ndt::make_dtype<complex<double> >();
     } else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
         // CTypes type object
         return dtype_from_ctypes_cdatatype((PyObject *)obj);
@@ -235,21 +235,21 @@ static dynd::dtype make_dtype_from_pytypeobject(PyTypeObject* obj)
     throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");
 }
 
-dynd::dtype pydynd::make_dtype_from_pyobject(PyObject* obj)
+dynd::ndt::type pydynd::make_dtype_from_pyobject(PyObject* obj)
 {
-    if (WDType_Check(obj)) {
-        return ((WDType *)obj)->v;
+    if (WType_Check(obj)) {
+        return ((WType *)obj)->v;
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
-        return dtype(pystring_as_string(obj));
+        return ndt::type(pystring_as_string(obj));
 #endif
     } else if (PyUnicode_Check(obj)) {
-        return dtype(pystring_as_string(obj));
+        return ndt::type(pystring_as_string(obj));
     } else if (WArray_Check(obj)) {
-        return ((WArray *)obj)->v.as<dtype>();
+        return ((WArray *)obj)->v.as<ndt::type>();
     } else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP
-        dtype result;
+        ndt::type result;
         if (dtype_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
             return result;
         }
@@ -325,17 +325,17 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     }
 }
 
-dynd::dtype pydynd::dynd_make_convert_dtype(const dynd::dtype& to_dtype, const dynd::dtype& from_dtype, PyObject *errmode)
+dynd::ndt::type pydynd::dynd_make_convert_dtype(const dynd::ndt::type& to_dtype, const dynd::ndt::type& from_dtype, PyObject *errmode)
 {
     return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
-dynd::dtype pydynd::dynd_make_view_dtype(const dynd::dtype& value_dtype, const dynd::dtype& operand_dtype)
+dynd::ndt::type pydynd::dynd_make_view_dtype(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type)
 {
-    return make_view_dtype(value_dtype, operand_dtype);
+    return make_view_dtype(value_type, operand_type);
 }
 
-dynd::dtype pydynd::dynd_make_fixedstring_dtype(intptr_t size,
+dynd::ndt::type pydynd::dynd_make_fixedstring_dtype(intptr_t size,
                 PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
@@ -343,30 +343,30 @@ dynd::dtype pydynd::dynd_make_fixedstring_dtype(intptr_t size,
     return make_fixedstring_dtype(size, encoding);
 }
 
-dynd::dtype pydynd::dynd_make_string_dtype(PyObject *encoding_obj)
+dynd::ndt::type pydynd::dynd_make_string_dtype(PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
     return make_string_dtype(encoding);
 }
 
-dynd::dtype pydynd::dynd_make_pointer_dtype(const dtype& target_dtype)
+dynd::ndt::type pydynd::dynd_make_pointer_dtype(const ndt::type& target_dtype)
 {
     return make_pointer_dtype(target_dtype);
 }
 
-dynd::dtype pydynd::dynd_make_struct_dtype(PyObject *field_types, PyObject *field_names)
+dynd::ndt::type pydynd::dynd_make_struct_dtype(PyObject *field_types, PyObject *field_names)
 {
-    vector<dtype> field_types_vec;
+    vector<ndt::type> field_types_vec;
     vector<string> field_names_vec;
     pyobject_as_vector_dtype(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
     return make_struct_dtype(field_types_vec, field_names_vec);
 }
 
-dynd::dtype pydynd::dynd_make_cstruct_dtype(PyObject *field_types, PyObject *field_names)
+dynd::ndt::type pydynd::dynd_make_cstruct_dtype(PyObject *field_types, PyObject *field_names)
 {
-    vector<dtype> field_types_vec;
+    vector<ndt::type> field_types_vec;
     vector<string> field_names_vec;
     pyobject_as_vector_dtype(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
@@ -376,7 +376,7 @@ dynd::dtype pydynd::dynd_make_cstruct_dtype(PyObject *field_types, PyObject *fie
     return make_cstruct_dtype(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
 }
 
-dynd::dtype pydynd::dynd_make_fixed_dim_dtype(PyObject *shape, const dtype& element_dtype, PyObject *axis_perm)
+dynd::ndt::type pydynd::dynd_make_fixed_dim_dtype(PyObject *shape, const ndt::type& element_dtype, PyObject *axis_perm)
 {
     vector<intptr_t> shape_vec;
     if (PySequence_Check(shape)) {
@@ -400,7 +400,7 @@ dynd::dtype pydynd::dynd_make_fixed_dim_dtype(PyObject *shape, const dtype& elem
     }
 }
 
-dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
+dynd::ndt::type pydynd::dtype_getitem(const dynd::ndt::type& d, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges
     intptr_t size;
@@ -423,7 +423,7 @@ dynd::dtype pydynd::dtype_getitem(const dynd::dtype& d, PyObject *subscript)
     return d.at_array((int)size, indices.get());
 }
 
-PyObject *pydynd::dtype_array_property_names(const dtype& d)
+PyObject *pydynd::dtype_array_property_names(const ndt::type& d)
 {
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;

@@ -53,7 +53,7 @@ static void debug_print_py_buffer(std::ostream& o, const Py_buffer *buffer, int 
     cout << "  internal: " << buffer->internal << endl;
 }
 
-static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const char *metadata, std::stringstream& o)
+static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, const char *metadata, std::stringstream& o)
 {
     switch (dt.get_type_id()) {
         case bool_type_id:
@@ -129,19 +129,19 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             // Pass through to error
             break;
         case fixed_dim_type_id: {
-            dtype child_dt = dt;
+            ndt::type child_dt = dt;
             o << "(";
             do {
                 const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(child_dt.extended());
                 size_t dim_size = tdt->get_fixed_dim_size();
                 o << dim_size;
-                if (child_dt.get_data_size() != tdt->get_element_dtype().get_data_size() * dim_size) {
+                if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * dim_size) {
                     stringstream ss;
-                    ss << "Cannot convert dynd dtype " << dt << " into a PEP 3118 format because it is not C-order";
+                    ss << "Cannot convert dynd type " << dt << " into a PEP 3118 format because it is not C-order";
                     throw runtime_error(ss.str());
                 }
                 o << ")";
-                child_dt = tdt->get_element_dtype();
+                child_dt = tdt->get_element_type();
             } while (child_dt.get_type_id() == fixed_dim_type_id && (o << ","));
             append_pep3118_format(out_itemsize, child_dt, metadata, o);
             out_itemsize = dt.get_data_size();
@@ -150,7 +150,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
         case cstruct_type_id: {
             o << "T{";
             const cstruct_dtype *tdt = static_cast<const cstruct_dtype *>(dt.extended());
-            const dtype *field_types = tdt->get_field_types();
+            const ndt::type *field_types = tdt->get_field_types();
             const string *field_names = tdt->get_field_names();
             size_t num_fields = tdt->get_field_count();
             const size_t *offsets = tdt->get_data_offsets(metadata);
@@ -186,15 +186,15 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             vals.u = '>' + ('<' << 8);
             const byteswap_dtype *bd = static_cast<const byteswap_dtype *>(dt.extended());
             o << vals.s[0];
-            append_pep3118_format(out_itemsize, bd->get_value_dtype(), metadata, o);
+            append_pep3118_format(out_itemsize, bd->get_value_type(), metadata, o);
             return;
         }
         case view_type_id: {
             const view_dtype *vd = static_cast<const view_dtype *>(dt.extended());
             // If it's a view of bytes, usually to view unaligned data, can ignore it
             // since the buffer format we're creating doesn't use alignment
-            if (vd->get_operand_dtype().get_type_id() == fixedbytes_type_id) {
-                append_pep3118_format(out_itemsize, vd->get_value_dtype(), metadata, o);
+            if (vd->get_operand_type().get_type_id() == fixedbytes_type_id) {
+                append_pep3118_format(out_itemsize, vd->get_value_type(), metadata, o);
                 return;
             }
             break;
@@ -203,11 +203,11 @@ static void append_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const
             break;
     }
     stringstream ss;
-    ss << "Cannot convert dynd dtype " << dt << " into a PEP 3118 format string";
+    ss << "Cannot convert dynd type " << dt << " into a PEP 3118 format string";
     throw runtime_error(ss.str());
 }
 
-std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const dtype& dt, const char *metadata)
+std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, const char *metadata)
 {
     std::stringstream result;
     // Specify native alignment/storage if it's a builtin scalar type
@@ -218,7 +218,7 @@ std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const dtype& dt,
     return result.str();
 }
 
-static void array_getbuffer_pep3118_bytes(const dtype& dt, const char *metadata,
+static void array_getbuffer_pep3118_bytes(const ndt::type& dt, const char *metadata,
                 char *data, Py_buffer *buffer, int flags)
 {
     buffer->itemsize = 1;
@@ -267,7 +267,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         }
         nd::array& n = ((WArray *)ndo)->v;
         array_preamble *preamble = n.get_ndo();
-        dtype dt = n.get_dtype();
+        ndt::type dt = n.get_dtype();
 
         // Check if a writeable buffer is requested
         if ((flags&PyBUF_WRITABLE) && !(n.get_access_flags()&nd::write_access_flag)) {
@@ -284,15 +284,15 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         buffer->ndim = (int)dt.get_undim();
         if (((flags&PyBUF_ND) != PyBUF_ND) && buffer->ndim > 1) {
             stringstream ss;
-            ss << "dynd dtype " << n.get_dtype() << " is multidimensional, but PEP 3118 request is not ND";
+            ss << "dynd type " << n.get_dtype() << " is multidimensional, but PEP 3118 request is not ND";
             throw runtime_error(ss.str());
         }
 
         // Create the format, and allocate the dynamic memory but Py_buffer needs
         char *uniform_metadata = n.get_ndo_meta();
-        dtype uniform_dtype = dt.get_dtype_at_dimension(&uniform_metadata, buffer->ndim);
+        ndt::type uniform_dtype = dt.get_type_at_dimension(&uniform_metadata, buffer->ndim);
         if ((flags&PyBUF_FORMAT) || uniform_dtype.get_data_size() == 0) {
-            // If the uniform dtype doesn't have a fixed size, make_pep3118 fills buffer->itemsize as a side effect
+            // If the array data type doesn't have a fixed size, make_pep3118 fills buffer->itemsize as a side effect
             string format = make_pep3118_format(buffer->itemsize, uniform_dtype, uniform_metadata);
             if (flags&PyBUF_FORMAT) {
                 buffer->internal = malloc(2*buffer->ndim*sizeof(intptr_t) + format.size() + 1);
@@ -324,19 +324,19 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
                     buffer->shape[i] = md->size;
                     buffer->strides[i] = md->stride;
                     metadata += sizeof(strided_dim_dtype_metadata);
-                    dt = tdt->get_element_dtype();
+                    dt = tdt->get_element_type();
                     break;
                 }
                 case fixed_dim_type_id: {
                     const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(dt.extended());
                     buffer->shape[i] = tdt->get_fixed_dim_size();
                     buffer->strides[i] = tdt->get_fixed_stride();
-                    dt = tdt->get_element_dtype();
+                    dt = tdt->get_element_type();
                     break;
                 }
                 default: {
                     stringstream ss;
-                    ss << "Cannot get a strided view of dynd dtype " << n.get_dtype() << " for PEP 3118 buffer";
+                    ss << "Cannot get a strided view of dynd type " << n.get_dtype() << " for PEP 3118 buffer";
                     throw runtime_error(ss.str());
                 }
             }

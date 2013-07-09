@@ -71,15 +71,15 @@ dynd::nd::array array_eval_copy(const dynd::nd::array& n,
                 PyObject* access,
                 const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
 
-dynd::nd::array array_empty(const dynd::dtype& d);
-dynd::nd::array array_empty(PyObject *shape, const dynd::dtype& d);
+dynd::nd::array array_empty(const dynd::ndt::type& d);
+dynd::nd::array array_empty(PyObject *shape, const dynd::ndt::type& d);
 
 inline dynd::nd::array array_empty_like(const dynd::nd::array& n)
 {
     return dynd::nd::empty_like(n);
 }
 
-inline dynd::nd::array array_empty_like(const dynd::nd::array& n, const dynd::dtype& d)
+inline dynd::nd::array array_empty_like(const dynd::nd::array& n, const dynd::ndt::type& d)
 {
     return dynd::nd::empty_like(n, d);
 }
@@ -126,10 +126,10 @@ inline std::string array_debug_print(const dynd::nd::array& n)
 bool array_contains(const dynd::nd::array& n, PyObject *x);
 
 
-dynd::nd::array array_cast(const dynd::nd::array& n, const dynd::dtype& dt,
+dynd::nd::array array_cast(const dynd::nd::array& n, const dynd::ndt::type& dt,
                 PyObject *assign_error_obj);
 
-dynd::nd::array array_ucast(const dynd::nd::array& n, const dynd::dtype& dt,
+dynd::nd::array array_ucast(const dynd::nd::array& n, const dynd::ndt::type& dt,
                 size_t replace_undim, PyObject *assign_error_obj);
 
 PyObject *array_get_shape(const dynd::nd::array& n);

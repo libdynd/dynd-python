@@ -5,7 +5,7 @@ __all__ = ['build_metadata_struct']
 import ctypes
 
 from .ctypes_types import MemoryBlockData
-from ..nd import dtype
+from ..ndt import type as ndt_type
 
 # Metadata ctypes for types that don't have child metadata
 class EmptyMetadata(ctypes.Structure):
@@ -25,7 +25,7 @@ def build_metadata_struct(dt):
     dt : dynd type
         The dynd type for which the metadata is constructed.
     """
-    if not isinstance(dt, dtype):
+    if not isinstance(dt, ndt_type):
         raise TypeError('dt must be a dynd type, not %r' % type(dt))
     # If there's no metadata, just return an empty struct
     if dt.metadata_size == 0:
@@ -35,24 +35,24 @@ def build_metadata_struct(dt):
         class StridedMetadata(ctypes.Structure):
             _fields_ = [('size', ctypes.c_ssize_t),
                         ('stride', ctypes.c_ssize_t),
-                        ('element', build_metadata_struct(dt.element_dtype))]
+                        ('element', build_metadata_struct(dt.element_type))]
         result = StridedMetadata
     elif tid == 'fixed_dim':
         class FixedMetadata(ctypes.Structure):
-            _fields_ = [('element', build_metadata_struct(dt.element_dtype))]
+            _fields_ = [('element', build_metadata_struct(dt.element_type))]
         result = FixedMetadata
     elif tid == 'var_dim':
         class VarMetadata(ctypes.Structure):
             _fields_ = [('blockref', ctypes.POINTER(MemoryBlockData)),
                         ('stride', ctypes.c_ssize_t),
                         ('offset', ctypes.c_ssize_t),
-                        ('element', build_metadata_struct(dt.element_dtype))]
+                        ('element', build_metadata_struct(dt.element_type))]
         result = VarMetadata
     elif tid == 'pointer':
         class PointerMetadata(ctypes.Structure):
             _fields_ = [('blockref', ctypes.POINTER(MemoryBlockData)),
                         ('offset', ctypes.c_ssize_t),
-                        ('target', build_metadata_struct(dt.target_dtype))]
+                        ('target', build_metadata_struct(dt.target_type))]
         result = PointerMetadata
     elif tid in ['bytes', 'string', 'json']:
         result = BytesMetadata
@@ -70,9 +70,9 @@ def build_metadata_struct(dt):
             _fields_ = fields
         result = StructMetadata
     elif kind == 'expression':
-        # For any expression dtype not already handled,
+        # For any expression type not already handled,
         # its metadata is equivalent to its operand's metadata
-        result = build_metadata_struct(dt.operand_dtype)
+        result = build_metadata_struct(dt.operand_type)
     else:
         raise RuntimeError(('metadata struct for dynd type ' +
                         '%s is not handled') % dt)

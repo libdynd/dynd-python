@@ -114,7 +114,7 @@ calling_convention_t pydynd::get_ctypes_calling_convention(PyCFuncPtrObject* cfu
 #endif
 }
 
-void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, dtype& out_returntype, std::vector<dynd::dtype>& out_paramtypes)
+void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, ndt::type& out_returntype, std::vector<dynd::ndt::type>& out_paramtypes)
 {
     // The fields restype and argtypes are not always stored at the C level,
     // so must use the higher level getattr.
@@ -128,7 +128,7 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, dtype& out_returntype
     // Get the return type
     if (restype == Py_None) {
         // No return type
-        out_returntype = make_dtype<void>();
+        out_returntype = ndt::make_dtype<void>();
     } else {
         out_returntype = dtype_from_ctypes_cdatatype(restype);
     }
@@ -149,14 +149,14 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, dtype& out_returntype
 }
 
 
-dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
+dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
 {
     if (!PyObject_IsSubclass(d, ctypes.PyCData_Type)) {
-        throw runtime_error("requested a dtype from a ctypes c data type, but the given object has the wrong type");
+        throw runtime_error("internal error: requested a dynd type from a ctypes c data type, but the given object has the wrong type");
     }
 
     // If the ctypes type has a _dynd_type_ property, that should be
-    // a pydynd dtype instance corresponding to the type. This is how
+    // a pydynd type instance corresponding to the type. This is how
     // the complex type is supported, for example.
     PyObject *dynd_type_obj = PyObject_GetAttrString(d, "_dynd_type_");
     if (dynd_type_obj == NULL) {
@@ -176,31 +176,31 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
 
         switch (proto_str[0]) {
             case 'b':
-                return make_dtype<int8_t>();
+                return ndt::make_dtype<int8_t>();
             case 'B':
-                return make_dtype<uint8_t>();
+                return ndt::make_dtype<uint8_t>();
             case 'c':
                 return make_fixedstring_dtype(1, string_encoding_ascii);
             case 'd':
-                return make_dtype<double>();
+                return ndt::make_dtype<double>();
             case 'f':
-                return make_dtype<float>();
+                return ndt::make_dtype<float>();
             case 'h':
-                return make_dtype<int16_t>();
+                return ndt::make_dtype<int16_t>();
             case 'H':
-                return make_dtype<uint16_t>();
+                return ndt::make_dtype<uint16_t>();
             case 'i':
-                return make_dtype<int32_t>();
+                return ndt::make_dtype<int32_t>();
             case 'I':
-                return make_dtype<uint32_t>();
+                return ndt::make_dtype<uint32_t>();
             case 'l':
-                return make_dtype<long>();
+                return ndt::make_dtype<long>();
             case 'L':
-                return make_dtype<unsigned long>();
+                return ndt::make_dtype<unsigned long>();
             case 'q':
-                return make_dtype<int64_t>();
+                return ndt::make_dtype<int64_t>();
             case 'Q':
-                return make_dtype<uint64_t>();
+                return ndt::make_dtype<uint64_t>();
             default: {
                 stringstream ss;
                 ss << "The ctypes type code '" << proto_str[0] << "' cannot be converted to a dynd::dtype";
@@ -210,15 +210,15 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
     } else if (PyObject_IsSubclass(d, ctypes.PyCPointerType_Type)) {
         // Translate into a blockref pointer dtype
         pyobject_ownref target_dtype_obj(PyObject_GetAttrString(d, "_type_"));
-        dtype target_dtype = dtype_from_ctypes_cdatatype(target_dtype_obj);
+        ndt::type target_dtype = dtype_from_ctypes_cdatatype(target_dtype_obj);
         return make_pointer_dtype(target_dtype);
     } else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
-        // Translate into a cstruct or struct dtype
+        // Translate into a cstruct or struct type
         pyobject_ownref fields_list_obj(PyObject_GetAttrString(d, "_fields_"));
         if (!PyList_Check(fields_list_obj.get())) {
             throw runtime_error("The _fields_ member of the ctypes C struct is not a list");
         }
-        vector<dtype> field_types;
+        vector<ndt::type> field_types;
         vector<string> field_names;
         vector<size_t> field_offsets;
         Py_ssize_t field_count = PyList_GET_SIZE(fields_list_obj.get());
@@ -235,7 +235,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             pyobject_ownref field_data_obj(PyObject_GetAttr(d, key));
             pyobject_ownref field_data_offset_obj(PyObject_GetAttrString(field_data_obj.get(), "offset"));
             field_offsets.push_back(pyobject_as_index(field_data_offset_obj.get()));
-            // If the field isn't aligned as the dtype requires, make it into an unaligned version
+            // If the field isn't aligned as the type requires, make it into an unaligned version
             if (!offset_is_aligned(field_offsets.back(), field_types.back().get_data_alignment())) {
                 field_types.back() = make_unaligned_dtype(field_types.back());
             }
@@ -252,7 +252,7 @@ dynd::dtype pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
     } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
         // Translate into a either a fixed_dim or strided_dim
         pyobject_ownref element_dtype_obj(PyObject_GetAttrString(d, "_type_"));
-        dtype element_dtype = dtype_from_ctypes_cdatatype(element_dtype_obj);
+        ndt::type element_dtype = dtype_from_ctypes_cdatatype(element_dtype_obj);
         if (element_dtype.get_data_size() != 0) {
             pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
             intptr_t array_length = pyobject_as_index(array_length_obj.get());

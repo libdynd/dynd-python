@@ -38,7 +38,7 @@
 
 #include <sstream>
 
-#include <dynd/dtype.hpp>
+#include <dynd/type.hpp>
 #include <dynd/array.hpp>
 
 #include <numpy/ndarrayobject.h>
@@ -78,7 +78,7 @@ inline int import_numpy()
  *
  * \returns  The dynd equivalent of the Numpy dtype.
  */
-dynd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
+dynd::ndt::type dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
 
 /**
  * When the function dtype_from_numpy_dtype returns a dtype which requires
@@ -89,14 +89,14 @@ dynd::dtype dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
  * \param d  The numpy dtype passed to dtype_from_numpy_dtype.
  * \param metadata  A pointer to the metadata to populate.
  */
-void fill_metadata_from_numpy_dtype(const dynd::dtype& dt, PyArray_Descr *d, char *metadata);
+void fill_metadata_from_numpy_dtype(const dynd::ndt::type& dt, PyArray_Descr *d, char *metadata);
 
 /**
  * Converts a dynd::dtype to a numpy dtype.
  *
  * \param dt  The dtype to convert.
  */
-PyArray_Descr *numpy_dtype_from_dtype(const dynd::dtype& dt);
+PyArray_Descr *numpy_dtype_from_dtype(const dynd::ndt::type& dt);
 
 /**
  * Converts a dynd::dtype to a numpy dtype, also supporting dtypes which
@@ -105,20 +105,20 @@ PyArray_Descr *numpy_dtype_from_dtype(const dynd::dtype& dt);
  * \param dt  The dtype to convert.
  * \param metadata  The metadata for the dtype.
  */
-PyArray_Descr *numpy_dtype_from_dtype(const dynd::dtype& dt, const char *metadata);
+PyArray_Descr *numpy_dtype_from_dtype(const dynd::ndt::type& dt, const char *metadata);
 
 /**
- * Converts a pytypeobject for a numpy scalar
+ * Converts a pytypeobject for a n`umpy scalar
  * into a dynd::dtype.
  *
  * Returns 0 on success, -1 if it didn't match.
  */
-int dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::dtype& out_d);
+int dtype_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::type& out_d);
 
 /**
  * Gets the dtype of a numpy scalar object
  */
-dynd::dtype dtype_of_numpy_scalar(PyObject* obj);
+dynd::ndt::type dtype_of_numpy_scalar(PyObject* obj);
 
 /**
  * Views a Numpy PyArrayObject as an nd::array.
@@ -133,7 +133,7 @@ dynd::nd::array array_from_numpy_scalar(PyObject* obj);
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
-char numpy_kindchar_of(const dynd::dtype& d);
+char numpy_kindchar_of(const dynd::ndt::type& d);
 
 } // namespace pydynd
 

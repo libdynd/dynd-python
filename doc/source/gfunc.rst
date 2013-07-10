@@ -22,14 +22,14 @@ then evaluate it before and after modifying one of its inputs.
 
 .. code-block:: python
 
-    >>> a = nd.ndarray([1,2])
+    >>> a = nd.array([1,2])
     >>> b = a + 3
     >>> b
-    nd.ndarray([4, 5], int32)
+    nd.array([4, 5], int32)
 
     >>> a[0].val_assign(10)
     >>> b
-    nd.ndarray([13, 5], int32)
+    nd.array([13, 5], int32)
 
 The evaluation engine is currently very primitive, and does not
 support evaluating expressions with complicated expression graphs.
@@ -48,7 +48,7 @@ intermediate results.
     )
 
     >>> (a + 3).vals() * 2
-    nd.ndarray([8, 10], int32)
+    nd.array([8, 10], int32)
 
 Using the Builtin GFuncs
 ------------------------
@@ -61,7 +61,7 @@ a function signature within the gfunc.
 .. code-block:: python
 
     >>> nd.sin(3.1)
-    nd.ndarray(0.0415807, float64)
+    nd.array(0.0415807, float64)
 
     >>> nd.sin(3)
     Traceback (most recent call last):
@@ -70,7 +70,7 @@ a function signature within the gfunc.
     RuntimeError: sin: could not find a gfunc kernel matching input argument types (int32)
 
     >>> nd.sum([1,3,5,9])
-    nd.ndarray(18, int32)
+    nd.array(18, int32)
 
 Creating Elementwise GFuncs
 ---------------------------
@@ -95,13 +95,13 @@ Now we can call the function if we provide operands of the right type.
 .. code-block:: python
 
     >>> myfunc(3.0)
-    nd.ndarray(9, float64)
+    nd.array(9, float64)
 
     >>> myfunc(1,2)
-    nd.ndarray(3, int32)
+    nd.array(3, int32)
 
     >>> myfunc(1.0, 2.0)
-    nd.ndarray(2, float64)
+    nd.array(2, float64)
 
     >>> myfunc(1, 2.0)
     Traceback (most recent call last):
@@ -128,9 +128,9 @@ the input dtype.
     >>> myred.add_kernel(nd.elwise_kernels.multiply_float64, associative=True, commutative=True, identity=1)
 
     >>> myred([1,2,3,4])
-    nd.ndarray(10, int32)
+    nd.array(10, int32)
     >>> myred([1.,2.,3.,4.])
-    nd.ndarray(24, float64)
+    nd.array(24, float64)
 
 Groupby Reductions
 ------------------
@@ -149,14 +149,14 @@ reductions, can be used for groupby reductions. Here's a simple example.
     categorical<fixedstring<ascii,1>, ["a", "b", "c", "d"]>
 
     >>> print("max:     ", nd.max(gb, axis=1))
-    ('max:     ', nd.ndarray([6, 4, 5, 7], int32))
+    ('max:     ', nd.array([6, 4, 5, 7], int32))
 
     >>> print("min:     ", nd.min(gb, axis=1))
-    ('min:     ', nd.ndarray([0, 4, 2, 7], int32))
+    ('min:     ', nd.array([0, 4, 2, 7], int32))
 
     >>> print("sum:     ", nd.sum(gb, axis=1))
-    ('sum:     ', nd.ndarray([10, 4, 7, 7], int32))
+    ('sum:     ', nd.array([10, 4, 7, 7], int32))
 
     >>> print("product: ", nd.product(gb, axis=1))
-    ('product: ', nd.ndarray([0, 4, 10, 7], int32))
+    ('product: ', nd.array([0, 4, 10, 7], int32))
 

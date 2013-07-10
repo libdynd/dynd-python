@@ -2,57 +2,53 @@ Debugging DyND
 ==============
 
 One of the simplest tools to get started debugging and
-understanding how DyND works is the ``debug_repr()``
+understanding how DyND works is the ``nd.debug_repr(a)``
 method which exists on most objects.
 
 Here are a few examples to show what it prints.
 
-Debug Printing NDObjects
+Debug Printing ND.Array
 -----------------------
 
 .. code-block:: python
 
-    >>> print(nd.ndobject(True).debug_repr())
-    ------ ndobject
-     address: 0000000007BBBC70
+    >>> nd.debug_repr(nd.array(True))
+    ------ array
+     address: 000000000281BE10
      refcount: 1
-     dtype:
+     type:
       pointer: 0000000000000001
       type: bool
      metadata:
       flags: 5 (read_access immutable )
      data:
-       pointer: 0000000007BBBCA0
-       reference: 0000000000000000 (embedded in ndobject memory)
+       pointer: 000000000281BE40
+       reference: 0000000000000000 (embedded in array memory)
     ------
-    >>> print(nd.ndobject("testing").debug_repr())
-    ------ ndobject
-     address: 0000000007BBA6E0
+
+    >>> nd.debug_repr(nd.array("testing"))
+    ------ array
+     address: 000000000281F7A0
      refcount: 1
-     dtype:
-      pointer: 0000000007BBBC70
-      type: string<'ascii'>
+     type:
+      pointer: 000000000281BE10
+      type: string
      metadata:
       flags: 5 (read_access immutable )
       dtype-specific metadata:
        string metadata
-        ------ memory_block at 0000000003F08510
-         reference count: 1
-         type: external
-         object void pointer: 00000000027898A0
-         free function: 000007FEEAC61974
-        ------
+        ------ NULL memory block
      data:
-       pointer: 0000000007BBA718
-       reference: 0000000000000000 (embedded in ndobject memory)
+       pointer: 000000000281F7D8
+       reference: 0000000000000000 (embedded in array memory)
     ------
 
-    >>> print(nd.ndobject([1,2,3,4,5]).debug_repr())
-    ------ ndobject
-     address: 0000000003F0C7E0
+    >>> nd.debug_repr(nd.array([1,2,3,4,5]))
+    ------ array
+     address: 000000000281F7A0
      refcount: 1
-     dtype:
-      pointer: 0000000007BBB3D0
+     type:
+      pointer: 00000000028212A0
       type: strided_dim<int32>
      metadata:
       flags: 3 (read_access write_access )
@@ -61,9 +57,10 @@ Debug Printing NDObjects
         stride: 4
         size: 5
      data:
-       pointer: 0000000003F0C820
-       reference: 0000000000000000 (embedded in ndobject memory)
+       pointer: 000000000281F7E0
+       reference: 0000000000000000 (embedded in array memory)
     ------
+
 
 Debug Printing GFuncs
 ---------------------

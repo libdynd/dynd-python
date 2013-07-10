@@ -3,7 +3,7 @@ DyND Python Bindings Development
 ================================
 
 The DyND library, in its initial conception, is trying to
-work well in two worlds as both a C++ library and
+work well in two worlds, as both a C++ library and
 a Python module. In both languages, DyND should feel
 like a native first-class project, interacting with
 the features of each language in the way heavy users
@@ -86,8 +86,8 @@ names have been chosen in a way which is working
 well in practice. Here's how the dtype class wrapper
 starts::
 
-    cdef class w_dtype:
-        cdef dtype_placement_wrapper v
+    cdef class w_type:
+        cdef ndt_type_placement_wrapper v
 
         def __cinit__(self, rep=None):
             placement_new(self.v)
@@ -114,51 +114,51 @@ as it would be human readable.
 
 There is just one piece of information the C++ code needs to learn
 from Cython, the TypeObject instance. Ideally one could declare an
-exported variable `PyTypeObject *WNDObject_Type` in the Cython code,
+exported variable `PyTypeObject *WArray_Type` in the Cython code,
 and reference it with a one-liner in a header file. The Cython syntax
 doesn't appear to support this, so the alternative being used is to
 declare a C++ function::
 
-    PyTypeObject *pydynd::WNDObject_Type;
+    PyTypeObject *pydynd::WArray_Type;
 
-    void pydynd::init_w_ndobject_typeobject(PyObject *type)
+    void pydynd::init_w_array_typeobject(PyObject *type)
     {
-        WNDObject_Type = (PyTypeObject *)type;
+        WArray_Type = (PyTypeObject *)type;
     }
 
 and call it from Cython at the outer scope, which is executed
 on initialization::
 
-    init_w_ndobject_typeobject(w_ndobject)
+    init_w_array_typeobject(w_array)
     
 The full implementation of this in the C++ header is then::
 
-    extern PyTypeObject *WNDObject_Type;
-    inline bool WNDObject_CheckExact(PyObject *obj) {
-        return Py_TYPE(obj) == WNDObject_Type;
+    extern PyTypeObject *WArray_Type;
+    inline bool WArray_CheckExact(PyObject *obj) {
+        return Py_TYPE(obj) == WArray_Type;
     }
-    inline bool WNDObject_Check(PyObject *obj) {
-        return PyObject_TypeCheck(obj, WNDObject_Type);
+    inline bool WArray_Check(PyObject *obj) {
+        return PyObject_TypeCheck(obj, WArray_Type);
     }
-    struct WNDObject {
+    struct WArray {
       PyObject_HEAD;
-      // This is ndobject_placement_wrapper in Cython-land
-      dynd::ndobject v;
+      // This is array_placement_wrapper in Cython-land
+      dynd::array v;
     };
-    void init_w_ndobject_typeobject(PyObject *type);
+    void init_w_array_typeobject(PyObject *type);
 
 There is a special consideration that must be made when constructing
 the Cython classes from C++, which is that calling the
-`WNDObject_Type->tp_alloc` method does not call the Cython
+`WArray_Type->tp_alloc` method does not call the Cython
 `__cinit__` function. This leads to the following wrapper code::
 
-    inline PyObject *wrap_ndobject(const dynd::ndobject& n) {
-        WNDObject *result = (WNDObject *)WNDObject_Type->tp_alloc(WNDObject_Type, 0);
+    inline PyObject *wrap_array(const dynd::array& n) {
+        WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
         if (!result) {
             throw std::runtime_error("");
         }
         // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-        pydynd::placement_new(reinterpret_cast<pydynd::ndobject_placement_wrapper &>(result->v));
+        pydynd::placement_new(reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
         result->v = n;
         return (PyObject *)result;
     }
@@ -193,9 +193,15 @@ to the end of the definition, as follows::
 
 The naked `throw` reraises the exception caught by the Cython code,
 and uses an appropriate PyErr_SetString or PyErr_SetObject
-to translate the exception. I'm not sure whether this is
-conformant C++, but it appears to work well on all the compilers
-Cython is supporting.
+to translate the exception. It appears that this is
+conformant C++, as it is rethrowing the exception while within
+scope of another catch statement, even though that statement
+is within another function.
+
+The only problem encountered is on Mac OS X, on an older version of
+clang, where catching subclasses don't appear to work, and explicit
+catches of every single possible exception was required. The solution
+at the time was to switch to using g++ 4.2.
 
 Defining Custom Python Exceptions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

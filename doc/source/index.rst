@@ -25,8 +25,8 @@ Contents:
 .. toctree::
     :maxdepth: 2
 
-    dtype
-    ndarray
+    type
+    array
     gfunc
     debugging
     dev

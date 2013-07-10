@@ -99,8 +99,8 @@ and experiment with dynd from this shell. Here's an example.::
 
     In [3]: from dynd import nd, ndt
 
-    In [4]: nd.ndobject([[1,2,3], [4,5]])
-    Out[4]: nd.ndobject([[1, 2, 3], [4, 5]], strided_dim<var_dim<int32>>)
+    In [4]: nd.array([[1,2,3], [4,5]])
+    Out[4]: nd.array([[1, 2, 3], [4, 5]], strided_dim<var_dim<int32>>)
 
 Creating a Notebook
 -------------------

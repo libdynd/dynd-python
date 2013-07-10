@@ -155,5 +155,12 @@ class TestIteratorAssign(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, assign, a,
                         (x + 2 for x in range(11)))
 
+class TestStringAssign(unittest.TestCase):
+    def test_string_assign_to_slice(self):
+        a = nd.array(['a', 'b', 'c', 'd', 'e'], 'string(8)')
+        a[:3] = 'test'
+        self.assertEqual(nd.as_py(a), ['test', 'test', 'test', 'd', 'e'])
+
+
 if __name__ == '__main__':
     unittest.main()

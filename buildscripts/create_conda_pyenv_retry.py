@@ -25,7 +25,8 @@ def main(pyversion, envdir):
 
     packages = ['cython', 'scipy', 'nose']
 
-    while True:
+    # Try for 5 minutes
+    for i in range(5):
         p = subprocess.Popen(['conda', 'create', '--yes', '-p', envdir,
             'python=%s' % pyversion] + packages, stderr=subprocess.PIPE,
             shell=(sys.platform == 'win32'))
@@ -37,9 +38,11 @@ def main(pyversion, envdir):
                 print
                 time.sleep(60)
             else:
-                sys.exit(p.returncode)
+                return p.returncode
         else:
-            sys.exit(p.returncode)
+            return p.returncode
+    print('Giving up on conda, manual intervention required :(')
+    return 1
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1], sys.argv[2]))

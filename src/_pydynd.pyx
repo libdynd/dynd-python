@@ -78,7 +78,7 @@ def _get_py_lowlevel_api():
 
 cdef class w_type:
     """
-    dtype(obj=None)
+    ndt.type(obj=None)
 
     Create a dynd type object.
 
@@ -95,12 +95,12 @@ cdef class w_type:
     --------
     >>> from dynd import nd, ndt
 
-    >>> nd.dtype('int16')
+    >>> ndt.type('int16')
     ndt.int16
-    >>> nd.dtype('5, var, float32')
-    nd.dtype('fixed_dim<5, var_dim<float32>>')
-    >>> nd.dtype('{x: float32; y: float32; z: float32}')
-    nd.dtype('cstruct<float32 x, float32 y, float32 z>')
+    >>> ndt.type('5, var, float32')
+    ndt.type('fixed_dim<5, var_dim<float32>>')
+    >>> ndt.type('{x: float32; y: float32; z: float32}')
+    ndt.type('cstruct<float32 x, float32 y, float32 z>')
     """
     # To access the embedded dtype, use "GET(self.v)",
     # which returns a reference to the dtype, and
@@ -322,11 +322,11 @@ def replace_udtype(w_type dt, replacement_dt, size_t replace_undim=0):
     --------
     >>> from dynd import nd, ndt
 
-    >>> d = nd.dtype('3, var, int32')
+    >>> d = ndt.type('3, var, int32')
     >>> ndt.replace_udtype(d, 'M, float64')
-    nd.dtype('fixed_dim<3, var_dim<strided_dim<float64>>>')
+    ndt.type('fixed_dim<3, var_dim<strided_dim<float64>>>')
     >>> ndt.replace_udtype(d, '{x: int32; y:int32}', 1)
-    nd.dtype('fixed_dim<3, cstruct<int32 x, int32 y>>')
+    ndt.type('fixed_dim<3, cstruct<int32 x, int32 y>>')
     """
     cdef w_type result = w_type()
     SET(result.v, GET(dt.v).with_replaced_udtype(GET(w_type(replacement_dt).v), replace_undim))
@@ -353,11 +353,11 @@ def extract_udtype(dt, size_t keep_undim=0):
     --------
     >>> from dynd import nd, ndt
 
-    >>> d = nd.dtype('3, var, int32')
+    >>> d = ndt.type('3, var, int32')
     >>> ndt.extract_udtype(d)
     ndt.int32
     >>> ndt.extract_udtype(d, 1)
-    nd.dtype('var_dim<int32>')
+    ndt.type('var_dim<int32>')
     """
     cdef w_type result = w_type()
     SET(result.v, GET(w_type(dt).v).get_udtype(keep_undim))
@@ -385,7 +385,7 @@ def make_byteswap_dtype(builtin_dtype, operand_type=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_byteswap_dtype(ndt.int16)
-    nd.dtype('byteswap<int16>')
+    ndt.type('byteswap<int16>')
     """
     cdef w_type result = w_type()
     if operand_type is None:
@@ -413,9 +413,9 @@ def make_fixedbytes_dtype(int data_size, int data_alignment=1):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixedbytes_dtype(4)
-    nd.dtype('fixedbytes<4,1>')
+    ndt.type('fixedbytes<4,1>')
     >>> ndt.make_fixedbytes_dtype(6, 2)
-    nd.dtype('fixedbytes<6,2>')
+    ndt.type('fixedbytes<6,2>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedbytes_dtype(data_size, data_alignment))
@@ -449,9 +449,9 @@ def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_convert_dtype(ndt.int16, ndt.float32)
-    nd.dtype('convert<to=int16, from=float32>')
+    ndt.type('convert<to=int16, from=float32>')
     >>> ndt.make_convert_dtype(ndt.uint8, ndt.uint16, 'none')
-    nd.dtype('convert<to=uint8, from=uint16, errmode=none>')
+    ndt.type('convert<to=uint8, from=uint16, errmode=none>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_convert_dtype(GET(w_type(to_dtype).v), GET(w_type(from_dtype).v), errmode))
@@ -478,7 +478,7 @@ def make_view_dtype(value_type, operand_type):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_view_dtype(ndt.int32, ndt.uint32)
-    nd.dtype('view<as=int32, original=uint32>')
+    ndt.type('view<as=int32, original=uint32>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_view_dtype(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
@@ -502,7 +502,7 @@ def make_unaligned_dtype(aligned_dtype):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_unaligned_dtype(ndt.int32)
-    nd.dtype('unaligned<int32>')
+    ndt.type('unaligned<int32>')
     >>> ndt.make_unaligned_dtype(ndt.uint8)
     ndt.uint8
     """
@@ -533,9 +533,9 @@ def make_fixedstring_dtype(int size, encoding=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixedstring_dtype(10)
-    nd.dtype('string<10>')
+    ndt.type('string<10>')
     >>> ndt.make_fixedstring_dtype(10, 'utf_32')
-    nd.dtype('string<10,utf_32>')
+    ndt.type('string<10,utf_32>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedstring_dtype(size, encoding))
@@ -562,7 +562,7 @@ def make_string_dtype(encoding=None):
     >>> ndt.make_string_dtype()
     ndt.string
     >>> ndt.make_string_dtype('utf_16')
-    nd.dtype('string<utf_16>')
+    ndt.type('string<utf_16>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_string_dtype(encoding))
@@ -587,7 +587,7 @@ def make_bytes_dtype(size_t alignment=1):
     >>> ndt.make_bytes_dtype()
     ndt.bytes
     >>> ndt.make_string_dtype(4)
-    nd.dtype('bytes<align=4>')
+    ndt.type('bytes<align=4>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_bytes_dtype(alignment))
@@ -630,9 +630,9 @@ def make_strided_dim_dtype(element_dtype, undim=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_strided_dim_dtype(ndt.int32)
-    nd.dtype('strided_dim<int32>')
+    ndt.type('strided_dim<int32>')
     >>> ndt.make_strided_dim_dtype(ndt.int32, 3)
-    nd.dtype('strided_dim<strided_dim<strided_dim<int32>>>')
+    ndt.type('strided_dim<strided_dim<strided_dim<int32>>>')
     """
     cdef w_type result = w_type()
     if (undim is None):
@@ -665,11 +665,11 @@ def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixed_dim_dtype(5, ndt.int32)
-    nd.dtype('fixed_dim<5, int32>')
+    ndt.type('fixed_dim<5, int32>')
     >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32)
-    nd.dtype('fixed_dim<3, fixed_dim<5, int32>>')
+    ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
     >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32, axis_perm=(0,1))
-    nd.dtype('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
+    ndt.type('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_type(element_dtype).v), axis_perm))
@@ -699,7 +699,7 @@ def make_cstruct_dtype(field_types, field_names):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_cstruct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
-    nd.dtype('cstruct<int32 x, float64 y>')
+    ndt.type('cstruct<int32 x, float64 y>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_cstruct_dtype(field_types, field_names))
@@ -728,7 +728,7 @@ def make_struct_dtype(field_types, field_names):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_struct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
-    nd.dtype('struct<int32 x, float64 y>')
+    ndt.type('struct<int32 x, float64 y>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_struct_dtype(field_types, field_names))
@@ -750,7 +750,7 @@ def make_var_dim_dtype(element_dtype):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_var_dim_dtype(ndt.float32)
-    nd.dtype('var_dim<float32>')
+    ndt.type('var_dim<float32>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_var_dim_dtype(GET(w_type(element_dtype).v)))
@@ -780,7 +780,7 @@ def make_categorical_dtype(values):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_categorical_dtype(['sunny', 'rainy', 'cloudy', 'stormy'])
-    nd.dtype('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
+    ndt.type('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_categorical_dtype(GET(w_array(values).v)))
@@ -806,7 +806,7 @@ def factor_categorical_dtype(values):
     >>> from dynd import nd, ndt
 
     >>> ndt.factor_categorical_dtype(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
-    nd.dtype('categorical<string<ascii>, ["F", "M"]>')
+    ndt.type('categorical<string<ascii>, ["F", "M"]>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_factor_categorical_dtype(GET(w_array(values).v)))
@@ -1093,9 +1093,9 @@ cdef class w_array:
         >>> from dynd import nd, ndt
 
         >>> nd.array([1,2,3,4]).dtype
-        nd.dtype('strided_dim<int32>')
+        ndt.type('strided_dim<int32>')
         >>> nd.array([[1,2],[3.0]]).dtype
-        nd.dtype('strided_dim<var_dim<float64>>')
+        ndt.type('strided_dim<var_dim<float64>>')
         """
         def __get__(self):
             cdef w_type result = w_type()

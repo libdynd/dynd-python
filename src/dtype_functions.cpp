@@ -79,7 +79,7 @@ std::string pydynd::dtype_repr(const dynd::ndt::type& d)
                 if (static_cast<const bytes_dtype *>(d.extended())->get_target_alignment() == 1) {
                     ss << "ndt.bytes";
                 } else {
-                    ss << "nd.dtype('" << d << "')";
+                    ss << "ndt.type('" << d << "')";
                 }
                 break;
             case string_type_id:
@@ -87,11 +87,11 @@ std::string pydynd::dtype_repr(const dynd::ndt::type& d)
                             d.extended())->get_encoding() == string_encoding_utf_8) {
                     ss << "ndt.string";
                 } else {
-                    ss << "nd.dtype('" << d << "')";
+                    ss << "ndt.type('" << d << "')";
                 }
                 break;
             default:
-                ss << "nd.dtype('" << d << "')";
+                ss << "ndt.type('" << d << "')";
                 break;
         }
     }

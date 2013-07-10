@@ -12,8 +12,8 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         else:
             self.nonnative = '<'
 
-    def test_dtype_from_numpy_scalar_types(self):
-        # Tests converting numpy scalar types to pydynd dtypes
+    def test_dynd_type_from_numpy_scalar_types(self):
+        # Tests converting numpy scalar types to dynd types
         self.assertEqual(ndt.bool, ndt.type(np.bool))
         self.assertEqual(ndt.bool, ndt.type(np.bool_))
         self.assertEqual(ndt.int8, ndt.type(np.int8))
@@ -29,8 +29,8 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.cfloat32, ndt.type(np.complex64))
         self.assertEqual(ndt.cfloat64, ndt.type(np.complex128))
 
-    def test_dtype_from_numpy_dtype(self):
-        # Tests converting numpy dtypes to pydynd dtypes
+    def test_dynd_type_from_numpy_dtype(self):
+        # Tests converting numpy dtypes to dynd types
         # native byte order
         self.assertEqual(ndt.bool, ndt.type(np.dtype(np.bool)))
         self.assertEqual(ndt.int8, ndt.type(np.dtype(np.int8)))

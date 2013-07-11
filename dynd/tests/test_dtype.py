@@ -85,31 +85,31 @@ class TestDType(unittest.TestCase):
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 
     def test_fixedstring_type_properties(self):
-        d = ndt.make_fixedstring_dtype(10, 'ascii')
+        d = ndt.make_fixedstring_type(10, 'ascii')
         self.assertEqual(str(d), "string<10,'ascii'>")
         self.assertEqual(d.data_size, 10)
         self.assertEqual(d.data_alignment, 1)
         self.assertEqual(d.encoding, 'ascii')
 
-        d = ndt.make_fixedstring_dtype(10, 'ucs_2')
+        d = ndt.make_fixedstring_type(10, 'ucs_2')
         self.assertEqual(str(d), "string<10,'ucs-2'>")
         self.assertEqual(d.data_size, 20)
         self.assertEqual(d.data_alignment, 2)
         self.assertEqual(d.encoding, 'ucs-2')
 
-        d = ndt.make_fixedstring_dtype(10, 'utf-8')
+        d = ndt.make_fixedstring_type(10, 'utf-8')
         self.assertEqual(str(d), 'string<10>')
         self.assertEqual(d.data_size, 10)
         self.assertEqual(d.data_alignment, 1)
         self.assertEqual(d.encoding, 'utf-8')
 
-        d = ndt.make_fixedstring_dtype(10, 'utf_16')
+        d = ndt.make_fixedstring_type(10, 'utf_16')
         self.assertEqual(str(d), "string<10,'utf-16'>")
         self.assertEqual(d.data_size, 20)
         self.assertEqual(d.data_alignment, 2)
         self.assertEqual(d.encoding, 'utf-16')
 
-        d = ndt.make_fixedstring_dtype(10, 'utf_32')
+        d = ndt.make_fixedstring_type(10, 'utf_32')
         self.assertEqual(str(d), "string<10,'utf-32'>")
         self.assertEqual(d.data_size, 40)
         self.assertEqual(d.data_alignment, 4)

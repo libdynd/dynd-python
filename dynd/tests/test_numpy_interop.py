@@ -45,9 +45,9 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.float64, ndt.type(np.dtype(np.float64)))
         self.assertEqual(ndt.cfloat32, ndt.type(np.dtype(np.complex64)))
         self.assertEqual(ndt.cfloat64, ndt.type(np.dtype(np.complex128)))
-        self.assertEqual(ndt.make_fixedstring_dtype(10, 'ascii'),
+        self.assertEqual(ndt.make_fixedstring_type(10, 'ascii'),
                     ndt.type(np.dtype('S10')))
-        self.assertEqual(ndt.make_fixedstring_dtype(10, 'utf_32'),
+        self.assertEqual(ndt.make_fixedstring_type(10, 'utf_32'),
                     ndt.type(np.dtype('U10')))
 
         # non-native byte order
@@ -159,9 +159,9 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.array(['abc', 'testing', 'array'])
         b = nd.array(a)
         if sys.version_info >= (3, 0):
-            self.assertEqual(ndt.make_fixedstring_dtype(7, 'utf_32'), b.udtype)
+            self.assertEqual(ndt.make_fixedstring_type(7, 'utf_32'), b.udtype)
         else:
-            self.assertEqual(ndt.make_fixedstring_dtype(7, 'ascii'), b.udtype)
+            self.assertEqual(ndt.make_fixedstring_type(7, 'ascii'), b.udtype)
         self.assertEqual(b.udtype, ndt.type(a.dtype))
 
         # Make sure it's ascii
@@ -177,16 +177,16 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a, c)
 
         # ASCII dynd -> UTF32 dynd
-        b_u = b.ucast(ndt.make_fixedstring_dtype(7, 'utf_32'))
+        b_u = b.ucast(ndt.make_fixedstring_type(7, 'utf_32'))
         self.assertEqual(
                 ndt.make_convert_dtype(
-                    ndt.make_fixedstring_dtype(7, 'utf_32'),
-                    ndt.make_fixedstring_dtype(7, 'ascii')),
+                    ndt.make_fixedstring_type(7, 'utf_32'),
+                    ndt.make_fixedstring_type(7, 'ascii')),
                 b_u.udtype)
         # Evaluate to its value array
         b_u = b_u.eval()
         self.assertEqual(
-                ndt.make_fixedstring_dtype(7, 'utf_32'),
+                ndt.make_fixedstring_type(7, 'utf_32'),
                 b_u.udtype)
 
         # UTF32 dynd -> Numpy

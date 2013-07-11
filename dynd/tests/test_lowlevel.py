@@ -45,7 +45,7 @@ class TestLowLevel(unittest.TestCase):
         # String/bytes
         self.assertEqual(self.type_id_of(ndt.string),
                         _lowlevel.STRING_TYPE_ID)
-        self.assertEqual(self.type_id_of(ndt.make_fixedstring_dtype(16)),
+        self.assertEqual(self.type_id_of(ndt.make_fixedstring_type(16)),
                         _lowlevel.FIXEDSTRING_TYPE_ID)
         self.assertEqual(self.type_id_of(ndt.bytes),
                         _lowlevel.BYTES_TYPE_ID)

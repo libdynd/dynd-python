@@ -36,7 +36,7 @@ class TestNDObjectIn(unittest.TestCase):
         self.assertFalse(u'' in a)
 
     def test_strings_different_encoding(self):
-        a = nd.array(['this', 'is', 'a', 'test']).ucast(ndt.make_string_dtype('utf_8'))
+        a = nd.array(['this', 'is', 'a', 'test']).ucast(ndt.make_string_type('utf_8'))
         self.assertTrue('this' in a)
         self.assertTrue('is' in a)
         self.assertTrue('a' in a)

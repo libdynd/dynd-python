@@ -127,12 +127,12 @@ std::string pydynd::pystring_as_string(PyObject *str)
 #endif
     } else if (WArray_Check(str)) {
         const nd::array& n = ((WArray *)str)->v;
-        if (n.get_dtype().value_type().get_kind() == string_kind) {
+        if (n.get_type().value_type().get_kind() == string_kind) {
             return n.as<string>();
         } else {
             stringstream ss;
             ss << "Cannot implicitly convert object of type ";
-            ss << n.get_dtype() << " to string";
+            ss << n.get_type() << " to string";
             throw runtime_error(ss.str());
         }
     } else {

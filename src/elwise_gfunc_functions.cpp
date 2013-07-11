@@ -74,7 +74,7 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
     for (Py_ssize_t i = 0; i < nargs; ++i) {
         pyobject_ownref arg_obj(PySequence_GetItem(args, i));
         array_init_from_pyobject(array_args[i], arg_obj);
-        argtypes[i] = array_args[i].get_dtype().value_type();
+        argtypes[i] = array_args[i].get_type().value_type();
     }
 
     const gfunc::elwise_kernel *egk;

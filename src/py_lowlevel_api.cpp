@@ -44,7 +44,7 @@ namespace {
                 throw runtime_error(ss.str());
             }
             nd::array result(make_array_memory_block(0));
-            d.swap(result.get_ndo()->m_dtype);
+            d.swap(result.get_ndo()->m_type);
             result.get_ndo()->m_data_pointer = reinterpret_cast<char *>(ptr_val);
             memory_block_ptr owner_memblock = make_external_memory_block(owner, &py_decref_function);
             Py_INCREF(owner);

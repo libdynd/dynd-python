@@ -37,9 +37,9 @@ PyObject *pydynd::array_str(const dynd::nd::array& n)
     return array_unicode(n);
 #else
     nd::array n_str;
-    if (n.get_dtype().get_kind() == string_kind &&
+    if (n.get_type().get_kind() == string_kind &&
                     static_cast<const base_string_type *>(
-                        n.get_dtype().extended())->get_encoding() == string_encoding_ascii) {
+                        n.get_type().extended())->get_encoding() == string_encoding_ascii) {
         // If it's already an ASCII string, pass-through
         n_str = n;
     } else {
@@ -48,7 +48,7 @@ PyObject *pydynd::array_str(const dynd::nd::array& n)
         n_str.vals() = n;
     }
     const base_string_type *bsd =
-                    static_cast<const base_string_type *>(n_str.get_dtype().extended());
+                    static_cast<const base_string_type *>(n_str.get_type().extended());
     const char *begin = NULL, *end = NULL;
     bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
     return PyString_FromStringAndSize(begin, end - begin);
@@ -68,9 +68,9 @@ PyObject *pydynd::array_str(const dynd::nd::array& n)
 PyObject *pydynd::array_unicode(const dynd::nd::array& n)
 {
     nd::array n_str;
-    if (n.get_dtype().get_kind() == string_kind &&
+    if (n.get_type().get_kind() == string_kind &&
                     static_cast<const base_string_type *>(
-                        n.get_dtype().extended())->get_encoding() == DYND_PY_ENCODING) {
+                        n.get_type().extended())->get_encoding() == DYND_PY_ENCODING) {
         // If it's already a unicode string, pass-through
         n_str = n;
     } else {
@@ -79,7 +79,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array& n)
         n_str.vals() = n;
     }
     const base_string_type *bsd =
-                    static_cast<const base_string_type *>(n_str.get_dtype().extended());
+                    static_cast<const base_string_type *>(n_str.get_type().extended());
     const char *begin = NULL, *end = NULL;
     bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
 #if PY_VERSION_HEX >= 0x03030000
@@ -97,7 +97,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array& n)
 PyObject *pydynd::array_index(const dynd::nd::array& n)
 {
     // Implements the nb_index slot
-    switch (n.get_dtype().get_kind()) {
+    switch (n.get_type().get_kind()) {
         case int_kind:
         case uint_kind:
             return array_as_py(n);
@@ -112,7 +112,7 @@ PyObject *pydynd::array_index(const dynd::nd::array& n)
 PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
 {
     // Implements the nonzero/conversion to boolean slot
-    switch (n.get_dtype().value_type().get_kind()) {
+    switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
         case int_kind:
         case uint_kind:
@@ -129,7 +129,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case string_kind: {
             // Follow Python, return True if the string is nonempty, False otherwise
             nd::array n_eval = n.eval();
-            const base_string_type *bsd = static_cast<const base_string_type *>(n_eval.get_dtype().extended());
+            const base_string_type *bsd = static_cast<const base_string_type *>(n_eval.get_type().extended());
             const char *begin = NULL, *end = NULL;
             bsd->get_string_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
             if (begin != end) {
@@ -143,7 +143,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case bytes_kind: {
             // Return True if there is a non-zero byte, False otherwise
             nd::array n_eval = n.eval();
-            const base_bytes_type *bbd = static_cast<const base_bytes_type *>(n_eval.get_dtype().extended());
+            const base_bytes_type *bbd = static_cast<const base_bytes_type *>(n_eval.get_type().extended());
             const char *begin = NULL, *end = NULL;
             bbd->get_bytes_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
             while (begin != end) {
@@ -244,17 +244,17 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     ndt::type dt;
     const base_uniform_dim_type *budd;
     const char *metadata, *data;
-    if (n.get_dtype().get_kind() == uniform_dim_kind) {
-        dt = n.get_dtype();
+    if (n.get_type().get_kind() == uniform_dim_kind) {
+        dt = n.get_type();
         budd = static_cast<const base_uniform_dim_type *>(dt.extended());
         metadata = n.get_ndo_meta();
         data = n.get_readonly_originptr();
     } else {
         tmp = n.eval();
-        if (tmp.get_dtype().get_kind() != uniform_dim_kind) {
+        if (tmp.get_type().get_kind() != uniform_dim_kind) {
             throw runtime_error("internal error in array_contains: expected uniform_dim kind after eval() call");
         }
-        dt = tmp.get_dtype();
+        dt = tmp.get_type();
         budd = static_cast<const base_uniform_dim_type *>(dt.extended());
         metadata = tmp.get_ndo_meta();
         data = tmp.get_readonly_originptr();
@@ -262,7 +262,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
 
     // Turn 'x' into a dynd array, and make a comparison kernel
     nd::array x_ndo = array_from_py(x);
-    const ndt::type& x_dt = x_ndo.get_dtype();
+    const ndt::type& x_dt = x_ndo.get_type();
     const char *x_metadata = x_ndo.get_ndo_meta();
     const char *x_data = x_ndo.get_readonly_originptr();
     const ndt::type& child_dt = budd->get_element_type();
@@ -298,7 +298,7 @@ dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const ndt::type& d
 
 PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
 {
-    size_t ndim = n.get_dtype().get_undim();
+    size_t ndim = n.get_type().get_undim();
     dimvector result(ndim);
     n.get_shape(result.get());
     return intptr_array_as_tuple(ndim, result.get());
@@ -306,7 +306,7 @@ PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
 
 PyObject *pydynd::array_get_strides(const dynd::nd::array& n)
 {
-    size_t ndim = n.get_dtype().get_undim();
+    size_t ndim = n.get_type().get_undim();
     dimvector result(ndim);
     n.get_strides(result.get());
     return intptr_array_as_tuple(ndim, result.get());
@@ -354,7 +354,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         long i = PyInt_AS_LONG(subscript);
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
-        ndt::type d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
+        ndt::type d = n.get_type().at_single(i, &metadata, const_cast<const char **>(&data));
         array_broadcast_assign_from_py(d, metadata, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
@@ -364,7 +364,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         }
         const char *metadata = n.get_ndo_meta();
         char *data = n.get_readwrite_originptr();
-        ndt::type d = n.get_dtype().at_single(i, &metadata, const_cast<const char **>(&data));
+        ndt::type d = n.get_type().at_single(i, &metadata, const_cast<const char **>(&data));
         array_broadcast_assign_from_py(d, metadata, data, value);
     } else {
         intptr_t size;
@@ -394,8 +394,8 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, P
     if (dt != Py_None) {
         dt_nd = make_ndt_type_from_pyobject(dt);
     } else {
-        dt_nd = promote_dtypes_arithmetic(start_nd.get_dtype(),
-                    promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
+        dt_nd = promote_dtypes_arithmetic(start_nd.get_type(),
+                    promote_dtypes_arithmetic(stop_nd.get_type(), step_nd.get_type()));
     }
     
     start_nd = start_nd.ucast(dt_nd).eval();
@@ -459,7 +459,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     }
     // Create the result udt
     ndt::type rudt = ndt::make_struct(selected_dtypes, selected_fields);
-    ndt::type rdt = n.get_dtype().with_replaced_udtype(rudt);
+    ndt::type rdt = n.get_type().with_replaced_udtype(rudt);
     const base_struct_type *rudt_bsd = static_cast<const base_struct_type *>(rudt.extended());
 
     // Allocate the new memory block.
@@ -478,7 +478,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     result.get_ndo()->m_flags = n.get_ndo()->m_flags;
 
     // Set the dtype and transform the metadata
-    result.get_ndo()->m_dtype = ndt::type(rdt).release();
+    result.get_ndo()->m_type = ndt::type(rdt).release();
     // First copy all the array data type metadata
     ndt::type tmp_dt = rdt;
     char *dst_metadata = result.get_ndo_meta();

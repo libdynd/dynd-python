@@ -278,7 +278,7 @@ public:
         strided_dim_type_metadata *md;
         ndt::type dt = ndt::make_strided_dim(dst_dt);
         nd::array n(make_array_memory_block(dt.get_metadata_size()));
-        n.get_ndo()->m_dtype = dt.release();
+        n.get_ndo()->m_type = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
         md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
         md->size = 1;
@@ -292,7 +292,7 @@ public:
         for (size_t i = 0; i != src_count; ++i) {
             dt = ndt::make_strided_dim(src_dt[i]);
             n.set(make_array_memory_block(dt.get_metadata_size()));
-            n.get_ndo()->m_dtype = dt.release();
+            n.get_ndo()->m_type = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
             md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
             md->size = 1;
@@ -421,9 +421,9 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     // Because the expr type's operand is the result's type,
     // we can swap it in as the type
     ndt::type edt = ndt::make_expr(result_vdt,
-                    result.get_dtype(),
+                    result.get_type(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
-    edt.swap(result.get_ndo()->m_dtype);
+    edt.swap(result.get_ndo()->m_type);
     return wrap_array(DYND_MOVE(result));
 }
 

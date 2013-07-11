@@ -458,32 +458,32 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     // Populate the array with data
     switch (dt.get_type_id()) {
         case bool_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_bool>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_bool>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         case int32_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_int32>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_int32>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         case int64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_int64>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_int64>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         case float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_double>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_double>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         case complex_float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_cdouble>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_cdouble>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         case bytes_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_bytes>(result.get_dtype(),
+            fill_array_from_pylist<convert_one_pyscalar_bytes>(result.get_type(),
                             result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
@@ -491,7 +491,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
         case string_type_id: {
             const base_string_type *ext = static_cast<const base_string_type *>(dt.extended());
             if (ext->get_encoding() == string_encoding_utf_8) {
-                fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(),
+                fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_type(),
                                 result.get_ndo_meta(),
                                 result.get_readwrite_originptr(),
                                 obj, &shape[0], 0);
@@ -503,19 +503,19 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
             break;
         }
         case date_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_date>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_date>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         }
         case datetime_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_datetime>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_datetime>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
         }
         case dtype_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_dtype>(result.get_dtype(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_dtype>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
@@ -526,7 +526,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
             throw runtime_error(ss.str());
         }
     }
-    result.get_dtype().extended()->metadata_finalize_buffers(result.get_ndo_meta());
+    result.get_type().extended()->metadata_finalize_buffers(result.get_ndo_meta());
     return result;
 }
 
@@ -613,8 +613,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                         d.get_data_size(), d.get_data_alignment(), &data_ptr));
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
-        result.get_ndo()->m_dtype = d.extended();
-        base_type_incref(result.get_ndo()->m_dtype);
+        result.get_ndo()->m_type = d.extended();
+        base_type_incref(result.get_ndo()->m_type);
         // The scalar consists of pointers to the byte string data
         ((const char **)data_ptr)[0] = data;
         ((const char **)data_ptr)[1] = data + len;
@@ -672,7 +672,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
         Py_DECREF(iter);
         nd::array result = nd::empty(ndt::make_var_dim(ndt::make_type<double>()));
-        array_nodim_broadcast_assign_from_py(result.get_dtype(),
+        array_nodim_broadcast_assign_from_py(result.get_type(),
                         result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
         return result;
     } else {
@@ -800,7 +800,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
         result = nd::empty(dt);
     }
 
-    array_nodim_broadcast_assign_from_py(result.get_dtype(),
+    array_nodim_broadcast_assign_from_py(result.get_type(),
                     result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
     return result;
 }

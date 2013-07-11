@@ -499,9 +499,9 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     }
 
     // If a copy is allowed, convert the builtin scalars to NumPy scalars
-    if (allow_copy && n.get_dtype().is_scalar()) {
+    if (allow_copy && n.get_type().is_scalar()) {
         pyobject_ownref result;
-        switch (n.get_dtype().get_type_id()) {
+        switch (n.get_type().get_type_id()) {
             case uninitialized_type_id:
                 throw runtime_error("cannot convert uninitialized dynd array to numpy");
             case void_type_id:
@@ -603,17 +603,17 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
                 // Because 'allow_copy' is true
                 // we can evaluate any expressions and
                 // make copies of strings
-                if (n.get_dtype().get_kind() == expression_kind) {
+                if (n.get_type().get_kind() == expression_kind) {
                     // If it's an expression kind
                     pyobject_ownref n_tmp(wrap_array(n.eval()));
                     return array_as_numpy(n_tmp.get(), true);
-                } else if (n.get_dtype().get_kind() == string_kind) {
+                } else if (n.get_type().get_kind() == string_kind) {
                     // If it's a string kind, return it as a Python unicode
                     return array_as_py(n);
                 }
                 stringstream ss;
                 ss << "dynd as_numpy could not convert dynd type ";
-                ss << n.get_dtype();
+                ss << n.get_type();
                 ss << " to a numpy dtype";
                 throw runtime_error(ss.str());
             }
@@ -621,14 +621,14 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
         return result.release();
     }
 
-    if (n.get_dtype().get_type_id() == var_dim_type_id) {
+    if (n.get_type().get_type_id() == var_dim_type_id) {
         // If it's a var_dim, use "[:]" indexing to
         // strip away this leading part so it's compatible with NumPy.
         pyobject_ownref n_tmp(wrap_array(n(irange())));
         return array_as_numpy(n_tmp.get(), allow_copy);
     }
     // TODO: Handle pointer type nicely as well
-    //n.get_dtype().get_type_id() == pointer_type_id
+    //n.get_type().get_type_id() == pointer_type_id
 
     // Do a recursive analysis of the dynd array for how to
     // convert it to NumPy
@@ -640,16 +640,16 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     n.get_shape(shape.get());
     n.get_strides(strides.get());
     as_numpy_analysis(&numpy_dtype, &requires_copy,
-                    undim, n.get_dtype(), n.get_ndo_meta());
+                    undim, n.get_type(), n.get_ndo_meta());
     if (requires_copy) {
         if (!allow_copy) {
             stringstream ss;
-            ss << "cannot view dynd object with dtype " << n.get_dtype();
+            ss << "cannot view dynd object with dtype " << n.get_type();
             ss << " as numpy without making a copy";
             throw runtime_error(ss.str());
         }
         make_numpy_dtype_for_copy(&numpy_dtype,
-                        undim, n.get_dtype(), n.get_ndo_meta());
+                        undim, n.get_type(), n.get_ndo_meta());
 
         // Rebuild the strides so that the copy follows 'KEEPORDER'
         intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;

@@ -30,7 +30,7 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         #ndarray operator*(ndarray&) except +translate_exception
         #ndarray operator/(ndarray&) except +translate_exception
 
-        ndt_type get_dtype()
+        ndt_type get_type()
         bint is_scalar()
         intptr_t get_dim_size()
 

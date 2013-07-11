@@ -88,7 +88,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::ndt::type& dt, PyObject
 
 void pydynd::add_array_names_to_dir_dict(const dynd::nd::array& n, PyObject *dict)
 {
-    ndt::type dt = n.get_dtype();
+    ndt::type dt = n.get_type();
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
@@ -122,7 +122,7 @@ void pydynd::add_array_names_to_dir_dict(const dynd::nd::array& n, PyObject *dic
 
 PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array& n, PyObject *name)
 {
-    ndt::type dt = n.get_dtype();
+    ndt::type dt = n.get_type();
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;
     // Search for a property
@@ -161,7 +161,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array& n, PyObject 
 
 void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name, PyObject *value)
 {
-    ndt::type dt = n.get_dtype();
+    ndt::type dt = n.get_type();
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;
     // Search for a property
@@ -231,7 +231,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
         } else {
             // Copy the value using the default mechanism
             const nd::array& n = ((WArray *)value)->v;
-            dtype_assign(paramtype, metadata, data, n.get_dtype(), n.get_ndo_meta(), n.get_readonly_originptr());
+            dtype_assign(paramtype, metadata, data, n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
         }
         return;
     } else if (paramtype.get_type_id() == void_pointer_type_id) {
@@ -394,7 +394,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
 
     // Final, slow attempt to make it work, convert the input to an array, then copy that value
     nd::array n = array_from_py(value);
-    dtype_assign(paramtype, metadata, data, n.get_dtype(), n.get_ndo_meta(), n.get_readonly_originptr());
+    dtype_assign(paramtype, metadata, data, n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
 }
 
 PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const ndt::type& dt)
@@ -411,7 +411,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
             params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
             params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], dt);
     nd::array result = c.call_generic(params);
-    if (result.get_dtype().is_scalar()) {
+    if (result.get_type().is_scalar()) {
         return array_as_py(result);
     } else {
         return wrap_array(result);

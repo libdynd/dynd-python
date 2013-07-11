@@ -209,7 +209,7 @@ PyObject* pydynd::array_as_py(const dynd::nd::array& n)
     nd::array nvals = n.eval();
     array_as_py_data result;
 
-    nested_array_as_py(nvals.get_dtype(), nvals.get_ndo()->m_data_pointer, nvals.get_ndo_meta(), &result);
+    nested_array_as_py(nvals.get_type(), nvals.get_ndo()->m_data_pointer, nvals.get_ndo_meta(), &result);
     return result.result.release();
 }
 

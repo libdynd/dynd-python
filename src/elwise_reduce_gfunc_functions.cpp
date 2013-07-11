@@ -102,7 +102,7 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
         pyobject_ownref arg0_obj(PySequence_GetItem(args, 0));
         nd::array arg0;
         array_init_from_pyobject(arg0, arg0_obj);
-        int ndim = arg0.get_dtype().get_undim();
+        int ndim = arg0.get_type().get_undim();
 
         shortvector<dynd_bool> reduce_axes(ndim);
 
@@ -118,7 +118,7 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
         bool keepdims = pyarg_bool(PyDict_GetItemString(kwargs, "keepdims"), "keepdims", false);
 
         vector<ndt::type> argtypes(1);
-        argtypes[0] = arg0.get_dtype().value_type();
+        argtypes[0] = arg0.get_type().value_type();
         const gfunc::elwise_reduce_kernel *ergk = gf.find_matching_kernel(argtypes);
         if (ergk != NULL) {
             if (axis_count > 1 && !ergk->m_commutative) {

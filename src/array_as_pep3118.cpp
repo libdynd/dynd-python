@@ -267,7 +267,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         }
         nd::array& n = ((WArray *)ndo)->v;
         array_preamble *preamble = n.get_ndo();
-        ndt::type dt = n.get_dtype();
+        ndt::type dt = n.get_type();
 
         // Check if a writeable buffer is requested
         if ((flags&PyBUF_WRITABLE) && !(n.get_access_flags()&nd::write_access_flag)) {
@@ -284,7 +284,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         buffer->ndim = (int)dt.get_undim();
         if (((flags&PyBUF_ND) != PyBUF_ND) && buffer->ndim > 1) {
             stringstream ss;
-            ss << "dynd type " << n.get_dtype() << " is multidimensional, but PEP 3118 request is not ND";
+            ss << "dynd type " << n.get_type() << " is multidimensional, but PEP 3118 request is not ND";
             throw runtime_error(ss.str());
         }
 
@@ -336,7 +336,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
                 }
                 default: {
                     stringstream ss;
-                    ss << "Cannot get a strided view of dynd type " << n.get_dtype() << " for PEP 3118 buffer";
+                    ss << "Cannot get a strided view of dynd type " << n.get_type() << " for PEP 3118 buffer";
                     throw runtime_error(ss.str());
                 }
             }

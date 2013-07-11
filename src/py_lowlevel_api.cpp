@@ -22,7 +22,7 @@ namespace {
         return obj->v.get_ndo();
     }
 
-    const dynd::base_dtype *get_base_dtype_ptr(WType *obj)
+    const dynd::base_type *get_base_type_ptr(WType *obj)
     {
         return obj->v.extended();
     }
@@ -109,7 +109,7 @@ namespace {
     const py_lowlevel_api_t py_lowlevel_api = {
         0, // version, should increment this every time the struct changes at a release
         &get_array_ptr,
-        &get_base_dtype_ptr,
+        &get_base_type_ptr,
         &array_from_ptr,
         &make_assignment_kernel,
     };

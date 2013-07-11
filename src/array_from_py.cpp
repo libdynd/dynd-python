@@ -614,7 +614,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         result.get_ndo()->m_data_pointer = data_ptr;
         result.get_ndo()->m_data_reference = NULL;
         result.get_ndo()->m_dtype = d.extended();
-        base_dtype_incref(result.get_ndo()->m_dtype);
+        base_type_incref(result.get_ndo()->m_dtype);
         // The scalar consists of pointers to the byte string data
         ((const char **)data_ptr)[0] = data;
         ((const char **)data_ptr)[1] = data + len;

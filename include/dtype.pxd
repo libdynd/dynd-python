@@ -46,7 +46,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         string_encoding_utf_32
         string_encoding_invalid
 
-    cdef cppclass base_dtype:
+    cdef cppclass base_type:
         type_id_t type_id()
         type_kind_t get_kind()
         uintptr_t get_data_size()
@@ -71,7 +71,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         size_t get_data_size()
         size_t get_data_alignment()
         size_t get_metadata_size()
-        base_dtype* extended()
+        base_type* extended()
         string_encoding_t string_encoding() except +translate_exception
         size_t get_undim()
         ndt_type get_udtype()

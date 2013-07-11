@@ -195,7 +195,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
         ss << " cannot accept a dtype as its value";
         throw runtime_error(ss.str());
     }
-    // The dtype is encoded as either a raw type id, or a pointer to an base_dtype,
+    // The dtype is encoded as either a raw type id, or a pointer to an base_type,
     // just as the gfunc object is expecting.
     ndt::type(value).swap(reinterpret_cast<dtype_dtype_data *>(data)->dt);
 }

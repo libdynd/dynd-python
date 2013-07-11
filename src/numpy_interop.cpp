@@ -11,10 +11,10 @@
 #include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/strided_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/struct_type.hpp>
 #include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/fixed_dim_dtype.hpp>
+#include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/property_dtype.hpp>
@@ -92,10 +92,10 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
             if (PyTuple_Check(d->subarray->shape)) {
                 ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
             }
-            return make_strided_dim_dtype(dt, ndim);
+            return make_strided_dim_type(dt, ndim);
         } else {
             // Otherwise make a cstruct array
-            return dynd_make_fixed_dim_dtype(d->subarray->shape, dt, Py_None);
+            return dynd_make_fixed_dim_type(d->subarray->shape, dt, Py_None);
         }
     }
 
@@ -224,7 +224,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
             break;
         }
         case strided_dim_type_id: {
-            // The Numpy subarray becomes a series of strided_dim_dtypes, so we
+            // The Numpy subarray becomes a series of strided_dim_types, so we
             // need to copy the strides into the metadata.
             ndt::type el;
             PyArray_ArrayDescr *adescr = d->subarray;
@@ -235,22 +235,22 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
             }
             if (PyTuple_Check(adescr->shape)) {
                 int ndim = (int)PyTuple_GET_SIZE(adescr->shape);
-                strided_dim_dtype_metadata *md = reinterpret_cast<strided_dim_dtype_metadata *>(metadata);
+                strided_dim_type_metadata *md = reinterpret_cast<strided_dim_type_metadata *>(metadata);
                 intptr_t stride = adescr->base->elsize;
                 el = dt;
                 for (int i = ndim-1; i >= 0; --i) {
                     md[i].size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));
                     md[i].stride = stride;
                     stride *= md[i].size;
-                    el = static_cast<const strided_dim_dtype *>(el.extended())->get_element_type();
+                    el = static_cast<const strided_dim_type *>(el.extended())->get_element_type();
                 }
-                metadata += ndim * sizeof(strided_dim_dtype_metadata);
+                metadata += ndim * sizeof(strided_dim_type_metadata);
             } else {
-                strided_dim_dtype_metadata *md = reinterpret_cast<strided_dim_dtype_metadata *>(metadata);
-                metadata += sizeof(strided_dim_dtype_metadata);
+                strided_dim_type_metadata *md = reinterpret_cast<strided_dim_type_metadata *>(metadata);
+                metadata += sizeof(strided_dim_type_metadata);
                 md->size = pyobject_as_index(adescr->shape);
                 md->stride = adescr->base->elsize;
-                el = static_cast<const strided_dim_dtype *>(dt.extended())->get_element_type();
+                el = static_cast<const strided_dim_type *>(dt.extended())->get_element_type();
             }
             // Fill the metadata for the array element, if necessary
             if (!el.is_builtin()) {
@@ -399,7 +399,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::ndt::type& dt)
             ndt::type child_dt = dt;
             vector<intptr_t> shape;
             do {
-                const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(child_dt.extended());
+                const fixed_dim_type *tdt = static_cast<const fixed_dim_type *>(child_dt.extended());
                 shape.push_back(tdt->get_fixed_dim_size());
                 if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * shape.back()) {
                     stringstream ss;

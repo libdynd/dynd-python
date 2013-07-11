@@ -8,9 +8,9 @@
 #include <dynd/dtype_assign.hpp>
 #include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
-#include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/fixed_dim_dtype.hpp>
-#include <dynd/dtypes/var_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
+#include <dynd/dtypes/fixed_dim_type.hpp>
+#include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
@@ -445,22 +445,22 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
 {
     switch (dt.get_type_id()) {
         case fixed_dim_type_id: {
-            const fixed_dim_dtype *fdd = static_cast<const fixed_dim_dtype *>(dt.extended());
+            const fixed_dim_type *fdd = static_cast<const fixed_dim_type *>(dt.extended());
             array_assign_strided_from_pyseq(fdd->get_element_type(), metadata,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), seq, seqsize);
             break;
         }
         case strided_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const strided_dim_dtype *>(dt.extended())->get_element_type();
-            const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
-            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(strided_dim_dtype_metadata),
+            const ndt::type& element_dt = static_cast<const strided_dim_type *>(dt.extended())->get_element_type();
+            const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(strided_dim_type_metadata),
                             data, md->stride, md->size, seq, seqsize);
             break;
         }
         case var_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const var_dim_dtype *>(dt.extended())->get_element_type();
-            const var_dim_dtype_metadata *md = reinterpret_cast<const var_dim_dtype_metadata *>(metadata);
-            var_dim_dtype_data *d = reinterpret_cast<var_dim_dtype_data *>(data);
+            const ndt::type& element_dt = static_cast<const var_dim_type *>(dt.extended())->get_element_type();
+            const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
+            var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data);
             if (d->begin == NULL) {
                 // Need to allocate the destination data
                 if (md->offset != 0) {
@@ -486,7 +486,7 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
                 }
                 d->size = seqsize;
             }
-            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(var_dim_dtype_metadata),
+            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(var_dim_type_metadata),
                             d->begin + md->offset, md->stride, d->size, seq, seqsize);
             break;
         }
@@ -526,26 +526,26 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
 {
     switch (dt.get_type_id()) {
         case fixed_dim_type_id: {
-            const fixed_dim_dtype *fdd = static_cast<const fixed_dim_dtype *>(dt.extended());
+            const fixed_dim_type *fdd = static_cast<const fixed_dim_type *>(dt.extended());
             array_assign_strided_from_pyiter(fdd->get_element_type(), metadata,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), iter);
             break;
         }
         case strided_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const strided_dim_dtype *>(dt.extended())->get_element_type();
-            const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
-            array_assign_strided_from_pyiter(element_dt, metadata + sizeof(strided_dim_dtype_metadata),
+            const ndt::type& element_dt = static_cast<const strided_dim_type *>(dt.extended())->get_element_type();
+            const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyiter(element_dt, metadata + sizeof(strided_dim_type_metadata),
                             data, md->stride, md->size, iter);
             break;
         }
         case var_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const var_dim_dtype *>(dt.extended())->get_element_type();
-            const var_dim_dtype_metadata *md = reinterpret_cast<const var_dim_dtype_metadata *>(metadata);
-            var_dim_dtype_data *d = reinterpret_cast<var_dim_dtype_data *>(data);
+            const ndt::type& element_dt = static_cast<const var_dim_type *>(dt.extended())->get_element_type();
+            const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
+            var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data);
             // First check if the var_dim element is already assigned,
             // in which case we do a strided assignment
             if (d->begin != NULL) {
-                array_assign_strided_from_pyiter(element_dt, metadata + sizeof(var_dim_dtype_metadata),
+                array_assign_strided_from_pyiter(element_dt, metadata + sizeof(var_dim_type_metadata),
                                 d->begin + md->offset, md->stride, d->size, iter);
                 break;
             }
@@ -587,7 +587,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                         d->begin = allocator->resize(memblock, d->begin, allocsize);
                     }
 
-                    array_assign_from_value(element_dt, metadata + sizeof(var_dim_dtype_metadata),
+                    array_assign_from_value(element_dt, metadata + sizeof(var_dim_type_metadata),
                                     d->begin + filledsize * md->stride, item);
                     ++filledsize;
                 }
@@ -622,7 +622,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                         allocator->resize(memblock, allocsize * dst_stride, &d->begin, &dst_end);
                     }
 
-                    array_assign_from_value(element_dt, metadata + sizeof(var_dim_dtype_metadata),
+                    array_assign_from_value(element_dt, metadata + sizeof(var_dim_type_metadata),
                                     d->begin + filledsize * md->stride, item);
                     ++filledsize;
                 }

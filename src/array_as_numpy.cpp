@@ -15,8 +15,8 @@
 #include "array_functions.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/fixed_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
+#include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
@@ -109,15 +109,15 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 // If this is one of the array dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 if (dt.get_type_id() == strided_dim_type_id) {
-                    const strided_dim_dtype *sad = static_cast<const strided_dim_dtype *>(dt.extended());
+                    const strided_dim_type *sad = static_cast<const strided_dim_type *>(dt.extended());
                     make_numpy_dtype_for_copy(out_numpy_dtype,
                                     undim - 1, sad->get_element_type(),
-                                    metadata + sizeof(strided_dim_dtype_metadata));
+                                    metadata + sizeof(strided_dim_type_metadata));
                 } else {
-                    const fixed_dim_dtype *fad = static_cast<const fixed_dim_dtype *>(dt.extended());
+                    const fixed_dim_type *fad = static_cast<const fixed_dim_type *>(dt.extended());
                     make_numpy_dtype_for_copy(out_numpy_dtype,
                                     undim - 1, fad->get_element_type(),
-                                    metadata + sizeof(strided_dim_dtype_metadata));
+                                    metadata + sizeof(strided_dim_type_metadata));
                 }
                 return;
             } else {
@@ -135,14 +135,14 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 while(undim > 0) {
                     size_t dim_size = 0;
                     if (dt.get_type_id() == strided_dim_type_id) {
-                        const strided_dim_dtype *sad =
-                                        static_cast<const strided_dim_dtype *>(element_dtype.extended());
+                        const strided_dim_type *sad =
+                                        static_cast<const strided_dim_type *>(element_dtype.extended());
                         dim_size = sad->get_dim_size(metadata, NULL);
                         element_dtype = sad->get_element_type();
-                        metadata += sizeof(strided_dim_dtype_metadata);
+                        metadata += sizeof(strided_dim_type_metadata);
                     } else if (dt.get_type_id() == fixed_dim_type_id) {
-                        const fixed_dim_dtype *fad =
-                                        static_cast<const fixed_dim_dtype *>(element_dtype.extended());
+                        const fixed_dim_type *fad =
+                                        static_cast<const fixed_dim_type *>(element_dtype.extended());
                         dim_size = fad->get_fixed_dim_size();
                         element_dtype = fad->get_element_type();
                     } else {
@@ -323,13 +323,13 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             return;
         }
         case strided_dim_type_id: {
-            const strided_dim_dtype *sad = static_cast<const strided_dim_dtype *>(dt.extended());
+            const strided_dim_type *sad = static_cast<const strided_dim_type *>(dt.extended());
             if (undim > 0) {
                 // If this is one of the array dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 as_numpy_analysis(out_numpy_dtype, out_requires_copy,
                                 undim - 1, sad->get_element_type(),
-                                metadata + sizeof(strided_dim_dtype_metadata));
+                                metadata + sizeof(strided_dim_type_metadata));
                 return;
             } else {
                 // If this isn't one of the array dimensions, it maps into
@@ -341,13 +341,13 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             break;
         }
         case fixed_dim_type_id: {
-            const fixed_dim_dtype *fad = static_cast<const fixed_dim_dtype *>(dt.extended());
+            const fixed_dim_type *fad = static_cast<const fixed_dim_type *>(dt.extended());
             if (undim > 0) {
                 // If this is one of the array dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 as_numpy_analysis(out_numpy_dtype, out_requires_copy,
                                 undim - 1, fad->get_element_type(),
-                                metadata + sizeof(strided_dim_dtype_metadata));
+                                metadata + sizeof(strided_dim_type_metadata));
                 return;
             } else {
                 // If this isn't one of the array dimensions, it maps into
@@ -358,8 +358,8 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 while(undim > 0) {
                     size_t dim_size = 0;
                     if (dt.get_type_id() == fixed_dim_type_id) {
-                        const fixed_dim_dtype *fad =
-                                        static_cast<const fixed_dim_dtype *>(element_dtype.extended());
+                        const fixed_dim_type *fad =
+                                        static_cast<const fixed_dim_type *>(element_dtype.extended());
                         element_dtype = fad->get_element_type();
                         if (fad->get_data_size() !=
                                         element_dtype.get_data_size() * dim_size) {

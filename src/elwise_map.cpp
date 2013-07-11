@@ -9,8 +9,8 @@
 
 #include <dynd/dtypes/expr_dtype.hpp>
 #include <dynd/dtypes/unary_expr_dtype.hpp>
-#include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/var_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
+#include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/kernels/expr_kernel_generator.hpp>
 #include <dynd/kernels/elwise_expr_kernels.hpp>
 #include <dynd/shape_tools.hpp>
@@ -60,15 +60,15 @@ namespace {
                         size_t count)
         {
             WArray **ndo = reinterpret_cast<WArray **>(this + 1);
-            strided_dim_dtype_metadata *md;
+            strided_dim_type_metadata *md;
             // Modify the temporary arrays to point at the data.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
-            md = reinterpret_cast<strided_dim_dtype_metadata *>(ndo[0]->v.get_ndo_meta());
+            md = reinterpret_cast<strided_dim_type_metadata *>(ndo[0]->v.get_ndo_meta());
             md->size = count;
             md->stride = dst_stride;
             for (size_t i = 0; i != src_count; ++i) {
                 ndo[i+1]->v.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
-                md = reinterpret_cast<strided_dim_dtype_metadata *>(ndo[i+1]->v.get_ndo_meta());
+                md = reinterpret_cast<strided_dim_type_metadata *>(ndo[i+1]->v.get_ndo_meta());
                 md->size = count;
                 md->stride = src_stride[i];
             }
@@ -275,31 +275,31 @@ public:
         e->callable = m_callable.get();
         Py_INCREF(e->callable);
         // Create shell WArrays which are used to give the kernel data to Python
-        strided_dim_dtype_metadata *md;
-        ndt::type dt = make_strided_dim_dtype(dst_dt);
+        strided_dim_type_metadata *md;
+        ndt::type dt = make_strided_dim_type(dst_dt);
         nd::array n(make_array_memory_block(dt.get_metadata_size()));
         n.get_ndo()->m_dtype = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
-        md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
+        md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
         md->size = 1;
         md->stride = 0;
         if (dst_dt.get_metadata_size() > 0) {
             dst_dt.extended()->metadata_copy_construct(
-                            n.get_ndo_meta() + sizeof(strided_dim_dtype_metadata),
+                            n.get_ndo_meta() + sizeof(strided_dim_type_metadata),
                             dst_metadata, NULL);
         }
         ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
         for (size_t i = 0; i != src_count; ++i) {
-            dt = make_strided_dim_dtype(src_dt[i]);
+            dt = make_strided_dim_type(src_dt[i]);
             n.set(make_array_memory_block(dt.get_metadata_size()));
             n.get_ndo()->m_dtype = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
-            md = reinterpret_cast<strided_dim_dtype_metadata *>(n.get_ndo_meta());
+            md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
             md->size = 1;
             md->stride = 0;
             if (src_dt[i].get_metadata_size() > 0) {
                 src_dt[i].extended()->metadata_copy_construct(
-                                n.get_ndo_meta() + sizeof(strided_dim_dtype_metadata),
+                                n.get_ndo_meta() + sizeof(strided_dim_type_metadata),
                                 src_metadata[i], NULL);
             }
             ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));
@@ -403,9 +403,9 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     ndt::type result_vdt = dst_dt;
     for (size_t j = 0; j != undim; ++j) {
         if (result_shape[undim - j - 1] == -1) {
-            result_vdt = make_var_dim_dtype(result_vdt);
+            result_vdt = make_var_dim_type(result_vdt);
         } else {
-            result_vdt = make_strided_dim_dtype(result_vdt);
+            result_vdt = make_strided_dim_type(result_vdt);
         }
     }
 

@@ -7,9 +7,9 @@
 
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/fixed_dim_dtype.hpp>
+#include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/struct_type.hpp>
-#include <dynd/dtypes/strided_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
 
@@ -256,9 +256,9 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         if (element_dtype.get_data_size() != 0) {
             pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
-            return make_fixed_dim_dtype(array_length, element_dtype);
+            return make_fixed_dim_type(array_length, element_dtype);
         } else {
-            return make_strided_dim_dtype(element_dtype);
+            return make_strided_dim_type(element_dtype);
         }
     }
 

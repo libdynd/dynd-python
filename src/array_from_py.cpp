@@ -8,9 +8,9 @@
 
 #include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
-#include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/fixed_dim_dtype.hpp>
-#include <dynd/dtypes/var_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
+#include <dynd/dtypes/fixed_dim_type.hpp>
+#include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>
@@ -106,7 +106,7 @@ static size_t get_nonragged_dim_count(const ndt::type& dt, size_t max_count=nume
             } else {
                 return min(max_count,
                         1 + get_nonragged_dim_count(
-                            static_cast<const base_uniform_dim_dtype *>(
+                            static_cast<const base_uniform_dim_type *>(
                                 dt.extended())->get_element_type(), max_count - 1));
             }
         case struct_kind:
@@ -392,7 +392,7 @@ static void fill_array_from_pylist(const ndt::type& dt, const char *metadata, ch
     ndt::type element_dtype = dt.at_single(0, &element_metadata);
     if (shape[current_axis] >= 0) {
         // Fixed-sized dimension
-        const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
+        const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
         intptr_t stride = md->stride;
         if (element_dtype.is_scalar()) {
             for (Py_ssize_t i = 0; i < size; ++i) {
@@ -409,9 +409,9 @@ static void fill_array_from_pylist(const ndt::type& dt, const char *metadata, ch
         }
     } else {
         // Variable-sized dimension
-        const var_dim_dtype_metadata *md = reinterpret_cast<const var_dim_dtype_metadata *>(metadata);
+        const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
         intptr_t stride = md->stride;
-        var_dim_dtype_data *out = reinterpret_cast<var_dim_dtype_data *>(data);
+        var_dim_type_data *out = reinterpret_cast<var_dim_type_data *>(data);
         char *out_end = NULL;
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
@@ -671,7 +671,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     if (iter != NULL) {
         // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
         Py_DECREF(iter);
-        nd::array result = nd::empty(make_var_dim_dtype(ndt::make_dtype<double>()));
+        nd::array result = nd::empty(make_var_dim_type(ndt::make_dtype<double>()));
         array_nodim_broadcast_assign_from_py(result.get_dtype(),
                         result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
         return result;
@@ -696,7 +696,7 @@ static bool dtype_requires_shape(const ndt::type& dt)
             case fixed_dim_type_id:
             case var_dim_type_id:
                 return dtype_requires_shape(
-                                static_cast<const base_uniform_dim_dtype *>(
+                                static_cast<const base_uniform_dim_type *>(
                                     dt.extended())->get_element_type());
             default:
                 return true;
@@ -773,7 +773,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
             // a uniform dim, prepend a var dim as a special case
             PyObject *iter = PyObject_GetIter(obj);
             if (iter != NULL) {
-                result = nd::empty(make_var_dim_dtype(dt));
+                result = nd::empty(make_var_dim_type(dt));
             } else {
                 if (PyErr_Occurred()) {
                     if (PyErr_ExceptionMatches(PyExc_TypeError)) {

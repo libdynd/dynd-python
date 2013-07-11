@@ -101,12 +101,12 @@ cdef extern from "dynd/dtypes/categorical_dtype.hpp" namespace "dynd":
 cdef extern from "dynd/dtypes/dtype_alignment.hpp" namespace "dynd":
     ndt_type dynd_make_unaligned_dtype "dynd::ndt::make_unaligned_dtype" (ndt_type&) except +translate_exception
 
-cdef extern from "dynd/dtypes/strided_dim_dtype.hpp" namespace "dynd":
-    ndt_type dynd_make_strided_dim_dtype "dynd::make_strided_dim_dtype" (ndt_type&) except +translate_exception
-    ndt_type dynd_make_strided_dim_dtype "dynd::make_strided_dim_dtype" (ndt_type&, intptr_t) except +translate_exception
+cdef extern from "dynd/dtypes/strided_dim_type.hpp" namespace "dynd":
+    ndt_type dynd_make_strided_dim_type "dynd::make_strided_dim_type" (ndt_type&) except +translate_exception
+    ndt_type dynd_make_strided_dim_type "dynd::make_strided_dim_type" (ndt_type&, intptr_t) except +translate_exception
 
-cdef extern from "dynd/dtypes/var_dim_dtype.hpp" namespace "dynd":
-    ndt_type dynd_make_var_dim_dtype "dynd::make_var_dim_dtype" (ndt_type&) except +translate_exception
+cdef extern from "dynd/dtypes/var_dim_type.hpp" namespace "dynd":
+    ndt_type dynd_make_var_dim_type "dynd::make_var_dim_type" (ndt_type&) except +translate_exception
 
 cdef extern from "dynd/dtypes/bytes_dtype.hpp" namespace "dynd":
     ndt_type dynd_make_bytes_dtype "dynd::make_bytes_dtype" (size_t) except +translate_exception
@@ -131,4 +131,4 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     ndt_type dynd_make_pointer_dtype(ndt_type&) except +translate_exception
     ndt_type dynd_make_struct_type(object, object) except +translate_exception
     ndt_type dynd_make_cstruct_type(object, object) except +translate_exception
-    ndt_type dynd_make_fixed_dim_dtype(object, ndt_type&, object) except +translate_exception
+    ndt_type dynd_make_fixed_dim_type(object, ndt_type&, object) except +translate_exception

@@ -119,7 +119,7 @@ dynd::ndt::type dynd_make_pointer_dtype(const dynd::ndt::type& target_dtype);
 
 dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names);
 dynd::ndt::type dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names);
-dynd::ndt::type dynd_make_fixed_dim_dtype(PyObject *shape, const dynd::ndt::type& element_dtype, PyObject *axis_perm);
+dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_dtype, PyObject *axis_perm);
 
 /**
  * Implementation of __getitem__ for the wrapped dtype object.

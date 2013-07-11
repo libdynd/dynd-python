@@ -11,7 +11,7 @@
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/strided_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>

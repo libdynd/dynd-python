@@ -5,7 +5,7 @@ from dynd._pydynd import w_type as type, \
         make_view_dtype, \
         make_unaligned_dtype, make_fixedstring_type, make_string_type, \
         make_pointer_dtype, make_struct_type, make_cstruct_type, \
-        make_strided_dim_dtype, make_fixed_dim_dtype, make_var_dim_dtype, \
+        make_strided_dim_type, make_fixed_dim_type, make_var_dim_type, \
         make_categorical_dtype, replace_udtype, extract_udtype, \
         factor_categorical_dtype, make_bytes_dtype
 

@@ -11,7 +11,7 @@
 #include "numpy_interop.hpp"
 
 #include <dynd/dtypes/string_type.hpp>
-#include <dynd/dtypes/base_uniform_dim_dtype.hpp>
+#include <dynd/dtypes/base_uniform_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/ndobject_range.hpp>
 #include <dynd/dtype_promotion.hpp>
@@ -242,11 +242,11 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     // Turn 'n' into type/metadata/data with a uniform_dim leading dimension
     nd::array tmp;
     ndt::type dt;
-    const base_uniform_dim_dtype *budd;
+    const base_uniform_dim_type *budd;
     const char *metadata, *data;
     if (n.get_dtype().get_kind() == uniform_dim_kind) {
         dt = n.get_dtype();
-        budd = static_cast<const base_uniform_dim_dtype *>(dt.extended());
+        budd = static_cast<const base_uniform_dim_type *>(dt.extended());
         metadata = n.get_ndo_meta();
         data = n.get_readonly_originptr();
     } else {
@@ -255,7 +255,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
             throw runtime_error("internal error in array_contains: expected uniform_dim kind after eval() call");
         }
         dt = tmp.get_dtype();
-        budd = static_cast<const base_uniform_dim_dtype *>(dt.extended());
+        budd = static_cast<const base_uniform_dim_type *>(dt.extended());
         metadata = tmp.get_ndo_meta();
         data = tmp.get_readonly_originptr();
     }
@@ -487,7 +487,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         if (tmp_dt.get_kind() != uniform_dim_kind) {
             throw runtime_error("nd.fields doesn't support dimensions with pointers yet");
         }
-        const base_uniform_dim_dtype *budd = static_cast<const base_uniform_dim_dtype *>(
+        const base_uniform_dim_type *budd = static_cast<const base_uniform_dim_type *>(
                         tmp_dt.extended());
         size_t offset = budd->metadata_copy_construct_onedim(dst_metadata, src_metadata,
                         n.get_memblock().get());

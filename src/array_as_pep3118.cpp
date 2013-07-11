@@ -5,8 +5,8 @@
 
 #include <Python.h>
 
-#include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/fixed_dim_dtype.hpp>
+#include <dynd/dtypes/strided_dim_type.hpp>
+#include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/byteswap_dtype.hpp>
@@ -132,7 +132,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, c
             ndt::type child_dt = dt;
             o << "(";
             do {
-                const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(child_dt.extended());
+                const fixed_dim_type *tdt = static_cast<const fixed_dim_type *>(child_dt.extended());
                 size_t dim_size = tdt->get_fixed_dim_size();
                 o << dim_size;
                 if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * dim_size) {
@@ -319,16 +319,16 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         for (int i = 0; i < buffer->ndim; ++i) {
             switch (dt.get_type_id()) {
                 case strided_dim_type_id: {
-                    const strided_dim_dtype *tdt = static_cast<const strided_dim_dtype *>(dt.extended());
-                    const strided_dim_dtype_metadata *md = reinterpret_cast<const strided_dim_dtype_metadata *>(metadata);
+                    const strided_dim_type *tdt = static_cast<const strided_dim_type *>(dt.extended());
+                    const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
                     buffer->shape[i] = md->size;
                     buffer->strides[i] = md->stride;
-                    metadata += sizeof(strided_dim_dtype_metadata);
+                    metadata += sizeof(strided_dim_type_metadata);
                     dt = tdt->get_element_type();
                     break;
                 }
                 case fixed_dim_type_id: {
-                    const fixed_dim_dtype *tdt = static_cast<const fixed_dim_dtype *>(dt.extended());
+                    const fixed_dim_type *tdt = static_cast<const fixed_dim_type *>(dt.extended());
                     buffer->shape[i] = tdt->get_fixed_dim_size();
                     buffer->strides[i] = tdt->get_fixed_stride();
                     dt = tdt->get_element_type();

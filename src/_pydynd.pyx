@@ -609,9 +609,9 @@ def make_pointer_dtype(target_dtype):
     SET(result.v, dynd_make_pointer_dtype(GET(w_type(target_dtype).v)))
     return result
 
-def make_strided_dim_dtype(element_dtype, undim=None):
+def make_strided_dim_type(element_dtype, undim=None):
     """
-    make_strided_dim_dtype(element_dtype, undim=1)
+    make_strided_dim_type(element_dtype, undim=1)
 
     Constructs an array dynd type with one or more strided
     dimensions. A single strided_dim dynd type corresponds
@@ -629,21 +629,21 @@ def make_strided_dim_dtype(element_dtype, undim=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_strided_dim_dtype(ndt.int32)
+    >>> ndt.make_strided_dim_type(ndt.int32)
     ndt.type('strided_dim<int32>')
-    >>> ndt.make_strided_dim_dtype(ndt.int32, 3)
+    >>> ndt.make_strided_dim_type(ndt.int32, 3)
     ndt.type('strided_dim<strided_dim<strided_dim<int32>>>')
     """
     cdef w_type result = w_type()
     if (undim is None):
-        SET(result.v, dynd_make_strided_dim_dtype(GET(w_type(element_dtype).v)))
+        SET(result.v, dynd_make_strided_dim_type(GET(w_type(element_dtype).v)))
     else:
-        SET(result.v, dynd_make_strided_dim_dtype(GET(w_type(element_dtype).v), int(undim)))
+        SET(result.v, dynd_make_strided_dim_type(GET(w_type(element_dtype).v), int(undim)))
     return result
 
-def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
+def make_fixed_dim_type(shape, element_dtype, axis_perm=None):
     """
-    make_fixed_dim_dtype(shape, element_dtype, axis_perm=None)
+    make_fixed_dim_type(shape, element_dtype, axis_perm=None)
     
     Constructs a fixed_dim dtype of the given shape and axis permutation
     (default C order).
@@ -664,15 +664,15 @@ def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixed_dim_dtype(5, ndt.int32)
+    >>> ndt.make_fixed_dim_type(5, ndt.int32)
     ndt.type('fixed_dim<5, int32>')
-    >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32)
+    >>> ndt.make_fixed_dim_type((3,5), ndt.int32)
     ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
-    >>> ndt.make_fixed_dim_dtype((3,5), ndt.int32, axis_perm=(0,1))
+    >>> ndt.make_fixed_dim_type((3,5), ndt.int32, axis_perm=(0,1))
     ndt.type('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_type(element_dtype).v), axis_perm))
+    SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_dtype).v), axis_perm))
     return result
 
 def make_cstruct_type(field_types, field_names):
@@ -734,9 +734,9 @@ def make_struct_type(field_types, field_names):
     SET(result.v, dynd_make_struct_type(field_types, field_names))
     return result
 
-def make_var_dim_dtype(element_dtype):
+def make_var_dim_type(element_dtype):
     """
-    make_fixed_dim_dtype(element_dtype)
+    make_fixed_dim_type(element_dtype)
     
     Constructs a var_dim dtype.
 
@@ -749,11 +749,11 @@ def make_var_dim_dtype(element_dtype):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_var_dim_dtype(ndt.float32)
+    >>> ndt.make_var_dim_type(ndt.float32)
     ndt.type('var_dim<float32>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_var_dim_dtype(GET(w_type(element_dtype).v)))
+    SET(result.v, dynd_make_var_dim_type(GET(w_type(element_dtype).v)))
     return result
 
 def make_categorical_dtype(values):

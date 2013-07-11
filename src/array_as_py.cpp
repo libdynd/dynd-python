@@ -97,7 +97,7 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
         case string_type_id:
         case json_type_id: {
             const char *begin = NULL, *end = NULL;
-            const base_string_dtype *esd = static_cast<const base_string_dtype *>(d.extended());
+            const base_string_type *esd = static_cast<const base_string_type *>(d.extended());
             esd->get_string_range(&begin, &end, metadata, data);
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:

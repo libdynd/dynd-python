@@ -510,9 +510,9 @@ def make_unaligned_dtype(aligned_dtype):
     SET(result.v, dynd_make_unaligned_dtype(GET(w_type(aligned_dtype).v)))
     return result
 
-def make_fixedstring_dtype(int size, encoding=None):
+def make_fixedstring_type(int size, encoding=None):
     """
-    make_fixedstring_dtype(size, encoding='utf_8')
+    make_fixedstring_type(size, encoding='utf_8')
 
     Constructs a fixed-size string dtype with a specified encoding,
     whose size is the specified number of base units for the encoding.
@@ -532,18 +532,18 @@ def make_fixedstring_dtype(int size, encoding=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedstring_dtype(10)
+    >>> ndt.make_fixedstring_type(10)
     ndt.type('string<10>')
-    >>> ndt.make_fixedstring_dtype(10, 'utf_32')
+    >>> ndt.make_fixedstring_type(10, 'utf_32')
     ndt.type('string<10,utf_32>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixedstring_dtype(size, encoding))
+    SET(result.v, dynd_make_fixedstring_type(size, encoding))
     return result
 
-def make_string_dtype(encoding=None):
+def make_string_type(encoding=None):
     """
-    make_string_dtype(encoding='utf_8')
+    make_string_type(encoding='utf_8')
     
     Constructs a variable-sized string dynd type
     with the specified encoding.
@@ -559,13 +559,13 @@ def make_string_dtype(encoding=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_string_dtype()
+    >>> ndt.make_string_type()
     ndt.string
-    >>> ndt.make_string_dtype('utf_16')
+    >>> ndt.make_string_type('utf_16')
     ndt.type('string<utf_16>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_string_dtype(encoding))
+    SET(result.v, dynd_make_string_type(encoding))
     return result
 
 def make_bytes_dtype(size_t alignment=1):
@@ -586,7 +586,7 @@ def make_bytes_dtype(size_t alignment=1):
 
     >>> ndt.make_bytes_dtype()
     ndt.bytes
-    >>> ndt.make_string_dtype(4)
+    >>> ndt.make_string_type(4)
     ndt.type('bytes<align=4>')
     """
     cdef w_type result = w_type()

@@ -5,7 +5,7 @@
 
 #include <Python.h>
 
-#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/cstruct_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
@@ -180,7 +180,7 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             case 'B':
                 return ndt::make_dtype<uint8_t>();
             case 'c':
-                return make_fixedstring_dtype(1, string_encoding_ascii);
+                return make_fixedstring_type(1, string_encoding_ascii);
             case 'd':
                 return ndt::make_dtype<double>();
             case 'f':

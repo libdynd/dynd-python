@@ -383,7 +383,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
             break;
         }
         case string_kind: {
-            const base_string_dtype *esd = static_cast<const base_string_dtype *>(paramtype.extended());
+            const base_string_type *esd = static_cast<const base_string_type *>(paramtype.extended());
             string result = pystring_as_string(value);
             esd->set_utf8_string(metadata, data, assign_error_fractional, result);
             return;

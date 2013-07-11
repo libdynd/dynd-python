@@ -10,8 +10,8 @@
 #include "utility_functions.hpp"
 
 #include <dynd/dtypes/convert_dtype.hpp>
-#include <dynd/dtypes/fixedstring_dtype.hpp>
-#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/fixedstring_type.hpp>
+#include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
@@ -83,7 +83,7 @@ std::string pydynd::dtype_repr(const dynd::ndt::type& d)
                 }
                 break;
             case string_type_id:
-                if (static_cast<const string_dtype *>(
+                if (static_cast<const string_type *>(
                             d.extended())->get_encoding() == string_encoding_utf_8) {
                     ss << "ndt.string";
                 } else {
@@ -178,7 +178,7 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         // Python string
-        return make_string_dtype();
+        return make_string_type();
 #else
     } else if (PyBytes_Check(obj)) {
         // Python bytes string
@@ -186,7 +186,7 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 #endif
     } else if (PyUnicode_Check(obj)) {
         // Python string
-        return make_string_dtype();
+        return make_string_type();
     } else if (PyDateTime_Check(obj)) {
         if (((PyDateTime_DateTime *)obj)->hastzinfo &&
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
@@ -335,19 +335,19 @@ dynd::ndt::type pydynd::dynd_make_view_dtype(const dynd::ndt::type& value_type, 
     return make_view_dtype(value_type, operand_type);
 }
 
-dynd::ndt::type pydynd::dynd_make_fixedstring_dtype(intptr_t size,
+dynd::ndt::type pydynd::dynd_make_fixedstring_type(intptr_t size,
                 PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-    return make_fixedstring_dtype(size, encoding);
+    return make_fixedstring_type(size, encoding);
 }
 
-dynd::ndt::type pydynd::dynd_make_string_dtype(PyObject *encoding_obj)
+dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-    return make_string_dtype(encoding);
+    return make_string_type(encoding);
 }
 
 dynd::ndt::type pydynd::dynd_make_pointer_dtype(const ndt::type& target_dtype)

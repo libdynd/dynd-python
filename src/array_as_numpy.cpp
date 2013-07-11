@@ -17,7 +17,7 @@
 
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
-#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
@@ -62,7 +62,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
     switch (dt.get_type_id()) {
             case fixedstring_type_id: {
-                const fixedstring_dtype *fsd = static_cast<const fixedstring_dtype *>(dt.extended());
+                const fixedstring_type *fsd = static_cast<const fixedstring_type *>(dt.extended());
                 PyArray_Descr *result;
                 switch (fsd->get_encoding()) {
                     case string_encoding_ascii:
@@ -262,7 +262,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
 
     switch (dt.get_type_id()) {
             case fixedstring_type_id: {
-                const fixedstring_dtype *fsd = static_cast<const fixedstring_dtype *>(dt.extended());
+                const fixedstring_type *fsd = static_cast<const fixedstring_type *>(dt.extended());
                 PyArray_Descr *result;
                 switch (fsd->get_encoding()) {
                     case string_encoding_ascii:

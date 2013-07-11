@@ -6,7 +6,7 @@
 #include <Python.h>
 
 #include <dynd/dtype_assign.hpp>
-#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
@@ -162,10 +162,10 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             if (kind == bytes_kind) {
                 str_dt = make_bytes_dtype(1);
             } else { 
-                str_dt = make_string_dtype(string_encoding_ascii);
+                str_dt = make_string_type(string_encoding_ascii);
             }
-            string_dtype_data str_d;
-            string_dtype_metadata str_md;
+            string_type_data str_d;
+            string_type_metadata str_md;
             str_d.begin = pystr_data;
             str_d.end = pystr_data + pystr_len;
             str_md.blockref = NULL;
@@ -181,8 +181,8 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             }
 
             ndt::type bytes_dt = make_bytes_dtype(1);
-            string_dtype_data bytes_d;
-            string_dtype_metadata bytes_md;
+            string_type_data bytes_d;
+            string_type_metadata bytes_md;
             bytes_d.begin = pybytes_data;
             bytes_d.end = pybytes_data + pybytes_len;
             bytes_md.blockref = NULL;
@@ -200,9 +200,9 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 throw exception();
             }
 
-            ndt::type str_dt = make_string_dtype(string_encoding_utf_8);
-            string_dtype_data str_d;
-            string_dtype_metadata str_md;
+            ndt::type str_dt = make_string_type(string_encoding_utf_8);
+            string_type_data str_d;
+            string_type_metadata str_md;
             str_d.begin = s;
             str_d.end = s + len;
             str_md.blockref = NULL;

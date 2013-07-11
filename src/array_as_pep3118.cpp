@@ -8,7 +8,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/cstruct_dtype.hpp>
-#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/byteswap_dtype.hpp>
 #include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/shape_tools.hpp>
@@ -109,7 +109,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, c
             out_itemsize = 16;
             return;
         case fixedstring_type_id:
-            switch (static_cast<const fixedstring_dtype *>(dt.extended())->get_encoding()) {
+            switch (static_cast<const fixedstring_type *>(dt.extended())->get_encoding()) {
                 case string_encoding_ascii: {
                     intptr_t element_size = dt.get_data_size();
                     o << element_size << "s";

@@ -10,7 +10,7 @@
 #include <dynd/dtypes/byteswap_dtype.hpp>
 #include <dynd/dtypes/view_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
-#include <dynd/dtypes/fixedstring_dtype.hpp>
+#include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 #include <dynd/dtypes/cstruct_dtype.hpp>
@@ -146,10 +146,10 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
         dt = ndt::make_dtype<complex<double> >();
         break;
     case NPY_STRING:
-        dt = make_fixedstring_dtype(d->elsize, string_encoding_ascii);
+        dt = make_fixedstring_type(d->elsize, string_encoding_ascii);
         break;
     case NPY_UNICODE:
-        dt = make_fixedstring_dtype(d->elsize / 4, string_encoding_utf_32);
+        dt = make_fixedstring_type(d->elsize / 4, string_encoding_utf_32);
         break;
     case NPY_VOID:
         dt = make_struct_dtype_from_numpy_struct(d, data_alignment);
@@ -294,7 +294,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::ndt::type& dt)
         case complex_float64_type_id:
             return PyArray_DescrFromType(NPY_CDOUBLE);
         case fixedstring_type_id: {
-            const fixedstring_dtype *fdt = static_cast<const fixedstring_dtype *>(dt.extended());
+            const fixedstring_type *fdt = static_cast<const fixedstring_type *>(dt.extended());
             PyArray_Descr *result;
             switch (fdt->get_encoding()) {
                 case string_encoding_ascii:
@@ -713,7 +713,7 @@ char pydynd::numpy_kindchar_of(const dynd::ndt::type& d)
         return 'c';
     case string_kind:
         if (d.get_type_id() == fixedstring_type_id) {
-            const base_string_dtype *esd = static_cast<const base_string_dtype *>(d.extended());
+            const base_string_type *esd = static_cast<const base_string_type *>(d.extended());
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return 'S';

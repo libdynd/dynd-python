@@ -10,7 +10,7 @@
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 
-#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/base_uniform_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/ndobject_range.hpp>
@@ -38,17 +38,17 @@ PyObject *pydynd::array_str(const dynd::nd::array& n)
 #else
     nd::array n_str;
     if (n.get_dtype().get_kind() == string_kind &&
-                    static_cast<const base_string_dtype *>(
+                    static_cast<const base_string_type *>(
                         n.get_dtype().extended())->get_encoding() == string_encoding_ascii) {
         // If it's already an ASCII string, pass-through
         n_str = n;
     } else {
         // Otherwise, convert to an ASCII string
-        n_str = nd::empty(make_string_dtype(string_encoding_ascii));
+        n_str = nd::empty(make_string_type(string_encoding_ascii));
         n_str.vals() = n;
     }
-    const base_string_dtype *bsd =
-                    static_cast<const base_string_dtype *>(n_str.get_dtype().extended());
+    const base_string_type *bsd =
+                    static_cast<const base_string_type *>(n_str.get_dtype().extended());
     const char *begin = NULL, *end = NULL;
     bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
     return PyString_FromStringAndSize(begin, end - begin);
@@ -69,17 +69,17 @@ PyObject *pydynd::array_unicode(const dynd::nd::array& n)
 {
     nd::array n_str;
     if (n.get_dtype().get_kind() == string_kind &&
-                    static_cast<const base_string_dtype *>(
+                    static_cast<const base_string_type *>(
                         n.get_dtype().extended())->get_encoding() == DYND_PY_ENCODING) {
         // If it's already a unicode string, pass-through
         n_str = n;
     } else {
         // Otherwise, convert to a unicode string
-        n_str = nd::empty(make_string_dtype(DYND_PY_ENCODING));
+        n_str = nd::empty(make_string_type(DYND_PY_ENCODING));
         n_str.vals() = n;
     }
-    const base_string_dtype *bsd =
-                    static_cast<const base_string_dtype *>(n_str.get_dtype().extended());
+    const base_string_type *bsd =
+                    static_cast<const base_string_type *>(n_str.get_dtype().extended());
     const char *begin = NULL, *end = NULL;
     bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
 #if PY_VERSION_HEX >= 0x03030000
@@ -129,7 +129,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case string_kind: {
             // Follow Python, return True if the string is nonempty, False otherwise
             nd::array n_eval = n.eval();
-            const base_string_dtype *bsd = static_cast<const base_string_dtype *>(n_eval.get_dtype().extended());
+            const base_string_type *bsd = static_cast<const base_string_type *>(n_eval.get_dtype().extended());
             const char *begin = NULL, *end = NULL;
             bsd->get_string_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
             if (begin != end) {

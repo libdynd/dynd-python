@@ -105,12 +105,12 @@ dynd::ndt::type dynd_make_view_dtype(const dynd::ndt::type& value_type, const dy
 /**
  * Creates a fixed-sized string dtype.
  */
-dynd::ndt::type dynd_make_fixedstring_dtype(intptr_t size, PyObject *encoding_obj);
+dynd::ndt::type dynd_make_fixedstring_type(intptr_t size, PyObject *encoding_obj);
 
 /**
  * Creates a blockref string dtype.
  */
-dynd::ndt::type dynd_make_string_dtype(PyObject *encoding_obj);
+dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj);
 
 /**
  * Creates a blockref pointer dtype.

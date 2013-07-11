@@ -6,7 +6,7 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include <dynd/dtypes/string_dtype.hpp>
+#include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
@@ -79,7 +79,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
         ndt::type obj_dt;
 #if PY_VERSION_HEX >= 0x03000000
         if (PyUnicode_Check(obj)) {
-            obj_dt = make_string_dtype(string_encoding_utf_8);
+            obj_dt = make_string_type(string_encoding_utf_8);
         } else {
             obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
         }
@@ -278,7 +278,7 @@ struct bytes_string_ptrs {
 inline void convert_one_pyscalar_bytes(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     bytes_string_ptrs *out_asp = reinterpret_cast<bytes_string_ptrs *>(out);
-    const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
+    const string_type_metadata *md = reinterpret_cast<const string_type_metadata *>(metadata);
 #if PY_VERSION_HEX >= 0x03000000
     if (PyBytes_Check(obj)) {
 #else
@@ -309,7 +309,7 @@ struct pyunicode_string_ptrs {
 inline void convert_one_pyscalar_ustring(const ndt::type& dt, const char *metadata, char *out, PyObject *obj)
 {
     pyunicode_string_ptrs *out_usp = reinterpret_cast<pyunicode_string_ptrs *>(out);
-    const string_dtype_metadata *md = reinterpret_cast<const string_dtype_metadata *>(metadata);
+    const string_type_metadata *md = reinterpret_cast<const string_type_metadata *>(metadata);
     if (PyUnicode_Check(obj)) {
         // Get it as UTF8
         pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
@@ -489,7 +489,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
                             obj, &shape[0], 0);
             break;
         case string_type_id: {
-            const base_string_dtype *ext = static_cast<const base_string_dtype *>(dt.extended());
+            const base_string_type *ext = static_cast<const base_string_type *>(dt.extended());
             if (ext->get_encoding() == string_encoding_utf_8) {
                 fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_dtype(),
                                 result.get_ndo_meta(),
@@ -619,7 +619,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         ((const char **)data_ptr)[0] = data;
         ((const char **)data_ptr)[1] = data + len;
         // The metadata
-        string_dtype_metadata *md = reinterpret_cast<string_dtype_metadata *>(result.get_ndo_meta());
+        string_type_metadata *md = reinterpret_cast<string_type_metadata *>(result.get_ndo_meta());
         md->blockref = bytesref.release();
         result.get_ndo()->m_flags = nd::immutable_access_flag|nd::read_access_flag;
         return result;

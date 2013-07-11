@@ -9,8 +9,8 @@
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/byteswap_dtype.hpp>
-#include <dynd/dtypes/view_dtype.hpp>
+#include <dynd/dtypes/byteswap_type.hpp>
+#include <dynd/dtypes/view_type.hpp>
 #include <dynd/shape_tools.hpp>
 
 #include "array_as_pep3118.hpp"
@@ -184,13 +184,13 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, c
                 uint16_t u;
             } vals;
             vals.u = '>' + ('<' << 8);
-            const byteswap_dtype *bd = static_cast<const byteswap_dtype *>(dt.extended());
+            const byteswap_type *bd = static_cast<const byteswap_type *>(dt.extended());
             o << vals.s[0];
             append_pep3118_format(out_itemsize, bd->get_value_type(), metadata, o);
             return;
         }
         case view_type_id: {
-            const view_dtype *vd = static_cast<const view_dtype *>(dt.extended());
+            const view_type *vd = static_cast<const view_type *>(dt.extended());
             // If it's a view of bytes, usually to view unaligned data, can ignore it
             // since the buffer format we're creating doesn't use alignment
             if (vd->get_operand_type().get_type_id() == fixedbytes_type_id) {

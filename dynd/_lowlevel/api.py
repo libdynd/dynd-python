@@ -24,15 +24,15 @@ class _LowLevelAPI(ctypes.Structure):
                 # void memory_block_free(memory_block_data *mbd);
                 ('memory_block_free',
                  ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
-                # void base_dtype_incref(const base_dtype *bd);
-                ('base_dtype_incref',
+                # void base_type_incref(const base_type *bd);
+                ('base_type_incref',
                  ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
-                # void base_dtype_decref(const base_dtype *bd);
-                ('base_dtype_decref',
+                # void base_type_decref(const base_type *bd);
+                ('base_type_decref',
                  ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
-                # const base_dtype_members *get_base_dtype_members(
-                #                               const base_dtype *bd);
-                ('get_base_dtype_members',
+                # const base_type_members *get_base_type_members(
+                #                               const base_type *bd);
+                ('get_base_type_members',
                  ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p)),
                ]
 
@@ -45,8 +45,8 @@ class _PyLowLevelAPI(ctypes.Structure):
                 # dynd::array_preamble *get_array_ptr(WNDObject *obj);
                 ('get_array_ptr',
                  ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
-                # const dynd::base_dtype *get_base_dtype_ptr(WDType *obj);
-                ('get_base_dtype_ptr',
+                # const dynd::base_type *get_base_type_ptr(WDType *obj);
+                ('get_base_type_ptr',
                  ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
                 # object array_from_ptr(dt, ptr, owner, access)
                 ('array_from_ptr',

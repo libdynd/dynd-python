@@ -95,12 +95,12 @@ dynd::ndt::type make_dtype_from_pyobject(PyObject* obj);
 /**
  * Creates a convert dtype.
  */
-dynd::ndt::type dynd_make_convert_dtype(const dynd::ndt::type& to_dtype, const dynd::ndt::type& from_dtype, PyObject *errmode);
+dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type& to_dtype, const dynd::ndt::type& from_dtype, PyObject *errmode);
 
 /**
  * Creates a view dtype.
  */
-dynd::ndt::type dynd_make_view_dtype(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type);
+dynd::ndt::type dynd_make_view_type(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type);
 
 /**
  * Creates a fixed-sized string dtype.
@@ -115,7 +115,7 @@ dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj);
 /**
  * Creates a blockref pointer dtype.
  */
-dynd::ndt::type dynd_make_pointer_dtype(const dynd::ndt::type& target_dtype);
+dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type& target_dtype);
 
 dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names);
 dynd::ndt::type dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names);

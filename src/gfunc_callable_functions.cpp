@@ -11,7 +11,7 @@
 
 #include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/builtin_type_properties.hpp>
-#include <dynd/dtypes/dtype_dtype.hpp>
+#include <dynd/dtypes/type_type.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -197,7 +197,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
     }
     // The dtype is encoded as either a raw type id, or a pointer to an base_type,
     // just as the gfunc object is expecting.
-    ndt::type(value).swap(reinterpret_cast<dtype_dtype_data *>(data)->dt);
+    ndt::type(value).swap(reinterpret_cast<type_type_data *>(data)->dt);
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,

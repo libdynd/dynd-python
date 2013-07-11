@@ -252,9 +252,9 @@ cdef class w_type:
             SET(result.v, GET(self.v).operand_type())
             return result
 
-    property canonical_dtype:
+    property canonical_type:
         """
-        a.canonical_dtype
+        a.canonical_type
 
         Returns a version of this dtype that is canonical,
         where any intermediate pointers are removed and expressions
@@ -363,9 +363,9 @@ def extract_udtype(dt, size_t keep_undim=0):
     SET(result.v, GET(w_type(dt).v).get_udtype(keep_undim))
     return result
 
-def make_byteswap_dtype(builtin_type, operand_type=None):
+def make_byteswap_type(builtin_type, operand_type=None):
     """
-    make_byteswap_dtype(builtin_type, operand_type=None)
+    make_byteswap_type(builtin_type, operand_type=None)
 
     Constructs a byteswap dtype from a builtin one, with an
     optional expression type to chain in as the operand.
@@ -384,19 +384,19 @@ def make_byteswap_dtype(builtin_type, operand_type=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_byteswap_dtype(ndt.int16)
+    >>> ndt.make_byteswap_type(ndt.int16)
     ndt.type('byteswap<int16>')
     """
     cdef w_type result = w_type()
     if operand_type is None:
-        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_type).v)))
+        SET(result.v, dynd_make_byteswap_type(GET(w_type(builtin_type).v)))
     else:
-        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_type).v), GET(w_type(operand_type).v)))
+        SET(result.v, dynd_make_byteswap_type(GET(w_type(builtin_type).v), GET(w_type(operand_type).v)))
     return result
 
-def make_fixedbytes_dtype(int data_size, int data_alignment=1):
+def make_fixedbytes_type(int data_size, int data_alignment=1):
     """
-    make_fixedbytes_dtype(data_size, data_alignment=1)
+    make_fixedbytes_type(data_size, data_alignment=1)
 
     Constructs a bytes dtype with the specified data size and alignment.
 
@@ -412,18 +412,18 @@ def make_fixedbytes_dtype(int data_size, int data_alignment=1):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedbytes_dtype(4)
+    >>> ndt.make_fixedbytes_type(4)
     ndt.type('fixedbytes<4,1>')
-    >>> ndt.make_fixedbytes_dtype(6, 2)
+    >>> ndt.make_fixedbytes_type(6, 2)
     ndt.type('fixedbytes<6,2>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixedbytes_dtype(data_size, data_alignment))
+    SET(result.v, dynd_make_fixedbytes_type(data_size, data_alignment))
     return result
 
-def make_convert_dtype(to_dtype, from_dtype, errmode=None):
+def make_convert_type(to_dtype, from_dtype, errmode=None):
     """
-    make_convert_dtype(to_dtype, from_dtype, errmode='fractional')
+    make_convert_type(to_dtype, from_dtype, errmode='fractional')
     
     Constructs an expression type which converts from one
     dynd type to another, using a specified mode for handling
@@ -448,18 +448,18 @@ def make_convert_dtype(to_dtype, from_dtype, errmode=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_convert_dtype(ndt.int16, ndt.float32)
+    >>> ndt.make_convert_type(ndt.int16, ndt.float32)
     ndt.type('convert<to=int16, from=float32>')
-    >>> ndt.make_convert_dtype(ndt.uint8, ndt.uint16, 'none')
+    >>> ndt.make_convert_type(ndt.uint8, ndt.uint16, 'none')
     ndt.type('convert<to=uint8, from=uint16, errmode=none>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_convert_dtype(GET(w_type(to_dtype).v), GET(w_type(from_dtype).v), errmode))
+    SET(result.v, dynd_make_convert_type(GET(w_type(to_dtype).v), GET(w_type(from_dtype).v), errmode))
     return result
 
-def make_view_dtype(value_type, operand_type):
+def make_view_type(value_type, operand_type):
     """
-    make_view_dtype(value_type, operand_type)
+    make_view_type(value_type, operand_type)
     
     Constructs an expression type which views the bytes of
     one dtype as another.
@@ -477,16 +477,16 @@ def make_view_dtype(value_type, operand_type):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_view_dtype(ndt.int32, ndt.uint32)
+    >>> ndt.make_view_type(ndt.int32, ndt.uint32)
     ndt.type('view<as=int32, original=uint32>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_view_dtype(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
+    SET(result.v, dynd_make_view_type(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
     return result
 
-def make_unaligned_dtype(aligned_dtype):
+def make_unaligned_type(aligned_dtype):
     """
-    make_unaligned_dtype(aligned_dtype)
+    make_unaligned_type(aligned_dtype)
 
     Constructs a dtype with alignment of 1 from the given dtype.
     If the dtype already has alignment 1, just returns it.
@@ -501,13 +501,13 @@ def make_unaligned_dtype(aligned_dtype):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_unaligned_dtype(ndt.int32)
+    >>> ndt.make_unaligned_type(ndt.int32)
     ndt.type('unaligned<int32>')
-    >>> ndt.make_unaligned_dtype(ndt.uint8)
+    >>> ndt.make_unaligned_type(ndt.uint8)
     ndt.uint8
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_unaligned_dtype(GET(w_type(aligned_dtype).v)))
+    SET(result.v, dynd_make_unaligned_type(GET(w_type(aligned_dtype).v)))
     return result
 
 def make_fixedstring_type(int size, encoding=None):
@@ -568,9 +568,9 @@ def make_string_type(encoding=None):
     SET(result.v, dynd_make_string_type(encoding))
     return result
 
-def make_bytes_dtype(size_t alignment=1):
+def make_bytes_type(size_t alignment=1):
     """
-    make_bytes_dtype(alignment=1)
+    make_bytes_type(alignment=1)
 
     Constructs a variable-sized bytes dynd type
     with the specified alignment.
@@ -584,18 +584,18 @@ def make_bytes_dtype(size_t alignment=1):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_bytes_dtype()
+    >>> ndt.make_bytes_type()
     ndt.bytes
     >>> ndt.make_string_type(4)
     ndt.type('bytes<align=4>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_bytes_dtype(alignment))
+    SET(result.v, dynd_make_bytes_type(alignment))
     return result
 
-def make_pointer_dtype(target_dtype):
+def make_pointer_type(target_dtype):
     """
-    make_pointer_dtype(target_dtype)
+    make_pointer_type(target_dtype)
 
     Constructs a dynd type which is a pointer to the target type.
 
@@ -606,7 +606,7 @@ def make_pointer_dtype(target_dtype):
         the '*' in C/C++ type declarations.
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_pointer_dtype(GET(w_type(target_dtype).v)))
+    SET(result.v, dynd_make_pointer_type(GET(w_type(target_dtype).v)))
     return result
 
 def make_strided_dim_type(element_dtype, undim=None):
@@ -756,9 +756,9 @@ def make_var_dim_type(element_dtype):
     SET(result.v, dynd_make_var_dim_type(GET(w_type(element_dtype).v)))
     return result
 
-def make_categorical_dtype(values):
+def make_categorical_type(values):
     """
-    make_categorical_dtype(values)
+    make_categorical_type(values)
 
     Constructs a categorical dynd type with the
     specified values as its categories.
@@ -779,16 +779,16 @@ def make_categorical_dtype(values):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_categorical_dtype(['sunny', 'rainy', 'cloudy', 'stormy'])
+    >>> ndt.make_categorical_type(['sunny', 'rainy', 'cloudy', 'stormy'])
     ndt.type('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_categorical_dtype(GET(w_array(values).v)))
+    SET(result.v, dynd_make_categorical_type(GET(w_array(values).v)))
     return result
 
-def factor_categorical_dtype(values):
+def factor_categorical_type(values):
     """
-    factor_categorical_dtype(values)
+    factor_categorical_type(values)
 
     Constructs a categorical dynd type with the
     unique sorted subset of the values as its
@@ -805,11 +805,11 @@ def factor_categorical_dtype(values):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.factor_categorical_dtype(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
+    >>> ndt.factor_categorical_type(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
     ndt.type('categorical<string<ascii>, ["F", "M"]>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_factor_categorical_dtype(GET(w_array(values).v)))
+    SET(result.v, dynd_factor_categorical_type(GET(w_array(values).v)))
     return result
 
 ##############################################################################
@@ -1380,7 +1380,7 @@ def groupby(data, by, groups = None):
             # If groups is a list or dynd array, assume it's a list
             # of groups for a categorical dtype
             SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v),
-                            dynd_make_categorical_dtype(GET(w_array(groups).v))))
+                            dynd_make_categorical_type(GET(w_array(groups).v))))
         else:
             SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v), GET(w_type(groups).v)))
     return result
@@ -1490,7 +1490,7 @@ def parse_json(dtype, json):
     if type(dtype) is w_array:
         dynd_parse_json_array(GET((<w_array>dtype).v), GET(w_array(json).v))
     else:
-        SET(result.v, dynd_parse_json_dtype(GET(w_type(dtype).v), GET(w_array(json).v)))
+        SET(result.v, dynd_parse_json_type(GET(w_type(dtype).v), GET(w_array(json).v)))
         return result
 
 def format_json(w_array n):

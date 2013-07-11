@@ -53,25 +53,25 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         # non-native byte order
         nonnative = self.nonnative
 
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.int16),
+        self.assertEqual(ndt.make_byteswap_type(ndt.int16),
                 ndt.type(np.dtype(nonnative + 'i2')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.int32),
+        self.assertEqual(ndt.make_byteswap_type(ndt.int32),
                 ndt.type(np.dtype(nonnative + 'i4')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.int64),
+        self.assertEqual(ndt.make_byteswap_type(ndt.int64),
                 ndt.type(np.dtype(nonnative + 'i8')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.uint16),
+        self.assertEqual(ndt.make_byteswap_type(ndt.uint16),
                 ndt.type(np.dtype(nonnative + 'u2')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.uint32),
+        self.assertEqual(ndt.make_byteswap_type(ndt.uint32),
                 ndt.type(np.dtype(nonnative + 'u4')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.uint64),
+        self.assertEqual(ndt.make_byteswap_type(ndt.uint64),
                 ndt.type(np.dtype(nonnative + 'u8')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.float32),
+        self.assertEqual(ndt.make_byteswap_type(ndt.float32),
                 ndt.type(np.dtype(nonnative + 'f4')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.float64),
+        self.assertEqual(ndt.make_byteswap_type(ndt.float64),
                 ndt.type(np.dtype(nonnative + 'f8')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.cfloat32),
+        self.assertEqual(ndt.make_byteswap_type(ndt.cfloat32),
                 ndt.type(np.dtype(nonnative + 'c8')))
-        self.assertEqual(ndt.make_byteswap_dtype(ndt.cfloat64),
+        self.assertEqual(ndt.make_byteswap_type(ndt.cfloat64),
                 ndt.type(np.dtype(nonnative + 'c16')))
 
 class TestNumpyViewInterop(unittest.TestCase):
@@ -94,7 +94,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4)
         n = nd.array(a)
-        self.assertEqual(n.udtype, ndt.make_byteswap_dtype(ndt.int32))
+        self.assertEqual(n.udtype, ndt.make_byteswap_type(ndt.int32))
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
@@ -102,7 +102,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=np.int32).reshape(4,3)
         n = nd.array(a)
-        self.assertEqual(n.udtype, ndt.make_unaligned_dtype(ndt.int32))
+        self.assertEqual(n.udtype, ndt.make_unaligned_type(ndt.int32))
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
@@ -111,7 +111,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = a[1:].view(dtype=(nonnative + 'i4')).reshape(2,2,3)
         n = nd.array(a)
         self.assertEqual(n.udtype,
-                ndt.make_unaligned_dtype(ndt.make_byteswap_dtype(ndt.int32)))
+                ndt.make_unaligned_type(ndt.make_byteswap_type(ndt.int32)))
         self.assertEqual(n.undim, a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
@@ -179,7 +179,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # ASCII dynd -> UTF32 dynd
         b_u = b.ucast(ndt.make_fixedstring_type(7, 'utf_32'))
         self.assertEqual(
-                ndt.make_convert_dtype(
+                ndt.make_convert_type(
                     ndt.make_fixedstring_type(7, 'utf_32'),
                     ndt.make_fixedstring_type(7, 'ascii')),
                 b_u.udtype)

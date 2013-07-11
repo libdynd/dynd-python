@@ -20,8 +20,8 @@
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/bytes_dtype.hpp>
-#include <dynd/dtypes/property_dtype.hpp>
+#include <dynd/dtypes/bytes_type.hpp>
+#include <dynd/dtypes/property_type.hpp>
 #include <dynd/shape_tools.hpp>
 
 using namespace std;
@@ -292,7 +292,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
 #endif
             }
         case property_type_id: {
-            const property_dtype *pd = static_cast<const property_dtype *>(dt.extended());
+            const property_type *pd = static_cast<const property_type *>(dt.extended());
             // Special-case of 'int64 as date' property dtype, which is binary
             // compatible with NumPy's "M8[D]"
             if (pd->is_reversed_property() && pd->get_value_type().get_type_id() == date_type_id &&

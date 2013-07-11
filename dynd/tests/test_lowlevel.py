@@ -6,12 +6,12 @@ from dynd import nd, ndt, _lowlevel
 class TestLowLevel(unittest.TestCase):
     def type_id_of(self, dt):
         assert isinstance(dt, ndt.type)
-        bd = _lowlevel.py_api.get_base_dtype_ptr(dt)
+        bd = _lowlevel.py_api.get_base_type_ptr(dt)
         if bd < _lowlevel.BUILTIN_TYPE_ID_COUNT:
             return bd
         else:
             bdm = _lowlevel.BaseDTypeMembers.from_address(
-                            _lowlevel.api.get_base_dtype_members(bd))
+                            _lowlevel.api.get_base_type_members(bd))
             return bdm.type_id
 
     def test_type_id(self):
@@ -49,7 +49,7 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.FIXEDSTRING_TYPE_ID)
         self.assertEqual(self.type_id_of(ndt.bytes),
                         _lowlevel.BYTES_TYPE_ID)
-        self.assertEqual(self.type_id_of(ndt.make_fixedbytes_dtype(16)),
+        self.assertEqual(self.type_id_of(ndt.make_fixedbytes_type(16)),
                         _lowlevel.FIXEDBYTES_TYPE_ID)
         self.assertEqual(self.type_id_of(ndt.json),
                         _lowlevel.JSON_TYPE_ID)
@@ -60,7 +60,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.date(2000, 1, 1).year.dtype),
                         _lowlevel.PROPERTY_TYPE_ID)
         # Categorical
-        self.assertEqual(self.type_id_of(ndt.make_categorical_dtype([1, 2, 3])),
+        self.assertEqual(self.type_id_of(ndt.make_categorical_type([1, 2, 3])),
                         _lowlevel.CATEGORICAL_TYPE_ID)
         # Struct
         self.assertEqual(self.type_id_of(ndt.make_struct_type(
@@ -69,12 +69,12 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('{x : int32; y : int32}')),
                         _lowlevel.FIXEDSTRUCT_TYPE_ID)
         # Convert/byteswap/view
-        self.assertEqual(self.type_id_of(ndt.make_convert_dtype(
+        self.assertEqual(self.type_id_of(ndt.make_convert_type(
                                     ndt.int32, ndt.int8)),
                         _lowlevel.CONVERT_TYPE_ID)
-        self.assertEqual(self.type_id_of(ndt.make_byteswap_dtype(ndt.int32)),
+        self.assertEqual(self.type_id_of(ndt.make_byteswap_type(ndt.int32)),
                         _lowlevel.BYTESWAP_TYPE_ID)
-        self.assertEqual(self.type_id_of(ndt.make_view_dtype(
+        self.assertEqual(self.type_id_of(ndt.make_view_type(
                                     ndt.int32, ndt.uint32)),
                         _lowlevel.VIEW_TYPE_ID)
         # Uniform arrays

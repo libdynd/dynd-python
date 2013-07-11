@@ -4,7 +4,7 @@ from dynd import nd, ndt
 import ctypes
 
 class TestCTypesDTypeInterop(unittest.TestCase):
-    def test_dtype_from_ctype_typeobject(self):
+    def test_type_from_ctype_typeobject(self):
         self.assertEqual(ndt.int8, ndt.type(ctypes.c_int8))
         self.assertEqual(ndt.int16, ndt.type(ctypes.c_int16))
         self.assertEqual(ndt.int32, ndt.type(ctypes.c_int32))
@@ -18,14 +18,14 @@ class TestCTypesDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.float32, ndt.type(ctypes.c_float))
         self.assertEqual(ndt.float64, ndt.type(ctypes.c_double))
 
-    def test_dtype_from_annotated_ctype_typeobject(self):
+    def test_type_from_annotated_ctype_typeobject(self):
         self.assertEqual(ndt.bool, ndt.type(ndt.ctypes.c_dynd_bool))
         self.assertEqual(ndt.complex_float32, ndt.type(ndt.ctypes.c_complex_float32))
         self.assertEqual(ndt.complex_float64, ndt.type(ndt.ctypes.c_complex_float64))
         self.assertEqual(ndt.complex_float32, ndt.type(ndt.ctypes.c_complex64))
         self.assertEqual(ndt.complex_float64, ndt.type(ndt.ctypes.c_complex128))
 
-    def test_dtype_from_ctype_cstruct(self):
+    def test_type_from_ctype_cstruct(self):
         class POINT(ctypes.Structure):
             _fields_ = [('x', ctypes.c_int32), ('y', ctypes.c_int32)]
         self.assertEqual(ndt.make_cstruct_type(
@@ -42,7 +42,7 @@ class TestCTypesDTypeInterop(unittest.TestCase):
                                 ['pos', 'flags', 'size', 'vel']),
                         ndt.type(DATA))
 
-    def test_dtype_from_ctypes_carray(self):
+    def test_type_from_ctypes_carray(self):
         self.assertEqual(ndt.make_fixed_dim_type(10, ndt.int32),
                 ndt.type(ctypes.c_int32 * 10))
         self.assertEqual(ndt.make_fixed_dim_type((10, 3), ndt.int32),

@@ -9,17 +9,17 @@
 #include "ctypes_interop.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/convert_dtype.hpp>
+#include <dynd/dtypes/convert_type.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/string_type.hpp>
-#include <dynd/dtypes/bytes_dtype.hpp>
-#include <dynd/dtypes/pointer_dtype.hpp>
+#include <dynd/dtypes/bytes_type.hpp>
+#include <dynd/dtypes/pointer_type.hpp>
 #include <dynd/dtypes/struct_type.hpp>
 #include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/datetime_dtype.hpp>
-#include <dynd/dtypes/dtype_dtype.hpp>
+#include <dynd/dtypes/datetime_type.hpp>
+#include <dynd/dtypes/type_type.hpp>
 #include <dynd/shape_tools.hpp>
 #include <dynd/dtypes/builtin_type_properties.hpp>
 
@@ -76,7 +76,7 @@ std::string pydynd::dtype_repr(const dynd::ndt::type& d)
                 ss << "ndt.json";
                 break;
             case bytes_type_id:
-                if (static_cast<const bytes_dtype *>(d.extended())->get_target_alignment() == 1) {
+                if (static_cast<const bytes_type *>(d.extended())->get_target_alignment() == 1) {
                     ss << "ndt.bytes";
                 } else {
                     ss << "ndt.type('" << d << "')";
@@ -182,7 +182,7 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 #else
     } else if (PyBytes_Check(obj)) {
         // Python bytes string
-        return make_bytes_dtype(1);
+        return make_bytes_type(1);
 #endif
     } else if (PyUnicode_Check(obj)) {
         // Python string
@@ -192,16 +192,16 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
             throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
         }
-        return make_datetime_dtype(datetime_unit_usecond, tz_abstract);
+        return make_datetime_type(datetime_unit_usecond, tz_abstract);
     } else if (PyDate_Check(obj)) {
         return make_date_type();
     } else if (WType_Check(obj)) {
-        return make_dtype_dtype();
+        return make_type_type();
     } else if (PyType_Check(obj)) {
-        return make_dtype_dtype();
+        return make_type_type();
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_DescrCheck(obj)) {
-        return make_dtype_dtype();
+        return make_type_type();
 #endif // DYND_NUMPY_INTEROP
     }
 
@@ -325,14 +325,14 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     }
 }
 
-dynd::ndt::type pydynd::dynd_make_convert_dtype(const dynd::ndt::type& to_dtype, const dynd::ndt::type& from_dtype, PyObject *errmode)
+dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type& to_dtype, const dynd::ndt::type& from_dtype, PyObject *errmode)
 {
-    return make_convert_dtype(to_dtype, from_dtype, pyarg_error_mode(errmode));
+    return make_convert_type(to_dtype, from_dtype, pyarg_error_mode(errmode));
 }
 
-dynd::ndt::type pydynd::dynd_make_view_dtype(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type)
+dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type)
 {
-    return make_view_dtype(value_type, operand_type);
+    return make_view_type(value_type, operand_type);
 }
 
 dynd::ndt::type pydynd::dynd_make_fixedstring_type(intptr_t size,
@@ -350,9 +350,9 @@ dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
     return make_string_type(encoding);
 }
 
-dynd::ndt::type pydynd::dynd_make_pointer_dtype(const ndt::type& target_dtype)
+dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type& target_dtype)
 {
-    return make_pointer_dtype(target_dtype);
+    return make_pointer_type(target_dtype);
 }
 
 dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types, PyObject *field_names)

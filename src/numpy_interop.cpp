@@ -7,9 +7,9 @@
 
 #if DYND_NUMPY_INTEROP
 
-#include <dynd/dtypes/byteswap_dtype.hpp>
-#include <dynd/dtypes/view_dtype.hpp>
-#include <dynd/dtypes/dtype_alignment.hpp>
+#include <dynd/dtypes/byteswap_type.hpp>
+#include <dynd/dtypes/view_type.hpp>
+#include <dynd/dtypes/type_alignment.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/struct_type.hpp>
@@ -17,7 +17,7 @@
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/property_dtype.hpp>
+#include <dynd/dtypes/property_type.hpp>
 
 #include "dtype_functions.hpp"
 #include "array_functions.hpp"
@@ -60,7 +60,7 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
         field_types.push_back(dtype_from_numpy_dtype(fld_dtype, data_alignment));
         // If the field isn't aligned enough, turn it into an unaligned type
         if (!offset_is_aligned(offset | data_alignment, field_types.back().get_data_alignment())) {
-            field_types.back() = make_unaligned_dtype(field_types.back());
+            field_types.back() = make_unaligned_type(field_types.back());
         }
         field_names.push_back(pystring_as_string(key));
         field_offsets.push_back(offset);
@@ -165,7 +165,7 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
         string s = pystring_as_string(unit.get());
         if (s == "D") {
             // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
-            dt = make_reversed_property_dtype(make_date_type(),
+            dt = make_reversed_property_type(make_date_type(),
                             ndt::make_dtype<int64_t>(), "days_after_1970_int64");
         }
         break;
@@ -182,13 +182,13 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
     }
 
     if (!PyArray_ISNBO(d->byteorder)) {
-        dt = make_byteswap_dtype(dt);
+        dt = make_byteswap_type(dt);
     }
 
     // If the data this dtype is for isn't aligned enough,
     // make an unaligned version.
     if (data_alignment != 0 && data_alignment < dt.get_data_alignment()) {
-        dt = make_unaligned_dtype(dt);
+        dt = make_unaligned_type(dt);
     }
 
     return dt;
@@ -312,7 +312,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::ndt::type& dt)
         }
         /*
         case tuple_type_id: {
-            const tuple_dtype *tdt = static_cast<const tuple_dtype *>(dt.extended());
+            const tuple_type *tdt = static_cast<const tuple_type *>(dt.extended());
             const vector<ndt::type>& fields = tdt->get_fields();
             size_t num_fields = fields.size();
             const vector<size_t>& offsets = tdt->get_offsets();

@@ -9,7 +9,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(str(ndt.date), 'date')
         self.assertEqual(ndt.date.data_size, 4)
         self.assertEqual(ndt.date.data_alignment, 4)
-        self.assertEqual(ndt.date.canonical_dtype, ndt.date)
+        self.assertEqual(ndt.date.canonical_type, ndt.date)
 
     def test_date_properties(self):
         a = nd.array(date(1955,3,13))

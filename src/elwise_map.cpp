@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-#include <dynd/dtypes/expr_dtype.hpp>
-#include <dynd/dtypes/unary_expr_dtype.hpp>
+#include <dynd/dtypes/expr_type.hpp>
+#include <dynd/dtypes/unary_expr_type.hpp>
 #include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/kernels/expr_kernel_generator.hpp>
@@ -348,7 +348,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
         src_dt = n.get_udtype();
     }
 
-    ndt::type edt = make_unary_expr_dtype(dst_dt, src_dt,
+    ndt::type edt = make_unary_expr_type(dst_dt, src_dt,
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_type()));
     nd::array result = n.replace_udtype(edt, src_dt.get_undim());
     return wrap_array(result);
@@ -420,7 +420,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
 
     // Because the expr type's operand is the result's type,
     // we can swap it in as the type
-    ndt::type edt = make_expr_dtype(result_vdt,
+    ndt::type edt = make_expr_type(result_vdt,
                     result.get_dtype(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
     edt.swap(result.get_ndo()->m_dtype);

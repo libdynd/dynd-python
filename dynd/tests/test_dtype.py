@@ -122,24 +122,24 @@ class TestDType(unittest.TestCase):
         self.assertEqual(ndt.cfloat64, ndt.type(complex))
 
     def test_fixedbytes_type(self):
-        d = ndt.make_fixedbytes_dtype(4, 4)
+        d = ndt.make_fixedbytes_type(4, 4)
         self.assertEqual(str(d), 'fixedbytes<4,4>')
         self.assertEqual(d.data_size, 4)
         self.assertEqual(d.data_alignment, 4)
 
-        d = ndt.make_fixedbytes_dtype(9, 1)
+        d = ndt.make_fixedbytes_type(9, 1)
         self.assertEqual(str(d), 'fixedbytes<9,1>')
         self.assertEqual(d.data_size, 9)
         self.assertEqual(d.data_alignment, 1)
 
         # Alignment must not be greater than data_size
-        self.assertRaises(RuntimeError, ndt.make_fixedbytes_dtype, 1, 2)
+        self.assertRaises(RuntimeError, ndt.make_fixedbytes_type, 1, 2)
         # Alignment must be a power of 2
-        self.assertRaises(RuntimeError, ndt.make_fixedbytes_dtype, 6, 3)
+        self.assertRaises(RuntimeError, ndt.make_fixedbytes_type, 6, 3)
         # Alignment must divide into the data_size
-        self.assertRaises(RuntimeError, ndt.make_fixedbytes_dtype, 6, 4)
+        self.assertRaises(RuntimeError, ndt.make_fixedbytes_type, 6, 4)
 
-    def test_dtype_type(self):
+    def test_type_type(self):
         d = ndt.type('type')
         self.assertEqual(str(d), 'type')
 
@@ -158,7 +158,7 @@ class TestDType(unittest.TestCase):
 
     def test_categorical_type(self):
         a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime('sec','UTC')")
-        dt1 = ndt.factor_categorical_dtype(a.date)
+        dt1 = ndt.factor_categorical_type(a.date)
         #print (dt1)
         self.assertEqual(nd.as_py(dt1.categories.ucast(ndt.string)),
                         ['2012-05-10'])

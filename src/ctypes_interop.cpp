@@ -10,8 +10,8 @@
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/struct_type.hpp>
 #include <dynd/dtypes/strided_dim_type.hpp>
-#include <dynd/dtypes/pointer_dtype.hpp>
-#include <dynd/dtypes/dtype_alignment.hpp>
+#include <dynd/dtypes/pointer_type.hpp>
+#include <dynd/dtypes/type_alignment.hpp>
 
 #include "ctypes_interop.hpp"
 #include "dtype_functions.hpp"
@@ -211,7 +211,7 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         // Translate into a blockref pointer dtype
         pyobject_ownref target_dtype_obj(PyObject_GetAttrString(d, "_type_"));
         ndt::type target_dtype = dtype_from_ctypes_cdatatype(target_dtype_obj);
-        return make_pointer_dtype(target_dtype);
+        return make_pointer_type(target_dtype);
     } else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
         // Translate into a cstruct or struct type
         pyobject_ownref fields_list_obj(PyObject_GetAttrString(d, "_fields_"));
@@ -237,7 +237,7 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
             field_offsets.push_back(pyobject_as_index(field_data_offset_obj.get()));
             // If the field isn't aligned as the type requires, make it into an unaligned version
             if (!offset_is_aligned(field_offsets.back(), field_types.back().get_data_alignment())) {
-                field_types.back() = make_unaligned_dtype(field_types.back());
+                field_types.back() = make_unaligned_type(field_types.back());
             }
         }
         pyobject_ownref total_size_obj(PyObject_CallMethod(ctypes._ctypes, (char *)"sizeof", (char *)"N", d));

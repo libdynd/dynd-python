@@ -7,14 +7,14 @@
 #include <datetime.h>
 
 #include <dynd/dtypes/string_type.hpp>
-#include <dynd/dtypes/bytes_dtype.hpp>
+#include <dynd/dtypes/bytes_type.hpp>
 #include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/datetime_dtype.hpp>
-#include <dynd/dtypes/dtype_dtype.hpp>
+#include <dynd/dtypes/datetime_type.hpp>
+#include <dynd/dtypes/type_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/dtype_promotion.hpp>
@@ -365,7 +365,7 @@ inline void convert_one_pyscalar_datetime(const ndt::type& dt, const char *metad
                     ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
         throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
     }
-    const datetime_dtype *dd = static_cast<const datetime_dtype *>(dt.extended());
+    const datetime_type *dd = static_cast<const datetime_type *>(dt.extended());
     dd->set_cal(metadata, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
                     PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
                     PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
@@ -376,7 +376,7 @@ inline void convert_one_pyscalar_dtype(const ndt::type& DYND_UNUSED(dt),
                 const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
 {
     ndt::type dt = make_dtype_from_pyobject(obj);
-    dt.swap(reinterpret_cast<dtype_dtype_data *>(out)->dt);
+    dt.swap(reinterpret_cast<type_type_data *>(out)->dt);
 }
 
 template<convert_one_pyscalar_function_t ConvertOneFn>
@@ -604,7 +604,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
             throw runtime_error("Error getting byte string data");
         }
-        ndt::type d = make_bytes_dtype(1);
+        ndt::type d = make_bytes_type(1);
         // Python bytes are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
         memory_block_ptr bytesref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
@@ -637,8 +637,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
             throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
         }
-        ndt::type d = make_datetime_dtype(datetime_unit_usecond, tz_abstract);
-        const datetime_dtype *dd = static_cast<const datetime_dtype *>(d.extended());
+        ndt::type d = make_datetime_type(datetime_unit_usecond, tz_abstract);
+        const datetime_type *dd = static_cast<const datetime_type *>(d.extended());
         nd::array result = nd::empty(d);
         dd->set_cal(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
                     PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),

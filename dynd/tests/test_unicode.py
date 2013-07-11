@@ -19,7 +19,7 @@ class TestUnicode(unittest.TestCase):
         else:
             # In Python 2, str and bytes are the same,
             # so we have to manually request a bytes type
-            a = nd.array(b"Testing 1 2 3", dtype=ndt.bytes)
+            a = nd.array(b"Testing 1 2 3", type=ndt.bytes)
             b = nd.array([b"First", b"Second"], udtype=ndt.bytes)
         self.assertEqual(a.dtype, ndt.bytes)
         self.assertEqual(b.udtype, ndt.bytes)
@@ -38,5 +38,5 @@ class TestUnicode(unittest.TestCase):
             self.assertRaises(UnicodeEncodeError, str, a)
 
     def test_ascii_decode_error(self):
-        a = nd.array(128, dtype=ndt.uint8).view_scalars("string(1,'A')")
+        a = nd.array(128, type=ndt.uint8).view_scalars("string(1,'A')")
         self.assertRaises(UnicodeDecodeError, a.ucast("string").eval)

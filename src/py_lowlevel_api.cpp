@@ -39,7 +39,7 @@ namespace {
                                 "immutable", nd::read_access_flag|nd::immutable_access_flag);
             if (d.get_metadata_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create a dynd array from a raw pointer with non-empty metadata, dtype: ";
+                ss << "Cannot create a dynd array from a raw pointer with non-empty metadata, type: ";
                 ss << d;
                 throw runtime_error(ss.str());
             }
@@ -69,13 +69,13 @@ namespace {
             ndt::type src_dt = make_ndt_type_from_pyobject(src_dt_obj);
             if (dst_dt.get_metadata_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, dtype: ";
+                ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
                 ss << dst_dt;
                 throw runtime_error(ss.str());
             }
             if (src_dt.get_metadata_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, dtype: ";
+                ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
                 ss << src_dt;
                 throw runtime_error(ss.str());
             }

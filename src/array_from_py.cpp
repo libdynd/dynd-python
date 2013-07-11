@@ -81,10 +81,10 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
         if (PyUnicode_Check(obj)) {
             obj_dt = ndt::make_string(string_encoding_utf_8);
         } else {
-            obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
+            obj_dt = pydynd::deduce_ndt_type_from_pyobject(obj);
         }
 #else
-        obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
+        obj_dt = pydynd::deduce_ndt_type_from_pyobject(obj);
 #endif
 
         if (dt != obj_dt) {
@@ -514,7 +514,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
                             obj, &shape[0], 0);
             break;
         }
-        case dtype_type_id: {
+        case type_type_id: {
             fill_array_from_pylist<convert_one_pyscalar_dtype>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);

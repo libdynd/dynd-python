@@ -32,19 +32,19 @@ void pydynd::init_w_ndt_type_callable_typeobject(PyObject *type)
 }
 
 
-void pydynd::add_dtype_names_to_dir_dict(const ndt::type& dt, PyObject *dict)
+void pydynd::add_ndt_type_names_to_dir_dict(const ndt::type& dt, PyObject *dict)
 {
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
-        // Add the dtype properties
+        // Add the type properties
         dt.extended()->get_dynamic_type_properties(&properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
         }
-        // Add the dtype functions
+        // Add the type functions
         dt.extended()->get_dynamic_type_functions(&properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
@@ -54,7 +54,7 @@ void pydynd::add_dtype_names_to_dir_dict(const ndt::type& dt, PyObject *dict)
     }
 }
 
-PyObject *pydynd::get_dtype_dynamic_property(const dynd::ndt::type& dt, PyObject *name)
+PyObject *pydynd::get_ndt_type_dynamic_property(const dynd::ndt::type& dt, PyObject *name)
 {
     if (!dt.is_builtin()) {
         const std::pair<std::string, gfunc::callable> *properties;
@@ -76,7 +76,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::ndt::type& dt, PyObject
             string nstr = pystring_as_string(name);
             for (size_t i = 0; i < count; ++i) {
                 if (properties[i].first == nstr) {
-                    return wrap_dtype_callable(nstr, properties[i].second, dt);
+                    return wrap_ndt_type_callable(nstr, properties[i].second, dt);
                 }
             }
         }
@@ -189,13 +189,13 @@ void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
             const ndt::type& paramtype, char *metadata, char *data, const ndt::type& value)
 {
-    if (paramtype.get_type_id() != dtype_type_id) {
+    if (paramtype.get_type_id() != type_type_id) {
         stringstream ss;
         ss << "parameter \"" << paramname << "\" of dynd callable \"" << funcname << "\" with type " << paramtype;
-        ss << " cannot accept a dtype as its value";
+        ss << " cannot accept a dynd type as its value";
         throw runtime_error(ss.str());
     }
-    // The dtype is encoded as either a raw type id, or a pointer to an base_type,
+    // The type is encoded as either a raw type id, or a pointer to an base_type,
     // just as the gfunc object is expecting.
     ndt::type(value).swap(reinterpret_cast<type_type_data *>(data)->dt);
 }
@@ -203,11 +203,11 @@ static void set_single_parameter(const std::string& funcname, const std::string&
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
             const ndt::type& paramtype, char *metadata, char *data, const nd::array& value)
 {
-    // TODO: Need array_dtype (but then we can get circular references, and need garbage collection :P)
+    // TODO: Need array_type (but then we can get circular references, and need garbage collection :P)
     if (paramtype.get_type_id() != void_pointer_type_id) {
         stringstream ss;
         ss << "parameter \"" << paramname << "\" of dynd callable \"" << funcname << "\" with type " << paramtype;
-        ss << " cannot accept a dtype as its value";
+        ss << " cannot accept an array as its value";
         throw runtime_error(ss.str());
     }
     *(const void **)data = value.get_ndo();
@@ -226,17 +226,17 @@ static void set_single_parameter(const std::string& funcname, const std::string&
     if (WArray_Check(value)) {
         if (paramtype.get_type_id() == void_pointer_type_id) {
             // Pass raw ndo pointers (with a borrowed reference) to void pointer params
-            // TODO: Need array_dtype (but then we can get circular references, and need garbage collection :P)
+            // TODO: Need array_type (but then we can get circular references, and need garbage collection :P)
             *(const void **)data = ((WArray *)value)->v.get_ndo();
         } else {
             // Copy the value using the default mechanism
             const nd::array& n = ((WArray *)value)->v;
-            dtype_assign(paramtype, metadata, data, n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
+            typed_data_assign(paramtype, metadata, data, n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
         }
         return;
     } else if (paramtype.get_type_id() == void_pointer_type_id) {
         out_storage.push_back(array_from_py(value));
-        // TODO: Need array_dtype (but then we can get circular references, and need garbage collection :P)
+        // TODO: Need array_type (but then we can get circular references, and need garbage collection :P)
         *(const void **)data = out_storage.back().get_ndo();
         return;
     }
@@ -394,7 +394,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
 
     // Final, slow attempt to make it work, convert the input to an array, then copy that value
     nd::array n = array_from_py(value);
-    dtype_assign(paramtype, metadata, data, n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
+    typed_data_assign(paramtype, metadata, data, n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
 }
 
 PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::gfunc::callable& c, const ndt::type& dt)
@@ -507,7 +507,7 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
                     if (filled[i - args_count] == 0) {
                         size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
                         size_t data_offset = fsdt->get_data_offsets_vector()[i+1];
-                        dtype_copy(fsdt->get_field_types()[i+1],
+                        typed_data_copy(fsdt->get_field_types()[i+1],
                                         out_params.get_ndo_meta() + metadata_offset,
                                         out_params.get_ndo()->m_data_pointer + data_offset,
                                         default_parameters.get_ndo_meta() + metadata_offset,
@@ -535,7 +535,7 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
                 for (size_t i = args_count; i < param_count; ++i) {
                     size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
                     size_t data_offset = fsdt->get_data_offsets_vector()[i+1];
-                    dtype_copy(fsdt->get_field_types()[i+1],
+                    typed_data_copy(fsdt->get_field_types()[i+1],
                                     out_params.get_ndo_meta() + metadata_offset,
                                     out_params.get_ndo()->m_data_pointer + data_offset,
                                     default_parameters.get_ndo_meta() + metadata_offset,
@@ -584,7 +584,7 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper& ncw, PyObjec
     return wrap_array(ncw.c.call_generic(params));
 }
 
-PyObject *pydynd::wrap_dtype_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndt::type& d)
+PyObject *pydynd::wrap_ndt_type_callable(const std::string& funcname, const dynd::gfunc::callable& c, const dynd::ndt::type& d)
 {
     WTypeCallable *result = (WTypeCallable *)WTypeCallable_Type->tp_alloc(WTypeCallable_Type, 0);
     if (!result) {
@@ -620,7 +620,7 @@ PyObject *pydynd::ndt_type_callable_call(const ndt_type_callable_wrapper& dcw, P
     return ndt_type_callable_call(dcw.funcname, dcw.c, dcw.d, args, kwargs);
 }
 
-PyObject *pydynd::call_dtype_constructor_function(const dynd::ndt::type& dt, PyObject *args, PyObject *kwargs)
+PyObject *pydynd::call_ndt_type_constructor_function(const dynd::ndt::type& dt, PyObject *args, PyObject *kwargs)
 {
     // First find the __construct__ callable
     if (!dt.is_builtin()) {

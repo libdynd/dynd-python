@@ -130,7 +130,7 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, ndt::type& out_return
         // No return type
         out_returntype = ndt::make_type<void>();
     } else {
-        out_returntype = dtype_from_ctypes_cdatatype(restype);
+        out_returntype = ndt_type_from_ctypes_cdatatype(restype);
     }
 
     Py_ssize_t argcount = PySequence_Size(argtypes);
@@ -144,12 +144,12 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, ndt::type& out_return
     // Get the argument types
     for (intptr_t i = 0; i < argcount; ++i) {
         pyobject_ownref element(PySequence_GetItem(argtypes, i));
-        out_paramtypes[i] = dtype_from_ctypes_cdatatype(element);
+        out_paramtypes[i] = ndt_type_from_ctypes_cdatatype(element);
     }
 }
 
 
-dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
+dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
 {
     if (!PyObject_IsSubclass(d, ctypes.PyCData_Type)) {
         throw runtime_error("internal error: requested a dynd type from a ctypes c data type, but the given object has the wrong type");
@@ -203,15 +203,15 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
                 return ndt::make_type<uint64_t>();
             default: {
                 stringstream ss;
-                ss << "The ctypes type code '" << proto_str[0] << "' cannot be converted to a dynd::dtype";
+                ss << "The ctypes type code '" << proto_str[0] << "' cannot be converted to a dynd type";
                 throw runtime_error(ss.str());
             }
         }
     } else if (PyObject_IsSubclass(d, ctypes.PyCPointerType_Type)) {
-        // Translate into a blockref pointer dtype
-        pyobject_ownref target_dtype_obj(PyObject_GetAttrString(d, "_type_"));
-        ndt::type target_dtype = dtype_from_ctypes_cdatatype(target_dtype_obj);
-        return ndt::make_pointer(target_dtype);
+        // Translate into a blockref pointer type
+        pyobject_ownref target_tp_obj(PyObject_GetAttrString(d, "_type_"));
+        ndt::type target_tp = ndt_type_from_ctypes_cdatatype(target_tp_obj);
+        return ndt::make_pointer(target_tp);
     } else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
         // Translate into a cstruct or struct type
         pyobject_ownref fields_list_obj(PyObject_GetAttrString(d, "_fields_"));
@@ -229,7 +229,7 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
                 ss << "The _fields_[" << i << "] member of the ctypes C struct is not a tuple of size 2";
                 throw runtime_error(ss.str());
             }
-            field_types.push_back(dtype_from_ctypes_cdatatype(PyTuple_GET_ITEM(item, 1)));
+            field_types.push_back(ndt_type_from_ctypes_cdatatype(PyTuple_GET_ITEM(item, 1)));
             PyObject *key = PyTuple_GET_ITEM(item, 0);
             field_names.push_back(pystring_as_string(key));
             pyobject_ownref field_data_obj(PyObject_GetAttr(d, key));
@@ -251,16 +251,16 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         }
     } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
         // Translate into a either a fixed_dim or strided_dim
-        pyobject_ownref element_dtype_obj(PyObject_GetAttrString(d, "_type_"));
-        ndt::type element_dtype = dtype_from_ctypes_cdatatype(element_dtype_obj);
-        if (element_dtype.get_data_size() != 0) {
+        pyobject_ownref element_tp_obj(PyObject_GetAttrString(d, "_type_"));
+        ndt::type element_tp = ndt_type_from_ctypes_cdatatype(element_tp_obj);
+        if (element_tp.get_data_size() != 0) {
             pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
-            return ndt::make_fixed_dim(array_length, element_dtype);
+            return ndt::make_fixed_dim(array_length, element_tp);
         } else {
-            return ndt::make_strided_dim(element_dtype);
+            return ndt::make_strided_dim(element_tp);
         }
     }
 
-    throw runtime_error("Ctypes type object is not supported by dynd::dtype");
+    throw runtime_error("Ctypes type object is not supported by dynd type");
 }

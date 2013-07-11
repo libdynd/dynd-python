@@ -5,7 +5,7 @@
 
 #include <Python.h>
 
-#include <dynd/dtype_assign.hpp>
+#include <dynd/typed_data_assign.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
@@ -121,16 +121,16 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         // Do some special case assignments
         if (WArray_Check(value)) {
             const nd::array& v = ((WArray *)value)->v;
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyBool_Check(value)) {
             dynd_bool v = (value == Py_True);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type<dynd_bool>(), NULL, reinterpret_cast<const char *>(&v));
     #if PY_VERSION_HEX < 0x03000000
         } else if (PyInt_Check(value)) {
             long v = PyInt_AS_LONG(value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type<long>(), NULL, reinterpret_cast<const char *>(&v));
     #endif // PY_VERSION_HEX < 0x03000000
         } else if (PyLong_Check(value)) {
@@ -138,15 +138,15 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             if (v == -1 && PyErr_Occurred()) {
                 throw runtime_error("error converting int value");
             }
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyFloat_Check(value)) {
             double v = PyFloat_AS_DOUBLE(value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type<double>(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyComplex_Check(value)) {
             complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
 #if PY_VERSION_HEX < 0x03000000
         } else if (PyString_Check(value)) {
@@ -170,7 +170,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             str_d.end = pystr_data + pystr_len;
             str_md.blockref = NULL;
 
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
 #else
         } else if (PyBytes_Check(value)) {
@@ -187,7 +187,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             bytes_d.end = pybytes_data + pybytes_len;
             bytes_md.blockref = NULL;
 
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         bytes_dt, reinterpret_cast<const char *>(&bytes_md), reinterpret_cast<const char *>(&bytes_d));
 #endif
         } else if (PyUnicode_Check(value)) {
@@ -207,29 +207,29 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             str_d.end = s + len;
             str_md.blockref = NULL;
 
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
     #if DYND_NUMPY_INTEROP
         } else if (PyArray_Check(value)) {
             const nd::array& v = array_from_numpy_array((PyArrayObject *)value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_IsScalar(value, Generic)) {
             const nd::array& v = array_from_numpy_scalar(value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_DescrCheck(value)) {
             const ndt::type& v = make_ndt_type_from_pyobject(value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
     #endif // DYND_NUMPY_INTEROP
         } else if (WType_Check(value)) {
             const ndt::type& v = ((WType *)value)->v;
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyType_Check(value)) {
             const ndt::type& v = make_ndt_type_from_pyobject(value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyDict_Check(value)) {
             array_assign_from_pydict(dt, metadata, data, value);
@@ -247,7 +247,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
 
             // Fall back strategy, where we convert to nd::array, then assign
             nd::array v = array_from_py(value);
-            dtype_assign(dt, metadata, data,
+            typed_data_assign(dt, metadata, data,
                             v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         }
     }
@@ -698,13 +698,13 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
     // Special-case assigning from known array types
     if (WArray_Check(value)) {
         const nd::array& n = ((WArray *)value)->v;
-        dtype_assign(dt, metadata, data,
+        typed_data_assign(dt, metadata, data,
                         n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
         return;
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_Check(value)) {
         const nd::array& v = array_from_numpy_array((PyArrayObject *)value);
-        dtype_assign(dt, metadata, data,
+        typed_data_assign(dt, metadata, data,
                     v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         return;
 #endif // DYND_NUMPY_INTEROP
@@ -747,7 +747,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
                             shape.get() + (dst_undim - seq_undim)));
             array_assign_from_value(tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
                             value);
-            dtype_assign(dt, metadata, data, tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readonly_originptr());
+            typed_data_assign(dt, metadata, data, tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readonly_originptr());
         } else {
             array_assign_from_value(dt, metadata, data, value);
         }

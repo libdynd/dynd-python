@@ -54,7 +54,7 @@ void pydynd::init_w_type_typeobject(PyObject *type)
     pydynd::WType_Type = (PyTypeObject *)type;
 }
 
-std::string pydynd::dtype_repr(const dynd::ndt::type& d)
+std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
 {
     std::stringstream ss;
     if (d.is_builtin() &&
@@ -98,7 +98,7 @@ std::string pydynd::dtype_repr(const dynd::ndt::type& d)
     return ss.str();
 }
 
-PyObject *pydynd::dtype_get_kind(const dynd::ndt::type& d)
+PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type& d)
 {
     stringstream ss;
     ss << d.get_kind();
@@ -110,7 +110,7 @@ PyObject *pydynd::dtype_get_kind(const dynd::ndt::type& d)
 #endif
 }
 
-PyObject *pydynd::dtype_get_type_id(const dynd::ndt::type& d)
+PyObject *pydynd::ndt_type_get_type_id(const dynd::ndt::type& d)
 {
     stringstream ss;
     ss << d.get_type_id();
@@ -122,16 +122,16 @@ PyObject *pydynd::dtype_get_type_id(const dynd::ndt::type& d)
 #endif
 }
 
-ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
+ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj)
 {
 #if DYND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
         // Numpy array
         PyArray_Descr *d = PyArray_DESCR((PyArrayObject *)obj);
-        return dtype_from_numpy_dtype(d);
+        return ndt_type_from_numpy_dtype(d);
     } else if (PyArray_IsScalar(obj, Generic)) {
         // Numpy scalar
-        return dtype_of_numpy_scalar(obj);
+        return ndt_type_of_numpy_scalar(obj);
     }
 #endif // DYND_NUMPY_INTEROP
     
@@ -209,7 +209,7 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 }
 
 /**
- * Creates a dynd::dtype out of typical Python typeobjects.
+ * Creates a dynd type out of typical Python typeobjects.
  */
 static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
 {
@@ -227,12 +227,12 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
         return ndt::make_type<complex<double> >();
     } else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
         // CTypes type object
-        return dtype_from_ctypes_cdatatype((PyObject *)obj);
+        return ndt_type_from_ctypes_cdatatype((PyObject *)obj);
     } else if (obj == PyDateTimeAPI->DateType) {
         return ndt::make_date();
     }
 
-    throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");
+    throw std::runtime_error("could not convert the given Python TypeObject into a dynd type");
 }
 
 dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
@@ -250,7 +250,7 @@ dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
     } else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP
         ndt::type result;
-        if (dtype_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
+        if (ndt_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
             return result;
         }
 #endif // DYND_NUMPY_INTEROP
@@ -260,7 +260,7 @@ dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
 
 #if DYND_NUMPY_INTEROP
     if (PyArray_DescrCheck(obj)) {
-        return dtype_from_numpy_dtype((PyArray_Descr *)obj);
+        return ndt_type_from_numpy_dtype((PyArray_Descr *)obj);
     }
 #endif // DYND_NUMPY_INTEROP
 
@@ -268,7 +268,7 @@ dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
     ss << "could not convert the object ";
     pyobject_ownref repr(PyObject_Repr(obj));
     ss << pystring_as_string(repr.get());
-    ss << " into a dynd::dtype";
+    ss << " into a dynd type";
     throw std::runtime_error(ss.str());
 }
 
@@ -325,9 +325,9 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     }
 }
 
-dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type& to_dtype, const dynd::ndt::type& from_dtype, PyObject *errmode)
+dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp, PyObject *errmode)
 {
-    return ndt::make_convert(to_dtype, from_dtype, pyarg_error_mode(errmode));
+    return ndt::make_convert(to_tp, from_tp, pyarg_error_mode(errmode));
 }
 
 dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type)
@@ -350,16 +350,16 @@ dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
     return ndt::make_string(encoding);
 }
 
-dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type& target_dtype)
+dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type& target_tp)
 {
-    return ndt::make_pointer(target_dtype);
+    return ndt::make_pointer(target_tp);
 }
 
 dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types, PyObject *field_names)
 {
     vector<ndt::type> field_types_vec;
     vector<string> field_names_vec;
-    pyobject_as_vector_dtype(field_types, field_types_vec);
+    pyobject_as_vector_ndt_type(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
     return ndt::make_struct(field_types_vec, field_names_vec);
 }
@@ -368,7 +368,7 @@ dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *
 {
     vector<ndt::type> field_types_vec;
     vector<string> field_names_vec;
-    pyobject_as_vector_dtype(field_types, field_types_vec);
+    pyobject_as_vector_ndt_type(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
     if (field_types_vec.size() != field_names_vec.size()) {
         throw runtime_error("The input field types and field names lists must have the same size");
@@ -376,7 +376,7 @@ dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *
     return ndt::make_cstruct(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
 }
 
-dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const ndt::type& element_dtype, PyObject *axis_perm)
+dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const ndt::type& element_tp, PyObject *axis_perm)
 {
     vector<intptr_t> shape_vec;
     if (PySequence_Check(shape)) {
@@ -394,13 +394,13 @@ dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const ndt::typ
         if (axis_perm_vec.size() != shape_vec.size()) {
             throw runtime_error("Provided axis_perm is a different size than the provided shape");
         }
-        return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_dtype, &axis_perm_vec[0]);
+        return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp, &axis_perm_vec[0]);
     } else {
-        return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_dtype, NULL);
+        return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp, NULL);
     }
 }
 
-dynd::ndt::type pydynd::dtype_getitem(const dynd::ndt::type& d, PyObject *subscript)
+dynd::ndt::type pydynd::ndt_type_getitem(const dynd::ndt::type& d, PyObject *subscript)
 {
     // Convert the pyobject into an array of iranges
     intptr_t size;
@@ -423,7 +423,7 @@ dynd::ndt::type pydynd::dtype_getitem(const dynd::ndt::type& d, PyObject *subscr
     return d.at_array((int)size, indices.get());
 }
 
-PyObject *pydynd::dtype_array_property_names(const ndt::type& d)
+PyObject *pydynd::ndt_type_array_property_names(const ndt::type& d)
 {
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;

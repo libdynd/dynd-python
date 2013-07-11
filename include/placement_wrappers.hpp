@@ -2,7 +2,7 @@
 // Copyright (C) 2011-13 Mark Wiebe, DyND Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
-// This header defines some placement wrappers of dtype and nd::array
+// This header defines some placement wrappers of ndt::type and nd::array
 // to enable wrapping them without adding extra indirection layers.
 //
 
@@ -17,7 +17,7 @@
 
 #define DYND_DEFINE_PLACEMENT_WRAPPER(cpp_type, cpp_type_no_namespace, wrapper_type) \
     /** This is a struct with the same alignment (because of intptr_t) \
-     // and size as dynd::dtype. It's what we wrap in Cython, and use \
+     // and size as ndt::type. It's what we wrap in Cython, and use \
      // placement new and delete to manage its lifetime. */ \
     struct wrapper_type { \
         intptr_t dummy[(sizeof(cpp_type) + sizeof(intptr_t) - 1)/sizeof(intptr_t)]; \

@@ -42,10 +42,10 @@ extern ctypes_info ctypes;
 void init_ctypes_interop();
 
 /**
- * Constructs a dtype from a ctypes type object, such
+ * Constructs a dynd type from a ctypes type object, such
  * as ctypes.c_int, ctypes.c_float, etc.
  */
-dynd::ndt::type dtype_from_ctypes_cdatatype(PyObject *d);
+dynd::ndt::type ndt_type_from_ctypes_cdatatype(PyObject *d);
 
 //////////////////////////////////////////////////////////
 // The following emulates a lot of the internal ctypes.h

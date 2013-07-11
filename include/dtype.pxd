@@ -79,7 +79,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
 
         ndt_type with_replaced_udtype(ndt_type&, size_t) except +translate_exception
 
-cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
+cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
         assign_error_none
         assign_error_overflow
@@ -114,15 +114,15 @@ cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
 cdef extern from "type_functions.hpp" namespace "pydynd":
     void init_w_type_typeobject(object)
 
-    string dtype_str(ndt_type&)
-    string dtype_repr(ndt_type&)
-    ndt_type deduce_dtype_from_pyobject(object) except +translate_exception
+    string ndt_type_str(ndt_type&)
+    string ndt_type_repr(ndt_type&)
+    ndt_type deduce_ndt_type_from_pyobject(object) except +translate_exception
     ndt_type make_ndt_type_from_pyobject(object) except +translate_exception
 
-    object dtype_get_kind(ndt_type&) except +translate_exception
-    object dtype_get_type_id(ndt_type&) except +translate_exception
-    ndt_type dtype_getitem(ndt_type&, object) except +translate_exception
-    object dtype_array_property_names(ndt_type&) except +translate_exception
+    object ndt_type_get_kind(ndt_type&) except +translate_exception
+    object ndt_type_get_type_id(ndt_type&) except +translate_exception
+    ndt_type ndt_type_getitem(ndt_type&, object) except +translate_exception
+    object ndt_type_array_property_names(ndt_type&) except +translate_exception
 
     ndt_type dynd_make_convert_type(ndt_type&, ndt_type&, object) except +translate_exception
     ndt_type dynd_make_view_type(ndt_type&, ndt_type&) except +translate_exception

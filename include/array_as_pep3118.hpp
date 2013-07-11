@@ -15,9 +15,9 @@ namespace pydynd {
 /**
  * \brief Converts a dynd type into a PEP 3118 format string.
  *
- * \param dt  The dtype to convert.
- * \param metadata  If non-NULL, dtype metadata to provide additional strides/offsets
- *                  not available in just the dtype.
+ * \param dt  The dynd type to convert.
+ * \param metadata  If non-NULL, array metadata to provide additional strides/offsets
+ *                  not available in just the type.
  *
  * \returns  A PEP3118 format string.
  */

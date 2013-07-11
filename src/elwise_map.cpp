@@ -230,7 +230,7 @@ public:
                 }
             }
         }
-        // If the dtypes don't match the ones for this generator,
+        // If the types don't match the ones for this generator,
         // call the elementwise dimension handler to handle one dimension
         // or handle input/output buffering, giving 'this' as the next
         // kernel generator to call
@@ -340,7 +340,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
 
     dst_dt = make_ndt_type_from_pyobject(dst_type);
     if (src_type != Py_None) {
-        // Cast to the source dtype if requested
+        // Cast to the source type if requested
         src_dt = make_ndt_type_from_pyobject(src_type);
         // Do the ucast in a way to match up the dimensions
         n = n.ucast(src_dt, src_dt.get_undim());

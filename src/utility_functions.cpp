@@ -140,13 +140,13 @@ std::string pydynd::pystring_as_string(PyObject *str)
     }
 }
 
-void pydynd::pyobject_as_vector_dtype(PyObject *list_dtype, std::vector<dynd::ndt::type>& vector_dtype)
+void pydynd::pyobject_as_vector_ndt_type(PyObject *list_of_types, std::vector<dynd::ndt::type>& vector_of_ndt_types)
 {
-    Py_ssize_t size = PySequence_Size(list_dtype);
-    vector_dtype.resize(size);
+    Py_ssize_t size = PySequence_Size(list_of_types);
+    vector_of_ndt_types.resize(size);
     for (Py_ssize_t i = 0; i < size; ++i) {
-        pyobject_ownref item(PySequence_GetItem(list_dtype, i));
-        vector_dtype[i] = make_ndt_type_from_pyobject(item.get());
+        pyobject_ownref item(PySequence_GetItem(list_of_types, i));
+        vector_of_ndt_types[i] = make_ndt_type_from_pyobject(item.get());
     }
 }
 

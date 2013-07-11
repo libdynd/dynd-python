@@ -67,7 +67,7 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
         throw std::runtime_error(ss.str());
     }
 
-    // If an identity is provided, get an immutable version of it as the reduction dtype
+    // If an identity is provided, get an immutable version of it as the reduction type
     if (!identity.empty()) {
         out_kernel.m_identity = identity.cast_scalars(returntype).eval_immutable();
     } else {
@@ -138,7 +138,7 @@ PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObj
             */
         } else {
             std::stringstream ss;
-            ss << gf.get_name() << ": could not find a gfunc kernel matching input dtype (" << argtypes[0] << ")";
+            ss << gf.get_name() << ": could not find a gfunc kernel matching input type (" << argtypes[0] << ")";
             throw std::runtime_error(ss.str());
         }
     } else {

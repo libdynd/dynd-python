@@ -285,7 +285,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
     def test_var_dim_conversion(self):
         # A simple instantiated var_dim array should be
         # vieable with numpy without changes
-        a = nd.array([1, 2, 3, 4, 5], dtype='var, int32')
+        a = nd.array([1, 2, 3, 4, 5], type='var, int32')
         b = nd.as_numpy(a)
         self.assertTrue(isinstance(b, np.ndarray))
         self.assertEqual(b.dtype, np.dtype('int32'))

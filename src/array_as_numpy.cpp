@@ -100,7 +100,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 out_numpy_dtype->reset((PyObject *)datedt);
                 return;
 #else
-                throw runtime_error("NumPy >= 1.6 is required for dynd date dtype interop");
+                throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
             }
         case strided_dim_type_id:
@@ -122,7 +122,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 return;
             } else {
                 // If this isn't one of the array dimensions, it maps into
-                // a NumPy dtype with a shape
+                // a numpy dtype with a shape
                 if (metadata == NULL) {
                     stringstream ss;
                     ss << "cannot determine shape of dynd type " << dt;
@@ -131,20 +131,20 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 }
                 // Build up the shape of the array for NumPy
                 pyobject_ownref shape(PyList_New(0));
-                ndt::type element_dtype = dt;
+                ndt::type element_tp = dt;
                 while(undim > 0) {
                     size_t dim_size = 0;
                     if (dt.get_type_id() == strided_dim_type_id) {
                         const strided_dim_type *sad =
-                                        static_cast<const strided_dim_type *>(element_dtype.extended());
+                                        static_cast<const strided_dim_type *>(element_tp.extended());
                         dim_size = sad->get_dim_size(metadata, NULL);
-                        element_dtype = sad->get_element_type();
+                        element_tp = sad->get_element_type();
                         metadata += sizeof(strided_dim_type_metadata);
                     } else if (dt.get_type_id() == fixed_dim_type_id) {
                         const fixed_dim_type *fad =
-                                        static_cast<const fixed_dim_type *>(element_dtype.extended());
+                                        static_cast<const fixed_dim_type *>(element_tp.extended());
                         dim_size = fad->get_fixed_dim_size();
-                        element_dtype = fad->get_element_type();
+                        element_tp = fad->get_element_type();
                     } else {
                         stringstream ss;
                         ss << "dynd as_numpy could not convert dynd type ";
@@ -157,11 +157,11 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                         throw runtime_error("propagating python error");
                     }
                 }
-                // Get the NumPy dtype of the element
+                // Get the numpy dtype of the element
                 pyobject_ownref child_numpy_dtype;
                 make_numpy_dtype_for_copy(&child_numpy_dtype,
-                                0, element_dtype, metadata);
-                // Create the result NumPy dtype
+                                0, element_tp, metadata);
+                // Create the result numpy dtype
                 pyobject_ownref tuple_obj(PyTuple_New(2));
                 PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.release());
                 PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.release());
@@ -170,7 +170,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 if (!PyArray_DescrConverter(tuple_obj, &result)) {
                     throw runtime_error("failed to convert dynd type into numpy subarray dtype");
                 }
-                // Put the final dtype reference in the output
+                // Put the final numpy dtype reference in the output
                 out_numpy_dtype->reset((PyObject *)result);
                 return;
             }
@@ -199,7 +199,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             pyobject_ownref offsets_obj(PyList_New(field_count));
             size_t standard_offset = 0, standard_alignment = 1;
             for (size_t i = 0; i < field_count; ++i) {
-                // Get the NumPy dtype of the element
+                // Get the numpy dtype of the element
                 pyobject_ownref field_numpy_dtype;
                 make_numpy_dtype_for_copy(&field_numpy_dtype,
                                 0, field_types[i], metadata);
@@ -224,7 +224,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             PyArray_Descr *result = NULL;
             if (!PyArray_DescrAlignConverter(dict_obj, &result)) {
                 stringstream ss;
-                ss << "failed to convert dtype " << dt << " into numpy dtype via dict";
+                ss << "failed to convert dynd type " << dt << " into numpy dtype via dict";
                 throw runtime_error(ss.str());
             }
             out_numpy_dtype->reset((PyObject *)result);
@@ -236,7 +236,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     }
 
     if (dt.get_kind() == expression_kind) {
-        // Convert the value dtype for the copy
+        // Convert the value type for the copy
         make_numpy_dtype_for_copy(out_numpy_dtype, undim,
                         dt.value_type(), NULL);
         return;
@@ -288,12 +288,12 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 *out_requires_copy = true;
                 return;
 #else
-                throw runtime_error("NumPy >= 1.6 is required for dynd date dtype interop");
+                throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
             }
         case property_type_id: {
             const property_type *pd = static_cast<const property_type *>(dt.extended());
-            // Special-case of 'int64 as date' property dtype, which is binary
+            // Special-case of 'int64 as date' property type, which is binary
             // compatible with NumPy's "M8[D]"
             if (pd->is_reversed_property() && pd->get_value_type().get_type_id() == date_type_id &&
                             pd->get_operand_type().get_type_id() == int64_type_id) {
@@ -333,7 +333,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 return;
             } else {
                 // If this isn't one of the array dimensions, it maps into
-                // a NumPy dtype with a shape
+                // a numpy dtype with a shape
                 out_numpy_dtype->clear();
                 *out_requires_copy = true;
                 return;
@@ -351,18 +351,18 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 return;
             } else {
                 // If this isn't one of the array dimensions, it maps into
-                // a NumPy dtype with a shape
+                // a numpy dtype with a shape
                 // Build up the shape of the array for NumPy
                 pyobject_ownref shape(PyList_New(0));
-                ndt::type element_dtype = dt;
+                ndt::type element_tp = dt;
                 while(undim > 0) {
                     size_t dim_size = 0;
                     if (dt.get_type_id() == fixed_dim_type_id) {
                         const fixed_dim_type *fad =
-                                        static_cast<const fixed_dim_type *>(element_dtype.extended());
-                        element_dtype = fad->get_element_type();
+                                        static_cast<const fixed_dim_type *>(element_tp.extended());
+                        element_tp = fad->get_element_type();
                         if (fad->get_data_size() !=
-                                        element_dtype.get_data_size() * dim_size) {
+                                        element_tp.get_data_size() * dim_size) {
                             // If it's not C-order, a copy is required
                             out_numpy_dtype->clear();
                             *out_requires_copy = true;
@@ -380,16 +380,16 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                         throw runtime_error("propagating python error");
                     }
                 }
-                // Get the NumPy dtype of the element
+                // Get the numpy dtype of the element
                 pyobject_ownref child_numpy_dtype;
                 as_numpy_analysis(&child_numpy_dtype, out_requires_copy,
-                                0, element_dtype, metadata);
+                                0, element_tp, metadata);
                 if (*out_requires_copy) {
                     // If the child required a copy, stop right away
                     out_numpy_dtype->clear();
                     return;
                 }
-                // Create the result NumPy dtype
+                // Create the result numpy dtype
                 pyobject_ownref tuple_obj(PyTuple_New(2));
                 PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.release());
                 PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.release());
@@ -398,7 +398,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 if (!PyArray_DescrConverter(tuple_obj, &result)) {
                     throw runtime_error("failed to convert dynd type into numpy subarray dtype");
                 }
-                // Put the final dtype reference in the output
+                // Put the final numpy dtype reference in the output
                 out_numpy_dtype->reset((PyObject *)result);
                 return;
             }
@@ -407,7 +407,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
         case cstruct_type_id:
         case struct_type_id: {
             if (dt.get_type_id() == struct_type_id && metadata == NULL) {
-                // If it's a struct dtype with no metadata, a copy is required
+                // If it's a struct type with no metadata, a copy is required
                 out_numpy_dtype->clear();
                 *out_requires_copy = true;
                 return;
@@ -432,7 +432,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
 
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                // Get the NumPy dtype of the element
+                // Get the numpy dtype of the element
                 pyobject_ownref field_numpy_dtype;
                 as_numpy_analysis(&field_numpy_dtype, out_requires_copy,
                                 0, field_types[i], metadata);
@@ -460,7 +460,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             PyArray_Descr *result = NULL;
             if (!PyArray_DescrConverter(dict_obj, &result)) {
                 stringstream ss;
-                ss << "failed to convert dtype " << dt << " into numpy dtype via dict";
+                ss << "failed to convert dynd type " << dt << " into numpy dtype via dict";
                 throw runtime_error(ss.str());
             }
             out_numpy_dtype->reset((PyObject *)result);
@@ -596,7 +596,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
 #  endif
                 break;
 #else
-                throw runtime_error("NumPy >= 1.6 is required for dynd date dtype interop");
+                throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
             }
             default: {
@@ -644,7 +644,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     if (requires_copy) {
         if (!allow_copy) {
             stringstream ss;
-            ss << "cannot view dynd object with dtype " << n.get_type();
+            ss << "cannot view dynd array with dtype " << n.get_type();
             ss << " as numpy without making a copy";
             throw runtime_error(ss.str());
         }

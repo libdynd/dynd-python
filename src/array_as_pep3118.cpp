@@ -163,7 +163,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, c
                     o << "x";
                     ++format_offset;
                 }
-                // The field's dtype
+                // The field's type
                 append_pep3118_format(out_itemsize, field_types[i], metadata ? (metadata + metadata_offsets[i]) : NULL, o);
                 format_offset += out_itemsize;
                 // Append the name
@@ -290,10 +290,10 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 
         // Create the format, and allocate the dynamic memory but Py_buffer needs
         char *uniform_metadata = n.get_ndo_meta();
-        ndt::type uniform_dtype = dt.get_type_at_dimension(&uniform_metadata, buffer->ndim);
-        if ((flags&PyBUF_FORMAT) || uniform_dtype.get_data_size() == 0) {
+        ndt::type uniform_tp = dt.get_type_at_dimension(&uniform_metadata, buffer->ndim);
+        if ((flags&PyBUF_FORMAT) || uniform_tp.get_data_size() == 0) {
             // If the array data type doesn't have a fixed size, make_pep3118 fills buffer->itemsize as a side effect
-            string format = make_pep3118_format(buffer->itemsize, uniform_dtype, uniform_metadata);
+            string format = make_pep3118_format(buffer->itemsize, uniform_tp, uniform_metadata);
             if (flags&PyBUF_FORMAT) {
                 buffer->internal = malloc(2*buffer->ndim*sizeof(intptr_t) + format.size() + 1);
                 buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
@@ -308,7 +308,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
             }
         } else {
             buffer->format = NULL;
-            buffer->itemsize = uniform_dtype.get_data_size();
+            buffer->itemsize = uniform_tp.get_data_size();
             buffer->internal = malloc(2*buffer->ndim*sizeof(intptr_t));
             buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
             buffer->strides = buffer->shape + buffer->ndim;

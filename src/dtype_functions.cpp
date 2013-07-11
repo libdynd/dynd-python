@@ -17,7 +17,7 @@
 #include <dynd/dtypes/struct_type.hpp>
 #include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixed_dim_type.hpp>
-#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/date_type.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/shape_tools.hpp>
@@ -194,7 +194,7 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         }
         return make_datetime_dtype(datetime_unit_usecond, tz_abstract);
     } else if (PyDate_Check(obj)) {
-        return make_date_dtype();
+        return make_date_type();
     } else if (WType_Check(obj)) {
         return make_dtype_dtype();
     } else if (PyType_Check(obj)) {
@@ -229,7 +229,7 @@ static dynd::ndt::type make_dtype_from_pytypeobject(PyTypeObject* obj)
         // CTypes type object
         return dtype_from_ctypes_cdatatype((PyObject *)obj);
     } else if (obj == PyDateTimeAPI->DateType) {
-        return make_date_dtype();
+        return make_date_type();
     }
 
     throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");

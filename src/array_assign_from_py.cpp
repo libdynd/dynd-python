@@ -12,7 +12,7 @@
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/date_type.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
@@ -433,7 +433,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
             }
         }
     } else {
-        // TODO support assigning to date_dtype as well
+        // TODO support assigning to date_type as well
         stringstream ss;
         ss << "Cannot assign python dict to dynd type " << dt;
         throw runtime_error(ss.str());

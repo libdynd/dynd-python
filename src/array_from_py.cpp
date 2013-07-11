@@ -12,7 +12,7 @@
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/var_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/date_type.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
@@ -351,7 +351,7 @@ inline void convert_one_pyscalar_date(const ndt::type& dt, const char *metadata,
     if (!PyDate_Check(obj)) {
         throw runtime_error("input object is not a date as expected");
     }
-    const date_dtype *dd = static_cast<const date_dtype *>(dt.extended());
+    const date_type *dd = static_cast<const date_type *>(dt.extended());
     dd->set_ymd(metadata, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
                     PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
@@ -646,8 +646,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                     PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
         return result;
     } else if (PyDate_Check(obj)) {
-        ndt::type d = make_date_dtype();
-        const date_dtype *dd = static_cast<const date_dtype *>(d.extended());
+        ndt::type d = make_date_type();
+        const date_type *dd = static_cast<const date_type *>(d.extended());
         nd::array result = nd::empty(d);
         dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
                     PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));

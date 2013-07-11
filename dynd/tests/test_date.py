@@ -4,7 +4,7 @@ from datetime import date
 from dynd import nd, ndt
 
 class TestDate(unittest.TestCase):
-    def test_date_dtype_properties(self):
+    def test_date_type_properties(self):
         self.assertEqual(type(ndt.date), ndt.type)
         self.assertEqual(str(ndt.date), 'date')
         self.assertEqual(ndt.date.data_size, 4)

@@ -19,7 +19,7 @@
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/date_type.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/property_dtype.hpp>
 #include <dynd/shape_tools.hpp>

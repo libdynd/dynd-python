@@ -16,7 +16,7 @@
 #include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/date_type.hpp>
 #include <dynd/dtypes/property_dtype.hpp>
 
 #include "dtype_functions.hpp"
@@ -165,7 +165,7 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
         string s = pystring_as_string(unit.get());
         if (s == "D") {
             // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
-            dt = make_reversed_property_dtype(make_date_dtype(),
+            dt = make_reversed_property_dtype(make_date_type(),
                             ndt::make_dtype<int64_t>(), "days_after_1970_int64");
         }
         break;
@@ -680,7 +680,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj)
         const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
         int64_t val = scalar->obval;
         if (scalar->obmeta.base == NPY_FR_D) {
-            nd::array result = nd::empty(make_date_dtype());
+            nd::array result = nd::empty(make_date_type());
             if (val == NPY_DATETIME_NAT) {
                 *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
                             DYND_DATE_NA;

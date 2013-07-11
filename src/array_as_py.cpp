@@ -13,7 +13,7 @@
 
 #include <dynd/dtypes/strided_dim_type.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/date_dtype.hpp>
+#include <dynd/dtypes/date_type.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
@@ -114,7 +114,7 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
             }
         }
         case date_type_id: {
-            const date_dtype *dd = static_cast<const date_dtype *>(d.extended());
+            const date_type *dd = static_cast<const date_type *>(d.extended());
             int32_t year, month, day;
             dd->get_ymd(metadata, data, year, month, day);
             return PyDate_FromDate(year, month, day);

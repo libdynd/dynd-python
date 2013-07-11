@@ -312,7 +312,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             break;
         }
         case byteswap_type_id: {
-            const base_expression_dtype *bed = static_cast<const base_expression_dtype *>(dt.extended());
+            const base_expression_type *bed = static_cast<const base_expression_type *>(dt.extended());
             // Analyze the unswapped version
             as_numpy_analysis(out_numpy_dtype, out_requires_copy,
                             undim, bed->get_value_type(), metadata);

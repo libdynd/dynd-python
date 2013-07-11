@@ -308,7 +308,7 @@ public:
         return offset_out + extra_size;
     }
 
-    void print_dtype(std::ostream& o) const
+    void print_type(std::ostream& o) const
     {
         PyGILState_RAII pgs;
 

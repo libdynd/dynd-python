@@ -50,7 +50,7 @@ namespace {
     };
 };
 
-static void deduce_pylist_shape_and_dtype(PyObject *obj,
+static void deduce_pylist_shape_and_ndt_type(PyObject *obj,
                 vector<intptr_t>& shape, ndt::type& dt, size_t current_axis)
 {
     if (PyList_Check(obj)) {
@@ -69,7 +69,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
         }
         
         for (Py_ssize_t i = 0; i < size; ++i) {
-            deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, dt, current_axis + 1);
+            deduce_pylist_shape_and_ndt_type(PyList_GET_ITEM(obj, i), shape, dt, current_axis + 1);
         }
     } else {
         if (shape.size() != current_axis) {
@@ -154,7 +154,7 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const ndt::type& udt,
                 shape.push_back(size);
             } else if (udt.get_kind() == struct_kind) {
                 // Signal that this is a dimension which is sometimes scalar, to allow for
-                // raggedness in the struct dtype's fields
+                // raggedness in the struct type's fields
                 shape.push_back(shape_signal_ragged);
             } else {
                 throw runtime_error("dynd array doesn't support dimensions"
@@ -372,7 +372,7 @@ inline void convert_one_pyscalar_datetime(const ndt::type& dt, const char *metad
                     PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
 }
 
-inline void convert_one_pyscalar_dtype(const ndt::type& DYND_UNUSED(dt),
+inline void convert_one_pyscalar_ndt_type(const ndt::type& DYND_UNUSED(dt),
                 const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
 {
     ndt::type dt = make_ndt_type_from_pyobject(obj);
@@ -389,20 +389,20 @@ static void fill_array_from_pylist(const ndt::type& dt, const char *metadata, ch
 
     Py_ssize_t size = PyList_GET_SIZE(obj);
     const char *element_metadata = metadata;
-    ndt::type element_dtype = dt.at_single(0, &element_metadata);
+    ndt::type element_tp = dt.at_single(0, &element_metadata);
     if (shape[current_axis] >= 0) {
         // Fixed-sized dimension
         const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
         intptr_t stride = md->stride;
-        if (element_dtype.is_scalar()) {
+        if (element_tp.is_scalar()) {
             for (Py_ssize_t i = 0; i < size; ++i) {
                 PyObject *item = PyList_GET_ITEM(obj, i);
-                ConvertOneFn(element_dtype, element_metadata, data, item);
+                ConvertOneFn(element_tp, element_metadata, data, item);
                 data += stride;
             }
         } else {
             for (Py_ssize_t i = 0; i < size; ++i) {
-                fill_array_from_pylist<ConvertOneFn>(element_dtype, element_metadata, data,
+                fill_array_from_pylist<ConvertOneFn>(element_tp, element_metadata, data,
                                 PyList_GET_ITEM(obj, i), shape, current_axis + 1);
                 data += stride;
             }
@@ -416,18 +416,18 @@ static void fill_array_from_pylist(const ndt::type& dt, const char *metadata, ch
 
         memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
         allocator->allocate(md->blockref, size * stride,
-                        element_dtype.get_data_alignment(), &out->begin, &out_end);
+                        element_tp.get_data_alignment(), &out->begin, &out_end);
         out->size = size;
         char *element_data = out->begin;
-        if (element_dtype.is_scalar()) {
+        if (element_tp.is_scalar()) {
             for (Py_ssize_t i = 0; i < size; ++i) {
                 PyObject *item = PyList_GET_ITEM(obj, i);
-                ConvertOneFn(element_dtype, element_metadata, element_data, item);
+                ConvertOneFn(element_tp, element_metadata, element_data, item);
                 element_data += stride;
             }
         } else {
             for (Py_ssize_t i = 0; i < size; ++i) {
-                fill_array_from_pylist<ConvertOneFn>(element_dtype, element_metadata, element_data,
+                fill_array_from_pylist<ConvertOneFn>(element_tp, element_metadata, element_data,
                                 PyList_GET_ITEM(obj, i), shape, current_axis + 1);
                 element_data += stride;
             }
@@ -438,13 +438,13 @@ static void fill_array_from_pylist(const ndt::type& dt, const char *metadata, ch
 static dynd::nd::array array_from_pylist(PyObject *obj)
 {
     // TODO: Add ability to specify access flags (e.g. immutable)
-    // Do a pass through all the data to deduce its dtype and shape
+    // Do a pass through all the data to deduce its type and shape
     vector<intptr_t> shape;
     ndt::type dt(void_type_id);
     Py_ssize_t size = PyList_GET_SIZE(obj);
     shape.push_back(size);
     for (Py_ssize_t i = 0; i < size; ++i) {
-        deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, dt, 1);
+        deduce_pylist_shape_and_ndt_type(PyList_GET_ITEM(obj, i), shape, dt, 1);
     }
     // If no type was deduced, e.g. a size-zero list, default to double/float64
     if (dt.get_type_id() == void_type_id) {
@@ -515,7 +515,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
             break;
         }
         case type_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_dtype>(result.get_type(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_ndt_type>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
@@ -665,7 +665,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     }
 
     // Special case if it's an iterator: convert to a datashape of 'var, float64'.
-    // This is based on NumPy's default np.fromiter(it) behavior when no dtype
+    // This is based on NumPy's default np.fromiter(it) behavior when no type
     // is specified
     PyObject *iter = PyObject_GetIter(obj);
     if (iter != NULL) {
@@ -689,13 +689,13 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     throw std::runtime_error("could not convert python object into a dynd array");
 }
 
-static bool dtype_requires_shape(const ndt::type& dt)
+static bool ndt_type_requires_shape(const ndt::type& dt)
 {
     if (dt.get_undim() > 0) {
         switch (dt.get_type_id()) {
             case fixed_dim_type_id:
             case var_dim_type_id:
-                return dtype_requires_shape(
+                return ndt_type_requires_shape(
                                 static_cast<const base_uniform_dim_type *>(
                                     dt.extended())->get_element_type());
             default:
@@ -713,7 +713,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
         if (dt.get_undim() != 0) {
             stringstream ss;
             ss << "dynd array creation with requested automatic deduction of array shape, but provided dt ";
-            ss << dt << " already has a uniform dim";
+            ss << dt << " already has an array dimension type";
             throw runtime_error(ss.str());
         }
         if (PyUnicode_Check(obj)
@@ -769,8 +769,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                 result = nd::make_strided_array(dt, shape.size(), &shape[0]);
             }
         } else {
-            // If the object is an iterator and the dtype doesn't already have
-            // a uniform dim, prepend a var dim as a special case
+            // If the object is an iterator and the type doesn't already have
+            // a array dimension, prepend a var dim as a special case
             PyObject *iter = PyObject_GetIter(obj);
             if (iter != NULL) {
                 result = nd::empty(ndt::make_var_dim(dt));
@@ -788,7 +788,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                 result = nd::empty(dt);
             }
         }
-    } else if (dt.get_undim() > 0 && dtype_requires_shape(dt)) {
+    } else if (dt.get_undim() > 0 && ndt_type_requires_shape(dt)) {
         size_t undim = dt.get_undim();
         dimvector shape(undim);
         for (size_t i = 0; i != undim; ++i) {

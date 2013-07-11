@@ -176,7 +176,7 @@ set(pydynd_CYTHON_SRC
     src/_pydynd.pyx
     include/codegen_cache.pxd
     include/dynd.pxd
-    include/dtype.pxd
+    include/ndt_type.pxd
     include/array.pxd
     include/gfunc_callable.pxd
     include/elwise_gfunc.pxd

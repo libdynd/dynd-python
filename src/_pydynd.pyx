@@ -37,7 +37,7 @@ init_w_ndt_type_callable_typeobject(w_type_callable)
 
 include "dynd.pxd"
 #include "codegen_cache.pxd"
-include "dtype.pxd"
+include "ndt_type.pxd"
 include "array.pxd"
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
@@ -56,6 +56,8 @@ if any_diagnostics_enabled():
                 str(<char *>which_diagnostics_enabled().c_str()), PerformanceWarning)
 
 from cython.operator import dereference
+# Save the built-in type operator, so we can have parameters called 'type'
+builtin_type = type
 
 # Create the codegen cache used by default when making gfuncs
 #cdef w_codegen_cache default_cgcache_c = w_codegen_cache()
@@ -365,7 +367,7 @@ def make_byteswap(builtin_type, operand_type=None):
     """
     ndt.make_byteswap(builtin_type, operand_type=None)
 
-    Constructs a byteswap dtype from a builtin one, with an
+    Constructs a byteswap type from a builtin one, with an
     optional expression type to chain in as the operand.
 
     Parameters
@@ -396,7 +398,7 @@ def make_fixedbytes(int data_size, int data_alignment=1):
     """
     ndt.make_fixedbytes(data_size, data_alignment=1)
 
-    Constructs a bytes dtype with the specified data size and alignment.
+    Constructs a bytes type with the specified data size and alignment.
 
     Parameters
     ----------
@@ -419,9 +421,9 @@ def make_fixedbytes(int data_size, int data_alignment=1):
     SET(result.v, dynd_make_fixedbytes_type(data_size, data_alignment))
     return result
 
-def make_convert(to_dtype, from_dtype, errmode=None):
+def make_convert(to_tp, from_tp, errmode=None):
     """
-    ndt.make_convert(to_dtype, from_dtype, errmode='fractional')
+    ndt.make_convert(to_tp, from_tp, errmode='fractional')
 
     Constructs an expression type which converts from one
     dynd type to another, using a specified mode for handling
@@ -429,10 +431,10 @@ def make_convert(to_dtype, from_dtype, errmode=None):
 
     Parameters
     ----------
-    to_type : dynd type
+    to_tp : dynd type
         The dynd type being converted to. This is the 'value_type'
         of the resulting expression dynd type.
-    from_type : dynd type
+    from_tp : dynd type
         The dynd type being converted from. This is the 'operand_type'
         of the resulting expression dynd type.
     errmode : 'inexact', 'fractional', 'overflow', 'none'
@@ -452,7 +454,7 @@ def make_convert(to_dtype, from_dtype, errmode=None):
     ndt.type('convert<to=uint8, from=uint16, errmode=none>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_convert_type(GET(w_type(to_dtype).v), GET(w_type(from_dtype).v), errmode))
+    SET(result.v, dynd_make_convert_type(GET(w_type(to_tp).v), GET(w_type(from_tp).v), errmode))
     return result
 
 def make_view(value_type, operand_type):
@@ -460,7 +462,7 @@ def make_view(value_type, operand_type):
     ndt.make_view(value_type, operand_type)
 
     Constructs an expression type which views the bytes of
-    one dtype as another.
+    one type as another.
 
     Parameters
     ----------
@@ -482,16 +484,16 @@ def make_view(value_type, operand_type):
     SET(result.v, dynd_make_view_type(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
     return result
 
-def make_unaligned(aligned_dtype):
+def make_unaligned(aligned_tp):
     """
-    ndt.make_unaligned(aligned_dtype)
+    ndt.make_unaligned(aligned_tp)
 
-    Constructs a dtype with alignment of 1 from the given dtype.
-    If the dtype already has alignment 1, just returns it.
+    Constructs a type with alignment of 1 from the given type.
+    If the type already has alignment 1, just returns it.
 
     Parameters
     ----------
-    aligned_dtype : dynd type
+    aligned_tp : dynd type
         The dynd type which should be viewed on data that is
         not properly aligned.
 
@@ -505,14 +507,14 @@ def make_unaligned(aligned_dtype):
     ndt.uint8
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_unaligned_type(GET(w_type(aligned_dtype).v)))
+    SET(result.v, dynd_make_unaligned_type(GET(w_type(aligned_tp).v)))
     return result
 
 def make_fixedstring(int size, encoding=None):
     """
     ndt.make_fixedstring(size, encoding='utf_8')
 
-    Constructs a fixed-size string dtype with a specified encoding,
+    Constructs a fixed-size string type with a specified encoding,
     whose size is the specified number of base units for the encoding.
 
     Parameters
@@ -1265,21 +1267,21 @@ def as_numpy(w_array n, allow_copy=False):
     # TODO: Could also convert dynd types into numpy dtypes
     return array_as_numpy(n, bool(allow_copy))
 
-def empty(shape, dtype=None):
+def empty(shape, type=None):
     """
-    nd.empty(dtype)
-    nd.empty(shape, dtype)
+    nd.empty(type)
+    nd.empty(shape, type)
 
     Creates an uninitialized array of the specified
-    (shape, dtype) or just (dtype).
+    shape if supplied, with the provided dynd type.
 
     Parameters
     ----------
     shape : list of int, optional
-        If provided, specifies the shape for the dtype dimensions
+        If provided, specifies the shape for the type dimensions
         that don't encode a dimension size themselves, such as
         strided_dim dimensions.
-    dtype : dynd type
+    type : dynd type
         The data type of the uninitialized array to create. This
         is the full data type, including the multi-dimensional
         structure.
@@ -1294,10 +1296,10 @@ def empty(shape, dtype=None):
     nd.array([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
     cdef w_array result = w_array()
-    if dtype is not None:
-        SET(result.v, array_empty(shape, GET(w_type(dtype).v)))
+    if type is not None:
+        SET(result.v, array_empty(shape, GET(w_type(type).v)))
     else:
-        # Interpret the first argument (shape) as a dtype in the one argument case
+        # Interpret the first argument (shape) as a type in the one argument case
         SET(result.v, array_empty(GET(w_type(shape).v)))
     return result
 
@@ -1376,7 +1378,7 @@ def groupby(data, by, groups = None):
     else:
         if type(groups) in [list, w_array]:
             # If groups is a list or dynd array, assume it's a list
-            # of groups for a categorical dtype
+            # of groups for a categorical type
             SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v),
                             dynd_make_categorical_type(GET(w_array(groups).v))))
         else:
@@ -1459,15 +1461,15 @@ def fields(w_array struct_array, *fields_list):
     SET(result.v, nd_fields(GET(struct_array.v), fields_list))
     return result
 
-def parse_json(dtype, json):
+def parse_json(type, json):
     """
-    nd.parse_json(dtype, json)
+    nd.parse_json(type, json)
 
-    Parses an input JSON string as a particular dtype.
+    Parses an input JSON string as a particular dynd type.
 
     Parameters
     ----------
-    dtype : dynd type
+    type : dynd type
         The type to interpret the input JSON as. If the data
         does not match this type, an error is raised during parsing.
     json : string or bytes
@@ -1485,10 +1487,10 @@ def parse_json(dtype, json):
     nd.array([[0, 1], [3, 2]], fixed_dim<2, cstruct<int8 x, int8 y>>)
     """
     cdef w_array result = w_array()
-    if type(dtype) is w_array:
-        dynd_parse_json_array(GET((<w_array>dtype).v), GET(w_array(json).v))
+    if builtin_type(type) is w_array:
+        dynd_parse_json_array(GET((<w_array>type).v), GET(w_array(json).v))
     else:
-        SET(result.v, dynd_parse_json_type(GET(w_type(dtype).v), GET(w_array(json).v)))
+        SET(result.v, dynd_parse_json_type(GET(w_type(type).v), GET(w_array(json).v)))
         return result
 
 def format_json(w_array n):

@@ -443,22 +443,22 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     if (selected_fields.empty()) {
         throw runtime_error("nd.fields requires at least one field name to be specified");
     }
-    // Construct the field mapping and output field dtypes
+    // Construct the field mapping and output field types
     vector<intptr_t> selected_index(selected_fields.size());
-    vector<ndt::type> selected_dtypes(selected_fields.size());
+    vector<ndt::type> selected_ndt_types(selected_fields.size());
     for (size_t i = 0; i != selected_fields.size(); ++i) {
         selected_index[i] = bsd->get_field_index(selected_fields[i]);
         if (selected_index[i] < 0) {
             stringstream ss;
             ss << "field name ";
             print_escaped_utf8_string(ss, selected_fields[i]);
-            ss << " does not exist in dtype " << fdt;
+            ss << " does not exist in dynd type " << fdt;
             throw runtime_error(ss.str());
         }
-        selected_dtypes[i] = field_types[selected_index[i]];
+        selected_ndt_types[i] = field_types[selected_index[i]];
     }
     // Create the result udt
-    ndt::type rudt = ndt::make_struct(selected_dtypes, selected_fields);
+    ndt::type rudt = ndt::make_struct(selected_ndt_types, selected_fields);
     ndt::type rdt = n.get_type().with_replaced_udtype(rudt);
     const base_struct_type *rudt_bsd = static_cast<const base_struct_type *>(rudt.extended());
 
@@ -477,7 +477,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     // Copy the flags
     result.get_ndo()->m_flags = n.get_ndo()->m_flags;
 
-    // Set the dtype and transform the metadata
+    // Set the type and transform the metadata
     result.get_ndo()->m_type = ndt::type(rdt).release();
     // First copy all the array data type metadata
     ndt::type tmp_dt = rdt;
@@ -501,7 +501,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     const size_t *data_offsets = bsd->get_data_offsets(src_metadata);
     size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_metadata);
     for (size_t i = 0; i != selected_fields.size(); ++i) {
-        const ndt::type& dt = selected_dtypes[i];
+        const ndt::type& dt = selected_ndt_types[i];
         // Copy the data offset
         result_data_offsets[i] = data_offsets[selected_index[i]];
         // Copy the metadata for this field

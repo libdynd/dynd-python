@@ -68,7 +68,7 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
 #if 0 // TODO reenable
     Py_ssize_t nargs = PySequence_Size(args);
 
-    // Convert the args into nd::arrays, and get the value dtypes
+    // Convert the args into nd::arrays, and get the value types
     vector<nd::array> array_args(nargs);
     vector<ndt::type> argtypes(nargs);
     for (Py_ssize_t i = 0; i < nargs; ++i) {

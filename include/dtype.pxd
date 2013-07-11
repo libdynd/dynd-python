@@ -87,28 +87,28 @@ cdef extern from "dynd/dtype_assign.hpp" namespace "dynd":
         assign_error_inexact
         assign_error_default
 
-cdef extern from "dynd/dtypes/fixedbytes_type.hpp" namespace "dynd":
+cdef extern from "dynd/types/fixedbytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_fixedbytes_type "dynd::ndt::make_fixedbytes" (intptr_t, intptr_t) except +translate_exception
 
-cdef extern from "dynd/dtypes/byteswap_type.hpp" namespace "dynd":
+cdef extern from "dynd/types/byteswap_type.hpp" namespace "dynd":
     ndt_type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (ndt_type&) except +translate_exception
     ndt_type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (ndt_type&, ndt_type&) except +translate_exception
 
-cdef extern from "dynd/dtypes/categorical_type.hpp" namespace "dynd":
+cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
     ndt_type dynd_make_categorical_type "dynd::ndt::make_categorical" (ndarray&) except +translate_exception
     ndt_type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (ndarray&) except +translate_exception
 
-cdef extern from "dynd/dtypes/type_alignment.hpp" namespace "dynd":
+cdef extern from "dynd/types/type_alignment.hpp" namespace "dynd":
     ndt_type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (ndt_type&) except +translate_exception
 
-cdef extern from "dynd/dtypes/strided_dim_type.hpp" namespace "dynd":
+cdef extern from "dynd/types/strided_dim_type.hpp" namespace "dynd":
     ndt_type dynd_make_strided_dim_type "dynd::ndt::make_strided_dim" (ndt_type&) except +translate_exception
     ndt_type dynd_make_strided_dim_type "dynd::ndt::make_strided_dim" (ndt_type&, intptr_t) except +translate_exception
 
-cdef extern from "dynd/dtypes/var_dim_type.hpp" namespace "dynd":
+cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
     ndt_type dynd_make_var_dim_type "dynd::ndt::make_var_dim" (ndt_type&) except +translate_exception
 
-cdef extern from "dynd/dtypes/bytes_type.hpp" namespace "dynd":
+cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
 
 cdef extern from "dtype_functions.hpp" namespace "pydynd":

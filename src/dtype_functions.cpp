@@ -9,19 +9,19 @@
 #include "ctypes_interop.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/convert_type.hpp>
-#include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/string_type.hpp>
-#include <dynd/dtypes/bytes_type.hpp>
-#include <dynd/dtypes/pointer_type.hpp>
-#include <dynd/dtypes/struct_type.hpp>
-#include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/fixed_dim_type.hpp>
-#include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/datetime_type.hpp>
-#include <dynd/dtypes/type_type.hpp>
+#include <dynd/types/convert_type.hpp>
+#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/string_type.hpp>
+#include <dynd/types/bytes_type.hpp>
+#include <dynd/types/pointer_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/cstruct_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
+#include <dynd/types/type_type.hpp>
 #include <dynd/shape_tools.hpp>
-#include <dynd/dtypes/builtin_type_properties.hpp>
+#include <dynd/types/builtin_type_properties.hpp>
 
 // Python's datetime C API
 #include "datetime.h"

@@ -6,15 +6,15 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include <dynd/dtypes/string_type.hpp>
-#include <dynd/dtypes/bytes_type.hpp>
-#include <dynd/dtypes/strided_dim_type.hpp>
-#include <dynd/dtypes/fixed_dim_type.hpp>
-#include <dynd/dtypes/var_dim_type.hpp>
-#include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/datetime_type.hpp>
-#include <dynd/dtypes/type_type.hpp>
+#include <dynd/types/string_type.hpp>
+#include <dynd/types/bytes_type.hpp>
+#include <dynd/types/strided_dim_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/var_dim_type.hpp>
+#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
+#include <dynd/types/type_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/dtype_promotion.hpp>

@@ -9,9 +9,9 @@
 #include "array_as_py.hpp"
 #include "placement_wrappers.hpp"
 
-#include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/builtin_type_properties.hpp>
-#include <dynd/dtypes/type_type.hpp>
+#include <dynd/types/cstruct_type.hpp>
+#include <dynd/types/builtin_type_properties.hpp>
+#include <dynd/types/type_type.hpp>
 
 using namespace std;
 using namespace dynd;

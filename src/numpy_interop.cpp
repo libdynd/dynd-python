@@ -7,17 +7,17 @@
 
 #if DYND_NUMPY_INTEROP
 
-#include <dynd/dtypes/byteswap_type.hpp>
-#include <dynd/dtypes/view_type.hpp>
-#include <dynd/dtypes/type_alignment.hpp>
-#include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/strided_dim_type.hpp>
-#include <dynd/dtypes/struct_type.hpp>
-#include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/fixed_dim_type.hpp>
+#include <dynd/types/byteswap_type.hpp>
+#include <dynd/types/view_type.hpp>
+#include <dynd/types/type_alignment.hpp>
+#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/strided_dim_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/cstruct_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/property_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/property_type.hpp>
 
 #include "dtype_functions.hpp"
 #include "array_functions.hpp"

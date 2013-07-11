@@ -11,12 +11,12 @@
 #include "dtype_functions.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/dtypes/strided_dim_type.hpp>
-#include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/date_type.hpp>
-#include <dynd/dtypes/datetime_type.hpp>
-#include <dynd/dtypes/bytes_type.hpp>
-#include <dynd/dtypes/type_type.hpp>
+#include <dynd/types/strided_dim_type.hpp>
+#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
+#include <dynd/types/bytes_type.hpp>
+#include <dynd/types/type_type.hpp>
 
 using namespace std;
 using namespace dynd;

@@ -5,13 +5,13 @@
 
 #include <Python.h>
 
-#include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/fixed_dim_type.hpp>
-#include <dynd/dtypes/struct_type.hpp>
-#include <dynd/dtypes/strided_dim_type.hpp>
-#include <dynd/dtypes/pointer_type.hpp>
-#include <dynd/dtypes/type_alignment.hpp>
+#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/cstruct_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/strided_dim_type.hpp>
+#include <dynd/types/pointer_type.hpp>
+#include <dynd/types/type_alignment.hpp>
 
 #include "ctypes_interop.hpp"
 #include "dtype_functions.hpp"

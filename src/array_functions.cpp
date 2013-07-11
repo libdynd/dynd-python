@@ -10,14 +10,14 @@
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 
-#include <dynd/dtypes/string_type.hpp>
-#include <dynd/dtypes/base_uniform_dim_type.hpp>
+#include <dynd/types/string_type.hpp>
+#include <dynd/types/base_uniform_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
 #include <dynd/dtype_promotion.hpp>
-#include <dynd/dtypes/base_struct_type.hpp>
-#include <dynd/dtypes/base_bytes_type.hpp>
-#include <dynd/dtypes/struct_type.hpp>
+#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/base_bytes_type.hpp>
+#include <dynd/types/struct_type.hpp>
 
 using namespace std;
 using namespace dynd;

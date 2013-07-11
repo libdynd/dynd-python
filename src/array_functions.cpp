@@ -16,7 +16,7 @@
 #include <dynd/ndobject_range.hpp>
 #include <dynd/dtype_promotion.hpp>
 #include <dynd/dtypes/base_struct_dtype.hpp>
-#include <dynd/dtypes/base_bytes_dtype.hpp>
+#include <dynd/dtypes/base_bytes_type.hpp>
 #include <dynd/dtypes/struct_dtype.hpp>
 
 using namespace std;
@@ -143,7 +143,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case bytes_kind: {
             // Return True if there is a non-zero byte, False otherwise
             nd::array n_eval = n.eval();
-            const base_bytes_dtype *bbd = static_cast<const base_bytes_dtype *>(n_eval.get_dtype().extended());
+            const base_bytes_type *bbd = static_cast<const base_bytes_type *>(n_eval.get_dtype().extended());
             const char *begin = NULL, *end = NULL;
             bbd->get_bytes_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
             while (begin != end) {

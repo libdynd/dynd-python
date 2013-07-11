@@ -375,7 +375,7 @@ inline void convert_one_pyscalar_datetime(const ndt::type& dt, const char *metad
 inline void convert_one_pyscalar_dtype(const ndt::type& DYND_UNUSED(dt),
                 const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
 {
-    ndt::type dt = make_dtype_from_pyobject(obj);
+    ndt::type dt = make_ndt_type_from_pyobject(obj);
     dt.swap(reinterpret_cast<type_type_data *>(out)->dt);
 }
 
@@ -448,7 +448,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     }
     // If no type was deduced, e.g. a size-zero list, default to double/float64
     if (dt.get_type_id() == void_type_id) {
-        dt = ndt::make_dtype<double>();
+        dt = ndt::make_type<double>();
     }
 
     // Create the array
@@ -657,10 +657,10 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     } else if (PyList_Check(obj)) {
         return array_from_pylist(obj);
     } else if (PyType_Check(obj)) {
-        return nd::array(make_dtype_from_pyobject(obj));
+        return nd::array(make_ndt_type_from_pyobject(obj));
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_DescrCheck(obj)) {
-        return nd::array(make_dtype_from_pyobject(obj));
+        return nd::array(make_ndt_type_from_pyobject(obj));
 #endif // DYND_NUMPY_INTEROP
     }
 
@@ -671,7 +671,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     if (iter != NULL) {
         // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
         Py_DECREF(iter);
-        nd::array result = nd::empty(ndt::make_var_dim(ndt::make_dtype<double>()));
+        nd::array result = nd::empty(ndt::make_var_dim(ndt::make_type<double>()));
         array_nodim_broadcast_assign_from_py(result.get_dtype(),
                         result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
         return result;

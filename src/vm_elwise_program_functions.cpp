@@ -31,7 +31,7 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
     regtypes.resize(regtypes_size);
     for (Py_ssize_t i = 0; i < regtypes_size; ++i) {
         pyobject_ownref item(PySequence_GetItem(regtypes_object, i));
-        regtypes[i] = make_dtype_from_pyobject(item.get());
+        regtypes[i] = make_ndt_type_from_pyobject(item.get());
     }
 
     // The program (list of instructions)

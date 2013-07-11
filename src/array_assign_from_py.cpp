@@ -126,12 +126,12 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         } else if (PyBool_Check(value)) {
             dynd_bool v = (value == Py_True);
             dtype_assign(dt, metadata, data,
-                        ndt::make_dtype<dynd_bool>(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type<dynd_bool>(), NULL, reinterpret_cast<const char *>(&v));
     #if PY_VERSION_HEX < 0x03000000
         } else if (PyInt_Check(value)) {
             long v = PyInt_AS_LONG(value);
             dtype_assign(dt, metadata, data,
-                        ndt::make_dtype<long>(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type<long>(), NULL, reinterpret_cast<const char *>(&v));
     #endif // PY_VERSION_HEX < 0x03000000
         } else if (PyLong_Check(value)) {
             PY_LONG_LONG v = PyLong_AsLongLong(value);
@@ -139,15 +139,15 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 throw runtime_error("error converting int value");
             }
             dtype_assign(dt, metadata, data,
-                        ndt::make_dtype<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyFloat_Check(value)) {
             double v = PyFloat_AS_DOUBLE(value);
             dtype_assign(dt, metadata, data,
-                        ndt::make_dtype<double>(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type<double>(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyComplex_Check(value)) {
             complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
             dtype_assign(dt, metadata, data,
-                        ndt::make_dtype<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
 #if PY_VERSION_HEX < 0x03000000
         } else if (PyString_Check(value)) {
             char *pystr_data = NULL;
@@ -219,7 +219,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             dtype_assign(dt, metadata, data,
                         v.get_dtype(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_DescrCheck(value)) {
-            const ndt::type& v = make_dtype_from_pyobject(value);
+            const ndt::type& v = make_ndt_type_from_pyobject(value);
             dtype_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
     #endif // DYND_NUMPY_INTEROP
@@ -228,7 +228,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             dtype_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyType_Check(value)) {
-            const ndt::type& v = make_dtype_from_pyobject(value);
+            const ndt::type& v = make_ndt_type_from_pyobject(value);
             dtype_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyDict_Check(value)) {

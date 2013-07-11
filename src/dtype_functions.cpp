@@ -137,7 +137,7 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
     
     if (PyBool_Check(obj)) {
         // Python bool
-        return ndt::make_dtype<dynd_bool>();
+        return ndt::make_type<dynd_bool>();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(obj)) {
         // Python integer
@@ -147,12 +147,12 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         // is independent of sizeof(long), and is the same on 32-bit
         // and 64-bit platforms.
         if (value >= INT_MIN && value <= INT_MAX) {
-            return ndt::make_dtype<int>();
+            return ndt::make_type<int>();
         } else {
-            return ndt::make_dtype<long>();
+            return ndt::make_type<long>();
         }
 # else
-        return ndt::make_dtype<int>();
+        return ndt::make_type<int>();
 # endif
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(obj)) {
@@ -165,16 +165,16 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
         // is independent of sizeof(long), and is the same on 32-bit
         // and 64-bit platforms.
         if (value >= INT_MIN && value <= INT_MAX) {
-            return ndt::make_dtype<int>();
+            return ndt::make_type<int>();
         } else {
-            return ndt::make_dtype<PY_LONG_LONG>();
+            return ndt::make_type<PY_LONG_LONG>();
         }
     } else if (PyFloat_Check(obj)) {
         // Python float
-        return ndt::make_dtype<double>();
+        return ndt::make_type<double>();
     } else if (PyComplex_Check(obj)) {
         // Python complex
-        return ndt::make_dtype<complex<double> >();
+        return ndt::make_type<complex<double> >();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         // Python string
@@ -211,20 +211,20 @@ ndt::type pydynd::deduce_dtype_from_pyobject(PyObject* obj)
 /**
  * Creates a dynd::dtype out of typical Python typeobjects.
  */
-static dynd::ndt::type make_dtype_from_pytypeobject(PyTypeObject* obj)
+static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
 {
     if (obj == &PyBool_Type) {
-        return ndt::make_dtype<dynd_bool>();
+        return ndt::make_type<dynd_bool>();
 #if PY_VERSION_HEX < 0x03000000
     } else if (obj == &PyInt_Type) {
-        return ndt::make_dtype<int32_t>();
+        return ndt::make_type<int32_t>();
 #endif
     } else if (obj == &PyLong_Type) {
-        return ndt::make_dtype<int32_t>();
+        return ndt::make_type<int32_t>();
     } else if (obj == &PyFloat_Type) {
-        return ndt::make_dtype<double>();
+        return ndt::make_type<double>();
     } else if (obj == &PyComplex_Type) {
-        return ndt::make_dtype<complex<double> >();
+        return ndt::make_type<complex<double> >();
     } else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
         // CTypes type object
         return dtype_from_ctypes_cdatatype((PyObject *)obj);
@@ -235,7 +235,7 @@ static dynd::ndt::type make_dtype_from_pytypeobject(PyTypeObject* obj)
     throw std::runtime_error("could not convert the given Python TypeObject into a dynd::dtype");
 }
 
-dynd::ndt::type pydynd::make_dtype_from_pyobject(PyObject* obj)
+dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
 {
     if (WType_Check(obj)) {
         return ((WType *)obj)->v;
@@ -254,7 +254,7 @@ dynd::ndt::type pydynd::make_dtype_from_pyobject(PyObject* obj)
             return result;
         }
 #endif // DYND_NUMPY_INTEROP
-        return make_dtype_from_pytypeobject((PyTypeObject *)obj);
+        return make_ndt_type_from_pytypeobject((PyTypeObject *)obj);
     }
 
 

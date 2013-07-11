@@ -117,7 +117,7 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     string dtype_str(ndt_type&)
     string dtype_repr(ndt_type&)
     ndt_type deduce_dtype_from_pyobject(object) except +translate_exception
-    ndt_type make_dtype_from_pyobject(object) except +translate_exception
+    ndt_type make_ndt_type_from_pyobject(object) except +translate_exception
 
     object dtype_get_kind(ndt_type&) except +translate_exception
     object dtype_get_type_id(ndt_type&) except +translate_exception

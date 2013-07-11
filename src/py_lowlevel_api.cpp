@@ -30,7 +30,7 @@ namespace {
     PyObject *array_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access)
     {
         try {
-            ndt::type d = make_dtype_from_pyobject(dt);
+            ndt::type d = make_ndt_type_from_pyobject(dt);
             size_t ptr_val = pyobject_as_size_t(ptr);
             uint32_t access_flags = pyarg_strings_to_int(
                             access, "access", nd::read_access_flag,
@@ -65,8 +65,8 @@ namespace {
             out_dki->kernel_size = 0;
             out_dki->free_func = NULL;
 
-            ndt::type dst_dt = make_dtype_from_pyobject(dst_dt_obj);
-            ndt::type src_dt = make_dtype_from_pyobject(src_dt_obj);
+            ndt::type dst_dt = make_ndt_type_from_pyobject(dst_dt_obj);
+            ndt::type src_dt = make_ndt_type_from_pyobject(src_dt_obj);
             if (dst_dt.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, dtype: ";

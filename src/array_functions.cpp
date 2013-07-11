@@ -13,7 +13,7 @@
 #include <dynd/dtypes/string_type.hpp>
 #include <dynd/dtypes/base_uniform_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/ndobject_range.hpp>
+#include <dynd/array_range.hpp>
 #include <dynd/dtype_promotion.hpp>
 #include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/base_bytes_type.hpp>
@@ -175,7 +175,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
 
 void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform)
 {
-    n = array_from_py(obj, make_dtype_from_pyobject(dt), uniform);
+    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), uniform);
 }
 
 void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj)
@@ -392,7 +392,7 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, P
     }
 
     if (dt != Py_None) {
-        dt_nd = make_dtype_from_pyobject(dt);
+        dt_nd = make_ndt_type_from_pyobject(dt);
     } else {
         dt_nd = promote_dtypes_arithmetic(start_nd.get_dtype(),
                     promote_dtypes_arithmetic(stop_nd.get_dtype(), step_nd.get_dtype()));
@@ -420,7 +420,7 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop, PyObject
     if (dt == Py_None) {
         return nd::linspace(start_nd, stop_nd, count_val);
     } else {
-        return nd::linspace(start_nd, stop_nd, count_val, make_dtype_from_pyobject(dt));
+        return nd::linspace(start_nd, stop_nd, count_val, make_ndt_type_from_pyobject(dt));
     }
 }
 

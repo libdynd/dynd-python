@@ -90,7 +90,7 @@ dynd::ndt::type deduce_dtype_from_pyobject(PyObject* obj);
  * into a dtype. This raises an error if given an object
  * which contains values, it is for dtype-like things only.
  */
-dynd::ndt::type make_dtype_from_pyobject(PyObject* obj);
+dynd::ndt::type make_ndt_type_from_pyobject(PyObject* obj);
 
 /**
  * Creates a convert dtype.

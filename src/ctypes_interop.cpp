@@ -128,7 +128,7 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject* cfunc, ndt::type& out_return
     // Get the return type
     if (restype == Py_None) {
         // No return type
-        out_returntype = ndt::make_dtype<void>();
+        out_returntype = ndt::make_type<void>();
     } else {
         out_returntype = dtype_from_ctypes_cdatatype(restype);
     }
@@ -163,7 +163,7 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
         PyErr_Clear();
     } else {
         pyobject_ownref dynd_type(dynd_type_obj);
-        return make_dtype_from_pyobject(dynd_type);
+        return make_ndt_type_from_pyobject(dynd_type);
     }
 
     // The simple C data types
@@ -176,31 +176,31 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
 
         switch (proto_str[0]) {
             case 'b':
-                return ndt::make_dtype<int8_t>();
+                return ndt::make_type<int8_t>();
             case 'B':
-                return ndt::make_dtype<uint8_t>();
+                return ndt::make_type<uint8_t>();
             case 'c':
                 return ndt::make_fixedstring(1, string_encoding_ascii);
             case 'd':
-                return ndt::make_dtype<double>();
+                return ndt::make_type<double>();
             case 'f':
-                return ndt::make_dtype<float>();
+                return ndt::make_type<float>();
             case 'h':
-                return ndt::make_dtype<int16_t>();
+                return ndt::make_type<int16_t>();
             case 'H':
-                return ndt::make_dtype<uint16_t>();
+                return ndt::make_type<uint16_t>();
             case 'i':
-                return ndt::make_dtype<int32_t>();
+                return ndt::make_type<int32_t>();
             case 'I':
-                return ndt::make_dtype<uint32_t>();
+                return ndt::make_type<uint32_t>();
             case 'l':
-                return ndt::make_dtype<long>();
+                return ndt::make_type<long>();
             case 'L':
-                return ndt::make_dtype<unsigned long>();
+                return ndt::make_type<unsigned long>();
             case 'q':
-                return ndt::make_dtype<int64_t>();
+                return ndt::make_type<int64_t>();
             case 'Q':
-                return ndt::make_dtype<uint64_t>();
+                return ndt::make_type<uint64_t>();
             default: {
                 stringstream ss;
                 ss << "The ctypes type code '" << proto_str[0] << "' cannot be converted to a dynd::dtype";

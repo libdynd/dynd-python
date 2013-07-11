@@ -79,7 +79,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
         ndt::type obj_dt;
 #if PY_VERSION_HEX >= 0x03000000
         if (PyUnicode_Check(obj)) {
-            obj_dt = make_string_type(string_encoding_utf_8);
+            obj_dt = ndt::make_string(string_encoding_utf_8);
         } else {
             obj_dt = pydynd::deduce_dtype_from_pyobject(obj);
         }
@@ -604,7 +604,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
         if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
             throw runtime_error("Error getting byte string data");
         }
-        ndt::type d = make_bytes_type(1);
+        ndt::type d = ndt::make_bytes(1);
         // Python bytes are immutable, so simply use the existing memory with an external memory 
         Py_INCREF(obj);
         memory_block_ptr bytesref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
@@ -637,7 +637,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
             throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
         }
-        ndt::type d = make_datetime_type(datetime_unit_usecond, tz_abstract);
+        ndt::type d = ndt::make_datetime(datetime_unit_usecond, tz_abstract);
         const datetime_type *dd = static_cast<const datetime_type *>(d.extended());
         nd::array result = nd::empty(d);
         dd->set_cal(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
@@ -646,7 +646,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
                     PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 1000);
         return result;
     } else if (PyDate_Check(obj)) {
-        ndt::type d = make_date_type();
+        ndt::type d = ndt::make_date();
         const date_type *dd = static_cast<const date_type *>(d.extended());
         nd::array result = nd::empty(d);
         dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
@@ -671,7 +671,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
     if (iter != NULL) {
         // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
         Py_DECREF(iter);
-        nd::array result = nd::empty(make_var_dim_type(ndt::make_dtype<double>()));
+        nd::array result = nd::empty(ndt::make_var_dim(ndt::make_dtype<double>()));
         array_nodim_broadcast_assign_from_py(result.get_dtype(),
                         result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
         return result;
@@ -773,7 +773,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
             // a uniform dim, prepend a var dim as a special case
             PyObject *iter = PyObject_GetIter(obj);
             if (iter != NULL) {
-                result = nd::empty(make_var_dim_type(dt));
+                result = nd::empty(ndt::make_var_dim(dt));
             } else {
                 if (PyErr_Occurred()) {
                     if (PyErr_ExceptionMatches(PyExc_TypeError)) {

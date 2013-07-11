@@ -1,13 +1,13 @@
 from __future__ import absolute_import
 
 from dynd._pydynd import w_type as type, \
-        make_byteswap_type, make_fixedbytes_type, make_convert_type, \
-        make_view_type, \
-        make_unaligned_type, make_fixedstring_type, make_string_type, \
-        make_pointer_type, make_struct_type, make_cstruct_type, \
-        make_strided_dim_type, make_fixed_dim_type, make_var_dim_type, \
-        make_categorical_type, replace_udtype, extract_udtype, \
-        factor_categorical_type, make_bytes_type
+        make_byteswap, make_fixedbytes, make_convert, \
+        make_view, \
+        make_unaligned, make_fixedstring, make_string, \
+        make_pointer, make_struct, make_cstruct, \
+        make_strided_dim, make_fixed_dim, make_var_dim, \
+        make_categorical, replace_udtype, extract_udtype, \
+        factor_categorical, make_bytes
 
 void = type('void')
 bool = type('bool')

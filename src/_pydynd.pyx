@@ -154,7 +154,7 @@ cdef class w_type:
 
         The alignment, in bytes, of the data for an
         instance of this dynd type.
-        
+
         Data for this dynd type must always be aligned
         according to this alignment, unaligned data
         requires an adapter transformation applied.
@@ -363,9 +363,9 @@ def extract_udtype(dt, size_t keep_undim=0):
     SET(result.v, GET(w_type(dt).v).get_udtype(keep_undim))
     return result
 
-def make_byteswap_type(builtin_type, operand_type=None):
+def make_byteswap(builtin_type, operand_type=None):
     """
-    make_byteswap_type(builtin_type, operand_type=None)
+    ndt.make_byteswap(builtin_type, operand_type=None)
 
     Constructs a byteswap dtype from a builtin one, with an
     optional expression type to chain in as the operand.
@@ -384,7 +384,7 @@ def make_byteswap_type(builtin_type, operand_type=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_byteswap_type(ndt.int16)
+    >>> ndt.make_byteswap(ndt.int16)
     ndt.type('byteswap<int16>')
     """
     cdef w_type result = w_type()
@@ -394,9 +394,9 @@ def make_byteswap_type(builtin_type, operand_type=None):
         SET(result.v, dynd_make_byteswap_type(GET(w_type(builtin_type).v), GET(w_type(operand_type).v)))
     return result
 
-def make_fixedbytes_type(int data_size, int data_alignment=1):
+def make_fixedbytes(int data_size, int data_alignment=1):
     """
-    make_fixedbytes_type(data_size, data_alignment=1)
+    ndt.make_fixedbytes(data_size, data_alignment=1)
 
     Constructs a bytes dtype with the specified data size and alignment.
 
@@ -412,19 +412,19 @@ def make_fixedbytes_type(int data_size, int data_alignment=1):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedbytes_type(4)
+    >>> ndt.make_fixedbytes(4)
     ndt.type('fixedbytes<4,1>')
-    >>> ndt.make_fixedbytes_type(6, 2)
+    >>> ndt.make_fixedbytes(6, 2)
     ndt.type('fixedbytes<6,2>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedbytes_type(data_size, data_alignment))
     return result
 
-def make_convert_type(to_dtype, from_dtype, errmode=None):
+def make_convert(to_dtype, from_dtype, errmode=None):
     """
-    make_convert_type(to_dtype, from_dtype, errmode='fractional')
-    
+    ndt.make_convert(to_dtype, from_dtype, errmode='fractional')
+
     Constructs an expression type which converts from one
     dynd type to another, using a specified mode for handling
     conversion errors.
@@ -448,19 +448,19 @@ def make_convert_type(to_dtype, from_dtype, errmode=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_convert_type(ndt.int16, ndt.float32)
+    >>> ndt.make_convert(ndt.int16, ndt.float32)
     ndt.type('convert<to=int16, from=float32>')
-    >>> ndt.make_convert_type(ndt.uint8, ndt.uint16, 'none')
+    >>> ndt.make_convert(ndt.uint8, ndt.uint16, 'none')
     ndt.type('convert<to=uint8, from=uint16, errmode=none>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_convert_type(GET(w_type(to_dtype).v), GET(w_type(from_dtype).v), errmode))
     return result
 
-def make_view_type(value_type, operand_type):
+def make_view(value_type, operand_type):
     """
-    make_view_type(value_type, operand_type)
-    
+    ndt.make_view(value_type, operand_type)
+
     Constructs an expression type which views the bytes of
     one dtype as another.
 
@@ -477,16 +477,16 @@ def make_view_type(value_type, operand_type):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_view_type(ndt.int32, ndt.uint32)
+    >>> ndt.make_view(ndt.int32, ndt.uint32)
     ndt.type('view<as=int32, original=uint32>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_view_type(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
     return result
 
-def make_unaligned_type(aligned_dtype):
+def make_unaligned(aligned_dtype):
     """
-    make_unaligned_type(aligned_dtype)
+    ndt.make_unaligned(aligned_dtype)
 
     Constructs a dtype with alignment of 1 from the given dtype.
     If the dtype already has alignment 1, just returns it.
@@ -501,18 +501,18 @@ def make_unaligned_type(aligned_dtype):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_unaligned_type(ndt.int32)
+    >>> ndt.make_unaligned(ndt.int32)
     ndt.type('unaligned<int32>')
-    >>> ndt.make_unaligned_type(ndt.uint8)
+    >>> ndt.make_unaligned(ndt.uint8)
     ndt.uint8
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_unaligned_type(GET(w_type(aligned_dtype).v)))
     return result
 
-def make_fixedstring_type(int size, encoding=None):
+def make_fixedstring(int size, encoding=None):
     """
-    make_fixedstring_type(size, encoding='utf_8')
+    ndt.make_fixedstring(size, encoding='utf_8')
 
     Constructs a fixed-size string dtype with a specified encoding,
     whose size is the specified number of base units for the encoding.
@@ -532,19 +532,19 @@ def make_fixedstring_type(int size, encoding=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedstring_type(10)
+    >>> ndt.make_fixedstring(10)
     ndt.type('string<10>')
-    >>> ndt.make_fixedstring_type(10, 'utf_32')
+    >>> ndt.make_fixedstring(10, 'utf_32')
     ndt.type('string<10,utf_32>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedstring_type(size, encoding))
     return result
 
-def make_string_type(encoding=None):
+def make_string(encoding=None):
     """
-    make_string_type(encoding='utf_8')
-    
+    ndt.make_string(encoding='utf_8')
+
     Constructs a variable-sized string dynd type
     with the specified encoding.
 
@@ -559,18 +559,18 @@ def make_string_type(encoding=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_string_type()
+    >>> ndt.make_string()
     ndt.string
-    >>> ndt.make_string_type('utf_16')
+    >>> ndt.make_string('utf_16')
     ndt.type('string<utf_16>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_string_type(encoding))
     return result
 
-def make_bytes_type(size_t alignment=1):
+def make_bytes(size_t alignment=1):
     """
-    make_bytes_type(alignment=1)
+    ndt.make_bytes(alignment=1)
 
     Constructs a variable-sized bytes dynd type
     with the specified alignment.
@@ -584,18 +584,18 @@ def make_bytes_type(size_t alignment=1):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_bytes_type()
+    >>> ndt.make_bytes()
     ndt.bytes
-    >>> ndt.make_string_type(4)
+    >>> ndt.make_string(4)
     ndt.type('bytes<align=4>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_bytes_type(alignment))
     return result
 
-def make_pointer_type(target_dtype):
+def make_pointer(target_dtype):
     """
-    make_pointer_type(target_dtype)
+    ndt.make_pointer(target_dtype)
 
     Constructs a dynd type which is a pointer to the target type.
 
@@ -609,9 +609,9 @@ def make_pointer_type(target_dtype):
     SET(result.v, dynd_make_pointer_type(GET(w_type(target_dtype).v)))
     return result
 
-def make_strided_dim_type(element_dtype, undim=None):
+def make_strided_dim(element_dtype, undim=None):
     """
-    make_strided_dim_type(element_dtype, undim=1)
+    ndt.make_strided_dim(element_dtype, undim=1)
 
     Constructs an array dynd type with one or more strided
     dimensions. A single strided_dim dynd type corresponds
@@ -629,9 +629,9 @@ def make_strided_dim_type(element_dtype, undim=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_strided_dim_type(ndt.int32)
+    >>> ndt.make_strided_dim(ndt.int32)
     ndt.type('strided_dim<int32>')
-    >>> ndt.make_strided_dim_type(ndt.int32, 3)
+    >>> ndt.make_strided_dim(ndt.int32, 3)
     ndt.type('strided_dim<strided_dim<strided_dim<int32>>>')
     """
     cdef w_type result = w_type()
@@ -641,10 +641,10 @@ def make_strided_dim_type(element_dtype, undim=None):
         SET(result.v, dynd_make_strided_dim_type(GET(w_type(element_dtype).v), int(undim)))
     return result
 
-def make_fixed_dim_type(shape, element_dtype, axis_perm=None):
+def make_fixed_dim(shape, element_dtype, axis_perm=None):
     """
-    make_fixed_dim_type(shape, element_dtype, axis_perm=None)
-    
+    ndt.make_fixed_dim(shape, element_dtype, axis_perm=None)
+
     Constructs a fixed_dim dtype of the given shape and axis permutation
     (default C order).
 
@@ -664,24 +664,24 @@ def make_fixed_dim_type(shape, element_dtype, axis_perm=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixed_dim_type(5, ndt.int32)
+    >>> ndt.make_fixed_dim(5, ndt.int32)
     ndt.type('fixed_dim<5, int32>')
-    >>> ndt.make_fixed_dim_type((3,5), ndt.int32)
+    >>> ndt.make_fixed_dim((3,5), ndt.int32)
     ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
-    >>> ndt.make_fixed_dim_type((3,5), ndt.int32, axis_perm=(0,1))
+    >>> ndt.make_fixed_dim((3,5), ndt.int32, axis_perm=(0,1))
     ndt.type('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_dtype).v), axis_perm))
     return result
 
-def make_cstruct_type(field_types, field_names):
+def make_cstruct(field_types, field_names):
     """
-    make_cstruct_type(field_types, field_names)
+    ndt.make_cstruct(field_types, field_names)
 
     Constructs a fixed_struct dynd type, which has fields with
     a fixed layout.
-    
+
     The fields are laid out in memory in the order they
     are specified, each field aligned as required
     by its type, and the total data size padded so that adjacent
@@ -698,20 +698,20 @@ def make_cstruct_type(field_types, field_names):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_cstruct_type([ndt.int32, ndt.float64], ['x', 'y'])
+    >>> ndt.make_cstruct([ndt.int32, ndt.float64], ['x', 'y'])
     ndt.type('cstruct<int32 x, float64 y>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_cstruct_type(field_types, field_names))
     return result
 
-def make_struct_type(field_types, field_names):
+def make_struct(field_types, field_names):
     """
-    make_struct_type(field_types, field_names)
+    ndt.make_struct(field_types, field_names)
 
     Constructs a struct dynd type, which has fields with a flexible
     per-array layout.
-    
+
     If a subset of fields from a fixed_struct are taken,
     the result is a struct, with the layout specified
     in the dynd array's metadata.
@@ -727,17 +727,17 @@ def make_struct_type(field_types, field_names):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_struct_type([ndt.int32, ndt.float64], ['x', 'y'])
+    >>> ndt.make_struct([ndt.int32, ndt.float64], ['x', 'y'])
     ndt.type('struct<int32 x, float64 y>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_struct_type(field_types, field_names))
     return result
 
-def make_var_dim_type(element_dtype):
+def make_var_dim(element_dtype):
     """
-    make_fixed_dim_type(element_dtype)
-    
+    ndt.make_fixed_dim(element_dtype)
+
     Constructs a var_dim dtype.
 
     Parameters
@@ -749,16 +749,16 @@ def make_var_dim_type(element_dtype):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_var_dim_type(ndt.float32)
+    >>> ndt.make_var_dim(ndt.float32)
     ndt.type('var_dim<float32>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_var_dim_type(GET(w_type(element_dtype).v)))
     return result
 
-def make_categorical_type(values):
+def make_categorical(values):
     """
-    make_categorical_type(values)
+    ndt.make_categorical(values)
 
     Constructs a categorical dynd type with the
     specified values as its categories.
@@ -779,16 +779,16 @@ def make_categorical_type(values):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_categorical_type(['sunny', 'rainy', 'cloudy', 'stormy'])
+    >>> ndt.make_categorical(['sunny', 'rainy', 'cloudy', 'stormy'])
     ndt.type('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_categorical_type(GET(w_array(values).v)))
     return result
 
-def factor_categorical_type(values):
+def factor_categorical(values):
     """
-    factor_categorical_type(values)
+    ndt.factor_categorical(values)
 
     Constructs a categorical dynd type with the
     unique sorted subset of the values as its
@@ -805,7 +805,7 @@ def factor_categorical_type(values):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.factor_categorical_type(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
+    >>> ndt.factor_categorical(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
     ndt.type('categorical<string<ascii>, ["F", "M"]>')
     """
     cdef w_type result = w_type()
@@ -903,7 +903,7 @@ cdef class w_array:
     def eval(self):
         """
         a.eval()
-        
+
         Returns a version of the dynd array with plain values,
         all expressions evaluated. This returns the original
         array back if it has no expression type.
@@ -1002,7 +1002,7 @@ cdef class w_array:
     def ucast(self, dtype, int replace_undim=0, errmode=None):
         """
         a.ucast(dtype, replace_undim=0, errmode='fractional')
-        
+
         Casts the dynd array's array data type to the requested dtype,
         producing a conversion dtype. The array data type is the dtype
         after the a.undim array dimensions.
@@ -1041,7 +1041,7 @@ cdef class w_array:
     def view_scalars(self, dtype):
         """
         a.view_scalars(dtype)
-        
+
         Views the data of the dynd array as the requested dtype,
         where it makes sense.
 
@@ -1065,7 +1065,7 @@ cdef class w_array:
     def flag_as_immutable(self):
         """
         a.flag_as_immutable()
-        
+
         When there's still only one reference to a
         dynd array, can be used to flag it as immutable.
         """
@@ -1240,9 +1240,9 @@ def as_py(w_array n):
 def as_numpy(w_array n, allow_copy=False):
     """
     nd.as_numpy(n, allow_copy=False)
-    
+
     Evaluates the dynd array, and converts it into a NumPy object.
-    
+
     Parameters
     ----------
     n : dynd array
@@ -1271,10 +1271,10 @@ def empty(shape, dtype=None):
     """
     nd.empty(dtype)
     nd.empty(shape, dtype)
-    
+
     Creates an uninitialized array of the specified
     (shape, dtype) or just (dtype).
-    
+
     Parameters
     ----------
     shape : list of int, optional
@@ -1309,7 +1309,7 @@ def empty_like(w_array prototype, dtype=None):
 
     Creates an uninitialized array whose array dimensions match
     the structure of the prototype's array dimensions.
-    
+
     Parameters
     ----------
     prototype : dynd array
@@ -1340,10 +1340,10 @@ def empty_like(w_array prototype, dtype=None):
 def groupby(data, by, groups = None):
     """
     nd.groupby(data, by, groups=None)
-    
+
     Produces an array containing the elements of `data`, grouped
     according to `by` which has corresponding shape.
-    
+
     Parameters
     ----------
     data : dynd array
@@ -1389,13 +1389,13 @@ def range(start=None, stop=None, step=None, dtype=None):
     """
     nd.range(stop, dtype=None)
     nd.range(start, stop, step=None, dtype=None)
-    
+
     Constructs a dynd array representing a stepped range of values.
 
     This function assumes that (stop-start)/step is approximately
     an integer, so as to be able to produce reasonable values with
     fractional steps which can't be exactly represented, such as 0.1.
-    
+
     Parameters
     ----------
     start : int, optional
@@ -1423,9 +1423,9 @@ def range(start=None, stop=None, step=None, dtype=None):
 def linspace(start, stop, count=50, dtype=None):
     """
     nd.linspace(start, stop, count=50, dtype=None)
-    
+
     Constructs a specified count of values interpolating a range.
-    
+
     Parameters
     ----------
     start : floating point scalar
@@ -1464,7 +1464,7 @@ def fields(w_array struct_array, *fields_list):
 def parse_json(dtype, json):
     """
     nd.parse_json(dtype, json)
-    
+
     Parses an input JSON string as a particular dtype.
 
     Parameters
@@ -1496,7 +1496,7 @@ def parse_json(dtype, json):
 def format_json(w_array n):
     """
     nd.format_json(n)
-    
+
     Formats a dynd array as JSON.
 
     Parameters

@@ -276,7 +276,7 @@ public:
         Py_INCREF(e->callable);
         // Create shell WArrays which are used to give the kernel data to Python
         strided_dim_type_metadata *md;
-        ndt::type dt = make_strided_dim_type(dst_dt);
+        ndt::type dt = ndt::make_strided_dim(dst_dt);
         nd::array n(make_array_memory_block(dt.get_metadata_size()));
         n.get_ndo()->m_dtype = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
@@ -290,7 +290,7 @@ public:
         }
         ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
         for (size_t i = 0; i != src_count; ++i) {
-            dt = make_strided_dim_type(src_dt[i]);
+            dt = ndt::make_strided_dim(src_dt[i]);
             n.set(make_array_memory_block(dt.get_metadata_size()));
             n.get_ndo()->m_dtype = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
@@ -348,7 +348,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
         src_dt = n.get_udtype();
     }
 
-    ndt::type edt = make_unary_expr_type(dst_dt, src_dt,
+    ndt::type edt = ndt::make_unary_expr(dst_dt, src_dt,
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_type()));
     nd::array result = n.replace_udtype(edt, src_dt.get_undim());
     return wrap_array(result);
@@ -403,9 +403,9 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     ndt::type result_vdt = dst_dt;
     for (size_t j = 0; j != undim; ++j) {
         if (result_shape[undim - j - 1] == -1) {
-            result_vdt = make_var_dim_type(result_vdt);
+            result_vdt = ndt::make_var_dim(result_vdt);
         } else {
-            result_vdt = make_strided_dim_type(result_vdt);
+            result_vdt = ndt::make_strided_dim(result_vdt);
         }
     }
 
@@ -420,7 +420,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
 
     // Because the expr type's operand is the result's type,
     // we can swap it in as the type
-    ndt::type edt = make_expr_type(result_vdt,
+    ndt::type edt = ndt::make_expr(result_vdt,
                     result.get_dtype(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
     edt.swap(result.get_ndo()->m_dtype);

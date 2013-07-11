@@ -28,7 +28,7 @@ class TestCTypesDTypeInterop(unittest.TestCase):
     def test_type_from_ctype_cstruct(self):
         class POINT(ctypes.Structure):
             _fields_ = [('x', ctypes.c_int32), ('y', ctypes.c_int32)]
-        self.assertEqual(ndt.make_cstruct_type(
+        self.assertEqual(ndt.make_cstruct(
                                 [ndt.int32, ndt.int32],['x', 'y']),
                         ndt.type(POINT))
         class DATA(ctypes.Structure):
@@ -38,21 +38,21 @@ class TestCTypesDTypeInterop(unittest.TestCase):
                         ('size', ctypes.c_float),
                         ('vel', POINT)
                        ]
-        self.assertEqual(ndt.make_cstruct_type([POINT, ndt.int8, ndt.float32, POINT],
+        self.assertEqual(ndt.make_cstruct([POINT, ndt.int8, ndt.float32, POINT],
                                 ['pos', 'flags', 'size', 'vel']),
                         ndt.type(DATA))
 
     def test_type_from_ctypes_carray(self):
-        self.assertEqual(ndt.make_fixed_dim_type(10, ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim(10, ndt.int32),
                 ndt.type(ctypes.c_int32 * 10))
-        self.assertEqual(ndt.make_fixed_dim_type((10, 3), ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim((10, 3), ndt.int32),
                 ndt.type((ctypes.c_int32 * 3) * 10))
-        self.assertEqual(ndt.make_fixed_dim_type((10, 3, 4), ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim((10, 3, 4), ndt.int32),
                 ndt.type(((ctypes.c_int32 * 4) * 3) * 10))
 
         class POINT(ctypes.Structure):
             _fields_ = [('x', ctypes.c_int32), ('y', ctypes.c_int32)]
-        self.assertEqual(ndt.make_fixed_dim_type(10, ndt.type(POINT)),
+        self.assertEqual(ndt.make_fixed_dim(10, ndt.type(POINT)),
                 ndt.type(POINT * 10))
 
 if __name__ == '__main__':

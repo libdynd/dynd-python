@@ -60,7 +60,7 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
         field_types.push_back(dtype_from_numpy_dtype(fld_dtype, data_alignment));
         // If the field isn't aligned enough, turn it into an unaligned type
         if (!offset_is_aligned(offset | data_alignment, field_types.back().get_data_alignment())) {
-            field_types.back() = make_unaligned_type(field_types.back());
+            field_types.back() = make_unaligned(field_types.back());
         }
         field_names.push_back(pystring_as_string(key));
         field_offsets.push_back(offset);
@@ -69,9 +69,9 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
     // Make a cstruct if possible, struct otherwise
     if (is_cstruct_compatible_offsets(field_types.size(),
                     &field_types[0], &field_offsets[0], d->elsize)) {
-        return make_cstruct_type(field_types.size(), &field_types[0], &field_names[0]);
+        return ndt::make_cstruct(field_types.size(), &field_types[0], &field_names[0]);
     } else {
-        return make_struct_type(field_types, field_names);
+        return ndt::make_struct(field_types, field_names);
     }
 }
 
@@ -92,7 +92,7 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
             if (PyTuple_Check(d->subarray->shape)) {
                 ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
             }
-            return make_strided_dim_type(dt, ndim);
+            return ndt::make_strided_dim(dt, ndim);
         } else {
             // Otherwise make a cstruct array
             return dynd_make_fixed_dim_type(d->subarray->shape, dt, Py_None);
@@ -146,10 +146,10 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
         dt = ndt::make_dtype<complex<double> >();
         break;
     case NPY_STRING:
-        dt = make_fixedstring_type(d->elsize, string_encoding_ascii);
+        dt = ndt::make_fixedstring(d->elsize, string_encoding_ascii);
         break;
     case NPY_UNICODE:
-        dt = make_fixedstring_type(d->elsize / 4, string_encoding_utf_32);
+        dt = ndt::make_fixedstring(d->elsize / 4, string_encoding_utf_32);
         break;
     case NPY_VOID:
         dt = make_struct_type_from_numpy_struct(d, data_alignment);
@@ -165,7 +165,7 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
         string s = pystring_as_string(unit.get());
         if (s == "D") {
             // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
-            dt = make_reversed_property_type(make_date_type(),
+            dt = ndt::make_reversed_property(ndt::make_date(),
                             ndt::make_dtype<int64_t>(), "days_after_1970_int64");
         }
         break;
@@ -182,13 +182,13 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
     }
 
     if (!PyArray_ISNBO(d->byteorder)) {
-        dt = make_byteswap_type(dt);
+        dt = ndt::make_byteswap(dt);
     }
 
     // If the data this dtype is for isn't aligned enough,
     // make an unaligned version.
     if (data_alignment != 0 && data_alignment < dt.get_data_alignment()) {
-        dt = make_unaligned_type(dt);
+        dt = make_unaligned(dt);
     }
 
     return dt;
@@ -680,7 +680,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj)
         const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
         int64_t val = scalar->obval;
         if (scalar->obmeta.base == NPY_FR_D) {
-            nd::array result = nd::empty(make_date_type());
+            nd::array result = nd::empty(ndt::make_date());
             if (val == NPY_DATETIME_NAT) {
                 *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
                             DYND_DATE_NA;

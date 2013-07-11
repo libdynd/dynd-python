@@ -160,9 +160,9 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             // Choose between bytes or ascii string based on the destination type
             type_kind_t kind = dt.get_udtype().get_kind();
             if (kind == bytes_kind) {
-                str_dt = make_bytes_type(1);
+                str_dt = ndt::make_bytes(1);
             } else { 
-                str_dt = make_string_type(string_encoding_ascii);
+                str_dt = ndt::make_string(string_encoding_ascii);
             }
             string_type_data str_d;
             string_type_metadata str_md;
@@ -180,7 +180,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 throw runtime_error("Error getting byte string data");
             }
 
-            ndt::type bytes_dt = make_bytes_type(1);
+            ndt::type bytes_dt = ndt::make_bytes(1);
             string_type_data bytes_d;
             string_type_metadata bytes_md;
             bytes_d.begin = pybytes_data;
@@ -200,7 +200,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 throw exception();
             }
 
-            ndt::type str_dt = make_string_type(string_encoding_utf_8);
+            ndt::type str_dt = ndt::make_string(string_encoding_utf_8);
             string_type_data str_d;
             string_type_metadata str_md;
             str_d.begin = s;
@@ -221,16 +221,16 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         } else if (PyArray_DescrCheck(value)) {
             const ndt::type& v = make_dtype_from_pyobject(value);
             dtype_assign(dt, metadata, data,
-                        make_type_type(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
     #endif // DYND_NUMPY_INTEROP
         } else if (WType_Check(value)) {
             const ndt::type& v = ((WType *)value)->v;
             dtype_assign(dt, metadata, data,
-                        make_type_type(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyType_Check(value)) {
             const ndt::type& v = make_dtype_from_pyobject(value);
             dtype_assign(dt, metadata, data,
-                        make_type_type(), NULL, reinterpret_cast<const char *>(&v));
+                        ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyDict_Check(value)) {
             array_assign_from_pydict(dt, metadata, data, value);
         } else {

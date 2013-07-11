@@ -29,9 +29,9 @@ class TestDTypeDataShape(unittest.TestCase):
 
     def test_fixed_array(self):
         # Tests of datashapes that produce the DyND fixed array type
-        self.assertEqual(ndt.make_fixed_dim_type(3, ndt.int32),
+        self.assertEqual(ndt.make_fixed_dim(3, ndt.int32),
                         ndt.type('3, int32'))
-        self.assertEqual(ndt.make_fixed_dim_type((5, 2), ndt.float64),
+        self.assertEqual(ndt.make_fixed_dim((5, 2), ndt.float64),
                         ndt.type('5, 2, float64'))
 
     def test_struct(self):

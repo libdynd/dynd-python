@@ -10,7 +10,7 @@
 #include "placement_wrappers.hpp"
 
 #include <dynd/dtypes/cstruct_type.hpp>
-#include <dynd/dtypes/builtin_dtype_properties.hpp>
+#include <dynd/dtypes/builtin_type_properties.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 
 using namespace std;
@@ -110,7 +110,7 @@ void pydynd::add_array_names_to_dir_dict(const dynd::nd::array& n, PyObject *dic
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
         // Add the array properties
-        get_builtin_dtype_dynamic_array_properties(dt.get_type_id(), &properties, &count);
+        get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
@@ -129,7 +129,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array& n, PyObject 
     if (!dt.is_builtin()) {
         dt.extended()->get_dynamic_array_properties(&properties, &count);
     } else {
-        get_builtin_dtype_dynamic_array_properties(dt.get_type_id(), &properties, &count);
+        get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties, &count);
     }
     // TODO: We probably want to make some kind of acceleration structure for the name lookup
     if (count > 0) {
@@ -168,7 +168,7 @@ void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name
     if (!dt.is_builtin()) {
         dt.extended()->get_dynamic_array_properties(&properties, &count);
     } else {
-        get_builtin_dtype_dynamic_array_properties(dt.get_type_id(), &properties, &count);
+        get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties, &count);
     }
     // TODO: We probably want to make some kind of acceleration structure for the name lookup
     if (count > 0) {

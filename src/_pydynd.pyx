@@ -363,22 +363,22 @@ def extract_udtype(dt, size_t keep_undim=0):
     SET(result.v, GET(w_type(dt).v).get_udtype(keep_undim))
     return result
 
-def make_byteswap_dtype(builtin_dtype, operand_type=None):
+def make_byteswap_dtype(builtin_type, operand_type=None):
     """
-    make_byteswap_dtype(builtin_dtype, operand_type=None)
+    make_byteswap_dtype(builtin_type, operand_type=None)
 
     Constructs a byteswap dtype from a builtin one, with an
     optional expression type to chain in as the operand.
 
     Parameters
     ----------
-    builtin_dtype : dynd type
+    builtin_type : dynd type
         The builtin dynd type (like ndt.int16, ndt.float64) to
         which to apply the byte swap operation.
     operand_type: dynd type, optional
         An expression dynd type whose value type is a fixed bytes
         dynd type with the same data size and alignment as
-        'builtin_dtype'.
+        'builtin_type'.
 
     Examples
     --------
@@ -389,9 +389,9 @@ def make_byteswap_dtype(builtin_dtype, operand_type=None):
     """
     cdef w_type result = w_type()
     if operand_type is None:
-        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_dtype).v)))
+        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_type).v)))
     else:
-        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_dtype).v), GET(w_type(operand_type).v)))
+        SET(result.v, dynd_make_byteswap_dtype(GET(w_type(builtin_type).v), GET(w_type(operand_type).v)))
     return result
 
 def make_fixedbytes_dtype(int data_size, int data_alignment=1):

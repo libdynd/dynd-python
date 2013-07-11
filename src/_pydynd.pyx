@@ -675,9 +675,9 @@ def make_fixed_dim_dtype(shape, element_dtype, axis_perm=None):
     SET(result.v, dynd_make_fixed_dim_dtype(shape, GET(w_type(element_dtype).v), axis_perm))
     return result
 
-def make_cstruct_dtype(field_types, field_names):
+def make_cstruct_type(field_types, field_names):
     """
-    make_cstruct_dtype(field_types, field_names)
+    make_cstruct_type(field_types, field_names)
 
     Constructs a fixed_struct dynd type, which has fields with
     a fixed layout.
@@ -698,16 +698,16 @@ def make_cstruct_dtype(field_types, field_names):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_cstruct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
+    >>> ndt.make_cstruct_type([ndt.int32, ndt.float64], ['x', 'y'])
     ndt.type('cstruct<int32 x, float64 y>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_cstruct_dtype(field_types, field_names))
+    SET(result.v, dynd_make_cstruct_type(field_types, field_names))
     return result
 
-def make_struct_dtype(field_types, field_names):
+def make_struct_type(field_types, field_names):
     """
-    make_struct_dtype(field_types, field_names)
+    make_struct_type(field_types, field_names)
 
     Constructs a struct dynd type, which has fields with a flexible
     per-array layout.
@@ -727,11 +727,11 @@ def make_struct_dtype(field_types, field_names):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_struct_dtype([ndt.int32, ndt.float64], ['x', 'y'])
+    >>> ndt.make_struct_type([ndt.int32, ndt.float64], ['x', 'y'])
     ndt.type('struct<int32 x, float64 y>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_struct_dtype(field_types, field_names))
+    SET(result.v, dynd_make_struct_type(field_types, field_names))
     return result
 
 def make_var_dim_dtype(element_dtype):

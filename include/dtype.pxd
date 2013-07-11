@@ -129,6 +129,6 @@ cdef extern from "dtype_functions.hpp" namespace "pydynd":
     ndt_type dynd_make_fixedstring_type(int, object) except +translate_exception
     ndt_type dynd_make_string_type(object) except +translate_exception
     ndt_type dynd_make_pointer_dtype(ndt_type&) except +translate_exception
-    ndt_type dynd_make_struct_dtype(object, object) except +translate_exception
-    ndt_type dynd_make_cstruct_dtype(object, object) except +translate_exception
+    ndt_type dynd_make_struct_type(object, object) except +translate_exception
+    ndt_type dynd_make_cstruct_type(object, object) except +translate_exception
     ndt_type dynd_make_fixed_dim_dtype(object, ndt_type&, object) except +translate_exception

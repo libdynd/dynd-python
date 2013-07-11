@@ -11,7 +11,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
-#include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
@@ -391,7 +391,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     if (dt.get_kind() == struct_kind) {
-        const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
+        const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
         size_t field_count = fsd->get_field_count();
         const string *field_names = fsd->get_field_names();
         const ndt::type *field_types = fsd->get_field_types();
@@ -492,7 +492,7 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
         }
         case struct_type_id:
         case cstruct_type_id: {
-            const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
+            const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
             size_t field_count = fsd->get_field_count();
             const ndt::type *field_types = fsd->get_field_types();
             const size_t *data_offsets = fsd->get_data_offsets(metadata);
@@ -643,7 +643,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
         }
         case struct_type_id:
         case cstruct_type_id: {
-            const base_struct_dtype *fsd = static_cast<const base_struct_dtype *>(dt.extended());
+            const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
             size_t field_count = fsd->get_field_count();
             const ndt::type *field_types = fsd->get_field_types();
             const size_t *data_offsets = fsd->get_data_offsets(metadata);
@@ -730,7 +730,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
                     udt = udt.get_udtype();
                 } else if (udt.get_kind() == struct_kind) {
                     ++dst_undim;
-                    udt = static_cast<const base_struct_dtype *>(udt.extended())->get_field_types()[0];
+                    udt = static_cast<const base_struct_type *>(udt.extended())->get_field_types()[0];
                 } else {
                     break;
                 }

@@ -18,7 +18,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
 #include <dynd/dtypes/property_dtype.hpp>
@@ -178,7 +178,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
         }
         case cstruct_type_id:
         case struct_type_id: {
-            const base_struct_dtype *bs = static_cast<const base_struct_dtype *>(dt.extended());
+            const base_struct_type *bs = static_cast<const base_struct_type *>(dt.extended());
             const ndt::type *field_types = bs->get_field_types();
             const string *field_names = bs->get_field_names();
             size_t field_count = bs->get_field_count();
@@ -412,7 +412,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 *out_requires_copy = true;
                 return;
             }
-            const base_struct_dtype *bs = static_cast<const base_struct_dtype *>(dt.extended());
+            const base_struct_type *bs = static_cast<const base_struct_type *>(dt.extended());
             const ndt::type *field_types = bs->get_field_types();
             const string *field_names = bs->get_field_names();
             const size_t *offsets = bs->get_data_offsets(metadata);

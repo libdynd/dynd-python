@@ -28,7 +28,7 @@ class TestCTypesDTypeInterop(unittest.TestCase):
     def test_dtype_from_ctype_cstruct(self):
         class POINT(ctypes.Structure):
             _fields_ = [('x', ctypes.c_int32), ('y', ctypes.c_int32)]
-        self.assertEqual(ndt.make_cstruct_dtype(
+        self.assertEqual(ndt.make_cstruct_type(
                                 [ndt.int32, ndt.int32],['x', 'y']),
                         ndt.type(POINT))
         class DATA(ctypes.Structure):
@@ -38,7 +38,7 @@ class TestCTypesDTypeInterop(unittest.TestCase):
                         ('size', ctypes.c_float),
                         ('vel', POINT)
                        ]
-        self.assertEqual(ndt.make_cstruct_dtype([POINT, ndt.int8, ndt.float32, POINT],
+        self.assertEqual(ndt.make_cstruct_type([POINT, ndt.int8, ndt.float32, POINT],
                                 ['pos', 'flags', 'size', 'vel']),
                         ndt.type(DATA))
 

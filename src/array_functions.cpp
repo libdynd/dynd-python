@@ -15,9 +15,9 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/ndobject_range.hpp>
 #include <dynd/dtype_promotion.hpp>
-#include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/base_bytes_type.hpp>
-#include <dynd/dtypes/struct_dtype.hpp>
+#include <dynd/dtypes/struct_type.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -437,7 +437,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         ss << fdt;
         throw runtime_error(ss.str());
     }
-    const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(fdt.extended());
+    const base_struct_type *bsd = static_cast<const base_struct_type *>(fdt.extended());
     const ndt::type *field_types = bsd->get_field_types();
 
     if (selected_fields.empty()) {
@@ -458,9 +458,9 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         selected_dtypes[i] = field_types[selected_index[i]];
     }
     // Create the result udt
-    ndt::type rudt = make_struct_dtype(selected_dtypes, selected_fields);
+    ndt::type rudt = make_struct_type(selected_dtypes, selected_fields);
     ndt::type rdt = n.get_dtype().with_replaced_udtype(rudt);
-    const base_struct_dtype *rudt_bsd = static_cast<const base_struct_dtype *>(rudt.extended());
+    const base_struct_type *rudt_bsd = static_cast<const base_struct_type *>(rudt.extended());
 
     // Allocate the new memory block.
     size_t metadata_size = rdt.get_metadata_size();

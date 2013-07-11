@@ -1,7 +1,7 @@
 __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_type, \
-                w_array as array, make_cstruct_dtype, \
+                w_array as array, make_cstruct_type, \
                 elwise_map, extract_udtype
 
 class FieldExpr:
@@ -120,7 +120,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
         new_field_types.append(ft)
         new_field_expr.append(fe)
 
-    result_udt = make_cstruct_dtype(new_field_types, new_field_names)
+    result_udt = make_cstruct_type(new_field_types, new_field_names)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
     return elwise_map([n], fieldexpr, result_udt)
@@ -196,7 +196,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
         new_field_types.append(ft)
         new_field_expr.append(fe)
 
-    result_udt = make_cstruct_dtype(new_field_types, new_field_names)
+    result_udt = make_cstruct_type(new_field_types, new_field_names)
     src_udt = extract_udtype(n.dtype, replace_undim)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 

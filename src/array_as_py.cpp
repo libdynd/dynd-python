@@ -12,7 +12,7 @@
 #include "utility_functions.hpp"
 
 #include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/bytes_dtype.hpp>
@@ -159,7 +159,7 @@ static void nested_struct_as_py(const ndt::type& d, char *data, const char *meta
 {
     array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 
-    const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(d.extended());
+    const base_struct_type *bsd = static_cast<const base_struct_type *>(d.extended());
     size_t field_count = bsd->get_field_count();
     const string *field_names = bsd->get_field_names();
     const ndt::type *field_types = bsd->get_field_types();

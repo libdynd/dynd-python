@@ -117,8 +117,8 @@ dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj);
  */
 dynd::ndt::type dynd_make_pointer_dtype(const dynd::ndt::type& target_dtype);
 
-dynd::ndt::type dynd_make_struct_dtype(PyObject *field_types, PyObject *field_names);
-dynd::ndt::type dynd_make_cstruct_dtype(PyObject *field_types, PyObject *field_names);
+dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names);
+dynd::ndt::type dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names);
 dynd::ndt::type dynd_make_fixed_dim_dtype(PyObject *shape, const dynd::ndt::type& element_dtype, PyObject *axis_perm);
 
 /**

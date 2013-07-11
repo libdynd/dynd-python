@@ -11,7 +11,7 @@
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/dtypes/var_dim_dtype.hpp>
-#include <dynd/dtypes/base_struct_dtype.hpp>
+#include <dynd/dtypes/base_struct_type.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
 #include <dynd/dtypes/datetime_dtype.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
@@ -113,7 +113,7 @@ static size_t get_nonragged_dim_count(const ndt::type& dt, size_t max_count=nume
             if (max_count <= 1) {
                 return max_count;
             } else {
-                const base_struct_dtype *bsd = static_cast<const base_struct_dtype *>(dt.extended());
+                const base_struct_type *bsd = static_cast<const base_struct_type *>(dt.extended());
                 size_t field_count = bsd->get_field_count();
                 const ndt::type *field_types = bsd->get_field_types();
                 for (size_t i = 0; i != field_count; ++i) {

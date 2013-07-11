@@ -63,7 +63,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.make_categorical_dtype([1, 2, 3])),
                         _lowlevel.CATEGORICAL_TYPE_ID)
         # Struct
-        self.assertEqual(self.type_id_of(ndt.make_struct_dtype(
+        self.assertEqual(self.type_id_of(ndt.make_struct_type(
                                     [ndt.int32, ndt.int32], ['x', 'y'])),
                         _lowlevel.STRUCT_TYPE_ID)
         self.assertEqual(self.type_id_of(ndt.type('{x : int32; y : int32}')),

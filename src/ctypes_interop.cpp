@@ -6,9 +6,9 @@
 #include <Python.h>
 
 #include <dynd/dtypes/fixedstring_type.hpp>
-#include <dynd/dtypes/cstruct_dtype.hpp>
+#include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
-#include <dynd/dtypes/struct_dtype.hpp>
+#include <dynd/dtypes/struct_type.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
 #include <dynd/dtypes/pointer_dtype.hpp>
 #include <dynd/dtypes/dtype_alignment.hpp>
@@ -245,9 +245,9 @@ dynd::ndt::type pydynd::dtype_from_ctypes_cdatatype(PyObject *d)
 
         if (is_cstruct_compatible_offsets(field_count, &field_types[0],
                         &field_offsets[0], total_size)) {
-            return make_cstruct_dtype(field_count, &field_types[0], &field_names[0]);
+            return make_cstruct_type(field_count, &field_types[0], &field_names[0]);
         } else {
-            return make_struct_dtype(field_types, field_names);
+            return make_struct_type(field_types, field_names);
         }
     } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
         // Translate into a either a fixed_dim or strided_dim

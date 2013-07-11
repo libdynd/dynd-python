@@ -24,7 +24,7 @@ class TestDate(unittest.TestCase):
     def test_struct_casting(self):
         a = nd.array([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
-        s = a.ucast(ndt.make_cstruct_dtype([ndt.int64, ndt.int16, ndt.int8],
+        s = a.ucast(ndt.make_cstruct_type([ndt.int64, ndt.int16, ndt.int8],
                                         ['year', 'month', 'day']))
         s = s.eval()
         self.assertEqual(nd.as_py(s.year), [1912, 2002])
@@ -39,7 +39,7 @@ class TestDate(unittest.TestCase):
         a = nd.array(date(1955,3,13))
         s = a.to_struct().eval()
         self.assertEqual(s.dtype,
-                        ndt.make_cstruct_dtype(
+                        ndt.make_cstruct_type(
                             [ndt.int32, ndt.int16, ndt.int16],
                             ['year', 'month', 'day']))
         self.assertEqual(nd.as_py(s.year), 1955)

@@ -9,7 +9,7 @@
 #include "array_as_py.hpp"
 #include "placement_wrappers.hpp"
 
-#include <dynd/dtypes/cstruct_dtype.hpp>
+#include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/builtin_dtype_properties.hpp>
 #include <dynd/dtypes/dtype_dtype.hpp>
 
@@ -401,7 +401,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
 {
     const ndt::type& pdt = c.get_parameters_type();
     nd::array params = nd::empty(pdt);
-    const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
+    const cstruct_type *fsdt = static_cast<const cstruct_type *>(pdt.extended());
     if (fsdt->get_field_count() != 1) {
         stringstream ss;
         ss << "incorrect number of arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
@@ -422,7 +422,7 @@ nd::array pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
 {
     const ndt::type& pdt = c.get_parameters_type();
     nd::array params = nd::empty(pdt);
-    const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
+    const cstruct_type *fsdt = static_cast<const cstruct_type *>(pdt.extended());
     if (fsdt->get_field_count() != 1) {
         stringstream ss;
         ss << "not enough arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
@@ -443,7 +443,7 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
                 nd::array& out_params, vector<nd::array>& out_storage)
 {
     const ndt::type& pdt = c.get_parameters_type();
-    const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
+    const cstruct_type *fsdt = static_cast<const cstruct_type *>(pdt.extended());
     size_t param_count = fsdt->get_field_count() - 1, args_count = PyTuple_GET_SIZE(args);
     if (args_count > param_count) {
         stringstream ss;
@@ -573,7 +573,7 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper& ncw, PyObjec
     const ndt::type& pdt = ncw.c.get_parameters_type();
     vector<nd::array> storage;
     nd::array params = nd::empty(pdt);
-    const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
+    const cstruct_type *fsdt = static_cast<const cstruct_type *>(pdt.extended());
     // Set the 'self' parameter value
     set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
                 params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],
@@ -604,7 +604,7 @@ static PyObject *ndt_type_callable_call(const std::string& funcname, const gfunc
     const ndt::type& pdt = c.get_parameters_type();
     vector<nd::array> storage;
     nd::array params = nd::empty(pdt);
-    const cstruct_dtype *fsdt = static_cast<const cstruct_dtype *>(pdt.extended());
+    const cstruct_type *fsdt = static_cast<const cstruct_type *>(pdt.extended());
     // Set the 'self' parameter value
     set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
                 params.get_ndo_meta() + fsdt->get_metadata_offsets()[0],

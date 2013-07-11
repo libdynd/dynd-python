@@ -12,8 +12,8 @@
 #include <dynd/dtypes/dtype_alignment.hpp>
 #include <dynd/dtypes/fixedstring_type.hpp>
 #include <dynd/dtypes/strided_dim_dtype.hpp>
-#include <dynd/dtypes/struct_dtype.hpp>
-#include <dynd/dtypes/cstruct_dtype.hpp>
+#include <dynd/dtypes/struct_type.hpp>
+#include <dynd/dtypes/cstruct_type.hpp>
 #include <dynd/dtypes/fixed_dim_dtype.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/dtypes/date_dtype.hpp>
@@ -29,7 +29,7 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-ndt::type make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
+ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
 {
     vector<ndt::type> field_types;
     vector<string> field_names;
@@ -69,9 +69,9 @@ ndt::type make_struct_dtype_from_numpy_struct(PyArray_Descr *d, size_t data_alig
     // Make a cstruct if possible, struct otherwise
     if (is_cstruct_compatible_offsets(field_types.size(),
                     &field_types[0], &field_offsets[0], d->elsize)) {
-        return make_cstruct_dtype(field_types.size(), &field_types[0], &field_names[0]);
+        return make_cstruct_type(field_types.size(), &field_types[0], &field_names[0]);
     } else {
-        return make_struct_dtype(field_types, field_names);
+        return make_struct_type(field_types, field_names);
     }
 }
 
@@ -152,7 +152,7 @@ ndt::type pydynd::dtype_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment
         dt = make_fixedstring_type(d->elsize / 4, string_encoding_utf_32);
         break;
     case NPY_VOID:
-        dt = make_struct_dtype_from_numpy_struct(d, data_alignment);
+        dt = make_struct_type_from_numpy_struct(d, data_alignment);
         break;
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     case NPY_DATETIME: {
@@ -201,7 +201,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
             // In DyND, the struct offsets are part of the metadata instead of the dtype.
             // That's why we have to populate them here.
             PyObject *d_names = d->names;
-            const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
+            const struct_type *sdt = static_cast<const struct_type *>(dt.extended());
             const ndt::type *fields = sdt->get_field_types();
             const size_t *metadata_offsets = sdt->get_metadata_offsets();
             size_t field_count = sdt->get_field_count();
@@ -351,7 +351,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::ndt::type& dt)
         }
         */
         case cstruct_type_id: {
-            const cstruct_dtype *tdt = static_cast<const cstruct_dtype *>(dt.extended());
+            const cstruct_type *tdt = static_cast<const cstruct_type *>(dt.extended());
             const ndt::type *field_types = tdt->get_field_types();
             const string *field_names = tdt->get_field_names();
             const vector<size_t>& offsets = tdt->get_data_offsets_vector();
@@ -455,7 +455,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_dtype(const dynd::ndt::type& dt, const c
                 ss << "Can only convert dynd type " << dt << " into a numpy dtype with array metadata";
                 throw runtime_error(ss.str());
             }
-            const struct_dtype *sdt = static_cast<const struct_dtype *>(dt.extended());
+            const struct_type *sdt = static_cast<const struct_type *>(dt.extended());
             const ndt::type *field_types = sdt->get_field_types();
             const string *field_names = sdt->get_field_names();
             const size_t *metadata_offsets = sdt->get_metadata_offsets();

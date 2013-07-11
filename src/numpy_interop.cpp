@@ -19,7 +19,7 @@
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/property_type.hpp>
 
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 #include "array_functions.hpp"
 #include "utility_functions.hpp"
 

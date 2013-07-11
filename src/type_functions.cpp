@@ -3,7 +3,7 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 #include "array_functions.hpp"
 #include "numpy_interop.hpp"
 #include "ctypes_interop.hpp"

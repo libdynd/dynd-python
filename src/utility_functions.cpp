@@ -4,7 +4,7 @@
 //
 
 #include "utility_functions.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 #include "array_functions.hpp"
 
 #include <dynd/exceptions.hpp>

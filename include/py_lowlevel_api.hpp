@@ -9,7 +9,7 @@
 #include <dynd/lowlevel_api.hpp>
 
 #include "array_functions.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 
 namespace pydynd {
 

@@ -8,7 +8,7 @@
 
 #include "array_as_py.hpp"
 #include "array_functions.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <dynd/types/strided_dim_type.hpp>

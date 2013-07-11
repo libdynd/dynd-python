@@ -5,7 +5,7 @@
 
 #include "vm_elwise_program_functions.hpp"
 #include "utility_functions.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 
 using namespace std;
 using namespace dynd;

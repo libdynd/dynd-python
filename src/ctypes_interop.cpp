@@ -14,7 +14,7 @@
 #include <dynd/types/type_alignment.hpp>
 
 #include "ctypes_interop.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 #include "utility_functions.hpp"
 
 using namespace std;

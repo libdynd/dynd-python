@@ -38,14 +38,14 @@ void pydynd::add_dtype_names_to_dir_dict(const ndt::type& dt, PyObject *dict)
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
         // Add the dtype properties
-        dt.extended()->get_dynamic_dtype_properties(&properties, &count);
+        dt.extended()->get_dynamic_type_properties(&properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
             }
         }
         // Add the dtype functions
-        dt.extended()->get_dynamic_dtype_functions(&properties, &count);
+        dt.extended()->get_dynamic_type_functions(&properties, &count);
         for (size_t i = 0; i < count; ++i) {
             if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) < 0) {
                 throw runtime_error("");
@@ -60,7 +60,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::ndt::type& dt, PyObject
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
         // Search for a property
-        dt.extended()->get_dynamic_dtype_properties(&properties, &count);
+        dt.extended()->get_dynamic_type_properties(&properties, &count);
         // TODO: We probably want to make some kind of acceleration structure for the name lookup
         if (count > 0) {
             string nstr = pystring_as_string(name);
@@ -71,7 +71,7 @@ PyObject *pydynd::get_dtype_dynamic_property(const dynd::ndt::type& dt, PyObject
             }
         }
         // Search for a function
-        dt.extended()->get_dynamic_dtype_functions(&properties, &count);
+        dt.extended()->get_dynamic_type_functions(&properties, &count);
         if (count > 0) {
             string nstr = pystring_as_string(name);
             for (size_t i = 0; i < count; ++i) {
@@ -627,7 +627,7 @@ PyObject *pydynd::call_dtype_constructor_function(const dynd::ndt::type& dt, PyO
         const std::pair<std::string, gfunc::callable> *properties;
         size_t count;
         // Search for a function
-        dt.extended()->get_dynamic_dtype_functions(&properties, &count);
+        dt.extended()->get_dynamic_type_functions(&properties, &count);
         if (count > 0) {
             for (size_t i = 0; i < count; ++i) {
                 if (properties[i].first == "__construct__") {

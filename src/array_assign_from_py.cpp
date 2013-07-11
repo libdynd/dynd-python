@@ -22,7 +22,7 @@
 #include "array_from_py.hpp"
 #include "array_assign_from_py.hpp"
 #include "array_functions.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 

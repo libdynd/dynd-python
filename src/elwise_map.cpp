@@ -18,7 +18,7 @@
 #include "utility_functions.hpp"
 #include "elwise_map.hpp"
 #include "array_functions.hpp"
-#include "dtype_functions.hpp"
+#include "type_functions.hpp"
 
 using namespace std;
 using namespace dynd;

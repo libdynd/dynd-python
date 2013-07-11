@@ -134,7 +134,7 @@ set(pydynd_CPP_SRC
     include/ctypes_interop.hpp
     include/do_import_array.hpp
     include/placement_wrappers.hpp
-    include/dtype_functions.hpp
+    include/type_functions.hpp
     include/elwise_map.hpp
     include/exception_translation.hpp
     include/gfunc_callable_functions.hpp
@@ -153,7 +153,7 @@ set(pydynd_CPP_SRC
     include/vm_elwise_program_functions.hpp
     src/codegen_cache_functions.cpp
     src/ctypes_interop.cpp
-    src/dtype_functions.cpp
+    src/type_functions.cpp
     src/elwise_map.cpp
     src/gfunc_callable_functions.cpp
     src/exception_translation.cpp

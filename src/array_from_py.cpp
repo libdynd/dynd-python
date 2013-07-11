@@ -17,7 +17,7 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
-#include <dynd/dtype_promotion.hpp>
+#include <dynd/type_promotion.hpp>
 #include <dynd/exceptions.hpp>
 
 #include "array_from_py.hpp"
@@ -88,7 +88,7 @@ static void deduce_pylist_shape_and_dtype(PyObject *obj,
 #endif
 
         if (dt != obj_dt) {
-            dt = dynd::promote_dtypes_arithmetic(obj_dt, dt);
+            dt = dynd::promote_types_arithmetic(obj_dt, dt);
         }
     }
 }

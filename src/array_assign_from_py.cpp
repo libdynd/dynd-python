@@ -16,7 +16,7 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
-#include <dynd/dtype_promotion.hpp>
+#include <dynd/type_promotion.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 
 #include "array_from_py.hpp"

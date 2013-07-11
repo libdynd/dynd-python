@@ -14,7 +14,7 @@
 #include <dynd/types/base_uniform_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
-#include <dynd/dtype_promotion.hpp>
+#include <dynd/type_promotion.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
@@ -394,8 +394,8 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, P
     if (dt != Py_None) {
         dt_nd = make_ndt_type_from_pyobject(dt);
     } else {
-        dt_nd = promote_dtypes_arithmetic(start_nd.get_type(),
-                    promote_dtypes_arithmetic(stop_nd.get_type(), step_nd.get_type()));
+        dt_nd = promote_types_arithmetic(start_nd.get_type(),
+                    promote_types_arithmetic(stop_nd.get_type(), step_nd.get_type()));
     }
     
     start_nd = start_nd.ucast(dt_nd).eval();

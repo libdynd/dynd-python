@@ -57,7 +57,7 @@ namespace {
         }
     }
 
-    PyObject *make_assignment_kernel(PyObject *dst_dt_obj, PyObject *src_dt_obj, PyObject *kerntype_obj, void *out_dki_ptr)
+    PyObject *make_assignment_kernel(PyObject *dst_tp_obj, PyObject *src_tp_obj, PyObject *kerntype_obj, void *out_dki_ptr)
     {
         try {
             dynamic_kernel_instance *out_dki = reinterpret_cast<dynamic_kernel_instance *>(out_dki_ptr);
@@ -65,18 +65,18 @@ namespace {
             out_dki->kernel_size = 0;
             out_dki->free_func = NULL;
 
-            ndt::type dst_dt = make_ndt_type_from_pyobject(dst_dt_obj);
-            ndt::type src_dt = make_ndt_type_from_pyobject(src_dt_obj);
-            if (dst_dt.get_metadata_size() != 0) {
+            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+            if (dst_tp.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
-                ss << dst_dt;
+                ss << dst_tp;
                 throw runtime_error(ss.str());
             }
-            if (src_dt.get_metadata_size() != 0) {
+            if (src_tp.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
-                ss << src_dt;
+                ss << src_tp;
                 throw runtime_error(ss.str());
             }
             string kt = pystring_as_string(kerntype_obj);
@@ -93,8 +93,8 @@ namespace {
             }
 
             hierarchical_kernel hk;
-            size_t kernel_size = make_assignment_kernel(&hk, 0, dst_dt, NULL,
-                            src_dt, NULL, kerntype, assign_error_default,
+            size_t kernel_size = make_assignment_kernel(&hk, 0, dst_tp, NULL,
+                            src_tp, NULL, kerntype, assign_error_default,
                             &eval::default_eval_context);
             hk.move_into_dki(out_dki, kernel_size);
 

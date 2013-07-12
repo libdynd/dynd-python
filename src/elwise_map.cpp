@@ -188,22 +188,22 @@ namespace {
 
 class pyobject_elwise_expr_kernel_generator : public expr_kernel_generator {
     pyobject_ownref m_callable;
-    ndt::type m_dst_dt;
-    vector<ndt::type> m_src_dt;
+    ndt::type m_dst_tp;
+    vector<ndt::type> m_src_tp;
 public:
     pyobject_elwise_expr_kernel_generator(PyObject *callable,
-                    const ndt::type& dst_dt, const std::vector<ndt::type>& src_dt)
+                    const ndt::type& dst_tp, const std::vector<ndt::type>& src_tp)
         : expr_kernel_generator(true), m_callable(callable, true),
-                        m_dst_dt(dst_dt), m_src_dt(src_dt)
+                        m_dst_tp(dst_tp), m_src_tp(src_tp)
     {
     }
 
     pyobject_elwise_expr_kernel_generator(PyObject *callable,
-                    const ndt::type& dst_dt, const ndt::type& src_dt)
+                    const ndt::type& dst_tp, const ndt::type& src_tp)
         : expr_kernel_generator(true), m_callable(callable, true),
-                        m_dst_dt(dst_dt), m_src_dt(1)
+                        m_dst_tp(dst_tp), m_src_tp(1)
     {
-        m_src_dt[0] = src_dt;
+        m_src_tp[0] = src_tp;
     }
 
     virtual ~pyobject_elwise_expr_kernel_generator() {
@@ -211,20 +211,20 @@ public:
 
     size_t make_expr_kernel(
                 hierarchical_kernel *out, size_t offset_out,
-                const ndt::type& dst_dt, const char *dst_metadata,
-                size_t src_count, const ndt::type *src_dt, const char **src_metadata,
+                const ndt::type& dst_tp, const char *dst_metadata,
+                size_t src_count, const ndt::type *src_tp, const char **src_metadata,
                 kernel_request_t kernreq, const eval::eval_context *ectx) const
     {
-        if (src_count != m_src_dt.size()) {
+        if (src_count != m_src_tp.size()) {
             stringstream ss;
-            ss << "This elwise_map kernel requires " << m_src_dt.size() << " src operands, ";
+            ss << "This elwise_map kernel requires " << m_src_tp.size() << " src operands, ";
             ss << "received " << src_count;
             throw runtime_error(ss.str());
         }
-        bool require_elwise = dst_dt != m_dst_dt;
+        bool require_elwise = dst_tp != m_dst_tp;
         if (require_elwise) {
             for (size_t i = 0; i != src_count; ++i) {
-                if (src_dt[i] != m_src_dt[i]) {
+                if (src_tp[i] != m_src_tp[i]) {
                     require_elwise = true;
                     break;
                 }
@@ -236,8 +236,8 @@ public:
         // kernel generator to call
         if (require_elwise) {
             return make_elwise_dimension_expr_kernel(out, offset_out,
-                            dst_dt, dst_metadata,
-                            src_count, src_dt, src_metadata,
+                            dst_tp, dst_metadata,
+                            src_count, src_tp, src_metadata,
                             kernreq, ectx,
                             this);
         }
@@ -276,29 +276,29 @@ public:
         Py_INCREF(e->callable);
         // Create shell WArrays which are used to give the kernel data to Python
         strided_dim_type_metadata *md;
-        ndt::type dt = ndt::make_strided_dim(dst_dt);
+        ndt::type dt = ndt::make_strided_dim(dst_tp);
         nd::array n(make_array_memory_block(dt.get_metadata_size()));
         n.get_ndo()->m_type = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
         md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
         md->size = 1;
         md->stride = 0;
-        if (dst_dt.get_metadata_size() > 0) {
-            dst_dt.extended()->metadata_copy_construct(
+        if (dst_tp.get_metadata_size() > 0) {
+            dst_tp.extended()->metadata_copy_construct(
                             n.get_ndo_meta() + sizeof(strided_dim_type_metadata),
                             dst_metadata, NULL);
         }
         ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
         for (size_t i = 0; i != src_count; ++i) {
-            dt = ndt::make_strided_dim(src_dt[i]);
+            dt = ndt::make_strided_dim(src_tp[i]);
             n.set(make_array_memory_block(dt.get_metadata_size()));
             n.get_ndo()->m_type = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
             md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
             md->size = 1;
             md->stride = 0;
-            if (src_dt[i].get_metadata_size() > 0) {
-                src_dt[i].extended()->metadata_copy_construct(
+            if (src_tp[i].get_metadata_size() > 0) {
+                src_tp[i].extended()->metadata_copy_construct(
                                 n.get_ndo_meta() + sizeof(strided_dim_type_metadata),
                                 src_metadata[i], NULL);
             }
@@ -321,7 +321,7 @@ public:
             o << "_unnamed";
         }
         o << "(op0";
-        for (size_t i = 1; i != m_src_dt.size(); ++i) {
+        for (size_t i = 1; i != m_src_tp.size(); ++i) {
             o << ", op" << i;
         }
         o << ")";
@@ -336,21 +336,21 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
         throw runtime_error("elwise_map received a NULL dynd array");
     }
 
-    ndt::type dst_dt, src_dt;
+    ndt::type dst_tp, src_tp;
 
-    dst_dt = make_ndt_type_from_pyobject(dst_type);
+    dst_tp = make_ndt_type_from_pyobject(dst_type);
     if (src_type != Py_None) {
         // Cast to the source type if requested
-        src_dt = make_ndt_type_from_pyobject(src_type);
+        src_tp = make_ndt_type_from_pyobject(src_type);
         // Do the ucast in a way to match up the dimensions
-        n = n.ucast(src_dt, src_dt.get_undim());
+        n = n.ucast(src_tp, src_tp.get_undim());
     } else {
-        src_dt = n.get_udtype();
+        src_tp = n.get_udtype();
     }
 
-    ndt::type edt = ndt::make_unary_expr(dst_dt, src_dt,
-                    new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt.value_type()));
-    nd::array result = n.replace_udtype(edt, src_dt.get_undim());
+    ndt::type edt = ndt::make_unary_expr(dst_tp, src_tp,
+                    new pyobject_elwise_expr_kernel_generator(callable, dst_tp, src_tp.value_type()));
+    nd::array result = n.replace_udtype(edt, src_tp.get_undim());
     return wrap_array(result);
 }
 
@@ -365,19 +365,19 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     }
 
-    ndt::type dst_dt;
-    vector<ndt::type> src_dt(n.size());
+    ndt::type dst_tp;
+    vector<ndt::type> src_tp(n.size());
 
-    dst_dt = make_ndt_type_from_pyobject(dst_type);
+    dst_tp = make_ndt_type_from_pyobject(dst_type);
     if (src_type_list != Py_None) {
         for (size_t i = 0; i != n.size(); ++i) {
             // Cast to the source type if requested
-            src_dt[i] = make_ndt_type_from_pyobject(PyList_GET_ITEM(src_type_list, i));
-            n[i] = n[i].ucast(src_dt[i]);
+            src_tp[i] = make_ndt_type_from_pyobject(PyList_GET_ITEM(src_type_list, i));
+            n[i] = n[i].ucast(src_tp[i]);
         }
     } else {
         for (size_t i = 0; i != n.size(); ++i) {
-            src_dt[i] = n[i].get_udtype();
+            src_tp[i] = n[i].get_udtype();
         }
     }
 
@@ -400,7 +400,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     }
 
-    ndt::type result_vdt = dst_dt;
+    ndt::type result_vdt = dst_tp;
     for (size_t j = 0; j != undim; ++j) {
         if (result_shape[undim - j - 1] == -1) {
             result_vdt = ndt::make_var_dim(result_vdt);
@@ -422,7 +422,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     // we can swap it in as the type
     ndt::type edt = ndt::make_expr(result_vdt,
                     result.get_type(),
-                    new pyobject_elwise_expr_kernel_generator(callable, dst_dt, src_dt));
+                    new pyobject_elwise_expr_kernel_generator(callable, dst_tp, src_tp));
     edt.swap(result.get_ndo()->m_type);
     return wrap_array(DYND_MOVE(result));
 }

@@ -53,6 +53,6 @@ def metadata_struct_of(ndo):
     """
     if not isinstance(ndo, nd.array):
         raise TypeError('Object is not a dynd array')
-    metadata_type = build_metadata_struct(ndo.dtype)
+    metadata_type = build_metadata_struct(nd.type_of(ndo))
     return metadata_type.from_address(metadata_address_of(ndo))
 

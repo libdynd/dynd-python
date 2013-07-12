@@ -43,7 +43,7 @@ float32.
 
 .. code-block:: python
 
-    >>> ndt.make_fixedbytes_dtype(8, 4)
+    >>> ndt.make_fixedbytes(8, 4)
     ndt.type('fixedbytes<8,4>')
 
 Unaligned Type
@@ -57,7 +57,7 @@ a type which adapts it into aligned storage must be used.
 
 .. code-block:: python
 
-    >>> ndt.make_unaligned_dtype(ndt.float64)
+    >>> ndt.make_unaligned(ndt.float64)
     ndt.type('unaligned<float64>')
 
 Byteswap Type
@@ -69,7 +69,7 @@ plays this role.
 
 .. code-block:: python
 
-    >>> ndt.make_byteswap_dtype(ndt.int32)
+    >>> ndt.make_byteswap(ndt.int32)
     ndt.type('byteswap<int32>')
 
 Convert Type
@@ -81,10 +81,10 @@ parameter.
 
 .. code-block:: python
 
-    >>> ndt.make_convert_dtype(ndt.int32, ndt.float64)
+    >>> ndt.make_convert(ndt.int32, ndt.float64)
     ndt.type('convert<to=int32, from=float64>')
 
-    >>> ndt.make_convert_dtype(ndt.int32, ndt.float64, errmode='overflow')
+    >>> ndt.make_convert(ndt.int32, ndt.float64, errmode='overflow')
     ndt.type('convert<to=int32, from=float64, errmode=overflow>')
 
 
@@ -104,16 +104,16 @@ mutated in place.
 Also planned are strings with full dynamic behavior, where each string
 manages its own memory allocation. These are not implemented yet.
 
-To create string types, use the `ndt.make_string_dtype` and
-`ndt.make_fixedstring_dtype`. There is a default string type
+To create string types, use the `ndt.make_string` and
+`ndt.make_fixedstring`. There is a default string type
 `ndt.string`, which is UTF-8.
 
 .. code-block:: python
 
-    >>> ndt.make_string_dtype('ascii')
+    >>> ndt.make_string('ascii')
     ndt.type('string<ascii>')
 
-    >>> ndt.make_fixedstring_dtype(16, 'utf_32')
+    >>> ndt.make_fixedstring(16, 'utf_32')
     ndt.type("string<16,'utf-32'>")
 
 When creating ndarray objects from Python lists, blockref strings
@@ -133,8 +133,8 @@ function.
 .. code-block:: python
 
     >>> groups = nd.array(['a', 'b', 'c'],
-                     udtype=ndt.make_fixedstring_dtype(1, 'ascii'))
-    >>> ndt.make_categorical_dtype(groups)
+                     udtype=ndt.make_fixedstring(1, 'ascii'))
+    >>> ndt.make_categorical(groups)
     ndt.type('categorical<string<1,'ascii'>, ["a", "b", "c"]>')
 
 Pointer Type
@@ -146,6 +146,6 @@ similar to the blockref string type.
 
 .. code-block:: python
 
-    >>> ndt.make_pointer_dtype(ndt.cfloat32)
+    >>> ndt.make_pointer(ndt.cfloat32)
     ndt.type('pointer<complex<float32>>')
 

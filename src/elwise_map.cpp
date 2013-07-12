@@ -343,14 +343,14 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
         // Cast to the source type if requested
         src_tp = make_ndt_type_from_pyobject(src_type);
         // Do the ucast in a way to match up the dimensions
-        n = n.ucast(src_tp, src_tp.get_undim());
+        n = n.ucast(src_tp, src_tp.get_ndim());
     } else {
-        src_tp = n.get_udtype();
+        src_tp = n.get_dtype();
     }
 
     ndt::type edt = ndt::make_unary_expr(dst_tp, src_tp,
                     new pyobject_elwise_expr_kernel_generator(callable, dst_tp, src_tp.value_type()));
-    nd::array result = n.replace_udtype(edt, src_tp.get_undim());
+    nd::array result = n.replace_dtype(edt, src_tp.get_ndim());
     return wrap_array(result);
 }
 
@@ -377,13 +377,13 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     } else {
         for (size_t i = 0; i != n.size(); ++i) {
-            src_tp[i] = n[i].get_udtype();
+            src_tp[i] = n[i].get_dtype();
         }
     }
 
     size_t undim = 0;
     for (size_t i = 0; i != n.size(); ++i) {
-        size_t undim_i = n[i].get_undim();
+        size_t undim_i = n[i].get_ndim();
         if (undim_i > undim) {
             undim = undim_i;
         }
@@ -393,7 +393,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         result_shape[j] = 1;
     }
     for (size_t i = 0; i != n.size(); ++i) {
-        size_t undim_i = n[i].get_undim();
+        size_t undim_i = n[i].get_ndim();
         if (undim_i > 0) {
             n[i].get_shape(tmp_shape.get());
             incremental_broadcast(undim, result_shape.get(), undim_i, tmp_shape.get());

@@ -12,33 +12,33 @@ class TestArange(unittest.TestCase):
 
     def test_default_dtype(self):
         # Defaults to int32 when given ints
-        self.assertEqual(nd.range(10).udtype, ndt.int32)
+        self.assertEqual(nd.range(10).dtype, ndt.int32)
         # Except if the input numbers don't fit, then returns int64
-        self.assertEqual(nd.range(2**32, 2**32+10).udtype, ndt.int64)
-        self.assertEqual(nd.range(-2**32, -2**32+10).udtype, ndt.int64)
+        self.assertEqual(nd.range(2**32, 2**32+10).dtype, ndt.int64)
+        self.assertEqual(nd.range(-2**32, -2**32+10).dtype, ndt.int64)
         # Gives float64 when given floats
-        self.assertEqual(nd.range(10.0).udtype, ndt.float64)
+        self.assertEqual(nd.range(10.0).dtype, ndt.float64)
 
     def test_specified_dtype(self):
         # Must return the requested type
         self.assertRaises(OverflowError, nd.range, 10, dtype=ndt.bool)
-        self.assertEqual(nd.range(10, dtype=ndt.int8).udtype, ndt.int8)
-        self.assertEqual(nd.range(10, dtype=ndt.int16).udtype, ndt.int16)
-        self.assertEqual(nd.range(10, dtype=ndt.int32).udtype, ndt.int32)
-        self.assertEqual(nd.range(10, dtype=ndt.int64).udtype, ndt.int64)
-        self.assertEqual(nd.range(10, dtype=ndt.uint8).udtype, ndt.uint8)
-        self.assertEqual(nd.range(10, dtype=ndt.uint16).udtype, ndt.uint16)
-        self.assertEqual(nd.range(10, dtype=ndt.uint32).udtype, ndt.uint32)
-        self.assertEqual(nd.range(10, dtype=ndt.uint64).udtype, ndt.uint64)
-        self.assertEqual(nd.range(10, dtype=ndt.float32).udtype, ndt.float32)
-        self.assertEqual(nd.range(10, dtype=ndt.float64).udtype, ndt.float64)
+        self.assertEqual(nd.range(10, dtype=ndt.int8).dtype, ndt.int8)
+        self.assertEqual(nd.range(10, dtype=ndt.int16).dtype, ndt.int16)
+        self.assertEqual(nd.range(10, dtype=ndt.int32).dtype, ndt.int32)
+        self.assertEqual(nd.range(10, dtype=ndt.int64).dtype, ndt.int64)
+        self.assertEqual(nd.range(10, dtype=ndt.uint8).dtype, ndt.uint8)
+        self.assertEqual(nd.range(10, dtype=ndt.uint16).dtype, ndt.uint16)
+        self.assertEqual(nd.range(10, dtype=ndt.uint32).dtype, ndt.uint32)
+        self.assertEqual(nd.range(10, dtype=ndt.uint64).dtype, ndt.uint64)
+        self.assertEqual(nd.range(10, dtype=ndt.float32).dtype, ndt.float32)
+        self.assertEqual(nd.range(10, dtype=ndt.float64).dtype, ndt.float64)
         # Maybe in the future add complex support when start.imag == stop.imag
         # and step.imag == 0?
         self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.cfloat32)
         self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.cfloat64)
         # Float/complex should convert when the dtype is specified
-        self.assertEqual(nd.range(10.0, dtype=ndt.uint16).udtype, ndt.uint16)
-        self.assertEqual(nd.range(1.0, step=0.5+0j, dtype=ndt.float32).udtype, ndt.float32)
+        self.assertEqual(nd.range(10.0, dtype=ndt.uint16).dtype, ndt.uint16)
+        self.assertEqual(nd.range(1.0, step=0.5+0j, dtype=ndt.float32).dtype, ndt.float32)
 
     def test_float_step(self):
         # Should produce the correct count for 1.0/int steps
@@ -70,13 +70,13 @@ class TestLinspace(unittest.TestCase):
 
     def test_default_dtype(self):
         # Defaults to float64 when given ints
-        self.assertEqual(nd.linspace(0, 1).udtype, ndt.float64)
+        self.assertEqual(nd.linspace(0, 1).dtype, ndt.float64)
         # Gives float64 when given floats
-        self.assertEqual(nd.linspace(0, 1.0).udtype, ndt.float64)
-        self.assertEqual(nd.linspace(0.0, 1).udtype, ndt.float64)
+        self.assertEqual(nd.linspace(0, 1.0).dtype, ndt.float64)
+        self.assertEqual(nd.linspace(0.0, 1).dtype, ndt.float64)
         # Gives cfloat64 when given complex
-        self.assertEqual(nd.linspace(1.0, 1.0j).udtype, ndt.cfloat64)
-        self.assertEqual(nd.linspace(0.0j, 1.0).udtype, ndt.cfloat64)
+        self.assertEqual(nd.linspace(1.0, 1.0j).dtype, ndt.cfloat64)
+        self.assertEqual(nd.linspace(0.0j, 1.0).dtype, ndt.cfloat64)
 
     def test_specified_dtype(self):
         # Linspace only supports real-valued outputs
@@ -90,10 +90,10 @@ class TestLinspace(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.linspace, 0, 1, dtype=ndt.uint32)
         self.assertRaises(RuntimeError, nd.linspace, 0, 1, dtype=ndt.uint64)
         # Should obey the float/complex type requests
-        self.assertEqual(nd.linspace(0, 1, dtype=ndt.float32).udtype, ndt.float32)
-        self.assertEqual(nd.linspace(0, 1, dtype=ndt.float64).udtype, ndt.float64)
-        self.assertEqual(nd.linspace(0, 1, dtype=ndt.cfloat32).udtype, ndt.cfloat32)
-        self.assertEqual(nd.linspace(0, 1, dtype=ndt.cfloat64).udtype, ndt.cfloat64)
+        self.assertEqual(nd.linspace(0, 1, dtype=ndt.float32).dtype, ndt.float32)
+        self.assertEqual(nd.linspace(0, 1, dtype=ndt.float64).dtype, ndt.float64)
+        self.assertEqual(nd.linspace(0, 1, dtype=ndt.cfloat32).dtype, ndt.cfloat32)
+        self.assertEqual(nd.linspace(0, 1, dtype=ndt.cfloat64).dtype, ndt.cfloat64)
 
     def test_cast_errors(self):
         # If a dtype is specified, the inputs must be convertible

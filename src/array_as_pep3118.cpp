@@ -281,7 +281,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
             return 0;
         }
 
-        buffer->ndim = (int)dt.get_undim();
+        buffer->ndim = (int)dt.get_ndim();
         if (((flags&PyBUF_ND) != PyBUF_ND) && buffer->ndim > 1) {
             stringstream ss;
             ss << "dynd type " << n.get_type() << " is multidimensional, but PEP 3118 request is not ND";

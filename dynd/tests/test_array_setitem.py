@@ -25,4 +25,4 @@ class TestArraySetItem(unittest.TestCase):
         self.assertEqual(nd.as_py(a[4]), 101)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

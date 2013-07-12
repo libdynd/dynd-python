@@ -130,7 +130,7 @@ dynd::nd::array array_cast(const dynd::nd::array& n, const dynd::ndt::type& dt,
                 PyObject *assign_error_obj);
 
 dynd::nd::array array_ucast(const dynd::nd::array& n, const dynd::ndt::type& dt,
-                size_t replace_undim, PyObject *assign_error_obj);
+                size_t replace_ndim, PyObject *assign_error_obj);
 
 PyObject *array_get_shape(const dynd::nd::array& n);
 

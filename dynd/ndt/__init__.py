@@ -6,7 +6,7 @@ from dynd._pydynd import w_type as type, \
         make_unaligned, make_fixedstring, make_string, \
         make_pointer, make_struct, make_cstruct, \
         make_strided_dim, make_fixed_dim, make_var_dim, \
-        make_categorical, replace_udtype, extract_udtype, \
+        make_categorical, replace_dtype, extract_dtype, \
         factor_categorical, make_bytes
 
 void = type('void')

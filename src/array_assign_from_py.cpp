@@ -93,7 +93,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
 static void array_assign_from_value(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *value)
 {
-    if (dt.get_undim() > 0) {
+    if (dt.get_ndim() > 0) {
         if (PySequence_Check(value)) {
             Py_ssize_t seqsize = PySequence_Size(value);
             if (seqsize == -1 && PyErr_Occurred()) {
@@ -158,7 +158,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
 
             ndt::type str_dt;
             // Choose between bytes or ascii string based on the destination type
-            type_kind_t kind = dt.get_udtype().get_kind();
+            type_kind_t kind = dt.get_dtype().get_kind();
             if (kind == bytes_kind) {
                 str_dt = ndt::make_bytes(1);
             } else { 
@@ -710,26 +710,26 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
 #endif // DYND_NUMPY_INTEROP
     }
 
-    size_t dst_undim = dt.get_undim();
+    size_t dst_ndim = dt.get_ndim();
     bool ends_in_dict = false;
-    if (dst_undim == 0) {
+    if (dst_ndim == 0) {
         array_assign_from_value(dt, metadata, data, value);
     } else {
-        size_t seq_undim = get_pyseq_ndim(value, ends_in_dict);
+        size_t seq_ndim = get_pyseq_ndim(value, ends_in_dict);
         // Special handling when the destination is a struct,
         // and there was no dict at the end of the seq chain.
-        // Increase the dst_undim to count the first field
+        // Increase the dst_ndim to count the first field
         // of any structs as uniform, to match up with how
         // get_pyseq_ndim works.
-        ndt::type udt = dt.get_udtype().value_type();
-        size_t original_dst_undim = dst_undim;
+        ndt::type udt = dt.get_dtype().value_type();
+        size_t original_dst_ndim = dst_ndim;
         if (!ends_in_dict && udt.get_kind() == struct_kind) {
             while (true) {
-                if (udt.get_undim() > 0) {
-                    dst_undim += udt.get_undim();
-                    udt = udt.get_udtype();
+                if (udt.get_ndim() > 0) {
+                    dst_ndim += udt.get_ndim();
+                    udt = udt.get_dtype();
                 } else if (udt.get_kind() == struct_kind) {
-                    ++dst_undim;
+                    ++dst_ndim;
                     udt = static_cast<const base_struct_type *>(udt.extended())->get_field_types()[0];
                 } else {
                     break;
@@ -737,14 +737,14 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
             }
         }
 
-        if (dst_undim > seq_undim || dt.is_expression()) {
+        if (dst_ndim > seq_ndim || dt.is_expression()) {
             // Make a temporary value with just the trailing dimensions, then
             // assign to the output
-            dimvector shape(original_dst_undim);
-            dt.extended()->get_shape(original_dst_undim, 0, shape.get(), metadata);
-            ndt::type partial_dt = dt.get_type_at_dimension(NULL, dst_undim - seq_undim).get_canonical_type();
-            nd::array tmp(make_array_memory_block(partial_dt, original_dst_undim - (dst_undim - seq_undim),
-                            shape.get() + (dst_undim - seq_undim)));
+            dimvector shape(original_dst_ndim);
+            dt.extended()->get_shape(original_dst_ndim, 0, shape.get(), metadata);
+            ndt::type partial_dt = dt.get_type_at_dimension(NULL, dst_ndim - seq_ndim).get_canonical_type();
+            nd::array tmp(make_array_memory_block(partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
+                            shape.get() + (dst_ndim - seq_ndim)));
             array_assign_from_value(tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
                             value);
             typed_data_assign(dt, metadata, data, tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readonly_originptr());

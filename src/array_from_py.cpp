@@ -132,7 +132,7 @@ static size_t get_nonragged_dim_count(const ndt::type& dt, size_t max_count=nume
     }
 }
 
-static void deduce_pyseq_shape_with_udtype(PyObject *obj, const ndt::type& udt,
+static void deduce_pyseq_shape_with_dtype(PyObject *obj, const ndt::type& udt,
                 std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis)
 {
     bool is_sequence = (PySequence_Check(obj) != 0 && !PyUnicode_Check(obj));
@@ -169,7 +169,7 @@ static void deduce_pyseq_shape_with_udtype(PyObject *obj, const ndt::type& udt,
 
         for (Py_ssize_t i = 0; i < size; ++i) {
             pyobject_ownref item(PySequence_GetItem(obj, i));
-            deduce_pyseq_shape_with_udtype(item.get(), udt,
+            deduce_pyseq_shape_with_dtype(item.get(), udt,
                             shape, i == 0 && initial_pass, current_axis + 1);
         }
     } else {
@@ -691,7 +691,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj)
 
 static bool ndt_type_requires_shape(const ndt::type& dt)
 {
-    if (dt.get_undim() > 0) {
+    if (dt.get_ndim() > 0) {
         switch (dt.get_type_id()) {
             case fixed_dim_type_id:
             case var_dim_type_id:
@@ -710,7 +710,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
 {
     nd::array result;
     if (uniform) {
-        if (dt.get_undim() != 0) {
+        if (dt.get_ndim() != 0) {
             stringstream ss;
             ss << "dynd array creation with requested automatic deduction of array shape, but provided dt ";
             ss << dt << " already has an array dimension type";
@@ -733,7 +733,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                 shape.push_back(size);
                 for (Py_ssize_t i = 0; i < size; ++i) {
                     pyobject_ownref item(PySequence_GetItem(obj, i));
-                    deduce_pyseq_shape_with_udtype(item.get(), dt, shape, true, 1);
+                    deduce_pyseq_shape_with_dtype(item.get(), dt, shape, true, 1);
                 }
                 // If it's a struct, fix up the ndim to let the struct absorb
                 // some of the sequences
@@ -788,8 +788,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                 result = nd::empty(dt);
             }
         }
-    } else if (dt.get_undim() > 0 && ndt_type_requires_shape(dt)) {
-        size_t undim = dt.get_undim();
+    } else if (dt.get_ndim() > 0 && ndt_type_requires_shape(dt)) {
+        size_t undim = dt.get_ndim();
         dimvector shape(undim);
         for (size_t i = 0; i != undim; ++i) {
             shape[i] = shape_signal_uninitialized;

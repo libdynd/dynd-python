@@ -57,7 +57,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.date),
                         _lowlevel.DATE_TYPE_ID)
         # Property
-        self.assertEqual(self.type_id_of(ndt.date(2000, 1, 1).year.dtype),
+        self.assertEqual(self.type_id_of(ndt.date(2000, 1, 1).year.type),
                         _lowlevel.PROPERTY_TYPE_ID)
         # Categorical
         self.assertEqual(self.type_id_of(ndt.make_categorical([1, 2, 3])),
@@ -85,7 +85,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('var, int32')),
                         _lowlevel.VAR_DIM_TYPE_ID)
         # GroupBy
-        self.assertEqual(self.type_id_of(nd.groupby([1, 2], ['a', 'a']).dtype),
+        self.assertEqual(self.type_id_of(nd.groupby([1, 2], ['a', 'a']).type),
                         _lowlevel.GROUPBY_TYPE_ID)
         # Type
         self.assertEqual(self.type_id_of(ndt.type('type')),
@@ -120,4 +120,4 @@ class TestLowLevel(unittest.TestCase):
                         a, 'readwrite')
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

@@ -73,11 +73,11 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         size_t get_metadata_size()
         base_type* extended()
         string_encoding_t string_encoding() except +translate_exception
-        size_t get_undim()
-        ndt_type get_udtype()
-        ndt_type get_udtype(size_t)
+        size_t get_ndim()
+        ndt_type get_dtype()
+        ndt_type get_dtype(size_t)
 
-        ndt_type with_replaced_udtype(ndt_type&, size_t) except +translate_exception
+        ndt_type with_replaced_dtype(ndt_type&, size_t) except +translate_exception
 
 cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:

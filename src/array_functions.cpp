@@ -234,7 +234,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     if (n.get_ndo() == NULL) {
         return false;
     }
-    if (n.get_undim() == 0) {
+    if (n.get_ndim() == 0) {
         // TODO: Allow for struct types, etc?
         throw runtime_error("cannot call __contains__ on a scalar dynd array");
     }
@@ -291,14 +291,14 @@ dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt
 }
 
 dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const ndt::type& dt,
-                size_t replace_undim, PyObject *assign_error_obj)
+                size_t replace_ndim, PyObject *assign_error_obj)
 {
-    return n.ucast(dt, replace_undim, pyarg_error_mode(assign_error_obj));
+    return n.ucast(dt, replace_ndim, pyarg_error_mode(assign_error_obj));
 }
 
 PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
 {
-    size_t ndim = n.get_type().get_undim();
+    size_t ndim = n.get_type().get_ndim();
     dimvector result(ndim);
     n.get_shape(result.get());
     return intptr_array_as_tuple(ndim, result.get());
@@ -306,7 +306,7 @@ PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
 
 PyObject *pydynd::array_get_strides(const dynd::nd::array& n)
 {
-    size_t ndim = n.get_type().get_undim();
+    size_t ndim = n.get_type().get_ndim();
     dimvector result(ndim);
     n.get_strides(result.get());
     return intptr_array_as_tuple(ndim, result.get());
@@ -430,7 +430,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     pyobject_as_vector_string(field_list, selected_fields);
 
     // TODO: Move this implementation into dynd
-    ndt::type fdt = n.get_udtype();
+    ndt::type fdt = n.get_dtype();
     if (fdt.get_kind() != struct_kind) {
         stringstream ss;
         ss << "nd.fields must be given a dynd array of 'struct' kind, not ";
@@ -459,11 +459,11 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     }
     // Create the result udt
     ndt::type rudt = ndt::make_struct(selected_ndt_types, selected_fields);
-    ndt::type rdt = n.get_type().with_replaced_udtype(rudt);
+    ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
     const base_struct_type *rudt_bsd = static_cast<const base_struct_type *>(rudt.extended());
 
     // Allocate the new memory block.
-    size_t metadata_size = rdt.get_metadata_size();
+    size_t metadata_size = result_tp.get_metadata_size();
     nd::array result(make_array_memory_block(metadata_size));
 
     // Clone the data pointer
@@ -478,12 +478,12 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     result.get_ndo()->m_flags = n.get_ndo()->m_flags;
 
     // Set the type and transform the metadata
-    result.get_ndo()->m_type = ndt::type(rdt).release();
+    result.get_ndo()->m_type = ndt::type(result_tp).release();
     // First copy all the array data type metadata
-    ndt::type tmp_dt = rdt;
+    ndt::type tmp_dt = result_tp;
     char *dst_metadata = result.get_ndo_meta();
     const char *src_metadata = n.get_ndo_meta();
-    while (tmp_dt.get_undim() > 0) {
+    while (tmp_dt.get_ndim() > 0) {
         if (tmp_dt.get_kind() != uniform_dim_kind) {
             throw runtime_error("nd.fields doesn't support dimensions with pointers yet");
         }

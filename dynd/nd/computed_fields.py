@@ -2,7 +2,7 @@ __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_type, \
                 w_array as array, make_cstruct, \
-                elwise_map, extract_udtype
+                elwise_map, extract_dtype
 
 class FieldExpr:
     def __init__(self, dst_field_expr, src_field_names, fnname):
@@ -31,7 +31,7 @@ class FieldExpr:
             lcl = {}
             for i, name in enumerate(self.src_field_names):
                 s = getattr(src_itm, name).eval()
-                if s.undim > 0 or s.dtype.kind == 'struct':
+                if s.ndim > 0 or s.dtype.kind == 'struct':
                     # For types which NumPy doesn't support, leave
                     # them as DyND arrays
                     try:
@@ -61,7 +61,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     Parameters
     ----------
     n : dynd array
-        This should have a uniform struct dtype. The
+        This should have a struct data dtype. The
         result will be a view of this data.
     fields : list of (field_name, field_type, field_expr)
         These are the fields which are added to 'n'.
@@ -94,7 +94,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     nd.array([100, 3.14159], cstruct<float64 r, float64 theta>)
     """
     n = array(n)
-    udt = n.udtype.value_type
+    udt = n.dtype.value_type
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
@@ -125,11 +125,11 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
 
     return elwise_map([n], fieldexpr, result_udt)
 
-def make_computed_fields(n, replace_undim, fields, fnname=None):
+def make_computed_fields(n, replace_ndim, fields, fnname=None):
     """
     Creates a new struct type, with fields computed based
     on the input fields. Leaves the requested number of
-    uniform dimensions in place, so the result has fewer
+    array dimensions in place, so the result has fewer
     than the input if positive.
 
     Each field_expr should be a string or bit of code
@@ -140,12 +140,12 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
     Parameters
     ----------
     n : dynd array
-        This should have a uniform struct type. The
+        This should have a struct data type. The
         result will be a view of this data.
-    replace_undim : integer
-        The number of uniform dimensions to leave in the
+    replace_ndim : integer
+        The number of array dimensions to leave in the
         input going to the fields. For example if the
-        input has shape (3,4,2) and replace_undim is 1,
+        input has shape (3,4,2) and replace_ndim is 1,
         the result will have shape (3,4), and each operand
         provided to the field expression will have shape (2).
     fields : list of (field_name, field_type, field_expr)
@@ -162,7 +162,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
     ...  ('A', 1, 2), ('A', 3, 4),
     ...  ('B', 1.5, 2.5), ('A', 0.5, 9),
     ...  ('C', 1, 5), ('B', 2, 2)],
-    ...  udtype='{cat: string; x: float32; y: float32}')
+    ...  dtype='{cat: string; x: float32; y: float32}')
     >>> gb = nd.groupby(a, a.cat)
     >>> gb.groups
     nd.array(["A", "B", "C"], strided_dim<string>)
@@ -179,7 +179,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
      {u'max_x': 1.0, u'max_y': 5.0, u'mean_y': 5.0, u'min_y': 5.0, u'sum_x': 1.0}]
     """
     n = array(n)
-    udt = n.udtype.value_type
+    udt = n.dtype.value_type
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
@@ -197,7 +197,7 @@ def make_computed_fields(n, replace_undim, fields, fnname=None):
         new_field_expr.append(fe)
 
     result_udt = make_cstruct(new_field_types, new_field_names)
-    src_udt = extract_udtype(n.dtype, replace_undim)
+    src_udt = extract_dtype(n.type, replace_ndim)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
     return elwise_map([n], fieldexpr, result_udt, [src_udt])

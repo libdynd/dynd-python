@@ -51,7 +51,7 @@ static int dynd_to_numpy_type_id[builtin_type_id_count] = {
 };
 
 static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, 
-                size_t undim, const ndt::type& dt, const char *metadata)
+                size_t ndim, const ndt::type& dt, const char *metadata)
 {
     // DyND builtin types
     if (dt.is_builtin()) {
@@ -105,18 +105,18 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             }
         case strided_dim_type_id:
         case fixed_dim_type_id: {
-            if (undim > 0) {
+            if (ndim > 0) {
                 // If this is one of the array dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 if (dt.get_type_id() == strided_dim_type_id) {
                     const strided_dim_type *sad = static_cast<const strided_dim_type *>(dt.extended());
                     make_numpy_dtype_for_copy(out_numpy_dtype,
-                                    undim - 1, sad->get_element_type(),
+                                    ndim - 1, sad->get_element_type(),
                                     metadata + sizeof(strided_dim_type_metadata));
                 } else {
                     const fixed_dim_type *fad = static_cast<const fixed_dim_type *>(dt.extended());
                     make_numpy_dtype_for_copy(out_numpy_dtype,
-                                    undim - 1, fad->get_element_type(),
+                                    ndim - 1, fad->get_element_type(),
                                     metadata + sizeof(strided_dim_type_metadata));
                 }
                 return;
@@ -132,7 +132,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 // Build up the shape of the array for NumPy
                 pyobject_ownref shape(PyList_New(0));
                 ndt::type element_tp = dt;
-                while(undim > 0) {
+                while(ndim > 0) {
                     size_t dim_size = 0;
                     if (dt.get_type_id() == strided_dim_type_id) {
                         const strided_dim_type *sad =
@@ -152,7 +152,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                         ss << " to a numpy dtype";
                         throw runtime_error(ss.str());
                     }
-                    --undim;
+                    --ndim;
                     if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
                         throw runtime_error("propagating python error");
                     }
@@ -237,7 +237,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
     if (dt.get_kind() == expression_kind) {
         // Convert the value type for the copy
-        make_numpy_dtype_for_copy(out_numpy_dtype, undim,
+        make_numpy_dtype_for_copy(out_numpy_dtype, ndim,
                         dt.value_type(), NULL);
         return;
     }
@@ -251,7 +251,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 }
 
 static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requires_copy,
-                size_t undim, const ndt::type& dt, const char *metadata)
+                size_t ndim, const ndt::type& dt, const char *metadata)
 {
     // DyND builtin types
     if (dt.is_builtin()) {
@@ -315,7 +315,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             const base_expression_type *bed = static_cast<const base_expression_type *>(dt.extended());
             // Analyze the unswapped version
             as_numpy_analysis(out_numpy_dtype, out_requires_copy,
-                            undim, bed->get_value_type(), metadata);
+                            ndim, bed->get_value_type(), metadata);
             pyobject_ownref swapdt(out_numpy_dtype->release());
             // Byteswap the numpy dtype
             out_numpy_dtype->reset((PyObject *)PyArray_DescrNewByteorder(
@@ -324,11 +324,11 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
         }
         case strided_dim_type_id: {
             const strided_dim_type *sad = static_cast<const strided_dim_type *>(dt.extended());
-            if (undim > 0) {
+            if (ndim > 0) {
                 // If this is one of the array dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 as_numpy_analysis(out_numpy_dtype, out_requires_copy,
-                                undim - 1, sad->get_element_type(),
+                                ndim - 1, sad->get_element_type(),
                                 metadata + sizeof(strided_dim_type_metadata));
                 return;
             } else {
@@ -342,11 +342,11 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
         }
         case fixed_dim_type_id: {
             const fixed_dim_type *fad = static_cast<const fixed_dim_type *>(dt.extended());
-            if (undim > 0) {
+            if (ndim > 0) {
                 // If this is one of the array dimensions, it simply
                 // becomes one of the numpy ndarray dimensions
                 as_numpy_analysis(out_numpy_dtype, out_requires_copy,
-                                undim - 1, fad->get_element_type(),
+                                ndim - 1, fad->get_element_type(),
                                 metadata + sizeof(strided_dim_type_metadata));
                 return;
             } else {
@@ -355,7 +355,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 // Build up the shape of the array for NumPy
                 pyobject_ownref shape(PyList_New(0));
                 ndt::type element_tp = dt;
-                while(undim > 0) {
+                while(ndim > 0) {
                     size_t dim_size = 0;
                     if (dt.get_type_id() == fixed_dim_type_id) {
                         const fixed_dim_type *fad =
@@ -375,7 +375,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                         ss << " to a numpy dtype";
                         throw runtime_error(ss.str());
                     }
-                    --undim;
+                    --ndim;
                     if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
                         throw runtime_error("propagating python error");
                     }
@@ -634,13 +634,13 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     // convert it to NumPy
     bool requires_copy = false;
     pyobject_ownref numpy_dtype;
-    size_t undim = n.get_undim();
-    dimvector shape(undim), strides(undim);
+    size_t ndim = n.get_ndim();
+    dimvector shape(ndim), strides(ndim);
 
     n.get_shape(shape.get());
     n.get_strides(strides.get());
     as_numpy_analysis(&numpy_dtype, &requires_copy,
-                    undim, n.get_type(), n.get_ndo_meta());
+                    ndim, n.get_type(), n.get_ndo_meta());
     if (requires_copy) {
         if (!allow_copy) {
             stringstream ss;
@@ -649,23 +649,23 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
             throw runtime_error(ss.str());
         }
         make_numpy_dtype_for_copy(&numpy_dtype,
-                        undim, n.get_type(), n.get_ndo_meta());
+                        ndim, n.get_type(), n.get_ndo_meta());
 
         // Rebuild the strides so that the copy follows 'KEEPORDER'
         intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;
-        if (undim == 1) {
+        if (ndim == 1) {
             strides[0] = element_size;
-        } else if (undim > 1) {
-            shortvector<int> axis_perm(undim);
-            strides_to_axis_perm(undim, strides.get(), axis_perm.get());
-            axis_perm_to_strides(undim, axis_perm.get(),
+        } else if (ndim > 1) {
+            shortvector<int> axis_perm(ndim);
+            strides_to_axis_perm(ndim, strides.get(), axis_perm.get());
+            axis_perm_to_strides(ndim, axis_perm.get(),
                             shape.get(), element_size,
                             strides.get());
         }
 
         // Create a new NumPy array, and copy from the dynd array
         pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
-                        (int)undim, shape.get(), strides.get(), NULL, 0, NULL));
+                        (int)ndim, shape.get(), strides.get(), NULL, 0, NULL));
         // Create a dynd array view of this result
         nd::array result_dynd = array_from_numpy_array((PyArrayObject *)result.get());
         // Copy the values using this view
@@ -675,7 +675,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     } else {
         // Create a view directly to the dynd array
         pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
-                    (int)undim, shape.get(), strides.get(), n.get_ndo()->m_data_pointer,
+                    (int)ndim, shape.get(), strides.get(), n.get_ndo()->m_data_pointer,
                     ((n.get_flags()&nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
         Py_INCREF(n_obj);

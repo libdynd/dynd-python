@@ -75,12 +75,12 @@ class TestDType(unittest.TestCase):
 
     def test_complex_type_realimag(self):
         a = nd.array(1 + 3j)
-        self.assertEqual(ndt.cfloat64, a.dtype)
+        self.assertEqual(ndt.cfloat64, a.type)
         self.assertEqual(1, nd.as_py(a.real))
         self.assertEqual(3, nd.as_py(a.imag))
 
         a = nd.array([1 + 2j, 3 + 4j, 5 + 6j])
-        self.assertEqual(ndt.type('A, cfloat64'), a.dtype)
+        self.assertEqual(ndt.type('A, cfloat64'), a.type)
         self.assertEqual([1, 3, 5], nd.as_py(a.real))
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 
@@ -146,11 +146,11 @@ class TestDType(unittest.TestCase):
         # Creating a dynd array out of a dtype
         # results in it having the dtype 'dtype'
         n = nd.array(d)
-        self.assertEqual(n.dtype, d)
+        self.assertEqual(n.type, d)
 
         # Python float type converts to float64
         n = nd.array(float)
-        self.assertEqual(n.dtype, d)
+        self.assertEqual(n.type, d)
         self.assertEqual(nd.as_py(n), ndt.float64)
 
     def test_cstruct_type(self):

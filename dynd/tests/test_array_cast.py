@@ -13,7 +13,7 @@ class TestNDObjectCast(unittest.TestCase):
         a = nd.array([5,1,2])
         b = a.cast('3, int32').eval()
         self.assertEqual(nd.as_py(b), [5,1,2])
-        self.assertEqual(b.dtype, ndt.type('3, int32'))
+        self.assertEqual(b.type, ndt.type('3, int32'))
 
 if __name__ == '__main__':
     unittest.main()

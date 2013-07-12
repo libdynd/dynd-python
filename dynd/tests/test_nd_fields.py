@@ -8,23 +8,23 @@ class TestFields(unittest.TestCase):
                 (1, 2, 'a', 'b'),
                 (3, 4, 'ab', 'cd'),
                 (5, 6, 'def', 'ghi')],
-                udtype='{x: int32; y: int32; z: string; w: string}')
+                dtype='{x: int32; y: int32; z: string; w: string}')
         # Selecting a single field
         b = nd.fields(a, 'x')
-        self.assertEqual(b.udtype, ndt.make_struct(
+        self.assertEqual(b.dtype, ndt.make_struct(
                         [ndt.int32],
                         ['x']))
         self.assertEqual(nd.as_py(b.x), nd.as_py(a.x))
         # Selecting two fields
         b = nd.fields(a, 'z', 'y')
-        self.assertEqual(b.udtype, ndt.make_struct(
+        self.assertEqual(b.dtype, ndt.make_struct(
                         [ndt.string, ndt.int32],
                         ['z', 'y']))
         self.assertEqual(nd.as_py(b.z), nd.as_py(a.z))
         self.assertEqual(nd.as_py(b.y), nd.as_py(a.y))
         # Selecting three fields
         b = nd.fields(a, 'w', 'y', 'z')
-        self.assertEqual(b.udtype, ndt.make_struct(
+        self.assertEqual(b.dtype, ndt.make_struct(
                         [ndt.string, ndt.int32, ndt.string],
                         ['w', 'y', 'z']))
         self.assertEqual(nd.as_py(b.w), nd.as_py(a.w))
@@ -32,7 +32,7 @@ class TestFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.z), nd.as_py(a.z))
         # Reordering all four fields
         b = nd.fields(a, 'w', 'y', 'x', 'z')
-        self.assertEqual(b.udtype, ndt.make_struct(
+        self.assertEqual(b.dtype, ndt.make_struct(
                         [ndt.string, ndt.int32, ndt.int32, ndt.string],
                         ['w', 'y', 'x', 'z']))
         self.assertEqual(nd.as_py(b.w), nd.as_py(a.w))
@@ -51,14 +51,14 @@ class TestFields(unittest.TestCase):
                 type='3, var, {x: int32; y: int32; z: string; w: string}')
         # Selecting a single field
         b = nd.fields(a, 'x')
-        self.assertEqual(b.dtype, ndt.make_fixed_dim(3,
+        self.assertEqual(b.type, ndt.make_fixed_dim(3,
                                     ndt.make_var_dim(ndt.make_struct(
                         [ndt.int32],
                         ['x']))))
         self.assertEqual(nd.as_py(b.x), nd.as_py(a.x))
         # Selecting two fields
         b = nd.fields(a, 'z', 'y')
-        self.assertEqual(b.dtype, ndt.make_fixed_dim(3,
+        self.assertEqual(b.type, ndt.make_fixed_dim(3,
                                     ndt.make_var_dim(ndt.make_struct(
                         [ndt.string, ndt.int32],
                         ['z', 'y']))))
@@ -66,7 +66,7 @@ class TestFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.y), nd.as_py(a.y))
         # Selecting three fields
         b = nd.fields(a, 'w', 'y', 'z')
-        self.assertEqual(b.dtype, ndt.make_fixed_dim(3,
+        self.assertEqual(b.type, ndt.make_fixed_dim(3,
                                     ndt.make_var_dim(ndt.make_struct(
                         [ndt.string, ndt.int32, ndt.string],
                         ['w', 'y', 'z']))))
@@ -75,7 +75,7 @@ class TestFields(unittest.TestCase):
         self.assertEqual(nd.as_py(b.z), nd.as_py(a.z))
         # Reordering all four fields
         b = nd.fields(a, 'w', 'y', 'x', 'z')
-        self.assertEqual(b.dtype, ndt.make_fixed_dim(3,
+        self.assertEqual(b.type, ndt.make_fixed_dim(3,
                                     ndt.make_var_dim(ndt.make_struct(
                         [ndt.string, ndt.int32, ndt.int32, ndt.string],
                         ['w', 'y', 'x', 'z']))))
@@ -89,7 +89,7 @@ class TestFields(unittest.TestCase):
                 (1, 2, 'a', 'b'),
                 (3, 4, 'ab', 'cd'),
                 (5, 6, 'def', 'ghi')],
-                udtype='{x: int32; y: int32; z: string; w: string}')
+                dtype='{x: int32; y: int32; z: string; w: string}')
         self.assertRaises(RuntimeError, nd.fields, a, 'y', 'v')
 
 if __name__ == '__main__':

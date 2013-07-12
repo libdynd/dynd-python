@@ -5,7 +5,7 @@ from dynd._pydynd import w_array as array, \
         as_py, as_numpy, empty, empty_like, range, \
         linspace, fields, groupby, elwise_map, \
         parse_json, format_json, debug_repr, \
-        BroadcastError
+        BroadcastError, type_of, dtype_of, dshape_of, ndim_of
 
 # All the builtin elementwise gfuncs
 #from elwise_gfuncs import *

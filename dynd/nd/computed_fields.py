@@ -2,7 +2,8 @@ __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_type, \
                 w_array as array, make_cstruct, \
-                elwise_map, extract_dtype
+                elwise_map, extract_dtype, type_of, \
+                dtype_of, ndim_of
 
 class FieldExpr:
     def __init__(self, dst_field_expr, src_field_names, fnname):
@@ -31,7 +32,7 @@ class FieldExpr:
             lcl = {}
             for i, name in enumerate(self.src_field_names):
                 s = getattr(src_itm, name).eval()
-                if s.ndim > 0 or s.dtype.kind == 'struct':
+                if ndim_of(s) > 0 or dtype_of(s).kind == 'struct':
                     # For types which NumPy doesn't support, leave
                     # them as DyND arrays
                     try:
@@ -94,7 +95,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     nd.array([100, 3.14159], cstruct<float64 r, float64 theta>)
     """
     n = array(n)
-    udt = n.dtype.value_type
+    udt = dtype_of(n).value_type
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
@@ -179,7 +180,7 @@ def make_computed_fields(n, replace_ndim, fields, fnname=None):
      {u'max_x': 1.0, u'max_y': 5.0, u'mean_y': 5.0, u'min_y': 5.0, u'sum_x': 1.0}]
     """
     n = array(n)
-    udt = n.dtype.value_type
+    udt = dtype_of(n).value_type
     if udt.kind != 'struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
@@ -197,7 +198,7 @@ def make_computed_fields(n, replace_ndim, fields, fnname=None):
         new_field_expr.append(fe)
 
     result_udt = make_cstruct(new_field_types, new_field_names)
-    src_udt = extract_dtype(n.type, replace_ndim)
+    src_udt = extract_dtype(type_of(n), replace_ndim)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
     return elwise_map([n], fieldexpr, result_udt, [src_udt])

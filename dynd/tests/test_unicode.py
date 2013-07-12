@@ -8,7 +8,7 @@ if sys.version_info >= (3, 0):
 class TestUnicode(unittest.TestCase):
     def test_array_string(self):
         a = nd.array("Testing 1 2 3")
-        self.assertEqual(a.dtype, ndt.string)
+        self.assertEqual(nd.type_of(a), ndt.string)
         self.assertEqual(str(a), "Testing 1 2 3")
         self.assertEqual(unicode(a), u"Testing 1 2 3")
 
@@ -21,16 +21,16 @@ class TestUnicode(unittest.TestCase):
             # so we have to manually request a bytes type
             a = nd.array(b"Testing 1 2 3", type=ndt.bytes)
             b = nd.array([b"First", b"Second"], dtype=ndt.bytes)
-        self.assertEqual(a.type, ndt.bytes)
-        self.assertEqual(b.dtype, ndt.bytes)
+        self.assertEqual(nd.type_of(a), ndt.bytes)
+        self.assertEqual(nd.dtype_of(b), ndt.bytes)
         self.assertEqual(nd.as_py(a), b"Testing 1 2 3")
         self.assertEqual(nd.as_py(b), [b"First", b"Second"])
 
     def test_array_unicode(self):
         a = nd.array(u"\uc548\ub155")
         b = nd.array([u"\uc548\ub155", u"Hello"])
-        self.assertEqual(a.type, ndt.string)
-        self.assertEqual(b.dtype, ndt.string)
+        self.assertEqual(nd.type_of(a), ndt.string)
+        self.assertEqual(nd.dtype_of(b), ndt.string)
         self.assertEqual(unicode(a), u"\uc548\ub155")
         self.assertEqual(nd.as_py(b), [u"\uc548\ub155", u"Hello"])
         # In Python 2, 'str' is not unicode

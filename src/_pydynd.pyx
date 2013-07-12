@@ -205,7 +205,7 @@ cdef class w_type:
 
         The number of array dimensions in this dynd type.
 
-        This property is roughly equivalent to NumPy
+        This property is like NumPy
         ndarray's 'ndim'. Indexing with [] can in many cases
         go deeper than just the array dimensions, for
         example structs can be indexed this way.
@@ -1005,7 +1005,7 @@ cdef class w_array:
 
         Casts the dynd array's dtype to the requested type,
         producing a conversion type. The dtype is the type
-        after the a.ndim array dimensions.
+        after the nd.ndim_of(a) array dimensions.
 
         Parameters
         ----------
@@ -1081,60 +1081,6 @@ cdef class w_array:
         def __get__(self):
             return str(<char *>array_access_flags_string(GET(self.v)))
 
-    property type:
-        """
-        a.type
-
-        The dynd type of the dynd array. This is the full
-        data type, including its multi-dimensional structure.
-
-        Examples
-        --------
-        >>> from dynd import nd, ndt
-
-        >>> nd.array([1,2,3,4]).type
-        ndt.type('strided_dim<int32>')
-        >>> nd.array([[1,2],[3.0]]).type
-        ndt.type('strided_dim<var_dim<float64>>')
-        """
-        def __get__(self):
-            cdef w_type result = w_type()
-            SET(result.v, GET(self.v).get_type())
-            return result
-
-    property dshape:
-        """
-        a.dshape
-
-        The blaze datashape of the dynd array, as a string.
-        """
-        def __get__(self):
-            return str(<char *>dynd_format_datashape(GET(self.v)).c_str())
-
-    property dtype:
-        """
-        a.dtype
-
-        The data type of the dynd array. This is
-        the type after removing all the a.ndim array
-        dimensions from the dynd type of `a`.
-        """
-        def __get__(self):
-            cdef w_type result = w_type()
-            SET(result.v, GET(self.v).get_type().get_dtype())
-            return result
-
-    property ndim:
-        """
-        a.ndim
-
-        The number of array dimensions in the dynd array.
-        This roughly corresponds to the number of dimensions
-        in a NumPy array.
-        """
-        def __get__(self):
-            return GET(self.v).get_type().get_ndim()
-
     property is_scalar:
         """
         a.is_scalar
@@ -1209,6 +1155,77 @@ cdef class w_array:
         cdef w_array result = w_array()
         SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
         return result
+
+def type_of(w_array a):
+    """
+    nd.type_of(a)
+
+    The dynd type of the array. This is the full
+    data type, including its multi-dimensional structure.
+
+    Parameters
+    ----------
+    a : dynd array
+        The array whose type is requested.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> nd.type_of(nd.array([1,2,3,4]))
+    ndt.type('strided_dim<int32>')
+    >>> nd.type_of(nd.array([[1,2],[3.0]]))
+    ndt.type('strided_dim<var_dim<float64>>')
+    """
+    cdef w_type result = w_type()
+    SET(result.v, GET(a.v).get_type())
+    return result
+
+def dshape_of(w_array a):
+    """
+    nd.dshape_of(a)
+
+    The blaze datashape of the dynd array, as a string.
+
+    Parameters
+    ----------
+    a : dynd array
+        The array whose type is requested.
+    """
+    return str(<char *>dynd_format_datashape(GET(a.v)).c_str())
+
+def dtype_of(w_array a, size_t include_ndim=0):
+    """
+    nd.dtype_of(a)
+
+    The data type of the dynd array. This is
+    the type after removing all the array
+    dimensions from the dynd type of `a`.
+    If `include_ndim` is provided, that many
+    array dimensions are included in the
+    data type returned.
+
+    Parameters
+    ----------
+    a : dynd array
+        The array whose type is requested.
+    include_ndim : int, optional
+        The number of array dimensions to include
+        in the data type, default zero.
+    """
+    cdef w_type result = w_type()
+    SET(result.v, GET(a.v).get_dtype(include_ndim))
+    return result
+
+def ndim_of(w_array a):
+    """
+    nd.ndim_of(a)
+
+    The number of array dimensions in the dynd array `a`.
+    This corresponds to the number of dimensions
+    in a NumPy array.
+    """
+    return GET(a.v).get_ndim()
 
 def as_py(w_array n):
     """

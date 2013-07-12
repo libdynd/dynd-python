@@ -57,7 +57,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.date),
                         _lowlevel.DATE_TYPE_ID)
         # Property
-        self.assertEqual(self.type_id_of(ndt.date(2000, 1, 1).year.type),
+        self.assertEqual(self.type_id_of(nd.type_of(ndt.date(2000, 1, 1).year)),
                         _lowlevel.PROPERTY_TYPE_ID)
         # Categorical
         self.assertEqual(self.type_id_of(ndt.make_categorical([1, 2, 3])),
@@ -85,7 +85,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('var, int32')),
                         _lowlevel.VAR_DIM_TYPE_ID)
         # GroupBy
-        self.assertEqual(self.type_id_of(nd.groupby([1, 2], ['a', 'a']).type),
+        self.assertEqual(self.type_id_of(nd.type_of(nd.groupby([1, 2], ['a', 'a']))),
                         _lowlevel.GROUPBY_TYPE_ID)
         # Type
         self.assertEqual(self.type_id_of(ndt.type('type')),
@@ -100,7 +100,7 @@ class TestLowLevel(unittest.TestCase):
         b = _lowlevel.py_api.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
                         a, 'readwrite')
         self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
-        self.assertEqual(b.dshape, '3, int32')
+        self.assertEqual(nd.dshape_of(b), '3, int32')
         self.assertEqual(nd.as_py(b), [3, 6, 9])
         b[1] = 10
         self.assertEqual(a[1], 10)

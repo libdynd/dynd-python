@@ -14,9 +14,9 @@ class TestDate(unittest.TestCase):
     def test_date_properties(self):
         a = nd.array(date(1955,3,13))
         self.assertEqual(str(a), '1955-03-13')
-        self.assertEqual(a.year.eval().dtype, ndt.int32)
-        self.assertEqual(a.month.eval().dtype, ndt.int32)
-        self.assertEqual(a.day.eval().dtype, ndt.int32)
+        self.assertEqual(nd.dtype_of(a.year.eval()), ndt.int32)
+        self.assertEqual(nd.dtype_of(a.month.eval()), ndt.int32)
+        self.assertEqual(nd.dtype_of(a.day.eval()), ndt.int32)
         self.assertEqual(nd.as_py(a.year), 1955)
         self.assertEqual(nd.as_py(a.month), 3)
         self.assertEqual(nd.as_py(a.day), 13)
@@ -38,7 +38,7 @@ class TestDate(unittest.TestCase):
     def test_struct_function(self):
         a = nd.array(date(1955,3,13))
         s = a.to_struct().eval()
-        self.assertEqual(s.dtype,
+        self.assertEqual(nd.dtype_of(s),
                         ndt.make_cstruct(
                             [ndt.int32, ndt.int16, ndt.int16],
                             ['year', 'month', 'day']))

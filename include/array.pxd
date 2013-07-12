@@ -31,6 +31,9 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         #ndarray operator/(ndarray&) except +translate_exception
 
         ndt_type get_type()
+        ndt_type get_dtype()
+        ndt_type get_dtype(size_t)
+        size_t get_ndim()
         bint is_scalar()
         intptr_t get_dim_size()
 

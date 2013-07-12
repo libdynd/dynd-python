@@ -7,63 +7,63 @@ class TestStringConstruct(unittest.TestCase):
     def test_empty_array(self):
         # Empty arrays default to float64
         a = nd.array([])
-        self.assertEqual(a.type, ndt.type('M, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('M, float64'))
         self.assertEqual(a.shape, (0,))
         a = nd.array([[], [], []])
-        self.assertEqual(a.type, ndt.type('M, N, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('M, N, float64'))
         self.assertEqual(a.shape, (3, 0))
 
     def test_string(self):
         a = nd.array('abc', type=ndt.string)
-        self.assertEqual(a.type, ndt.string)
+        self.assertEqual(nd.type_of(a), ndt.string)
         a = nd.array('abc', dtype=ndt.string)
-        self.assertEqual(a.type, ndt.string)
+        self.assertEqual(nd.type_of(a), ndt.string)
 
     def test_unicode(self):
         a = nd.array(u'abc', type=ndt.string)
-        self.assertEqual(a.type, ndt.string)
+        self.assertEqual(nd.type_of(a), ndt.string)
         a = nd.array(u'abc', dtype=ndt.string)
-        self.assertEqual(a.type, ndt.string)
+        self.assertEqual(nd.type_of(a), ndt.string)
 
     def test_string_array(self):
         a = nd.array(['this', 'is', 'a', 'test'],
                         dtype=ndt.string)
-        self.assertEqual(a.type, ndt.type('N, string'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, string'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
         a = nd.array(['this', 'is', 'a', 'test'],
                         dtype='string("U16")')
-        self.assertEqual(a.type, ndt.type('N, string("U16")'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, string("U16")'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
     def test_unicode_array(self):
         a = nd.array([u'this', 'is', u'a', 'test'],
                         dtype=ndt.string)
-        self.assertEqual(a.type, ndt.type('N, string'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, string'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
         a = nd.array([u'this', 'is', u'a', 'test'],
                         dtype='string("U16")')
-        self.assertEqual(a.type, ndt.type('N, string("U16")'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, string("U16")'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
     def test_fixedstring_array(self):
         a = nd.array(['a', 'b', 'c'],
                         dtype='string(1,"A")')
-        self.assertEqual(a[0].type.type_id, 'fixedstring')
-        self.assertEqual(a[0].type.data_size, 1)
+        self.assertEqual(nd.type_of(a[0]).type_id, 'fixedstring')
+        self.assertEqual(nd.type_of(a[0]).data_size, 1)
         self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
 
 class TestStructConstruct(unittest.TestCase):
     def test_single_struct(self):
         a = nd.array([12, 'test', True], type='{x:int32; y:string; z:bool}')
-        self.assertEqual(a.type, ndt.type('{x:int32; y:string; z:bool}'))
+        self.assertEqual(nd.type_of(a), ndt.type('{x:int32; y:string; z:bool}'))
         self.assertEqual(nd.as_py(a[0]), 12)
         self.assertEqual(nd.as_py(a[1]), 'test')
         self.assertEqual(nd.as_py(a[2]), True)
 
         a = nd.array({'x':12, 'y':'test', 'z':True}, type='{x:int32; y:string; z:bool}')
-        self.assertEqual(a.type, ndt.type('{x:int32; y:string; z:bool}'))
+        self.assertEqual(nd.type_of(a), ndt.type('{x:int32; y:string; z:bool}'))
         self.assertEqual(nd.as_py(a[0]), 12)
         self.assertEqual(nd.as_py(a[1]), 'test')
         self.assertEqual(nd.as_py(a[2]), True)
@@ -85,33 +85,33 @@ class TestStructConstruct(unittest.TestCase):
 
     def test_single_struct_array(self):
         a = nd.array([(0,0), (3,5), (12,10)], dtype='{x:int32; y:int32}')
-        self.assertEqual(a.type, ndt.type('N, {x:int32; y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, {x:int32; y:int32}'))
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([{'x':0,'y':0}, {'x':3,'y':5}, {'x':12,'y':10}],
                     dtype='{x:int32; y:int32}')
-        self.assertEqual(a.type, ndt.type('N, {x:int32; y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, {x:int32; y:int32}'))
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([[(3, 'X')], [(10, 'L'), (12, 'M')]],
                         dtype='{count:int32; size:string(1,"A")}')
-        self.assertEqual(a.type, ndt.type('N, var, {count:int32; size:string(1,"A")}'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, var, {count:int32; size:string(1,"A")}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
         a = nd.array([[{'count':3, 'size':'X'}],
                         [{'count':10, 'size':'L'}, {'count':12, 'size':'M'}]],
                         dtype='{count:int32; size:string(1,"A")}')
-        self.assertEqual(a.type, ndt.type('N, var, {count:int32; size:string(1,"A")}'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, var, {count:int32; size:string(1,"A")}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
     def test_nested_struct_array(self):
         a = nd.array([((0,1),0), ((2,2),5), ((100,10),10)],
                     dtype='{x:{a:int16; b:int16}; y:int32}')
-        self.assertEqual(a.type, ndt.type('N, {x:{a:int16; b:int16}; y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, {x:{a:int16; b:int16}; y:int32}'))
         self.assertEqual(nd.as_py(a.x.a), [0, 2, 100])
         self.assertEqual(nd.as_py(a.x.b), [1, 2, 10])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
@@ -120,14 +120,14 @@ class TestStructConstruct(unittest.TestCase):
                         {'x':{'a':2,'b':2},'y':5},
                         {'x':{'a':100,'b':10},'y':10}],
                     dtype='{x:{a:int16; b:int16}; y:int32}')
-        self.assertEqual(a.type, ndt.type('N, {x:{a:int16; b:int16}; y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('N, {x:{a:int16; b:int16}; y:int32}'))
         self.assertEqual(nd.as_py(a.x.a), [0, 2, 100])
         self.assertEqual(nd.as_py(a.x.b), [1, 2, 10])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]],
                         dtype='{count:int32; size:{name:string(1,"A"); id: int8}}')
-        self.assertEqual(a.type,
+        self.assertEqual(nd.type_of(a),
                     ndt.type('N, var, {count:int32; size:{name:string(1,"A"); id: int8}}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])
@@ -153,18 +153,18 @@ class TestIteratorConstruct(unittest.TestCase):
         # Constructing from an iterator with no specified dtype
         # defaults to float64
         a = nd.array(2*x + 1 for x in range(10))
-        self.assertEqual(a.type, ndt.type('var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(10)])
 
     def test_simple_fromiter(self):
         # Var dimension construction from a generator
         a = nd.array((2*x + 5 for x in range(10)), type='var, int32')
-        self.assertEqual(a.type, ndt.type('var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(len(a), 10)
         self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
         # Fixed dimension construction from a generator
         a = nd.array((2*x + 5 for x in range(10)), type='10, int32')
-        self.assertEqual(a.type, ndt.type('10, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('10, int32'))
         self.assertEqual(len(a), 10)
         self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
         # Produce an error if it's a fixed dimension with too few elements
@@ -180,7 +180,7 @@ class TestIteratorConstruct(unittest.TestCase):
     def test_simple_fromiter_medsize(self):
         # A bigger input to exercise the dynamic resizing a bit
         a = nd.array((2*x + 5 for x in range(100000)), type='var, int32')
-        self.assertEqual(a.type, ndt.type('var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(len(a), 100000)
         self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(100000)])
 
@@ -188,19 +188,19 @@ class TestIteratorConstruct(unittest.TestCase):
         # Strided array of var from list of iterators
         a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
                         [2, 10]], type='M, var, int32')
-        self.assertEqual(a.type, ndt.type('M, var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('M, var, int32'))
         self.assertEqual(nd.as_py(a),
                         [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
         # Var array of var from iterator of iterators
         a = nd.array(((2*x for x in range(y)) for y in range(4)),
                         type='var, var, int32')
-        self.assertEqual(a.type, ndt.type('var, var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
         self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
 
     def test_uniform_fromiter(self):
         # Specify uniform type instead of full type
         a = nd.array((2*x + 1 for x in range(7)), dtype=ndt.int32)
-        self.assertEqual(a.type, ndt.type('var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
 
 class TestConstructErrors(unittest.TestCase):

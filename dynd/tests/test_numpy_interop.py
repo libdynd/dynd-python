@@ -87,32 +87,32 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(10, dtype=np.int32)
         n = nd.array(a)
-        self.assertEqual(n.dtype, ndt.int32)
-        self.assertEqual(n.ndim, a.ndim)
+        self.assertEqual(nd.dtype_of(n), ndt.int32)
+        self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
         a = np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4)
         n = nd.array(a)
-        self.assertEqual(n.dtype, ndt.make_byteswap(ndt.int32))
-        self.assertEqual(n.ndim, a.ndim)
+        self.assertEqual(nd.dtype_of(n), ndt.make_byteswap(ndt.int32))
+        self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=np.int32).reshape(4,3)
         n = nd.array(a)
-        self.assertEqual(n.dtype, ndt.make_unaligned(ndt.int32))
-        self.assertEqual(n.ndim, a.ndim)
+        self.assertEqual(nd.dtype_of(n), ndt.make_unaligned(ndt.int32))
+        self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=(nonnative + 'i4')).reshape(2,2,3)
         n = nd.array(a)
-        self.assertEqual(n.dtype,
+        self.assertEqual(nd.dtype_of(n),
                 ndt.make_unaligned(ndt.make_byteswap(ndt.int32)))
-        self.assertEqual(n.ndim, a.ndim)
+        self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
@@ -124,7 +124,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertTrue(a.flags.aligned)
-        self.assertEqual(a.ndim, n.ndim)
+        self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
@@ -132,7 +132,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(nonnative + 'i4'))
         self.assertTrue(a.flags.aligned)
-        self.assertEqual(a.ndim, n.ndim)
+        self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
@@ -140,7 +140,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertFalse(a.flags.aligned)
-        self.assertEqual(a.ndim, n.ndim)
+        self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
@@ -149,7 +149,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(nonnative + 'i4'))
         self.assertFalse(a.flags.aligned)
-        self.assertEqual(a.ndim, n.ndim)
+        self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
@@ -159,10 +159,10 @@ class TestNumpyViewInterop(unittest.TestCase):
         a = np.array(['abc', 'testing', 'array'])
         b = nd.array(a)
         if sys.version_info >= (3, 0):
-            self.assertEqual(ndt.make_fixedstring(7, 'utf_32'), b.dtype)
+            self.assertEqual(ndt.make_fixedstring(7, 'utf_32'), nd.dtype_of(b))
         else:
-            self.assertEqual(ndt.make_fixedstring(7, 'ascii'), b.dtype)
-        self.assertEqual(b.dtype, ndt.type(a.dtype))
+            self.assertEqual(ndt.make_fixedstring(7, 'ascii'), nd.dtype_of(b))
+        self.assertEqual(nd.dtype_of(b), ndt.type(a.dtype))
 
         # Make sure it's ascii
         a = a.astype('S7')
@@ -182,16 +182,16 @@ class TestNumpyViewInterop(unittest.TestCase):
                 ndt.make_convert(
                     ndt.make_fixedstring(7, 'utf_32'),
                     ndt.make_fixedstring(7, 'ascii')),
-                b_u.dtype)
+                nd.dtype_of(b_u))
         # Evaluate to its value array
         b_u = b_u.eval()
         self.assertEqual(
                 ndt.make_fixedstring(7, 'utf_32'),
-                b_u.dtype)
+                nd.dtype_of(b_u))
 
         # UTF32 dynd -> Numpy
         c_u = np.asarray(b_u)
-        self.assertEqual(b_u.dtype, ndt.type(c_u.dtype))
+        self.assertEqual(nd.dtype_of(b_u), ndt.type(c_u.dtype))
         assert_array_equal(a.astype('U'), c_u)
         # 'a' and 'c_u' are not looking at the same data
         a[1] = 'diff'
@@ -201,13 +201,13 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Blockref strings don't have a corresponding Numpy construct
         # Therefore numpy makes an object array scalar out of them.
         a = nd.array("abcdef")
-        self.assertEqual(a.dtype, ndt.string)
+        self.assertEqual(nd.dtype_of(a), ndt.string)
         # Some versions of NumPy produce an error instead,
         # so this assertion is removed
         #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
         a = nd.array(u"abcdef \uc548\ub155")
-        self.assertEqual(a.dtype, ndt.string)
+        self.assertEqual(nd.dtype_of(a), ndt.string)
         # Some versions of NumPy produce an error instead,
         # so this assertion is removed
         #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
@@ -234,22 +234,22 @@ class TestNumpyViewInterop(unittest.TestCase):
 
 class TestNumpyScalarInterop(unittest.TestCase):
     def test_numpy_scalar_conversion_dtypes(self):
-        self.assertEqual(nd.array(np.bool_(True)).dtype, ndt.bool)
-        self.assertEqual(nd.array(np.bool(True)).dtype, ndt.bool)
-        self.assertEqual(nd.array(np.int8(100)).dtype, ndt.int8)
-        self.assertEqual(nd.array(np.int16(100)).dtype, ndt.int16)
-        self.assertEqual(nd.array(np.int32(100)).dtype, ndt.int32)
-        self.assertEqual(nd.array(np.int64(100)).dtype, ndt.int64)
-        self.assertEqual(nd.array(np.uint8(100)).dtype, ndt.uint8)
-        self.assertEqual(nd.array(np.uint16(100)).dtype, ndt.uint16)
-        self.assertEqual(nd.array(np.uint32(100)).dtype, ndt.uint32)
-        self.assertEqual(nd.array(np.uint64(100)).dtype, ndt.uint64)
-        self.assertEqual(nd.array(np.float32(100.)).dtype, ndt.float32)
-        self.assertEqual(nd.array(np.float64(100.)).dtype, ndt.float64)
-        self.assertEqual(nd.array(np.complex64(100j)).dtype, ndt.cfloat32)
-        self.assertEqual(nd.array(np.complex128(100j)).dtype, ndt.cfloat64)
+        self.assertEqual(nd.dtype_of(nd.array(np.bool_(True))), ndt.bool)
+        self.assertEqual(nd.dtype_of(nd.array(np.bool(True))), ndt.bool)
+        self.assertEqual(nd.dtype_of(nd.array(np.int8(100))), ndt.int8)
+        self.assertEqual(nd.dtype_of(nd.array(np.int16(100))), ndt.int16)
+        self.assertEqual(nd.dtype_of(nd.array(np.int32(100))), ndt.int32)
+        self.assertEqual(nd.dtype_of(nd.array(np.int64(100))), ndt.int64)
+        self.assertEqual(nd.dtype_of(nd.array(np.uint8(100))), ndt.uint8)
+        self.assertEqual(nd.dtype_of(nd.array(np.uint16(100))), ndt.uint16)
+        self.assertEqual(nd.dtype_of(nd.array(np.uint32(100))), ndt.uint32)
+        self.assertEqual(nd.dtype_of(nd.array(np.uint64(100))), ndt.uint64)
+        self.assertEqual(nd.dtype_of(nd.array(np.float32(100.))), ndt.float32)
+        self.assertEqual(nd.dtype_of(nd.array(np.float64(100.))), ndt.float64)
+        self.assertEqual(nd.dtype_of(nd.array(np.complex64(100j))), ndt.cfloat32)
+        self.assertEqual(nd.dtype_of(nd.array(np.complex128(100j))), ndt.cfloat64)
         if np.__version__ >= '1.7':
-            self.assertEqual(nd.array(np.datetime64('2000-12-13')).dtype, ndt.date)
+            self.assertEqual(nd.dtype_of(nd.array(np.datetime64('2000-12-13'))), ndt.date)
 
     def test_numpy_scalar_conversion_values(self):
         self.assertEqual(nd.as_py(nd.array(np.bool_(True))), True)

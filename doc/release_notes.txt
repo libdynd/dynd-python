@@ -1,60 +1,74 @@
 DyND-Python Release Notes
 ===================
 
-DyND-Python 0.4.1
------------------
+Release 0.4.2
+-------------
 
- - Rename nd.arange to nd.range, the "a" prefix is unneeded because
-   the nd namespace is always used.
- - Finish the rename of nd.ndobject to nd.array throughout the system.
- - Change string/bytes conversion and assignment to be similar to
-   Python 3 on both Python 2 and 3.
+- Support assignment from Python iterators to dynd array dimensions.
+- Use float64 as the default type when the type cannot be deduced
+  from the input, like for "nd.array([])". This matches NumPy's
+  behavior in the same case.
+- Rename nd.dtype to ndt.type.
+- Previous "udtype=" parameters are now "dtype=", and "dtype="
+  parameters are now "type=". This helps make it a bit more
+  intuitive for those accustomed to NumPy.
+- Some array attributes have moved into free functions.
+  "a.type" -> "nd.type_of(a)", "a.dtype" -> "nd.dtype_of(a)",
+  "a.dshape" -> "nd.dshape_of(a)", "a.ndim" -> "nd.ndim_of(a)".
 
-DyND-Python 0.4.0
------------------
+Release 0.4.1
+-------------
 
- - Updates to notebooks and other documentation
- - Some API tweaks, like adding ndt.make_bytes_dtype
- - Rename nd.ndobject to nd.array
- - Add initial basic datetime type, with 64-bit int storage
+- Rename nd.arange to nd.range, the "a" prefix is unneeded because
+  the nd namespace is always used.
+- Finish the rename of nd.ndobject to nd.array throughout the system.
+- Change string/bytes conversion and assignment to be similar to
+  Python 3 on both Python 2 and 3.
 
-DyND-Python 0.3.1
------------------
+Release 0.4.0
+-------------
 
- - Add dynd._lowlevel submodule which exposes low level details as
-   ctypes function pointers and structures.
- - Rename var_dim from "VarDim" to "var" in dshape parsing/printing.
- - Rename fixedstruct to cstruct dtype, make it follow the C/C++
-   layout properly.
+- Updates to notebooks and other documentation
+- Some API tweaks, like adding ndt.make_bytes_dtype
+- Rename nd.ndobject to nd.array
+- Add initial basic datetime type, with 64-bit int storage
 
+Release 0.3.1
+-------------
 
-DyND-Python 0.3.0
------------------
+- Add dynd._lowlevel submodule which exposes low level details as
+  ctypes function pointers and structures.
+- Rename var_dim from "VarDim" to "var" in dshape parsing/printing.
+- Rename fixedstruct to cstruct dtype, make it follow the C/C++
+  layout properly.
 
- - Support Python 3.3 (Python 2.6, 2.7, 3.3 using one code base).
- - Implement more __*__ methods so ndobject integrates better in Python.
- - Add function nd.fields, which extracts fields from a struct array.
- - Rename cast_udtype to ucast.
- - Functions ndt.replace_udtype and ndt.extract_udtype for manipulating dtypes.
- - Improved var_dim support.
- - Implement a groupby function which produces a ragged array with a
-   var_dim type.
- - More sophisticated initialization and assignment from Python objects.
+Release 0.3.0
+-------------
 
-DyND-Python 0.2.0
------------------
+- Support Python 3.3 (Python 2.6, 2.7, 3.3 using one code base).
+- Implement more __*__ methods so ndobject integrates better in Python.
+- Add function nd.fields, which extracts fields from a struct array.
+- Rename cast_udtype to ucast.
+- Functions ndt.replace_udtype and ndt.extract_udtype for manipulating dtypes.
+- Improved var_dim support.
+- Implement a groupby function which produces a ragged array with a
+  var_dim type.
+- More sophisticated initialization and assignment from Python objects.
 
- - Convert from a NumPy-style array/dtype data model to a datashape
-   based approach. This unifies the treatment of dimensions and types.
- - Add a prototype computed fields mechanism, based on numpy/scipy expressions
- - Split the dynd.nd namespace into dynd.nd and dynd.ndt
- - Improved conversion to/from native Python types and NumPy arrays.
- - Add datashape to/from dynd types.
- - Add a typed JSON parsing function, that parses into an object of
-   specified dtype.
+Release 0.2.0
+-------------
 
-DyND-Python 0.1.0
------------------
+- Convert from a NumPy-style array/dtype data model to a datashape
+  based approach. This unifies the treatment of dimensions and types.
+- Add a prototype computed fields mechanism, based on numpy/scipy expressions
+- Split the dynd.nd namespace into dynd.nd and dynd.ndt
+- Improved conversion to/from native Python types and NumPy arrays.
+- Add datashape to/from dynd types.
+- Add a typed JSON parsing function, that parses into an object of
+  specified dtype.
+
+Release 0.1.0
+-------------
 
 This is the first preview release of dynd-python, a component of
 of the Blaze project. Blaze will layer a broader distributed storage and

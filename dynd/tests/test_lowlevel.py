@@ -6,12 +6,12 @@ from dynd import nd, ndt, _lowlevel
 class TestLowLevel(unittest.TestCase):
     def type_id_of(self, dt):
         assert isinstance(dt, ndt.type)
-        bd = _lowlevel.py_api.get_base_type_ptr(dt)
+        bd = _lowlevel.get_base_type_ptr(dt)
         if bd < _lowlevel.BUILTIN_TYPE_ID_COUNT:
             return bd
         else:
             bdm = _lowlevel.BaseDTypeMembers.from_address(
-                            _lowlevel.api.get_base_type_members(bd))
+                            _lowlevel.get_base_type_members(bd))
             return bdm.type_id
 
     def test_type_id(self):
@@ -97,7 +97,7 @@ class TestLowLevel(unittest.TestCase):
         a[1] = 6
         a[2] = 9
         # Readwrite version
-        b = _lowlevel.py_api.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
+        b = _lowlevel.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
                         a, 'readwrite')
         self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
         self.assertEqual(nd.dshape_of(b), '3, int32')
@@ -105,7 +105,7 @@ class TestLowLevel(unittest.TestCase):
         b[1] = 10
         self.assertEqual(a[1], 10)
         # Readonly version
-        b = _lowlevel.py_api.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
+        b = _lowlevel.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
                         a, 'readonly')
         self.assertEqual(nd.as_py(b), [3, 10, 9])
         def assign_to(b):
@@ -115,7 +115,7 @@ class TestLowLevel(unittest.TestCase):
     def test_array_from_ptr_error(self):
         # Should raise an exception if the type has metadata
         a = (ctypes.c_int32 * 4)()
-        self.assertRaises(RuntimeError, _lowlevel.py_api.array_from_ptr,
+        self.assertRaises(RuntimeError, _lowlevel.array_from_ptr,
                         ndt.type('M, int32'), ctypes.addressof(a),
                         a, 'readwrite')
 

@@ -77,7 +77,7 @@ class TestElwiseMap(unittest.TestCase):
                 d[...] = nd.as_py(s0) * nd.as_py(s1)
         # 1D array
         a = nd.range(5)
-        b = nd.array([1, 3, -2, 4, 12])
+        b = nd.array([1, 3, -2, 4, 12], access='rw')
         c = nd.elwise_map([a,b], multiplier, ndt.int32)
         self.assertEqual(nd.as_py(c), [0, 3, -4, 12, 48])
         # indexing into the deferred dynd array

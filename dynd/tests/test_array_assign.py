@@ -157,7 +157,7 @@ class TestIteratorAssign(unittest.TestCase):
 
 class TestStringAssign(unittest.TestCase):
     def test_string_assign_to_slice(self):
-        a = nd.array(['a', 'b', 'c', 'd', 'e'], 'string(8)')
+        a = nd.array(['a', 'b', 'c', 'd', 'e'], 'string(8)', access='rw')
         a[:3] = 'test'
         self.assertEqual(nd.as_py(a), ['test', 'test', 'test', 'd', 'e'])
 

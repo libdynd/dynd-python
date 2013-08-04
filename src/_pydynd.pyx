@@ -1171,6 +1171,31 @@ cdef class w_array:
         SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
         return result
 
+def view(obj, access=None):
+    """
+    nd.view(obj, access=None)
+
+    Constructs a dynd array which is a view of the data from
+    `obj`. The `access` parameter can be used to require writable
+    access for an output parameter, or to produce a read-only
+    view of writable data.
+
+    Parameters
+    ----------
+    obj : Python object
+        A Python object which backs some array data, such as
+        a dynd array, a numpy array, or an object supporting
+        the Python buffer protocol.
+    access : 'readwrite' or 'readonly', optional
+        The access flags for the constructed array. Use 'readwrite'
+        to require that the view be writable, and 'readonly' to
+        provide a view of data to someone else without allowing
+        writing.
+    """
+    cdef w_array result = w_array()
+    SET(result.v, array_view(obj, access))
+    return result
+
 def type_of(w_array a):
     """
     nd.type_of(a)

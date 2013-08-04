@@ -86,14 +86,14 @@ class TestNumpyViewInterop(unittest.TestCase):
         nonnative = self.nonnative
 
         a = np.arange(10, dtype=np.int32)
-        n = nd.array(a)
+        n = nd.view(a)
         self.assertEqual(nd.dtype_of(n), ndt.int32)
         self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
 
         a = np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4)
-        n = nd.array(a)
+        n = nd.view(a)
         self.assertEqual(nd.dtype_of(n), ndt.make_byteswap(ndt.int32))
         self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
@@ -101,7 +101,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=np.int32).reshape(4,3)
-        n = nd.array(a)
+        n = nd.view(a)
         self.assertEqual(nd.dtype_of(n), ndt.make_unaligned(ndt.int32))
         self.assertEqual(nd.ndim_of(n), a.ndim)
         self.assertEqual(n.shape, a.shape)
@@ -109,7 +109,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         a = np.arange(49, dtype='i1')
         a = a[1:].view(dtype=(nonnative + 'i4')).reshape(2,2,3)
-        n = nd.array(a)
+        n = nd.view(a)
         self.assertEqual(nd.dtype_of(n),
                 ndt.make_unaligned(ndt.make_byteswap(ndt.int32)))
         self.assertEqual(nd.ndim_of(n), a.ndim)
@@ -120,7 +120,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Tests viewing a dynd.array as a numpy array
         nonnative = self.nonnative
 
-        n = nd.array(np.arange(10, dtype=np.int32))
+        n = nd.view(np.arange(10, dtype=np.int32))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertTrue(a.flags.aligned)
@@ -128,7 +128,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-        n = nd.array(np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4))
+        n = nd.view(np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(nonnative + 'i4'))
         self.assertTrue(a.flags.aligned)
@@ -136,7 +136,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-        n = nd.array(np.arange(49, dtype='i1')[1:].view(dtype=np.int32).reshape(4,3))
+        n = nd.view(np.arange(49, dtype='i1')[1:].view(dtype=np.int32).reshape(4,3))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertFalse(a.flags.aligned)
@@ -144,7 +144,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
 
-        n = nd.array(np.arange(49, dtype='i1')[1:].view(
+        n = nd.view(np.arange(49, dtype='i1')[1:].view(
                     dtype=(nonnative + 'i4')).reshape(2,2,3))
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(nonnative + 'i4'))
@@ -157,7 +157,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Tests converting fixed-size string arrays to/from numpy
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
-        b = nd.array(a)
+        b = nd.view(a)
         if sys.version_info >= (3, 0):
             self.assertEqual(ndt.make_fixedstring(7, 'utf_32'), nd.dtype_of(b))
         else:
@@ -166,7 +166,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 
         # Make sure it's ascii
         a = a.astype('S7')
-        b = nd.array(a)
+        b = nd.view(a)
 
         # ASCII dynd -> Numpy
         c = np.asarray(b)
@@ -213,24 +213,33 @@ class TestNumpyViewInterop(unittest.TestCase):
         #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
     def test_readwrite_access_flags(self):
+        def assign_to(x,y):
+            x[0] = y
         # Tests that read/write access control is preserved to/from numpy
         a = np.arange(10.)
 
         # Writeable
-        b = nd.array(a)
+        b = nd.view(a)
         b[0] = 2.0
+        self.assertEqual(nd.as_py(b[0]), 2.0)
+        self.assertEqual(a[0], 2.0)
+
+        # Readonly view of writeable
+        b = nd.view(a, access='r')
+        self.assertRaises(RuntimeError, assign_to, b, 3.0)
+        # should still be 2.0
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
 
         # Not writeable
         a.flags.writeable = False
-        b = nd.array(a)
-        def assign_to(x,y):
-            x[0] = y
+        b = nd.view(a)
         self.assertRaises(RuntimeError, assign_to, b, 3.0)
         # should still be 2.0
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
+        # Trying to get a readwrite view raises an error
+        self.assertRaises(RuntimeError, nd.view, a, access='rw')
 
 class TestNumpyScalarInterop(unittest.TestCase):
     def test_numpy_scalar_conversion_dtypes(self):

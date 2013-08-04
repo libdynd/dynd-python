@@ -180,6 +180,9 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
         access_flags = pyarg_strings_to_int(
                         access, "access", 0,
                             "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "rw",  nd::read_access_flag|nd::write_access_flag,
+                            "readonly", nd::read_access_flag,
+                            "r",  nd::read_access_flag,
                             "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
     n = array_from_py(obj, make_ndt_type_from_pyobject(dt), uniform, access_flags);
@@ -192,9 +195,53 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
         access_flags = pyarg_strings_to_int(
                         access, "access", 0,
                             "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "rw",  nd::read_access_flag|nd::write_access_flag,
+                            "readonly", nd::read_access_flag,
+                            "r",  nd::read_access_flag,
                             "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
     n = array_from_py(obj, access_flags, true);
+}
+
+dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *access)
+{
+    uint32_t access_flags = 0;
+    if (access != Py_None) {
+        access_flags = pyarg_strings_to_int(
+                        access, "access", 0,
+                            "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "rw", nd::read_access_flag|nd::write_access_flag,
+                            "readonly", nd::read_access_flag,
+                            "r", nd::read_access_flag);
+    }
+
+    // If it's a Cython w_array
+    if (WArray_Check(obj)) {
+        const nd::array& obj_dynd = ((WArray *)obj)->v;
+        if (access_flags != 0) {
+            uint32_t raf = obj_dynd.get_access_flags();
+            if ((access_flags&nd::immutable_access_flag) && !(raf&nd::immutable_access_flag)) {
+                throw runtime_error("cannot view a non-immutable dynd array as immutable");
+            }
+            if ((access_flags&nd::write_access_flag) != 0 && (raf&nd::write_access_flag) == 0) {
+                throw runtime_error("cannot view a readonly dynd array as readwrite");
+            }
+            if ((access_flags&nd::write_access_flag) == 0 && (raf&nd::write_access_flag) != 0) {
+                // Convert it to a readonly view
+                nd::array result(shallow_copy_array_memory_block(obj_dynd.get_memblock()));
+                result.get_ndo()->m_flags = access_flags;
+                return result;
+            }
+        }
+        return obj_dynd;
+    }
+
+    // If it's a numpy array
+    if (PyArray_Check(obj)) {
+        return array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
+    }
+
+    throw runtime_error("provided object can't be viewed as a dynd array (TODO: add python buffer protocol support here)");
 }
 
 dynd::nd::array pydynd::array_eval(const dynd::nd::array& n)
@@ -208,7 +255,9 @@ dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
     uint32_t access_flags = pyarg_strings_to_int(
                     access, "access", 0,
                         "readwrite", nd::read_access_flag|nd::write_access_flag,
-                        "immutable", nd::read_access_flag|nd::immutable_access_flag);
+                        "rw", nd::read_access_flag|nd::write_access_flag,
+                        "immutable", nd::read_access_flag|nd::immutable_access_flag,
+                        "r", nd::read_access_flag|nd::immutable_access_flag);
     return n.eval_copy(access_flags, ectx);
 }
 

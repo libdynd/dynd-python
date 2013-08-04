@@ -392,6 +392,36 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default
     throw runtime_error(ss.str());
 }
 
+int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+                const char *string0, int value0,
+                const char *string1, int value1,
+                const char *string2, int value2,
+                const char *string3, int value3,
+                const char *string4, int value4)
+{
+    if (obj == NULL || obj == Py_None) {
+        return default_value;
+    }
+
+    string s = pystring_as_string(obj);
+
+    if (s == string0) {
+        return value0;
+    } else if (s == string1) {
+        return value1;
+    } else if (s == string2) {
+        return value2;
+    } else if (s == string3) {
+        return value3;
+    } else if (s == string4) {
+        return value4;
+    }
+
+    stringstream ss;
+    ss << "argument " << argname << " was given the invalid argument value \"" << s << "\"";
+    throw runtime_error(ss.str());
+}
+
 bool pydynd::pyarg_bool(PyObject *obj, const char *argname, bool default_value)
 {
     if (obj == NULL || obj == Py_None) {

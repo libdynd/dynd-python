@@ -652,6 +652,10 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject* obj, uint32_t access_fla
     if (always_copy) {
         return result.eval_copy(access_flags);
     } else {
+        if (access_flags != 0) {
+            // Use the requested access flags
+            result.get_ndo()->m_flags = access_flags;
+        }
         return result;
     }
 }

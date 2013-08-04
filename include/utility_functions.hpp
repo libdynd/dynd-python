@@ -209,6 +209,13 @@ int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                 const char *string2, int value2,
                 const char *string3, int value3);
 
+int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
+                const char *string0, int value0,
+                const char *string1, int value1,
+                const char *string2, int value2,
+                const char *string3, int value3,
+                const char *string4, int value4);
+
 bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
 
 

@@ -269,9 +269,9 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         array_preamble *preamble = n.get_ndo();
         ndt::type dt = n.get_type();
 
-        // Check if a writeable buffer is requested
+        // Check if a writable buffer is requested
         if ((flags&PyBUF_WRITABLE) && !(n.get_access_flags()&nd::write_access_flag)) {
-            throw runtime_error("dynd array is not writeable");
+            throw runtime_error("dynd array is not writable");
         }
         buffer->readonly = ((n.get_access_flags()&nd::write_access_flag) == 0);
         buffer->buf = preamble->m_data_pointer;

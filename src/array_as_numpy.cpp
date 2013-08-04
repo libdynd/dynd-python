@@ -667,7 +667,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
         pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
                         (int)ndim, shape.get(), strides.get(), NULL, 0, NULL));
         // Create a dynd array view of this result
-        nd::array result_dynd = array_from_numpy_array((PyArrayObject *)result.get());
+        nd::array result_dynd = array_from_numpy_array((PyArrayObject *)result.get(), 0, false);
         // Copy the values using this view
         result_dynd.vals() = n;
         // Return the NumPy array

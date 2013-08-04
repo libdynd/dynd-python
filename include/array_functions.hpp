@@ -63,8 +63,8 @@ inline PyObject *wrap_array(dynd::nd::array&& n) {
 }
 #endif
 
-void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform);
-void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj);
+void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform, PyObject *access);
+void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access);
 
 dynd::nd::array array_eval(const dynd::nd::array& n);
 dynd::nd::array array_eval_copy(const dynd::nd::array& n,

@@ -121,14 +121,22 @@ int ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::type& ou
 dynd::ndt::type ndt_type_of_numpy_scalar(PyObject* obj);
 
 /**
- * Views a Numpy PyArrayObject as an nd::array.
+ * Views or copies a numpy PyArrayObject as an nd::array.
+ *
+ * \param obj  The numpy array object.
+ * \param access_flags  The requested access flags (0 for default).
+ * \param always_copy  If true, produce a copy instead of a view.
  */
-dynd::nd::array array_from_numpy_array(PyArrayObject* obj);
+dynd::nd::array array_from_numpy_array(PyArrayObject* obj, uint32_t access_flags, bool always_copy);
 
 /**
- * Creates a dynd::nd::array from a numpy scalar.
+ * Creates a dynd::nd::array from a numpy scalar. This always produces
+ * a copy.
+ *
+ * \param obj  The numpy scalar object.
+ * \param access_flags  The requested access flags (0 for default).
  */
-dynd::nd::array array_from_numpy_scalar(PyObject* obj);
+dynd::nd::array array_from_numpy_scalar(PyObject* obj, uint32_t access_flags);
 
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.

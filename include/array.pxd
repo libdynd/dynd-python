@@ -68,8 +68,8 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     string array_debug_print(ndarray&) except +translate_exception
     bint array_contains(ndarray&, object) except +translate_exception
 
-    void array_init_from_pyobject(ndarray&, object, object, bint) except +translate_exception
-    void array_init_from_pyobject(ndarray&, object) except +translate_exception
+    void array_init_from_pyobject(ndarray&, object, object, bint, object) except +translate_exception
+    void array_init_from_pyobject(ndarray&, object, object) except +translate_exception
     ndarray array_eval(ndarray&) except +translate_exception
     ndarray array_eval_copy(ndarray&, object) except +translate_exception
     ndarray array_empty(ndt_type&) except +translate_exception

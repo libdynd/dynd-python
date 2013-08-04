@@ -173,14 +173,28 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
     }
 }
 
-void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform)
+void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform, PyObject *access)
 {
-    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), uniform);
+    uint32_t access_flags = 0;
+    if (access != Py_None) {
+        access_flags = pyarg_strings_to_int(
+                        access, "access", 0,
+                            "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "immutable", nd::read_access_flag|nd::immutable_access_flag);
+    }
+    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), uniform, access_flags);
 }
 
-void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj)
+void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access)
 {
-    n = array_from_py(obj);
+    uint32_t access_flags = 0;
+    if (access != Py_None) {
+        access_flags = pyarg_strings_to_int(
+                        access, "access", 0,
+                            "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "immutable", nd::read_access_flag|nd::immutable_access_flag);
+    }
+    n = array_from_py(obj, access_flags, true);
 }
 
 dynd::nd::array pydynd::array_eval(const dynd::nd::array& n)
@@ -192,10 +206,10 @@ dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
                 PyObject* access, const eval::eval_context *ectx)
 {
     uint32_t access_flags = pyarg_strings_to_int(
-                    access, "access", nd::read_access_flag|nd::write_access_flag,
+                    access, "access", 0,
                         "readwrite", nd::read_access_flag|nd::write_access_flag,
                         "immutable", nd::read_access_flag|nd::immutable_access_flag);
-    return n.eval_copy(ectx, access_flags);
+    return n.eval_copy(access_flags, ectx);
 }
 
 dynd::nd::array pydynd::array_empty(const dynd::ndt::type& d)
@@ -261,7 +275,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     }
 
     // Turn 'x' into a dynd array, and make a comparison kernel
-    nd::array x_ndo = array_from_py(x);
+    nd::array x_ndo = array_from_py(x, 0, false);
     const ndt::type& x_dt = x_ndo.get_type();
     const char *x_metadata = x_ndo.get_ndo_meta();
     const char *x_data = x_ndo.get_readonly_originptr();
@@ -380,13 +394,13 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, P
     ndt::type dt_nd;
 
     if (start != Py_None) {
-        start_nd = array_from_py(start);
+        start_nd = array_from_py(start, 0, false);
     } else {
         start_nd = 0;
     }
-    stop_nd = array_from_py(stop);
+    stop_nd = array_from_py(stop, 0, false);
     if (step != Py_None) {
-        step_nd = array_from_py(step);
+        step_nd = array_from_py(step, 0, false);
     } else {
         step_nd = 1;
     }
@@ -415,8 +429,8 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop, PyObject
 {
     nd::array start_nd, stop_nd;
     intptr_t count_val = pyobject_as_index(count);
-    start_nd = array_from_py(start);
-    stop_nd = array_from_py(stop);
+    start_nd = array_from_py(start, 0, false);
+    stop_nd = array_from_py(stop, 0, false);
     if (dt == Py_None) {
         return nd::linspace(start_nd, stop_nd, count_val);
     } else {

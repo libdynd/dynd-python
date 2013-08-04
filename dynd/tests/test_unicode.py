@@ -42,4 +42,4 @@ class TestUnicode(unittest.TestCase):
         self.assertRaises(UnicodeDecodeError, a.ucast("string").eval)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

@@ -821,7 +821,7 @@ def factor_categorical(values):
 
 cdef class w_array:
     """
-    nd.array(obj=None, dtype=None, type=None)
+    nd.array(obj=None, dtype=None, type=None, access=None)
 
     Create a dynd array out of the provided object.
 
@@ -848,6 +848,20 @@ cdef class w_array:
         If provided, the type is used as the full type for the input.
         If needed by the type, the shape is deduced from the input.
         This parameter cannot be used together with 'dtype'.
+    access:  'readwrite', 'readonly', or 'immutable', optional
+        If provided, this specifies the access control for the
+        created array. If the array is being allocated, as in
+        construction from Python objects, this is the access control
+        set.
+
+        If the array is a view into another array data source,
+        such as NumPy arrays or objects which support the buffer
+        protocol, the access control must be compatible with that
+        of the input object's.
+
+        The default is immutable, or to inherit the access control
+        of the object being viewed if it is an object supporting
+        the buffer protocol.
 
     Examples
     --------
@@ -867,18 +881,19 @@ cdef class w_array:
     # array's value.
     cdef array_placement_wrapper v
 
-    def __cinit__(self, obj=None, dtype=None, type=None):
+    def __cinit__(self, obj=None, dtype=None, type=None, access=None):
         placement_new(self.v)
         if obj is not None:
             # Get the array data
             if dtype is not None:
                 if type is not None:
-                    raise ValueError('Must provide only one of dtype or type, not both')
-                array_init_from_pyobject(GET(self.v), obj, dtype, True)
+                    raise ValueError('Must provide only one of ' +
+                                    'dtype or type, not both')
+                array_init_from_pyobject(GET(self.v), obj, dtype, True, access)
             elif type is not None:
-                array_init_from_pyobject(GET(self.v), obj, type, False)
+                array_init_from_pyobject(GET(self.v), obj, type, False, access)
             else:
-                array_init_from_pyobject(GET(self.v), obj)
+                array_init_from_pyobject(GET(self.v), obj, access)
 
     def __dealloc__(self):
         placement_delete(self.v)

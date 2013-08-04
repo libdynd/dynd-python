@@ -211,11 +211,11 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
     #if DYND_NUMPY_INTEROP
         } else if (PyArray_Check(value)) {
-            const nd::array& v = array_from_numpy_array((PyArrayObject *)value);
+            const nd::array& v = array_from_numpy_array((PyArrayObject *)value, 0, false);
             typed_data_assign(dt, metadata, data,
                         v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_IsScalar(value, Generic)) {
-            const nd::array& v = array_from_numpy_scalar(value);
+            const nd::array& v = array_from_numpy_scalar(value, 0);
             typed_data_assign(dt, metadata, data,
                         v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         } else if (PyArray_DescrCheck(value)) {
@@ -246,7 +246,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             }
 
             // Fall back strategy, where we convert to nd::array, then assign
-            nd::array v = array_from_py(value);
+            nd::array v = array_from_py(value, 0, false);
             typed_data_assign(dt, metadata, data,
                             v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         }
@@ -703,7 +703,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
         return;
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_Check(value)) {
-        const nd::array& v = array_from_numpy_array((PyArrayObject *)value);
+        const nd::array& v = array_from_numpy_array((PyArrayObject *)value, 0, false);
         typed_data_assign(dt, metadata, data,
                     v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
         return;

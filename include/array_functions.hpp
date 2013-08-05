@@ -67,6 +67,7 @@ void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, b
 void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access);
 
 dynd::nd::array array_view(PyObject *obj, PyObject *access);
+dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
 
 dynd::nd::array array_eval(const dynd::nd::array& n);
 dynd::nd::array array_eval_copy(const dynd::nd::array& n,

@@ -848,7 +848,7 @@ cdef class w_array:
         If provided, the type is used as the full type for the input.
         If needed by the type, the shape is deduced from the input.
         This parameter cannot be used together with 'dtype'.
-    access:  'readwrite', 'readonly', or 'immutable', optional
+    access:  'readwrite'/'rw', 'readonly'/'r', or 'immutable', optional
         If provided, this specifies the access control for the
         created array. If the array is being allocated, as in
         construction from Python objects, this is the access control
@@ -1182,11 +1182,11 @@ def view(obj, access=None):
 
     Parameters
     ----------
-    obj : Python object
+    obj : object
         A Python object which backs some array data, such as
         a dynd array, a numpy array, or an object supporting
         the Python buffer protocol.
-    access : 'readwrite' or 'readonly', optional
+    access : 'readwrite'/'rw' or 'readonly'/'r', optional
         The access flags for the constructed array. Use 'readwrite'
         to require that the view be writable, and 'readonly' to
         provide a view of data to someone else without allowing
@@ -1194,6 +1194,27 @@ def view(obj, access=None):
     """
     cdef w_array result = w_array()
     SET(result.v, array_view(obj, access))
+    return result
+
+def asarray(obj, access=None):
+    """
+    nd.asarray(obj, access=None)
+
+    Constructs a dynd array from the object, taking a view
+    if possible, otherwise making a copy.
+
+    Parameters
+    ----------
+    obj : object
+        The object which is to be converted into a dynd array,
+        as a view if possible, otherwise a copy.
+    access : 'readwrite'/'rw', 'readonly'/'r', 'immutable', optional
+        If provided, the access flags the resulting array should
+        satisfy. When a view can be taken, but these access flags
+        cannot, a copy is made.
+    """
+    cdef w_array result = w_array()
+    SET(result.v, array_asarray(obj, access))
     return result
 
 def type_of(w_array a):

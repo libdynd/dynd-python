@@ -212,7 +212,8 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *access)
                             "readwrite", nd::read_access_flag|nd::write_access_flag,
                             "rw", nd::read_access_flag|nd::write_access_flag,
                             "readonly", nd::read_access_flag,
-                            "r", nd::read_access_flag);
+                            "r", nd::read_access_flag,
+                            "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
 
     // If it's a Cython w_array
@@ -241,7 +242,80 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *access)
         return array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
     }
 
-    throw runtime_error("provided object can't be viewed as a dynd array (TODO: add python buffer protocol support here)");
+    // TODO: add python buffer protocol support here
+    throw runtime_error("provided object can't be viewed as a dynd array, use nd.asarray or nd.array to create a copy");
+}
+
+dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
+{
+    uint32_t access_flags = 0;
+    if (access != Py_None) {
+        access_flags = pyarg_strings_to_int(
+                        access, "access", 0,
+                            "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "rw", nd::read_access_flag|nd::write_access_flag,
+                            "readonly", nd::read_access_flag,
+                            "r", nd::read_access_flag,
+                            "immutable", nd::read_access_flag|nd::immutable_access_flag);
+    }
+
+    // If it's a Cython w_array
+    if (WArray_Check(obj)) {
+        const nd::array& obj_dynd = ((WArray *)obj)->v;
+        if (access_flags != 0) {
+            // Flag for whether it's ok to take this view
+            bool ok = true;
+            // TODO: Make an nd::view function to handle this logic
+            uint32_t raf = obj_dynd.get_access_flags();
+            if ((access_flags&nd::immutable_access_flag) && !(raf&nd::immutable_access_flag)) {
+                ok = false;
+            } else if ((access_flags&nd::write_access_flag) == 0 && (raf&nd::write_access_flag) != 0) {
+                // Convert it to a readonly view
+                nd::array result(shallow_copy_array_memory_block(obj_dynd.get_memblock()));
+                result.get_ndo()->m_flags = access_flags;
+                return result;
+            }
+            if ((access_flags&nd::write_access_flag) != 0 && (raf&nd::write_access_flag) == 0) {
+                ok = false;
+            }
+            
+            if (ok) {
+                return obj_dynd;
+            } else {
+                return obj_dynd.eval_copy(access_flags);
+            }
+        } else {
+            return obj_dynd;
+        }
+    }
+
+    // If it's a numpy array
+    if (PyArray_Check(obj)) {
+        nd::array result = array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
+        if (access_flags != 0) {
+            bool ok = true;
+            // TODO: Make an nd::view function to handle this logic
+            uint32_t raf = result.get_access_flags();
+            if ((access_flags&nd::write_access_flag) != 0 && (raf&nd::write_access_flag) == 0) {
+                ok = false;
+            }
+            if ((access_flags&nd::write_access_flag) == 0 && (raf&nd::write_access_flag) != 0) {
+                // Convert it to a readonly view
+                nd::array ro_view(shallow_copy_array_memory_block(result.get_memblock()));
+                ro_view.get_ndo()->m_flags = access_flags;
+                return ro_view;
+            }
+            if (ok) {
+                return result;
+            } else {
+                return result.eval_copy(access_flags);
+            }
+        }
+    }
+
+    // TODO: Check for the python buffer protocol.
+
+    return array_from_py(obj, access_flags, true);
 }
 
 dynd::nd::array pydynd::array_eval(const dynd::nd::array& n)
@@ -256,8 +330,8 @@ dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
                     access, "access", 0,
                         "readwrite", nd::read_access_flag|nd::write_access_flag,
                         "rw", nd::read_access_flag|nd::write_access_flag,
-                        "immutable", nd::read_access_flag|nd::immutable_access_flag,
-                        "r", nd::read_access_flag|nd::immutable_access_flag);
+                        "r", nd::read_access_flag|nd::immutable_access_flag,
+                        "immutable", nd::read_access_flag|nd::immutable_access_flag);
     return n.eval_copy(access_flags, ectx);
 }
 

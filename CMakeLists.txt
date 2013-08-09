@@ -51,7 +51,7 @@ if (NOT PYTHON_PACKAGE_INSTALL_PREFIX)
 endif()
 
 # Require version >= 1.5
-if(NUMPY_VERSION_DECIMAL LESS 10500)
+if (NUMPY_VERSION_DECIMAL LESS 10500)
     message(FATAL_ERROR,
         "DyND-Python requires NumPy >= 1.5")
 endif()
@@ -146,6 +146,7 @@ set(pydynd_CPP_SRC
     include/array_as_numpy.hpp
     include/array_as_py.hpp
     include/numpy_interop.hpp
+    include/numpy_ufunc_kernel.hpp
     include/py_lowlevel_api.hpp
     include/elwise_gfunc_functions.hpp
     include/elwise_reduce_gfunc_functions.hpp
@@ -164,6 +165,7 @@ set(pydynd_CPP_SRC
     src/array_as_numpy.cpp
     src/array_as_py.cpp
     src/numpy_interop.cpp
+    src/numpy_ufunc_kernel.cpp
     src/py_lowlevel_api.cpp
     src/elwise_gfunc_functions.cpp
     src/elwise_reduce_gfunc_functions.cpp

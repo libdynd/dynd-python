@@ -31,9 +31,11 @@
 #endif
 
 #define PY_ARRAY_UNIQUE_SYMBOL pydynd_ARRAY_API
+#define PY_UFUNC_UNIQUE_SYMBOL pydynd_UFUNC_API
 // Invert the importing signal to match how numpy wants it
 #ifndef NUMPY_IMPORT_ARRAY
 # define NO_IMPORT_ARRAY
+# define NO_IMPORT_UFUNC
 #endif
 
 #include <sstream>

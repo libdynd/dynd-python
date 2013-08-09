@@ -28,7 +28,8 @@ struct py_lowlevel_api_t {
     dynd::array_preamble *(*get_array_ptr)(WArray *obj);
     const dynd::base_type *(*get_base_type_ptr)(WType *obj);
     PyObject *(*array_from_ptr)(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access);
-    PyObject *(*make_single_assignment_kernel)(PyObject *dst_dt_obj, PyObject *src_dt_obj, PyObject *kerntype, void *out_dki_ptr);
+    PyObject *(*make_assignment_kernel)(PyObject *dst_dt_obj, PyObject *src_dt_obj, PyObject *kerntype, void *out_dki_ptr);
+    PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
 };
 
 } // namespace pydynd

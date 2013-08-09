@@ -9,6 +9,7 @@
 #include<dynd/memblock/external_memory_block.hpp>
 
 #include "py_lowlevel_api.hpp"
+#include "numpy_ufunc_kernel.hpp"
 #include "utility_functions.hpp"
 #include "exception_translation.hpp"
 
@@ -112,6 +113,7 @@ namespace {
         &get_base_type_ptr,
         &array_from_ptr,
         &make_assignment_kernel,
+        &pydynd::numpy_typetuples_from_ufunc
     };
 } // anonymous namespace
 

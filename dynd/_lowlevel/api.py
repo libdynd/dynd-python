@@ -58,6 +58,9 @@ class _PyLowLevelAPI(ctypes.Structure):
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.c_void_p)),
+                # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
+                ('numpy_typetuples_from_ufunc',
+                 ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object)),
                ]
 
 api = _LowLevelAPI.from_address(_get_lowlevel_api())

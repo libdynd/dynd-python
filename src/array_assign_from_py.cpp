@@ -267,7 +267,7 @@ static void array_assign_strided_from_pyseq(const dynd::ndt::type& element_dt,
         pyobject_ownref item(PySequence_GetItem(seq, 0));
         array_assign_from_value(element_dt, element_metadata, dst_data, item.get());
         // Get a strided kernel, and use it to assign from the first element to the rest of them
-        assignment_kernel k;
+        assignment_ckernel_builder k;
         make_assignment_kernel(&k, 0, element_dt, element_metadata,
                         element_dt, element_metadata, kernel_request_strided,
                         assign_error_default, &eval::default_eval_context);
@@ -340,7 +340,7 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
         }
         if (dst_size > 1) {
             // Get a strided kernel, and use it to assign from the first element to the rest of them
-            assignment_kernel k;
+            assignment_ckernel_builder k;
             make_assignment_kernel(&k, 0, element_dt, element_metadata,
                             element_dt, element_metadata, kernel_request_strided,
                             assign_error_default, &eval::default_eval_context);

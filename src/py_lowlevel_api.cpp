@@ -58,13 +58,13 @@ namespace {
         }
     }
 
-    PyObject *make_assignment_kernel(PyObject *dst_tp_obj, PyObject *src_tp_obj, PyObject *kerntype_obj, void *out_dki_ptr)
+    PyObject *make_assignment_kernel(PyObject *dst_tp_obj, PyObject *src_tp_obj, PyObject *kerntype_obj, void *out_cki_ptr)
     {
         try {
-            dynamic_kernel_instance *out_dki = reinterpret_cast<dynamic_kernel_instance *>(out_dki_ptr);
-            out_dki->kernel = NULL;
-            out_dki->kernel_size = 0;
-            out_dki->free_func = NULL;
+            ckernel_instance *out_cki = reinterpret_cast<ckernel_instance *>(out_cki_ptr);
+            out_cki->kernel = NULL;
+            out_cki->kernel_size = 0;
+            out_cki->free_func = NULL;
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -93,11 +93,11 @@ namespace {
                 throw runtime_error(ss.str());
             }
 
-            ckernel_builder hk;
-            size_t kernel_size = make_assignment_kernel(&hk, 0, dst_tp, NULL,
+            ckernel_builder ckb;
+            size_t kernel_size = make_assignment_kernel(&ckb, 0, dst_tp, NULL,
                             src_tp, NULL, kerntype, assign_error_default,
                             &eval::default_eval_context);
-            hk.move_into_dki(out_dki, kernel_size);
+            ckb.move_into_cki(out_cki, kernel_size);
 
             Py_INCREF(Py_None);
             return Py_None;

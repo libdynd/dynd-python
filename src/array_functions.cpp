@@ -351,7 +351,7 @@ dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type& d)
 namespace {
     struct contains_data {
         const char *x_data;
-        comparison_kernel *k;
+        comparison_ckernel_builder *k;
         bool found;
     };
 
@@ -404,7 +404,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     const char *x_data = x_ndo.get_readonly_originptr();
     const ndt::type& child_dt = budd->get_element_type();
     const char *child_metadata = metadata + budd->get_element_metadata_offset();
-    comparison_kernel k;
+    comparison_ckernel_builder k;
     try {
         make_comparison_kernel(&k, 0,
                     x_dt, x_metadata, child_dt, child_metadata,

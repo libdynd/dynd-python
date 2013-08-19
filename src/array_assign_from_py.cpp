@@ -271,7 +271,7 @@ static void array_assign_strided_from_pyseq(const dynd::ndt::type& element_dt,
         make_assignment_kernel(&k, 0, element_dt, element_metadata,
                         element_dt, element_metadata, kernel_request_strided,
                         assign_error_default, &eval::default_eval_context);
-        ckernel_data_prefix *kdp = k.get();
+        ckernel_prefix *kdp = k.get();
         kdp->get_function<unary_strided_operation_t>()(
                         dst_data + dst_stride, dst_stride,
                         dst_data, 0, dst_size - 1, kdp);
@@ -344,7 +344,7 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
             make_assignment_kernel(&k, 0, element_dt, element_metadata,
                             element_dt, element_metadata, kernel_request_strided,
                             assign_error_default, &eval::default_eval_context);
-            ckernel_data_prefix *kdp = k.get();
+            ckernel_prefix *kdp = k.get();
             kdp->get_function<unary_strided_operation_t>()(
                             dst_data + dst_stride, dst_stride,
                             dst_data, 0, dst_size - 1, kdp);

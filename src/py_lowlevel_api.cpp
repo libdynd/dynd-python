@@ -93,7 +93,7 @@ namespace {
                 throw runtime_error(ss.str());
             }
 
-            hierarchical_kernel hk;
+            ckernel_builder hk;
             size_t kernel_size = make_assignment_kernel(&hk, 0, dst_tp, NULL,
                             src_tp, NULL, kerntype, assign_error_default,
                             &eval::default_eval_context);

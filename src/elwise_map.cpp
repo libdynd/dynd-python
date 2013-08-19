@@ -28,7 +28,7 @@ namespace {
     struct pyobject_expr_kernel_extra {
         typedef pyobject_expr_kernel_extra extra_type;
 
-        kernel_data_prefix base;
+        ckernel_data_prefix base;
         size_t src_count;
         PyObject *callable;
         // After this are 1 + src_count shell WArrays,
@@ -116,7 +116,7 @@ namespace {
         }
 
         static void single_unary(char *dst, const char *src,
-                        kernel_data_prefix *extra)
+                        ckernel_data_prefix *extra)
         {
             PyGILState_RAII pgs;
 
@@ -129,7 +129,7 @@ namespace {
         }
 
         static void single(char *dst, const char * const *src,
-                        kernel_data_prefix *extra)
+                        ckernel_data_prefix *extra)
         {
             PyGILState_RAII pgs;
 
@@ -143,7 +143,7 @@ namespace {
 
         static void strided_unary(char *dst, intptr_t dst_stride,
                     const char *src, intptr_t src_stride,
-                    size_t count, kernel_data_prefix *extra)
+                    size_t count, ckernel_data_prefix *extra)
         {
             PyGILState_RAII pgs;
 
@@ -158,7 +158,7 @@ namespace {
 
         static void strided(char *dst, intptr_t dst_stride,
                     const char * const *src, const intptr_t *src_stride,
-                    size_t count, kernel_data_prefix *extra)
+                    size_t count, ckernel_data_prefix *extra)
         {
             PyGILState_RAII pgs;
 
@@ -171,7 +171,7 @@ namespace {
             e->verify_postcall_consistency(res.get());
         }
 
-        static void destruct(kernel_data_prefix *extra)
+        static void destruct(ckernel_data_prefix *extra)
         {
             PyGILState_RAII pgs;
 

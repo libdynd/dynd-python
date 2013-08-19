@@ -17,18 +17,18 @@ using namespace pydynd;
 
 PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
 {
+    // NOTE: This function does not raise C++ exceptions,
+    //       it behaves as a Python C-API function.
     if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
         PyErr_SetString(PyExc_TypeError, "require a numpy ufunc object "
                         "to retrieve its type tuples");
         return NULL;
     }
     PyUFuncObject *uf = (PyUFuncObject *)ufunc;
-cout << "uf: " << (void *)uf << endl;
     if (uf->core_enabled) {
         PyErr_SetString(PyExc_TypeError, "gufunc type tuple extraction is not supported yet");
         return NULL;
     }
-cout << "line: " << __LINE__ << endl;
 
     // Process the main ufunc loops list
     int builtin_count = uf->ntypes;
@@ -38,7 +38,6 @@ cout << "line: " << __LINE__ << endl;
         return NULL;
     }
     for (int i = 0; i < builtin_count; ++i) {
-cout << "line: " << __LINE__ << endl;
         PyObject *typetup = PyTuple_New(nargs);
         if (typetup == NULL) {
             Py_DECREF(result);

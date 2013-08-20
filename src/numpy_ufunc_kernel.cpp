@@ -5,7 +5,15 @@
 
 
 #include "numpy_ufunc_kernel.hpp"
+
+#if defined(_MSC_VER)
+#pragma warning(push,2)
+#endif
 #include <numpy/npy_3kcompat.h>
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 
 #include "utility_functions.hpp"
 

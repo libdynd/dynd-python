@@ -113,7 +113,8 @@ namespace {
         &get_base_type_ptr,
         &array_from_ptr,
         &make_assignment_kernel,
-        &pydynd::numpy_typetuples_from_ufunc
+        &pydynd::numpy_typetuples_from_ufunc,
+        &pydynd::ckernel_deferred_from_ufunc
     };
 } // anonymous namespace
 

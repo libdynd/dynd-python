@@ -83,6 +83,16 @@ inline int import_numpy()
 dynd::ndt::type ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
 
 /**
+ * Converts a numpy type number to a dynd type. This produces an
+ * aligned output type.
+ *
+ * \param numpy_type_num  The numpy type number.
+ *
+ * \returns  The dynd equivalent of the numpy dtype.
+ */
+dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num);
+
+/**
  * When the function ndt_type_from_numpy_dtype returns a type which requires
  * additional metadata to be filled in, this function should be called to populate
  * that metadata in a created nd::array.

@@ -194,6 +194,47 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
     return dt;
 }
 
+dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num)
+{
+    switch (numpy_type_num) {
+    case NPY_BOOL:
+        return ndt::make_type<dynd_bool>();
+    case NPY_BYTE:
+        return ndt::make_type<npy_byte>();
+    case NPY_UBYTE:
+        return ndt::make_type<npy_ubyte>();
+    case NPY_SHORT:
+        return ndt::make_type<npy_short>();
+    case NPY_USHORT:
+        return ndt::make_type<npy_ushort>();
+    case NPY_INT:
+        return ndt::make_type<npy_int>();
+    case NPY_UINT:
+        return ndt::make_type<npy_uint>();
+    case NPY_LONG:
+        return ndt::make_type<npy_long>();
+    case NPY_ULONG:
+        return ndt::make_type<npy_ulong>();
+    case NPY_LONGLONG:
+        return ndt::make_type<npy_longlong>();
+    case NPY_ULONGLONG:
+        return ndt::make_type<npy_ulonglong>();
+    case NPY_FLOAT:
+        return ndt::make_type<float>();
+    case NPY_DOUBLE:
+        return ndt::make_type<double>();
+    case NPY_CFLOAT:
+        return ndt::make_type<complex<float> >();
+    case NPY_CDOUBLE:
+        return ndt::make_type<complex<double> >();
+    default: {
+        stringstream ss;
+        ss << "Cannot convert numpy type num " << numpy_type_num << " to a dynd type";
+        throw runtime_error(ss.str());
+        }
+    }
+}
+
 void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d, char *metadata)
 {
     switch (dt.get_type_id()) {

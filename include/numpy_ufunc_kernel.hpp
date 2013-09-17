@@ -8,6 +8,7 @@
 
 #include "numpy_interop.hpp"
 #include <numpy/ufuncobject.h>
+#include <dynd/kernels/ckernel_deferred.hpp>
 
 namespace pydynd {
 
@@ -28,6 +29,22 @@ namespace pydynd {
  *          or a list of type tuples.
  */
 PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
+
+/**
+ * Given a ufunc and a type tuple supported by that ufunc,
+ * returns a deferred ckernel.
+ *
+ * \param ufunc  The numpy ufunc.
+ * \param type_tuple  The tuple of types defining the kernel signature.
+ * \param out_ckd  A raw pointer to a ckernel_deferred object,
+ *                 which is populated with the deferred ckernel.
+ * \param ckernel_acquires_gil  A flag which controls whether the ckernel should
+ *                              acquire the GIL before calling the ufunc's kernel.
+ *                              Since numpy doesn't have a nice, rigorous way of
+ *                              specifying the need for this, we make it a parameter.
+ */
+PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
+                PyObject *type_tuple, void *out_ckd_raw, int ckernel_acquires_gil);
 
 } // namespace pydynd
 

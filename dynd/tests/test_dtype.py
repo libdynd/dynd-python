@@ -1,4 +1,5 @@
 import sys
+import ctypes
 import unittest
 from dynd import nd, ndt
 
@@ -30,6 +31,16 @@ class TestDType(unittest.TestCase):
         self.assertEqual(ndt.int64.data_size, 8)
         self.assertTrue(ndt.int64.data_alignment in [4,8])
 
+        self.assertEqual(type(ndt.intptr), ndt.type)
+        if ctypes.sizeof(ctypes.c_void_p) == 4:
+            self.assertEqual(str(ndt.intptr), 'int32')
+            self.assertEqual(ndt.intptr.data_size, 4)
+            self.assertEqual(ndt.intptr.data_alignment in 4)
+        else:
+            self.assertEqual(str(ndt.intptr), 'int64')
+            self.assertEqual(ndt.intptr.data_size, 8)
+            self.assertTrue(ndt.intptr.data_alignment in [4,8])
+
     def test_uint_type_properties(self):
         self.assertEqual(type(ndt.uint8), ndt.type)
         self.assertEqual(str(ndt.uint8), 'uint8')
@@ -50,6 +61,16 @@ class TestDType(unittest.TestCase):
         self.assertEqual(str(ndt.uint64), 'uint64')
         self.assertEqual(ndt.uint64.data_size, 8)
         self.assertTrue(ndt.uint64.data_alignment in [4,8])
+
+        self.assertEqual(type(ndt.uintptr), ndt.type)
+        if ctypes.sizeof(ctypes.c_void_p) == 4:
+            self.assertEqual(str(ndt.uintptr), 'uint32')
+            self.assertEqual(ndt.uintptr.data_size, 4)
+            self.assertEqual(ndt.uintptr.data_alignment in 4)
+        else:
+            self.assertEqual(str(ndt.uintptr), 'uint64')
+            self.assertEqual(ndt.uintptr.data_size, 8)
+            self.assertTrue(ndt.uintptr.data_alignment in [4,8])
 
     def test_float_type_properties(self):
         self.assertEqual(type(ndt.float32), ndt.type)

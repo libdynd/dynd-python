@@ -838,7 +838,7 @@ cdef class w_array:
 
     Parameters
     ----------
-    obj : multi-dimensional object, optional
+    value : multi-dimensional object, optional
         Any object which dynd knows how to interpret as a dynd array.
     dtype: dynd type
         If provided, the type is used as the data type for the
@@ -881,19 +881,22 @@ cdef class w_array:
     # array's value.
     cdef array_placement_wrapper v
 
-    def __cinit__(self, obj=None, dtype=None, type=None, access=None):
+    def __cinit__(self, value=None, dtype=None, type=None, access=None):
         placement_new(self.v)
-        if obj is not None:
+        if value is not None:
             # Get the array data
             if dtype is not None:
                 if type is not None:
                     raise ValueError('Must provide only one of ' +
                                     'dtype or type, not both')
-                array_init_from_pyobject(GET(self.v), obj, dtype, True, access)
+                array_init_from_pyobject(GET(self.v), value, dtype, True, access)
             elif type is not None:
-                array_init_from_pyobject(GET(self.v), obj, type, False, access)
+                array_init_from_pyobject(GET(self.v), value, type, False, access)
             else:
-                array_init_from_pyobject(GET(self.v), obj, access)
+                array_init_from_pyobject(GET(self.v), value, access)
+        elif dtype is not None or type is not None or access is not None:
+            raise ValueError('a value for the array construction must ' +
+                            'be provided when another keyword parameter is used')
 
     def __dealloc__(self):
         placement_delete(self.v)

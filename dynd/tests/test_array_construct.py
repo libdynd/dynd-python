@@ -391,5 +391,10 @@ class TestConstructErrors(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.empty, (2,), ndt.int32)
         self.assertRaises(RuntimeError, nd.empty, (2,3), 'var, int64')
 
+    def test_bad_params(self):
+        self.assertRaises(ValueError, nd.array, dtype='int32')
+        self.assertRaises(ValueError, nd.array, type='2, 2, int32')
+        self.assertRaises(ValueError, nd.array, access='readwrite')
+
 if __name__ == '__main__':
     unittest.main()

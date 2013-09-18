@@ -349,15 +349,15 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         }
 
         // Check that any contiguity requirements are satisfied
-        if ((flags&PyBUF_C_CONTIGUOUS) || (flags&PyBUF_STRIDES) == 0) {
+        if ((flags&PyBUF_C_CONTIGUOUS) == PyBUF_C_CONTIGUOUS || (flags&PyBUF_STRIDES) != PyBUF_STRIDES) {
             if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
                 throw runtime_error("dynd array is not C-contiguous as requested for PEP 3118 buffer");
             }
-        } else if (flags&PyBUF_F_CONTIGUOUS) {
+        } else if ((flags&PyBUF_F_CONTIGUOUS) == PyBUF_F_CONTIGUOUS) {
             if (!strides_are_f_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
                 throw runtime_error("dynd array is not F-contiguous as requested for PEP 3118 buffer");
             }
-        } else if (flags&PyBUF_ANY_CONTIGUOUS) {
+        } else if ((flags&PyBUF_ANY_CONTIGUOUS) == PyBUF_ANY_CONTIGUOUS) {
             if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides) &&
                     !strides_are_f_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
                 throw runtime_error("dynd array is not C-contiguous nor F-contiguous as requested for PEP 3118 buffer");

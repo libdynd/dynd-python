@@ -127,6 +127,9 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
+        # Make sure it's a view
+        a[1] = 100
+        self.assertEqual(nd.as_py(n[1]), 100)
 
         n = nd.view(np.arange(12, dtype=(nonnative + 'i4')).reshape(3,4))
         a = np.asarray(n)
@@ -135,6 +138,9 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
+        # Make sure it's a view
+        a[1,2] = 100
+        self.assertEqual(nd.as_py(n[1,2]), 100)
 
         n = nd.view(np.arange(49, dtype='i1')[1:].view(dtype=np.int32).reshape(4,3))
         a = np.asarray(n)
@@ -143,6 +149,9 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
+        # Make sure it's a view
+        a[1,2] = 100
+        self.assertEqual(nd.as_py(n[1,2]), 100)
 
         n = nd.view(np.arange(49, dtype='i1')[1:].view(
                     dtype=(nonnative + 'i4')).reshape(2,2,3))
@@ -152,6 +161,21 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a.ndim, nd.ndim_of(n))
         self.assertEqual(a.shape, n.shape)
         self.assertEqual(a.strides, n.strides)
+        # Make sure it's a view
+        a[1,1,1] = 100
+        self.assertEqual(nd.as_py(n[1,1,1]), 100)
+
+    def test_numpy_view_of_noncontig_dynd_array(self):
+        n = nd.range(10)[1::3]
+        a = np.asarray(n)
+        self.assertEqual(a.dtype, np.dtype('i4'))
+        self.assertFalse(a.flags.c_contiguous)
+        self.assertEqual(a.ndim, nd.ndim_of(n))
+        self.assertEqual(a.shape, n.shape)
+        self.assertEqual(a.strides, n.strides)
+        # Make sure it's a view as needed
+        a[1] = 100
+        self.assertEqual(nd.as_py(n[1]), 100)
 
     def test_numpy_dynd_fixedstring_interop(self):
         # Tests converting fixed-size string arrays to/from numpy
@@ -293,7 +317,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
 
     def test_var_dim_conversion(self):
         # A simple instantiated var_dim array should be
-        # vieable with numpy without changes
+        # viewable with numpy without changes
         a = nd.array([1, 2, 3, 4, 5], type='var, int32')
         b = nd.as_numpy(a)
         self.assertTrue(isinstance(b, np.ndarray))

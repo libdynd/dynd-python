@@ -5,7 +5,8 @@ __all__ = ['api', 'py_api']
 import sys
 import ctypes
 from dynd._pydynd import _get_lowlevel_api, _get_py_lowlevel_api
-from .ckernel import CKernelDeferredStructPtr, CKernelBuilderStructPtr
+from .ctypes_types import (CKernelDeferredStructPtr,
+        CKernelBuilderStructPtr)
 
 if sys.version_info >= (2, 7):
     c_ssize_t = ctypes.c_ssize_t
@@ -45,21 +46,23 @@ class _LowLevelAPI(ctypes.Structure):
                  ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p)),
                 # void ckernel_builder_construct(void *ckb);
                 ('ckernel_builder_construct',
-                 ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
+                 ctypes.CFUNCTYPE(None, CKernelBuilderStructPtr)),
                 # void ckernel_builder_destruct(void *ckb);
                 ('ckernel_builder_destruct',
-                 ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
+                 ctypes.CFUNCTYPE(None, CKernelBuilderStructPtr)),
                 # void ckernel_builder_reset(void *ckb);
                 ('ckernel_builder_reset',
-                 ctypes.CFUNCTYPE(None, ctypes.c_void_p)),
+                 ctypes.CFUNCTYPE(None, CKernelBuilderStructPtr)),
                 # void ckernel_builder_ensure_capacity_leaf(void *ckb,
                 #                         intptr_t requested_capacity);
                 ('ckernel_builder_ensure_capacity_leaf',
-                 ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_void_p, c_ssize_t)),
+                 ctypes.CFUNCTYPE(ctypes.c_int,
+                        CKernelBuilderStructPtr, c_ssize_t)),
                 # void ckernel_builder_ensure_capacity(void *ckb,
                 #                         intptr_t requested_capacity);
                 ('ckernel_builder_ensure_capacity',
-                 ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_void_p, c_ssize_t)),
+                 ctypes.CFUNCTYPE(ctypes.c_int,
+                        CKernelBuilderStructPtr, c_ssize_t)),
                ]
 
 # The low level API functions are declared with all

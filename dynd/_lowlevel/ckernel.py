@@ -47,16 +47,48 @@ class CKernelBuilder(object):
     def __init__(self):
         """Constructs an empty ckernel builder"""
         self.__ckb = CKernelBuilderStruct()
-        api.ckernel_builder_construct(ctypes.byref(self.__ckb))
+        api.ckernel_builder_construct(ctypes.byref(self.ckb))
 
     def close(self):
         if self.__ckb:
             # Call the destructor
-            api.ckernel_builder_destruct(ctypes.byref(self.__ckb))
+            api.ckernel_builder_destruct(ctypes.byref(self.ckb))
             self.__ckb = None
+
+    def ensure_capacity(requested_capacity):
+        """Ensures that the ckernel has the requested
+        capacity, together with space for a minimal child
+        ckernel. Use this when building a ckernel with
+        a child.
+
+        Parameters
+        ----------
+        requested_capacity : int
+            The number of bytes the ckernel should have.
+        """
+        if api.ckernel_builder_ensure_capacity(
+                        ctypes.byref(self.ckb),
+                        requested_capacity) < 0:
+            raise MemoryError('ckernel builder ran out of memory')
+
+    def ensure_capacity_leaf(requested_capacity):
+        """Ensures that the ckernel has the requested
+        capacity, with no space for a child ckernel.
+        Use this when creating a leaf ckernel.
+
+        Parameters
+        ----------
+        requested_capacity : int
+            The number of bytes the ckernel should have.
+        """
+        if api.ckernel_builder_ensure_capacity_leaf(
+                        ctypes.byref(self.ckb),
+                        requested_capacity) < 0:
+            raise MemoryError('ckernel builder ran out of memory')
 
     @property
     def ckb(self):
+        """Returns the ckernel builder ctypes structure"""
         return self.__ckb
 
     def ckernel(self, kernel_proto):
@@ -67,11 +99,16 @@ class CKernelBuilder(object):
         kernel_proto : CFUNCPTR
             The function prototype of the kernel.
         """
-        return CKernel(self._ckb.data, kernel_proto)
+        return CKernel(self.__ckb.data, kernel_proto)
 
     def __del__(self):
         self.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
 
 class CKernelDeferred(object):
     def __init__(self):

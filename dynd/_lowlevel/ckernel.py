@@ -37,7 +37,7 @@ class CKernel(object):
 
     @property
     def kernel_function(self):
-        return ctypes.cast(self.ckp.function, self.kernel_proto)
+        return ctypes.cast(self._ckp.function, self.kernel_proto)
 
     def __call__(self, *args):
         return self.kernel_function(*(args + (ctypes.byref(self._ckp),)))
@@ -47,15 +47,19 @@ class CKernelBuilder(object):
     def __init__(self):
         """Constructs an empty ckernel builder"""
         self.__ckb = CKernelBuilderStruct()
-        api.ckernel_builder_construct(ctypes.byref(self.ckb))
+        api.ckernel_builder_construct(self.ckbref)
 
     def close(self):
         if self.__ckb:
             # Call the destructor
-            api.ckernel_builder_destruct(ctypes.byref(self.ckb))
+            api.ckernel_builder_destruct(self.ckbref)
             self.__ckb = None
 
-    def ensure_capacity(requested_capacity):
+    def reset(self):
+        # Resets the ckernel builder to its initial state
+        api.ckernel_builder_reset(self.ckbref)
+
+    def ensure_capacity(self, requested_capacity):
         """Ensures that the ckernel has the requested
         capacity, together with space for a minimal child
         ckernel. Use this when building a ckernel with
@@ -67,11 +71,10 @@ class CKernelBuilder(object):
             The number of bytes the ckernel should have.
         """
         if api.ckernel_builder_ensure_capacity(
-                        ctypes.byref(self.ckb),
-                        requested_capacity) < 0:
+                        self.ckbref, requested_capacity) < 0:
             raise MemoryError('ckernel builder ran out of memory')
 
-    def ensure_capacity_leaf(requested_capacity):
+    def ensure_capacity_leaf(self, requested_capacity):
         """Ensures that the ckernel has the requested
         capacity, with no space for a child ckernel.
         Use this when creating a leaf ckernel.
@@ -82,14 +85,18 @@ class CKernelBuilder(object):
             The number of bytes the ckernel should have.
         """
         if api.ckernel_builder_ensure_capacity_leaf(
-                        ctypes.byref(self.ckb),
-                        requested_capacity) < 0:
+                        self.ckbref, requested_capacity) < 0:
             raise MemoryError('ckernel builder ran out of memory')
 
     @property
     def ckb(self):
         """Returns the ckernel builder ctypes structure"""
         return self.__ckb
+
+    @property
+    def ckbref(self):
+        """Returns the ckernel builder ctypes structure byref for calls"""
+        return ctypes.byref(self.__ckb)
 
     def ckernel(self, kernel_proto):
         """Returns a ckernel wrapper object for the built ckernel.
@@ -99,7 +106,7 @@ class CKernelBuilder(object):
         kernel_proto : CFUNCPTR
             The function prototype of the kernel.
         """
-        return CKernel(self.__ckb.data, kernel_proto)
+        return CKernel(kernel_proto, self.__ckb.data)
 
     def __del__(self):
         self.close()

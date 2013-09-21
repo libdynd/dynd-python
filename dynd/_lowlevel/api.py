@@ -82,10 +82,12 @@ class _PyLowLevelAPI(ctypes.Structure):
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                # void make_assignment_kernel(dst_dt, src_dt, kerntype, &ckb)
+                # void make_assignment_kernel(dst_dt, dst_metadata,
+                #               src_dt, src_metadata, kerntype, &ckb)
                 ('make_assignment_ckernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object, ctypes.c_void_p,
+                        ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, CKernelBuilderStructPtr)),
                 # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
                 ('numpy_typetuples_from_ufunc',

@@ -70,8 +70,9 @@ class TestCKernelBuilder(unittest.TestCase):
 
     def test_assignment_ckernel_single(self):
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
-            _lowlevel.make_assignment_ckernel(ndt.float32, ndt.int64,
-                            "single", ckb.ckbref)
+            _lowlevel.make_assignment_ckernel(
+                        ndt.float32, None, ndt.int64, None,
+                        "single", ckb.ckbref)
             ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
@@ -82,11 +83,14 @@ class TestCKernelBuilder(unittest.TestCase):
     def test_assignment_ckernel_strided(self):
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             _lowlevel.make_assignment_ckernel(
-                            ndt.float32, ndt.type('string(15,"A")'),
-                            'strided', ckb.ckbref)
+                        ndt.float32, None, ndt.type('string(15,"A")'), None,
+                        'strided', ckb.ckbref)
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using a numpy array
             src = np.array(['3.25', '-1000', '1e5'], dtype='S15')
             dst = np.arange(3, dtype=np.float32)
             ck(dst.ctypes.data, 4, src.ctypes.data, 15, 3)
             self.assertEqual(dst.tolist(), [3.25, -1000, 1e5])
+
+class TestCKernelDeferred(unittest.TestCase):
+    pass

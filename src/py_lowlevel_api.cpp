@@ -58,20 +58,22 @@ namespace {
         }
     }
 
-    PyObject *make_assignment_kernel(PyObject *dst_tp_obj, PyObject *src_tp_obj, PyObject *kerntype_obj, void *out_ckb)
+    PyObject *make_assignment_ckernel(PyObject *dst_tp_obj, const void *dst_metadata,
+                    PyObject *src_tp_obj, const void *src_metadata,
+                    PyObject *kerntype_obj, void *out_ckb)
     {
         try {
             ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(out_ckb);
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-            if (dst_tp.get_metadata_size() != 0) {
+            if (dst_metadata == NULL && dst_tp.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
                 ss << dst_tp;
                 throw runtime_error(ss.str());
             }
-            if (src_tp.get_metadata_size() != 0) {
+            if (src_metadata == NULL && src_tp.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
                 ss << src_tp;
@@ -90,8 +92,10 @@ namespace {
                 throw runtime_error(ss.str());
             }
 
-            size_t kernel_size = make_assignment_kernel(ckb_ptr, 0, dst_tp, NULL,
-                            src_tp, NULL, kerntype, assign_error_default,
+            size_t kernel_size = make_assignment_kernel(ckb_ptr, 0,
+                            dst_tp, reinterpret_cast<const char *>(dst_metadata),
+                            src_tp, reinterpret_cast<const char *>(src_metadata),
+                            kerntype, assign_error_default,
                             &eval::default_eval_context);
 
             Py_INCREF(Py_None);
@@ -102,12 +106,28 @@ namespace {
         }
     }
 
+    PyObject *make_ckernel_deferred_from_assignment(PyObject *dst_dt_obj, PyObject *src_dt_obj,
+                PyObject *funcproto, PyObject *errmode, void *out_ckd)
+    {
+        try {
+            ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd);
+
+            Py_INCREF(Py_None);
+            return Py_None;
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
+    }
+
+
     const py_lowlevel_api_t py_lowlevel_api = {
         0, // version, should increment this every time the struct changes at a release
         &get_array_ptr,
         &get_base_type_ptr,
         &array_from_ptr,
-        &make_assignment_kernel,
+        &make_assignment_ckernel,
+        &make_ckernel_deferred_from_assignment,
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc
     };

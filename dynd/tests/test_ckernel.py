@@ -72,7 +72,7 @@ class TestCKernelBuilder(unittest.TestCase):
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             _lowlevel.make_assignment_ckernel(
                         ndt.float32, None, ndt.int64, None,
-                        "single", ckb.ckbref)
+                        "single", ckb)
             ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
@@ -84,7 +84,7 @@ class TestCKernelBuilder(unittest.TestCase):
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             _lowlevel.make_assignment_ckernel(
                         ndt.float32, None, ndt.type('string(15,"A")'), None,
-                        'strided', ckb.ckbref)
+                        'strided', ckb)
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using a numpy array
             src = np.array(['3.25', '-1000', '1e5'], dtype='S15')
@@ -93,4 +93,38 @@ class TestCKernelBuilder(unittest.TestCase):
             self.assertEqual(dst.tolist(), [3.25, -1000, 1e5])
 
 class TestCKernelDeferred(unittest.TestCase):
-    pass
+    def test_creation(self):
+        with _lowlevel.ckernel.CKernelDeferred() as ckd:
+            pass
+
+    def test_assignment_ckernel(self):
+        with _lowlevel.ckernel.CKernelDeferred() as ckd:
+            _lowlevel.make_ckernel_deferred_from_assignment(
+                        ndt.float32, ndt.int64,
+                        "unary", "none", ckd)
+            # Instantiate as a single kernel
+            with _lowlevel.ckernel.CKernelBuilder() as ckb:
+                meta = (ctypes.c_void_p * 2)()
+                ckd.instantiate(ckb, 0, meta, "single")
+                ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
+                # Do an assignment using ctypes
+                i64 = ctypes.c_int64(1234)
+                f32 = ctypes.c_float(1)
+                ck(ctypes.addressof(f32), ctypes.addressof(i64))
+                self.assertEqual(f32.value, 1234.0)
+            # Instantiate as a strided kernel
+            with _lowlevel.ckernel.CKernelBuilder() as ckb:
+                meta = (ctypes.c_void_p * 2)()
+                ckd.instantiate(ckb, 0, meta, "strided")
+                ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
+                # Do an assignment using ctypes
+                i64 = (ctypes.c_int64 * 3)()
+                for i, v in enumerate([3,7,21]):
+                    i64[i] = v
+                f32 = (ctypes.c_float * 3)()
+                ck(ctypes.addressof(f32), 4,
+                            ctypes.addressof(i64), 8,
+                            3)
+                self.assertEqual([f32[i] for i in range(3)], [3,7,21])
+
+

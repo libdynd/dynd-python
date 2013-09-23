@@ -89,6 +89,11 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, CKernelBuilderStructPtr)),
+                ('make_ckernel_deferred_from_assignment',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        CKernelDeferredStructPtr)),
                 # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
                 ('numpy_typetuples_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object)),

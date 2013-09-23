@@ -47,17 +47,17 @@ class CKernelBuilder(object):
     def __init__(self):
         """Constructs an empty ckernel builder"""
         self.__ckb = CKernelBuilderStruct()
-        api.ckernel_builder_construct(self.ckbref)
+        api.ckernel_builder_construct(self)
 
     def close(self):
         if self.__ckb:
             # Call the destructor
-            api.ckernel_builder_destruct(self.ckbref)
+            api.ckernel_builder_destruct(self)
             self.__ckb = None
 
     def reset(self):
         # Resets the ckernel builder to its initial state
-        api.ckernel_builder_reset(self.ckbref)
+        api.ckernel_builder_reset(self)
 
     def ensure_capacity(self, requested_capacity):
         """Ensures that the ckernel has the requested
@@ -71,7 +71,7 @@ class CKernelBuilder(object):
             The number of bytes the ckernel should have.
         """
         if api.ckernel_builder_ensure_capacity(
-                        self.ckbref, requested_capacity) < 0:
+                        self, requested_capacity) < 0:
             raise MemoryError('ckernel builder ran out of memory')
 
     def ensure_capacity_leaf(self, requested_capacity):
@@ -85,7 +85,7 @@ class CKernelBuilder(object):
             The number of bytes the ckernel should have.
         """
         if api.ckernel_builder_ensure_capacity_leaf(
-                        self.ckbref, requested_capacity) < 0:
+                        self, requested_capacity) < 0:
             raise MemoryError('ckernel builder ran out of memory')
 
     @property
@@ -94,8 +94,8 @@ class CKernelBuilder(object):
         return self.__ckb
 
     @property
-    def ckbref(self):
-        """Returns the ckernel builder ctypes structure byref for calls"""
+    def _as_parameter_(self):
+        """Returns the ckernel builder byref for ctypes calls"""
         return ctypes.byref(self.__ckb)
 
     def ckernel(self, kernel_proto):
@@ -125,6 +125,22 @@ class CKernelDeferred(object):
     def ckd(self):
         return self.__ckd
 
+    @property
+    def _as_parameter_(self):
+        """Returns the ckernel_deferred byref for ctypes calls"""
+        return ctypes.byref(self.__ckd)
+
+    def instantiate(self, out_ckb, ckb_offset, dynd_metadata, kerntype):
+        if kerntype in ["single", 0]:
+            kerntype = 0
+        elif kerntype in ["strided", 1]:
+            kerntype = 1
+        else:
+            raise ValueError("invalid kernel request type %r" % kerntype)
+        self.ckd.instantiate_func(self.ckd.data_ptr,
+                        out_ckb, ckb_offset, dynd_metadata,
+                        kerntype)
+
     def close(self):
         if self.__ckd:
             # Call the free function
@@ -133,5 +149,11 @@ class CKernelDeferred(object):
             self.__ckd = None
 
     def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
         self.close()
 

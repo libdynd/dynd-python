@@ -106,11 +106,32 @@ namespace {
         }
     }
 
-    PyObject *make_ckernel_deferred_from_assignment(PyObject *dst_dt_obj, PyObject *src_dt_obj,
-                PyObject *funcproto, PyObject *errmode, void *out_ckd)
+    PyObject *make_ckernel_deferred_from_assignment(PyObject *dst_tp_obj, PyObject *src_tp_obj,
+                PyObject *funcproto_obj, PyObject *errmode_obj, void *out_ckd)
     {
         try {
             ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd);
+
+            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+            string fp = pystring_as_string(funcproto_obj);
+            deferred_ckernel_funcproto_t funcproto;
+            if (fp == "unary") {
+                funcproto = unary_operation_funcproto;
+            } else if (fp == "expr") {
+                funcproto = expr_operation_funcproto;
+            } else if (fp == "binary_predicate") {
+                funcproto = binary_predicate_funcproto;
+            } else {
+                stringstream ss;
+                ss << "Invalid function prototype type ";
+                print_escaped_utf8_string(ss, fp);
+                throw runtime_error(ss.str());
+            }
+            assign_error_mode errmode = pyarg_error_mode(errmode_obj);
+
+            dynd::make_ckernel_deferred_from_assignment(dst_tp, src_tp,
+                            funcproto, errmode, *ckd_ptr);
 
             Py_INCREF(Py_None);
             return Py_None;

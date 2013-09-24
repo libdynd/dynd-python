@@ -35,11 +35,11 @@ class TestDType(unittest.TestCase):
         if ctypes.sizeof(ctypes.c_void_p) == 4:
             self.assertEqual(str(ndt.intptr), 'int32')
             self.assertEqual(ndt.intptr.data_size, 4)
-            self.assertEqual(ndt.intptr.data_alignment in 4)
+            self.assertEqual(ndt.intptr.data_alignment, 4)
         else:
             self.assertEqual(str(ndt.intptr), 'int64')
             self.assertEqual(ndt.intptr.data_size, 8)
-            self.assertTrue(ndt.intptr.data_alignment in [4,8])
+            self.assertEqual(ndt.intptr.data_alignment, 8)
 
     def test_uint_type_properties(self):
         self.assertEqual(type(ndt.uint8), ndt.type)
@@ -66,11 +66,11 @@ class TestDType(unittest.TestCase):
         if ctypes.sizeof(ctypes.c_void_p) == 4:
             self.assertEqual(str(ndt.uintptr), 'uint32')
             self.assertEqual(ndt.uintptr.data_size, 4)
-            self.assertEqual(ndt.uintptr.data_alignment in 4)
+            self.assertEqual(ndt.uintptr.data_alignment, 4)
         else:
             self.assertEqual(str(ndt.uintptr), 'uint64')
             self.assertEqual(ndt.uintptr.data_size, 8)
-            self.assertTrue(ndt.uintptr.data_alignment in [4,8])
+            self.assertEqual(ndt.uintptr.data_alignment, 8)
 
     def test_float_type_properties(self):
         self.assertEqual(type(ndt.float32), ndt.type)

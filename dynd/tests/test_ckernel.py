@@ -1,8 +1,21 @@
+from __future__ import print_function, absolute_import
 import sys
 import ctypes
 import unittest
 from dynd import nd, ndt, _lowlevel
 import numpy as np
+
+# ctypes.c_ssize_t/c_size_t was introduced in python 2.7
+if sys.version_info >= (2, 7):
+    c_ssize_t = ctypes.c_ssize_t
+    c_size_t = ctypes.c_size_t
+else:
+    if ctypes.sizeof(ctypes.c_void_p) == 4:
+        c_ssize_t = ctypes.c_int32
+        c_size_t = ctypes.c_uint32
+    else:
+        c_ssize_t = ctypes.c_int64
+        c_size_t = ctypes.c_uint64
 
 class TestCKernelBuilder(unittest.TestCase):
     def test_creation(self):
@@ -127,4 +140,52 @@ class TestCKernelDeferred(unittest.TestCase):
                             3)
                 self.assertEqual([f32[i] for i in range(3)], [3,7,21])
 
+    def check_from_numpy_int32_add(self, requiregil):
+        # Get int32 add as a ckernel_deferred
+        with _lowlevel.ckernel.CKernelDeferred() as ckd:
+            _lowlevel.ckernel_deferred_from_ufunc(np.add,
+                            (np.int32, np.int32, np.int32),
+                            ckd, requiregil)
+            # Instantiate as a single kernel
+            with _lowlevel.ckernel.CKernelBuilder() as ckb:
+                meta = (ctypes.c_void_p * 3)()
+                ckd.instantiate(ckb, 0, meta, "single")
+                ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
+                a = ctypes.c_int32(10)
+                b = ctypes.c_int32(21)
+                c = ctypes.c_int32(0)
+                src = (ctypes.c_void_p * 2)()
+                src[0] = ctypes.addressof(a)
+                src[1] = ctypes.addressof(b)
+                ck(ctypes.addressof(c), src)
+                self.assertEqual(c.value, 31)
+            # Instantiate as a strided kernel
+            with _lowlevel.ckernel.CKernelBuilder() as ckb:
+                meta = (ctypes.c_void_p * 3)()
+                ckd.instantiate(ckb, 0, meta, "strided")
+                ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
+                a = (ctypes.c_int32 * 3)()
+                b = (ctypes.c_int32 * 3)()
+                c = (ctypes.c_int32 * 3)()
+                for i, v in enumerate([1,4,6]):
+                    a[i] = v
+                for i, v in enumerate([3, -1, 12]):
+                    b[i] = v
+                src = (ctypes.c_void_p * 2)()
+                src[0] = ctypes.addressof(a)
+                src[1] = ctypes.addressof(b)
+                strides = (c_ssize_t * 2)()
+                strides[0] = strides[1] = 4
+                ck(ctypes.addressof(c), 4, src, strides, 3)
+                self.assertEqual(c[0], 4)
+                self.assertEqual(c[1], 3)
+                self.assertEqual(c[2], 18)
 
+    def test_from_numpy_int32_add_nogil(self):
+        self.check_from_numpy_int32_add(False)
+
+    def test_from_numpy_int32_add_withgil(self):
+        self.check_from_numpy_int32_add(True)
+
+if __name__ == '__main__':
+    unittest.main()

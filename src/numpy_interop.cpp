@@ -194,7 +194,7 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
     return dt;
 }
 
-dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num)
+dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
 {
     switch (numpy_type_num) {
     case NPY_BOOL:

@@ -150,7 +150,7 @@ namespace {
         size_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size] = dst;
+        args[data_types_size - 1] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t dimsize = 1;
         intptr_t strides[NPY_MAXARGS];
@@ -165,17 +165,17 @@ namespace {
                     char *dst, const char * const *src,
                     ckernel_prefix *ckp)
     {
-        scalar_ufunc_deferred_data *data =
-                        reinterpret_cast<scalar_ufunc_deferred_data *>(ckp);
+        scalar_ufunc_ckernel_data *data =
+                        reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
         size_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size] = dst;
+        args[data_types_size - 1] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t dimsize = 1;
         intptr_t strides[NPY_MAXARGS];
-        memset(strides, 0, data_types_size * sizeof(void *));
+        memset(strides, 0, data_types_size * sizeof(intptr_t));
         data->funcptr(args, &dimsize, strides, data->ufunc_data);
     }
 
@@ -184,17 +184,17 @@ namespace {
                     const char * const *src, const intptr_t *src_stride,
                     size_t count, ckernel_prefix *ckp)
     {
-        scalar_ufunc_deferred_data *data =
-                        reinterpret_cast<scalar_ufunc_deferred_data *>(ckp);
+        scalar_ufunc_ckernel_data *data =
+                        reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
         size_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size] = dst;
+        args[data_types_size - 1] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t strides[NPY_MAXARGS];
         memcpy(&strides[0], &src_stride[0], (data_types_size - 1) * sizeof(intptr_t));
-        strides[data_types_size] = dst_stride;
+        strides[data_types_size - 1] = dst_stride;
         {
             PyGILState_RAII pgs;
             data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
@@ -207,17 +207,17 @@ namespace {
                     const char * const *src, const intptr_t *src_stride,
                     size_t count, ckernel_prefix *ckp)
     {
-        scalar_ufunc_deferred_data *data =
-                        reinterpret_cast<scalar_ufunc_deferred_data *>(ckp);
+        scalar_ufunc_ckernel_data *data =
+                        reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
         size_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size] = dst;
+        args[data_types_size - 1] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t strides[NPY_MAXARGS];
         memcpy(&strides[0], &src_stride[0], (data_types_size - 1) * sizeof(intptr_t));
-        strides[data_types_size] = dst_stride;
+        strides[data_types_size - 1] = dst_stride;
         data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides, data->ufunc_data);
     }
 
@@ -248,6 +248,7 @@ namespace {
         } else {
             throw runtime_error("unsupported kernel request in instantiate_scalar_ufunc_ckernel");
         }
+        ckd->funcptr = data->funcptr;
         ckd->ufunc_data = data->ufunc_data;
         ckd->data_types_size = data->data_types_size;
         ckd->ufunc = data->ufunc;
@@ -316,10 +317,22 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                 size_t out_ckd_size = sizeof(scalar_ufunc_deferred_data) + (nargs - 1) * sizeof(void *);
                 out_ckd->data_ptr = malloc(out_ckd_size);
                 memset(out_ckd->data_ptr, 0, out_ckd_size);
-                scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(out_ckd->data_ptr);
+                out_ckd->ckernel_funcproto = expr_operation_funcproto;
                 out_ckd->free_func = &delete_scalar_ufunc_deferred_data;
                 out_ckd->instantiate_func = &instantiate_scalar_ufunc_ckernel;
                 out_ckd->data_types_size = nargs;
+                // Fill in the ckernel_deferred instance data
+                scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(out_ckd->data_ptr);
+                data->ufunc = uf;
+                Py_INCREF(uf);
+                data->data_types_size = nargs;
+                out_ckd->data_dynd_types = data->data_types;
+                for (intptr_t j = 0; j < nargs; ++j) {
+                    data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
+                }
+                data->ckernel_acquires_gil = ckernel_acquires_gil;
+                data->funcptr = uf->functions[i];
+                data->ufunc_data = uf->data[i];
                 Py_RETURN_NONE;
             } else {
                 // TODO: support gufunc

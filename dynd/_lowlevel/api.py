@@ -100,7 +100,8 @@ class _PyLowLevelAPI(ctypes.Structure):
                 # PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
                 #   PyObject *type_tuple, void *out_ckd, int ckernel_acquires_gil);
                 ('ckernel_deferred_from_ufunc',
-                 ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object,
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
                         CKernelDeferredStructPtr, ctypes.c_int)),
                ]
 

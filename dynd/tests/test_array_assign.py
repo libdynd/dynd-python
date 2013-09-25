@@ -117,7 +117,7 @@ class TestIteratorAssign(unittest.TestCase):
 
     def test_simple_strided_dim(self):
         # Assign to a strided dim from a generator
-        a = nd.empty(10, 'M, int32')
+        a = nd.empty(10, ndt.int32)
         a[...] = (x + 2 for x in range(10))
         self.assertEqual(len(a), 10)
         self.assertEqual(nd.as_py(a), [x + 2 for x in range(10)])
@@ -137,7 +137,7 @@ class TestIteratorAssign(unittest.TestCase):
 
     def test_simple_fixed_dim(self):
         # Assign to a strided dim from a generator
-        a = nd.empty('10, int32')
+        a = nd.empty(10, ndt.int32)
         a[...] = (x + 2 for x in range(10))
         self.assertEqual(len(a), 10)
         self.assertEqual(nd.as_py(a), [x + 2 for x in range(10)])

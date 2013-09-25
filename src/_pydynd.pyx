@@ -1348,13 +1348,16 @@ def as_numpy(w_array n, allow_copy=False):
     # TODO: Could also convert dynd types into numpy dtypes
     return array_as_numpy(n, bool(allow_copy))
 
-def empty(shape, type=None):
+def empty(shape, dtype=None):
     """
     nd.empty(type)
-    nd.empty(shape, type)
+    nd.empty(shape, dtype)
 
     Creates an uninitialized array of the specified
-    shape if supplied, with the provided dynd type.
+    type. If just the `type` is provided, it is the full type
+    of the array created. If both a `shape` and `dtype` are
+    provided, dimensions are prepended to the `dtype` to
+    produce the full array type.
 
     Parameters
     ----------
@@ -1362,10 +1365,10 @@ def empty(shape, type=None):
         If provided, specifies the shape for the type dimensions
         that don't encode a dimension size themselves, such as
         strided_dim dimensions.
-    type : dynd type
-        The data type of the uninitialized array to create. This
-        is the full data type, including the multi-dimensional
-        structure.
+    type/dtype : dynd type
+        The type of the uninitialized array to create. If `shape`
+        is not provided, this is the full data type, including
+        the multi-dimensional structure.
 
     Examples
     --------
@@ -1373,12 +1376,12 @@ def empty(shape, type=None):
 
     >>> nd.empty('2, 2, int8')
     nd.array([[0, -24], [0, 4]], fixed_dim<2, fixed_dim<2, int8>>)
-    >>> nd.empty((2, 2), 'M, N, int16')
+    >>> nd.empty((2, 2), ndt.int16)
     nd.array([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
     cdef w_array result = w_array()
-    if type is not None:
-        SET(result.v, array_empty(shape, GET(w_type(type).v)))
+    if dtype is not None:
+        SET(result.v, array_empty(shape, GET(w_type(dtype).v)))
     else:
         # Interpret the first argument (shape) as a type in the one argument case
         SET(result.v, array_empty(GET(w_type(shape).v)))

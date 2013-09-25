@@ -18,6 +18,7 @@
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
+#include <dynd/types/strided_dim_type.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -344,8 +345,8 @@ dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type& d)
 {
     std::vector<intptr_t> shape_vec;
     pyobject_as_vector_intp(shape, shape_vec, true);
-    return nd::array(make_array_memory_block(d, (int)shape_vec.size(),
-                    shape_vec.empty() ? NULL : &shape_vec[0]));
+    return nd::make_strided_array(d, (int)shape_vec.size(),
+                    shape_vec.empty() ? NULL : &shape_vec[0]);
 }
 
 namespace {

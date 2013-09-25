@@ -1,6 +1,8 @@
 DyND-Python Release Notes
 ===================
 
+- Change nd.empty(shape, type) to nd.empty(shape, dtype)
+
 Release 0.4.2
 -------------
 

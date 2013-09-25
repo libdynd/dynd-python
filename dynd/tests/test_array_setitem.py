@@ -5,7 +5,7 @@ from dynd import nd, ndt
 class TestArraySetItem(unittest.TestCase):
 
     def test_strided_dim(self):
-        a = nd.empty(100, 'A, int32')
+        a = nd.empty(100, ndt.int32)
         a[...] = nd.range(100)
         a[0] = 1000
         self.assertEqual(nd.as_py(a[0]), 1000)

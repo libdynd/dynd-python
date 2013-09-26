@@ -1,7 +1,9 @@
 DyND-Python Release Notes
 ===================
 
-- Change nd.empty(shape, type) to nd.empty(shape, dtype)
+- Change nd.empty(shape, type) to nd.empty(shape, dtype),
+  also accepting nd.empty(shape0, ..., shape(n-1), dtype).
+- Add nd.ones, nd.zeros, and nd.full constructor functions.
 
 Release 0.4.2
 -------------

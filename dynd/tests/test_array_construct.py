@@ -3,62 +3,7 @@ import unittest
 from datetime import date
 from dynd import nd, ndt
 
-class TestArrayConstructor(unittest.TestCase):
-    # Always constructs a new array
-    def test_simple(self):
-        a = nd.array([1, 2, 3], access='rw')
-        self.assertEqual(nd.type_of(a), ndt.type('M, int32'))
-        # Modifying 'a' shouldn't affect 'b', because it's a copy
-        b = nd.array(a)
-        a[1] = 10
-        self.assertEqual(nd.as_py(b), [1, 2, 3])
-
-    def test_access_from_pyobject(self):
-        a = nd.array([1, 2, 3])
-        self.assertEqual(a.access_flags, 'immutable')
-        a = nd.array([1, 2, 3], access='immutable')
-        self.assertEqual(a.access_flags, 'immutable')
-        a = nd.array([1, 2, 3], access='readonly')
-        self.assertEqual(a.access_flags, 'immutable')
-        a = nd.array([1, 2, 3], access='r')
-        self.assertEqual(a.access_flags, 'immutable')
-        a = nd.array([1, 2, 3], access='readwrite')
-        self.assertEqual(a.access_flags, 'readwrite')
-        a = nd.array([1, 2, 3], access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-
-    def test_access_from_immutable_array(self):
-        # `a` is an immutable array
-        a = nd.array([1, 2, 3])
-        b = nd.array(a)
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='immutable')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='readonly')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='r')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='readwrite')
-        self.assertEqual(b.access_flags, 'readwrite')
-        b = nd.array(a, access='rw')
-        self.assertEqual(b.access_flags, 'readwrite')
-
-    def test_access_from_readwrite_array(self):
-        # `a` is a readwrite array
-        a = nd.array([1, 2, 3], access='rw')
-        b = nd.array(a)
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='immutable')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='readonly')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='r')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.array(a, access='readwrite')
-        self.assertEqual(b.access_flags, 'readwrite')
-        b = nd.array(a, access='rw')
-        self.assertEqual(b.access_flags, 'readwrite')
-
+class TestTypedArrayConstructors(unittest.TestSuite):
     def test_empty(self):
         # Constructor from scalar type
         a = nd.empty(ndt.int32)
@@ -154,6 +99,77 @@ class TestArrayConstructor(unittest.TestCase):
     def test_ones(self):
         self.check_constructor(nd.ones, 1)
         self.check_constructor_readwrite(nd.ones, 1)
+
+    def test_full(self):
+        def cons(value):
+            def c(*args, **kwargs):
+                kwargs['value'] = value
+                return nd.full(*args, **kwargs)
+            return c
+        self.check_constructor(cons(1000), 1000)
+        self.check_constructor_readwrite(cons(1000), 1000)
+        self.check_constructor(cons(-21000), -21000)
+        self.check_constructor_readwrite(cons(-21000), -21000)
+        # Also check that 'value' is keyword-only
+        a = nd.full(2, 3, ndt.float32, value=1.5)
+        self.assertEqual(nd.as_py(a), [[1.5]*3]*2)
+        self.assertRaises(TypeError, nd.full, 2, 3, ndt.float32, 1.5)
+
+class TestArrayConstructor(unittest.TestCase):
+    # Always constructs a new array
+    def test_simple(self):
+        a = nd.array([1, 2, 3], access='rw')
+        self.assertEqual(nd.type_of(a), ndt.type('M, int32'))
+        # Modifying 'a' shouldn't affect 'b', because it's a copy
+        b = nd.array(a)
+        a[1] = 10
+        self.assertEqual(nd.as_py(b), [1, 2, 3])
+
+    def test_access_from_pyobject(self):
+        a = nd.array([1, 2, 3])
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.array([1, 2, 3], access='immutable')
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.array([1, 2, 3], access='readonly')
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.array([1, 2, 3], access='r')
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.array([1, 2, 3], access='readwrite')
+        self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.array([1, 2, 3], access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
+    def test_access_from_immutable_array(self):
+        # `a` is an immutable array
+        a = nd.array([1, 2, 3])
+        b = nd.array(a)
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='immutable')
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='readonly')
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='r')
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='readwrite')
+        self.assertEqual(b.access_flags, 'readwrite')
+        b = nd.array(a, access='rw')
+        self.assertEqual(b.access_flags, 'readwrite')
+
+    def test_access_from_readwrite_array(self):
+        # `a` is a readwrite array
+        a = nd.array([1, 2, 3], access='rw')
+        b = nd.array(a)
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='immutable')
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='readonly')
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='r')
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='readwrite')
+        self.assertEqual(b.access_flags, 'readwrite')
+        b = nd.array(a, access='rw')
+        self.assertEqual(b.access_flags, 'readwrite')
 
 class TestViewConstructor(unittest.TestCase):
     # Always constructs a view

@@ -1454,6 +1454,65 @@ def ones(*args, **kwargs):
         raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
     return result
 
+def full(*args, **kwargs):
+    """
+    nd.full(type, *, value, access=None)
+    nd.ones(shape, dtype, *, value, access=None)
+    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, value, access=None)
+
+    Creates an array filled with the given value and
+    of the specified type. If just the `type` is specified,
+    it is the full type of the array created. If both a `shape`
+    and `dtype` are provided, dimensions are prepended to
+    the `dtype` to produce the full array type.
+    
+    The array created by default is immutable.
+    
+    TODO: In the immutable case it should use zero-strides to optimize storage.
+
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for the type dimensions
+        that don't encode a dimension size themselves, such as
+        strided_dim dimensions.
+    type/dtype : dynd type
+        The type of the uninitialized array to create. If `shape`
+        is not provided, this is the full data type, including
+        the multi-dimensional structure.
+    value : object
+        A single value to broadcast-fill the array with.
+    access : 'readwrite' or 'immutable'
+        Specifies the access control of the resulting copy.
+    """
+    # Handle the keyword-only arguments
+    if 'value' not in kwargs:
+        raise TypeError("nd.full() missing required " +
+                    "keyword-only argument: 'value'")
+    access = kwargs.pop('access', None)
+    value = kwargs.pop('value', None)
+    if kwargs:
+        msg = "nd.full() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef w_array result = w_array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        SET(result.v, array_full(GET(w_type(args[0]).v), value, access))
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        SET(result.v, array_full(args[0], GET(w_type(args[1]).v), value, access))
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        SET(result.v, array_full(args[:-1], GET(w_type(args[-1]).v), value, access))
+    else:
+        raise TypeError('nd.full() expected at least 1 positional argument, got 0')
+    return result
+
 def empty(*args):
     """
     nd.empty(type)

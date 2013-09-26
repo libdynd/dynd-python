@@ -74,6 +74,12 @@ dynd::nd::array array_eval_copy(const dynd::nd::array& n,
                 PyObject* access,
                 const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
 
+dynd::nd::array array_zeros(const dynd::ndt::type& d, PyObject *access);
+dynd::nd::array array_zeros(PyObject *shape, const dynd::ndt::type& d, PyObject *access);
+
+dynd::nd::array array_ones(const dynd::ndt::type& d, PyObject *access);
+dynd::nd::array array_ones(PyObject *shape, const dynd::ndt::type& d, PyObject *access);
+
 dynd::nd::array array_empty(const dynd::ndt::type& d);
 dynd::nd::array array_empty(PyObject *shape, const dynd::ndt::type& d);
 

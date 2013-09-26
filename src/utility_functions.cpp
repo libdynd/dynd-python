@@ -460,3 +460,13 @@ uint32_t pydynd::pyarg_access_flags(PyObject* obj)
 
     return result;
 }
+
+uint32_t pydynd::pyarg_creation_access_flags(PyObject *access)
+{
+    return pyarg_strings_to_int(
+                    access, "access", 0,
+                        "readwrite", nd::read_access_flag|nd::write_access_flag,
+                        "rw", nd::read_access_flag|nd::write_access_flag,
+                        "r", nd::read_access_flag|nd::immutable_access_flag,
+                        "immutable", nd::read_access_flag|nd::immutable_access_flag);
+}

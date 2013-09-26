@@ -74,6 +74,10 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     ndarray array_asarray(object, object) except +translate_exception
     ndarray array_eval(ndarray&) except +translate_exception
     ndarray array_eval_copy(ndarray&, object) except +translate_exception
+    ndarray array_zeros(ndt_type&, object) except +translate_exception
+    ndarray array_zeros(object, ndt_type&, object) except +translate_exception
+    ndarray array_ones(ndt_type&, object) except +translate_exception
+    ndarray array_ones(object, ndt_type&, object) except +translate_exception
     ndarray array_empty(ndt_type&) except +translate_exception
     ndarray array_empty(object, ndt_type&) except +translate_exception
     ndarray array_empty_like(ndarray&) except +translate_exception

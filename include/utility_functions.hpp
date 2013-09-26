@@ -218,8 +218,14 @@ int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
 
 bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
 
-
+/**
+ * Accepts "readwrite", "readonly", and "immutable".
+ */
 uint32_t pyarg_access_flags(PyObject* obj);
+/**
+ * Accepts "readwrite" and "immutable".
+ */
+uint32_t pyarg_creation_access_flags(PyObject *obj);
 
 } // namespace pydynd
 

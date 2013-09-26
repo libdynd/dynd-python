@@ -1348,16 +1348,126 @@ def as_numpy(w_array n, allow_copy=False):
     # TODO: Could also convert dynd types into numpy dtypes
     return array_as_numpy(n, bool(allow_copy))
 
-def empty(shape, dtype=None):
+def zeros(*args, **kwargs):
+    """
+    nd.zeros(type, *, access=None)
+    nd.zeros(shape, dtype, *, access=None)
+    nd.zeros(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
+
+    Creates an array of zeros of the specified
+    type. If just the `type` is specified, it is the
+    full type of the array created. If both a `shape`
+    and `dtype` are provided, dimensions are prepended to
+    the `dtype` to produce the full array type.
+    
+    The array created by default is immutable.
+    
+    TODO: In the immutable case it should use zero-strides to optimize storage.
+
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for the type dimensions
+        that don't encode a dimension size themselves, such as
+        strided_dim dimensions.
+    type/dtype : dynd type
+        The type of the uninitialized array to create. If `shape`
+        is not provided, this is the full data type, including
+        the multi-dimensional structure.
+    access : 'readwrite' or 'immutable'
+        Specifies the access control of the resulting copy.
+    """
+    # Handle the keyword-only arguments
+    access = kwargs.pop('access', None)
+    if kwargs:
+        msg = "nd.zeros() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef w_array result = w_array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        SET(result.v, array_zeros(GET(w_type(args[0]).v), access))
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        SET(result.v, array_zeros(args[0], GET(w_type(args[1]).v), access))
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        SET(result.v, array_zeros(args[:-1], GET(w_type(args[-1]).v), access))
+    else:
+        raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
+    return result
+
+def ones(*args, **kwargs):
+    """
+    nd.ones(type, *, access=None)
+    nd.ones(shape, dtype, *, access=None)
+    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
+
+    Creates an array of ones of the specified
+    type. If just the `type` is specified, it is the
+    full type of the array created. If both a `shape`
+    and `dtype` are provided, dimensions are prepended to
+    the `dtype` to produce the full array type.
+    
+    The array created by default is immutable.
+    
+    TODO: In the immutable case it should use zero-strides to optimize storage.
+
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for the type dimensions
+        that don't encode a dimension size themselves, such as
+        strided_dim dimensions.
+    type/dtype : dynd type
+        The type of the uninitialized array to create. If `shape`
+        is not provided, this is the full data type, including
+        the multi-dimensional structure.
+    access : 'readwrite' or 'immutable'
+        Specifies the access control of the resulting copy.
+    """
+    # Handle the keyword-only arguments
+    access = kwargs.pop('access', None)
+    if kwargs:
+        msg = "nd.ones() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef w_array result = w_array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        SET(result.v, array_ones(GET(w_type(args[0]).v), access))
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        SET(result.v, array_ones(args[0], GET(w_type(args[1]).v), access))
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        SET(result.v, array_ones(args[:-1], GET(w_type(args[-1]).v), access))
+    else:
+        raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
+    return result
+
+def empty(*args):
     """
     nd.empty(type)
     nd.empty(shape, dtype)
+    nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype)
 
     Creates an uninitialized array of the specified
     type. If just the `type` is provided, it is the full type
     of the array created. If both a `shape` and `dtype` are
     provided, dimensions are prepended to the `dtype` to
     produce the full array type.
+
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
 
     Parameters
     ----------
@@ -1380,11 +1490,18 @@ def empty(shape, dtype=None):
     nd.array([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
     cdef w_array result = w_array()
-    if dtype is not None:
-        SET(result.v, array_empty(shape, GET(w_type(dtype).v)))
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        SET(result.v, array_empty(GET(w_type(args[0]).v)))
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        SET(result.v, array_empty(args[0], GET(w_type(args[1]).v)))
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        SET(result.v, array_empty(args[:-1], GET(w_type(args[-1]).v)))
     else:
-        # Interpret the first argument (shape) as a type in the one argument case
-        SET(result.v, array_empty(GET(w_type(shape).v)))
+        raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
     return result
 
 def empty_like(w_array prototype, dtype=None):

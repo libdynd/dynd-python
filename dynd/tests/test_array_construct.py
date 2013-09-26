@@ -59,6 +59,102 @@ class TestArrayConstructor(unittest.TestCase):
         b = nd.array(a, access='rw')
         self.assertEqual(b.access_flags, 'readwrite')
 
+    def test_empty(self):
+        # Constructor from scalar type
+        a = nd.empty(ndt.int32)
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.int32)
+        # Constructor from type with fixed dimension
+        a = nd.empty('3, int32')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        # Constructor from shape as single integer
+        a = nd.empty(3, ndt.int32)
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.make_strided_dim(ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        # Constructor from shape as tuple
+        a = nd.empty((3,4), ndt.int32)
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
+        self.assertEqual(a.shape, (3,4))
+        # Constructor from shape as variadic arguments
+        a = nd.empty(3, 4, ndt.int32)
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
+        self.assertEqual(a.shape, (3,4))
+
+    def check_constructor(self, cons, value):
+        # Constructor from scalar type
+        a = cons(ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a), ndt.int32)
+        self.assertEqual(nd.as_py(a), value)
+        # Constructor from type with fixed dimension
+        a = cons('3, int32')
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a), [value]*3)
+        # Constructor from shape as single integer
+        a = cons(3, ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a), ndt.make_strided_dim(ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a), [value]*3)
+        # Constructor from shape as tuple
+        a = cons((3,4), ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
+        self.assertEqual(a.shape, (3,4))
+        self.assertEqual(nd.as_py(a), [[value]*4]*3)
+        # Constructor from shape as variadic arguments
+        a = cons(3, 4, ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
+        self.assertEqual(a.shape, (3,4))
+        self.assertEqual(nd.as_py(a), [[value]*4]*3)
+
+    def check_constructor_readwrite(self, cons, value):
+        # Constructor from scalar type
+        a = cons(ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.int32)
+        self.assertEqual(nd.as_py(a), value)
+        # Constructor from type with fixed dimension
+        a = cons('3, int32', access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a), [value]*3)
+        # Constructor from shape as single integer
+        a = cons(3, ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.make_strided_dim(ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a), [value]*3)
+        # Constructor from shape as tuple
+        a = cons((3,4), ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
+        self.assertEqual(a.shape, (3,4))
+        self.assertEqual(nd.as_py(a), [[value]*4]*3)
+        # Constructor from shape as variadic arguments
+        a = cons(3, 4, ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
+        self.assertEqual(a.shape, (3,4))
+        self.assertEqual(nd.as_py(a), [[value]*4]*3)
+
+    def test_zeros(self):
+        self.check_constructor(nd.zeros, 0)
+        self.check_constructor_readwrite(nd.zeros, 0)
+
+    def test_ones(self):
+        self.check_constructor(nd.ones, 1)
+        self.check_constructor_readwrite(nd.ones, 1)
+
 class TestViewConstructor(unittest.TestCase):
     # Always constructs a view
     def test_simple(self):

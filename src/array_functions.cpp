@@ -327,13 +327,58 @@ dynd::nd::array pydynd::array_eval(const dynd::nd::array& n)
 dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
                 PyObject* access, const eval::eval_context *ectx)
 {
-    uint32_t access_flags = pyarg_strings_to_int(
-                    access, "access", 0,
-                        "readwrite", nd::read_access_flag|nd::write_access_flag,
-                        "rw", nd::read_access_flag|nd::write_access_flag,
-                        "r", nd::read_access_flag|nd::immutable_access_flag,
-                        "immutable", nd::read_access_flag|nd::immutable_access_flag);
+    uint32_t access_flags = pyarg_creation_access_flags(access);
     return n.eval_copy(access_flags, ectx);
+}
+
+dynd::nd::array pydynd::array_zeros(const dynd::ndt::type& d, PyObject *access)
+{
+    uint32_t access_flags = pyarg_creation_access_flags(access);
+    nd::array n = nd::empty(d);
+    n.val_assign(0, assign_error_none);
+    if ((access_flags&nd::write_access_flag) == 0) {
+        n.flag_as_immutable();
+    }
+    return n;
+}
+
+dynd::nd::array pydynd::array_zeros(PyObject *shape, const dynd::ndt::type& d, PyObject *access)
+{
+    uint32_t access_flags = pyarg_creation_access_flags(access);
+    std::vector<intptr_t> shape_vec;
+    pyobject_as_vector_intp(shape, shape_vec, true);
+    nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
+                    shape_vec.empty() ? NULL : &shape_vec[0]);
+    n.val_assign(0, assign_error_none);
+    if ((access_flags&nd::write_access_flag) == 0) {
+        n.flag_as_immutable();
+    }
+    return n;
+}
+
+dynd::nd::array pydynd::array_ones(const dynd::ndt::type& d, PyObject *access)
+{
+    uint32_t access_flags = pyarg_creation_access_flags(access);
+    nd::array n = nd::empty(d);
+    n.val_assign(1, assign_error_none);
+    if ((access_flags&nd::write_access_flag) == 0) {
+        n.flag_as_immutable();
+    }
+    return n;
+}
+
+dynd::nd::array pydynd::array_ones(PyObject *shape, const dynd::ndt::type& d, PyObject *access)
+{
+    uint32_t access_flags = pyarg_creation_access_flags(access);
+    std::vector<intptr_t> shape_vec;
+    pyobject_as_vector_intp(shape, shape_vec, true);
+    nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
+                    shape_vec.empty() ? NULL : &shape_vec[0]);
+    n.val_assign(1, assign_error_none);
+    if ((access_flags&nd::write_access_flag) == 0) {
+        n.flag_as_immutable();
+    }
+    return n;
 }
 
 dynd::nd::array pydynd::array_empty(const dynd::ndt::type& d)

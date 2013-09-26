@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 from dynd import nd, ndt
 
-class TestTypedArrayConstructors(unittest.TestSuite):
+class TestTypedArrayConstructors(unittest.TestCase):
     def test_empty(self):
         # Constructor from scalar type
         a = nd.empty(ndt.int32)

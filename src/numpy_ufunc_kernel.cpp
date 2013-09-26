@@ -221,15 +221,16 @@ namespace {
         data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides, data->ufunc_data);
     }
 
-    static void instantiate_scalar_ufunc_ckernel(void *self_data_ptr,
-                    dynd::ckernel_builder *out_ckb, size_t ckb_offset,
+    static intptr_t instantiate_scalar_ufunc_ckernel(void *self_data_ptr,
+                    dynd::ckernel_builder *out_ckb, intptr_t ckb_offset,
                     const char *const* dynd_metadata, uint32_t kerntype)
     {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         scalar_ufunc_deferred_data *data =
                         reinterpret_cast<scalar_ufunc_deferred_data *>(self_data_ptr);
-        out_ckb->ensure_capacity_leaf(ckb_offset + sizeof(scalar_ufunc_ckernel_data));
+        intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
+        out_ckb->ensure_capacity_leaf(ckb_end);
         scalar_ufunc_ckernel_data *ckd =
                         out_ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
         ckd->base.destructor = &delete_scalar_ufunc_ckernel_data;
@@ -253,6 +254,7 @@ namespace {
         ckd->data_types_size = data->data_types_size;
         ckd->ufunc = data->ufunc;
         Py_INCREF(ckd->ufunc);
+        return ckb_end;
     }
 
 } // anonymous namespace

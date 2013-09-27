@@ -5,7 +5,8 @@ DyND-Python Release Notes
   also accepting nd.empty(shape0, ..., shape(n-1), dtype).
 - Add nd.ones, nd.zeros, and nd.full constructor functions.
 - Add nd.squeeze, behaving like numpy.squeeze.
-- Add .shape property to the ndt.type object
+- Add .shape property to the ndt.type object.
+- Add .as_numpy() method to the ndt.type object.
 
 Release 0.4.2
 -------------

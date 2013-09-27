@@ -289,6 +289,22 @@ cdef class w_type:
         def __get__(self):
             return ndt_type_array_property_names(GET(self.v))
 
+    def as_numpy(self):
+        """
+        tp.as_numpy()
+
+        If possible, converts the ndt.type object into an
+        equivalent numpy dtype.
+
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+
+        >>> ndt.int32.as_numpy()
+        dtype('int32')
+        """
+        return numpy_dtype_obj_from_ndt_type(GET(self.v))
+
     def __getitem__(self, x):
         cdef w_type result = w_type()
         SET(result.v, ndt_type_getitem(GET(self.v), x))

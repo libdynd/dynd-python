@@ -101,14 +101,20 @@ dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num);
  * \param d  The numpy dtype passed to ndt_type_from_numpy_dtype.
  * \param metadata  A pointer to the metadata to populate.
  */
-void fill_metadata_from_numpy_dtype(const dynd::ndt::type& dt, PyArray_Descr *d, char *metadata);
+void fill_metadata_from_numpy_dtype(const dynd::ndt::type& tp, PyArray_Descr *d, char *metadata);
 
 /**
  * Converts a dynd type to a numpy dtype.
  *
  * \param dt  The dynd type to convert.
  */
-PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& dt);
+PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp);
+
+/** Small helper for cython parameter */
+inline PyObject *numpy_dtype_obj_from_ndt_type(const dynd::ndt::type& tp)
+{
+    return (PyObject *)numpy_dtype_from_ndt_type(tp);
+}
 
 /**
  * Converts a dynd type to a numpy dtype, also supporting types which
@@ -117,7 +123,7 @@ PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& dt);
  * \param dt  The dynd type to convert.
  * \param metadata  The metadata for the dynd type.
  */
-PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& dt, const char *metadata);
+PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *metadata);
 
 /**
  * Converts a pytypeobject for a n`umpy scalar
@@ -125,7 +131,7 @@ PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& dt, const char *
  *
  * Returns 0 on success, -1 if it didn't match.
  */
-int ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::type& out_d);
+int ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::type& out_tp);
 
 /**
  * Gets the dynd type of a numpy scalar object
@@ -153,7 +159,7 @@ dynd::nd::array array_from_numpy_scalar(PyObject* obj, uint32_t access_flags);
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
-char numpy_kindchar_of(const dynd::ndt::type& d);
+char numpy_kindchar_of(const dynd::ndt::type& tp);
 
 } // namespace pydynd
 

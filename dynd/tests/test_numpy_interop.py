@@ -74,6 +74,32 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.make_byteswap(ndt.cfloat64),
                 ndt.type(np.dtype(nonnative + 'c16')))
 
+    def test_ndt_type_as_numpy(self):
+        self.assertEqual(ndt.bool.as_numpy(), np.dtype('bool'))
+        self.assertEqual(ndt.int8.as_numpy(), np.dtype('int8'))
+        self.assertEqual(ndt.int16.as_numpy(), np.dtype('int16'))
+        self.assertEqual(ndt.int32.as_numpy(), np.dtype('int32'))
+        self.assertEqual(ndt.int64.as_numpy(), np.dtype('int64'))
+        self.assertEqual(ndt.uint8.as_numpy(), np.dtype('uint8'))
+        self.assertEqual(ndt.uint16.as_numpy(), np.dtype('uint16'))
+        self.assertEqual(ndt.uint32.as_numpy(), np.dtype('uint32'))
+        self.assertEqual(ndt.uint64.as_numpy(), np.dtype('uint64'))
+        self.assertEqual(ndt.float32.as_numpy(), np.dtype('float32'))
+        self.assertEqual(ndt.float64.as_numpy(), np.dtype('float64'))
+        self.assertEqual(ndt.cfloat32.as_numpy(), np.dtype('complex64'))
+        self.assertEqual(ndt.cfloat64.as_numpy(), np.dtype('complex128'))
+        # nonnative byte order
+        nonnative = self.nonnative
+        self.assertEqual(ndt.make_byteswap(ndt.int16).as_numpy(),
+                    np.dtype(nonnative + 'i2'))
+        self.assertEqual(ndt.make_byteswap(ndt.float64).as_numpy(),
+                    np.dtype(nonnative + 'f8'))
+        # struct
+        self.assertEqual(ndt.type('{x : int32; y : int64}').as_numpy(),
+                    np.dtype([('x', np.int32), ('y', np.int64)], align=True))
+        # check a type which can't be converted
+        self.assertRaises(RuntimeError, ndt.date.as_numpy)
+
 class TestNumpyViewInterop(unittest.TestCase):
     def setUp(self):
         if sys.byteorder == 'little':

@@ -131,9 +131,20 @@ cdef class w_type:
     def __getattr__(self, name):
         return get_ndt_type_dynamic_property(GET(self.v), name)
 
+    property shape:
+        """
+        tp.shape
+
+        The shape of the array dimensions of the type. For
+        dimensions whose size is unknown without additional
+        array metadata or array data, a -1 is returned.
+        """
+        def __get__(self):
+            return ndt_type_get_shape(GET(self.v))
+        
     property dshape:
         """
-        a.dshape
+        tp.dshape
 
         The blaze datashape of the dynd type, as a string.
         """
@@ -142,17 +153,18 @@ cdef class w_type:
 
     property data_size:
         """
-        a.data_size
+        tp.data_size
 
         The size, in bytes, of the data for an instance
-        of this dynd type.
+        of this dynd type. This is 0 if array metadata
+        is required to fully specify it.
         """
         def __get__(self):
             return GET(self.v).get_data_size()
 
     property data_alignment:
         """
-        a.data_alignment
+        tp.data_alignment
 
         The alignment, in bytes, of the data for an
         instance of this dynd type.
@@ -166,7 +178,7 @@ cdef class w_type:
 
     property metadata_size:
         """
-        a.metadata_size
+        tp.metadata_size
 
         The size, in bytes, of the metadata for
         this dynd type.
@@ -176,7 +188,7 @@ cdef class w_type:
 
     property kind:
         """
-        a.kind
+        tp.kind
 
         The kind of this dynd type, as a string.
 
@@ -189,7 +201,7 @@ cdef class w_type:
 
     property type_id:
         """
-        a.type_id
+        tp.type_id
 
         The type id of this dynd type, as a string.
 
@@ -201,7 +213,7 @@ cdef class w_type:
 
     property ndim:
         """
-        a.ndim
+        tp.ndim
 
         The number of array dimensions in this dynd type.
 
@@ -215,7 +227,7 @@ cdef class w_type:
 
     property dtype:
         """
-        a.dtype
+        tp.dtype
 
         The dynd type of the element after the 'ndim'
         array dimensions are indexed away.
@@ -230,7 +242,7 @@ cdef class w_type:
 
     property value_type:
         """
-        a.value_type
+        tp.value_type
 
         If this is an expression dynd type, returns the
         dynd type that values after evaluation have. Otherwise,
@@ -243,7 +255,7 @@ cdef class w_type:
 
     property operand_type:
         """
-        a.operand_type
+        tp.operand_type
 
         If this is an expression dynd type, returns the
         dynd type that inputs to its expression evaluation
@@ -256,7 +268,7 @@ cdef class w_type:
 
     property canonical_type:
         """
-        a.canonical_type
+        tp.canonical_type
 
         Returns a version of this type that is canonical,
         where any intermediate pointers are removed and expressions
@@ -269,7 +281,7 @@ cdef class w_type:
 
     property property_names:
         """
-        a.property_names
+        tp.property_names
 
         Returns the names of properties exposed by dynd arrays
         of this type.

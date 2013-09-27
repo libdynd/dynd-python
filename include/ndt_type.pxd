@@ -119,6 +119,7 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
     ndt_type deduce_ndt_type_from_pyobject(object) except +translate_exception
     ndt_type make_ndt_type_from_pyobject(object) except +translate_exception
 
+    object ndt_type_get_shape(ndt_type&) except +translate_exception
     object ndt_type_get_kind(ndt_type&) except +translate_exception
     object ndt_type_get_type_id(ndt_type&) except +translate_exception
     ndt_type ndt_type_getitem(ndt_type&, object) except +translate_exception

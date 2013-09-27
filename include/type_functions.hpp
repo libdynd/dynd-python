@@ -68,6 +68,8 @@ inline std::string ndt_type_str(const dynd::ndt::type& d)
 
 std::string ndt_type_repr(const dynd::ndt::type& d);
 
+PyObject *ndt_type_get_shape(const dynd::ndt::type& d);
+
 /**
  * Returns the kind of the ndt::type, as a Python string.
  */

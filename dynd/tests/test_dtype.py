@@ -184,5 +184,14 @@ class TestDType(unittest.TestCase):
         self.assertEqual(nd.as_py(dt1.categories.ucast(ndt.string)),
                         ['2012-05-10'])
 
+    def test_type_shape(self):
+        # The shape attribute of ndt.type
+        tp = ndt.type('3, 4, int32')
+        self.assertEqual(tp.shape, (3, 4))
+        tp = ndt.type('M, 3, var, int32')
+        self.assertEqual(tp.shape, (-1, 3, -1))
+        tp = ndt.type('var, 3, 2, int32')
+        self.assertEqual(tp.shape, (-1, 3, 2))
+
 if __name__ == '__main__':
     unittest.main()

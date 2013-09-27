@@ -98,6 +98,18 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
     return ss.str();
 }
 
+PyObject *pydynd::ndt_type_get_shape(const dynd::ndt::type& d)
+{
+    size_t ndim = d.get_ndim();
+    if (ndim > 0) {
+        dimvector shape(ndim);
+        d.extended()->get_shape(ndim, 0, shape.get(), NULL, NULL);
+        return intptr_array_as_tuple(ndim, shape.get());
+    } else {
+        return PyTuple_New(0);
+    }
+}
+
 PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type& d)
 {
     stringstream ss;

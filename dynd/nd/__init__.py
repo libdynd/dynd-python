@@ -15,5 +15,6 @@ from dynd._pydynd import w_array as array, \
 #from elwise_reduce_gfuncs import *
 
 from .computed_fields import add_computed_fields, make_computed_fields
+from .array_functions import squeeze
 
 from . import vm

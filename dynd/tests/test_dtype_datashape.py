@@ -42,6 +42,10 @@ class TestDTypeDataShape(unittest.TestCase):
         self.assertEqual(dt.type_id, 'cstruct')
         self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
 
+    def test_var_dshape(self):
+        # Getting the dshape can see into leading var dims
+        a = nd.array([[[1], [2,3]]], type='var, var, var, int32')
+        self.assertEqual(nd.dshape_of(a), '1, 2, var, int32')
 
 if __name__ == '__main__':
     unittest.main()

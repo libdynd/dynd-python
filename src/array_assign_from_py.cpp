@@ -741,7 +741,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
             // Make a temporary value with just the trailing dimensions, then
             // assign to the output
             dimvector shape(original_dst_ndim);
-            dt.extended()->get_shape(original_dst_ndim, 0, shape.get(), metadata);
+            dt.extended()->get_shape(original_dst_ndim, 0, shape.get(), metadata, data);
             ndt::type partial_dt = dt.get_type_at_dimension(NULL, dst_ndim - seq_ndim).get_canonical_type();
             nd::array tmp(make_array_memory_block(partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
                             shape.get() + (dst_ndim - seq_ndim)));

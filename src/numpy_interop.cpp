@@ -39,6 +39,10 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
         throw runtime_error("Tried to make a tuple dtype from a Numpy descr without fields");
     }
 
+    if (data_alignment == 0) {
+        data_alignment = (size_t)d->alignment;
+    }
+
     PyObject *names = d->names;
     Py_ssize_t names_size = PyTuple_GET_SIZE(names);
 
@@ -94,7 +98,7 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
             }
             return ndt::make_strided_dim(dt, ndim);
         } else {
-            // Otherwise make a cstruct array
+            // Otherwise make a fixed dim array
             return dynd_make_fixed_dim_type(d->subarray->shape, dt, Py_None);
         }
     }
@@ -305,9 +309,9 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
 }
 
 
-PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
+PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
 {
-    switch (dt.get_type_id()) {
+    switch (tp.get_type_id()) {
         case bool_type_id:
             return PyArray_DescrFromType(NPY_BOOL);
         case int8_type_id:
@@ -335,16 +339,16 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
         case complex_float64_type_id:
             return PyArray_DescrFromType(NPY_CDOUBLE);
         case fixedstring_type_id: {
-            const fixedstring_type *fdt = static_cast<const fixedstring_type *>(dt.extended());
+            const fixedstring_type *ftp = static_cast<const fixedstring_type *>(tp.extended());
             PyArray_Descr *result;
-            switch (fdt->get_encoding()) {
+            switch (ftp->get_encoding()) {
                 case string_encoding_ascii:
                     result = PyArray_DescrNewFromType(NPY_STRING);
-                    result->elsize = (int)fdt->get_data_size();
+                    result->elsize = (int)ftp->get_data_size();
                     return result;
                 case string_encoding_utf_32:
                     result = PyArray_DescrNewFromType(NPY_UNICODE);
-                    result->elsize = (int)fdt->get_data_size();
+                    result->elsize = (int)ftp->get_data_size();
                     return result;
                 default:
                     break;
@@ -353,10 +357,10 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
         }
         /*
         case tuple_type_id: {
-            const tuple_type *tdt = static_cast<const tuple_type *>(dt.extended());
-            const vector<ndt::type>& fields = tdt->get_fields();
+            const tuple_type *ttp = static_cast<const tuple_type *>(tp.extended());
+            const vector<ndt::type>& fields = ttp->get_fields();
             size_t num_fields = fields.size();
-            const vector<size_t>& offsets = tdt->get_offsets();
+            const vector<size_t>& offsets = ttp->get_offsets();
 
             // TODO: Deal with the names better
             pyobject_ownref names_obj(PyList_New(num_fields));
@@ -376,7 +380,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(tp.get_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
@@ -392,11 +396,12 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
         }
         */
         case cstruct_type_id: {
-            const cstruct_type *tdt = static_cast<const cstruct_type *>(dt.extended());
-            const ndt::type *field_types = tdt->get_field_types();
-            const string *field_names = tdt->get_field_names();
-            const vector<size_t>& offsets = tdt->get_data_offsets_vector();
-            size_t field_count = tdt->get_field_count();
+            const cstruct_type *ttp = static_cast<const cstruct_type *>(tp.extended());
+            const ndt::type *field_types = ttp->get_field_types();
+            const string *field_names = ttp->get_field_names();
+            const vector<size_t>& offsets = ttp->get_data_offsets_vector();
+            size_t field_count = ttp->get_field_count();
+            size_t max_numpy_alignment = 1;
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
@@ -412,7 +417,9 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
 
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)numpy_dtype_from_ndt_type(field_types[i]));
+                PyArray_Descr *npdt = numpy_dtype_from_ndt_type(field_types[i]);
+                max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
+                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
             }
 
             pyobject_ownref offsets_obj(PyList_New(field_count));
@@ -420,36 +427,43 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(tp.get_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
             PyDict_SetItemString(dict_obj, "formats", formats_obj);
             PyDict_SetItemString(dict_obj, "offsets", offsets_obj);
             PyDict_SetItemString(dict_obj, "itemsize", itemsize_obj);
+            // This isn't quite right, but the rules between numpy and dynd
+            // differ enough to make this tricky.
+            if (max_numpy_alignment > 1 &&
+                            max_numpy_alignment == tp.get_data_alignment()) {
+                Py_INCREF(Py_True);
+                PyDict_SetItemString(dict_obj, "aligned", Py_True);
+            }
 
             PyArray_Descr *result = NULL;
             if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
                 stringstream ss;
-                ss << "failed to convert dtype " << dt << " into numpy dtype via dict";
+                ss << "failed to convert dtype " << tp << " into numpy dtype via dict";
                 throw runtime_error(ss.str());
             }
             return result;
         }
         case fixed_dim_type_id: {
-            ndt::type child_dt = dt;
+            ndt::type child_tp = tp;
             vector<intptr_t> shape;
             do {
-                const fixed_dim_type *tdt = static_cast<const fixed_dim_type *>(child_dt.extended());
-                shape.push_back(tdt->get_fixed_dim_size());
-                if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * shape.back()) {
+                const fixed_dim_type *ttp = static_cast<const fixed_dim_type *>(child_tp.extended());
+                shape.push_back(ttp->get_fixed_dim_size());
+                if (child_tp.get_data_size() != ttp->get_element_type().get_data_size() * shape.back()) {
                     stringstream ss;
-                    ss << "Cannot convert dynd type " << dt << " into a numpy dtype because it is not C-order";
+                    ss << "Cannot convert dynd type " << tp << " into a numpy dtype because it is not C-order";
                     throw runtime_error(ss.str());
                 }
-                child_dt = tdt->get_element_type();
-            } while (child_dt.get_type_id() == fixed_dim_type_id);
-            pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from_ndt_type(child_dt));
+                child_tp = ttp->get_element_type();
+            } while (child_tp.get_type_id() == fixed_dim_type_id);
+            pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from_ndt_type(child_tp));
             pyobject_ownref shape_obj(intptr_array_as_tuple((int)shape.size(), &shape[0]));
             pyobject_ownref tuple_obj(PyTuple_New(2));
             PyTuple_SET_ITEM(tuple_obj.get(), 0, dtype_obj.release());
@@ -464,15 +478,15 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it
             // away because Numpy works differently
-            if (dt.operand_type().get_type_id() == fixedbytes_type_id) {
-                return numpy_dtype_from_ndt_type(dt.value_type());
+            if (tp.operand_type().get_type_id() == fixedbytes_type_id) {
+                return numpy_dtype_from_ndt_type(tp.value_type());
             }
             break;
         }
         case byteswap_type_id: {
             // If it's a simple byteswap from bytes, that can be converted
-            if (dt.operand_type().get_type_id() == fixedbytes_type_id) {
-                PyArray_Descr *unswapped = numpy_dtype_from_ndt_type(dt.value_type());
+            if (tp.operand_type().get_type_id() == fixedbytes_type_id) {
+                PyArray_Descr *unswapped = numpy_dtype_from_ndt_type(tp.value_type());
                 PyArray_Descr *result = PyArray_DescrNewByteorder(unswapped, NPY_SWAP);
                 Py_DECREF(unswapped);
                 return result;
@@ -483,25 +497,26 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt)
     }
 
     stringstream ss;
-    ss << "cannot convert dynd type " << dt << " into a Numpy dtype";
+    ss << "cannot convert dynd type " << tp << " into a Numpy dtype";
     throw runtime_error(ss.str());
 }
 
-PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt, const char *metadata)
+PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *metadata)
 {
-    switch (dt.get_type_id()) {
+    switch (tp.get_type_id()) {
         case struct_type_id: {
             if (metadata == NULL) {
                 stringstream ss;
-                ss << "Can only convert dynd type " << dt << " into a numpy dtype with array metadata";
+                ss << "Can only convert dynd type " << tp << " into a numpy dtype with array metadata";
                 throw runtime_error(ss.str());
             }
-            const struct_type *sdt = static_cast<const struct_type *>(dt.extended());
-            const ndt::type *field_types = sdt->get_field_types();
-            const string *field_names = sdt->get_field_names();
-            const size_t *metadata_offsets = sdt->get_metadata_offsets();
-            const size_t *offsets = sdt->get_data_offsets(metadata);
-            size_t field_count = sdt->get_field_count();
+            const struct_type *stp = static_cast<const struct_type *>(tp.extended());
+            const ndt::type *field_types = stp->get_field_types();
+            const string *field_names = stp->get_field_names();
+            const size_t *metadata_offsets = stp->get_metadata_offsets();
+            const size_t *offsets = stp->get_data_offsets(metadata);
+            size_t field_count = stp->get_field_count();
+            size_t max_numpy_alignment = 1;
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
@@ -517,8 +532,10 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt, cons
 
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyList_SET_ITEM((PyObject *)formats_obj, i,
-                                (PyObject *)numpy_dtype_from_ndt_type(field_types[i], metadata + metadata_offsets[i]));
+                PyArray_Descr *npdt = numpy_dtype_from_ndt_type(
+                                field_types[i], metadata + metadata_offsets[i]);
+                max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
+                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
             }
 
             pyobject_ownref offsets_obj(PyList_New(field_count));
@@ -526,13 +543,20 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt, cons
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(tp.get_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
             PyDict_SetItemString(dict_obj, "formats", formats_obj);
             PyDict_SetItemString(dict_obj, "offsets", offsets_obj);
             PyDict_SetItemString(dict_obj, "itemsize", itemsize_obj);
+            // This isn't quite right, but the rules between numpy and dynd
+            // differ enough to make this tricky.
+            if (max_numpy_alignment > 1 &&
+                            max_numpy_alignment == tp.get_data_alignment()) {
+                Py_INCREF(Py_True);
+                PyDict_SetItemString(dict_obj, "aligned", Py_True);
+            }
 
             PyArray_Descr *result = NULL;
             if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
@@ -541,7 +565,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& dt, cons
             return result;
         }
         default:
-            return numpy_dtype_from_ndt_type(dt);
+            return numpy_dtype_from_ndt_type(tp);
     }
 }
 

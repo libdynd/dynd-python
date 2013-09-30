@@ -12,7 +12,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         else:
             self.nonnative = '<'
 
-    def test_dynd_type_from_numpy_scalar_types(self):
+    def test_ndt_type_from_numpy_scalar_types(self):
         # Tests converting numpy scalar types to dynd types
         self.assertEqual(ndt.bool, ndt.type(np.bool))
         self.assertEqual(ndt.bool, ndt.type(np.bool_))
@@ -29,7 +29,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.cfloat32, ndt.type(np.complex64))
         self.assertEqual(ndt.cfloat64, ndt.type(np.complex128))
 
-    def test_dynd_type_from_numpy_dtype(self):
+    def test_ndt_type_from_numpy_dtype(self):
         # Tests converting numpy dtypes to dynd types
         # native byte order
         self.assertEqual(ndt.bool, ndt.type(np.dtype(np.bool)))
@@ -74,6 +74,19 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.make_byteswap(ndt.cfloat64),
                 ndt.type(np.dtype(nonnative + 'c16')))
 
+    def test_ndt_type_from_numpy_dtype_struct(self):
+        # aligned struct
+        tp0 = ndt.type(np.dtype([('x', np.int32), ('y', np.int64)],
+                            align=True))
+        tp1 = ndt.type('{x : int32; y : int64}')
+        self.assertEqual(tp0, tp1)
+        # unaligned struct
+        tp0 = ndt.type(np.dtype([('x', np.int32), ('y', np.int64)]))
+        tp1 = ndt.make_cstruct([ndt.make_unaligned(ndt.int32),
+                        ndt.make_unaligned(ndt.int64)],
+                        ['x', 'y'])
+        self.assertEqual(tp0, tp1)
+
     def test_ndt_type_as_numpy(self):
         self.assertEqual(ndt.bool.as_numpy(), np.dtype('bool'))
         self.assertEqual(ndt.int8.as_numpy(), np.dtype('int8'))
@@ -94,9 +107,16 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                     np.dtype(nonnative + 'i2'))
         self.assertEqual(ndt.make_byteswap(ndt.float64).as_numpy(),
                     np.dtype(nonnative + 'f8'))
-        # struct
-        self.assertEqual(ndt.type('{x : int32; y : int64}').as_numpy(),
-                    np.dtype([('x', np.int32), ('y', np.int64)], align=True))
+        # aligned struct
+        tp0 = ndt.type('{x : int32; y : int64}').as_numpy()
+        tp1 = np.dtype([('x', np.int32), ('y', np.int64)], align=True)
+        self.assertEqual(tp0, tp1)
+        # unaligned struct
+        tp0 = ndt.make_cstruct([ndt.make_unaligned(ndt.int32),
+                        ndt.make_unaligned(ndt.int64)],
+                        ['x', 'y']).as_numpy()
+        tp1 = np.dtype([('x', np.int32), ('y', np.int64)])
+        self.assertEqual(tp0, tp1)
         # check a type which can't be converted
         self.assertRaises(RuntimeError, ndt.date.as_numpy)
 

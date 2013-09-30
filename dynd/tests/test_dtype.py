@@ -177,6 +177,13 @@ class TestDType(unittest.TestCase):
     def test_cstruct_type(self):
         self.assertFalse(ndt.type('{x: int32}') == ndt.type('{y: int32}'))
 
+    def test_struct_type(self):
+        tp = ndt.make_struct([ndt.int32, ndt.int64], ['x', 'y'])
+        self.assertTrue(nd.as_py(tp.field_types), [ndt.int32, ndt.int64])
+        self.assertTrue(nd.as_py(tp.field_names), ['x', 'y'])
+        self.assertEqual(tp.metadata_size, 2 * ctypes.sizeof(ctypes.c_void_p))
+        self.assertTrue(tp.data_size is None)
+
     def test_categorical_type(self):
         a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime('sec','UTC')")
         dt1 = ndt.factor_categorical(a.date)

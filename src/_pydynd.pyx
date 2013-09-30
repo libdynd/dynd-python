@@ -156,11 +156,18 @@ cdef class w_type:
         tp.data_size
 
         The size, in bytes, of the data for an instance
-        of this dynd type. This is 0 if array metadata
-        is required to fully specify it.
+        of this dynd type.
+        
+        None is returned if array metadata is required to
+        fully specify it. For example, both the strided_dim and
+        struct types require such metadata.
         """
         def __get__(self):
-            return GET(self.v).get_data_size()
+            cdef ssize_t result = (GET(self.v)).get_data_size()
+            if result > 0:
+                return result
+            else:
+                return None
 
     property data_alignment:
         """

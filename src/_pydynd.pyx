@@ -1405,8 +1405,9 @@ def zeros(*args, **kwargs):
         The type of the uninitialized array to create. If `shape`
         is not provided, this is the full data type, including
         the multi-dimensional structure.
-    access : 'readwrite' or 'immutable'
-        Specifies the access control of the resulting copy.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to immutable.
     """
     # Handle the keyword-only arguments
     access = kwargs.pop('access', None)
@@ -1458,8 +1459,9 @@ def ones(*args, **kwargs):
         The type of the uninitialized array to create. If `shape`
         is not provided, this is the full data type, including
         the multi-dimensional structure.
-    access : 'readwrite' or 'immutable'
-        Specifies the access control of the resulting copy.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to immutable.
     """
     # Handle the keyword-only arguments
     access = kwargs.pop('access', None)
@@ -1513,8 +1515,20 @@ def full(*args, **kwargs):
         the multi-dimensional structure.
     value : object
         A single value to broadcast-fill the array with.
-    access : 'readwrite' or 'immutable'
-        Specifies the access control of the resulting copy.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to immutable
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> nd.full(2, 3, ndt.int32, value=123)
+    nd.array([[123, 123, 123], [123, 123, 123]], strided_dim<strided_dim<int32>>)
+    >>> nd.full(2, 2, ndt.int32, value=[1, 5])
+    nd.array([[1, 5], [1, 5]], strided_dim<strided_dim<int32>>)
+    >>> nd.full('3, {x : int32; y : 2, int16}', value=[1, [2, 3]], access='rw')
+    nd.array([[1, [2, 3]], [1, [2, 3]], [1, [2, 3]]], fixed_dim<3, cstruct<int32 x, fixed_dim<2, int16> y>>)
     """
     # Handle the keyword-only arguments
     if 'value' not in kwargs:

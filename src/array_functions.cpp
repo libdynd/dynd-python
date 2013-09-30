@@ -260,7 +260,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
                             "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
 
-    // If it's a Cython w_array
+    // If it's a dynd-native w_array
     if (WArray_Check(obj)) {
         const nd::array& obj_dynd = ((WArray *)obj)->v;
         if (access_flags != 0) {
@@ -293,7 +293,10 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
     // If it's a numpy array
     if (PyArray_Check(obj)) {
         nd::array result = array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
-        if (access_flags != 0) {
+        if (access_flags == 0) {
+            // Always return it as a view if no specific access flags are specified
+            return result;
+        } else {
             bool ok = true;
             // TODO: Make an nd::view function to handle this logic
             uint32_t raf = result.get_access_flags();

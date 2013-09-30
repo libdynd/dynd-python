@@ -107,6 +107,36 @@ class TestNumpyViewInterop(unittest.TestCase):
         else:
             self.nonnative = '<'
 
+    def test_dynd_scalar_view(self):
+        a = np.array(3, dtype='int64')
+        n = nd.view(a)
+        self.assertEqual(nd.type_of(n), ndt.int64)
+        self.assertEqual(nd.as_py(n), 3)
+        self.assertEqual(n.access_flags, 'readwrite')
+        # Ensure it's a view
+        n[...] = 4
+        self.assertEqual(a[()], 4)
+
+    def test_dynd_scalar_array(self):
+        a = np.array(3, dtype='int64')
+        n = nd.array(a)
+        self.assertEqual(nd.type_of(n), ndt.int64)
+        self.assertEqual(nd.as_py(n), 3)
+        self.assertEqual(n.access_flags, 'immutable')
+        # Ensure it's not a view
+        a[...] = 4
+        self.assertEqual(nd.as_py(n), 3)
+
+    def test_dynd_scalar_asarray(self):
+        a = np.array(3, dtype='int64')
+        n = nd.asarray(a)
+        self.assertEqual(nd.type_of(n), ndt.int64)
+        self.assertEqual(nd.as_py(n), 3)
+        self.assertEqual(n.access_flags, 'readwrite')
+        # Ensure it's a view
+        n[...] = 4
+        self.assertEqual(a[()], 4)
+
     def test_dynd_view_of_numpy_array(self):
         # Tests viewing a numpy array as a dynd.array
         nonnative = self.nonnative

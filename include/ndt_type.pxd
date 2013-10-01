@@ -73,7 +73,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         size_t get_metadata_size()
         base_type* extended()
         string_encoding_t string_encoding() except +translate_exception
-        size_t get_ndim()
+        intptr_t get_ndim()
         ndt_type get_dtype()
         ndt_type get_dtype(size_t)
 

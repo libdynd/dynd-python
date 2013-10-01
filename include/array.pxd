@@ -33,7 +33,7 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         ndt_type get_type()
         ndt_type get_dtype()
         ndt_type get_dtype(size_t)
-        size_t get_ndim()
+        intptr_t get_ndim()
         bint is_scalar()
         intptr_t get_dim_size()
 

@@ -51,7 +51,7 @@ static int dynd_to_numpy_type_id[builtin_type_id_count] = {
 };
 
 static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, 
-                size_t ndim, const ndt::type& dt, const char *metadata)
+                intptr_t ndim, const ndt::type& dt, const char *metadata)
 {
     // DyND builtin types
     if (dt.is_builtin()) {
@@ -251,7 +251,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 }
 
 static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requires_copy,
-                size_t ndim, const ndt::type& dt, const char *metadata)
+                intptr_t ndim, const ndt::type& dt, const char *metadata)
 {
     // DyND builtin types
     if (dt.is_builtin()) {

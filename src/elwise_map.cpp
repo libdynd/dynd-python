@@ -381,19 +381,19 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
         }
     }
 
-    size_t undim = 0;
-    for (size_t i = 0; i != n.size(); ++i) {
-        size_t undim_i = n[i].get_ndim();
+    intptr_t undim = 0;
+    for (intptr_t i = 0; i != n.size(); ++i) {
+        intptr_t undim_i = n[i].get_ndim();
         if (undim_i > undim) {
             undim = undim_i;
         }
     }
     dimvector result_shape(undim), tmp_shape(undim);
-    for (size_t j = 0; j != undim; ++j) {
+    for (intptr_t j = 0; j != undim; ++j) {
         result_shape[j] = 1;
     }
-    for (size_t i = 0; i != n.size(); ++i) {
-        size_t undim_i = n[i].get_ndim();
+    for (intptr_t i = 0; i != n.size(); ++i) {
+        intptr_t undim_i = n[i].get_ndim();
         if (undim_i > 0) {
             n[i].get_shape(tmp_shape.get());
             incremental_broadcast(undim, result_shape.get(), undim_i, tmp_shape.get());

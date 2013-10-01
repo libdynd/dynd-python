@@ -30,9 +30,9 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static size_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
+static intptr_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
 {
-    size_t ndim = 0;
+    intptr_t ndim = 0;
     pyobject_ownref obj(seq, true);
     Py_ssize_t seqsize = 0;
     ends_in_dict = false;
@@ -710,19 +710,19 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
 #endif // DYND_NUMPY_INTEROP
     }
 
-    size_t dst_ndim = dt.get_ndim();
+    intptr_t dst_ndim = dt.get_ndim();
     bool ends_in_dict = false;
     if (dst_ndim == 0) {
         array_assign_from_value(dt, metadata, data, value);
     } else {
-        size_t seq_ndim = get_pyseq_ndim(value, ends_in_dict);
+        intptr_t seq_ndim = get_pyseq_ndim(value, ends_in_dict);
         // Special handling when the destination is a struct,
         // and there was no dict at the end of the seq chain.
         // Increase the dst_ndim to count the first field
         // of any structs as uniform, to match up with how
         // get_pyseq_ndim works.
         ndt::type udt = dt.get_dtype().value_type();
-        size_t original_dst_ndim = dst_ndim;
+        intptr_t original_dst_ndim = dst_ndim;
         if (!ends_in_dict && udt.get_kind() == struct_kind) {
             while (true) {
                 if (udt.get_ndim() > 0) {
@@ -742,7 +742,8 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
             // assign to the output
             dimvector shape(original_dst_ndim);
             dt.extended()->get_shape(original_dst_ndim, 0, shape.get(), metadata, data);
-            ndt::type partial_dt = dt.get_type_at_dimension(NULL, dst_ndim - seq_ndim).get_canonical_type();
+            ndt::type partial_dt = dt.get_type_at_dimension(NULL,
+                            min(dst_ndim - seq_ndim, dt.get_ndim())).get_canonical_type();
             nd::array tmp(make_array_memory_block(partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
                             shape.get() + (dst_ndim - seq_ndim)));
             array_assign_from_value(tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),

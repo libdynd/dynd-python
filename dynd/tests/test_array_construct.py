@@ -60,6 +60,23 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
+        # Constructor of a cstruct type
+        a = cons(3, '{x: int32; y: int32}')
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a),
+                    ndt.type('strided, {x: int32; y: int32}'))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a),
+                    [{'x': value, 'y': value}]*3)
+        # Constructor of a struct type
+        a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']))
+        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(nd.type_of(a),
+                    ndt.make_strided_dim(
+                        ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a),
+                    [{'x': value, 'y': value}]*3)
 
     def check_constructor_readwrite(self, cons, value):
         # Constructor from scalar type
@@ -91,6 +108,23 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('A, B, int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
+        # Constructor of a cstruct type
+        a = cons(3, '{x: int32; y: int32}', access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a),
+                    ndt.type('strided, {x: int32; y: int32}'))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a),
+                    [{'x': value, 'y': value}]*3)
+        # Constructor of a struct type
+        a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']), access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a),
+                    ndt.make_strided_dim(
+                        ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a),
+                    [{'x': value, 'y': value}]*3)
 
     def test_zeros(self):
         self.check_constructor(nd.zeros, 0)
@@ -114,6 +148,26 @@ class TestTypedArrayConstructors(unittest.TestCase):
         a = nd.full(2, 3, ndt.float32, value=1.5)
         self.assertEqual(nd.as_py(a), [[1.5]*3]*2)
         self.assertRaises(TypeError, nd.full, 2, 3, ndt.float32, 1.5)
+
+    def test_full_of_struct(self):
+        # Constructor of a cstruct type
+        a = nd.full(3, '{x: int32; y: int32}', value=[1,5], access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a),
+                    ndt.type('strided, {x: int32; y: int32}'))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a),
+                    [{'x': 1, 'y': 5}]*3)
+        # Constructor of a struct type
+        a = nd.full(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']),
+                    value={'x' : 3, 'y' : 10}, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a),
+                    ndt.make_strided_dim(
+                        ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
+        self.assertEqual(a.shape, (3,))
+        self.assertEqual(nd.as_py(a),
+                    [{'x': 3, 'y': 10}]*3)
 
 class TestArrayConstructor(unittest.TestCase):
     # Always constructs a new array

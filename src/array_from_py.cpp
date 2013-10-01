@@ -786,13 +786,13 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                 // If it's a struct, fix up the ndim to let the struct absorb
                 // some of the sequences
                 if (dt.get_kind() == struct_kind) {
-                    size_t ndim, ndim_end = shape.size();
+                    intptr_t ndim, ndim_end = shape.size();
                     for (ndim = 0; ndim != ndim_end; ++ndim) {
                         if (shape[ndim] == shape_signal_ragged) {
                             // Match up the number of dimensions which aren't
                             // ragged in udt with the number of dimensions
                             // which are nonragged in the input data
-                            size_t dt_nonragged = get_nonragged_dim_count(dt);
+                            intptr_t dt_nonragged = get_nonragged_dim_count(dt);
                             if (dt_nonragged <= ndim) {
                                 ndim -= dt_nonragged;
                             } else {
@@ -804,7 +804,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                         }
                     }
                     if (ndim == ndim_end) {
-                        size_t dt_nonragged = get_nonragged_dim_count(dt);
+                        intptr_t dt_nonragged = get_nonragged_dim_count(dt);
                         if (dt_nonragged <= ndim) {
                             ndim -= dt_nonragged;
                         } else {
@@ -837,7 +837,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
             }
         }
     } else if (dt.get_ndim() > 0 && ndt_type_requires_shape(dt)) {
-        size_t undim = dt.get_ndim();
+        intptr_t undim = dt.get_ndim();
         dimvector shape(undim);
         for (size_t i = 0; i != undim; ++i) {
             shape[i] = shape_signal_uninitialized;

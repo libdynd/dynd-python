@@ -503,7 +503,7 @@ dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt
 }
 
 dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const ndt::type& dt,
-                size_t replace_ndim, PyObject *assign_error_obj)
+                intptr_t replace_ndim, PyObject *assign_error_obj)
 {
     return n.ucast(dt, replace_ndim, pyarg_error_mode(assign_error_obj));
 }

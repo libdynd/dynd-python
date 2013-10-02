@@ -196,7 +196,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         # Tests viewing a dynd.array as a numpy array
         nonnative = self.nonnative
 
-        n = nd.view(np.arange(10, dtype=np.int32))
+        n = nd.range(10, dtype=ndt.int32)
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype(np.int32))
         self.assertTrue(a.flags.aligned)
@@ -340,6 +340,39 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(a[0], 2.0)
         # Trying to get a readwrite view raises an error
         self.assertRaises(RuntimeError, nd.view, a, access='rw')
+
+class TestAsNumpy(unittest.TestCase):
+    def test_cstruct_as_numpy(self):
+        # Aligned cstruct
+        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32; y: int64}')
+        b = nd.as_numpy(a)
+        self.assertEqual(b.dtype,
+                    np.dtype([('x', np.int32), ('y', np.int64)], align=True))
+        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
+        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
+        # Unaligned cstruct
+        a = nd.array([[1, 2], [3, 4]],
+                    dtype='{x : unaligned(int32); y: unaligned(int64)}')
+        b = nd.as_numpy(a)
+        self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
+        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
+        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
+
+    def test_cstruct_via_pep3118(self):
+        # Aligned cstruct
+        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32; y: int64}')
+        b = np.asarray(a)
+        self.assertEqual(b.dtype,
+                    np.dtype([('x', np.int32), ('y', np.int64)], align=True))
+        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
+        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
+        # Unaligned cstruct
+        a = nd.array([[1, 2], [3, 4]],
+                    dtype='{x : unaligned(int32); y: unaligned(int64)}')
+        b = np.asarray(a)
+        self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
+        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
+        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
 
 class TestNumpyScalarInterop(unittest.TestCase):
     def test_numpy_scalar_conversion_dtypes(self):

@@ -253,10 +253,15 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requires_copy,
                 intptr_t ndim, const ndt::type& dt, const char *metadata)
 {
-    // DyND builtin types
     if (dt.is_builtin()) {
+        // DyND builtin types
         out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(
                         dynd_to_numpy_type_id[dt.get_type_id()]));
+        return;
+    } else if (dt.get_type_id() == view_type_id && dt.operand_type().get_type_id() == fixedbytes_type_id) {
+        // View operation for alignment
+        as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim,
+                        dt.value_type(), NULL);
         return;
     }
 

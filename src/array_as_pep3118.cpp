@@ -53,7 +53,8 @@ static void debug_print_py_buffer(std::ostream& o, const Py_buffer *buffer, int 
     cout << "  internal: " << buffer->internal << endl;
 }
 
-static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, const char *metadata, std::stringstream& o)
+static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
+                const char *metadata, std::stringstream& o)
 {
     switch (dt.get_type_id()) {
         case bool_type_id:
@@ -207,14 +208,16 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, c
     throw runtime_error(ss.str());
 }
 
-std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt, const char *metadata)
+std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type& tp, const char *metadata)
 {
     std::stringstream result;
     // Specify native alignment/storage if it's a builtin scalar type
-    if (dt.extended() == NULL) {
+    if (tp.is_builtin()) {
         result << "@";
+    } else if (tp.get_type_id() != byteswap_type_id) {
+        result << "=";
     }
-    append_pep3118_format(out_itemsize, dt, metadata, result);
+    append_pep3118_format(out_itemsize, tp, metadata, result);
     return result.str();
 }
 

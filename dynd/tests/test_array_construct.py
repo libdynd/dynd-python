@@ -3,6 +3,43 @@ import unittest
 from datetime import date
 from dynd import nd, ndt
 
+class TestScalarConstructor(unittest.TestCase):
+    def test_access_array(self):
+        a = nd.array(1)
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.array(1, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
+    def test_access_array_with_type(self):
+        a = nd.array(1, type=ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.array(1, type=ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
+    def test_access_asarray(self):
+        a = nd.asarray(1)
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.asarray(1, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
+    def test_access_zeros(self):
+        a = nd.zeros(ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.zeros(ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
+    def test_access_ones(self):
+        a = nd.ones(ndt.int32)
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.ones(ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
+    def test_access_full(self):
+        a = nd.full(ndt.int32, value=1)
+        self.assertEqual(a.access_flags, 'immutable')
+        a = nd.full(ndt.int32, value=1, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+
 class TestTypedArrayConstructors(unittest.TestCase):
     def test_empty(self):
         # Constructor from scalar type

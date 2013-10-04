@@ -375,8 +375,8 @@ inline void convert_one_pyscalar_datetime(const ndt::type& dt, const char *metad
 inline void convert_one_pyscalar_ndt_type(const ndt::type& DYND_UNUSED(dt),
                 const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
 {
-    ndt::type dt = make_ndt_type_from_pyobject(obj);
-    dt.swap(reinterpret_cast<type_type_data *>(out)->dt);
+    ndt::type tp = make_ndt_type_from_pyobject(obj);
+    tp.swap(reinterpret_cast<type_type_data *>(out)->tp);
 }
 
 template<convert_one_pyscalar_function_t ConvertOneFn>
@@ -562,21 +562,19 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     nd::array result;
 
     if (PyBool_Check(obj)) {
-        result = nd::array(obj == Py_True);
+        result = nd::array_rw(obj == Py_True);
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(obj)) {
         long value = PyInt_AS_LONG(obj);
 # if SIZEOF_LONG > SIZEOF_INT
-        // Use a 32-bit int if it fits. This conversion strategy
-        // is independent of sizeof(long), and is the same on 32-bit
-        // and 64-bit platforms.
+        // Use a 32-bit int if it fits.
         if (value >= INT_MIN && value <= INT_MAX) {
-            result = static_cast<int>(value);
+            result = nd::array_rw(static_cast<int>(value));
         } else {
-            result = value;
+            result = nd::array_rw(value);
         }
 # else
-        result = value;
+        result = nd::array_rw(value);
 # endif
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(obj)) {
@@ -585,18 +583,18 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
             throw runtime_error("error converting int value");
         }
 
-        // Use a 32-bit int if it fits. This conversion strategy
-        // is independent of sizeof(long), and is the same on 32-bit
-        // and 64-bit platforms.
+        // Use a 32-bit int if it fits.
         if (value >= INT_MIN && value <= INT_MAX) {
-            result = static_cast<int>(value);
+            result = nd::array_rw(static_cast<int>(value));
         } else {
-            result = value;
+            result = nd::array_rw(value);
         }
     } else if (PyFloat_Check(obj)) {
-        result = PyFloat_AS_DOUBLE(obj);
+        result = nd::array_rw(PyFloat_AS_DOUBLE(obj));
     } else if (PyComplex_Check(obj)) {
-        result = complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
+        result = nd::array_rw(
+                complex<double>(PyComplex_RealAsDouble(obj),
+                                PyComplex_ImagAsDouble(obj)));
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         char *data = NULL;
@@ -612,7 +610,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
             }
         }
 
-        result = nd::make_utf8_array(data, len);
+        result = nd::make_string_array(data, len,
+                    string_encoding_utf_8, nd::readwrite_access_flags);
         
 #else
     } else if (PyBytes_Check(obj)) {
@@ -667,7 +666,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
         if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
             throw exception();
         }
-        result = nd::make_utf8_array(s, len);
+        result = nd::make_string_array(s, len,
+                    string_encoding_utf_8, nd::readwrite_access_flags);
     } else if (PyDateTime_Check(obj)) {
         if (((PyDateTime_DateTime *)obj)->hastzinfo &&
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
@@ -687,14 +687,14 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
         dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
                     PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
     } else if (WType_Check(obj)) {
-        result = nd::array(((WType *)obj)->v);
+        result = nd::array_rw(((WType *)obj)->v);
     } else if (PyList_Check(obj)) {
         result = array_from_pylist(obj);
     } else if (PyType_Check(obj)) {
-        result = nd::array(make_ndt_type_from_pyobject(obj));
+        result = nd::array_rw(make_ndt_type_from_pyobject(obj));
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_DescrCheck(obj)) {
-        result = nd::array(make_ndt_type_from_pyobject(obj));
+        result = nd::array_rw(make_ndt_type_from_pyobject(obj));
 #endif // DYND_NUMPY_INTEROP
     }
 

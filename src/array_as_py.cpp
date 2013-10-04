@@ -135,8 +135,8 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
             return PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
         }
         case type_type_id: {
-            ndt::type dt(reinterpret_cast<const type_type_data *>(data)->dt, true);
-            return wrap_ndt_type(DYND_MOVE(dt));
+            ndt::type tp(reinterpret_cast<const type_type_data *>(data)->tp, true);
+            return wrap_ndt_type(DYND_MOVE(tp));
         }
         default: {
             stringstream ss;

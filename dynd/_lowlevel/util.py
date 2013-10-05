@@ -6,7 +6,7 @@ __all__ = ['array_preamble_of', 'data_address_of',
 import ctypes
 
 from dynd import nd, ndt
-from .ctypes_types import NDObjectPreamble
+from .ctypes_types import NDArrayPreambleStruct
 from .api import py_api
 from .metadata_struct import build_metadata_struct
 
@@ -20,7 +20,7 @@ def array_preamble_of(ndo):
     """
     if not isinstance(ndo, nd.array):
         raise TypeError('Object is not a dynd array')
-    return NDObjectPreamble.from_address(py_api.get_array_ptr(ndo))
+    return NDArrayPreambleStruct.from_address(py_api.get_array_ptr(ndo))
 
 def data_address_of(ndo):
     """
@@ -29,7 +29,7 @@ def data_address_of(ndo):
     """
     if not isinstance(ndo, nd.array):
         raise TypeError('Object is not a dynd array')
-    s = NDObjectPreamble.from_address(py_api.get_array_ptr(ndo))
+    s = NDArrayPreambleStruct.from_address(py_api.get_array_ptr(ndo))
     return s.data_pointer
 
 def metadata_address_of(ndo):
@@ -41,7 +41,7 @@ def metadata_address_of(ndo):
         raise TypeError('Object is not a dynd array')
     # The metadata is always part of the array,
     # immediately after the preamble.
-    return py_api.get_array_ptr(ndo) + ctypes.sizeof(NDObjectPreamble)
+    return py_api.get_array_ptr(ndo) + ctypes.sizeof(NDArrayPreambleStruct)
 
 def metadata_struct_of(ndo):
     """

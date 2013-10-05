@@ -1,13 +1,15 @@
 from __future__ import absolute_import
 
 __all__ = [
-        'CKernel', 'CKernelBuilder', 'CKernelDeferred']
+        'CKernel', 'CKernelBuilder',
+        'ckernel_deferred_instantiate']
 
 import ctypes
 from .api import api, py_api
-from .ctypes_types import (CKernelPrefixStruct,
+from .ctypes_types import (CKernelPrefixStruct, NDArrayPreambleStruct,
         CKernelBuilderStruct,
         CKernelDeferredStruct)
+from dynd import nd, ndt
 
 class CKernel(object):
     """Wraps a ckernel prefix pointer in a callable interface.
@@ -117,43 +119,21 @@ class CKernelBuilder(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
-class CKernelDeferred(object):
-    def __init__(self):
-        self.__ckd = CKernelDeferredStruct()
-
-    @property
-    def ckd(self):
-        return self.__ckd
-
-    @property
-    def _as_parameter_(self):
-        """Returns the ckernel_deferred byref for ctypes calls"""
-        return ctypes.byref(self.__ckd)
-
-    def instantiate(self, out_ckb, ckb_offset, dynd_metadata, kerntype):
-        if kerntype in ["single", 0]:
-            kerntype = 0
-        elif kerntype in ["strided", 1]:
-            kerntype = 1
-        else:
-            raise ValueError("invalid kernel request type %r" % kerntype)
-        self.ckd.instantiate_func(self.ckd.data_ptr,
-                        out_ckb, ckb_offset, dynd_metadata,
-                        kerntype)
-
-    def close(self):
-        if self.__ckd:
-            # Call the free function
-            if self.__ckd.free_func:
-                self.__ckd.free_func(self.__ckd.data_ptr)
-            self.__ckd = None
-
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.close()
-
+def ckernel_deferred_instantiate(ckd, out_ckb, ckb_offset, dynd_metadata, kerntype):
+    if (not isinstance(ckd, nd.array) or
+                nd.type_of(ckd).type_id != 'ckernel_deferred'):
+        raise TypeError('ckd must be an nd.array with type ckernel_deferred')
+    if kerntype in ["single", 0]:
+        kerntype = 0
+    elif kerntype in ["strided", 1]:
+        kerntype = 1
+    else:
+        raise ValueError("invalid kernel request type %r" % kerntype)
+    # Get the data pointer to the ckernel_deferred object
+    dp = NDArrayPreambleStruct.from_address(py_api.get_array_ptr(ckd)).data_pointer
+    ckd_struct = CKernelDeferredStruct.from_address(dp)
+    if ckd_struct.instantiate_func is None:
+        raise ValueError('the provided ckernel_deferred is NULL')
+    ckd_struct.instantiate_func(ckd_struct.data_ptr,
+                    out_ckb, ckb_offset, dynd_metadata,
+                    kerntype)

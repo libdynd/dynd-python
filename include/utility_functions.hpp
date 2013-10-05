@@ -14,6 +14,11 @@
 
 #include <dynd/type.hpp>
 
+namespace dynd {
+    // Forward declaration
+    struct ckernel_deferred;
+} // namespace dynd
+
 namespace pydynd {
 
 /**
@@ -226,6 +231,8 @@ uint32_t pyarg_access_flags(PyObject* obj);
  * Accepts "readwrite" and "immutable".
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
+
+dynd::ckernel_deferred *pyarg_ckernel_deferred(PyObject *ckd, const char *paramname);
 
 } // namespace pydynd
 

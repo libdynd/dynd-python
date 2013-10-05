@@ -260,9 +260,9 @@ namespace {
 } // anonymous namespace
 
 PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
-                PyObject *type_tuple, void *out_ckd_raw, int ckernel_acquires_gil)
+                PyObject *type_tuple, PyObject *out_ckd, int ckernel_acquires_gil)
 {
-    dynd::ckernel_deferred *out_ckd = reinterpret_cast<dynd::ckernel_deferred *>(out_ckd_raw);
+    ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred(out_ckd, "out_ckd");
     // NOTE: This function does not raise C++ exceptions,
     //       it behaves as a Python C-API function.
     if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
@@ -317,18 +317,18 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
         if (matched) {
             if (!uf->core_enabled) {
                 size_t out_ckd_size = sizeof(scalar_ufunc_deferred_data) + (nargs - 1) * sizeof(void *);
-                out_ckd->data_ptr = malloc(out_ckd_size);
-                memset(out_ckd->data_ptr, 0, out_ckd_size);
-                out_ckd->ckernel_funcproto = expr_operation_funcproto;
-                out_ckd->free_func = &delete_scalar_ufunc_deferred_data;
-                out_ckd->instantiate_func = &instantiate_scalar_ufunc_ckernel;
-                out_ckd->data_types_size = nargs;
+                ckd_ptr->data_ptr = malloc(out_ckd_size);
+                memset(ckd_ptr->data_ptr, 0, out_ckd_size);
+                ckd_ptr->ckernel_funcproto = expr_operation_funcproto;
+                ckd_ptr->free_func = &delete_scalar_ufunc_deferred_data;
+                ckd_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
+                ckd_ptr->data_types_size = nargs;
                 // Fill in the ckernel_deferred instance data
-                scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(out_ckd->data_ptr);
+                scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(ckd_ptr->data_ptr);
                 data->ufunc = uf;
                 Py_INCREF(uf);
                 data->data_types_size = nargs;
-                out_ckd->data_dynd_types = data->data_types;
+                ckd_ptr->data_dynd_types = data->data_types;
                 for (intptr_t j = 0; j < nargs; ++j) {
                     data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
                 }

@@ -32,10 +32,10 @@ struct py_lowlevel_api_t {
                     PyObject *src_tp_obj, const void *src_metadata,
                     PyObject *kerntype, void *out_ckb);
     PyObject *(*make_ckernel_deferred_from_assignment)(PyObject *dst_tp_obj, PyObject *src_tp_obj,
-                    PyObject *funcproto, PyObject *errmode, void *out_ckd);
+                    PyObject *funcproto, PyObject *errmode, PyObject *out_ckd);
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
     PyObject *(*ckernel_deferred_from_ufunc)(PyObject *ufunc,
-                    PyObject *type_tuple, void *out_ckd, int ckernel_acquires_gil);
+                    PyObject *type_tuple, PyObject *out_ckd, int ckernel_acquires_gil);
 };
 
 } // namespace pydynd

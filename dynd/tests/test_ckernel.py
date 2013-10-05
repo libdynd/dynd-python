@@ -107,79 +107,79 @@ class TestCKernelBuilder(unittest.TestCase):
 
 class TestCKernelDeferred(unittest.TestCase):
     def test_creation(self):
-        with _lowlevel.ckernel.CKernelDeferred() as ckd:
-            pass
+        ckd = nd.empty('ckernel_deferred')
+        self.assertEqual(nd.type_of(ckd).type_id, 'ckernel_deferred')
 
     def test_assignment_ckernel(self):
-        with _lowlevel.ckernel.CKernelDeferred() as ckd:
-            _lowlevel.make_ckernel_deferred_from_assignment(
-                        ndt.float32, ndt.int64,
-                        "unary", "none", ckd)
-            # Instantiate as a single kernel
-            with _lowlevel.ckernel.CKernelBuilder() as ckb:
-                meta = (ctypes.c_void_p * 2)()
-                ckd.instantiate(ckb, 0, meta, "single")
-                ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
-                # Do an assignment using ctypes
-                i64 = ctypes.c_int64(1234)
-                f32 = ctypes.c_float(1)
-                ck(ctypes.addressof(f32), ctypes.addressof(i64))
-                self.assertEqual(f32.value, 1234.0)
-            # Instantiate as a strided kernel
-            with _lowlevel.ckernel.CKernelBuilder() as ckb:
-                meta = (ctypes.c_void_p * 2)()
-                ckd.instantiate(ckb, 0, meta, "strided")
-                ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
-                # Do an assignment using ctypes
-                i64 = (ctypes.c_int64 * 3)()
-                for i, v in enumerate([3,7,21]):
-                    i64[i] = v
-                f32 = (ctypes.c_float * 3)()
-                ck(ctypes.addressof(f32), 4,
-                            ctypes.addressof(i64), 8,
-                            3)
-                self.assertEqual([f32[i] for i in range(3)], [3,7,21])
+        ckd = nd.empty('ckernel_deferred')
+        _lowlevel.make_ckernel_deferred_from_assignment(
+                    ndt.float32, ndt.int64,
+                    "unary", "none", ckd)
+        # Instantiate as a single kernel
+        with _lowlevel.ckernel.CKernelBuilder() as ckb:
+            meta = (ctypes.c_void_p * 2)()
+            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "single")
+            ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
+            # Do an assignment using ctypes
+            i64 = ctypes.c_int64(1234)
+            f32 = ctypes.c_float(1)
+            ck(ctypes.addressof(f32), ctypes.addressof(i64))
+            self.assertEqual(f32.value, 1234.0)
+        # Instantiate as a strided kernel
+        with _lowlevel.ckernel.CKernelBuilder() as ckb:
+            meta = (ctypes.c_void_p * 2)()
+            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "strided")
+            ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
+            # Do an assignment using ctypes
+            i64 = (ctypes.c_int64 * 3)()
+            for i, v in enumerate([3,7,21]):
+                i64[i] = v
+            f32 = (ctypes.c_float * 3)()
+            ck(ctypes.addressof(f32), 4,
+                        ctypes.addressof(i64), 8,
+                        3)
+            self.assertEqual([f32[i] for i in range(3)], [3,7,21])
 
     def check_from_numpy_int32_add(self, requiregil):
         # Get int32 add as a ckernel_deferred
-        with _lowlevel.ckernel.CKernelDeferred() as ckd:
-            _lowlevel.ckernel_deferred_from_ufunc(np.add,
-                            (np.int32, np.int32, np.int32),
-                            ckd, requiregil)
-            # Instantiate as a single kernel
-            with _lowlevel.ckernel.CKernelBuilder() as ckb:
-                meta = (ctypes.c_void_p * 3)()
-                ckd.instantiate(ckb, 0, meta, "single")
-                ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
-                a = ctypes.c_int32(10)
-                b = ctypes.c_int32(21)
-                c = ctypes.c_int32(0)
-                src = (ctypes.c_void_p * 2)()
-                src[0] = ctypes.addressof(a)
-                src[1] = ctypes.addressof(b)
-                ck(ctypes.addressof(c), src)
-                self.assertEqual(c.value, 31)
-            # Instantiate as a strided kernel
-            with _lowlevel.ckernel.CKernelBuilder() as ckb:
-                meta = (ctypes.c_void_p * 3)()
-                ckd.instantiate(ckb, 0, meta, "strided")
-                ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
-                a = (ctypes.c_int32 * 3)()
-                b = (ctypes.c_int32 * 3)()
-                c = (ctypes.c_int32 * 3)()
-                for i, v in enumerate([1,4,6]):
-                    a[i] = v
-                for i, v in enumerate([3, -1, 12]):
-                    b[i] = v
-                src = (ctypes.c_void_p * 2)()
-                src[0] = ctypes.addressof(a)
-                src[1] = ctypes.addressof(b)
-                strides = (c_ssize_t * 2)()
-                strides[0] = strides[1] = 4
-                ck(ctypes.addressof(c), 4, src, strides, 3)
-                self.assertEqual(c[0], 4)
-                self.assertEqual(c[1], 3)
-                self.assertEqual(c[2], 18)
+        ckd = nd.empty('ckernel_deferred')
+        _lowlevel.ckernel_deferred_from_ufunc(np.add,
+                        (np.int32, np.int32, np.int32),
+                        ckd, requiregil)
+        # Instantiate as a single kernel
+        with _lowlevel.ckernel.CKernelBuilder() as ckb:
+            meta = (ctypes.c_void_p * 3)()
+            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "single")
+            ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
+            a = ctypes.c_int32(10)
+            b = ctypes.c_int32(21)
+            c = ctypes.c_int32(0)
+            src = (ctypes.c_void_p * 2)()
+            src[0] = ctypes.addressof(a)
+            src[1] = ctypes.addressof(b)
+            ck(ctypes.addressof(c), src)
+            self.assertEqual(c.value, 31)
+        # Instantiate as a strided kernel
+        with _lowlevel.ckernel.CKernelBuilder() as ckb:
+            meta = (ctypes.c_void_p * 3)()
+            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "strided")
+            ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
+            a = (ctypes.c_int32 * 3)()
+            b = (ctypes.c_int32 * 3)()
+            c = (ctypes.c_int32 * 3)()
+            for i, v in enumerate([1,4,6]):
+                a[i] = v
+            for i, v in enumerate([3, -1, 12]):
+                b[i] = v
+            src = (ctypes.c_void_p * 2)()
+            src[0] = ctypes.addressof(a)
+            src[1] = ctypes.addressof(b)
+            strides = (c_ssize_t * 2)()
+            strides[0] = strides[1] = 4
+            ck(ctypes.addressof(c), 4, src, strides, 3)
+            self.assertEqual(c[0], 4)
+            self.assertEqual(c[1], 3)
+            self.assertEqual(c[2], 18)
 
     def test_from_numpy_int32_add_nogil(self):
         self.check_from_numpy_int32_add(False)

@@ -28,10 +28,10 @@ namespace {
         return obj->v.extended();
     }
 
-    PyObject *array_from_ptr(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access)
+    PyObject *array_from_ptr(PyObject *tp, PyObject *ptr, PyObject *owner, PyObject *access)
     {
         try {
-            ndt::type d = make_ndt_type_from_pyobject(dt);
+            ndt::type d = make_ndt_type_from_pyobject(tp);
             size_t ptr_val = pyobject_as_size_t(ptr);
             uint32_t access_flags = pyarg_strings_to_int(
                             access, "access", nd::read_access_flag,
@@ -107,10 +107,10 @@ namespace {
     }
 
     PyObject *make_ckernel_deferred_from_assignment(PyObject *dst_tp_obj, PyObject *src_tp_obj,
-                PyObject *funcproto_obj, PyObject *errmode_obj, void *out_ckd)
+                PyObject *funcproto_obj, PyObject *errmode_obj, PyObject *out_ckd)
     {
         try {
-            ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd);
+            ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred(out_ckd, "out_ckd");
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);

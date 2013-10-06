@@ -262,7 +262,7 @@ namespace {
 PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                 PyObject *type_tuple, PyObject *out_ckd, int ckernel_acquires_gil)
 {
-    ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred(out_ckd, "out_ckd");
+    ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred_rw(out_ckd, "out_ckd");
     // NOTE: This function does not raise C++ exceptions,
     //       it behaves as a Python C-API function.
     if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {

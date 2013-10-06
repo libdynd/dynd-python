@@ -232,7 +232,8 @@ uint32_t pyarg_access_flags(PyObject* obj);
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
 
-dynd::ckernel_deferred *pyarg_ckernel_deferred(PyObject *ckd, const char *paramname);
+const dynd::ckernel_deferred *pyarg_ckernel_deferred_ro(PyObject *ckd, const char *paramname);
+dynd::ckernel_deferred *pyarg_ckernel_deferred_rw(PyObject *ckd, const char *paramname);
 
 } // namespace pydynd
 

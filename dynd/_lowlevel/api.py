@@ -101,6 +101,9 @@ class _PyLowLevelAPI(ctypes.Structure):
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.c_int)),
+                ('lift_ckernel_deferred',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object, ctypes.py_object)),
                ]
 
 api = _LowLevelAPI.from_address(_get_lowlevel_api())
@@ -415,4 +418,9 @@ ckernel_deferred_from_ufunc.__doc__ = """
     ckernel_acquires_gil : bool
         If True, the resulting ckernel acquires the GIL before calling
         the ufunc's kernel. If False, it does not.
+    """
+lift_ckernel_deferred.__doc__ = """
+    _lowlevel.lift_ckernel_deferred(out_ckd, ckd, types)
+
+    TODO
     """

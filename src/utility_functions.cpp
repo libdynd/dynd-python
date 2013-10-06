@@ -472,10 +472,22 @@ uint32_t pydynd::pyarg_creation_access_flags(PyObject *access)
                         "immutable", nd::read_access_flag|nd::immutable_access_flag);
 }
 
-dynd::ckernel_deferred *pydynd::pyarg_ckernel_deferred(PyObject *ckd, const char *paramname)
+const dynd::ckernel_deferred *pydynd::pyarg_ckernel_deferred_ro(PyObject *ckd, const char *paramname)
 {
     if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
-        throw runtime_error("out_ckd must be an nd.array of type ckernel_deferred");
+        stringstream ss;
+        ss << paramname << " must be an nd.array of type ckernel_deferred";
+        throw runtime_error(ss.str());
+    }
+    return reinterpret_cast<const ckernel_deferred *>(((WArray *)ckd)->v.get_readonly_originptr());
+}
+
+dynd::ckernel_deferred *pydynd::pyarg_ckernel_deferred_rw(PyObject *ckd, const char *paramname)
+{
+    if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+        stringstream ss;
+        ss << paramname << " must be an nd.array of type ckernel_deferred";
+        throw runtime_error(ss.str());
     }
     return reinterpret_cast<ckernel_deferred *>(((WArray *)ckd)->v.get_readwrite_originptr());
 }

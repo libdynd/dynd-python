@@ -6,7 +6,8 @@
 #include <sstream>
 
 #include <dynd/kernels/assignment_kernels.hpp>
-#include<dynd/memblock/external_memory_block.hpp>
+#include <dynd/memblock/external_memory_block.hpp>
+#include <dynd/kernels/lift_ckernel_deferred.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "numpy_ufunc_kernel.hpp"
@@ -110,7 +111,7 @@ namespace {
                 PyObject *funcproto_obj, PyObject *errmode_obj, PyObject *out_ckd)
     {
         try {
-            ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred(out_ckd, "out_ckd");
+            ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred_rw(out_ckd, "out_ckd");
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -141,6 +142,28 @@ namespace {
         }
     }
 
+    PyObject *lift_ckernel_deferred(PyObject *out_ckd, PyObject *ckd, PyObject *types)
+    {
+        try {
+            // Convert all the input parameters
+            ckernel_deferred *out_ckd_ptr = pyarg_ckernel_deferred_rw(out_ckd, "out_ckd");
+            if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+                stringstream ss;
+                ss << "ckd must be an nd.array of type ckernel_deferred";
+                throw runtime_error(ss.str());
+            }
+            const nd::array& ckd_arr = ((WArray *)ckd)->v;
+            vector<ndt::type> types_vec;
+            pyobject_as_vector_ndt_type(types, types_vec);
+            
+            dynd::lift_ckernel_deferred(out_ckd_ptr, ckd_arr, types_vec);
+
+            Py_RETURN_NONE;
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
+    }
 
     const py_lowlevel_api_t py_lowlevel_api = {
         0, // version, should increment this every time the struct changes at a release
@@ -150,7 +173,8 @@ namespace {
         &make_assignment_ckernel,
         &make_ckernel_deferred_from_assignment,
         &pydynd::numpy_typetuples_from_ufunc,
-        &pydynd::ckernel_deferred_from_ufunc
+        &pydynd::ckernel_deferred_from_ufunc,
+        &lift_ckernel_deferred
     };
 } // anonymous namespace
 

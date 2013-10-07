@@ -207,21 +207,10 @@ class TestCKernelDeferred(unittest.TestCase):
                                     'strided, var, float64', 'strided, 1, int32']])
         # Create some compatible arguments
         out = nd.empty('var, var, float64')
-        in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='var, var, float64')
+        in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='strided, var, float64')
         in1 = nd.array([[-1], [10], [100], [-12]], type='strided, 1, int32')
-        # Instantiate as a single kernel
-        with _lowlevel.ckernel.CKernelBuilder() as ckb:
-            meta = (ctypes.c_void_p * 3)()
-            for i, arr in enumerate([out, in0, in1]):
-                meta[i] = _lowlevel.metadata_address_of(arr)
-            _lowlevel.ckernel_deferred_instantiate(ckd_lifted, ckb, 0, meta, "single")
-            # Call it on the arrays
-            ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
-            src = (ctypes.c_void_p * 2)()
-            for i, arr in enumerate([in0, in1]):
-                src[i] = _lowlevel.data_address_of(arr)
-            dst = _lowlevel.data_address_of(out)
-            ck(dst, src)
+        # Instantiate and call the kernel on these arguments
+        ckd_lifted.__call__(out, in0, in1)
         # Verify that we got the expected result
         self.assertEqual(nd.as_py(out),
                     [[0.5, 1.0, 1.5],

@@ -49,8 +49,18 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
             return NULL;
         }
         char *types = uf->types + i * nargs;
-        for (int j = 0; j < nargs; ++j) {
-            PyObject *descr = (PyObject *)PyArray_DescrFromType(types[j]);
+        // Switch from numpy convention "in, out" to dynd convention "out, in"
+        {
+            PyObject *descr = (PyObject *)PyArray_DescrFromType(types[nargs-1]);
+            if (descr == NULL) {
+                Py_DECREF(result);
+                Py_DECREF(typetup);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(typetup, 0, descr);
+        }
+        for (int j = 1; j < nargs; ++j) {
+            PyObject *descr = (PyObject *)PyArray_DescrFromType(types[j-1]);
             if (descr == NULL) {
                 Py_DECREF(result);
                 Py_DECREF(typetup);
@@ -74,8 +84,18 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
                     return NULL;
                 }
                 int *types = funcdata->arg_types;
-                for (int j = 0; j < nargs; ++j) {
-                    PyObject *descr = (PyObject *)PyArray_DescrFromType(types[j]);
+                // Switch from numpy convention "in, out" to dynd convention "out, in"
+                {
+                    PyObject *descr = (PyObject *)PyArray_DescrFromType(types[nargs-1]);
+                    if (descr == NULL) {
+                        Py_DECREF(result);
+                        Py_DECREF(typetup);
+                        return NULL;
+                    }
+                    PyTuple_SET_ITEM(typetup, 0, descr);
+                }
+                for (int j = 1; j < nargs; ++j) {
+                    PyObject *descr = (PyObject *)PyArray_DescrFromType(types[j-1]);
                     if (descr == NULL) {
                         Py_DECREF(result);
                         Py_DECREF(typetup);
@@ -307,11 +327,15 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
     for (int i = 0; i < builtin_count; ++i) {
         char *types = uf->types + i * nargs;
         bool matched = true;
-        for (intptr_t j = 0; j < nargs; ++j) {
-            if (argtypes[j] != types[j]) {
+        // Match the numpy convention "in, out" vs the dynd convention "out, in"
+        for (intptr_t j = 1; j < nargs; ++j) {
+            if (argtypes[j] != types[j-1]) {
                 matched = false;
                 break;
             }
+        }
+        if (argtypes[0] != types[nargs-1]) {
+            matched = false;
         }
         // If we found a full match, return the kernel
         if (matched) {

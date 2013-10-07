@@ -328,7 +328,7 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                 data->ufunc = uf;
                 Py_INCREF(uf);
                 data->data_types_size = nargs;
-                ckd_ptr->data_dynd_types = data->data_types;
+                ckd_ptr->data_dynd_types = reinterpret_cast<ndt::type *>(data->data_types);
                 for (intptr_t j = 0; j < nargs; ++j) {
                     data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
                 }

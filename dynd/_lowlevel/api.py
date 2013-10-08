@@ -80,13 +80,15 @@ class _PyLowLevelAPI(ctypes.Structure):
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                # void make_assignment_kernel(dst_dt, dst_metadata,
-                #               src_dt, src_metadata, kerntype, &ckb)
+                # void make_assignment_kernel(out_ckb, ckb_offset,
+                #               dst_dt, dst_metadata,
+                #               src_dt, src_metadata, kerntype)
                 ('make_assignment_ckernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
+                        CKernelBuilderStructPtr, c_ssize_t,
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, ctypes.c_void_p,
-                        ctypes.py_object, CKernelBuilderStructPtr)),
+                        ctypes.py_object)),
                 ('make_ckernel_deferred_from_assignment',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
@@ -341,7 +343,7 @@ array_from_ptr.__doc__ = """
         The dynd array constructed from the parameters.
     """
 make_assignment_ckernel.__doc__ = """
-    _lowlevel.make_assignment_ckernel(dst_tp, dst_metadata, src_tp, src_metadata, kerntype, out_ckb)
+    _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset, dst_tp, dst_metadata, src_tp, src_metadata, kerntype)
 
     This ctypes function pointer constructs a unary ckernel
     into the output ckernel_builder provided. The assignment
@@ -349,6 +351,12 @@ make_assignment_ckernel.__doc__ = """
 
     Parameters
     ----------
+    out_ckb : raw pointer
+        This must point to a valid ckernel_builder object.
+    ckb_offset : integer
+        This is the offset within the output ckernel_builder at which
+        to create the ckernel. This is nonzero when a child kernel
+        is being created.
     dst_tp : ndt.type
         The destination type.
     dst_metadata : raw pointer or None
@@ -361,8 +369,6 @@ make_assignment_ckernel.__doc__ = """
         remain live while the constructed ckernel exists.
     kerntype : 'single' or 'strided'
         Whether to create a unary_single or unary_strided ckernel.
-    out_ckb : raw pointer
-        This must point to a valid ckernel_builder object.
     """
 make_ckernel_deferred_from_assignment.__doc__ = """
     _lowlevel.make_ckernel_deferred_from_assignment(dst_tp, src_tp, funcproto, errmode)

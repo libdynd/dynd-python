@@ -61,9 +61,10 @@ namespace {
         }
     }
 
-    PyObject *make_assignment_ckernel(PyObject *dst_tp_obj, const void *dst_metadata,
+    PyObject *make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
+                    PyObject *dst_tp_obj, const void *dst_metadata,
                     PyObject *src_tp_obj, const void *src_metadata,
-                    PyObject *kerntype_obj, void *out_ckb)
+                    PyObject *kerntype_obj)
     {
         try {
             ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(out_ckb);
@@ -95,14 +96,13 @@ namespace {
                 throw runtime_error(ss.str());
             }
 
-            size_t kernel_size = make_assignment_kernel(ckb_ptr, 0,
+            intptr_t kernel_size = make_assignment_kernel(ckb_ptr, ckb_offset,
                             dst_tp, reinterpret_cast<const char *>(dst_metadata),
                             src_tp, reinterpret_cast<const char *>(src_metadata),
                             kerntype, assign_error_default,
                             &eval::default_eval_context);
 
-            Py_INCREF(Py_None);
-            return Py_None;
+            return PyLong_FromSsize_t(kernel_size);
         } catch(...) {
             translate_exception();
             return NULL;

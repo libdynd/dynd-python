@@ -219,11 +219,17 @@ class TestCKernelDeferred(unittest.TestCase):
     def test_ckernel_deferred_from_pyfunc(self):
         # Test wrapping make_assignment_ckernel as a deferred ckernel
         def instantiate_assignment(out_ckb, ckb_offset, types, meta, kerntype):
+            out_ckb = _lowlevel.CKernelBuilderStruct.from_address(out_ckb)
             return _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset,
                             types[0], meta[0],
                             types[1], meta[1],
                             'expr', kerntype)
-
+        ckd = _lowlevel.ckernel_deferred_from_pyfunc(instantiate_assignment,
+                        [ndt.string, ndt.date])
+        out = nd.empty(ndt.string)
+        in0 = nd.array('2012-11-05', ndt.date)
+        ckd.__call__(out, in0)
+        self.assertEqual(nd.as_py(out), '2012-11-05')
 
 
 if __name__ == '__main__':

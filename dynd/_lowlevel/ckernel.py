@@ -46,15 +46,25 @@ class CKernel(object):
 
 class CKernelBuilder(object):
     """Wraps a ckernel builder data structure as a python object"""
-    def __init__(self):
-        """Constructs an empty ckernel builder"""
-        self.__ckb = CKernelBuilderStruct()
-        api.ckernel_builder_construct(self)
+    def __init__(self, address=None):
+        """
+        Constructs an empty ckernel builder owned by this object,
+        or builds a ckernel builder python object around a
+        ckernel_builder raw pointer, borrowing its value temporarily
+        """
+        if address is None:
+            self.__ckb = CKernelBuilderStruct()
+            api.ckernel_builder_construct(self)
+            self._borrowed = False
+        else:
+            self.__ckb = CKernelBuilderStruct.from_address(address)
+            self._borrowed = True
 
     def close(self):
         if self.__ckb:
-            # Call the destructor
-            api.ckernel_builder_destruct(self)
+            if not self._borrowed:
+                # Call the destructor
+                api.ckernel_builder_destruct(self)
             self.__ckb = None
 
     def reset(self):
@@ -89,6 +99,11 @@ class CKernelBuilder(object):
         if api.ckernel_builder_ensure_capacity_leaf(
                         self, requested_capacity) < 0:
             raise MemoryError('ckernel builder ran out of memory')
+
+    @property
+    def data(self):
+        """Return the pointer to the ckernel data"""
+        return self.__ckb.data
 
     @property
     def ckb(self):

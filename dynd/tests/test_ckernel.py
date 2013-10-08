@@ -230,7 +230,18 @@ class TestCKernelDeferred(unittest.TestCase):
         in0 = nd.array('2012-11-05', ndt.date)
         ckd.__call__(out, in0)
         self.assertEqual(nd.as_py(out), '2012-11-05')
-
+        # Also test it as a lifted kernel
+        ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
+                        ['3, var, string', '3, var, date'])
+        out = nd.empty('3, var, string')
+        from datetime import date
+        in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
+                        [date(1999, 12, 31)],
+                        []], type='3, var, date')
+        ckd_lifted.__call__(out, in0)
+        self.assertEqual(nd.as_py(out),
+                        [['2013-03-11', '2010-10-10'],
+                         ['1999-12-31'], []])
 
 if __name__ == '__main__':
     unittest.main()

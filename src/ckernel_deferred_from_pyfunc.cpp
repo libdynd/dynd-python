@@ -58,9 +58,9 @@ namespace {
         // Turn the kernel request type into a string
         pyobject_ownref kerntype_str;
         if (kerntype == kernel_request_single) {
-            kerntype_str.reset(PyString_FromString("single"));
+            kerntype_str.reset(pystring_from_string("single"));
         } else if (kerntype == kernel_request_strided) {
-            kerntype_str.reset(PyString_FromString("strided"));
+            kerntype_str.reset(pystring_from_string("strided"));
         } else {
             throw runtime_error("unrecognized kernel request type");
         }

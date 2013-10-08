@@ -138,6 +138,22 @@ intptr_t pyobject_as_index(PyObject *index);
 int pyobject_as_int_index(PyObject *index);
 dynd::irange pyobject_as_irange(PyObject *index);
 std::string pystring_as_string(PyObject *str);
+inline PyObject *pystring_from_string(const char *str)
+{
+#if PY_VERSION_HEX >= 0x03000000
+        return PyUnicode_FromString(str);
+#else
+        return PyString_FromString(str);
+#endif
+}
+inline PyObject *pystring_from_string(const std::string& str)
+{
+#if PY_VERSION_HEX >= 0x03000000
+        return PyUnicode_FromStringAndSize(str.data(), str.size());
+#else
+        return PyString_FromStringAndSize(str.data(), str.size());
+#endif
+}
 
 void pyobject_as_vector_ndt_type(PyObject *list_dtype, std::vector<dynd::ndt::type>& vector_dtype);
 void pyobject_as_vector_string(PyObject *list_string, std::vector<std::string>& vector_string);

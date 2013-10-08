@@ -111,6 +111,13 @@ class TestCKernelDeferred(unittest.TestCase):
     def test_creation(self):
         ckd = nd.empty('ckernel_deferred')
         self.assertEqual(nd.type_of(ckd).type_id, 'ckernel_deferred')
+        # Test there is a string version of a NULL ckernel_deferred
+        self.assertTrue(str(ckd) != '')
+        # Test there is a string version of an initialized ckernel_deferred
+        ckd = _lowlevel.make_ckernel_deferred_from_assignment(
+                    ndt.float32, ndt.int64,
+                    "unary", "none")
+        self.assertTrue(str(ckd) != '')
 
     def test_assignment_ckernel(self):
         ckd = _lowlevel.make_ckernel_deferred_from_assignment(

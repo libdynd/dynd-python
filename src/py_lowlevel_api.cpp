@@ -8,11 +8,13 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/kernels/lift_ckernel_deferred.hpp>
+#include <dynd/types/ckernel_deferred_type.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "numpy_ufunc_kernel.hpp"
 #include "utility_functions.hpp"
 #include "exception_translation.hpp"
+#include "ckernel_deferred_from_pyfunc.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -142,11 +144,12 @@ namespace {
         }
     }
 
-    PyObject *lift_ckernel_deferred(PyObject *out_ckd, PyObject *ckd, PyObject *types)
+    PyObject *lift_ckernel_deferred(PyObject *ckd, PyObject *types)
     {
         try {
+            nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
+            ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
             // Convert all the input parameters
-            ckernel_deferred *out_ckd_ptr = pyarg_ckernel_deferred_rw(out_ckd, "out_ckd");
             if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
                 stringstream ss;
                 ss << "ckd must be an nd.array of type ckernel_deferred";
@@ -158,7 +161,7 @@ namespace {
             
             dynd::lift_ckernel_deferred(out_ckd_ptr, ckd_arr, types_vec);
 
-            Py_RETURN_NONE;
+            return wrap_array(out_ckd);
         } catch(...) {
             translate_exception();
             return NULL;
@@ -174,7 +177,8 @@ namespace {
         &make_ckernel_deferred_from_assignment,
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc,
-        &lift_ckernel_deferred
+        &lift_ckernel_deferred,
+        &pydynd::ckernel_deferred_from_pyfunc
     };
 } // anonymous namespace
 

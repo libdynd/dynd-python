@@ -198,8 +198,7 @@ class TestCKernelDeferred(unittest.TestCase):
                         [ndt.float64, ndt.float64, ndt.int32])
 
         # Now lift it
-        ckd_lifted = nd.empty("ckernel_deferred")
-        _lowlevel.lift_ckernel_deferred(ckd_lifted, ckd,
+        ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
                         ['var, var, float64', 'strided, var, float64',
                          'strided, 1, int32'])
         self.assertEqual(nd.as_py(ckd_lifted.types),

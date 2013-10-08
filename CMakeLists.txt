@@ -145,6 +145,7 @@ set(pydynd_CPP_SRC
     include/array_as_pep3118.hpp
     include/array_as_numpy.hpp
     include/array_as_py.hpp
+    include/ckernel_deferred_from_pyfunc.hpp
     include/numpy_interop.hpp
     include/numpy_ufunc_kernel.hpp
     include/py_lowlevel_api.hpp
@@ -164,6 +165,7 @@ set(pydynd_CPP_SRC
     src/array_as_pep3118.cpp
     src/array_as_numpy.cpp
     src/array_as_py.cpp
+    src/ckernel_deferred_from_pyfunc.cpp
     src/numpy_interop.cpp
     src/numpy_ufunc_kernel.cpp
     src/py_lowlevel_api.cpp

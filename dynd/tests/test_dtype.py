@@ -85,12 +85,12 @@ class TestDType(unittest.TestCase):
 
     def test_complex_type_properties(self):
         self.assertEqual(type(ndt.cfloat32), ndt.type)
-        self.assertEqual(str(ndt.cfloat32), 'complex<float32>')
+        self.assertEqual(str(ndt.cfloat32), 'cfloat32')
         self.assertEqual(ndt.cfloat32.data_size, 8)
         self.assertEqual(ndt.cfloat32.data_alignment, 4)
 
         self.assertEqual(type(ndt.cfloat64), ndt.type)
-        self.assertEqual(str(ndt.cfloat64), 'complex<float64>')
+        self.assertEqual(str(ndt.cfloat64), 'cfloat64')
         self.assertEqual(ndt.cfloat64.data_size, 16)
         self.assertTrue(ndt.cfloat64.data_alignment in [4,8])
 

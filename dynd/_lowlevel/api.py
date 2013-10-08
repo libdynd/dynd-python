@@ -103,7 +103,10 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.c_int)),
                 ('lift_ckernel_deferred',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object, ctypes.py_object)),
+                        ctypes.py_object, ctypes.py_object)),
+                ('ckernel_deferred_from_pyfunc',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object)),
                ]
 
 api = _LowLevelAPI.from_address(_get_lowlevel_api())
@@ -420,7 +423,26 @@ ckernel_deferred_from_ufunc.__doc__ = """
         the ufunc's kernel. If False, it does not.
     """
 lift_ckernel_deferred.__doc__ = """
-    _lowlevel.lift_ckernel_deferred(out_ckd, ckd, types)
+    _lowlevel.lift_ckernel_deferred(ckd, types)
+
+    This function creates a lifted ckernel_deferred, broadcasting
+    the provided ``ckd`` across the additional array dimensions
+    in the ``types`` parameter.
+
+    Parameters
+    ----------
+    ckd : nd.array of ckernel_deferred type
+        The ckernel_deferred object to lift.
+    types : list of dynd types
+        The types to lift the ``ckd`` to.
+
+    Returns
+    -------
+    nd.array of ckernel_deferred type
+        The lifted ckernel_deferred object.
+    """
+ckernel_deferred_from_pyfunc.__doc__ = """
+    _lowlevel.ckernel_deferred_from_pyfunc(instantiate_pyfunc, types)
 
     TODO
     """

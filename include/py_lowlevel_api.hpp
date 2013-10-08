@@ -36,7 +36,8 @@ struct py_lowlevel_api_t {
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
     PyObject *(*ckernel_deferred_from_ufunc)(PyObject *ufunc,
                     PyObject *type_tuple, PyObject *out_ckd, int ckernel_acquires_gil);
-    PyObject *(*lift_ckernel_deferred)(PyObject *out_ckd, PyObject *ckd, PyObject *types);
+    PyObject *(*lift_ckernel_deferred)(PyObject *ckd, PyObject *types);
+    PyObject *(*ckernel_deferred_from_pyfunc)(PyObject *instantiate_pyfunc, PyObject *types);
 };
 
 } // namespace pydynd

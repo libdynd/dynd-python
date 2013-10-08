@@ -119,7 +119,7 @@ namespace {
         PyUFuncGenericFunction funcptr;
         void *ufunc_data;
         int ckernel_acquires_gil;
-        size_t data_types_size;
+        intptr_t data_types_size;
         const dynd::base_type *data_types[1];
     };
 
@@ -128,7 +128,7 @@ namespace {
         scalar_ufunc_deferred_data *data =
                         reinterpret_cast<scalar_ufunc_deferred_data *>(self_data_ptr);
         const dynd::base_type **data_types = &data->data_types[0];
-        for (size_t i = 0; i < data->data_types_size; ++i) {
+        for (intptr_t i = 0; i < data->data_types_size; ++i) {
             base_type_xdecref(data_types[i]);
         }
         // Call the destructor and free the memory
@@ -145,7 +145,7 @@ namespace {
         ckernel_prefix base;
         PyUFuncGenericFunction funcptr;
         void *ufunc_data;
-        size_t data_types_size;
+        intptr_t data_types_size;
         PyUFuncObject *ufunc;
     };
 
@@ -167,7 +167,7 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        size_t data_types_size = data->data_types_size;
+        intptr_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
         args[data_types_size - 1] = dst;
@@ -188,7 +188,7 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        size_t data_types_size = data->data_types_size;
+        intptr_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
         args[data_types_size - 1] = dst;
@@ -207,7 +207,7 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        size_t data_types_size = data->data_types_size;
+        intptr_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
         args[data_types_size - 1] = dst;
@@ -230,7 +230,7 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        size_t data_types_size = data->data_types_size;
+        intptr_t data_types_size = data->data_types_size;
         // Set up the args array the way the numpy ufunc wants it
         memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
         args[data_types_size - 1] = dst;

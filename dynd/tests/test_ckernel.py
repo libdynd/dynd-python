@@ -111,10 +111,9 @@ class TestCKernelDeferred(unittest.TestCase):
         self.assertEqual(nd.type_of(ckd).type_id, 'ckernel_deferred')
 
     def test_assignment_ckernel(self):
-        ckd = nd.empty('ckernel_deferred')
-        _lowlevel.make_ckernel_deferred_from_assignment(
+        ckd = _lowlevel.make_ckernel_deferred_from_assignment(
                     ndt.float32, ndt.int64,
-                    "unary", "none", ckd)
+                    "unary", "none")
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
@@ -142,10 +141,9 @@ class TestCKernelDeferred(unittest.TestCase):
 
     def check_from_numpy_int32_add(self, requiregil):
         # Get int32 add as a ckernel_deferred
-        ckd = nd.empty('ckernel_deferred')
-        _lowlevel.ckernel_deferred_from_ufunc(np.add,
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
-                        ckd, requiregil)
+                        requiregil)
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
@@ -189,11 +187,10 @@ class TestCKernelDeferred(unittest.TestCase):
 
     def test_lift_ckernel(self):
         # First get a ckernel from numpy
-        ckd = nd.empty("ckernel_deferred")
         requiregil = False
-        _lowlevel.ckernel_deferred_from_ufunc(np.ldexp,
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.ldexp,
                         (np.float64, np.float64, np.int32),
-                        ckd, requiregil)
+                        requiregil)
         self.assertEqual(nd.as_py(ckd.types),
                         [ndt.float64, ndt.float64, ndt.int32])
 

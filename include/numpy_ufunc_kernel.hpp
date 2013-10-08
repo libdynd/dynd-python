@@ -36,14 +36,15 @@ PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
  *
  * \param ufunc  The numpy ufunc.
  * \param type_tuple  The tuple of types defining the kernel signature.
- * \param out_ckd  An nd.array instance of type ckernel_deferred.
  * \param ckernel_acquires_gil  A flag which controls whether the ckernel should
  *                              acquire the GIL before calling the ufunc's kernel.
  *                              Since numpy doesn't have a nice, rigorous way of
  *                              specifying the need for this, we make it a parameter.
+ *
+ * \returns A ckernel_deferred inside an nd::array.
  */
 PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
-                PyObject *type_tuple, PyObject *out_ckd, int ckernel_acquires_gil);
+                PyObject *type_tuple, int ckernel_acquires_gil);
 
 } // namespace pydynd
 

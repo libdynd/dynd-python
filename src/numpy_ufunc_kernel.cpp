@@ -14,9 +14,11 @@
 #pragma warning(pop)
 #endif
 
+#include <dynd/kernels/expr_kernels.hpp>
+#include <dynd/types/ckernel_deferred_type.hpp>
 
 #include "utility_functions.hpp"
-#include <dynd/kernels/expr_kernels.hpp>
+#include "array_functions.hpp"
 
 #if DYND_NUMPY_INTEROP
 
@@ -280,9 +282,11 @@ namespace {
 } // anonymous namespace
 
 PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
-                PyObject *type_tuple, PyObject *out_ckd, int ckernel_acquires_gil)
+                PyObject *type_tuple, int ckernel_acquires_gil)
 {
-    ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred_rw(out_ckd, "out_ckd");
+    nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
+    ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+
     // NOTE: This function does not raise C++ exceptions,
     //       it behaves as a Python C-API function.
     if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
@@ -359,7 +363,7 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                 data->ckernel_acquires_gil = ckernel_acquires_gil;
                 data->funcptr = uf->functions[i];
                 data->ufunc_data = uf->data[i];
-                Py_RETURN_NONE;
+                return wrap_array(ckd);
             } else {
                 // TODO: support gufunc
                 PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");

@@ -89,17 +89,17 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, CKernelBuilderStructPtr)),
                 ('make_ckernel_deferred_from_assignment',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object)),
                 # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
                 ('numpy_typetuples_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object)),
                 # PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
-                #   PyObject *type_tuple, void *out_ckd, int ckernel_acquires_gil);
+                #   PyObject *type_tuple, int ckernel_acquires_gil);
                 ('ckernel_deferred_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object,
                         ctypes.py_object, ctypes.c_int)),
                 ('lift_ckernel_deferred',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
@@ -365,7 +365,7 @@ make_assignment_ckernel.__doc__ = """
         This must point to a valid ckernel_builder object.
     """
 make_ckernel_deferred_from_assignment.__doc__ = """
-    _lowlevel.make_ckernel_deferred_from_assignment(dst_tp, src_tp, funcproto, errmode, out_ckd)
+    _lowlevel.make_ckernel_deferred_from_assignment(dst_tp, src_tp, funcproto, errmode)
 
     This ctypes function pointer constructs a ckernel_deferred
     object for an assignment ``src_tp`` to ``dst_tp``.
@@ -380,8 +380,11 @@ make_ckernel_deferred_from_assignment.__doc__ = """
         Which kind of function prototype the ckernel_deferred should
         be for. In 'unary', there is one src and one dst. In 'expr',
         there is an array of src and one dst.
-    out_ckd : nd.array of ckernel_deferred type
-        A ckernel_deferred object, inside an nd.array.
+
+    Returns
+    -------
+    nd.array of ckernel_deferred type
+        The lifted ckernel_deferred object.
     """
 numpy_typetuples_from_ufunc.__doc__ = """
     _lowlevel.numpy_typetuples_from_ufunc(ufunc)
@@ -402,7 +405,7 @@ numpy_typetuples_from_ufunc.__doc__ = """
         A list of the type tuples for which this ufunc has functions.
     """
 ckernel_deferred_from_ufunc.__doc__ = """
-    _lowlevel.ckernel_deferred_from_ufunc(ufunc, type_tuple, out_ckd, ckernel_acquires_gil)
+    _lowlevel.ckernel_deferred_from_ufunc(ufunc, type_tuple, ckernel_acquires_gil)
 
     Constructs a ckernel_deferred object wrapping the specified
     kernel of the ufunc. The ckernel_deferred is constructed as an 'expr'
@@ -416,11 +419,14 @@ ckernel_deferred_from_ufunc.__doc__ = """
         A tuple of types, providing the signature for the kernel. This
         may be one of the type tuples returned by
         ``_lowlevel.numpy_typetuples_from_ufunc``.
-    out_ckd : nd.array of ckernel_deferred type
-        A ckernel_deferred object, inside an nd.array.
     ckernel_acquires_gil : bool
         If True, the resulting ckernel acquires the GIL before calling
         the ufunc's kernel. If False, it does not.
+
+    Returns
+    -------
+    nd.array of ckernel_deferred type
+        The lifted ckernel_deferred object.
     """
 lift_ckernel_deferred.__doc__ = """
     _lowlevel.lift_ckernel_deferred(ckd, types)

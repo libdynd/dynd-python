@@ -110,10 +110,11 @@ namespace {
     }
 
     PyObject *make_ckernel_deferred_from_assignment(PyObject *dst_tp_obj, PyObject *src_tp_obj,
-                PyObject *funcproto_obj, PyObject *errmode_obj, PyObject *out_ckd)
+                PyObject *funcproto_obj, PyObject *errmode_obj)
     {
         try {
-            ckernel_deferred *ckd_ptr = pyarg_ckernel_deferred_rw(out_ckd, "out_ckd");
+            nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
+            ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -136,8 +137,7 @@ namespace {
             dynd::make_ckernel_deferred_from_assignment(dst_tp, src_tp,
                             funcproto, errmode, *ckd_ptr);
 
-            Py_INCREF(Py_None);
-            return Py_None;
+            return wrap_array(ckd);
         } catch(...) {
             translate_exception();
             return NULL;

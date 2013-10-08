@@ -82,13 +82,14 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.py_object)),
                 # void make_assignment_kernel(out_ckb, ckb_offset,
                 #               dst_dt, dst_metadata,
-                #               src_dt, src_metadata, kerntype)
+                #               src_dt, src_metadata,
+                #               funcproto, kerntype)
                 ('make_assignment_ckernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         CKernelBuilderStructPtr, c_ssize_t,
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, ctypes.c_void_p,
-                        ctypes.py_object)),
+                        ctypes.py_object, ctypes.py_object)),
                 ('make_ckernel_deferred_from_assignment',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
@@ -343,7 +344,7 @@ array_from_ptr.__doc__ = """
         The dynd array constructed from the parameters.
     """
 make_assignment_ckernel.__doc__ = """
-    _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset, dst_tp, dst_metadata, src_tp, src_metadata, kerntype)
+    _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset, dst_tp, dst_metadata, src_tp, src_metadata, funcproto, kerntype)
 
     This ctypes function pointer constructs a unary ckernel
     into the output ckernel_builder provided. The assignment
@@ -367,8 +368,10 @@ make_assignment_ckernel.__doc__ = """
     src_metadata : raw pointer or None
         A pointer to metadata for the source data. This must
         remain live while the constructed ckernel exists.
+    funcproto : 'unary' or 'expr'
+        Whether to create a unary or expr ckernel.
     kerntype : 'single' or 'strided'
-        Whether to create a unary_single or unary_strided ckernel.
+        Whether to create a single or strided ckernel.
     """
 make_ckernel_deferred_from_assignment.__doc__ = """
     _lowlevel.make_ckernel_deferred_from_assignment(dst_tp, src_tp, funcproto, errmode)

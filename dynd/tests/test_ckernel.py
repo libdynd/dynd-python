@@ -86,7 +86,7 @@ class TestCKernelBuilder(unittest.TestCase):
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
                         ndt.float32, None, ndt.int64, None,
-                        "single")
+                        "unary", "single")
             ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
@@ -99,7 +99,7 @@ class TestCKernelBuilder(unittest.TestCase):
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
                         ndt.float32, None, ndt.type('string(15,"A")'), None,
-                        'strided')
+                        'unary', 'strided')
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using a numpy array
             src = np.array(['3.25', '-1000', '1e5'], dtype='S15')
@@ -217,11 +217,12 @@ class TestCKernelDeferred(unittest.TestCase):
                      [0.001708984375, 0.002197265625, 0.00244140625]])
 
     def test_ckernel_deferred_from_pyfunc(self):
+        # Test wrapping make_assignment_ckernel as a deferred ckernel
         def instantiate_assignment(out_ckb, ckb_offset, types, meta, kerntype):
-            return _lowlevel.make_assignment_kernel(out_ckb, ckb_offset,
+            return _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset,
                             types[0], meta[0],
                             types[1], meta[1],
-                            kerntype)
+                            'expr', kerntype)
 
 
 

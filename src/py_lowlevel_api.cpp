@@ -9,6 +9,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/kernels/lift_ckernel_deferred.hpp>
 #include <dynd/types/ckernel_deferred_type.hpp>
+#include <dynd/kernels/ckernel_common_functions.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "numpy_ufunc_kernel.hpp"
@@ -64,7 +65,7 @@ namespace {
     PyObject *make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
                     PyObject *dst_tp_obj, const void *dst_metadata,
                     PyObject *src_tp_obj, const void *src_metadata,
-                    PyObject *kerntype_obj)
+                    PyObject *funcproto_obj, PyObject *kerntype_obj)
     {
         try {
             ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(out_ckb);
@@ -84,6 +85,18 @@ namespace {
                 throw runtime_error(ss.str());
             }
             string kt = pystring_as_string(kerntype_obj);
+            string fp = pystring_as_string(funcproto_obj);
+            deferred_ckernel_funcproto_t funcproto;
+            if (fp == "unary") {
+                funcproto = unary_operation_funcproto;
+            } else if (fp == "expr") {
+                funcproto = expr_operation_funcproto;
+            } else {
+                stringstream ss;
+                ss << "Invalid function prototype type ";
+                print_escaped_utf8_string(ss, fp);
+                throw runtime_error(ss.str());
+            }
             kernel_request_t kerntype;
             if (kt == "single") {
                 kerntype = kernel_request_single;
@@ -94,6 +107,12 @@ namespace {
                 ss << "Invalid kernel request type ";
                 print_escaped_utf8_string(ss, kt);
                 throw runtime_error(ss.str());
+            }
+
+            // If an expr kernel is requested, use an adapter
+            if (funcproto == expr_operation_funcproto) {
+                ckb_offset = kernels::wrap_unary_as_expr_ckernel(
+                                ckb_ptr, ckb_offset, kerntype);
             }
 
             intptr_t kernel_size = make_assignment_kernel(ckb_ptr, ckb_offset,
@@ -133,7 +152,6 @@ namespace {
                 throw runtime_error(ss.str());
             }
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-
             dynd::make_ckernel_deferred_from_assignment(dst_tp, src_tp,
                             funcproto, errmode, *ckd_ptr);
 

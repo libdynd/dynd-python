@@ -113,16 +113,19 @@ class TestCKernelDeferred(unittest.TestCase):
         self.assertEqual(nd.type_of(ckd).type_id, 'ckernel_deferred')
         # Test there is a string version of a NULL ckernel_deferred
         self.assertTrue(str(ckd) != '')
+        self.assertEqual(nd.as_py(ckd.types), [])
         # Test there is a string version of an initialized ckernel_deferred
         ckd = _lowlevel.make_ckernel_deferred_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
         self.assertTrue(str(ckd) != '')
+        self.assertEqual(nd.as_py(ckd.types), [ndt.float32, ndt.int64])
 
     def test_assignment_ckernel(self):
         ckd = _lowlevel.make_ckernel_deferred_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
+        self.assertEqual(nd.as_py(ckd.types), [ndt.float32, ndt.int64])
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
@@ -153,6 +156,7 @@ class TestCKernelDeferred(unittest.TestCase):
         ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         requiregil)
+        self.assertEqual(nd.as_py(ckd.types), [ndt.int32]*3)
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
@@ -233,6 +237,7 @@ class TestCKernelDeferred(unittest.TestCase):
                             'expr', kerntype)
         ckd = _lowlevel.ckernel_deferred_from_pyfunc(instantiate_assignment,
                         [ndt.string, ndt.date])
+        self.assertEqual(nd.as_py(ckd.types), [ndt.string, ndt.date])
         out = nd.empty(ndt.string)
         in0 = nd.array('2012-11-05', ndt.date)
         ckd.__call__(out, in0)
@@ -240,6 +245,8 @@ class TestCKernelDeferred(unittest.TestCase):
         # Also test it as a lifted kernel
         ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
                         ['3, var, string', '3, var, date'])
+        self.assertEqual(nd.as_py(ckd_lifted.types),
+                    [ndt.type('3, var, string'), ndt.type('3, var, date')])
         out = nd.empty('3, var, string')
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],

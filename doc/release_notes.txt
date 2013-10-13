@@ -1,6 +1,15 @@
 DyND-Python Release Notes
 ===================
 
+Release 0.5.0
+-------------
+
+- Make nd.array(a, ...) always produce a new array, in the same
+  way the built in list(a) creates a new list.
+- Add nd.asarray(a) and and nd.view(a) to support producing an
+  array which is a view when possible, or requiring a view.
+- Shuffle some things around in the _lowlevel namespace, including
+  new ckernel interfaces.
 - Change nd.empty(shape, type) to nd.empty(shape, dtype),
   also accepting nd.empty(shape0, ..., shape(n-1), dtype).
 - Add nd.ones, nd.zeros, and nd.full constructor functions.

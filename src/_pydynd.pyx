@@ -1326,6 +1326,28 @@ def ndim_of(w_array a):
     """
     return GET(a.v).get_ndim()
 
+def is_c_contiguous(w_array a):
+    """
+    nd.is_c_contiguous(a)
+
+    Returns True if the array is C-contiguous, False
+    otherwise. An array is C-contiguous if all its array
+    dimensions are ``fixed`` or ``strided``, the strides
+    are in decreasing order, and the data is tightly packed.
+    """
+    return array_is_c_contiguous(GET(a.v))
+
+def is_f_contiguous(w_array a):
+    """
+    nd.is_f_contiguous(a)
+
+    Returns True if the array is F-contiguous, False
+    otherwise. An array is F-contiguous if all its array
+    dimensions are ``fixed`` or ``strided``, the strides
+    are in increasing order, and the data is tightly packed.
+    """
+    return array_is_f_contiguous(GET(a.v))
+
 def as_py(w_array n):
     """
     nd.as_py(n)

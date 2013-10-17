@@ -43,10 +43,10 @@ init_pydatetime pdt;
 
 namespace {
     enum shape_signals_t {
-        shape_signal_var = -1,
-        shape_signal_ragged = -2,
-        shape_signal_dict = -3,
-        shape_signal_uninitialized = -4
+        pydynd_shape_signal_var = -1,
+        pydynd_shape_signal_ragged = -2,
+        pydynd_shape_signal_dict = -3,
+        pydynd_shape_signal_uninitialized = -4
     };
 };
 
@@ -64,7 +64,7 @@ static void deduce_pylist_shape_and_ndt_type(PyObject *obj,
         } else {
             if (shape[current_axis] != size) {
                 // A variable-sized dimension
-                shape[current_axis] = shape_signal_var;
+                shape[current_axis] = pydynd_shape_signal_var;
             }
         }
         
@@ -155,7 +155,7 @@ static void deduce_pyseq_shape_with_dtype(PyObject *obj, const ndt::type& udt,
             } else if (udt.get_kind() == struct_kind) {
                 // Signal that this is a dimension which is sometimes scalar, to allow for
                 // raggedness in the struct type's fields
-                shape.push_back(shape_signal_ragged);
+                shape.push_back(pydynd_shape_signal_ragged);
             } else {
                 throw runtime_error("dynd array doesn't support dimensions"
                                 " which are sometimes scalars and sometimes arrays");
@@ -163,7 +163,7 @@ static void deduce_pyseq_shape_with_dtype(PyObject *obj, const ndt::type& udt,
         } else {
             if (shape[current_axis] != size && shape[current_axis] >= 0) {
                 // A variable-sized dimension
-                shape[current_axis] = shape_signal_var;
+                shape[current_axis] = pydynd_shape_signal_var;
             }
         }
 
@@ -175,13 +175,13 @@ static void deduce_pyseq_shape_with_dtype(PyObject *obj, const ndt::type& udt,
     } else {
         if (PyDict_Check(obj) && udt.get_kind() == struct_kind) {
             if (shape.size() == current_axis) {
-                shape.push_back(shape_signal_dict);
-            } else if (shape[current_axis] != shape_signal_ragged) {
-                shape[current_axis] = shape_signal_dict;
+                shape.push_back(pydynd_shape_signal_dict);
+            } else if (shape[current_axis] != pydynd_shape_signal_ragged) {
+                shape[current_axis] = pydynd_shape_signal_dict;
             }
         } else if (shape.size() != current_axis) {
             if (udt.get_kind() == struct_kind) {
-                shape[current_axis] = shape_signal_ragged;
+                shape[current_axis] = pydynd_shape_signal_ragged;
             } else {
                 throw runtime_error("dynd array doesn't support dimensions"
                                 " which are sometimes scalars and sometimes arrays");
@@ -203,11 +203,11 @@ static void deduce_pyseq_shape(PyObject *obj, size_t undim, intptr_t *shape)
     }
 
     if (is_sequence) {
-        if (shape[0] == shape_signal_uninitialized) {
+        if (shape[0] == pydynd_shape_signal_uninitialized) {
             shape[0] = size;
         } else if (shape[0] != size) {
             // A variable-sized dimension
-            shape[0] = shape_signal_var;
+            shape[0] = pydynd_shape_signal_var;
         }
 
         if (undim > 1) {
@@ -233,7 +233,7 @@ static void deduce_pyseq_shape(PyObject *obj, size_t undim, intptr_t *shape)
             Py_DECREF(iter);
         }
         // It must be a variable-sized dimension
-        shape[0] = shape_signal_var;
+        shape[0] = pydynd_shape_signal_var;
     }
 }
 
@@ -788,7 +788,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                 if (dt.get_kind() == struct_kind) {
                     intptr_t ndim, ndim_end = shape.size();
                     for (ndim = 0; ndim != ndim_end; ++ndim) {
-                        if (shape[ndim] == shape_signal_ragged) {
+                        if (shape[ndim] == pydynd_shape_signal_ragged) {
                             // Match up the number of dimensions which aren't
                             // ragged in udt with the number of dimensions
                             // which are nonragged in the input data
@@ -799,7 +799,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
                                 ndim = 0;
                             }
                             break;
-                        } else if (shape[ndim] == shape_signal_dict) {
+                        } else if (shape[ndim] == pydynd_shape_signal_dict) {
                             break;
                         }
                     }
@@ -840,7 +840,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& dt, bool u
         intptr_t undim = dt.get_ndim();
         dimvector shape(undim);
         for (size_t i = 0; i != undim; ++i) {
-            shape[i] = shape_signal_uninitialized;
+            shape[i] = pydynd_shape_signal_uninitialized;
         }
         deduce_pyseq_shape(obj, undim, shape.get());
         result = nd::array(make_array_memory_block(dt, undim, shape.get()));

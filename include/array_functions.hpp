@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include <dynd/array.hpp>
+#include <dynd/shape_tools.hpp>
 
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"
@@ -94,6 +95,28 @@ inline dynd::nd::array array_empty_like(const dynd::nd::array& n)
 inline dynd::nd::array array_empty_like(const dynd::nd::array& n, const dynd::ndt::type& d)
 {
     return dynd::nd::empty_like(n, d);
+}
+
+inline bool array_is_c_contiguous(const dynd::nd::array& n)
+{
+    intptr_t ndim = n.get_ndim();
+    dynd::dimvector shape(ndim), strides(ndim);
+    n.get_shape(shape.get());
+    n.get_strides(strides.get());
+    return dynd::strides_are_c_contiguous(ndim,
+                    n.get_dtype().get_data_size(),
+                    shape.get(), strides.get());
+}
+
+inline bool array_is_f_contiguous(const dynd::nd::array& n)
+{
+    intptr_t ndim = n.get_ndim();
+    dynd::dimvector shape(ndim), strides(ndim);
+    n.get_shape(shape.get());
+    n.get_strides(strides.get());
+    return dynd::strides_are_f_contiguous(ndim,
+                    n.get_dtype().get_data_size(),
+                    shape.get(), strides.get());
 }
 
 inline dynd::nd::array array_add(const dynd::nd::array& lhs, const dynd::nd::array& rhs)

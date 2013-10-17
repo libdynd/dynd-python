@@ -61,7 +61,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         ndt_type(string&) except +translate_exception
         bint operator==(ndt_type&)
         bint operator!=(ndt_type&)
-        
+
         ndt_type& value_type()
         ndt_type& operand_type()
         ndt_type& storage_type()
@@ -74,8 +74,8 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         base_type* extended()
         string_encoding_t string_encoding() except +translate_exception
         intptr_t get_ndim()
-        ndt_type get_dtype()
-        ndt_type get_dtype(size_t)
+        ndt_type get_dtype() except +translate_exception
+        ndt_type get_dtype(size_t) except +translate_exception
 
         ndt_type with_replaced_dtype(ndt_type&, size_t) except +translate_exception
 

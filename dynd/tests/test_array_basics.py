@@ -71,5 +71,36 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(len(a), 2)
         self.assertEqual([nd.as_py(x) for x in a], [[1, 2, 3], [4,5,6]])
 
+    def test_contiguous(self):
+        # Scalar is contiguous
+        a = nd.array(3)
+        self.assertTrue(nd.is_c_contiguous(a))
+        self.assertTrue(nd.is_f_contiguous(a))
+        # Default-constructed 1D array
+        a = nd.array([1, 3, 5, 2])
+        self.assertTrue(nd.is_c_contiguous(a))
+        self.assertTrue(nd.is_f_contiguous(a))
+        # Sliced 1D array with a step
+        a = nd.array([1, 3, 5, 2])[::2]
+        self.assertFalse(nd.is_c_contiguous(a))
+        self.assertFalse(nd.is_f_contiguous(a))
+        a = nd.array([1, 3, 5, 2])[::-1]
+        self.assertFalse(nd.is_c_contiguous(a))
+        self.assertFalse(nd.is_f_contiguous(a))
+        # Default-constructed 2D array
+        a = nd.array([[1, 3, 5, 2], [1, 2, 3, 4]])
+        self.assertTrue(nd.is_c_contiguous(a))
+        self.assertFalse(nd.is_f_contiguous(a))
+        # Sliced 2D array with a step
+        a = nd.array([[1, 3, 5, 2], [1, 2, 3, 4], [3,4,5,6]])[::2]
+        self.assertFalse(nd.is_c_contiguous(a))
+        self.assertFalse(nd.is_f_contiguous(a))
+        a = nd.array([[1, 3, 5, 2], [1, 2, 3, 4]])[:, ::2]
+        self.assertFalse(nd.is_c_contiguous(a))
+        self.assertFalse(nd.is_f_contiguous(a))
+        a = nd.array([[1, 3, 5, 2], [1, 2, 3, 4]])[::-1, ::-1]
+        self.assertFalse(nd.is_c_contiguous(a))
+        self.assertFalse(nd.is_f_contiguous(a))
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

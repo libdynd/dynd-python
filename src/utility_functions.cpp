@@ -3,6 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
+#include <Python.h>
+
 #include "utility_functions.hpp"
 #include "type_functions.hpp"
 #include "array_functions.hpp"
@@ -10,8 +12,6 @@
 #include <dynd/exceptions.hpp>
 #include <dynd/array.hpp>
 #include <dynd/kernels/ckernel_deferred.hpp>
-
-#include <Python.h>
 
 using namespace std;
 using namespace dynd;

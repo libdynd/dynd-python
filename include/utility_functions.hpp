@@ -6,7 +6,7 @@
 #ifndef _DYND__UTILITY_FUNCTIONS_HPP_
 #define _DYND__UTILITY_FUNCTIONS_HPP_
 
-#include "Python.h"
+#include <Python.h>
 
 #include <sstream>
 #include <stdexcept>

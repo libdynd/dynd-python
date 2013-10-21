@@ -6,7 +6,7 @@
 #ifndef _DYND__GFUNC_CALLABLE_FUNCTIONS_HPP_
 #define _DYND__GFUNC_CALLABLE_FUNCTIONS_HPP_
 
-#include "Python.h"
+#include <Python.h>
 
 #include <dynd/type.hpp>
 #include <dynd/gfunc/callable.hpp>

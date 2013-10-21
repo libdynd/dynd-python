@@ -196,6 +196,13 @@ cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
 
 set_target_properties(_pydynd PROPERTIES LINKER_LANGUAGE CXX)
 if(WIN32)
+    if(MSVC12)
+    set_target_properties(
+        _pydynd PROPERTIES
+        COMPILE_FLAGS
+        "-DHAVE_ROUND"
+        )
+    endif()
 elseif(APPLE)
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.

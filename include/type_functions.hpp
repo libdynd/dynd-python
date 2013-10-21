@@ -9,7 +9,7 @@
 #ifndef _DYND__DTYPE_FUNCTIONS_HPP_
 #define _DYND__DTYPE_FUNCTIONS_HPP_
 
-#include "Python.h"
+#include <Python.h>
 
 #include <sstream>
 

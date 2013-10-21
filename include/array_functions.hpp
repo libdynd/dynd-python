@@ -9,7 +9,7 @@
 #ifndef _DYND__NDARRAY_FUNCTIONS_HPP_
 #define _DYND__NDARRAY_FUNCTIONS_HPP_
 
-#include "Python.h"
+#include <Python.h>
 
 #include <sstream>
 

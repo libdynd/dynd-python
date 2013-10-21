@@ -6,7 +6,7 @@
 #ifndef _DYND__CODEGEN_CACHE_FUNCTIONS_HPP_
 #define _DYND__CODEGEN_CACHE_FUNCTIONS_HPP_
 
-#include "Python.h"
+#include <Python.h>
 
 #include <sstream>
 #include <stdexcept>

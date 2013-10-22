@@ -174,7 +174,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
     }
 }
 
-void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform, PyObject *access)
+void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool fulltype, PyObject *access)
 {
     uint32_t access_flags = 0;
     if (access != Py_None) {
@@ -186,7 +186,7 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
                             "r",  nd::read_access_flag,
                             "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
-    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), uniform, access_flags);
+    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), fulltype, access_flags);
 }
 
 void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access)

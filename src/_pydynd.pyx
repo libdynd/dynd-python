@@ -924,9 +924,9 @@ cdef class w_array:
                 if type is not None:
                     raise ValueError('Must provide only one of ' +
                                     'dtype or type, not both')
-                array_init_from_pyobject(GET(self.v), value, dtype, True, access)
+                array_init_from_pyobject(GET(self.v), value, dtype, False, access)
             elif type is not None:
-                array_init_from_pyobject(GET(self.v), value, type, False, access)
+                array_init_from_pyobject(GET(self.v), value, type, True, access)
             else:
                 array_init_from_pyobject(GET(self.v), value, access)
         elif dtype is not None or type is not None or access is not None:

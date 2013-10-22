@@ -588,6 +588,63 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
 
+class TestDeduceDims(unittest.TestCase):
+    def test_simplearr(self):
+        val = [[[1, 2], [3, 4]], [[5, 6], [7, 8]],
+               [[11, 12], [13, 14]], [[15, 16], [17, 18]]]
+        # Deduce all the dims
+        a = nd.array(val, dtype=ndt.int16)
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, strided, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        # Specify some dims as strided
+        a = nd.array(val, dtype='strided, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, strided, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        a = nd.array(val, dtype='strided, strided, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, strided, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        a = nd.array(val, dtype='strided, strided, strided, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, strided, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        # Specify some dims as fixed
+        a = nd.array(val, dtype='2, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, 2, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        a = nd.array(val, dtype='2, 2, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, 2, 2, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        a = nd.array(val, dtype='4, 2, 2, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('4, 2, 2, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        # Mix fixed, strided, and var
+        a = nd.array(val, dtype='4, var, strided, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('4, var, strided, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        a = nd.array(val, dtype='var, 2, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, 2, int16'))
+        self.assertEqual(nd.as_py(a), val)
+        a = nd.array(val, dtype='strided, 2, int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, 2, int16'))
+        self.assertEqual(nd.as_py(a), val)
+
+    def test_empty(self):
+        # A fixed dimension of non-zero size gets pushed down
+        a = nd.array([], dtype='3, int32')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, 3, int32'))
+        self.assertEqual(nd.as_py(a), [])
+        # A fixed dimension of zero size gets absorbed
+        a = nd.array([], dtype='0, int32')
+        self.assertEqual(nd.type_of(a), ndt.type('0, int32'))
+        self.assertEqual(nd.as_py(a), [])
+        # A strided dimension gets absorbed
+        a = nd.array([], dtype='strided, int32')
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int32'))
+        self.assertEqual(nd.as_py(a), [])
+        # A var dimension gets absorbed
+        a = nd.array([], dtype='var, int32')
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.as_py(a), [])
+
 class TestConstructErrors(unittest.TestCase):
     def test_bad_params(self):
         self.assertRaises(ValueError, nd.array, dtype='int32')

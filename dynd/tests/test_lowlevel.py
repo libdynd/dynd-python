@@ -7,7 +7,7 @@ class TestLowLevel(unittest.TestCase):
     def type_id_of(self, dt):
         assert isinstance(dt, ndt.type)
         bd = _lowlevel.get_base_type_ptr(dt)
-        if bd < _lowlevel.BUILTIN_TYPE_ID_COUNT:
+        if bd < _lowlevel.type_id.BUILTIN_TYPE_ID_COUNT:
             return bd
         else:
             bdm = _lowlevel.BaseDTypeMembers.from_address(
@@ -17,79 +17,79 @@ class TestLowLevel(unittest.TestCase):
     def test_type_id(self):
         # Numeric type id
         self.assertEqual(self.type_id_of(ndt.bool),
-                        _lowlevel.BOOL_TYPE_ID)
+                        _lowlevel.type_id.BOOL)
         self.assertEqual(self.type_id_of(ndt.int8),
-                        _lowlevel.INT8_TYPE_ID)
+                        _lowlevel.type_id.INT8)
         self.assertEqual(self.type_id_of(ndt.int16),
-                        _lowlevel.INT16_TYPE_ID)
+                        _lowlevel.type_id.INT16)
         self.assertEqual(self.type_id_of(ndt.int32),
-                        _lowlevel.INT32_TYPE_ID)
+                        _lowlevel.type_id.INT32)
         self.assertEqual(self.type_id_of(ndt.int64),
-                        _lowlevel.INT64_TYPE_ID)
+                        _lowlevel.type_id.INT64)
         self.assertEqual(self.type_id_of(ndt.uint8),
-                        _lowlevel.UINT8_TYPE_ID)
+                        _lowlevel.type_id.UINT8)
         self.assertEqual(self.type_id_of(ndt.uint16),
-                        _lowlevel.UINT16_TYPE_ID)
+                        _lowlevel.type_id.UINT16)
         self.assertEqual(self.type_id_of(ndt.uint32),
-                        _lowlevel.UINT32_TYPE_ID)
+                        _lowlevel.type_id.UINT32)
         self.assertEqual(self.type_id_of(ndt.uint64),
-                        _lowlevel.UINT64_TYPE_ID)
+                        _lowlevel.type_id.UINT64)
         self.assertEqual(self.type_id_of(ndt.float32),
-                        _lowlevel.FLOAT32_TYPE_ID)
+                        _lowlevel.type_id.FLOAT32)
         self.assertEqual(self.type_id_of(ndt.float64),
-                        _lowlevel.FLOAT64_TYPE_ID)
+                        _lowlevel.type_id.FLOAT64)
         self.assertEqual(self.type_id_of(ndt.cfloat32),
-                        _lowlevel.COMPLEX_FLOAT32_TYPE_ID)
+                        _lowlevel.type_id.COMPLEX_FLOAT32)
         self.assertEqual(self.type_id_of(ndt.cfloat64),
-                        _lowlevel.COMPLEX_FLOAT64_TYPE_ID)
+                        _lowlevel.type_id.COMPLEX_FLOAT64)
         # String/bytes
         self.assertEqual(self.type_id_of(ndt.string),
-                        _lowlevel.STRING_TYPE_ID)
+                        _lowlevel.type_id.STRING)
         self.assertEqual(self.type_id_of(ndt.make_fixedstring(16)),
-                        _lowlevel.FIXEDSTRING_TYPE_ID)
+                        _lowlevel.type_id.FIXEDSTRING)
         self.assertEqual(self.type_id_of(ndt.bytes),
-                        _lowlevel.BYTES_TYPE_ID)
+                        _lowlevel.type_id.BYTES)
         self.assertEqual(self.type_id_of(ndt.make_fixedbytes(16)),
-                        _lowlevel.FIXEDBYTES_TYPE_ID)
+                        _lowlevel.type_id.FIXEDBYTES)
         self.assertEqual(self.type_id_of(ndt.json),
-                        _lowlevel.JSON_TYPE_ID)
+                        _lowlevel.type_id.JSON)
         # Date
         self.assertEqual(self.type_id_of(ndt.date),
-                        _lowlevel.DATE_TYPE_ID)
+                        _lowlevel.type_id.DATE)
         # Property
         self.assertEqual(self.type_id_of(nd.type_of(ndt.date(2000, 1, 1).year)),
-                        _lowlevel.PROPERTY_TYPE_ID)
+                        _lowlevel.type_id.PROPERTY)
         # Categorical
         self.assertEqual(self.type_id_of(ndt.make_categorical([1, 2, 3])),
-                        _lowlevel.CATEGORICAL_TYPE_ID)
+                        _lowlevel.type_id.CATEGORICAL)
         # Struct
         self.assertEqual(self.type_id_of(ndt.make_struct(
                                     [ndt.int32, ndt.int32], ['x', 'y'])),
-                        _lowlevel.STRUCT_TYPE_ID)
+                        _lowlevel.type_id.STRUCT)
         self.assertEqual(self.type_id_of(ndt.type('{x : int32; y : int32}')),
-                        _lowlevel.FIXEDSTRUCT_TYPE_ID)
+                        _lowlevel.type_id.FIXEDSTRUCT)
         # Convert/byteswap/view
         self.assertEqual(self.type_id_of(ndt.make_convert(
                                     ndt.int32, ndt.int8)),
-                        _lowlevel.CONVERT_TYPE_ID)
+                        _lowlevel.type_id.CONVERT)
         self.assertEqual(self.type_id_of(ndt.make_byteswap(ndt.int32)),
-                        _lowlevel.BYTESWAP_TYPE_ID)
+                        _lowlevel.type_id.BYTESWAP)
         self.assertEqual(self.type_id_of(ndt.make_view(
                                     ndt.int32, ndt.uint32)),
-                        _lowlevel.VIEW_TYPE_ID)
+                        _lowlevel.type_id.VIEW)
         # Uniform arrays
         self.assertEqual(self.type_id_of(ndt.type('3, int32')),
-                        _lowlevel.FIXED_DIM_TYPE_ID)
+                        _lowlevel.type_id.FIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('M, int32')),
-                        _lowlevel.STRIDED_DIM_TYPE_ID)
+                        _lowlevel.type_id.STRIDED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('var, int32')),
-                        _lowlevel.VAR_DIM_TYPE_ID)
+                        _lowlevel.type_id.VAR_DIM)
         # GroupBy
         self.assertEqual(self.type_id_of(nd.type_of(nd.groupby([1, 2], ['a', 'a']))),
-                        _lowlevel.GROUPBY_TYPE_ID)
+                        _lowlevel.type_id.GROUPBY)
         # Type
         self.assertEqual(self.type_id_of(ndt.type('type')),
-                        _lowlevel.DTYPE_TYPE_ID)
+                        _lowlevel.type_id.DTYPE)
 
     def test_array_from_ptr(self):
         a = (ctypes.c_int32 * 3)()

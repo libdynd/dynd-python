@@ -294,37 +294,54 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     string_encoding_t encoding = string_encoding_invalid;
     string encoding_str = pystring_as_string(encoding_obj);
     switch (encoding_str.size()) {
-    case 5:
-        switch (encoding_str[1]) {
-        case 'c':
-            if (encoding_str == "ucs_2" || encoding_str == "ucs-2") {
-                encoding = string_encoding_ucs_2;
+        case 4:
+            switch (encoding_str[3]) {
+                case '2':
+                    if (encoding_str == "ucs2") {
+                        encoding = string_encoding_ucs_2;
+                    }
+                    break;
+                case '8':
+                    if (encoding_str == "utf8") {
+                        encoding = string_encoding_utf_8;
+                    }
+                    break;
+            }
+        case 5:
+            switch (encoding_str[1]) {
+            case 'c':
+                if (encoding_str == "ucs_2" || encoding_str == "ucs-2") {
+                    encoding = string_encoding_ucs_2;
+                }
+                break;
+            case 's':
+                if (encoding_str == "ascii") {
+                    encoding = string_encoding_ascii;
+                }
+                break;
+            case 't':
+                if (encoding_str == "utf16") {
+                    encoding = string_encoding_utf_16;
+                } else if (encoding_str == "utf32") {
+                    encoding = string_encoding_utf_32;
+                } else if (encoding_str == "utf_8" || encoding_str == "utf-8") {
+                    encoding = string_encoding_utf_8;
+                }
+                break;
             }
             break;
-        case 's':
-            if (encoding_str == "ascii") {
-                encoding = string_encoding_ascii;
-            }
-            break;
-        case 't':
-            if (encoding_str == "utf_8" || encoding_str == "utf-8") {
-                encoding = string_encoding_utf_8;
-            }
-            break;
-        }
-        break;
-    case 6:
-        switch (encoding_str[4]) {
-        case '1':
-            if (encoding_str == "utf_16" || encoding_str == "utf-16") {
-                encoding = string_encoding_utf_16;
-            }
-            break;
-        case '3':
-            if (encoding_str == "utf_32" || encoding_str == "utf-32") {
-                encoding = string_encoding_utf_32;
-            }
-            break;
+        case 6:
+            switch (encoding_str[4]) {
+            case '1':
+                if (encoding_str == "utf_16" || encoding_str == "utf-16") {
+                    encoding = string_encoding_utf_16;
+                }
+                break;
+            case '3':
+                if (encoding_str == "utf_32" || encoding_str == "utf-32") {
+                    encoding = string_encoding_utf_32;
+                }
+                break;
         }
     }
 

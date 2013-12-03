@@ -97,6 +97,8 @@ inline dynd::nd::array array_empty_like(const dynd::nd::array& n, const dynd::nd
     return dynd::nd::empty_like(n, d);
 }
 
+dynd::nd::array array_memmap(PyObject *filename, PyObject *begin, PyObject *end, PyObject *access);
+
 inline bool array_is_c_contiguous(const dynd::nd::array& n)
 {
     intptr_t ndim = n.get_ndim();

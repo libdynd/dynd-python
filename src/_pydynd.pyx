@@ -1668,6 +1668,44 @@ def empty_like(w_array prototype, dtype=None):
         SET(result.v, array_empty_like(GET(prototype.v), GET(w_type(dtype).v)))
     return result
 
+def memmap(filename, begin=None, end=None, access=None):
+    """
+    nd.memmap(filename, begin=None, end=None, access=None)
+
+    Memory maps a file as a dynd array with type 'bytes'.
+
+    Parameters
+    ----------
+    filename : string
+        The name of the file to memory map
+    begin : integer, optional
+        If provided, provides the offset into the file where memory
+        mapping should start. Follows Python slicing convention for
+        negative and out of bounds value. (Default 0.)
+    end : integer, optional
+        If provided, provides the offset into the file where memory
+        mapping should stop. Follows Python slicing convention for
+        negative and out of bounds value. (Default end of file.)
+    access : 'readwrite'/'rw', 'readonly'/'r', or 'immutable', optional
+        If provided, this specifies the access control for the
+        created array. If the array is being allocated, as in
+        construction from Python objects, this is the access control
+        set.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> with open("test.txt", "w") as f:
+    ...     f.write("Testing 1 2 3")	
+    >>> a = nd.memmap("test.txt").view_scalars(ndt.string)
+    >>> a
+    nd.array("Testing 1 2 3", string)
+    """
+    cdef w_array result = w_array()
+    SET(result.v, array_memmap(filename, begin, end, access))
+    return result
+
 def groupby(data, by, groups = None):
     """
     nd.groupby(data, by, groups=None)

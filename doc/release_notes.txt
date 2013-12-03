@@ -3,6 +3,7 @@ DyND-Python Release Notes
 
 - Add nd.is_c_contiguous(a) and nd.is_f_contiguous(a) to
   check array strides.
+- Add nd.memmap(filename, ...) to memory map a file as bytes.
 
 Release 0.5.0
 -------------

@@ -423,6 +423,25 @@ dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type& d)
                     shape_vec.empty() ? NULL : &shape_vec[0]);
 }
 
+dynd::nd::array pydynd::array_memmap(
+    PyObject *filename, PyObject *begin, PyObject *end, PyObject *access)
+{
+    string filename_ = pystring_as_string(filename);
+    intptr_t begin_ = (begin == Py_None) ? 0 : pyobject_as_index(begin);
+    intptr_t end_ = (end == Py_None) ? std::numeric_limits<intptr_t>::max() : pyobject_as_index(end);
+    uint32_t access_flags = 0;
+    if (access != Py_None) {
+        access_flags = pyarg_strings_to_int(
+                        access, "access", 0,
+                            "readwrite", nd::read_access_flag|nd::write_access_flag,
+                            "rw",  nd::read_access_flag|nd::write_access_flag,
+                            "readonly", nd::read_access_flag,
+                            "r",  nd::read_access_flag,
+                            "immutable", nd::read_access_flag|nd::immutable_access_flag);
+    }
+    return nd::memmap(filename_, begin_, end_, access_flags);
+}
+
 namespace {
     struct contains_data {
         const char *x_data;

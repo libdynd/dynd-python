@@ -43,17 +43,13 @@ Strings default to `blockref` strings, which are variable-sized strings.
 The support for them is still preliminary, but some basic functionality
 like converting between different unicode encodings is implemented.
 
-One thing to note is that strings and unicode scalars are imported as
-a view into the Python object's data. Because the Python object is immutable,
-the array also is flagged as immutable.
-
 .. code-block:: python
 
     >>> nd.array('testing')
-    nd.array("testing", string<ascii>)
+    nd.array("testing", string)
 
     >>> nd.array(u'testing')
-    nd.array("testing", string<ucs_2>)
+    nd.array("testing", string)
 
 Constructing from Python Lists
 ------------------------------
@@ -68,28 +64,28 @@ will fail if something is inconsistent in the input data.
     nd.array([true, false], bool)
 
     >>> nd.array([1,2,3])
-    nd.array([1, 2, 3], int32)
+    nd.array([1, 2, 3], strided_dim<int32>)
 
     >>> nd.array([[1.0,0],[0,1.0]])
-    nd.array([[1, 0], [0, 1]], float64)
+    nd.array([[1, 0], [0, 1]], strided_dim<strided_dim<float64>>)
 
     >>> nd.array(["testing", "one", u"two", "three"])
-    nd.array(["testing", "one", "two", "three"], string<ucs_2>)
+    nd.array(["testing", "one", "two", "three"], strided_dim<string>)
 
 Converting to Python Types
 --------------------------
 
-To convert back into native Python objects, there is an ``as_py()``
+To convert back into native Python objects, there is an ``nd.as_py(a)``
 function.
 
 .. code-block:: python
 
     >> x = nd.array([True, False])
-    >> x.as_py()
+    >> nd.as_py(x)
     [True, False]
 
     >> x = nd.array("testing")
-    >> x.as_py()
+    >> nd.as_py(x)
     u'testing'
 
 Constructing from NumPy Scalars
@@ -99,6 +95,8 @@ Numpy scalars are also supported as input, and the dtype is preserved
 in the conversion.
 
 .. code-block:: python
+
+    >>> import numpy as np
 
     >>> x = np.bool_(False)
     >>> nd.array(x)
@@ -110,24 +108,27 @@ in the conversion.
 
     >>> x = np.complex128(3.1)
     >>> nd.array(x)
-    nd.array((3.1,0), complex<float64>)
+    nd.array((3.1,0), cfloat64)
 
 Constructing from NumPy Arrays
 ------------------------------
 
 When the dtype is supported by dynd, numpy arrays can
-be converted into dynd arrays. The resulting array points at the same
-data the numpy array used.
+be converted into dynd arrays. When using the `nd.array` constructor,
+a new array is created, but there is also `nd.asarray` which creates
+a view when possible.
 
 .. code-block:: python
 
     >>> x = np.arange(6.).reshape(3,2)
     >>> nd.array(x)
-    nd.array([[0, 1], [2, 3], [4, 5]], float64)
+    nd.array([[0, 1], [2, 3], [4, 5]], strided_dim<strided_dim<float64>>)
+    >>> nd.asarray(x)
+    nd.array([[0, 1], [2, 3], [4, 5]], strided_dim<strided_dim<float64>>)
 
     >>> x = np.array(['testing', 'one', 'two', 'three'])
-    >>> nd.array(x)
-    nd.array(["testing", "one", "two", "three"], fixedstring<ascii,7>)
+    >>> nd.asarray(x)
+    nd.array(["testing", "one", "two", "three"], strided_dim<string<7,'ascii'>>)
 
 
 Converting to NumPy Arrays
@@ -144,3 +145,25 @@ dtypes.
     >>> np.square(x)
     array([  1.  ,   4.  ,  12.25])
 
+There are some cases where a dynd array will not seamlessly convert
+into a numpy array. The behavior of numpy is usually to ignore errors
+that occur, and switch to an "object" array instead.
+
+... code-block:: python
+
+    >>> x = nd.array([1, 2, 3]).ucast(ndt.float32)
+    >>> x
+    nd.array([1, 2, 3], strided_dim<convert<to=float32, from=int32>>)
+    >>> np.array(x)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: expected a readable buffer object
+    >>> nd.as_numpy(x)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "_pydynd.pyx", line 1406, in _pydynd.as_numpy (_pydynd.cxx:9568)
+    RuntimeError: cannot view dynd array with dtype strided_dim<convert<to=float32,
+    from=int32>> as numpy without making a copy
+    >>> nd.as_numpy(x, allow_copy=True)
+    array([ 1.,  2.,  3.], dtype=float32)
+        

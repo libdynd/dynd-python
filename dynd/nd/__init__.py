@@ -3,7 +3,7 @@ from __future__ import absolute_import
 # Expose types and functions directly from the Cython/C++ module
 from dynd._pydynd import w_array as array, \
         as_py, as_numpy, zeros, ones, full, empty, empty_like, range, \
-        linspace, fields, groupby, elwise_map, \
+        linspace, memmap, fields, groupby, elwise_map, \
         parse_json, format_json, debug_repr, \
         BroadcastError, type_of, dtype_of, dshape_of, ndim_of, \
         view, asarray, is_c_contiguous, is_f_contiguous

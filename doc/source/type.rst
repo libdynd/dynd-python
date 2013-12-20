@@ -15,23 +15,23 @@ Primitive Types
 
 To start are the primitive numeric types with a fixed size.
 
-============  =============== =====================================
-Type           Size (bytes)    Notes
-============  =============== =====================================
-ndt.bool       1               True (value 0) or False (value 1)
-ndt.int8       1               8 bit signed integer
-ndt.int16      2               16 bit signed integer
-ndt.int32      4               32 bit signed integer
-ndt.int64      8               64 bit signed integer
-ndt.uint8      1               8 bit unsigned integer
-ndt.uint16     2               16 bit unsigned integer
-ndt.uint32     4               32 bit unsigned integer
-ndt.uint64     8               64 bit unsigned integer
-ndt.float32    4               32-bit IEEE floating point
-ndt.float64    8               64-bit IEEE floating point
-ndt.cfloat32   8               complex made of 32-bit IEEE floats
-ndt.cfloat64   16              complex made of 64-bit IEEE floats
-============  =============== =====================================
+=================== =============== =====================================
+Type                 Size (bytes)    Notes
+=================== =============== =====================================
+ndt.bool             1               True (value 0) or False (value 1)
+ndt.int8             1               8 bit signed integer
+ndt.int16            2               16 bit signed integer
+ndt.int32            4               32 bit signed integer
+ndt.int64            8               64 bit signed integer
+ndt.uint8            1               8 bit unsigned integer
+ndt.uint16           2               16 bit unsigned integer
+ndt.uint32           4               32 bit unsigned integer
+ndt.uint64           8               64 bit unsigned integer
+ndt.float32          4               32-bit IEEE floating point
+ndt.float64          8               64-bit IEEE floating point
+ndt.complex_float32  8               complex made of 32-bit IEEE floats
+ndt.complex_float64  16              complex made of 64-bit IEEE floats
+=================== =============== =====================================
 
 Bytes Type
 ----------
@@ -146,6 +146,6 @@ similar to the blockref string type.
 
 .. code-block:: python
 
-    >>> ndt.make_pointer(ndt.cfloat32)
-    ndt.type('pointer<complex<float32>>')
+    >>> ndt.make_pointer(ndt.complex_float32)
+    ndt.type('pointer(complex[float32])')
 

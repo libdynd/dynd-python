@@ -47,7 +47,7 @@ class TestPythonScalar(unittest.TestCase):
     def test_complex(self):
         # Complex floating point
         a = nd.array(5.125 - 2.5j)
-        self.assertEqual(nd.type_of(a), ndt.cfloat64)
+        self.assertEqual(nd.type_of(a), ndt.complex_float64)
         self.assertEqual(type(nd.as_py(a)), complex)
         self.assertEqual(nd.as_py(a), 5.125 - 2.5j)
 

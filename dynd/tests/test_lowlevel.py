@@ -38,9 +38,9 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.FLOAT32)
         self.assertEqual(self.type_id_of(ndt.float64),
                         _lowlevel.type_id.FLOAT64)
-        self.assertEqual(self.type_id_of(ndt.cfloat32),
+        self.assertEqual(self.type_id_of(ndt.complex_float32),
                         _lowlevel.type_id.COMPLEX_FLOAT32)
-        self.assertEqual(self.type_id_of(ndt.cfloat64),
+        self.assertEqual(self.type_id_of(ndt.complex_float64),
                         _lowlevel.type_id.COMPLEX_FLOAT64)
         # String/bytes
         self.assertEqual(self.type_id_of(ndt.string),

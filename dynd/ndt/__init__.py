@@ -23,13 +23,11 @@ uint64 = type('uint64')
 uintptr = type('uintptr')
 float32 = type('float32')
 float64 = type('float64')
-complex_float32 = type('cfloat32')
-complex_float64 = type('cfloat64')
-cfloat32 = complex_float32
-cfloat64 = complex_float64
-# Aliases for people comfortable with the Numpy complex namings
-complex64 = cfloat32
-complex128 = cfloat64
+complex_float32 = type('complex[float32]')
+complex_float64 = type('complex[float64]')
+# Aliases for people comfortable with the NumPy complex namings
+complex64 = complex_float32
+complex128 = complex_float64
 
 string = type('string')
 date = type('date')

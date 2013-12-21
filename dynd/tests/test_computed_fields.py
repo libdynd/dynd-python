@@ -30,7 +30,7 @@ class TestComputedFields(unittest.TestCase):
                 rm_fields=['x', 'y'])
         self.assertEqual(nd.type_of(b).element_type.value_type,
                 ndt.type('{sum: float32; difference: float32;' +
-                    ' product: float32; complex: cfloat32}'))
+                    ' product: float32; complex: complex[float32]}'))
         self.assertEqual(nd.as_py(b.sum), [3, 0, 7]),
         self.assertEqual(nd.as_py(b.difference), [-1, -2, -3])
         self.assertEqual(nd.as_py(b.product), [2, -1, 10])

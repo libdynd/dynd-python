@@ -34,8 +34,8 @@ class TestArange(unittest.TestCase):
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.float64)), ndt.float64)
         # Maybe in the future add complex support when start.imag == stop.imag
         # and step.imag == 0?
-        self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.cfloat32)
-        self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.cfloat64)
+        self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.complex_float32)
+        self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.complex_float64)
         # Float/complex should convert when the dtype is specified
         self.assertEqual(nd.dtype_of(nd.range(10.0, dtype=ndt.uint16)), ndt.uint16)
         self.assertEqual(nd.dtype_of(nd.range(1.0, step=0.5+0j, dtype=ndt.float32)), ndt.float32)
@@ -74,9 +74,9 @@ class TestLinspace(unittest.TestCase):
         # Gives float64 when given floats
         self.assertEqual(nd.dtype_of(nd.linspace(0, 1.0)), ndt.float64)
         self.assertEqual(nd.dtype_of(nd.linspace(0.0, 1)), ndt.float64)
-        # Gives cfloat64 when given complex
-        self.assertEqual(nd.dtype_of(nd.linspace(1.0, 1.0j)), ndt.cfloat64)
-        self.assertEqual(nd.dtype_of(nd.linspace(0.0j, 1.0)), ndt.cfloat64)
+        # Gives complex[float64] when given complex
+        self.assertEqual(nd.dtype_of(nd.linspace(1.0, 1.0j)), ndt.complex_float64)
+        self.assertEqual(nd.dtype_of(nd.linspace(0.0j, 1.0)), ndt.complex_float64)
 
     def test_specified_dtype(self):
         # Linspace only supports real-valued outputs
@@ -92,8 +92,8 @@ class TestLinspace(unittest.TestCase):
         # Should obey the float/complex type requests
         self.assertEqual(nd.dtype_of(nd.linspace(0, 1, dtype=ndt.float32)), ndt.float32)
         self.assertEqual(nd.dtype_of(nd.linspace(0, 1, dtype=ndt.float64)), ndt.float64)
-        self.assertEqual(nd.dtype_of(nd.linspace(0, 1, dtype=ndt.cfloat32)), ndt.cfloat32)
-        self.assertEqual(nd.dtype_of(nd.linspace(0, 1, dtype=ndt.cfloat64)), ndt.cfloat64)
+        self.assertEqual(nd.dtype_of(nd.linspace(0, 1, dtype=ndt.complex_float32)), ndt.complex_float32)
+        self.assertEqual(nd.dtype_of(nd.linspace(0, 1, dtype=ndt.complex_float64)), ndt.complex_float64)
 
     def test_cast_errors(self):
         # If a dtype is specified, the inputs must be convertible

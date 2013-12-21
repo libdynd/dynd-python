@@ -26,8 +26,8 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.uint64, ndt.type(np.uint64))
         self.assertEqual(ndt.float32, ndt.type(np.float32))
         self.assertEqual(ndt.float64, ndt.type(np.float64))
-        self.assertEqual(ndt.cfloat32, ndt.type(np.complex64))
-        self.assertEqual(ndt.cfloat64, ndt.type(np.complex128))
+        self.assertEqual(ndt.complex_float32, ndt.type(np.complex64))
+        self.assertEqual(ndt.complex_float64, ndt.type(np.complex128))
 
     def test_ndt_type_from_numpy_dtype(self):
         # Tests converting numpy dtypes to dynd types
@@ -43,8 +43,8 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.uint64, ndt.type(np.dtype(np.uint64)))
         self.assertEqual(ndt.float32, ndt.type(np.dtype(np.float32)))
         self.assertEqual(ndt.float64, ndt.type(np.dtype(np.float64)))
-        self.assertEqual(ndt.cfloat32, ndt.type(np.dtype(np.complex64)))
-        self.assertEqual(ndt.cfloat64, ndt.type(np.dtype(np.complex128)))
+        self.assertEqual(ndt.complex_float32, ndt.type(np.dtype(np.complex64)))
+        self.assertEqual(ndt.complex_float64, ndt.type(np.dtype(np.complex128)))
         self.assertEqual(ndt.make_fixedstring(10, 'ascii'),
                     ndt.type(np.dtype('S10')))
         self.assertEqual(ndt.make_fixedstring(10, 'utf_32'),
@@ -69,9 +69,9 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                 ndt.type(np.dtype(nonnative + 'f4')))
         self.assertEqual(ndt.make_byteswap(ndt.float64),
                 ndt.type(np.dtype(nonnative + 'f8')))
-        self.assertEqual(ndt.make_byteswap(ndt.cfloat32),
+        self.assertEqual(ndt.make_byteswap(ndt.complex_float32),
                 ndt.type(np.dtype(nonnative + 'c8')))
-        self.assertEqual(ndt.make_byteswap(ndt.cfloat64),
+        self.assertEqual(ndt.make_byteswap(ndt.complex_float64),
                 ndt.type(np.dtype(nonnative + 'c16')))
 
     def test_ndt_type_from_numpy_dtype_struct(self):
@@ -99,8 +99,8 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.uint64.as_numpy(), np.dtype('uint64'))
         self.assertEqual(ndt.float32.as_numpy(), np.dtype('float32'))
         self.assertEqual(ndt.float64.as_numpy(), np.dtype('float64'))
-        self.assertEqual(ndt.cfloat32.as_numpy(), np.dtype('complex64'))
-        self.assertEqual(ndt.cfloat64.as_numpy(), np.dtype('complex128'))
+        self.assertEqual(ndt.complex_float32.as_numpy(), np.dtype('complex64'))
+        self.assertEqual(ndt.complex_float64.as_numpy(), np.dtype('complex128'))
         # nonnative byte order
         nonnative = self.nonnative
         self.assertEqual(ndt.make_byteswap(ndt.int16).as_numpy(),
@@ -388,8 +388,8 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.dtype_of(nd.array(np.uint64(100))), ndt.uint64)
         self.assertEqual(nd.dtype_of(nd.array(np.float32(100.))), ndt.float32)
         self.assertEqual(nd.dtype_of(nd.array(np.float64(100.))), ndt.float64)
-        self.assertEqual(nd.dtype_of(nd.array(np.complex64(100j))), ndt.cfloat32)
-        self.assertEqual(nd.dtype_of(nd.array(np.complex128(100j))), ndt.cfloat64)
+        self.assertEqual(nd.dtype_of(nd.array(np.complex64(100j))), ndt.complex_float32)
+        self.assertEqual(nd.dtype_of(nd.array(np.complex128(100j))), ndt.complex_float64)
         if np.__version__ >= '1.7':
             self.assertEqual(nd.dtype_of(nd.array(np.datetime64('2000-12-13'))), ndt.date)
 

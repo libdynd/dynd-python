@@ -18,14 +18,14 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.z), True)
 
     def test_nested_struct(self):
-        a = nd.empty('{x: 2, int16; y: {a: string; b: float64}; z: 1, cfloat32}')
+        a = nd.empty('{x: 2, int16; y: {a: string; b: float64}; z: 1, complex[float32]}')
         a[...] = [[1,2], ['test', 3.5], [3j]]
         self.assertEqual(nd.as_py(a.x), [1, 2])
         self.assertEqual(nd.as_py(a.y.a), 'test')
         self.assertEqual(nd.as_py(a.y.b), 3.5)
         self.assertEqual(nd.as_py(a.z), [3j])
 
-        a = nd.empty('{x: 2, int16; y: {a: string; b: float64}; z: 1, cfloat32}')
+        a = nd.empty('{x: 2, int16; y: {a: string; b: float64}; z: 1, complex[float32]}')
         a[...] = {'x':[1,2], 'y':{'a':'test', 'b':3.5}, 'z':[3j]}
         self.assertEqual(nd.as_py(a.x), [1, 2])
         self.assertEqual(nd.as_py(a.y.a), 'test')

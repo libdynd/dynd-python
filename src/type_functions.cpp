@@ -64,10 +64,10 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
     } else {
         switch (d.get_type_id()) {
             case complex_float32_type_id:
-                ss << "ndt.cfloat32";
+                ss << "ndt.complex_float32";
                 break;
             case complex_float64_type_id:
-                ss << "ndt.cfloat64";
+                ss << "ndt.complex_float64";
                 break;
             case date_type_id:
                 ss << "ndt.date";

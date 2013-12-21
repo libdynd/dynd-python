@@ -108,7 +108,7 @@ in the conversion.
 
     >>> x = np.complex128(3.1)
     >>> nd.array(x)
-    nd.array((3.1,0), cfloat64)
+    nd.array((3.1,0), complex[float64])
 
 Constructing from NumPy Arrays
 ------------------------------

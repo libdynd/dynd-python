@@ -84,24 +84,24 @@ class TestDType(unittest.TestCase):
         self.assertTrue(ndt.float64.data_alignment in [4,8])
 
     def test_complex_type_properties(self):
-        self.assertEqual(type(ndt.cfloat32), ndt.type)
-        self.assertEqual(str(ndt.cfloat32), 'cfloat32')
-        self.assertEqual(ndt.cfloat32.data_size, 8)
-        self.assertEqual(ndt.cfloat32.data_alignment, 4)
+        self.assertEqual(type(ndt.complex_float32), ndt.type)
+        self.assertEqual(str(ndt.complex_float32), 'complex[float32]')
+        self.assertEqual(ndt.complex_float32.data_size, 8)
+        self.assertEqual(ndt.complex_float32.data_alignment, 4)
 
-        self.assertEqual(type(ndt.cfloat64), ndt.type)
-        self.assertEqual(str(ndt.cfloat64), 'cfloat64')
-        self.assertEqual(ndt.cfloat64.data_size, 16)
-        self.assertTrue(ndt.cfloat64.data_alignment in [4,8])
+        self.assertEqual(type(ndt.complex_float64), ndt.type)
+        self.assertEqual(str(ndt.complex_float64), 'complex[float64]')
+        self.assertEqual(ndt.complex_float64.data_size, 16)
+        self.assertTrue(ndt.complex_float64.data_alignment in [4,8])
 
     def test_complex_type_realimag(self):
         a = nd.array(1 + 3j)
-        self.assertEqual(ndt.cfloat64, nd.type_of(a))
+        self.assertEqual(ndt.complex_float64, nd.type_of(a))
         self.assertEqual(1, nd.as_py(a.real))
         self.assertEqual(3, nd.as_py(a.imag))
 
         a = nd.array([1 + 2j, 3 + 4j, 5 + 6j])
-        self.assertEqual(ndt.type('A, cfloat64'), nd.type_of(a))
+        self.assertEqual(ndt.type('A, complex[float64]'), nd.type_of(a))
         self.assertEqual([1, 3, 5], nd.as_py(a.real))
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 
@@ -140,7 +140,7 @@ class TestDType(unittest.TestCase):
         self.assertEqual(ndt.bool, ndt.type(bool))
         self.assertEqual(ndt.int32, ndt.type(int))
         self.assertEqual(ndt.float64, ndt.type(float))
-        self.assertEqual(ndt.cfloat64, ndt.type(complex))
+        self.assertEqual(ndt.complex_float64, ndt.type(complex))
 
     def test_fixedbytes_type(self):
         d = ndt.make_fixedbytes(4, 4)

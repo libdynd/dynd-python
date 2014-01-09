@@ -81,13 +81,6 @@ PyObject *ndt_type_get_kind(const dynd::ndt::type& d);
 PyObject *ndt_type_get_type_id(const dynd::ndt::type& d);
 
 /**
- * Produces a ndt::type corresponding to the object's type. This
- * is to determine the ndt::type of an object that contains a value
- * or values.
- */
-dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject* obj);
-
-/**
  * Converts a Python type, numpy dtype, or string
  * into an ndt::type. This raises an error if given an object
  * which contains values, it is for type-like things only.

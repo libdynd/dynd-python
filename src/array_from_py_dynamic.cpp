@@ -119,11 +119,145 @@ inline nd::array allocate_nd_arr(
     return result;
 }
 
+static bool bool_assign(char *data, PyObject *obj)
+{
+    if (obj == Py_True) {
+        *data = 1;
+        return true;
+    } else if (obj == Py_False) {
+        *data = 0;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool int_assign(const ndt::type& tp, char *data, PyObject *obj)
+{
+#if PY_VERSION_HEX < 0x03000000
+    if (PyInt_Check(obj)) {
+        long value = PyInt_AS_LONG(obj);
+# if SIZEOF_LONG > SIZEOF_INT
+        // Check whether we're assigning to int32 or int64
+        if (tp.get_type_id() == int64_type_id) {
+            int64_t *result_ptr = reinterpret_cast<int64_t *>(data);
+            *result_ptr = static_cast<int64_t>(value);
+        } else {
+            if (value >= INT_MIN && value <= INT_MAX) {
+                int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
+                *result_ptr = static_cast<int32_t>(value);
+            } else {
+                // Needs promotion to int64
+                return false;
+            }
+        }
+# else
+        int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
+        *result_ptr = static_cast<int32_t>(value);
+# endif
+        return true;
+    }
+#endif
+
+    if (PyLong_Check(obj)) {
+        PY_LONG_LONG value = PyLong_AsLongLong(obj);
+        if (value == -1 && PyErr_Occurred()) {
+            throw runtime_error("error converting int value");
+        }
+
+        if (tp.get_type_id() == int64_type_id) {
+            int64_t *result_ptr = reinterpret_cast<int64_t *>(data);
+            *result_ptr = static_cast<int64_t>(value);
+        } else {
+            if (value >= INT_MIN && value <= INT_MAX) {
+                int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
+                *result_ptr = static_cast<int32_t>(value);
+            } else {
+                // This value requires promotion to int64
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // TODO: Bool
+
+    return false;
+}
+
+static bool real_assign(char *data, PyObject *obj)
+{
+    double *result_ptr = reinterpret_cast<double *>(data);
+    if (PyFloat_Check(obj)) {
+        *result_ptr = PyFloat_AS_DOUBLE(obj);
+        return true;
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyInt_Check(obj)) {
+        *result_ptr = PyInt_AS_LONG(obj);
+        return true;
+#endif
+    } else if (PyLong_Check(obj)) {
+        double value = PyLong_AsDouble(obj);
+        if (value == -1 && PyErr_Occurred()) {
+            throw runtime_error("error converting int value");
+        }
+        *result_ptr = value;
+        return true;
+    } else if (obj == Py_True) {
+        *result_ptr = 1;
+        return true;
+    } else if (obj == Py_False) {
+        *result_ptr = 0;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool complex_assign(char *data, PyObject *obj)
+{
+    complex<double> *result_ptr = reinterpret_cast<complex<double> *>(data);
+    if (PyComplex_Check(obj)) {
+        *result_ptr = complex<double>(PyComplex_RealAsDouble(obj),
+                                PyComplex_ImagAsDouble(obj));
+        return true;
+    } else if (PyFloat_Check(obj)) {
+        *result_ptr = PyFloat_AS_DOUBLE(obj);
+        return true;
+#if PY_VERSION_HEX < 0x03000000
+    } else if (PyInt_Check(obj)) {
+        *result_ptr = PyInt_AS_LONG(obj);
+        return true;
+#endif
+    } else if (PyLong_Check(obj)) {
+        double value = PyLong_AsDouble(obj);
+        if (value == -1 && PyErr_Occurred()) {
+            throw runtime_error("error converting int value");
+        }
+        *result_ptr = value;
+        return true;
+    } else if (obj == Py_True) {
+        *result_ptr = 1;
+        return true;
+    } else if (obj == Py_False) {
+        *result_ptr = 0;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /**
- * Special string assignment, just for UTF-8 because
- * that's the type of string we produce.
+ * Assign a string pyobject to an array element.
+ *
+ * \param  tp  The string type.
+ * \param  metadata  Metadata for the string.
+ * \param  data  The data element being assigned to.
+ * \param  obj  The Python object containing the value
+ *
+ * \return  True if the assignment was successful, false if the input type is incompatible.
  */
-static void string_assign(const ndt::type& tp, const char *metadata, char *data, PyObject *obj)
+static bool string_assign(const ndt::type& tp, const char *metadata, char *data, PyObject *obj)
 {
     if (PyUnicode_Check(obj)) {
         // Go through UTF8 (was accessing the cpython unicode values directly
@@ -137,6 +271,7 @@ static void string_assign(const ndt::type& tp, const char *metadata, char *data,
 
         const string_type *st = static_cast<const string_type *>(tp.extended());
         st->set_utf8_string(metadata, data, assign_error_default, s, s + len);
+        return true;
     }
 #if PY_VERSION_HEX < 0x03000000
     else if (PyString_Check(obj)) {
@@ -148,15 +283,26 @@ static void string_assign(const ndt::type& tp, const char *metadata, char *data,
 
         const string_type *st = static_cast<const string_type *>(tp.extended());
         st->set_utf8_string(metadata, data, assign_error_default, s, s + len);
+        return true;
     }
 #endif
     else {
-        throw runtime_error("internal error: string assignment should get a String or Unicode");
+        return false;
     }
 }
 
 #if PY_VERSION_HEX >= 0x03000000
-static void bytes_assign(const ndt::type& tp, const char *metadata, char *data, PyObject *obj)
+/**
+ * Assign a bytes pyobject to an array element.
+ *
+ * \param  tp  The string type.
+ * \param  metadata  Metadata for the type.
+ * \param  data  The data element being assigned to.
+ * \param  obj  The Python object containing the value
+ *
+ * \return  True if the assignment was successful, false if the input type is incompatible.
+ */
+static bool bytes_assign(const ndt::type& tp, const char *metadata, char *data, PyObject *obj)
 {
     if (PyBytes_Check(obj)) {
         char *s = NULL;
@@ -167,9 +313,10 @@ static void bytes_assign(const ndt::type& tp, const char *metadata, char *data, 
 
         const bytes_type *st = static_cast<const bytes_type *>(tp.extended());
         st->set_bytes_data(metadata, data, assign_error_default, s, s + len);
+        return true;
     }
     else {
-        throw runtime_error("internal error: bytes assignment should get a Bytes");
+        return false;
     }
 }
 #endif
@@ -252,18 +399,18 @@ static void array_from_py_dynamic_first_alloc(
             elem.dtp = ndt::make_type<int32_t>();
             arr = allocate_nd_arr(shape, coord, elem);
             int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
-            *result_ptr = static_cast<int>(value);
+            *result_ptr = static_cast<int32_t>(value);
         } else {
             elem.dtp = ndt::make_type<int64_t>();
             arr = allocate_nd_arr(shape, coord, elem);
             int64_t *result_ptr = reinterpret_cast<int64_t *>(coord[current_axis-1].data_ptr);
-            *result_ptr = static_cast<int>(value);
+            *result_ptr = static_cast<int64_t>(value);
         }
 # else
         elem.dtp = ndt::make_type<int32_t>();
         arr = allocate_nd_arr(shape, coord, elem);
         int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
-        *result_ptr = static_cast<int>(value);
+        *result_ptr = static_cast<int32_t>(value);
 # endif
         return;
     }
@@ -320,30 +467,44 @@ static void array_from_py_dynamic_first_alloc(
                     pyobject_ownref item_ownref(item);
                     if (!coord.empty()) {
                         coord[current_axis].coord = i;
+                        char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
+                                                            : arr.get_readwrite_originptr();
                         if (coord[current_axis].coord >= coord[current_axis].reserved_size) {
                             // Increase the reserved capacity if needed
                             coord[current_axis].reserved_size *= 2;
-                            char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
-                                                                : arr.get_readwrite_originptr();
                             ndt::var_dim_element_resize(coord[current_axis].tp,
                                         coord[current_axis].metadata_ptr,
                                         data_ptr, coord[current_axis].reserved_size);
                         }
+                        // Set the data pointer for the child element
+                        var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data_ptr);
+                        const var_dim_type_metadata *md =
+                            reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                        coord[current_axis].data_ptr = d->begin + i * md->stride;
                     }
                     array_from_py_dynamic(item, shape, coord, elem,
                                 arr, current_axis + 1);
 
                     item = PyIter_Next(iter);
+                    ++i;
                 }
 
                 if (PyErr_Occurred()) {
                     // Propagate any error
                     throw exception();
                 }
+                // Shrink the var element to fit
+                char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
+                                                    : arr.get_readwrite_originptr();
+                ndt::var_dim_element_resize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr,
+                            data_ptr, i);
+                return;
             } else {
                 // Because this iterator's sequence is zero-sized, we can't
-                // start deducing the type yet. Thus, we make an array of
-                // int32, but don't initialize elem yet.
+                // start deducing the type yet. To start capturing the
+                // dimensional structure, we make an array of
+                // int32, while keeping elem.dtp as an uninitialized type.
                 elem.dtp = ndt::make_type<int32_t>();
                 arr = allocate_nd_arr(shape, coord, elem);
                 // Make the dtype uninitialized again, to signal we have
@@ -367,6 +528,13 @@ static void array_from_py_dynamic_first_alloc(
             }
         }
     }
+
+    stringstream ss;
+    ss << "Unable to convert object of type ";
+    pyobject_ownref typestr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+    ss << pystring_as_string(typestr.get());
+    ss << " to a dynd array";
+    throw runtime_error(ss.str());
 }
 
 /**
@@ -416,7 +584,51 @@ static void array_from_py_dynamic(
         return;
     }
 
-
+    // If it's the dtype
+    if (current_axis == shape.size()) {
+        switch (elem.dtp.get_kind()) {
+            case bool_kind:
+                if (!bool_assign(coord[current_axis-1].data_ptr, obj)) {
+                    throw runtime_error("TODO: Handle type promotion");
+                }
+                return;
+            case int_kind:
+                if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
+                    throw runtime_error("TODO: Handle type promotion");
+                }
+                return;
+            case real_kind:
+                if (!real_assign(coord[current_axis-1].data_ptr, obj)) {
+                    throw runtime_error("TODO: Handle type promotion");
+                }
+                return;
+            case complex_kind:
+                if (!complex_assign(coord[current_axis-1].data_ptr, obj)) {
+                    throw runtime_error("TODO: Handle type promotion");
+                }
+                return;
+            case string_kind:
+                if (!string_assign(elem.dtp, elem.metadata_ptr,
+                                coord[current_axis-1].data_ptr, obj)) {
+                    throw runtime_error("TODO: Handle type promotion");
+                }
+                return;
+#if PY_VERSION_HEX >= 0x03000000
+            case bytes_kind:
+                if (!bytes_assign(elem.dtp, elem.metadata_ptr,
+                                coord[current_axis-1].data_ptr, obj)) {
+                    throw runtime_error("TODO: Handle type promotion");
+                }
+                return;
+#endif
+            case void_kind:
+                // In this case, zero-sized dimension were encountered before
+                // an actual element from which to deduce a type.
+                throw runtime_error("TODO: Handle late discovery of dtype in dynd conversion");
+            default:
+                throw runtime_error("internal error: unexpected type in recursive pyobject to dynd array conversion");
+        }
+    }
 }
 
 dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj)

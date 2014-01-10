@@ -22,6 +22,7 @@
 
 #include "array_from_py.hpp"
 #include "array_from_py_typededuction.hpp"
+#include "array_from_py_dynamic.hpp"
 #include "array_assign_from_py.hpp"
 #include "array_functions.hpp"
 #include "type_functions.hpp"
@@ -506,12 +507,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
         // is specified
         PyObject *iter = PyObject_GetIter(obj);
         if (iter != NULL) {
-            // TODO: Maybe directly call the assign from pyiter function in array_assign_from_py.cpp
             Py_DECREF(iter);
-            nd::array result = nd::empty(ndt::make_var_dim(ndt::make_type<double>()));
-            array_nodim_broadcast_assign_from_py(result.get_type(),
-                            result.get_ndo_meta(), result.get_readwrite_originptr(), obj);
-            return result;
+            return array_from_py_dynamic(obj);
         } else {
             if (PyErr_ExceptionMatches(PyExc_TypeError)) {
                 // A TypeError indicates that the object doesn't support

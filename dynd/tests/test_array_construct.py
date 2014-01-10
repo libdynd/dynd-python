@@ -536,9 +536,9 @@ class TestIteratorConstruct(unittest.TestCase):
 
     def test_without_specified_dtype(self):
         # Constructing from an iterator with no specified dtype
-        # defaults to float64
+        # defaults to int32
         a = nd.array(2*x + 1 for x in range(10))
-        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(10)])
 
     def test_simple_fromiter(self):

@@ -209,10 +209,17 @@ static void array_from_py_dynamic_first_alloc(
         if (size != -1) {
             // Add this size to the shape
             shape.push_back(size);
+            // Initialize the data pointer for child elements with the one for this element
+            if (!coord.empty() && current_axis > 0) {
+                coord[current_axis].data_ptr = coord[current_axis-1].data_ptr;
+            }
             // Process all the elements
             for (intptr_t i = 0; i < size; ++i) {
-                pyobject_ownref child(PySequence_GetItem(obj, i));
-                array_from_py_dynamic(child.get(), shape, coord, elem,
+                if (!coord.empty()) {
+                    coord[current_axis].coord = i;
+                }
+                pyobject_ownref item(PySequence_GetItem(obj, i));
+                array_from_py_dynamic(item.get(), shape, coord, elem,
                             arr, current_axis + 1);
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
@@ -229,7 +236,137 @@ static void array_from_py_dynamic_first_alloc(
         }
     }
 
+    if (PyBool_Check(obj)) {
+        elem.dtp = ndt::make_type<dynd_bool>();
+        arr = allocate_nd_arr(shape, coord, elem);
+        *coord[current_axis-1].data_ptr = (obj == Py_True);
+        return;
+    }
 
+#if PY_VERSION_HEX < 0x03000000
+    if (PyInt_Check(obj)) {
+        long value = PyInt_AS_LONG(obj);
+# if SIZEOF_LONG > SIZEOF_INT
+        // Use a 32-bit int if it fits.
+        if (value >= INT_MIN && value <= INT_MAX) {
+            elem.dtp = ndt::make_type<int32_t>();
+            arr = allocate_nd_arr(shape, coord, elem);
+            int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
+            *result_ptr = static_cast<int>(value);
+        } else {
+            elem.dtp = ndt::make_type<int64_t>();
+            arr = allocate_nd_arr(shape, coord, elem);
+            int64_t *result_ptr = reinterpret_cast<int64_t *>(coord[current_axis-1].data_ptr);
+            *result_ptr = static_cast<int>(value);
+        }
+# else
+        elem.dtp = ndt::make_type<int32_t>();
+        arr = allocate_nd_arr(shape, coord, elem);
+        int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
+        *result_ptr = static_cast<int>(value);
+# endif
+        return;
+    }
+#endif
+
+    if (PyLong_Check(obj)) {
+        PY_LONG_LONG value = PyLong_AsLongLong(obj);
+        if (value == -1 && PyErr_Occurred()) {
+            throw runtime_error("error converting int value");
+        }
+
+        // Use a 32-bit int if it fits.
+        if (value >= INT_MIN && value <= INT_MAX) {
+            elem.dtp = ndt::make_type<int32_t>();
+            arr = allocate_nd_arr(shape, coord, elem);
+            int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
+            *result_ptr = static_cast<int>(value);
+        } else {
+            elem.dtp = ndt::make_type<int64_t>();
+            arr = allocate_nd_arr(shape, coord, elem);
+            int64_t *result_ptr = reinterpret_cast<int64_t *>(coord[current_axis-1].data_ptr);
+            *result_ptr = static_cast<int>(value);
+        }
+        return;
+    }
+
+    if (PyFloat_Check(obj)) {
+        elem.dtp = ndt::make_type<double>();
+        arr = allocate_nd_arr(shape, coord, elem);
+        double *result_ptr = reinterpret_cast<double *>(coord[current_axis-1].data_ptr);
+        *result_ptr = PyFloat_AS_DOUBLE(obj);
+        return;
+    }
+
+    if (PyComplex_Check(obj)) {
+        elem.dtp = ndt::make_type<double>();
+        arr = allocate_nd_arr(shape, coord, elem);
+        complex<double> *result_ptr = reinterpret_cast<complex<double> *>(coord[current_axis-1].data_ptr);
+        *result_ptr = complex<double>(PyComplex_RealAsDouble(obj),
+                                PyComplex_ImagAsDouble(obj));
+        return;
+    }
+
+    // Check if it's an iterator
+    {
+        PyObject *iter = PyObject_GetIter(obj);
+        if (iter != NULL) {
+            // Indicate a var dim.
+            shape.push_back(-1);
+            PyObject *item = PyIter_Next(iter);
+            if (item != NULL) {
+                intptr_t i = 0;
+                while (item != NULL) {
+                    pyobject_ownref item_ownref(item);
+                    if (!coord.empty()) {
+                        coord[current_axis].coord = i;
+                        if (coord[current_axis].coord >= coord[current_axis].reserved_size) {
+                            // Increase the reserved capacity if needed
+                            coord[current_axis].reserved_size *= 2;
+                            char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
+                                                                : arr.get_readwrite_originptr();
+                            ndt::var_dim_element_resize(coord[current_axis].tp,
+                                        coord[current_axis].metadata_ptr,
+                                        data_ptr, coord[current_axis].reserved_size);
+                        }
+                    }
+                    array_from_py_dynamic(item, shape, coord, elem,
+                                arr, current_axis + 1);
+
+                    item = PyIter_Next(iter);
+                }
+
+                if (PyErr_Occurred()) {
+                    // Propagate any error
+                    throw exception();
+                }
+            } else {
+                // Because this iterator's sequence is zero-sized, we can't
+                // start deducing the type yet. Thus, we make an array of
+                // int32, but don't initialize elem yet.
+                elem.dtp = ndt::make_type<int32_t>();
+                arr = allocate_nd_arr(shape, coord, elem);
+                // Make the dtype uninitialized again, to signal we have
+                // deduced anything yet.
+                elem.dtp = ndt::type();
+                // Set it to a zero-sized var element
+                char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
+                                                    : arr.get_readwrite_originptr();
+                ndt::var_dim_element_resize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr, data_ptr, 0);
+                return;
+            }
+        } else {
+            if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+                // A TypeError indicates that the object doesn't support
+                // the iterator protocol
+                PyErr_Clear();
+            } else {
+                // Propagate the error
+                throw exception();
+            }
+        }
+    }
 }
 
 /**

@@ -534,12 +534,43 @@ class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators
     # NumPy's np.fromiter(x, dtype) becomes nd.array(x, type='var, <dtype>')
 
-    def test_without_specified_dtype(self):
-        # Constructing from an iterator with no specified dtype
-        # defaults to int32
+    def test_dynamic_fromiter_onetype(self):
+        # Constructing with an iterator like this uses a dynamic
+        # array construction method. In this simple case, we
+        # use generators that have a consistent type
+        # bool result
+        a = nd.array(x % 2 == 0 for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, bool'))
+        self.assertEqual(nd.as_py(a), [True, False]*5)
+        # int32 result
         a = nd.array(2*x + 1 for x in range(10))
         self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(10)])
+        # int64 result
+        a = nd.array(2*x + 10000000000 for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.as_py(a), [2*x + 10000000000 for x in range(10)])
+        # float64 result
+        a = nd.array(2*x + 3.25 for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [2*x + 3.25 for x in range(10)])
+        # complex[float64] result
+        a = nd.array(2j*(x + 1) + 3.25 for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [2j*(x + 1) + 3.25 for x in range(10)])
+        # string result
+        a = nd.array(str(x) + 'test' for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, string'))
+        self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
+        # string result
+        a = nd.array(str(x) + u'test' for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, string'))
+        self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
+        # bytes result
+        if sys.version_info[0] >= 3:
+            a = nd.array(b'x'*x for x in range(10))
+            self.assertEqual(nd.type_of(a), ndt.type('var, bytes'))
+            self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
 
     def test_simple_fromiter(self):
         # Var dimension construction from a generator

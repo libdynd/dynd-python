@@ -427,12 +427,12 @@ static void array_from_py_dynamic_first_alloc(
             elem.dtp = ndt::make_type<int32_t>();
             arr = allocate_nd_arr(shape, coord, elem);
             int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
-            *result_ptr = static_cast<int>(value);
+            *result_ptr = static_cast<int32_t>(value);
         } else {
             elem.dtp = ndt::make_type<int64_t>();
             arr = allocate_nd_arr(shape, coord, elem);
             int64_t *result_ptr = reinterpret_cast<int64_t *>(coord[current_axis-1].data_ptr);
-            *result_ptr = static_cast<int>(value);
+            *result_ptr = static_cast<int64_t>(value);
         }
         return;
     }
@@ -446,7 +446,7 @@ static void array_from_py_dynamic_first_alloc(
     }
 
     if (PyComplex_Check(obj)) {
-        elem.dtp = ndt::make_type<double>();
+        elem.dtp = ndt::make_type<complex<double> >();
         arr = allocate_nd_arr(shape, coord, elem);
         complex<double> *result_ptr = reinterpret_cast<complex<double> *>(coord[current_axis-1].data_ptr);
         *result_ptr = complex<double>(PyComplex_RealAsDouble(obj),
@@ -589,35 +589,35 @@ static void array_from_py_dynamic(
         switch (elem.dtp.get_kind()) {
             case bool_kind:
                 if (!bool_assign(coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle type promotion");
+                    throw runtime_error("TODO: Handle bool type promotion");
                 }
                 return;
             case int_kind:
                 if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle type promotion");
+                    throw runtime_error("TODO: Handle int type promotion");
                 }
                 return;
             case real_kind:
                 if (!real_assign(coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle type promotion");
+                    throw runtime_error("TODO: Handle real type promotion");
                 }
                 return;
             case complex_kind:
                 if (!complex_assign(coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle type promotion");
+                    throw runtime_error("TODO: Handle complex type promotion");
                 }
                 return;
             case string_kind:
                 if (!string_assign(elem.dtp, elem.metadata_ptr,
                                 coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle type promotion");
+                    throw runtime_error("TODO: Handle string type promotion");
                 }
                 return;
 #if PY_VERSION_HEX >= 0x03000000
             case bytes_kind:
                 if (!bytes_assign(elem.dtp, elem.metadata_ptr,
                                 coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle type promotion");
+                    throw runtime_error("TODO: Handle bytes type promotion");
                 }
                 return;
 #endif

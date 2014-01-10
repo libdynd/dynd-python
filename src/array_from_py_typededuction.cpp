@@ -15,12 +15,10 @@
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
-#include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/exceptions.hpp>
 
-#include "array_from_py_deduction.hpp"
+#include "array_from_py_typededuction.hpp"
 #include "array_assign_from_py.hpp"
 #include "array_functions.hpp"
 #include "type_functions.hpp"

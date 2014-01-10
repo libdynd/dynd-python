@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DYND__ARRAY_FROM_PY_DEDUCTION_HPP_
-#define _DYND__ARRAY_FROM_PY_DEDUCTION_HPP_
+#ifndef _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_
+#define _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_
 
 #include <Python.h>
 
@@ -107,5 +107,5 @@ size_t get_nonragged_dim_count(const dynd::ndt::type& tp, size_t max_count=std::
 
 } // namespace pydynd
 
-#endif // _DYND__ARRAY_FROM_PY_DEDUCTION_HPP_
+#endif // _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_
 

@@ -601,6 +601,40 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.array, iter([True, False, u"test"]))
         self.assertRaises(RuntimeError, nd.array, iter([True, False, b"test"]))
 
+    def test_dynamic_fromiter_int32typepromo(self):
+        # Test iterator construction cases promoting from an int32
+        # int64 result
+        a = nd.array(iter([1, 2, 10000000000]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.as_py(a), [1, 2, 10000000000])
+        # float64 result
+        a = nd.array(iter([1, 2, 3.25]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [1, 2, 3.25])
+        # complex[float64] result
+        a = nd.array(iter([1, 2, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
+        # Should raise an error mixing int32 and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([1, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([1, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([1, 2, b"test"]))
+
+    def test_dynamic_fromiter_int64typepromo(self):
+        # Test iterator construction cases promoting from an int64
+        # float64 result
+        a = nd.array(iter([10000000000, 2, 3.25]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25])
+        # complex[float64] result
+        a = nd.array(iter([10000000000, 2, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
+        # Should raise an error mixing int64 and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, b"test"]))
+
     def test_simple_fromiter(self):
         # Var dimension construction from a generator
         a = nd.array((2*x + 5 for x in range(10)), type='var, int32')

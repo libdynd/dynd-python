@@ -809,7 +809,10 @@ static void array_from_py_dynamic(
                 return;
             case int_kind:
                 if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
-                    throw runtime_error("TODO: Handle int type promotion");
+                    promote_nd_arr(shape, coord, elem, arr,
+                        promote_types_arithmetic(elem.dtp, deduce_ndt_type_from_pyobject(obj)));
+                    array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                                coord[current_axis-1].data_ptr, obj);
                 }
                 return;
             case real_kind:

@@ -140,9 +140,14 @@ static nd::array allocate_nd_arr(
 }
 
 /**
- * This copies everything up to, but not including, the
+ * This copies everything up to, and possibly including, the
  * current coordinate in `src_coord`. When finished,
  * `dst_coord` is left in a state equivalent to `src_coord`.
+ *
+ * The `copy_final_coord` controls whether the final coordinate
+ * for the axis `current_axis - 1` gets copied or not. Generally
+ * it shouldn't be, but when dealing with iterators it becomes
+ * necessary so as to preserve the already retrieved data.
  *
  * If `promoted_axis` is less than shape.size(), it's for
  * the case where a dim was promoted from strided to var.
@@ -160,6 +165,7 @@ static void copy_to_promoted_nd_arr(
     const assignment_strided_ckernel_builder& ck,
     intptr_t current_axis,
     intptr_t promoted_axis,
+    bool copy_final_coord,
     bool final_coordinate)
 {
     intptr_t ndim = shape.size();
@@ -176,9 +182,10 @@ static void copy_to_promoted_nd_arr(
                 ck(dst_data_ptr, dst_md->stride,
                     src_data_ptr, src_md->stride, shape[current_axis]);
             } else {
-                // Copy up to, but not including, the coordinate
+                // Copy up to, and possibly including, the coordinate
                 ck(dst_data_ptr, dst_md->stride,
-                    src_data_ptr, src_md->stride, src_coord[current_axis].coord);
+                    src_data_ptr, src_md->stride,
+                    src_coord[current_axis].coord + int(copy_final_coord));
                 dst_coord[current_axis].coord = src_coord[current_axis].coord;
                 dst_coord[current_axis].data_ptr = dst_data_ptr + dst_md->stride * dst_coord[current_axis].coord;
             }
@@ -205,9 +212,10 @@ static void copy_to_promoted_nd_arr(
                             dst_coord[current_axis].metadata_ptr,
                             dst_data_ptr, src_coord[current_axis].reserved_size);
                 dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
-                // Copy up to, but not including, the coordinate
+                // Copy up to, and possibly including, the coordinate
                 ck(dst_d->begin, dst_md->stride,
-                    src_d->begin, src_md->stride, src_coord[current_axis].coord);
+                    src_d->begin, src_md->stride,
+                    src_coord[current_axis].coord + int(copy_final_coord));
                 dst_coord[current_axis].coord = src_coord[current_axis].coord;
                 dst_coord[current_axis].data_ptr = dst_d->begin +
                             dst_md->stride * dst_coord[current_axis].coord;
@@ -232,7 +240,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_data_ptr, dst_coord, dst_elem,
                         src_data_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, false);
+                        ck, current_axis + 1, promoted_axis, copy_final_coord, false);
                 }
             } else {
                 // Copy up to, and including, the coordinate
@@ -247,7 +255,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_data_ptr, dst_coord, dst_elem,
                         src_data_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, i == size);
+                        ck, current_axis + 1, promoted_axis, copy_final_coord, i == size);
                 }
             }
         } else {
@@ -276,7 +284,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_elem_ptr, dst_coord, dst_elem,
                         src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, false);
+                        ck, current_axis + 1, promoted_axis, copy_final_coord, false);
                 }
             } else {
                 // Initialize the var element to the same reserved space as the input
@@ -298,7 +306,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_elem_ptr, dst_coord, dst_elem,
                         src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, i == size);
+                        ck, current_axis + 1, promoted_axis, copy_final_coord, i == size);
                 }
             }
         }
@@ -341,7 +349,7 @@ static void promote_nd_arr_dtype(
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
-                coord, elem, k, 0, ndim, true);
+                coord, elem, k, 0, ndim, false, true);
     arr.swap(newarr);
     coord.swap(newcoord);
     elem.swap(newelem);
@@ -358,7 +366,8 @@ static void promote_nd_arr_dim(
     std::vector<afpd_coordentry>& coord,
     afpd_dtype& elem,
     nd::array& arr,
-    intptr_t axis)
+    intptr_t axis,
+    bool copy_final_coord)
 {
     intptr_t ndim = shape.size();
     vector<afpd_coordentry> newcoord;
@@ -381,7 +390,7 @@ static void promote_nd_arr_dim(
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
-                coord, elem, k, 0, axis, true);
+                coord, elem, k, 0, axis, copy_final_coord, true);
     arr.swap(newarr);
     coord.swap(newcoord);
     elem.swap(newelem);
@@ -936,7 +945,7 @@ static void array_from_py_dynamic(
                 // The object supports the sequence protocol, so use it
                 if (size != shape[current_axis]) {
                     // Promote the current axis from strided to var
-                    promote_nd_arr_dim(shape, coord, elem, arr, current_axis);
+                    promote_nd_arr_dim(shape, coord, elem, arr, current_axis, false);
                     // Re-invoke this call, this time triggering the var dimension code
                     array_from_py_dynamic(obj, shape, coord, elem, arr, current_axis);
                     return;
@@ -984,7 +993,13 @@ static void array_from_py_dynamic(
                         // Propagate any error
                         throw exception();
                     }
-                    throw runtime_error("TODO: promote from strided to var dimension (small iter case)");
+                    // Promote the current axis from strided to var
+                    promote_nd_arr_dim(shape, coord, elem, arr, current_axis, true);
+                    // Shrink the var dim element to fit
+                    ndt::var_dim_element_resize(coord[current_axis].tp,
+                                coord[current_axis].metadata_ptr,
+                                coord[current_axis-1].data_ptr, i);
+                    return;
                 }
                 pyobject_ownref item_ownref(item);
                 array_from_py_dynamic(item, shape, coord, elem,

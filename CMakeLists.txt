@@ -141,6 +141,8 @@ set(pydynd_CPP_SRC
     include/git_version.hpp
     include/array_functions.hpp
     include/array_from_py.hpp
+    include/array_from_py_dynamic.hpp
+    include/array_from_py_typededuction.hpp
     include/array_assign_from_py.hpp
     include/array_as_pep3118.hpp
     include/array_as_numpy.hpp
@@ -161,6 +163,8 @@ set(pydynd_CPP_SRC
     src/exception_translation.cpp
     src/array_functions.cpp
     src/array_from_py.cpp
+    src/array_from_py_dynamic.cpp
+    src/array_from_py_typededuction.cpp
     src/array_assign_from_py.cpp
     src/array_as_pep3118.cpp
     src/array_as_numpy.cpp

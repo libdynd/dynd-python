@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DYND__NDOBJECT_FROM_PY_HPP_
-#define _DYND__NDOBJECT_FROM_PY_HPP_
+#ifndef _DYND__ARRAY_FROM_PY_HPP_
+#define _DYND__ARRAY_FROM_PY_HPP_
 
 #include <Python.h>
 
@@ -50,5 +50,5 @@ dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type& tp,
 
 } // namespace pydynd
 
-#endif // _DYND__NDOBJECT_FROM_PY_HPP_
+#endif // _DYND__ARRAY_FROM_PY_HPP_
 

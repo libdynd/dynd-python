@@ -532,14 +532,132 @@ class TestStructConstruct(unittest.TestCase):
 
 class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators
-    # NumPy's np.fromiter(x, dtype) becomes nd.array(x, type='var, <dtype>')
+    #
+    # NumPy's np.fromiter(x, dtype) becomes
+    #         nd.array(x, type=ndt.make_var(dtype)')
+    #
+    # Additionally, dynd supports dynamically deducing the type as
+    # it processes the iterators, so nd.array(x) where x is an iterator
+    # should work well too.
 
-    def test_without_specified_dtype(self):
-        # Constructing from an iterator with no specified dtype
-        # defaults to float64
-        a = nd.array(2*x + 1 for x in range(10))
+    def test_dynamic_fromiter_notype(self):
+        # When constructing from an empty iterator, defaults to int32
+        a = nd.array(x for x in [])
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.as_py(a), [])
+
+    def test_dynamic_fromiter_onetype(self):
+        # Constructing with an iterator like this uses a dynamic
+        # array construction method. In this simple case, we
+        # use generators that have a consistent type
+        # bool result
+        a = nd.array(iter([True, False]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, bool'))
+        self.assertEqual(nd.as_py(a), [True, False])
+        # int32 result
+        a = nd.array(iter([1, 2, True, False]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.as_py(a), [1, 2, 1, 0])
+        # int64 result
+        a = nd.array(iter([10000000000, 1, 2, True, False]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.as_py(a), [10000000000, 1, 2, 1, 0])
+        # float64 result
+        a = nd.array(iter([3.25, 10000000000, 1, 2, True, False]))
         self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
-        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(10)])
+        self.assertEqual(nd.as_py(a), [3.25, 10000000000, 1, 2, 1, 0])
+        # complex[float64] result
+        a = nd.array(iter([3.25j, 3.25, 10000000000, 1, 2, True, False]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [3.25j, 3.25, 10000000000, 1, 2, 1, 0])
+        # string result
+        a = nd.array(str(x) + 'test' for x in range(10))
+        self.assertEqual(nd.type_of(a), ndt.type('var, string'))
+        self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
+        # string result
+        a = nd.array(iter([u'test', 'test2']))
+        self.assertEqual(nd.type_of(a), ndt.type('var, string'))
+        self.assertEqual(nd.as_py(a), [u'test', u'test2'])
+        # bytes result
+        if sys.version_info[0] >= 3:
+            a = nd.array(b'x'*x for x in range(10))
+            self.assertEqual(nd.type_of(a), ndt.type('var, bytes'))
+            self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
+
+    def test_dynamic_fromiter_booltypepromo(self):
+        # Test iterator construction cases promoting from a boolean
+        # int32 result
+        a = nd.array(iter([True, False, 3]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.as_py(a), [1, 0, 3])
+        # int64 result
+        a = nd.array(iter([True, False, -10000000000]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.as_py(a), [1, 0, -10000000000])
+        # float64 result
+        a = nd.array(iter([True, False, 3.25]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [1, 0, 3.25])
+        # complex[float64] result
+        a = nd.array(iter([True, False, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
+        # Should raise an error mixing bool and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([True, False, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([True, False, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([True, False, b"test"]))
+
+    def test_dynamic_fromiter_int32typepromo(self):
+        # Test iterator construction cases promoting from an int32
+        # int64 result
+        a = nd.array(iter([1, 2, 10000000000]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.as_py(a), [1, 2, 10000000000])
+        # float64 result
+        a = nd.array(iter([1, 2, 3.25]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [1, 2, 3.25])
+        # complex[float64] result
+        a = nd.array(iter([1, 2, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
+        # Should raise an error mixing int32 and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([1, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([1, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([1, 2, b"test"]))
+
+    def test_dynamic_fromiter_int64typepromo(self):
+        # Test iterator construction cases promoting from an int64
+        # float64 result
+        a = nd.array(iter([10000000000, 2, 3.25]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25])
+        # complex[float64] result
+        a = nd.array(iter([10000000000, 2, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
+        # Should raise an error mixing int64 and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, b"test"]))
+
+    def test_dynamic_fromiter_float64typepromo(self):
+        # Test iterator construction cases promoting from an float64
+        # complex[float64] result
+        a = nd.array(iter([3.25, 2, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
+        # Should raise an error mixing float64 and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, b"test"]))
+
+    def test_dynamic_fromiter_complexfloat64typepromo(self):
+        # Test iterator construction cases promoting from an complex[float64]
+        # Should raise an error mixing complex[float64] and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, b"test"]))
 
     def test_simple_fromiter(self):
         # Var dimension construction from a generator
@@ -581,6 +699,29 @@ class TestIteratorConstruct(unittest.TestCase):
                         type='var, var, int32')
         self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
         self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
+
+    def test_ragged_fromiter_typepromo(self):
+        # 2D nested iterators
+        vals = [[True, False],
+                [False, 2, 3],
+                [-10000000000],
+                [True, 10, 3.125, 5.5j]]
+        a = nd.array(iter(x) for x in vals)
+        self.assertEqual(nd.type_of(a), ndt.type('var, var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), vals)
+        # 3D nested iterators
+        vals = [[[True, True, True],
+                 [False, False]],
+                [[True, True, False],
+                 [False, False, -1000, 10000000000],
+                 [10, 20, 10]],
+                [],
+                [[],
+                 [1.5],
+                 []]]
+        a = nd.array((iter(y) for y in x) for x in vals)
+        self.assertEqual(nd.type_of(a), ndt.type('var, var, var, float64'))
+        self.assertEqual(nd.as_py(a), vals)
 
     def test_uniform_fromiter(self):
         # Specify uniform type instead of full type

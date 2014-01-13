@@ -489,9 +489,9 @@ static bool string_assign(const ndt::type& tp, const char *metadata, char *data,
     }
 #if PY_VERSION_HEX < 0x03000000
     else if (PyString_Check(obj)) {
-        char *pystr_data = NULL;
-        intptr_t pystr_len = 0;
-        if (PyString_AsStringAndSize(obj, &pystr_data, &pystr_len) < 0) {
+        char *s = NULL;
+        intptr_t len = 0;
+        if (PyString_AsStringAndSize(obj, &s, &len) < 0) {
             throw runtime_error("Error getting string data");
         }
 

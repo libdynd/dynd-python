@@ -85,11 +85,15 @@ static void array_from_py_dynamic(
  * This allocates an nd::array for the first time,
  * using the shape provided, and filling in the
  * `coord` and `elem`.
+ *
+ * Pass shape.size() to promoted_axis for initial
+ * allocations or dtype promotions.
  */
 static nd::array allocate_nd_arr(
-    std::vector<intptr_t>& shape,
+    const std::vector<intptr_t>& shape,
     std::vector<afpd_coordentry>& coord,
-    afpd_dtype& elem)
+    afpd_dtype& elem,
+    intptr_t promoted_axis)
 {
     intptr_t ndim = (intptr_t)shape.size();
     // Allocate the nd::array
@@ -109,13 +113,19 @@ static nd::array allocate_nd_arr(
         c.metadata_ptr = metadata_ptr;
         // If it's a var dim, reserve some space
         if (tp.get_type_id() == var_dim_type_id) {
-            intptr_t initial_count = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
-            ndt::var_dim_element_initialize(tp, metadata_ptr,
-                                data_ptr, initial_count);
-            c.reserved_size = initial_count;
+            if (i < promoted_axis) {
+                // Only initialize the var dim elements prior
+                // to the promoted axis
+                intptr_t initial_count = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
+                ndt::var_dim_element_initialize(tp, metadata_ptr,
+                                    data_ptr, initial_count);
+                c.reserved_size = initial_count;
+                data_ptr = reinterpret_cast<const var_dim_type_data *>(data_ptr)->begin;
+            } else {
+                data_ptr = NULL;
+            }
             // Advance metadata_ptr and data_ptr to the child dimension
             metadata_ptr += sizeof(var_dim_type_metadata);
-            data_ptr = reinterpret_cast<const var_dim_type_data *>(data_ptr)->begin;
             tp = static_cast<const var_dim_type *>(tp.extended())->get_element_type();
         } else {
             // Advance metadata_ptr and data_ptr to the child dimension
@@ -134,11 +144,13 @@ static nd::array allocate_nd_arr(
  * current coordinate in `src_coord`. When finished,
  * `dst_coord` is left in a state equivalent to `src_coord`.
  *
- * This is for the case where the dtype was promoted to
- * a new type.
+ * If `promoted_axis` is less than shape.size(), it's for
+ * the case where a dim was promoted from strided to var.
+ * If `promoted_axis` is euqal to shape.size(), it's for
+ * promotion of a dtype.
  */
 static void copy_to_promoted_nd_arr(
-    std::vector<intptr_t>& shape,
+    const std::vector<intptr_t>& shape,
     char *dst_data_ptr,
     std::vector<afpd_coordentry>& dst_coord,
     afpd_dtype& dst_elem,
@@ -147,10 +159,11 @@ static void copy_to_promoted_nd_arr(
     afpd_dtype& src_elem,
     const assignment_strided_ckernel_builder& ck,
     intptr_t current_axis,
+    intptr_t promoted_axis,
     bool final_coordinate)
 {
     intptr_t ndim = shape.size();
-    if (current_axis == ndim - 1) {
+    if (current_axis == promoted_axis - 1) {
         // Base case - the final dimension
         if (shape[current_axis] >= 0) {
             // strided dimension case
@@ -219,7 +232,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_data_ptr, dst_coord, dst_elem,
                         src_data_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, false);
+                        ck, current_axis + 1, promoted_axis, false);
                 }
             } else {
                 // Copy up to, and including, the coordinate
@@ -234,7 +247,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_data_ptr, dst_coord, dst_elem,
                         src_data_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, i == size);
+                        ck, current_axis + 1, promoted_axis, i == size);
                 }
             }
         } else {
@@ -263,7 +276,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_elem_ptr, dst_coord, dst_elem,
                         src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, false);
+                        ck, current_axis + 1, promoted_axis, false);
                 }
             } else {
                 // Initialize the var element to the same reserved space as the input
@@ -285,7 +298,7 @@ static void copy_to_promoted_nd_arr(
                     copy_to_promoted_nd_arr(shape,
                         dst_elem_ptr, dst_coord, dst_elem,
                         src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, i == size);
+                        ck, current_axis + 1, promoted_axis, i == size);
                 }
             }
         }
@@ -295,10 +308,10 @@ static void copy_to_promoted_nd_arr(
 /**
  * This function promotes the dtype the array currently has with
  * `tp`, allocates a new one, then copies all the data up to the
- * current index in `coord`.
+ * current index in `coord`. This modifies coord and elem in place.
  */
-static void promote_nd_arr(
-    std::vector<intptr_t>& shape,
+static void promote_nd_arr_dtype(
+    const std::vector<intptr_t>& shape,
     std::vector<afpd_coordentry>& coord,
     afpd_dtype& elem,
     nd::array& arr,
@@ -316,7 +329,7 @@ static void promote_nd_arr(
         newelem.dtp = promote_types_arithmetic(elem.dtp, tp);
     }
     // Create the new array
-    nd::array newarr = allocate_nd_arr(shape, newcoord, newelem);
+    nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, ndim);
     // Copy the data up to, but not including, the current `coord`
     // from the old `arr` to the new one
     assignment_strided_ckernel_builder k;
@@ -328,12 +341,51 @@ static void promote_nd_arr(
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
-                coord, elem, k, 0, true);
+                coord, elem, k, 0, ndim, true);
     arr.swap(newarr);
     coord.swap(newcoord);
     elem.swap(newelem);
 }
 
+/**
+ * This function promotes the requested `axis` from
+ * a strided dim to a var dim. It modifies `shape`, `coord`,
+ * `elem`, and `arr` to point to a new array, and
+ * copies the data over.
+ */
+static void promote_nd_arr_dim(
+    std::vector<intptr_t>& shape,
+    std::vector<afpd_coordentry>& coord,
+    afpd_dtype& elem,
+    nd::array& arr,
+    intptr_t axis)
+{
+    intptr_t ndim = shape.size();
+    vector<afpd_coordentry> newcoord;
+    afpd_dtype newelem;
+    newelem.dtp = elem.dtp;
+    // Convert the axis into a var dim
+    shape[axis] = -1;
+    // Create the new array
+    nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, axis);
+    // Copy the data up to, but not including, the current `coord`
+    // from the old `arr` to the new one. The recursion stops
+    // at `axis`, where all subsequent dimensions are handled by the
+    // created kernel.
+    assignment_strided_ckernel_builder k;
+    if (elem.dtp.get_type_id() != uninitialized_type_id) {
+        make_assignment_kernel(&k, 0, newcoord[axis].tp, newcoord[axis].metadata_ptr,
+                        coord[axis].tp, coord[axis].metadata_ptr,
+                        kernel_request_strided,
+                        assign_error_none, &eval::default_eval_context);
+    }
+    copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
+                newcoord, newelem, arr.get_readonly_originptr(),
+                coord, elem, k, 0, axis, true);
+    arr.swap(newarr);
+    coord.swap(newcoord);
+    elem.swap(newelem);
+}
 
 static bool bool_assign(char *data, PyObject *obj)
 {
@@ -551,7 +603,7 @@ static void array_from_py_dynamic_first_alloc(
                     ) {
         // Special case strings, because they act as sequences too
         elem.dtp = ndt::make_string();
-        arr = allocate_nd_arr(shape, coord, elem);
+        arr = allocate_nd_arr(shape, coord, elem, shape.size());
         string_assign(elem.dtp, elem.metadata_ptr, coord[current_axis-1].data_ptr, obj);
         return;
     }
@@ -560,7 +612,7 @@ static void array_from_py_dynamic_first_alloc(
     if (PyBytes_Check(obj)) {
         // Special case bytes, because they act as sequences too
         elem.dtp = ndt::make_bytes(1);
-        arr = allocate_nd_arr(shape, coord, elem);
+        arr = allocate_nd_arr(shape, coord, elem, shape.size());
         bytes_assign(elem.dtp, elem.metadata_ptr, coord[current_axis-1].data_ptr, obj);
         return;
     }
@@ -600,7 +652,7 @@ static void array_from_py_dynamic_first_alloc(
 
     if (PyBool_Check(obj)) {
         elem.dtp = ndt::make_type<dynd_bool>();
-        arr = allocate_nd_arr(shape, coord, elem);
+        arr = allocate_nd_arr(shape, coord, elem, shape.size());
         *coord[current_axis-1].data_ptr = (obj == Py_True);
         return;
     }
@@ -612,18 +664,18 @@ static void array_from_py_dynamic_first_alloc(
         // Use a 32-bit int if it fits.
         if (value >= INT_MIN && value <= INT_MAX) {
             elem.dtp = ndt::make_type<int32_t>();
-            arr = allocate_nd_arr(shape, coord, elem);
+            arr = allocate_nd_arr(shape, coord, elem, shape.size());
             int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
             *result_ptr = static_cast<int32_t>(value);
         } else {
             elem.dtp = ndt::make_type<int64_t>();
-            arr = allocate_nd_arr(shape, coord, elem);
+            arr = allocate_nd_arr(shape, coord, elem, shape.size());
             int64_t *result_ptr = reinterpret_cast<int64_t *>(coord[current_axis-1].data_ptr);
             *result_ptr = static_cast<int64_t>(value);
         }
 # else
         elem.dtp = ndt::make_type<int32_t>();
-        arr = allocate_nd_arr(shape, coord, elem);
+        arr = allocate_nd_arr(shape, coord, elem, shape.size());
         int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
         *result_ptr = static_cast<int32_t>(value);
 # endif
@@ -640,12 +692,12 @@ static void array_from_py_dynamic_first_alloc(
         // Use a 32-bit int if it fits.
         if (value >= INT_MIN && value <= INT_MAX) {
             elem.dtp = ndt::make_type<int32_t>();
-            arr = allocate_nd_arr(shape, coord, elem);
+            arr = allocate_nd_arr(shape, coord, elem, shape.size());
             int32_t *result_ptr = reinterpret_cast<int32_t *>(coord[current_axis-1].data_ptr);
             *result_ptr = static_cast<int32_t>(value);
         } else {
             elem.dtp = ndt::make_type<int64_t>();
-            arr = allocate_nd_arr(shape, coord, elem);
+            arr = allocate_nd_arr(shape, coord, elem, shape.size());
             int64_t *result_ptr = reinterpret_cast<int64_t *>(coord[current_axis-1].data_ptr);
             *result_ptr = static_cast<int64_t>(value);
         }
@@ -654,7 +706,7 @@ static void array_from_py_dynamic_first_alloc(
 
     if (PyFloat_Check(obj)) {
         elem.dtp = ndt::make_type<double>();
-        arr = allocate_nd_arr(shape, coord, elem);
+        arr = allocate_nd_arr(shape, coord, elem, shape.size());
         double *result_ptr = reinterpret_cast<double *>(coord[current_axis-1].data_ptr);
         *result_ptr = PyFloat_AS_DOUBLE(obj);
         return;
@@ -662,7 +714,7 @@ static void array_from_py_dynamic_first_alloc(
 
     if (PyComplex_Check(obj)) {
         elem.dtp = ndt::make_type<complex<double> >();
-        arr = allocate_nd_arr(shape, coord, elem);
+        arr = allocate_nd_arr(shape, coord, elem, shape.size());
         complex<double> *result_ptr = reinterpret_cast<complex<double> *>(coord[current_axis-1].data_ptr);
         *result_ptr = complex<double>(PyComplex_RealAsDouble(obj),
                                 PyComplex_ImagAsDouble(obj));
@@ -722,7 +774,7 @@ static void array_from_py_dynamic_first_alloc(
                 // dimensional structure, we make an array of
                 // int32, while keeping elem.dtp as an uninitialized type.
                 elem.dtp = ndt::make_type<int32_t>();
-                arr = allocate_nd_arr(shape, coord, elem);
+                arr = allocate_nd_arr(shape, coord, elem, shape.size());
                 // Make the dtype uninitialized again, to signal we have
                 // deduced anything yet.
                 elem.dtp = ndt::type();
@@ -805,32 +857,32 @@ static void array_from_py_dynamic(
         switch (elem.dtp.get_kind()) {
             case bool_kind:
                 if (!bool_assign(coord[current_axis-1].data_ptr, obj)) {
-                    promote_nd_arr(shape, coord, elem, arr,
-                        promote_types_arithmetic(elem.dtp, deduce_ndt_type_from_pyobject(obj)));
+                    promote_nd_arr_dtype(shape, coord, elem, arr,
+                                        deduce_ndt_type_from_pyobject(obj));
                     array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
             case int_kind:
                 if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
-                    promote_nd_arr(shape, coord, elem, arr,
-                        promote_types_arithmetic(elem.dtp, deduce_ndt_type_from_pyobject(obj)));
+                    promote_nd_arr_dtype(shape, coord, elem, arr,
+                                        deduce_ndt_type_from_pyobject(obj));
                     array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
             case real_kind:
                 if (!real_assign(coord[current_axis-1].data_ptr, obj)) {
-                    promote_nd_arr(shape, coord, elem, arr,
-                        promote_types_arithmetic(elem.dtp, deduce_ndt_type_from_pyobject(obj)));
+                    promote_nd_arr_dtype(shape, coord, elem, arr,
+                                        deduce_ndt_type_from_pyobject(obj));
                     array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
             case complex_kind:
                 if (!complex_assign(coord[current_axis-1].data_ptr, obj)) {
-                    promote_nd_arr(shape, coord, elem, arr,
-                        promote_types_arithmetic(elem.dtp, deduce_ndt_type_from_pyobject(obj)));
+                    promote_nd_arr_dtype(shape, coord, elem, arr,
+                                        deduce_ndt_type_from_pyobject(obj));
                     array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
@@ -883,7 +935,11 @@ static void array_from_py_dynamic(
             if (size != -1) {
                 // The object supports the sequence protocol, so use it
                 if (size != shape[current_axis]) {
-                    throw runtime_error("TODO: promote from strided to var dimension (seq case)");
+                    // Promote the current axis from strided to var
+                    promote_nd_arr_dim(shape, coord, elem, arr, current_axis);
+                    // Re-invoke this call, this time triggering the var dimension code
+                    array_from_py_dynamic(obj, shape, coord, elem, arr, current_axis);
+                    return;
                 }
 
                 // In the strided case, the initial data pointer is the same

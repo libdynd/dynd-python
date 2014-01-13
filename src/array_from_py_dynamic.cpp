@@ -673,6 +673,7 @@ static void array_from_py_dynamic_first_alloc(
     {
         PyObject *iter = PyObject_GetIter(obj);
         if (iter != NULL) {
+            pyobject_ownref iter_owner(iter);
             // Indicate a var dim.
             shape.push_back(-1);
             PyObject *item = PyIter_Next(iter);
@@ -882,7 +883,7 @@ static void array_from_py_dynamic(
             if (size != -1) {
                 // The object supports the sequence protocol, so use it
                 if (size != shape[current_axis]) {
-                    throw runtime_error("TODO: promote from strided to var dimension");
+                    throw runtime_error("TODO: promote from strided to var dimension (seq case)");
                 }
 
                 // In the strided case, the initial data pointer is the same
@@ -912,8 +913,44 @@ static void array_from_py_dynamic(
 
         PyObject *iter = PyObject_GetIter(obj);
         if (iter != NULL) {
-            Py_DECREF(iter);
-            throw runtime_error("TODO: handle getting an iterator for a strided array");
+            pyobject_ownref iter_owner(iter);
+            // In the strided case, the initial data pointer is the same
+            // as the parent's. Note that for current_axis==0, arr.is_empty()
+            // is guaranteed to be true, so it is impossible to get here.
+            coord[current_axis].data_ptr = coord[current_axis-1].data_ptr;
+            // Process all the elements
+            Py_ssize_t size = shape[current_axis];
+            for (intptr_t i = 0; i < size; ++i) {
+                coord[current_axis].coord = i;
+                PyObject *item = PyIter_Next(iter);
+                if (item == NULL) {
+                    if (PyErr_Occurred()) {
+                        // Propagate any error
+                        throw exception();
+                    }
+                    throw runtime_error("TODO: promote from strided to var dimension (small iter case)");
+                }
+                pyobject_ownref item_ownref(item);
+                array_from_py_dynamic(item, shape, coord, elem,
+                            arr, current_axis + 1);
+                // Advance to the next element. Because the array may be
+                // dynamically reallocated deeper in the recursive call, we
+                // need to get the stride from the metadata each time.
+                const strided_dim_type_metadata *md =
+                    reinterpret_cast<const strided_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                coord[current_axis].data_ptr += md->stride;
+            }
+
+            // Make sure the iterator has no more elements
+            PyObject *item = PyIter_Next(iter);
+            if (item != NULL) {
+                Py_DECREF(item);
+                throw runtime_error("TODO: promote from strided to var dimension (large iter case)");
+            } else if (PyErr_Occurred()) {
+                // Propagate any error
+                throw exception();
+            }
+            return;
         }
     } else {
         // It's a var dimension
@@ -948,6 +985,7 @@ static void array_from_py_dynamic(
 
         PyObject *iter = PyObject_GetIter(obj);
         if (iter != NULL) {
+            pyobject_ownref iter_owner(iter);
             PyObject *item = PyIter_Next(iter);
             if (item != NULL) {
                 intptr_t i = 0;

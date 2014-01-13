@@ -635,6 +635,17 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, u"test"]))
         self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, b"test"]))
 
+    def test_dynamic_fromiter_float64typepromo(self):
+        # Test iterator construction cases promoting from an float64
+        # complex[float64] result
+        a = nd.array(iter([3.25, 2, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
+        # Should raise an error mixing float64 and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, b"test"]))
+
     def test_simple_fromiter(self):
         # Var dimension construction from a generator
         a = nd.array((2*x + 5 for x in range(10)), type='var, int32')

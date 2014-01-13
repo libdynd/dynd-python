@@ -722,6 +722,13 @@ class TestIteratorConstruct(unittest.TestCase):
         a = nd.array((iter(y) for y in x) for x in vals)
         self.assertEqual(nd.type_of(a), ndt.type('var, var, var, float64'))
         self.assertEqual(nd.as_py(a), vals)
+        # Iterator of lists
+        vals = [[True, 2, 3],
+                [4, 5, 6.5],
+                [1, 2, 3]]
+        a = nd.array(iter(vals))
+        self.assertEqual(nd.type_of(a), ndt.type('var, strided, float64'))
+        self.assertEqual(nd.as_py(a), vals)
 
     def test_uniform_fromiter(self):
         # Specify uniform type instead of full type

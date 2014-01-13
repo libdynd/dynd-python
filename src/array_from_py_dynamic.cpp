@@ -1015,8 +1015,51 @@ static void array_from_py_dynamic(
             // Make sure the iterator has no more elements
             PyObject *item = PyIter_Next(iter);
             if (item != NULL) {
-                Py_DECREF(item);
-                throw runtime_error("TODO: promote from strided to var dimension (large iter case)");
+                pyobject_ownref item_ownref_outer(item);
+                // Promote the current axis from strided to var
+                promote_nd_arr_dim(shape, coord, elem, arr, current_axis, true);
+                // Give the var dim some capacity so we can continue processing the iterator
+                coord[current_axis].reserved_size =
+                            std::max(size*2, ARRAY_FROM_DYNAMIC_INITIAL_COUNT);
+                ndt::var_dim_element_resize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr,
+                            coord[current_axis-1].data_ptr,
+                            coord[current_axis].reserved_size);
+                item_ownref_outer.release();
+                intptr_t i = size;
+                while (item != NULL) {
+                    pyobject_ownref item_ownref(item);
+                    coord[current_axis].coord = i;
+                    char *data_ptr = coord[current_axis-1].data_ptr;
+                    if (coord[current_axis].coord >= coord[current_axis].reserved_size) {
+                        // Increase the reserved capacity if needed
+                        coord[current_axis].reserved_size *= 2;
+                        ndt::var_dim_element_resize(coord[current_axis].tp,
+                                    coord[current_axis].metadata_ptr,
+                                    data_ptr, coord[current_axis].reserved_size);
+                    }
+                    // Set the data pointer for the child element
+                    var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data_ptr);
+                    const var_dim_type_metadata *md =
+                        reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    coord[current_axis].data_ptr = d->begin + i * md->stride;
+                    array_from_py_dynamic(item, shape, coord, elem,
+                                arr, current_axis + 1);
+
+                    item = PyIter_Next(iter);
+                    ++i;
+                }
+
+                if (PyErr_Occurred()) {
+                    // Propagate any error
+                    throw exception();
+                }
+                // Shrink the var element to fit
+                char *data_ptr = coord[current_axis-1].data_ptr;
+                ndt::var_dim_element_resize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr,
+                            data_ptr, i);
+                return;
             } else if (PyErr_Occurred()) {
                 // Propagate any error
                 throw exception();
@@ -1059,12 +1102,14 @@ static void array_from_py_dynamic(
             pyobject_ownref iter_owner(iter);
             PyObject *item = PyIter_Next(iter);
             if (item != NULL) {
+                pyobject_ownref item_ownref_outer(item);
                 intptr_t i = 0;
                 coord[current_axis].reserved_size = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
                 ndt::var_dim_element_initialize(coord[current_axis].tp,
                             coord[current_axis].metadata_ptr,
                             coord[current_axis-1].data_ptr,
                             coord[current_axis].reserved_size);
+                item_ownref_outer.release();
                 while (item != NULL) {
                     pyobject_ownref item_ownref(item);
                     coord[current_axis].coord = i;

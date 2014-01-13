@@ -746,6 +746,11 @@ class TestIteratorConstruct(unittest.TestCase):
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
         self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
         self.assertEqual(nd.as_py(a), vals)
+        # Iterator starting with list, first raggedness is a long iterator
+        vals = [[1], [2, 3, 4], [5, 6]]
+        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
+        self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
+        self.assertEqual(nd.as_py(a), vals)
 
     def test_uniform_fromiter(self):
         # Specify uniform type instead of full type

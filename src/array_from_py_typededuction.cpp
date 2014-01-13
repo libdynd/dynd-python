@@ -176,7 +176,13 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
             }
         }
 #else
-        obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj);
+        obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj, false);
+        // Propagate uninitialized_type_id as a signal an
+        // undeducable object was encountered
+        if (obj_tp.get_type_id() == uninitialized_type_id) {
+            tp = obj_tp;
+            return;
+        }
 #endif
 
         if (tp != obj_tp) {

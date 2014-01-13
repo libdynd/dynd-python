@@ -646,6 +646,13 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, u"test"]))
         self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, b"test"]))
 
+    def test_dynamic_fromiter_complexfloat64typepromo(self):
+        # Test iterator construction cases promoting from an complex[float64]
+        # Should raise an error mixing complex[float64] and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, b"test"]))
+
     def test_simple_fromiter(self):
         # Var dimension construction from a generator
         a = nd.array((2*x + 5 for x in range(10)), type='var, int32')

@@ -545,33 +545,33 @@ class TestIteratorConstruct(unittest.TestCase):
         # array construction method. In this simple case, we
         # use generators that have a consistent type
         # bool result
-        a = nd.array(x % 2 == 0 for x in range(10))
+        a = nd.array(iter([True, False]))
         self.assertEqual(nd.type_of(a), ndt.type('var, bool'))
-        self.assertEqual(nd.as_py(a), [True, False]*5)
+        self.assertEqual(nd.as_py(a), [True, False])
         # int32 result
-        a = nd.array(2*x + 1 for x in range(10))
+        a = nd.array(iter([1, 2, True, False]))
         self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
-        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(10)])
+        self.assertEqual(nd.as_py(a), [1, 2, 1, 0])
         # int64 result
-        a = nd.array(2*x + 10000000000 for x in range(10))
+        a = nd.array(iter([10000000000, 1, 2, True, False]))
         self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
-        self.assertEqual(nd.as_py(a), [2*x + 10000000000 for x in range(10)])
+        self.assertEqual(nd.as_py(a), [10000000000, 1, 2, 1, 0])
         # float64 result
-        a = nd.array(2*x + 3.25 for x in range(10))
+        a = nd.array(iter([3.25, 10000000000, 1, 2, True, False]))
         self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
-        self.assertEqual(nd.as_py(a), [2*x + 3.25 for x in range(10)])
+        self.assertEqual(nd.as_py(a), [3.25, 10000000000, 1, 2, 1, 0])
         # complex[float64] result
-        a = nd.array(2j*(x + 1) + 3.25 for x in range(10))
+        a = nd.array(iter([3.25j, 3.25, 10000000000, 1, 2, True, False]))
         self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
-        self.assertEqual(nd.as_py(a), [2j*(x + 1) + 3.25 for x in range(10)])
+        self.assertEqual(nd.as_py(a), [3.25j, 3.25, 10000000000, 1, 2, 1, 0])
         # string result
         a = nd.array(str(x) + 'test' for x in range(10))
         self.assertEqual(nd.type_of(a), ndt.type('var, string'))
         self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
         # string result
-        a = nd.array(str(x) + u'test' for x in range(10))
+        a = nd.array(iter([u'test', 'test2']))
         self.assertEqual(nd.type_of(a), ndt.type('var, string'))
-        self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
+        self.assertEqual(nd.as_py(a), [u'test', u'test2'])
         # bytes result
         if sys.version_info[0] >= 3:
             a = nd.array(b'x'*x for x in range(10))

@@ -701,13 +701,26 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
 
     def test_ragged_fromiter_typepromo(self):
-        # Var array of var from nested iterators
+        # 2D nested iterators
         vals = [[True, False],
                 [False, 2, 3],
                 [-10000000000],
                 [True, 10, 3.125, 5.5j]]
         a = nd.array(iter(x) for x in vals)
         self.assertEqual(nd.type_of(a), ndt.type('var, var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), vals)
+        # 3D nested iterators
+        vals = [[[True, True, True],
+                 [False, False]],
+                [[True, True, False],
+                 [False, False, -1000, 10000000000],
+                 [10, 20, 10]],
+                [],
+                [[],
+                 [1.5],
+                 []]]
+        a = nd.array((iter(y) for y in x) for x in vals)
+        self.assertEqual(nd.type_of(a), ndt.type('var, var, var, float64'))
         self.assertEqual(nd.as_py(a), vals)
 
     def test_uniform_fromiter(self):

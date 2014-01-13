@@ -976,6 +976,7 @@ static void array_from_py_dynamic(
             }
         }
 
+        // It wasn't a sequence, check if it's an iterator
         PyObject *iter = PyObject_GetIter(obj);
         if (iter != NULL) {
             pyobject_ownref iter_owner(iter);
@@ -1012,7 +1013,8 @@ static void array_from_py_dynamic(
                 coord[current_axis].data_ptr += md->stride;
             }
 
-            // Make sure the iterator has no more elements
+            // Make sure the iterator has no more elements. If it does, we must
+            // promote the dimension to var, then continue copying
             PyObject *item = PyIter_Next(iter);
             if (item != NULL) {
                 pyobject_ownref item_ownref_outer(item);

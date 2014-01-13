@@ -17,6 +17,9 @@ namespace pydynd {
  * reallocating the result with a new type if a new value
  * requires it.
  *
+ * The returned array is writable, if the caller wants an
+ * immutable array, it should call flag_as_immutable() on it.
+ *
  * The reason for doing this dynamically instead of using
  * two passes is to be able to appropriately deduce types from
  * iterators which may only exist for a single pass of iteration.

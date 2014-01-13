@@ -532,7 +532,13 @@ class TestStructConstruct(unittest.TestCase):
 
 class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators
-    # NumPy's np.fromiter(x, dtype) becomes nd.array(x, type='var, <dtype>')
+    #
+    # NumPy's np.fromiter(x, dtype) becomes
+    #         nd.array(x, type=ndt.make_var(dtype)')
+    #
+    # Additionally, dynd supports dynamically deducing the type as
+    # it processes the iterators, so nd.array(x) where x is an iterator
+    # should work well too.
 
     def test_dynamic_fromiter_notype(self):
         # When constructing from an empty iterator, defaults to int32
@@ -693,6 +699,16 @@ class TestIteratorConstruct(unittest.TestCase):
                         type='var, var, int32')
         self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
         self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
+
+    def test_ragged_fromiter_typepromo(self):
+        # Var array of var from nested iterators
+        vals = [[True, False],
+                [False, 2, 3],
+                [-10000000000],
+                [True, 10, 3.125, 5.5j]]
+        a = nd.array(iter(x) for x in vals)
+        self.assertEqual(nd.type_of(a), ndt.type('var, var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), vals)
 
     def test_uniform_fromiter(self):
         # Specify uniform type instead of full type

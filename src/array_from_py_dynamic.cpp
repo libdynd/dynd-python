@@ -35,6 +35,8 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
+static const intptr_t ARRAY_FROM_DYNAMIC_INITIAL_COUNT = 16;
+
 // Initialize the pydatetime API
 namespace {
 struct init_pydatetime {
@@ -107,16 +109,18 @@ static nd::array allocate_nd_arr(
         c.metadata_ptr = metadata_ptr;
         // If it's a var dim, reserve some space
         if (tp.get_type_id() == var_dim_type_id) {
-            intptr_t initial_count = 16;
+            intptr_t initial_count = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
             ndt::var_dim_element_initialize(tp, metadata_ptr,
                                 data_ptr, initial_count);
             c.reserved_size = initial_count;
             // Advance metadata_ptr and data_ptr to the child dimension
             metadata_ptr += sizeof(var_dim_type_metadata);
             data_ptr = reinterpret_cast<const var_dim_type_data *>(data_ptr)->begin;
+            tp = static_cast<const var_dim_type *>(tp.extended())->get_element_type();
         } else {
             // Advance metadata_ptr and data_ptr to the child dimension
             metadata_ptr += sizeof(strided_dim_type_metadata);
+            tp = static_cast<const strided_dim_type *>(tp.extended())->get_element_type();
         }
         c.data_ptr = data_ptr;
     }
@@ -267,21 +271,21 @@ static void copy_to_promoted_nd_arr(
                             dst_coord[current_axis].metadata_ptr,
                             dst_data_ptr, src_coord[current_axis].reserved_size);
                 dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
-                // Copy up to, but not including, the coordinate
-                intptr_t size = src_d->size;
+                // Copy up to, and including, the size
+                intptr_t size = src_coord[current_axis].coord;
                 char *dst_elem_ptr = dst_d->begin;
                 intptr_t dst_stride = dst_md->stride;
                 const char *src_elem_ptr = src_d->begin;
                 intptr_t src_stride = src_md->stride;
                 dst_coord[current_axis].coord = size;
                 dst_coord[current_axis].data_ptr = dst_elem_ptr + dst_stride * size;
-                for (intptr_t i = 0; i < size; ++i,
+                for (intptr_t i = 0; i <= size; ++i,
                                                dst_elem_ptr += dst_stride,
                                                src_elem_ptr += src_stride) {
                     copy_to_promoted_nd_arr(shape,
                         dst_elem_ptr, dst_coord, dst_elem,
                         src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, false);
+                        ck, current_axis + 1, i == size);
                 }
             }
         }
@@ -391,8 +395,6 @@ static bool int_assign(const ndt::type& tp, char *data, PyObject *obj)
         }
         return true;
     }
-
-    // TODO: Bool
 
     return false;
 }
@@ -796,7 +798,7 @@ static void array_from_py_dynamic(
         return;
     }
 
-    // If it's the dtype
+    // If it's the dtype, check for scalars
     if (current_axis == shape.size()) {
         switch (elem.dtp.get_kind()) {
             case bool_kind:
@@ -853,6 +855,166 @@ static void array_from_py_dynamic(
                 throw runtime_error("internal error: unexpected type in recursive pyobject to dynd array conversion");
         }
     }
+
+    // Special case error for string and bytes, because they
+    // support the sequence and iterator protocols, but we don't
+    // want them to end up as dimensions.
+    if (PyUnicode_Check(obj) ||
+#if PY_VERSION_HEX >= 0x03000000
+                PyBytes_Check(obj)) {
+#else
+                PyString_Check(obj)) {
+#endif
+        stringstream ss;
+        ss << "Ragged dimension encountered, type ";
+        pyobject_ownref typestr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+        ss << pystring_as_string(typestr.get());
+        ss << " after a dimension type while converting to a dynd array";
+        throw runtime_error(ss.str());
+    }
+
+    // We're processing a dimension
+    if (shape[current_axis] >= 0) {
+        // It's a strided dimension
+        if (PySequence_Check(obj)) {
+            Py_ssize_t size = PySequence_Size(obj);
+            if (size != -1) {
+                // The object supports the sequence protocol, so use it
+                if (size != shape[current_axis]) {
+                    throw runtime_error("TODO: promote from strided to var dimension");
+                }
+
+                // In the strided case, the initial data pointer is the same
+                // as the parent's. Note that for current_axis==0, arr.is_empty()
+                // is guaranteed to be true, so it is impossible to get here.
+                coord[current_axis].data_ptr = coord[current_axis-1].data_ptr;
+                // Process all the elements
+                for (intptr_t i = 0; i < size; ++i) {
+                    coord[current_axis].coord = i;
+                    pyobject_ownref item(PySequence_GetItem(obj, i));
+                    array_from_py_dynamic(item.get(), shape, coord, elem,
+                                arr, current_axis + 1);
+                    // Advance to the next element. Because the array may be
+                    // dynamically reallocated deeper in the recursive call, we
+                    // need to get the stride from the metadata each time.
+                    const strided_dim_type_metadata *md =
+                        reinterpret_cast<const strided_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    coord[current_axis].data_ptr += md->stride;
+                }
+                return;
+            } else {
+			    // If it doesn't actually check out as a sequence,
+			    // fall through to the iterator check.
+                PyErr_Clear();
+            }
+        }
+
+        PyObject *iter = PyObject_GetIter(obj);
+        if (iter != NULL) {
+            Py_DECREF(iter);
+            throw runtime_error("TODO: handle getting an iterator for a strided array");
+        }
+    } else {
+        // It's a var dimension
+        if (PySequence_Check(obj)) {
+            Py_ssize_t size = PySequence_Size(obj);
+            if (size != -1) {
+                ndt::var_dim_element_initialize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr,
+                            coord[current_axis-1].data_ptr, size);
+                coord[current_axis].reserved_size = size;
+                // Process all the elements
+                for (intptr_t i = 0; i < size; ++i) {
+                    coord[current_axis].coord = i;
+                    pyobject_ownref item(PySequence_GetItem(obj, i));
+                    // Set the data pointer for the child element. We must
+                    // re-retrieve from `coord` each time, because the recursive
+                    // call could reallocate the destination array.
+                    var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(coord[current_axis-1].data_ptr);
+                    const var_dim_type_metadata *md =
+                        reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    coord[current_axis].data_ptr = d->begin + i * md->stride;
+                    array_from_py_dynamic(item, shape, coord, elem,
+                                arr, current_axis + 1);
+                }
+                return;
+            } else {
+			    // If it doesn't actually check out as a sequence,
+			    // fall through to the iterator check.
+                PyErr_Clear();
+            }
+        }
+
+        PyObject *iter = PyObject_GetIter(obj);
+        if (iter != NULL) {
+            PyObject *item = PyIter_Next(iter);
+            if (item != NULL) {
+                intptr_t i = 0;
+                coord[current_axis].reserved_size = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
+                ndt::var_dim_element_initialize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr,
+                            coord[current_axis-1].data_ptr,
+                            coord[current_axis].reserved_size);
+                while (item != NULL) {
+                    pyobject_ownref item_ownref(item);
+                    coord[current_axis].coord = i;
+                    char *data_ptr = coord[current_axis-1].data_ptr;
+                    if (coord[current_axis].coord >= coord[current_axis].reserved_size) {
+                        // Increase the reserved capacity if needed
+                        coord[current_axis].reserved_size *= 2;
+                        ndt::var_dim_element_resize(coord[current_axis].tp,
+                                    coord[current_axis].metadata_ptr,
+                                    data_ptr, coord[current_axis].reserved_size);
+                    }
+                    // Set the data pointer for the child element
+                    var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data_ptr);
+                    const var_dim_type_metadata *md =
+                        reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    coord[current_axis].data_ptr = d->begin + i * md->stride;
+                    array_from_py_dynamic(item, shape, coord, elem,
+                                arr, current_axis + 1);
+
+                    item = PyIter_Next(iter);
+                    ++i;
+                }
+
+                if (PyErr_Occurred()) {
+                    // Propagate any error
+                    throw exception();
+                }
+                // Shrink the var element to fit
+                char *data_ptr = coord[current_axis-1].data_ptr;
+                ndt::var_dim_element_resize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr,
+                            data_ptr, i);
+                return;
+            } else {
+                // Set it to a zero-sized var element
+                char *data_ptr = coord[current_axis-1].data_ptr;
+                ndt::var_dim_element_initialize(coord[current_axis].tp,
+                            coord[current_axis].metadata_ptr, data_ptr, 0);
+                return;
+            }
+        } else {
+            if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+                // A TypeError indicates that the object doesn't support
+                // the iterator protocol
+                PyErr_Clear();
+            } else {
+                // Propagate the error
+                throw exception();
+            }
+        }
+    }
+
+    // The object supported neither the sequence nor the iterator
+    // protocol, so report an error.
+    stringstream ss;
+    ss << "Ragged dimension encountered, type ";
+    pyobject_ownref typestr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+    ss << pystring_as_string(typestr.get());
+    ss << " after a dimension type while converting to a dynd array";
+    throw runtime_error(ss.str());
 }
 
 dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj)

@@ -526,7 +526,7 @@ static bool bytes_assign(const ndt::type& tp, const char *metadata, char *data, 
         }
 
         const bytes_type *st = static_cast<const bytes_type *>(tp.extended());
-        st->set_bytes_data(metadata, data, assign_error_default, s, s + len);
+        st->set_bytes_data(metadata, data, s, s + len);
         return true;
     }
     else {

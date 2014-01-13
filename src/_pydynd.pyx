@@ -141,7 +141,7 @@ cdef class w_type:
         """
         def __get__(self):
             return ndt_type_get_shape(GET(self.v))
-        
+
     property dshape:
         """
         tp.dshape
@@ -157,7 +157,7 @@ cdef class w_type:
 
         The size, in bytes, of the data for an instance
         of this dynd type.
-        
+
         None is returned if array metadata is required to
         fully specify it. For example, both the strided_dim and
         struct types require such metadata.
@@ -1416,9 +1416,9 @@ def zeros(*args, **kwargs):
     full type of the array created. If both a `shape`
     and `dtype` are provided, dimensions are prepended to
     the `dtype` to produce the full array type.
-    
+
     The array created by default is immutable.
-    
+
     TODO: In the immutable case it should use zero-strides to optimize storage.
 
     TODO: Add order= keyword-only argument. This would accept
@@ -1470,9 +1470,9 @@ def ones(*args, **kwargs):
     full type of the array created. If both a `shape`
     and `dtype` are provided, dimensions are prepended to
     the `dtype` to produce the full array type.
-    
+
     The array created by default is immutable.
-    
+
     TODO: In the immutable case it should use zero-strides to optimize storage.
 
     TODO: Add order= keyword-only argument. This would accept
@@ -1524,9 +1524,9 @@ def full(*args, **kwargs):
     it is the full type of the array created. If both a `shape`
     and `dtype` are provided, dimensions are prepended to
     the `dtype` to produce the full array type.
-    
+
     The array created by default is immutable.
-    
+
     TODO: In the immutable case it should use zero-strides to optimize storage.
 
     TODO: Add order= keyword-only argument. This would accept
@@ -1697,7 +1697,7 @@ def memmap(filename, begin=None, end=None, access=None):
     >>> from dynd import nd, ndt
 
     >>> with open("test.txt", "w") as f:
-    ...     f.write("Testing 1 2 3")	
+    ...     f.write("Testing 1 2 3")
     >>> a = nd.memmap("test.txt").view_scalars(ndt.string)
     >>> a
     nd.array("Testing 1 2 3", string)

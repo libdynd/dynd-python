@@ -651,6 +651,18 @@ static void array_from_py_dynamic_first_alloc(
                     reinterpret_cast<const strided_dim_type_metadata *>(coord[current_axis].metadata_ptr);
                 coord[current_axis].data_ptr += md->stride;
             }
+
+            if (size == 0) {
+                // When the sequence is zero-sized, we can't
+                // start deducing the type yet. To start capturing the
+                // dimensional structure, we make an array of
+                // int32, while keeping elem.dtp as an uninitialized type.
+                elem.dtp = ndt::make_type<int32_t>();
+                arr = allocate_nd_arr(shape, coord, elem, shape.size());
+                // Make the dtype uninitialized again, to signal we have
+                // deduced anything yet.
+                elem.dtp = ndt::type();
+            }
             return;
         } else {
 			// If it doesn't actually check out as a sequence,

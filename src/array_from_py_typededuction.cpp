@@ -39,7 +39,7 @@ struct init_pydatetime {
 init_pydatetime pdt;
 } // anonymous namespace
 
-ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj)
+ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unknown)
 {
 #if DYND_NUMPY_INTEROP
     if (PyArray_Check(obj)) {
@@ -122,7 +122,12 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj)
 #endif // DYND_NUMPY_INTEROP
     }
 
-    throw std::runtime_error("could not deduce pydynd type from the python object");
+    if (throw_on_unknown) {
+        throw std::runtime_error("could not deduce pydynd type from the python object");
+    } else {
+        // Return an uninitialized type to signal nothing was deduced
+        return ndt::type();
+    }
 }
 
 void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
@@ -134,7 +139,8 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
             if (tp.get_type_id() == void_type_id) {
                 shape.push_back(size);
             } else {
-                throw runtime_error("dynd array doesn't support dimensions which are sometimes scalars and sometimes arrays");
+                throw runtime_error("dynd array doesn't support dimensions "
+                            "which are sometimes scalars and sometimes arrays");
             }
         } else {
             if (shape[current_axis] != size) {
@@ -145,6 +151,11 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
         
         for (Py_ssize_t i = 0; i < size; ++i) {
             deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, current_axis + 1);
+            // Propagate uninitialized_type_id as a signal an
+            // undeducable object was encountered
+            if (tp.get_type_id() == uninitialized_type_id) {
+                return;
+            }
         }
     } else {
         if (shape.size() != current_axis) {
@@ -156,7 +167,13 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
         if (PyUnicode_Check(obj)) {
             obj_tp = ndt::make_string(string_encoding_utf_8);
         } else {
-            obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj);
+            obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj, false);
+            // Propagate uninitialized_type_id as a signal an
+            // undeducable object was encountered
+            if (obj_tp.get_type_id() == uninitialized_type_id) {
+                tp = obj_tp;
+                return;
+            }
         }
 #else
         obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj);

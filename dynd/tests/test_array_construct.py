@@ -390,12 +390,12 @@ class TestAsArrayConstructor(unittest.TestCase):
 
 class TestStringConstruct(unittest.TestCase):
     def test_empty_array(self):
-        # Empty arrays default to float64
+        # Empty arrays default to int32
         a = nd.array([])
-        self.assertEqual(nd.type_of(a), ndt.type('M, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('M, int32'))
         self.assertEqual(a.shape, (0,))
         a = nd.array([[], [], []])
-        self.assertEqual(nd.type_of(a), ndt.type('M, N, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('M, N, int32'))
         self.assertEqual(a.shape, (3, 0))
 
     def test_string(self):
@@ -752,8 +752,18 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
         self.assertEqual(nd.as_py(a), vals)
 
-    def test_uniform_fromiter(self):
-        # Specify uniform type instead of full type
+    def test_ragged_fromlistofiter_typepromo(self):
+        # list of iterators
+        vals = [[True, False],
+                [False, 2, 3],
+                [-10000000000],
+                [True, 10, 3.125, 5.5j]]
+        a = nd.array([iter(x) for x in vals])
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), vals)
+
+    def test_dtype_fromiter(self):
+        # Specify dtype instead of full type
         a = nd.array((2*x + 1 for x in range(7)), dtype=ndt.int32)
         self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
         self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])

@@ -249,9 +249,11 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     for (Py_ssize_t i = 0; i < size; ++i) {
         deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
     }
-    // If no type was deduced, e.g. a size-zero list, default to double/float64
-    if (tp.get_type_id() == void_type_id) {
-        tp = ndt::make_type<double>();
+    // If no type was deduced, return with no result. This will fall
+    // through to the array_from_py_dynamic code.
+    if (tp.get_type_id() == uninitialized_type_id ||
+                    tp.get_type_id() == void_type_id) {
+        return nd::array();
     }
 
     // Create the array
@@ -502,9 +504,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     }
 
     if (result.get_ndo() == NULL) {
-        // Special case if it's an iterator: convert to a datashape of 'var, float64'.
-        // This is based on NumPy's default np.fromiter(it) behavior when no type
-        // is specified
+        // If it supports the iterator protocol, use array_from_py_dynamic,
+        // which promotes to new types on the fly as needed during processing.
         PyObject *iter = PyObject_GetIter(obj);
         if (iter != NULL) {
             Py_DECREF(iter);
@@ -522,7 +523,12 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     }
 
     if (result.get_ndo() == NULL) {
-        throw std::runtime_error("could not convert python object into a dynd array");
+        pyobject_ownref pytpstr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+        stringstream ss;
+        ss << "could not convert python object of type ";
+        ss << pystring_as_string(pytpstr.get());
+        ss << " into a dynd array";
+        throw std::runtime_error(ss.str());
     }
 
     // If write access wasn't specified, we can flag it as

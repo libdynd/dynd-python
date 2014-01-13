@@ -21,8 +21,14 @@ namespace pydynd {
  * a shape if the object is a dynd or numpy array, for example.
  *
  * \param obj  The python object whose type is to be deduced.
+ * \param throw_on_unknown  If true (the default), raises an exception
+ *                          when no type can be deduced, otherwise returns
+ *                          an uninitialized type.
+ *
+ * \return A type for the object, or an uninitialized type if
+ *         `throw_on_unknown` is false, and nothing could be deduced.
  */
-dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject* obj);
+dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unknown=true);
 
 
 
@@ -49,7 +55,9 @@ enum shape_deduction_t {
  *               vector, and gets updated and extended by this
  *               function as needed.
  * \param tp  The data type to start the deduction from. It should start as
- *            void_type_id, and is updated in place.
+ *            void_type_id, and is updated in place. This is updated to
+ *            uninitialized_type_id if a value is encountered which can't be
+ *            deduced.
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.
  */

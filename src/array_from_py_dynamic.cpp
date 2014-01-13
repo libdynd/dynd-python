@@ -353,12 +353,12 @@ static bool int_assign(const ndt::type& tp, char *data, PyObject *obj)
 #if PY_VERSION_HEX < 0x03000000
     if (PyInt_Check(obj)) {
         long value = PyInt_AS_LONG(obj);
-# if SIZEOF_LONG > SIZEOF_INT
         // Check whether we're assigning to int32 or int64
         if (tp.get_type_id() == int64_type_id) {
             int64_t *result_ptr = reinterpret_cast<int64_t *>(data);
             *result_ptr = static_cast<int64_t>(value);
         } else {
+# if SIZEOF_LONG > SIZEOF_INT
             if (value >= INT_MIN && value <= INT_MAX) {
                 int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
                 *result_ptr = static_cast<int32_t>(value);
@@ -368,8 +368,9 @@ static bool int_assign(const ndt::type& tp, char *data, PyObject *obj)
             }
         }
 # else
-        int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
-        *result_ptr = static_cast<int32_t>(value);
+            int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
+            *result_ptr = static_cast<int32_t>(value);
+        }
 # endif
         return true;
     }

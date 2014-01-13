@@ -534,6 +534,12 @@ class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators
     # NumPy's np.fromiter(x, dtype) becomes nd.array(x, type='var, <dtype>')
 
+    def test_dynamic_fromiter_notype(self):
+        # When constructing from an empty iterator, defaults to int32
+        a = nd.array(x for x in [])
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.as_py(a), [])
+
     def test_dynamic_fromiter_onetype(self):
         # Constructing with an iterator like this uses a dynamic
         # array construction method. In this simple case, we
@@ -571,6 +577,29 @@ class TestIteratorConstruct(unittest.TestCase):
             a = nd.array(b'x'*x for x in range(10))
             self.assertEqual(nd.type_of(a), ndt.type('var, bytes'))
             self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
+
+    def test_dynamic_fromiter_booltypepromo(self):
+        # Test iterator construction cases promoting from a boolean
+        # int32 result
+        a = nd.array(iter([True, False, 3]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.as_py(a), [1, 0, 3])
+        # int64 result
+        a = nd.array(iter([True, False, -10000000000]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.as_py(a), [1, 0, -10000000000])
+        # float64 result
+        a = nd.array(iter([True, False, 3.25]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.as_py(a), [1, 0, 3.25])
+        # complex[float64] result
+        a = nd.array(iter([True, False, 3.25j]))
+        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
+        # Should raise an error mixing bool and string/bytes
+        self.assertRaises(RuntimeError, nd.array, iter([True, False, "test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([True, False, u"test"]))
+        self.assertRaises(RuntimeError, nd.array, iter([True, False, b"test"]))
 
     def test_simple_fromiter(self):
         # Var dimension construction from a generator

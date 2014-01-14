@@ -761,6 +761,11 @@ class TestIteratorConstruct(unittest.TestCase):
         a = nd.array([iter(x) for x in vals])
         self.assertEqual(nd.type_of(a), ndt.type('strided, var, complex[float64]'))
         self.assertEqual(nd.as_py(a), vals)
+        # list of list/iterator
+        a = nd.array([[1,2,3], (1.5*x for x in range(4)), iter([-1, 1])])
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, float64'))
+        self.assertEqual(nd.as_py(a),
+                         [[1,2,3], [1.5*x for x in range(4)], [-1,1]])
 
     def test_ragged_initial_empty_typepromo(self):
         # iterator of lists, first one is empty

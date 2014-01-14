@@ -159,7 +159,11 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
         }
     } else {
         if (shape.size() != current_axis) {
-            throw runtime_error("dynd array doesn't support dimensions which are sometimes scalars and sometimes arrays");
+            // Return uninitialized_type_id as a signal
+            // when an ambiguous situation like this is encountered,
+            // letting the dynamic conversion handle it.
+            tp = ndt::type();
+            return;
         }
 
         ndt::type obj_tp;

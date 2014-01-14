@@ -543,7 +543,7 @@ class TestIteratorConstruct(unittest.TestCase):
     def test_dynamic_fromiter_notype(self):
         # When constructing from an empty iterator, defaults to int32
         a = nd.array(x for x in [])
-        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int32'))
         self.assertEqual(nd.as_py(a), [])
 
     def test_dynamic_fromiter_onetype(self):
@@ -552,55 +552,55 @@ class TestIteratorConstruct(unittest.TestCase):
         # use generators that have a consistent type
         # bool result
         a = nd.array(iter([True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, bool'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, bool'))
         self.assertEqual(nd.as_py(a), [True, False])
         # int32 result
         a = nd.array(iter([1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int32'))
         self.assertEqual(nd.as_py(a), [1, 2, 1, 0])
         # int64 result
         a = nd.array(iter([10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int64'))
         self.assertEqual(nd.as_py(a), [10000000000, 1, 2, 1, 0])
         # float64 result
         a = nd.array(iter([3.25, 10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, float64'))
         self.assertEqual(nd.as_py(a), [3.25, 10000000000, 1, 2, 1, 0])
         # complex[float64] result
         a = nd.array(iter([3.25j, 3.25, 10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [3.25j, 3.25, 10000000000, 1, 2, 1, 0])
         # string result
         a = nd.array(str(x) + 'test' for x in range(10))
-        self.assertEqual(nd.type_of(a), ndt.type('var, string'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, string'))
         self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
         # string result
         a = nd.array(iter([u'test', 'test2']))
-        self.assertEqual(nd.type_of(a), ndt.type('var, string'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, string'))
         self.assertEqual(nd.as_py(a), [u'test', u'test2'])
         # bytes result
         if sys.version_info[0] >= 3:
             a = nd.array(b'x'*x for x in range(10))
-            self.assertEqual(nd.type_of(a), ndt.type('var, bytes'))
+            self.assertEqual(nd.type_of(a), ndt.type('strided, bytes'))
             self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
 
     def test_dynamic_fromiter_booltypepromo(self):
         # Test iterator construction cases promoting from a boolean
         # int32 result
         a = nd.array(iter([True, False, 3]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int32'))
         self.assertEqual(nd.as_py(a), [1, 0, 3])
         # int64 result
         a = nd.array(iter([True, False, -10000000000]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int64'))
         self.assertEqual(nd.as_py(a), [1, 0, -10000000000])
         # float64 result
         a = nd.array(iter([True, False, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, float64'))
         self.assertEqual(nd.as_py(a), [1, 0, 3.25])
         # complex[float64] result
         a = nd.array(iter([True, False, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
         # Should raise an error mixing bool and string/bytes
         self.assertRaises(RuntimeError, nd.array, iter([True, False, "test"]))
@@ -611,15 +611,15 @@ class TestIteratorConstruct(unittest.TestCase):
         # Test iterator construction cases promoting from an int32
         # int64 result
         a = nd.array(iter([1, 2, 10000000000]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, int64'))
         self.assertEqual(nd.as_py(a), [1, 2, 10000000000])
         # float64 result
         a = nd.array(iter([1, 2, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, float64'))
         self.assertEqual(nd.as_py(a), [1, 2, 3.25])
         # complex[float64] result
         a = nd.array(iter([1, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
         # Should raise an error mixing int32 and string/bytes
         self.assertRaises(RuntimeError, nd.array, iter([1, 2, "test"]))
@@ -630,11 +630,11 @@ class TestIteratorConstruct(unittest.TestCase):
         # Test iterator construction cases promoting from an int64
         # float64 result
         a = nd.array(iter([10000000000, 2, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, float64'))
         self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25])
         # complex[float64] result
         a = nd.array(iter([10000000000, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
         # Should raise an error mixing int64 and string/bytes
         self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, "test"]))
@@ -645,7 +645,7 @@ class TestIteratorConstruct(unittest.TestCase):
         # Test iterator construction cases promoting from an float64
         # complex[float64] result
         a = nd.array(iter([3.25, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('var, complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
         # Should raise an error mixing float64 and string/bytes
         self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, "test"]))
@@ -707,7 +707,7 @@ class TestIteratorConstruct(unittest.TestCase):
                 [-10000000000],
                 [True, 10, 3.125, 5.5j]]
         a = nd.array(iter(x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('var, var, complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, complex[float64]'))
         self.assertEqual(nd.as_py(a), vals)
         # 3D nested iterators
         vals = [[[True, True, True],
@@ -720,36 +720,36 @@ class TestIteratorConstruct(unittest.TestCase):
                  [1.5],
                  []]]
         a = nd.array((iter(y) for y in x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('var, var, var, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, var, float64'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator of lists
         vals = [[True, 2, 3],
                 [4, 5, 6.5],
                 [1, 2, 3]]
         a = nd.array(iter(vals))
-        self.assertEqual(nd.type_of(a), ndt.type('var, strided, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, float64'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator starting with list, also including iterator
         vals = [[True, 2, 3],
                 [4, 5, 6.5],
                 [1, 2, 3]]
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('var, strided, float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, strided, float64'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator with lists, but ragged
         vals = [[1], [2, 3, 4], [5, 6]]
         a = nd.array(iter(vals))
-        self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, int32'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator starting with list, first raggedness is a short iterator
         vals = [[1, 2, 3], [4], [5, 6]]
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, int32'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator starting with list, first raggedness is a long iterator
         vals = [[1], [2, 3, 4], [5, 6]]
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('var, var, int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, int32'))
         self.assertEqual(nd.as_py(a), vals)
 
     def test_ragged_fromlistofiter_typepromo(self):

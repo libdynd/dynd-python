@@ -1194,5 +1194,13 @@ dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj)
     nd::array arr;
     memset(&elem, 0, sizeof(elem));
     array_from_py_dynamic(obj, shape, coord, elem, arr, 0);
+    // Finalize any variable-sized buffers, etc
+    if (!arr.get_type().is_builtin()) {
+        arr.get_type().extended()->metadata_finalize_buffers(arr.get_ndo_meta());
+    }
+    // As a special case, convert the outer dimension from var to strided
+    if (arr.get_type().get_type_id() == var_dim_type_id) {
+        arr = arr(irange());
+    }
     return arr;
 }

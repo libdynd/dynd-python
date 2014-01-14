@@ -762,6 +762,14 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('strided, var, complex[float64]'))
         self.assertEqual(nd.as_py(a), vals)
 
+    def test_ragged_initial_empty_typepromo(self):
+        # iterator of lists, first one is empty
+        vals = [[],
+                [False, 2, 3]]
+        a = nd.array(iter(x) for x in vals)
+        self.assertEqual(nd.type_of(a), ndt.type('strided, var, int32'))
+        self.assertEqual(nd.as_py(a), vals)
+
     def test_dtype_fromiter(self):
         # Specify dtype instead of full type
         a = nd.array((2*x + 1 for x in range(7)), dtype=ndt.int32)

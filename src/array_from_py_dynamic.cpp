@@ -346,6 +346,13 @@ static void promote_nd_arr_dtype(
                         elem.dtp, elem.metadata_ptr,
                         kernel_request_strided,
                         assign_error_none, &eval::default_eval_context);
+    } else {
+        // An assignment kernel which copies one byte - will only
+        // be called with count==0 when dtp is uninitialized
+        make_assignment_kernel(&k, 0, ndt::make_type<char>(),
+                        NULL, ndt::make_type<char>(), NULL,
+                        kernel_request_strided,
+                        assign_error_none, &eval::default_eval_context);
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
@@ -925,7 +932,11 @@ static void array_from_py_dynamic(
             case void_kind:
                 // In this case, zero-sized dimension were encountered before
                 // an actual element from which to deduce a type.
-                throw runtime_error("TODO: Handle late discovery of dtype in dynd conversion");
+                promote_nd_arr_dtype(shape, coord, elem, arr,
+                                    deduce_ndt_type_from_pyobject(obj));
+                array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                            coord[current_axis-1].data_ptr, obj);
+                return;
             default:
                 throw runtime_error("internal error: unexpected type in recursive pyobject to dynd array conversion");
         }

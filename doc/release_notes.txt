@@ -1,9 +1,16 @@
 DyND-Python Release Notes
 ===================
 
+Release 0.6.0
+-------------
+
 - Add nd.is_c_contiguous(a) and nd.is_f_contiguous(a) to
   check array strides.
 - Add nd.memmap(filename, ...) to memory map a file as bytes.
+- Replace type "cfloat##" with "complex[float##]".
+- Add an algorithm which can construct dynd arrays from
+  nested Python iterators, dynamically promoting the data
+  type and dimension types as it goes.
 
 Release 0.5.0
 -------------

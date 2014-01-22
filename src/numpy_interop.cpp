@@ -778,7 +778,11 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
         }
 #endif
     } else {
-        throw std::runtime_error("could not create a dynd array from the numpy scalar object");
+        stringstream ss;
+        pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));
+        ss << "could not create a dynd array from the numpy scalar object";
+        ss << " of type " << pystring_as_string(obj_tp.get());
+        throw runtime_error(ss.str());
     }
 
     result.get_ndo()->m_flags = access_flags ? access_flags : nd::default_access_flags;

@@ -244,7 +244,12 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *access)
     }
 
     // TODO: add python buffer protocol support here
-    throw runtime_error("provided object can't be viewed as a dynd array, use nd.asarray or nd.array to create a copy");
+    stringstream ss;
+    pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));
+    ss << "object of type " << pystring_as_string(obj_tp.get());
+    ss << " can't be viewed as a dynd array, use nd.asarray or";
+    ss << " nd.array to create a copy";
+    throw runtime_error(ss.str());
 }
 
 dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)

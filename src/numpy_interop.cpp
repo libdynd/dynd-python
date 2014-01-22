@@ -777,6 +777,13 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
             throw runtime_error("Unsupported NumPy datetime unit");
         }
 #endif
+    } else if (PyArray_IsScalar(obj, Void)) {
+        const PyVoidScalarObject *scalar = (const PyVoidScalarObject *)obj;
+        ndt::type tp = ndt_type_from_numpy_dtype(scalar->descr,
+                            reinterpret_cast<size_t>(scalar->obval));
+        // Use the canonical type (get rid of unaligned, etc)
+        result = nd::empty(tp.get_canonical_type());
+        result.val_assign(tp, NULL, scalar->obval);
     } else {
         stringstream ss;
         pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));

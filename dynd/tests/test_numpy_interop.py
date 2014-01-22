@@ -388,8 +388,10 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.dtype_of(nd.array(np.uint64(100))), ndt.uint64)
         self.assertEqual(nd.dtype_of(nd.array(np.float32(100.))), ndt.float32)
         self.assertEqual(nd.dtype_of(nd.array(np.float64(100.))), ndt.float64)
-        self.assertEqual(nd.dtype_of(nd.array(np.complex64(100j))), ndt.complex_float32)
-        self.assertEqual(nd.dtype_of(nd.array(np.complex128(100j))), ndt.complex_float64)
+        self.assertEqual(nd.dtype_of(nd.array(np.complex64(100j))),
+                         ndt.complex_float32)
+        self.assertEqual(nd.dtype_of(nd.array(np.complex128(100j))),
+                         ndt.complex_float64)
         if np.__version__ >= '1.7':
             self.assertEqual(nd.dtype_of(nd.array(np.datetime64('2000-12-13'))), ndt.date)
 
@@ -401,19 +403,54 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.as_py(nd.array(np.int16(20000))), 20000)
         self.assertEqual(nd.as_py(nd.array(np.int16(-20000))), -20000)
         self.assertEqual(nd.as_py(nd.array(np.int32(1000000000))), 1000000000)
-        self.assertEqual(nd.as_py(nd.array(np.int64(-1000000000000))), -1000000000000)
-        self.assertEqual(nd.as_py(nd.array(np.int64(1000000000000))), 1000000000000)
-        self.assertEqual(nd.as_py(nd.array(np.int32(-1000000000))), -1000000000)
+        self.assertEqual(nd.as_py(nd.array(np.int64(-1000000000000))),
+                         -1000000000000)
+        self.assertEqual(nd.as_py(nd.array(np.int64(1000000000000))),
+                         1000000000000)
+        self.assertEqual(nd.as_py(nd.array(np.int32(-1000000000))),
+                         -1000000000)
         self.assertEqual(nd.as_py(nd.array(np.uint8(200))), 200)
         self.assertEqual(nd.as_py(nd.array(np.uint16(50000))), 50000)
         self.assertEqual(nd.as_py(nd.array(np.uint32(3000000000))), 3000000000)
-        self.assertEqual(nd.as_py(nd.array(np.uint64(10000000000000000000))), 10000000000000000000)
+        self.assertEqual(nd.as_py(nd.array(np.uint64(10000000000000000000))),
+                         10000000000000000000)
         self.assertEqual(nd.as_py(nd.array(np.float32(2.5))), 2.5)
         self.assertEqual(nd.as_py(nd.array(np.float64(2.5))), 2.5)
         self.assertEqual(nd.as_py(nd.array(np.complex64(2.5-1j))), 2.5-1j)
         self.assertEqual(nd.as_py(nd.array(np.complex128(2.5-1j))), 2.5-1j)
         if np.__version__ >= '1.7':
-            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13'))), date(2000, 12, 13))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13'))),
+                             date(2000, 12, 13))
+
+    def test_numpy_struct_scalar(self):
+        # Create a NumPy struct scalar object, by indexing into
+        # a structured array
+        a = np.array([(10, 11, 12)], dtype='i4,i8,f8')[0]
+        aligned_tp = ndt.type('{f0: int32; f1: int64; f2: float64}')
+        val = {'f0': 10, 'f1': 11, 'f2': 12}
+
+        # Construct using nd.array
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), aligned_tp)
+        self.assertEqual(nd.as_py(b), val)
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.array(a, access='rw')
+        self.assertEqual(nd.type_of(b), aligned_tp)
+        self.assertEqual(nd.as_py(b), val)
+        self.assertEqual(b.access_flags, 'readwrite')
+
+        # Construct using nd.asarray
+        b = nd.asarray(a)
+        self.assertEqual(nd.type_of(b), aligned_tp)
+        self.assertEqual(nd.as_py(b), val)
+        self.assertEqual(b.access_flags, 'immutable')
+        b = nd.asarray(a, access='rw')
+        self.assertEqual(nd.type_of(b), aligned_tp)
+        self.assertEqual(nd.as_py(b), val)
+        self.assertEqual(b.access_flags, 'readwrite')
+
+        # nd.view should fail
+        self.assertRaises(RuntimeError, nd.view, a)
 
     def test_expr_struct_conversion(self):
         a = nd.array([date(2000, 12, 13), date(1995, 5, 2)]).to_struct()

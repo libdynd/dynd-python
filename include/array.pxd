@@ -35,7 +35,7 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         ndt_type get_dtype(size_t)
         intptr_t get_ndim()
         bint is_scalar()
-        intptr_t get_dim_size()
+        intptr_t get_dim_size() except +translate_exception
 
         char* get_readwrite_originptr()
         char* get_readonly_originptr()

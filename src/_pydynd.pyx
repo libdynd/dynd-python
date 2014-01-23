@@ -1167,8 +1167,6 @@ cdef class w_array:
         return str(<char *>array_repr(GET(self.v)).c_str())
 
     def __len__(self):
-        if GET(self.v).is_scalar():
-            raise TypeError('zero-dimensional nd::array has no len()')
         return GET(self.v).get_dim_size()
 
     def __getitem__(self, x):

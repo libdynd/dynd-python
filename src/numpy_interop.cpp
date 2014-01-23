@@ -223,6 +223,10 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
         return ndt::make_type<npy_longlong>();
     case NPY_ULONGLONG:
         return ndt::make_type<npy_ulonglong>();
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+    case NPY_HALF:
+        return ndt::make_type<dynd_float16>();
+#endif
     case NPY_FLOAT:
         return ndt::make_type<float>();
     case NPY_DOUBLE:

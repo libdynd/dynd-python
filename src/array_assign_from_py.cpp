@@ -134,12 +134,23 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                         ndt::make_type<long>(), NULL, reinterpret_cast<const char *>(&v));
     #endif // PY_VERSION_HEX < 0x03000000
         } else if (PyLong_Check(value)) {
-            PY_LONG_LONG v = PyLong_AsLongLong(value);
-            if (v == -1 && PyErr_Occurred()) {
-                throw runtime_error("error converting int value");
+            if (dt.value_type().get_type_id() == uint64_type_id) {
+                // Special case uint64 so as to cover its full range
+                unsigned PY_LONG_LONG v = PyLong_AsUnsignedLongLong(value);
+                if (v == -1 && PyErr_Occurred()) {
+                    throw runtime_error("error converting int value");
+                }
+                typed_data_assign(dt, metadata, data,
+                            ndt::make_type<unsigned PY_LONG_LONG>(), NULL,
+                            reinterpret_cast<const char *>(&v));
+            } else {
+                PY_LONG_LONG v = PyLong_AsLongLong(value);
+                if (v == -1 && PyErr_Occurred()) {
+                    throw runtime_error("error converting int value");
+                }
+                typed_data_assign(dt, metadata, data,
+                            ndt::make_type<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
             }
-            typed_data_assign(dt, metadata, data,
-                        ndt::make_type<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyFloat_Check(value)) {
             double v = PyFloat_AS_DOUBLE(value);
             typed_data_assign(dt, metadata, data,

@@ -102,5 +102,21 @@ class TestBasics(unittest.TestCase):
         self.assertFalse(nd.is_c_contiguous(a))
         self.assertFalse(nd.is_f_contiguous(a))
 
+    def test_uint_value_limits(self):
+        # Valid maximums
+        a = nd.array(0xff, ndt.uint8)
+        self.assertEqual(nd.as_py(a), 0xff)
+        a = nd.array(0xffff, ndt.uint16)
+        self.assertEqual(nd.as_py(a), 0xffff)
+        a = nd.array(0xffffffff, ndt.uint32)
+        self.assertEqual(nd.as_py(a), 0xffffffff)
+        a = nd.array(0xffffffffffffffff, ndt.uint64)
+        self.assertEqual(nd.as_py(a), 0xffffffffffffffff)
+        # Out of bounds
+        self.assertRaises(OverflowError, nd.array, 0x100, ndt.uint8)
+        self.assertRaises(OverflowError, nd.array, 0x10000, ndt.uint16)
+        self.assertRaises(OverflowError, nd.array, 0x100000000, ndt.uint32)
+        self.assertRaises(OverflowError, nd.array, 0x10000000000000000, ndt.uint64)
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

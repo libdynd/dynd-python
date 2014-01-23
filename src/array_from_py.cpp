@@ -101,7 +101,7 @@ inline void convert_one_pyscalar_bytes(const ndt::type& tp, const char *metadata
         allocator->allocate(md->blockref, len, 1, &out_asp->begin, &out_asp->end);
         memcpy(out_asp->begin, data, len);
     } else {
-        throw runtime_error("wrong kind of string provided (require byte string for dynd bytes type)");
+        throw dynd::type_error("wrong kind of string provided (require byte string for dynd bytes type)");
     }
 }
 
@@ -145,14 +145,14 @@ inline void convert_one_pyscalar_ustring(const ndt::type& tp, const char *metada
         }
 #endif
     } else {
-        throw runtime_error("wrong kind of string provided");
+        throw dynd::type_error("wrong kind of string provided");
     }
 }
 
 inline void convert_one_pyscalar_date(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
     if (!PyDate_Check(obj)) {
-        throw runtime_error("input object is not a date as expected");
+        throw dynd::type_error("input object is not a date as expected");
     }
     const date_type *dd = static_cast<const date_type *>(tp.extended());
     dd->set_ymd(metadata, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
@@ -162,7 +162,7 @@ inline void convert_one_pyscalar_date(const ndt::type& tp, const char *metadata,
 inline void convert_one_pyscalar_datetime(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
     if (!PyDateTime_Check(obj)) {
-        throw runtime_error("input object is not a datetime as expected");
+        throw dynd::type_error("input object is not a datetime as expected");
     }
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&
                     ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
@@ -567,8 +567,9 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& tp, bool f
 #if PY_VERSION_HEX < 0x03000000
                         || PyString_Check(obj)
 #endif
+                        || PyDict_Check(obj)
                         ) {
-            // Special case strings, because they act as sequences too
+            // Special case strings and dicts, because they act as sequences too
             result = nd::empty(tp);
         } else if (PySequence_Check(obj)) {
             vector<intptr_t> shape;

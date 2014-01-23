@@ -447,7 +447,21 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a[1]), 'test')
         self.assertEqual(nd.as_py(a[2]), True)
 
+        # With dtype= parameter instead of type=
+        a = nd.array([12, 'test', True], dtype='{x:int32; y:string; z:bool}')
+        self.assertEqual(nd.type_of(a), ndt.type('{x:int32; y:string; z:bool}'))
+        self.assertEqual(nd.as_py(a[0]), 12)
+        self.assertEqual(nd.as_py(a[1]), 'test')
+        self.assertEqual(nd.as_py(a[2]), True)
+
         a = nd.array({'x':12, 'y':'test', 'z':True}, type='{x:int32; y:string; z:bool}')
+        self.assertEqual(nd.type_of(a), ndt.type('{x:int32; y:string; z:bool}'))
+        self.assertEqual(nd.as_py(a[0]), 12)
+        self.assertEqual(nd.as_py(a[1]), 'test')
+        self.assertEqual(nd.as_py(a[2]), True)
+
+        # With dtype= parameter instead of type=
+        a = nd.array({'x':12, 'y':'test', 'z':True}, dtype='{x:int32; y:string; z:bool}')
         self.assertEqual(nd.type_of(a), ndt.type('{x:int32; y:string; z:bool}'))
         self.assertEqual(nd.as_py(a[0]), 12)
         self.assertEqual(nd.as_py(a[1]), 'test')
@@ -520,13 +534,25 @@ class TestStructConstruct(unittest.TestCase):
 
     def test_missing_field(self):
         self.assertRaises(RuntimeError, nd.array,
+                        [0, 1], type='{x:int32; y:int32; z:int32}')
+        # With dtype= parameter instead of type=
+        self.assertRaises(RuntimeError, nd.array,
                         [0, 1], dtype='{x:int32; y:int32; z:int32}')
+        self.assertRaises(RuntimeError, nd.array,
+                        {'x':0, 'z':1}, type='{x:int32; y:int32; z:int32}')
+        # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
                         {'x':0, 'z':1}, dtype='{x:int32; y:int32; z:int32}')
 
     def test_extra_field(self):
         self.assertRaises(RuntimeError, nd.array,
+                        [0, 1, 2, 3], type='{x:int32; y:int32; z:int32}')
+        # With dtype= parameter instead of type=
+        self.assertRaises(RuntimeError, nd.array,
                         [0, 1, 2, 3], dtype='{x:int32; y:int32; z:int32}')
+        self.assertRaises(RuntimeError, nd.array,
+                        {'x':0,'y':1,'z':2,'w':3}, type='{x:int32; y:int32; z:int32}')
+        # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, dtype='{x:int32; y:int32; z:int32}')
 
@@ -603,9 +629,9 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
         # Should raise an error mixing bool and string/bytes
-        self.assertRaises(RuntimeError, nd.array, iter([True, False, "test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([True, False, u"test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([True, False, b"test"]))
+        self.assertRaises(TypeError, nd.array, iter([True, False, "test"]))
+        self.assertRaises(TypeError, nd.array, iter([True, False, u"test"]))
+        self.assertRaises(TypeError, nd.array, iter([True, False, b"test"]))
 
     def test_dynamic_fromiter_int32typepromo(self):
         # Test iterator construction cases promoting from an int32
@@ -622,9 +648,9 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
         # Should raise an error mixing int32 and string/bytes
-        self.assertRaises(RuntimeError, nd.array, iter([1, 2, "test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([1, 2, u"test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([1, 2, b"test"]))
+        self.assertRaises(TypeError, nd.array, iter([1, 2, "test"]))
+        self.assertRaises(TypeError, nd.array, iter([1, 2, u"test"]))
+        self.assertRaises(TypeError, nd.array, iter([1, 2, b"test"]))
 
     def test_dynamic_fromiter_int64typepromo(self):
         # Test iterator construction cases promoting from an int64
@@ -637,9 +663,9 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
         # Should raise an error mixing int64 and string/bytes
-        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, "test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, u"test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([10000000000, 2, b"test"]))
+        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, "test"]))
+        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, u"test"]))
+        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, b"test"]))
 
     def test_dynamic_fromiter_float64typepromo(self):
         # Test iterator construction cases promoting from an float64
@@ -648,16 +674,16 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('strided, complex[float64]'))
         self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
         # Should raise an error mixing float64 and string/bytes
-        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, "test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, u"test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([3.25, 2, b"test"]))
+        self.assertRaises(TypeError, nd.array, iter([3.25, 2, "test"]))
+        self.assertRaises(TypeError, nd.array, iter([3.25, 2, u"test"]))
+        self.assertRaises(TypeError, nd.array, iter([3.25, 2, b"test"]))
 
     def test_dynamic_fromiter_complexfloat64typepromo(self):
         # Test iterator construction cases promoting from an complex[float64]
         # Should raise an error mixing complex[float64] and string/bytes
-        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, "test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, u"test"]))
-        self.assertRaises(RuntimeError, nd.array, iter([3.25j, 2, b"test"]))
+        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, "test"]))
+        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, u"test"]))
+        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, b"test"]))
 
     def test_simple_fromiter(self):
         # Var dimension construction from a generator

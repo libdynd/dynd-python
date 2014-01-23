@@ -117,8 +117,10 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                         ['x', 'y']).as_numpy()
         tp1 = np.dtype([('x', np.int32), ('y', np.int64)])
         self.assertEqual(tp0, tp1)
-        # check a type which can't be converted
-        self.assertRaises(RuntimeError, ndt.date.as_numpy)
+        # check some types which can't be converted
+        self.assertRaises(TypeError, ndt.date.as_numpy)
+        self.assertRaises(TypeError, ndt.bytes.as_numpy)
+        self.assertRaises(TypeError, ndt.string.as_numpy)
 
 class TestNumpyViewInterop(unittest.TestCase):
     def setUp(self):

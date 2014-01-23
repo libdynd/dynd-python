@@ -139,7 +139,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
                 if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * dim_size) {
                     stringstream ss;
                     ss << "Cannot convert dynd type " << dt << " into a PEP 3118 format because it is not C-order";
-                    throw runtime_error(ss.str());
+                    throw dynd::type_error(ss.str());
                 }
                 o << ")";
                 child_dt = tdt->get_element_type();
@@ -205,7 +205,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
     }
     stringstream ss;
     ss << "Cannot convert dynd type " << dt << " into a PEP 3118 format string";
-    throw runtime_error(ss.str());
+    throw dynd::type_error(ss.str());
 }
 
 std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type& tp, const char *metadata)
@@ -288,7 +288,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         if (((flags&PyBUF_ND) != PyBUF_ND) && buffer->ndim > 1) {
             stringstream ss;
             ss << "dynd type " << n.get_type() << " is multidimensional, but PEP 3118 request is not ND";
-            throw runtime_error(ss.str());
+            throw dynd::type_error(ss.str());
         }
 
         // Create the format, and allocate the dynamic memory but Py_buffer needs

@@ -110,7 +110,7 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
                 case string_encoding_utf_32:
                     return PyUnicode_DecodeUTF32(begin, end - begin, NULL, NULL);
                 default:
-                    throw runtime_error("Unrecognized dynd array string encoding");
+                    throw dynd::type_error("Unrecognized dynd array string encoding");
             }
         }
         case date_type_id: {
@@ -141,7 +141,7 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
         default: {
             stringstream ss;
             ss << "Cannot convert dynd array with dtype " << d << " into python object";
-            throw runtime_error(ss.str());
+            throw dynd::type_error(ss.str());
         }
     }
 }

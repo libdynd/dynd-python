@@ -171,7 +171,7 @@ namespace {
             if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
                 stringstream ss;
                 ss << "ckd must be an nd.array of type ckernel_deferred";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
             const nd::array& ckd_arr = ((WArray *)ckd)->v;
             vector<ndt::type> types_vec;

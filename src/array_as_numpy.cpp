@@ -95,7 +95,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 pyobject_ownref M8str(PyString_FromString("M8[D]"));
 #  endif
                 if (!PyArray_DescrConverter(M8str.get(), &datedt)) {
-                    throw runtime_error("Failed to create NumPy datetime64[D] dtype");
+                    throw dynd::type_error("Failed to create NumPy datetime64[D] dtype");
                 }
                 out_numpy_dtype->reset((PyObject *)datedt);
                 return;
@@ -127,7 +127,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                     stringstream ss;
                     ss << "cannot determine shape of dynd type " << dt;
                     ss << " to convert it to a numpy dtype";
-                    throw runtime_error(ss.str());
+                    throw dynd::type_error(ss.str());
                 }
                 // Build up the shape of the array for NumPy
                 pyobject_ownref shape(PyList_New(0));
@@ -150,7 +150,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                         ss << "dynd as_numpy could not convert dynd type ";
                         ss << dt;
                         ss << " to a numpy dtype";
-                        throw runtime_error(ss.str());
+                        throw dynd::type_error(ss.str());
                     }
                     --ndim;
                     if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
@@ -168,7 +168,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
                 PyArray_Descr *result = NULL;
                 if (!PyArray_DescrConverter(tuple_obj, &result)) {
-                    throw runtime_error("failed to convert dynd type into numpy subarray dtype");
+                    throw dynd::type_error("failed to convert dynd type into numpy subarray dtype");
                 }
                 // Put the final numpy dtype reference in the output
                 out_numpy_dtype->reset((PyObject *)result);
@@ -225,7 +225,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             if (!PyArray_DescrAlignConverter(dict_obj, &result)) {
                 stringstream ss;
                 ss << "failed to convert dynd type " << dt << " into numpy dtype via dict";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
             out_numpy_dtype->reset((PyObject *)result);
             return;
@@ -247,7 +247,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     ss << "dynd as_numpy could not convert dynd type ";
     ss << dt;
     ss << " to a numpy dtype";
-    throw runtime_error(ss.str());
+    throw dynd::type_error(ss.str());
 }
 
 static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requires_copy,
@@ -309,7 +309,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 pyobject_ownref M8str(PyString_FromString("M8[D]"));
 #  endif
                 if (!PyArray_DescrConverter(M8str.get(), &datedt)) {
-                    throw runtime_error("Failed to create NumPy datetime64[D] dtype");
+                    throw dynd::type_error("Failed to create NumPy datetime64[D] dtype");
                 }
                 out_numpy_dtype->reset((PyObject *)datedt);
                 return;
@@ -378,7 +378,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                         ss << "dynd as_numpy could not convert dynd type ";
                         ss << dt;
                         ss << " to a numpy dtype";
-                        throw runtime_error(ss.str());
+                        throw dynd::type_error(ss.str());
                     }
                     --ndim;
                     if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
@@ -401,7 +401,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
 
                 PyArray_Descr *result = NULL;
                 if (!PyArray_DescrConverter(tuple_obj, &result)) {
-                    throw runtime_error("failed to convert dynd type into numpy subarray dtype");
+                    throw dynd::type_error("failed to convert dynd type into numpy subarray dtype");
                 }
                 // Put the final numpy dtype reference in the output
                 out_numpy_dtype->reset((PyObject *)result);
@@ -466,7 +466,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             if (!PyArray_DescrConverter(dict_obj, &result)) {
                 stringstream ss;
                 ss << "failed to convert dynd type " << dt << " into numpy dtype via dict";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
             out_numpy_dtype->reset((PyObject *)result);
             return;
@@ -489,7 +489,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
     ss << "dynd as_numpy could not convert dynd type ";
     ss << dt;
     ss << " to a numpy dtype";
-    throw runtime_error(ss.str());
+    throw dynd::type_error(ss.str());
 }
 
 
@@ -620,7 +620,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
                 ss << "dynd as_numpy could not convert dynd type ";
                 ss << n.get_type();
                 ss << " to a numpy dtype";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
         }
         return result.release();
@@ -651,7 +651,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
             stringstream ss;
             ss << "cannot view dynd array with dtype " << n.get_type();
             ss << " as numpy without making a copy";
-            throw runtime_error(ss.str());
+            throw dynd::type_error(ss.str());
         }
         make_numpy_dtype_for_copy(&numpy_dtype,
                         ndim, n.get_type(), n.get_ndo_meta());

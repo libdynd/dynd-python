@@ -282,7 +282,9 @@ void pydynd::deduce_pyseq_shape(PyObject *obj, size_t ndim, intptr_t *shape)
 void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type& tp,
                 std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis)
 {
-    bool is_sequence = (PySequence_Check(obj) != 0 && !PyUnicode_Check(obj));
+    bool is_sequence = (PySequence_Check(obj) != 0 &&
+                        !PyUnicode_Check(obj) &&
+                        !PyDict_Check(obj));
 #if PY_VERSION_HEX < 0x03000000
     is_sequence = is_sequence && !PyString_Check(obj);
 #endif

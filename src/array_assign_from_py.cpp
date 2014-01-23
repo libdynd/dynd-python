@@ -402,6 +402,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     if (dt.get_kind() == struct_kind) {
+cout << "output to struct " << dt << endl;
         const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
         size_t field_count = fsd->get_field_count();
         const string *field_names = fsd->get_field_names();
@@ -418,6 +419,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
 
         while (PyDict_Next(value, &dict_pos, &dict_key, &dict_value)) {
             string name = pystring_as_string(dict_key);
+cout << "processing dict field " << name << endl;
             intptr_t i = fsd->get_field_index(name);
             // TODO: Add an error policy of whether to throw an error
             //       or not. For now, just raise an error

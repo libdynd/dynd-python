@@ -169,7 +169,12 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
         return ndt::make_date();
     }
 
-    throw std::runtime_error("could not convert the given Python TypeObject into a dynd type");
+    stringstream ss;
+    ss << "could not convert the Python TypeObject ";
+    pyobject_ownref obj_repr(PyObject_Repr((PyObject *)obj));
+    ss << pystring_as_string(obj_repr.get());
+    ss << " into a dynd type";
+    throw dynd::type_error(ss.str());
 }
 
 dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
@@ -206,7 +211,7 @@ dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
     pyobject_ownref repr(PyObject_Repr(obj));
     ss << pystring_as_string(repr.get());
     ss << " into a dynd type";
-    throw std::runtime_error(ss.str());
+    throw dynd::type_error(ss.str());
 }
 
 static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)

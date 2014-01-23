@@ -36,7 +36,7 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
     vector<size_t> field_offsets;
 
     if (!PyDataType_HASFIELDS(d)) {
-        throw runtime_error("Tried to make a tuple dtype from a Numpy descr without fields");
+        throw dynd::type_error("Tried to make a tuple dtype from a Numpy descr without fields");
     }
 
     if (data_alignment == 0) {
@@ -59,7 +59,7 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
         PyObject *title;
         int offset = 0;
         if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
-            throw runtime_error("Numpy struct dtype has corrupt data");
+            throw dynd::type_error("Numpy struct dtype has corrupt data");
         }
         field_types.push_back(ndt_type_from_numpy_dtype(fld_dtype, data_alignment));
         // If the field isn't aligned enough, turn it into an unaligned type
@@ -182,7 +182,7 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
     if (dt.get_type_id() == uninitialized_type_id) {
         stringstream ss;
         ss << "unsupported Numpy dtype with type id " << d->type_num;
-        throw runtime_error(ss.str());
+        throw dynd::type_error(ss.str());
     }
 
     if (!PyArray_ISNBO(d->byteorder)) {
@@ -234,7 +234,7 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
     default: {
         stringstream ss;
         ss << "Cannot convert numpy type num " << numpy_type_num << " to a dynd type";
-        throw runtime_error(ss.str());
+        throw dynd::type_error(ss.str());
         }
     }
 }
@@ -257,7 +257,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
                 PyObject *title;
                 int offset = 0;
                 if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
-                    throw runtime_error("Numpy struct dtype has corrupt data");
+                    throw dynd::type_error("Numpy struct dtype has corrupt data");
                 }
                 // Set the field offset in the output metadata
                 offsets[i] = offset;
@@ -276,7 +276,7 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
             if (adescr == NULL) {
                 stringstream ss;
                 ss << "Internal error building dynd metadata: Numpy dtype has NULL subarray corresponding to strided_dim type";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
             if (PyTuple_Check(adescr->shape)) {
                 int ndim = (int)PyTuple_GET_SIZE(adescr->shape);
@@ -390,7 +390,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
 
             PyArray_Descr *result = NULL;
             if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
-                throw runtime_error("failed to convert tuple dtype into numpy dtype via dict");
+                throw dynd::type_error("failed to convert tuple dtype into numpy dtype via dict");
             }
             return result;
         }
@@ -446,7 +446,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
                 stringstream ss;
                 ss << "failed to convert dtype " << tp << " into numpy dtype via dict";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
             return result;
         }
@@ -459,7 +459,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
                 if (child_tp.get_data_size() != ttp->get_element_type().get_data_size() * shape.back()) {
                     stringstream ss;
                     ss << "Cannot convert dynd type " << tp << " into a numpy dtype because it is not C-order";
-                    throw runtime_error(ss.str());
+                    throw dynd::type_error(ss.str());
                 }
                 child_tp = ttp->get_element_type();
             } while (child_tp.get_type_id() == fixed_dim_type_id);
@@ -471,7 +471,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
 
             PyArray_Descr *result = NULL;
             if (PyArray_DescrConverter(tuple_obj, &result) != NPY_SUCCEED) {
-                throw runtime_error("failed to convert dynd type into numpy subarray dtype");
+                throw dynd::type_error("failed to convert dynd type into numpy subarray dtype");
             }
             return result;
         }
@@ -498,7 +498,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
 
     stringstream ss;
     ss << "cannot convert dynd type " << tp << " into a Numpy dtype";
-    throw runtime_error(ss.str());
+    throw dynd::type_error(ss.str());
 }
 
 PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *metadata)
@@ -508,7 +508,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
             if (metadata == NULL) {
                 stringstream ss;
                 ss << "Can only convert dynd type " << tp << " into a numpy dtype with array metadata";
-                throw runtime_error(ss.str());
+                throw dynd::type_error(ss.str());
             }
             const struct_type *stp = static_cast<const struct_type *>(tp.extended());
             const ndt::type *field_types = stp->get_field_types();
@@ -560,7 +560,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
 
             PyArray_Descr *result = NULL;
             if (PyArray_DescrConverter(dict_obj, &result) != NPY_SUCCEED) {
-                throw runtime_error("failed to convert dtype into numpy struct dtype via dict");
+                throw dynd::type_error("failed to convert dtype into numpy struct dtype via dict");
             }
             return result;
         }
@@ -642,7 +642,7 @@ ndt::type pydynd::ndt_type_of_numpy_scalar(PyObject* obj)
         return ndt::make_type<complex<double> >();
     }
 
-    throw std::runtime_error("could not deduce a pydynd type from the numpy scalar object");
+    throw dynd::type_error("could not deduce a pydynd type from the numpy scalar object");
 }
 
 inline size_t get_alignment_of(uintptr_t align_bits)
@@ -774,7 +774,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
                             static_cast<int32_t>(val);
             }
         } else {
-            throw runtime_error("Unsupported NumPy datetime unit");
+            throw dynd::type_error("Unsupported NumPy datetime unit");
         }
 #endif
     } else if (PyArray_IsScalar(obj, Void)) {
@@ -789,7 +789,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
         pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));
         ss << "could not create a dynd array from the numpy scalar object";
         ss << " of type " << pystring_as_string(obj_tp.get());
-        throw runtime_error(ss.str());
+        throw dynd::type_error(ss.str());
     }
 
     result.get_ndo()->m_flags = access_flags ? access_flags : nd::default_access_flags;
@@ -829,7 +829,7 @@ char pydynd::numpy_kindchar_of(const dynd::ndt::type& d)
 
     stringstream ss;
     ss << "dynd type \"" << d << "\" does not have an equivalent numpy kind";
-    throw runtime_error(ss.str());
+    throw dynd::type_error(ss.str());
 }
 
 #endif // DYND_NUMPY_INTEROP

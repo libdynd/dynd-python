@@ -36,6 +36,8 @@ void pydynd::translate_exception()
         PyErr_SetString(PyExc_IndexError, exn.message());
     } catch (const dynd::invalid_type_id& exn) {
         PyErr_SetString(PyExc_TypeError, exn.message());
+    } catch (const dynd::type_error& exn) {
+        PyErr_SetString(PyExc_TypeError, exn.message());
     } catch (const dynd::string_encode_error& exn) {
         std::stringstream ss;
         ss << exn.encoding();

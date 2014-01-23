@@ -37,7 +37,7 @@ class FieldExpr:
                     # them as DyND arrays
                     try:
                         s = as_numpy(s, allow_copy=True)
-                    except RuntimeError:
+                    except TypeError:
                         pass
                 else:
                     s = as_py(s)

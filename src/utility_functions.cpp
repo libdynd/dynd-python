@@ -134,10 +134,10 @@ std::string pydynd::pystring_as_string(PyObject *str)
             stringstream ss;
             ss << "Cannot implicitly convert object of type ";
             ss << n.get_type() << " to string";
-            throw runtime_error(ss.str());
+            throw dynd::type_error(ss.str());
         }
     } else {
-        throw runtime_error("Cannot convert pyobject to string");
+        throw dynd::type_error("Cannot convert pyobject to string");
     }
 }
 

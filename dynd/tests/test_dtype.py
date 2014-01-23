@@ -141,6 +141,12 @@ class TestDType(unittest.TestCase):
         self.assertEqual(ndt.int32, ndt.type(int))
         self.assertEqual(ndt.float64, ndt.type(float))
         self.assertEqual(ndt.complex_float64, ndt.type(complex))
+        self.assertEqual(ndt.string, ndt.type(str))
+        self.assertEqual(ndt.bytes, ndt.type(bytearray))
+        if sys.version_info[0] == 2:
+            self.assertEqual(ndt.string, ndt.type(unicode))
+        if sys.version_info[0] >= 3:
+            self.assertEqual(ndt.bytes, ndt.type(bytes))
 
     def test_fixedbytes_type(self):
         d = ndt.make_fixedbytes(4, 4)

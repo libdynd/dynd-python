@@ -151,6 +151,17 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
         return ndt::make_type<double>();
     } else if (obj == &PyComplex_Type) {
         return ndt::make_type<complex<double> >();
+    } else if (obj == &PyUnicode_Type) {
+        return ndt::make_string();
+    } else if (obj == &PyByteArray_Type) {
+        return ndt::make_bytes(1);
+#if PY_VERSION_HEX >= 0x03000000
+    } else if (obj == &PyBytes_Type) {
+        return ndt::make_bytes(1);
+#else
+    } else if (obj == &PyString_Type) {
+        return ndt::make_string();
+#endif
     } else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
         // CTypes type object
         return ndt_type_from_ctypes_cdatatype((PyObject *)obj);

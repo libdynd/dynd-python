@@ -17,6 +17,7 @@
 #include <dynd/kernels/expr_kernels.hpp>
 #include <dynd/types/ckernel_deferred_type.hpp>
 
+#include "exception_translation.hpp"
 #include "utility_functions.hpp"
 #include "array_functions.hpp"
 
@@ -284,96 +285,101 @@ namespace {
 PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                 PyObject *type_tuple, int ckernel_acquires_gil)
 {
-    nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
-    ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+    try {
+        nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
+        ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
 
-    // NOTE: This function does not raise C++ exceptions,
-    //       it behaves as a Python C-API function.
-    if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
-        PyErr_SetString(PyExc_TypeError, "require a numpy ufunc object "
-                        "to retrieve its type tuples");
-        return NULL;
-    }
-    PyUFuncObject *uf = (PyUFuncObject *)ufunc;
-    if (uf->nout != 1) {
-        PyErr_SetString(PyExc_TypeError, "numpy ufuncs with multiple return "
-                        "arguments are not supported");
-        return NULL;
-    }
-    if (uf->data == (void *)PyUFunc_SetUsesArraysAsData) {
-        PyErr_SetString(PyExc_TypeError, "numpy ufuncs which require "
-                        "arrays as their data is not supported");
-        return NULL;
-    }
-
-    // Convert the type tuple to an integer type_num array
-    if (!PyTuple_Check(type_tuple)) {
-        PyErr_SetString(PyExc_TypeError, "type_tuple must be a tuple");
-        return NULL;
-    }
-    intptr_t nargs = PyTuple_GET_SIZE(type_tuple);
-    if (nargs != uf->nin + uf->nout) {
-        PyErr_SetString(PyExc_ValueError, "type_tuple has the wrong size for the ufunc");
-        return NULL;
-    }
-    int argtypes[NPY_MAXARGS];
-    for (intptr_t i = 0; i < nargs; ++i) {
-        PyArray_Descr *dt = NULL;
-        if (!PyArray_DescrConverter(PyTuple_GET_ITEM(type_tuple, i), &dt)) {
+        // NOTE: This function does not raise C++ exceptions,
+        //       it behaves as a Python C-API function.
+        if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
+            PyErr_SetString(PyExc_TypeError, "require a numpy ufunc object "
+                            "to retrieve its type tuples");
             return NULL;
         }
-        argtypes[i] = dt->type_num;
-        Py_DECREF(dt);
-    }
+        PyUFuncObject *uf = (PyUFuncObject *)ufunc;
+        if (uf->nout != 1) {
+            PyErr_SetString(PyExc_TypeError, "numpy ufuncs with multiple return "
+                            "arguments are not supported");
+            return NULL;
+        }
+        if (uf->data == (void *)PyUFunc_SetUsesArraysAsData) {
+            PyErr_SetString(PyExc_TypeError, "numpy ufuncs which require "
+                            "arrays as their data is not supported");
+            return NULL;
+        }
 
-    // Search through the main loops for one that matches
-    int builtin_count = uf->ntypes;
-    for (int i = 0; i < builtin_count; ++i) {
-        char *types = uf->types + i * nargs;
-        bool matched = true;
-        // Match the numpy convention "in, out" vs the dynd convention "out, in"
-        for (intptr_t j = 1; j < nargs; ++j) {
-            if (argtypes[j] != types[j-1]) {
-                matched = false;
-                break;
-            }
+        // Convert the type tuple to an integer type_num array
+        if (!PyTuple_Check(type_tuple)) {
+            PyErr_SetString(PyExc_TypeError, "type_tuple must be a tuple");
+            return NULL;
         }
-        if (argtypes[0] != types[nargs-1]) {
-            matched = false;
+        intptr_t nargs = PyTuple_GET_SIZE(type_tuple);
+        if (nargs != uf->nin + uf->nout) {
+            PyErr_SetString(PyExc_ValueError, "type_tuple has the wrong size for the ufunc");
+            return NULL;
         }
-        // If we found a full match, return the kernel
-        if (matched) {
-            if (!uf->core_enabled) {
-                size_t out_ckd_size = sizeof(scalar_ufunc_deferred_data) + (nargs - 1) * sizeof(void *);
-                ckd_ptr->data_ptr = malloc(out_ckd_size);
-                memset(ckd_ptr->data_ptr, 0, out_ckd_size);
-                ckd_ptr->ckernel_funcproto = expr_operation_funcproto;
-                ckd_ptr->free_func = &delete_scalar_ufunc_deferred_data;
-                ckd_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
-                ckd_ptr->data_types_size = nargs;
-                // Fill in the ckernel_deferred instance data
-                scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(ckd_ptr->data_ptr);
-                data->ufunc = uf;
-                Py_INCREF(uf);
-                data->data_types_size = nargs;
-                ckd_ptr->data_dynd_types = reinterpret_cast<ndt::type *>(data->data_types);
-                for (intptr_t j = 0; j < nargs; ++j) {
-                    data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
-                }
-                data->ckernel_acquires_gil = ckernel_acquires_gil;
-                data->funcptr = uf->functions[i];
-                data->ufunc_data = uf->data[i];
-                return wrap_array(ckd);
-            } else {
-                // TODO: support gufunc
-                PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");
+        int argtypes[NPY_MAXARGS];
+        for (intptr_t i = 0; i < nargs; ++i) {
+            PyArray_Descr *dt = NULL;
+            if (!PyArray_DescrConverter(PyTuple_GET_ITEM(type_tuple, i), &dt)) {
                 return NULL;
             }
+            argtypes[i] = dt->type_num;
+            Py_DECREF(dt);
         }
-    }
 
-    PyErr_SetString(PyExc_ValueError, "converting extended ufunc loops isn't implemented yet");
-    return NULL;
+        // Search through the main loops for one that matches
+        int builtin_count = uf->ntypes;
+        for (int i = 0; i < builtin_count; ++i) {
+            char *types = uf->types + i * nargs;
+            bool matched = true;
+            // Match the numpy convention "in, out" vs the dynd convention "out, in"
+            for (intptr_t j = 1; j < nargs; ++j) {
+                if (argtypes[j] != types[j-1]) {
+                    matched = false;
+                    break;
+                }
+            }
+            if (argtypes[0] != types[nargs-1]) {
+                matched = false;
+            }
+            // If we found a full match, return the kernel
+            if (matched) {
+                if (!uf->core_enabled) {
+                    size_t out_ckd_size = sizeof(scalar_ufunc_deferred_data) + (nargs - 1) * sizeof(void *);
+                    ckd_ptr->data_ptr = malloc(out_ckd_size);
+                    memset(ckd_ptr->data_ptr, 0, out_ckd_size);
+                    ckd_ptr->ckernel_funcproto = expr_operation_funcproto;
+                    ckd_ptr->free_func = &delete_scalar_ufunc_deferred_data;
+                    ckd_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
+                    ckd_ptr->data_types_size = nargs;
+                    // Fill in the ckernel_deferred instance data
+                    scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(ckd_ptr->data_ptr);
+                    data->ufunc = uf;
+                    Py_INCREF(uf);
+                    data->data_types_size = nargs;
+                    ckd_ptr->data_dynd_types = reinterpret_cast<ndt::type *>(data->data_types);
+                    for (intptr_t j = 0; j < nargs; ++j) {
+                        data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
+                    }
+                    data->ckernel_acquires_gil = ckernel_acquires_gil;
+                    data->funcptr = uf->functions[i];
+                    data->ufunc_data = uf->data[i];
+                    return wrap_array(ckd);
+                } else {
+                    // TODO: support gufunc
+                    PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");
+                    return NULL;
+                }
+            }
+        }
+
+        PyErr_SetString(PyExc_ValueError, "converting extended ufunc loops isn't implemented yet");
+        return NULL;
+    } catch (...) {
+        translate_exception();
+        return NULL;
+    }
 }
 
 #endif // DYND_NUMPY_INTEROP

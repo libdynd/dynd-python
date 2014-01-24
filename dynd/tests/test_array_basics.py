@@ -1,6 +1,7 @@
 import sys
 import unittest
 from dynd import nd, ndt
+import math
 
 class TestBasics(unittest.TestCase):
     def test_index(self):
@@ -117,6 +118,32 @@ class TestBasics(unittest.TestCase):
         self.assertRaises(OverflowError, nd.array, 0x10000, ndt.uint16)
         self.assertRaises(OverflowError, nd.array, 0x100000000, ndt.uint32)
         self.assertRaises(OverflowError, nd.array, 0x10000000000000000, ndt.uint64)
+
+    def test_inf(self):
+        # Validate nd.inf
+        self.assertEqual(nd.inf * 2, nd.inf)
+        self.assertTrue(nd.inf > 0)
+        self.assertTrue(-nd.inf < 0)
+        # as an array
+        a = nd.array(nd.inf)
+        self.assertEqual(nd.as_py(a), nd.inf)
+        self.assertEqual(nd.type_of(a), ndt.float64)
+        a = nd.array(nd.inf, ndt.float32)
+        self.assertEqual(nd.as_py(a), nd.inf)
+
+    def test_nan(self):
+        # Validate nd.nan
+        self.assertTrue(math.isnan(nd.nan))
+        self.assertFalse(nd.nan > 0)
+        self.assertFalse(nd.nan < 0)
+        self.assertFalse(nd.nan == 0)
+        self.assertFalse(nd.nan == nd.nan)
+        # as an array
+        a = nd.array(nd.nan)
+        self.assertTrue(math.isnan(nd.as_py(a)))
+        self.assertEqual(nd.type_of(a), ndt.float64)
+        a = nd.array(nd.nan, ndt.float32)
+        self.assertTrue(math.isnan(nd.as_py(a)))
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

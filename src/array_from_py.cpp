@@ -55,26 +55,42 @@ inline void convert_one_pyscalar_bool(const ndt::type& tp, const char *metadata,
 inline void convert_one_pyscalar_int32(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
 #if PY_VERSION_HEX >= 0x03000000
-    *reinterpret_cast<int32_t *>(out) = static_cast<int32_t>(PyLong_AsLong(obj));
+    int32_t value = static_cast<int32_t>(PyLong_AsLong(obj));
 #else
-    *reinterpret_cast<int32_t *>(out) = static_cast<int32_t>(PyInt_AsLong(obj));
+    int32_t value = static_cast<int32_t>(PyInt_AsLong(obj));
 #endif
+    if (value == -1 && PyErr_Occurred()) {
+        throw std::exception();
+    }
+    *reinterpret_cast<int32_t *>(out) = value;
 }
 
 inline void convert_one_pyscalar_int64(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
-    *reinterpret_cast<int64_t *>(out) = PyLong_AsLongLong(obj);
+    int64_t value = PyLong_AsLongLong(obj);
+    if (value == -1 && PyErr_Occurred()) {
+        throw std::exception();
+    }
+    *reinterpret_cast<int64_t *>(out) = value;
 }
 
 inline void convert_one_pyscalar_double(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
-    *reinterpret_cast<double *>(out) = PyFloat_AsDouble(obj);
+    double value = PyFloat_AsDouble(obj);
+    if (value == -1 && PyErr_Occurred()) {
+        throw std::exception();
+    }
+    *reinterpret_cast<double *>(out) = value;
 }
 
 inline void convert_one_pyscalar_cdouble(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
-    *reinterpret_cast<complex<double> *>(out) = complex<double>(
-                    PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj));
+    double value_real = PyComplex_RealAsDouble(obj);
+    double value_imag = PyComplex_ImagAsDouble(obj);
+    if ((value_real == -1 || value_imag == -1) && PyErr_Occurred()) {
+        throw std::exception();
+    }
+    *reinterpret_cast<complex<double> *>(out) = complex<double>(value_real, value_imag);
 }
 
 struct bytes_string_ptrs {

@@ -60,11 +60,14 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
 cdef extern from "array_functions.hpp" namespace "pydynd":
     void init_w_array_typeobject(object)
 
+    string array_repr(ndarray&) except +translate_exception
     object array_str(ndarray&) except +translate_exception
     object array_unicode(ndarray&) except +translate_exception
     object array_index(ndarray&) except +translate_exception
     object array_nonzero(ndarray&) except +translate_exception
-    string array_repr(ndarray&) except +translate_exception
+    object array_int(ndarray&) except +translate_exception
+    object array_float(ndarray&) except +translate_exception
+    object array_complex(ndarray&) except +translate_exception
     string array_debug_print(ndarray&) except +translate_exception
     bint array_contains(ndarray&, object) except +translate_exception
 

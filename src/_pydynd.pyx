@@ -1151,6 +1151,9 @@ cdef class w_array:
         def __get__(self):
             return array_get_strides(GET(self.v))
 
+    def __repr__(self):
+        return str(<char *>array_repr(GET(self.v)).c_str())
+
     def __str__(self):
         return array_str(GET(self.v))
 
@@ -1163,8 +1166,14 @@ cdef class w_array:
     def __nonzero__(self):
         return array_nonzero(GET(self.v))
 
-    def __repr__(self):
-        return str(<char *>array_repr(GET(self.v)).c_str())
+    def __int__(self):
+        return array_int(GET(self.v));
+
+    def __float__(self):
+        return array_float(GET(self.v));
+
+    def __complex__(self):
+        return array_complex(GET(self.v));
 
     def __len__(self):
         return GET(self.v).get_dim_size()

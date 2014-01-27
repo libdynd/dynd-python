@@ -141,17 +141,20 @@ inline dynd::nd::array array_divide(const dynd::nd::array& lhs, const dynd::nd::
     return lhs / rhs;
 }
 
-PyObject *array_str(const dynd::nd::array& n);
-PyObject *array_unicode(const dynd::nd::array& n);
-PyObject *array_index(const dynd::nd::array& n);
-PyObject *array_nonzero(const dynd::nd::array& n);
-
 inline std::string array_repr(const dynd::nd::array& n)
 {
     std::stringstream ss;
     ss << "nd." << n;
     return ss.str();
 }
+
+PyObject *array_str(const dynd::nd::array& n);
+PyObject *array_unicode(const dynd::nd::array& n);
+PyObject *array_index(const dynd::nd::array& n);
+PyObject *array_nonzero(const dynd::nd::array& n);
+PyObject *array_int(const dynd::nd::array& n);
+PyObject *array_float(const dynd::nd::array& n);
+PyObject *array_complex(const dynd::nd::array& n);
 
 inline std::string array_debug_print(const dynd::nd::array& n)
 {

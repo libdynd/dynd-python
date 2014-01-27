@@ -106,7 +106,7 @@ PyObject *pydynd::array_index(const dynd::nd::array& n)
             PyErr_SetString(PyExc_TypeError,
                             "dynd array must have kind 'int'"
                             " or 'uint' to be used as an index");
-            return NULL;
+            throw exception();
     }
 }
 
@@ -172,6 +172,63 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
                             "non-scalar type is ambiguous");
             throw exception();
     }
+}
+
+PyObject *pydynd::array_int(const dynd::nd::array& n)
+{
+    switch (n.get_type().value_type().get_kind()) {
+        case bool_kind:
+        case int_kind:
+            return PyLong_FromLongLong(n.as<int64_t>());
+        case uint_kind:
+            return PyLong_FromUnsignedLongLong(n.as<uint64_t>());
+        default:
+            break;
+    }
+    stringstream ss;
+    ss << "cannot convert dynd array of type " << n.get_type();
+    ss << " to an int";
+    PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+    throw exception();
+}
+
+PyObject *pydynd::array_float(const dynd::nd::array& n)
+{
+    switch (n.get_type().value_type().get_kind()) {
+        case bool_kind:
+        case int_kind:
+        case uint_kind:
+        case real_kind:
+            return PyFloat_FromDouble(n.as<double>());
+        default:
+            break;
+    }
+    stringstream ss;
+    ss << "cannot convert dynd array of type " << n.get_type();
+    ss << " to a float";
+    PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+    throw exception();
+}
+
+PyObject *pydynd::array_complex(const dynd::nd::array& n)
+{
+    switch (n.get_type().value_type().get_kind()) {
+        case bool_kind:
+        case int_kind:
+        case uint_kind:
+        case real_kind:
+        case complex_kind: {
+            complex<double> value = n.as<complex<double> >();
+            return PyComplex_FromDoubles(value.real(), value.imag());
+        }
+        default:
+            break;
+    }
+    stringstream ss;
+    ss << "cannot convert dynd array of type " << n.get_type();
+    ss << " to a complex";
+    PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+    throw exception();
 }
 
 void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool fulltype, PyObject *access)

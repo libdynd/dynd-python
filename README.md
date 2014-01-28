@@ -21,18 +21,21 @@ http://continuum.io/downloads
 
 For trying the latest updates, there is also an automated
 build configured which tracks the latest git master. When
-all the tests pass, it uploads conda packages to the Anaconda
-dev channel. To get these versions, you need a .condarc file
-which includes "http://repo.continuum.io/pkgs/dev" in its
-channels list.  See http://docs.continuum.io/conda/intro.html#configuration
-for more details. On windows, the .condarc file goes in
-the %USERPROFILE% directory.
+all the tests pass, it uploads conda packages to the binstar
+channel "mwiebe". To get these versions, you can either use a
+.condarc file which includes "https://conda.binstar.org/mwiebe" in its
+channels list, or run the following command.
 
-Here's an example .condarc file which includes the dev channel:
+```
+conda install -c https://conda.binstar.org/mwiebe dynd-python
+```
+
+On windows, the .condarc file goes in the %USERPROFILE% directory.
+Here's an example .condarc file which includes the channel:
 
 ```
 channels:
-  - http://repo.continuum.io/pkgs/dev
+  - https://conda.binstar.org/mwiebe
   - http://repo.continuum.io/pkgs/free
   - http://repo.continuum.io/pkgs/pro
   - http://repo.continuum.io/pkgs/gpl

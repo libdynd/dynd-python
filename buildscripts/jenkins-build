@@ -42,6 +42,9 @@ rm -rf build
 #       and use its build artifact here.
 ./buildscripts/checkout_libdynd.sh || exit 1
 
+# Make sure binstar is installed in the main environment
+~/anaconda/bin/conda install --yes binstar || exit 1
+
 # Use conda to create a conda environment of the required
 # python version and containing the dependencies.
 export PYENV_PREFIX=${WORKSPACE}/build/pyenv
@@ -99,5 +102,8 @@ fi
 
 # Create a conda package from the build
 ~/anaconda/bin/conda package -p ${PYENV_PREFIX} --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION} || exit 1
+
+# Upload the package to binstar
+~/anaconda/bin/binstar -t ${BINSTAR_AUTH} upload dynd-python*.tar.gz
 
 cd ..

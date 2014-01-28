@@ -43,7 +43,9 @@ rm -rf build
 ./buildscripts/checkout_libdynd.sh || exit 1
 
 # Make sure binstar is installed in the main environment
+echo Updating binstar...
 ~/anaconda/bin/conda install --yes binstar || exit 1
+~/anaconda/bin/binstar --version
 
 # Use conda to create a conda environment of the required
 # python version and containing the dependencies.

@@ -95,6 +95,11 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object)),
+                ('make_ckernel_deferred_from_property',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object)),
                 # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
                 ('numpy_typetuples_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object)),

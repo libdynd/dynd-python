@@ -34,6 +34,8 @@ struct py_lowlevel_api_t {
                     PyObject *funcproto, PyObject *kerntype);
     PyObject *(*make_ckernel_deferred_from_assignment)(PyObject *dst_tp_obj, PyObject *src_tp_obj,
                     PyObject *funcproto, PyObject *errmode);
+    PyObject *(*make_ckernel_deferred_from_property)(PyObject *tp_obj, PyObject *propname,
+                    PyObject *funcproto, PyObject *errmode);
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
     PyObject *(*ckernel_deferred_from_ufunc)(PyObject *ufunc,
                     PyObject *type_tuple, int ckernel_acquires_gil);

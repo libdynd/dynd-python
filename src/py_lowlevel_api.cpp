@@ -152,7 +152,7 @@ namespace {
                 throw runtime_error(ss.str());
             }
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-            dynd::make_ckernel_deferred_from_assignment(dst_tp, src_tp,
+            dynd::make_ckernel_deferred_from_assignment(dst_tp, src_tp, src_tp,
                             funcproto, errmode, *ckd_ptr);
 
             return wrap_array(ckd);
@@ -161,6 +161,41 @@ namespace {
             return NULL;
         }
     }
+
+    PyObject *make_ckernel_deferred_from_property(PyObject *tp_obj, PyObject *propname_obj,
+                PyObject *funcproto_obj, PyObject *errmode_obj)
+    {
+        try {
+            nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
+            ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+
+            ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
+            string propname = pystring_as_string(propname_obj);
+            string fp = pystring_as_string(funcproto_obj);
+            deferred_ckernel_funcproto_t funcproto;
+            if (fp == "unary") {
+                funcproto = unary_operation_funcproto;
+            } else if (fp == "expr") {
+                funcproto = expr_operation_funcproto;
+            } else if (fp == "binary_predicate") {
+                funcproto = binary_predicate_funcproto;
+            } else {
+                stringstream ss;
+                ss << "Invalid function prototype type ";
+                print_escaped_utf8_string(ss, fp);
+                throw runtime_error(ss.str());
+            }
+            assign_error_mode errmode = pyarg_error_mode(errmode_obj);
+            dynd::make_ckernel_deferred_from_property(tp, propname,
+                            funcproto, errmode, *ckd_ptr);
+
+            return wrap_array(ckd);
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
+    }
+
 
     PyObject *lift_ckernel_deferred(PyObject *ckd, PyObject *types)
     {
@@ -193,6 +228,7 @@ namespace {
         &array_from_ptr,
         &make_assignment_ckernel,
         &make_ckernel_deferred_from_assignment,
+        &make_ckernel_deferred_from_property,
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc,
         &lift_ckernel_deferred,

@@ -300,7 +300,8 @@ assign_error_mode pydynd::pyarg_error_mode(PyObject *error_mode_obj)
                     "none", assign_error_none,
                     "overflow", assign_error_overflow,
                     "fractional", assign_error_fractional,
-                    "inexact", assign_error_inexact);
+                    "inexact", assign_error_inexact,
+                    "default", assign_error_default);
 }
 
 int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,

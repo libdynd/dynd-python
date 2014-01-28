@@ -22,7 +22,9 @@ include "cpython/object.pxd"
 # include "libcpp/string.pxd"
 cdef extern from "<string>" namespace "std":
     cdef cppclass string:
-        char *c_str()
+        string(const char *)
+        const char *c_str()
+
 
 cdef extern from "<dynd/config.hpp>":
     # From the Cython docs:

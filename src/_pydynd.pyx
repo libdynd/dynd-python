@@ -791,6 +791,56 @@ def make_var_dim(element_tp):
     SET(result.v, dynd_make_var_dim_type(GET(w_type(element_tp).v)))
     return result
 
+def make_property(operand_tp, name):
+    """
+    ndt.make_property(operand_tp, name):
+
+    Constructs a property type from `operand_tp`, with name `name`. For
+    example the "real" property from a "complex[float64]" type.
+
+    The resulting type has an operand type matching `operand_tp`, and
+    a value type derived from the property.
+
+    Parameters
+    ----------
+    operand_tp : dynd type
+        The type from which to construct the property type. This will be
+        the operand type of the resulting property type.
+    name : str
+        The name of the property
+    """
+    cdef w_type result = w_type()
+    n = str(name)
+    SET(result.v, dynd_make_property_type(GET(w_type(operand_tp).v), string(<const char *>n)))
+    return result
+
+def make_reversed_property(value_tp, operand_tp, name):
+    """
+    ndt.make_reversed_property(value_tp, operand_tp, name):
+
+    Constructs a reversed property type from `tp`, with name `name`. For
+    example the "struct" property from a "date" type.
+
+    The resulting type has an operand type derived from the property,
+    and a value type equal to `tp`.
+
+    Parameters
+    ----------
+    value_tp : dynd type
+        A type whose value type must be equal to the value type of the selected
+        property.
+    operand_tp : dynd type
+        The type from which the property is taken. This will be the value
+        type of the result.
+    name : str
+        The name of the property.
+    """
+    cdef w_type result = w_type()
+    n = str(name)
+    SET(result.v, dynd_make_reversed_property_type(GET(w_type(value_tp).v),
+                                                   GET(w_type(operand_tp).v), string(<const char *>n)))
+    return result
+
 def make_categorical(values):
     """
     ndt.make_categorical(values)

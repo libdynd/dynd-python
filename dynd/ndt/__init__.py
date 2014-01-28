@@ -7,7 +7,8 @@ from dynd._pydynd import w_type as type, \
         make_pointer, make_struct, make_cstruct, \
         make_strided_dim, make_fixed_dim, make_var_dim, \
         make_categorical, replace_dtype, extract_dtype, \
-        factor_categorical, make_bytes
+        factor_categorical, make_bytes, make_property, \
+        make_reversed_property
 
 void = type('void')
 bool = type('bool')

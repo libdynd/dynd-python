@@ -108,6 +108,10 @@ cdef extern from "dynd/types/strided_dim_type.hpp" namespace "dynd":
 cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
     ndt_type dynd_make_var_dim_type "dynd::ndt::make_var_dim" (ndt_type&) except +translate_exception
 
+cdef extern from "dynd/types/property_type.hpp" namespace "dynd":
+    ndt_type dynd_make_property_type "dynd::ndt::make_property" (ndt_type&, string) except +translate_exception
+    ndt_type dynd_make_reversed_property_type "dynd::ndt::make_reversed_property" (ndt_type&, ndt_type&, string&) except +translate_exception
+
 cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
 

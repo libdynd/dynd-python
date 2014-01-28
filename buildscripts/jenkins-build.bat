@@ -34,8 +34,8 @@ IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 REM Make sure binstar is installed in the main environment
 echo Updating binstar...
-C:\Anaconda\Scripts\conda install --yes binstar || exit 1
-C:\Anaconda\Scripts\binstar --version
+call C:\Anaconda\Scripts\conda install --yes binstar || exit 1
+call C:\Anaconda\Scripts\binstar --version
 echo on
 
 REM Use conda to create a conda environment of the required
@@ -105,7 +105,7 @@ echo on
 
 REM Upload the package to binstar
 FOR /F "delims=" %%i IN ('dir /b dynd-python-*.tar.bz2') DO set PKG_FILE=%%i
-~/anaconda/bin/binstar -t %BINSTAR_AUTH% %PKG_FILE% || exit 1
+call C:\Anaconda\Scripts\binstar -t %BINSTAR_AUTH% %PKG_FILE% || exit 1
 
 cd ..
 

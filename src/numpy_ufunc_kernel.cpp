@@ -32,8 +32,11 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
     // NOTE: This function does not raise C++ exceptions,
     //       it behaves as a Python C-API function.
     if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
-        PyErr_SetString(PyExc_TypeError, "require a numpy ufunc object "
-                        "to retrieve its type tuples");
+        stringstream ss;
+        ss << "a numpy ufunc object is required to retrieve type tuples, ";
+        pyobject_ownref repr_obj(PyObject_Repr(ufunc));
+        ss << "got " << pystring_as_string(repr_obj.get());
+        PyErr_SetString(PyExc_TypeError, ss.str().c_str());
         return NULL;
     }
     PyUFuncObject *uf = (PyUFuncObject *)ufunc;
@@ -292,8 +295,11 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
         // NOTE: This function does not raise C++ exceptions,
         //       it behaves as a Python C-API function.
         if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
-            PyErr_SetString(PyExc_TypeError, "require a numpy ufunc object "
-                            "to retrieve its type tuples");
+            stringstream ss;
+            ss << "a numpy ufunc object is required by this function to create a ckernel_deferred, ";
+            pyobject_ownref repr_obj(PyObject_Repr(ufunc));
+            ss << "got " << pystring_as_string(repr_obj.get());
+            PyErr_SetString(PyExc_TypeError, ss.str().c_str());
             return NULL;
         }
         PyUFuncObject *uf = (PyUFuncObject *)ufunc;

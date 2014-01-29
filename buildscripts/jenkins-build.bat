@@ -105,7 +105,7 @@ echo on
 
 REM Upload the package to binstar
 FOR /F "delims=" %%i IN ('dir /b dynd-python-*.tar.bz2') DO set PKG_FILE=%%i
-call C:\Anaconda\Scripts\binstar -t %BINSTAR_AUTH% upload %PKG_FILE% || exit 1
+call C:\Anaconda\Scripts\binstar -t %BINSTAR_AUTH% upload --force %PKG_FILE% || exit 1
 
 cd ..
 

@@ -122,8 +122,31 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unk
 #endif // DYND_NUMPY_INTEROP
     }
 
+    // Check for a blaze.Array, or something which looks similar,
+    // specifically named 'Array' and with a property 'dshape'
+    PyObject *pytypename = PyObject_GetAttrString((PyObject *)Py_TYPE(obj), "__name__");
+    if (pytypename != NULL) {
+        pyobject_ownref pytypename_obj(pytypename);
+        if (pystring_as_string(pytypename) == "Array") {
+            PyObject *dshape = PyObject_GetAttrString(obj, "dshape");
+            if (dshape != NULL) {
+                pyobject_ownref dshape_obj(dshape);
+                pyobject_ownref dshapestr_obj(PyObject_Str(dshape));
+                return ndt::type(pystring_as_string(dshapestr_obj.get()));
+            } else {
+                PyErr_Clear();
+            }
+        }
+    } else {
+        PyErr_Clear();
+    }
+
     if (throw_on_unknown) {
-        throw std::runtime_error("could not deduce pydynd type from the python object");
+        stringstream ss;
+        ss << "could not deduce pydynd type from the python object ";
+        pyobject_ownref repr_obj(PyObject_Repr(obj));
+        ss << pystring_as_string(repr_obj.get());
+        throw std::runtime_error(ss.str());
     } else {
         // Return an uninitialized type to signal nothing was deduced
         return ndt::type();

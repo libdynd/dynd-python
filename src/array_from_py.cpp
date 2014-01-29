@@ -74,7 +74,16 @@ inline void convert_one_pyscalar_int64(const ndt::type& tp, const char *metadata
     *reinterpret_cast<int64_t *>(out) = value;
 }
 
-inline void convert_one_pyscalar_double(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
+inline void convert_one_pyscalar_float32(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
+{
+    double value = PyFloat_AsDouble(obj);
+    if (value == -1 && PyErr_Occurred()) {
+        throw std::exception();
+    }
+    *reinterpret_cast<float *>(out) = static_cast<float>(value);
+}
+
+inline void convert_one_pyscalar_float64(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
     double value = PyFloat_AsDouble(obj);
     if (value == -1 && PyErr_Occurred()) {
@@ -293,8 +302,13 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;
+        case float32_type_id:
+            fill_array_from_pylist<convert_one_pyscalar_float32>(result.get_type(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
+            break;
         case float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_double>(result.get_type(), result.get_ndo_meta(),
+            fill_array_from_pylist<convert_one_pyscalar_float64>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;

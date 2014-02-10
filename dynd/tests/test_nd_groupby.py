@@ -20,5 +20,18 @@ class TestGroupBy(unittest.TestCase):
                 [{'A': 'y', 'B': 1},
                  {'A': 'y', 'B': 4}]])
 
+    def test_grouped_slices(self):
+        a = nd.asarray([[1, 2, 3], [1, 4, 5]])
+        gb = nd.groupby(a[:, 1:], a[:, 0])
+        self.assertEqual(nd.as_py(gb.groups), [1])
+        self.assertEqual(nd.as_py(gb), [[[2, 3], [4, 5]]])
+
+        a = nd.asarray([[1, 2, 3], [3, 1, 7], [1, 4, 5], [2, 6, 7], [3, 2, 5]])
+        gb = nd.groupby(a[:, 1:], a[:, 0])
+        self.assertEqual(nd.as_py(gb.groups), [1, 2, 3])
+        self.assertEqual(nd.as_py(gb), [[[2, 3], [4, 5]],
+                                        [[6, 7]],
+                                        [[1, 7], [2, 5]]])
+
 if __name__ == '__main__':
     unittest.main()

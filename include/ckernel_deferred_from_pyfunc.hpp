@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011-13 Mark Wiebe, DyND Developers
+// Copyright (C) 2011-14 Mark Wiebe, DyND Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
 #ifndef _DYND__CKERNEL_DEFERRED_FROM_PYFUNC_HPP_

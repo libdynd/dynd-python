@@ -1,6 +1,20 @@
 DyND-Python Release Notes
 ===================
 
+Release 0.6.1
+-------------
+
+- Improve some type conversion error messages.
+- Support NumPy's struct scalar objects.
+- Expose creation functions for the 'property' type.
+- Convert 'str' and 'unicode' to dynd 'string',
+  and 'bytes' to dynd 'bytes' on Python 3.
+- Add nd.inf and nd.nan floating-point values.
+- Add __int__, __float__, __complex__ to the nd.array
+  object, so int(arr), float(arr), complex(arr) work.
+- Add detection of blaze.Array objects in conversion code
+  for some cases.
+
 Release 0.6.0
 -------------
 

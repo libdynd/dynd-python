@@ -201,7 +201,9 @@ is within another function.
 The only problem encountered is on Mac OS X, on an older version of
 clang, where catching subclasses don't appear to work, and explicit
 catches of every single possible exception was required. The solution
-at the time was to switch to using g++ 4.2.
+at the time was to switch to using g++ 4.2. This may have been caused
+by a mismatch in libc++ vs. libstdc++ or something similar, but was
+not tracked down.
 
 Defining Custom Python Exceptions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -34,7 +34,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         struct_type_id
         tuple_type_id
         array_type_id
-        ndobject_type_id
+        ndarray_type_id
         convert_type_id
         pattern_type_id
 

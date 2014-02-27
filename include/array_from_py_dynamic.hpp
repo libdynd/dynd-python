@@ -24,7 +24,7 @@ namespace pydynd {
  * two passes is to be able to appropriately deduce types from
  * iterators which may only exist for a single pass of iteration.
  *
- * As an example, consider a deduced datashape "4, var, var, float64"
+ * As an example, consider a deduced datashape "4 * var * var * float64"
  * from [[], [[], []], [], [[], [3.5]]].
  */
 dynd::nd::array array_from_py_dynamic(PyObject *obj);

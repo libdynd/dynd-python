@@ -66,7 +66,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.make_struct(
                                     [ndt.int32, ndt.int32], ['x', 'y'])),
                         _lowlevel.type_id.STRUCT)
-        self.assertEqual(self.type_id_of(ndt.type('{x : int32; y : int32}')),
+        self.assertEqual(self.type_id_of(ndt.type('{x : int32, y : int32}')),
                         _lowlevel.type_id.FIXEDSTRUCT)
         # Convert/byteswap/view
         self.assertEqual(self.type_id_of(ndt.make_convert(
@@ -78,11 +78,11 @@ class TestLowLevel(unittest.TestCase):
                                     ndt.int32, ndt.uint32)),
                         _lowlevel.type_id.VIEW)
         # Uniform arrays
-        self.assertEqual(self.type_id_of(ndt.type('3, int32')),
+        self.assertEqual(self.type_id_of(ndt.type('3 * int32')),
                         _lowlevel.type_id.FIXED_DIM)
-        self.assertEqual(self.type_id_of(ndt.type('M, int32')),
+        self.assertEqual(self.type_id_of(ndt.type('strided * int32')),
                         _lowlevel.type_id.STRIDED_DIM)
-        self.assertEqual(self.type_id_of(ndt.type('var, int32')),
+        self.assertEqual(self.type_id_of(ndt.type('var * int32')),
                         _lowlevel.type_id.VAR_DIM)
         # GroupBy
         self.assertEqual(self.type_id_of(nd.type_of(nd.groupby([1, 2], ['a', 'a']))),
@@ -97,15 +97,15 @@ class TestLowLevel(unittest.TestCase):
         a[1] = 6
         a[2] = 9
         # Readwrite version
-        b = _lowlevel.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
+        b = _lowlevel.array_from_ptr(ndt.type('3 * int32'), ctypes.addressof(a),
                         a, 'readwrite')
         self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
-        self.assertEqual(nd.dshape_of(b), '3, int32')
+        self.assertEqual(nd.dshape_of(b), '3 * int32')
         self.assertEqual(nd.as_py(b), [3, 6, 9])
         b[1] = 10
         self.assertEqual(a[1], 10)
         # Readonly version
-        b = _lowlevel.array_from_ptr(ndt.type('3, int32'), ctypes.addressof(a),
+        b = _lowlevel.array_from_ptr(ndt.type('3 * int32'), ctypes.addressof(a),
                         a, 'readonly')
         self.assertEqual(nd.as_py(b), [3, 10, 9])
         def assign_to(b):
@@ -116,7 +116,7 @@ class TestLowLevel(unittest.TestCase):
         # Should raise an exception if the type has metadata
         a = (ctypes.c_int32 * 4)()
         self.assertRaises(RuntimeError, _lowlevel.array_from_ptr,
-                        ndt.type('M, int32'), ctypes.addressof(a),
+                        ndt.type('strided * int32'), ctypes.addressof(a),
                         a, 'readwrite')
 
 if __name__ == '__main__':

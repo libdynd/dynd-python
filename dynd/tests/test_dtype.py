@@ -101,37 +101,37 @@ class TestDType(unittest.TestCase):
         self.assertEqual(3, nd.as_py(a.imag))
 
         a = nd.array([1 + 2j, 3 + 4j, 5 + 6j])
-        self.assertEqual(ndt.type('A, complex[float64]'), nd.type_of(a))
+        self.assertEqual(ndt.type('strided * complex[float64]'), nd.type_of(a))
         self.assertEqual([1, 3, 5], nd.as_py(a.real))
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 
     def test_fixedstring_type_properties(self):
         d = ndt.make_fixedstring(10, 'ascii')
-        self.assertEqual(str(d), "string<10,'ascii'>")
+        self.assertEqual(str(d), "string[10,'ascii']")
         self.assertEqual(d.data_size, 10)
         self.assertEqual(d.data_alignment, 1)
         self.assertEqual(d.encoding, 'ascii')
 
         d = ndt.make_fixedstring(10, 'ucs2')
-        self.assertEqual(str(d), "string<10,'ucs2'>")
+        self.assertEqual(str(d), "string[10,'ucs2']")
         self.assertEqual(d.data_size, 20)
         self.assertEqual(d.data_alignment, 2)
         self.assertEqual(d.encoding, 'ucs2')
 
         d = ndt.make_fixedstring(10, 'utf8')
-        self.assertEqual(str(d), 'string<10>')
+        self.assertEqual(str(d), 'string[10]')
         self.assertEqual(d.data_size, 10)
         self.assertEqual(d.data_alignment, 1)
         self.assertEqual(d.encoding, 'utf8')
 
         d = ndt.make_fixedstring(10, 'utf16')
-        self.assertEqual(str(d), "string<10,'utf16'>")
+        self.assertEqual(str(d), "string[10,'utf16']")
         self.assertEqual(d.data_size, 20)
         self.assertEqual(d.data_alignment, 2)
         self.assertEqual(d.encoding, 'utf16')
 
         d = ndt.make_fixedstring(10, 'utf32')
-        self.assertEqual(str(d), "string<10,'utf32'>")
+        self.assertEqual(str(d), "string[10,'utf32']")
         self.assertEqual(d.data_size, 40)
         self.assertEqual(d.data_alignment, 4)
         self.assertEqual(d.encoding, 'utf32')
@@ -150,12 +150,12 @@ class TestDType(unittest.TestCase):
 
     def test_fixedbytes_type(self):
         d = ndt.make_fixedbytes(4, 4)
-        self.assertEqual(str(d), 'fixedbytes<4,4>')
+        self.assertEqual(str(d), 'fixedbytes[4,4]')
         self.assertEqual(d.data_size, 4)
         self.assertEqual(d.data_alignment, 4)
 
         d = ndt.make_fixedbytes(9, 1)
-        self.assertEqual(str(d), 'fixedbytes<9,1>')
+        self.assertEqual(str(d), 'fixedbytes[9,1]')
         self.assertEqual(d.data_size, 9)
         self.assertEqual(d.data_alignment, 1)
 
@@ -191,7 +191,7 @@ class TestDType(unittest.TestCase):
         self.assertTrue(tp.data_size is None)
 
     def test_categorical_type(self):
-        a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime('sec','UTC')")
+        a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime['sec','UTC']")
         dt1 = ndt.factor_categorical(a.date)
         #print (dt1)
         self.assertEqual(nd.as_py(dt1.categories.ucast(ndt.string)),
@@ -199,11 +199,11 @@ class TestDType(unittest.TestCase):
 
     def test_type_shape(self):
         # The shape attribute of ndt.type
-        tp = ndt.type('3, 4, int32')
+        tp = ndt.type('3 * 4 * int32')
         self.assertEqual(tp.shape, (3, 4))
-        tp = ndt.type('M, 3, var, int32')
+        tp = ndt.type('M * 3 * var * int32')
         self.assertEqual(tp.shape, (-1, 3, -1))
-        tp = ndt.type('var, 3, 2, int32')
+        tp = ndt.type('var * 3 * 2 * int32')
         self.assertEqual(tp.shape, (-1, 3, 2))
 
 if __name__ == '__main__':

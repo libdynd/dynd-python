@@ -32,20 +32,20 @@ class TestDTypeDataShape(unittest.TestCase):
     def test_fixed_array(self):
         # Tests of datashapes that produce the DyND fixed array type
         self.assertEqual(ndt.make_fixed_dim(3, ndt.int32),
-                        ndt.type('3, int32'))
+                        ndt.type('3 * int32'))
         self.assertEqual(ndt.make_fixed_dim((5, 2), ndt.float64),
-                        ndt.type('5, 2, float64'))
+                        ndt.type('5 * 2 * float64'))
 
     def test_struct(self):
         # Tests of struct datashape
-        dt = ndt.type('{x: 3, int32; y: string}')
+        dt = ndt.type('{x: 3 * int32, y: string}')
         self.assertEqual(dt.type_id, 'cstruct')
         self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
 
     def test_var_dshape(self):
         # Getting the dshape can see into leading var dims
-        a = nd.array([[[1], [2,3]]], type='var, var, var, int32')
-        self.assertEqual(nd.dshape_of(a), '1, 2, var, int32')
+        a = nd.array([[[1], [2,3]]], type='var * var * var * int32')
+        self.assertEqual(nd.dshape_of(a), '1 * 2 * var * int32')
 
 if __name__ == '__main__':
     unittest.main()

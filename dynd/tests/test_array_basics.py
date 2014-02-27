@@ -52,7 +52,7 @@ class TestBasics(unittest.TestCase):
         # truth value is ambiguous
         self.assertRaises(ValueError, bool, nd.array([0]))
         self.assertRaises(ValueError, bool, nd.array([1, 2, 3]))
-        self.assertRaises(ValueError, bool, nd.array(['abc', 3], type='{x:string; y:int32}'))
+        self.assertRaises(ValueError, bool, nd.array(['abc', 3], type='{x:string, y:int32}'))
 
     def test_iter(self):
         # Iteration of a 1D array
@@ -64,11 +64,11 @@ class TestBasics(unittest.TestCase):
 
     def test_iter_fixed_dim(self):
         # Iteration of a 1D array
-        a = nd.array([1, 2, 3], type='3, int64')
+        a = nd.array([1, 2, 3], type='3 * int64')
         self.assertEqual(len(a), 3)
         self.assertEqual([nd.as_py(x) for x in a], [1, 2, 3])
         # Iteration of a 2D array
-        a = nd.array([[1, 2, 3], [4,5,6]], type='2, 3, int64')
+        a = nd.array([[1, 2, 3], [4,5,6]], type='2 * 3 * int64')
         self.assertEqual(len(a), 2)
         self.assertEqual([nd.as_py(x) for x in a], [[1, 2, 3], [4,5,6]])
 

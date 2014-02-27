@@ -98,7 +98,7 @@ class TestCKernelBuilder(unittest.TestCase):
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
-                        ndt.float32, None, ndt.type('string(15,"A")'), None,
+                        ndt.float32, None, ndt.type('string[15,"A"]'), None,
                         'unary', 'strided')
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using a numpy array
@@ -209,15 +209,15 @@ class TestCKernelDeferred(unittest.TestCase):
 
         # Now lift it
         ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
-                        ['var, var, float64', 'strided, var, float64',
-                         'strided, 1, int32'])
+                        ['var * var * float64', 'strided * var * float64',
+                         'strided * 1 * int32'])
         self.assertEqual(nd.as_py(ckd_lifted.types),
-                        [ndt.type(x) for x in ['var, var, float64',
-                                    'strided, var, float64', 'strided, 1, int32']])
+                        [ndt.type(x) for x in ['var * var * float64',
+                                    'strided * var * float64', 'strided * 1 * int32']])
         # Create some compatible arguments
-        out = nd.empty('var, var, float64')
-        in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='strided, var, float64')
-        in1 = nd.array([[-1], [10], [100], [-12]], type='strided, 1, int32')
+        out = nd.empty('var * var * float64')
+        in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='strided * var * float64')
+        in1 = nd.array([[-1], [10], [100], [-12]], type='strided * 1 * int32')
         # Instantiate and call the kernel on these arguments
         ckd_lifted.__call__(out, in0, in1)
         # Verify that we got the expected result
@@ -244,14 +244,14 @@ class TestCKernelDeferred(unittest.TestCase):
         self.assertEqual(nd.as_py(out), '2012-11-05')
         # Also test it as a lifted kernel
         ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
-                        ['3, var, string', '3, var, date'])
+                        ['3 * var * string', '3 * var * date'])
         self.assertEqual(nd.as_py(ckd_lifted.types),
-                    [ndt.type('3, var, string'), ndt.type('3, var, date')])
-        out = nd.empty('3, var, string')
+                    [ndt.type('3 * var * string'), ndt.type('3 * var * date')])
+        out = nd.empty('3 * var * string')
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
                         [date(1999, 12, 31)],
-                        []], type='3, var, date')
+                        []], type='3 * var * date')
         ckd_lifted.__call__(out, in0)
         self.assertEqual(nd.as_py(out),
                         [['2013-03-11', '2010-10-10'],

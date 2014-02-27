@@ -105,10 +105,10 @@ void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type& tp,
  * both structs and array dimensions as non-scalar.
  *
  * Examples:
- *    "3, int32" -> 1
- *    "3, {x: int32; y: int32}" -> 2
- *    "3, {x: {a: int32}; y: int32}" -> 2
- *    "3, {x: {a: int32}; y: {a: int32; b: int32}}" -> 3
+ *    "3 * int32" -> 1
+ *    "3 * {x: int32, y: int32}" -> 2
+ *    "3 * {x: {a: int32}, y: int32}" -> 2
+ *    "3 * {x: {a: int32}, y: {a: int32, b: int32}}" -> 3
  */
 size_t get_nonragged_dim_count(const dynd::ndt::type& tp, size_t max_count=std::numeric_limits<size_t>::max());
 

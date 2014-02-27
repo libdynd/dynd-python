@@ -20,7 +20,7 @@ class TestArraySqueeze(unittest.TestCase):
 
     def test_squeeze_var(self):
         # Simple var case (squeeze can see into leading size-1 var dims)
-        a = nd.array([[[1], [2,3]]], type='var, var, var, int32')
+        a = nd.array([[[1], [2,3]]], type='var * var * var * int32')
         self.assertEqual(a.shape, (1, 2, -1))
         self.assertEqual(nd.squeeze(a).shape, (2, -1))
         self.assertEqual(nd.as_py(nd.squeeze(a)), [[1], [2,3]])

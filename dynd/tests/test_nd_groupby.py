@@ -10,7 +10,7 @@ class TestGroupBy(unittest.TestCase):
                 ('x', 2),
                 ('x', 3),
                 ('y', 4)],
-                dtype='{A: string; B: int32}').eval_immutable()
+                dtype='{A: string, B: int32}').eval_immutable()
         gb = nd.groupby(a, nd.fields(a, 'A'))
         self.assertEqual(nd.as_py(gb.groups), [{'A': 'x'}, {'A': 'y'}])
         self.assertEqual(nd.as_py(gb), [

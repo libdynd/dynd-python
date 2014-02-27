@@ -14,7 +14,7 @@ class TestComputedFields(unittest.TestCase):
                  ('onemore', np.int16, 'xyz + 1')])
         self.assertEqual(nd.type_of(b).element_type.type_id, 'unary_expr')
         self.assertEqual(nd.type_of(b).element_type.value_type,
-                ndt.type('{xyz: int32; twice: int32; onemore: int16}'))
+                ndt.type('{xyz: int32, twice: int32, onemore: int16}'))
         self.assertEqual(nd.as_py(b.xyz), [1, 2, 3, 4, 5])
         self.assertEqual(nd.as_py(b.twice), [2, 4, 6, 8, 10])
         self.assertEqual(nd.as_py(b.onemore), [2, 3, 4, 5, 6])
@@ -29,8 +29,8 @@ class TestComputedFields(unittest.TestCase):
                         ('complex', np.complex64, 'x + 1j*y')],
                 rm_fields=['x', 'y'])
         self.assertEqual(nd.type_of(b).element_type.value_type,
-                ndt.type('{sum: float32; difference: float32;' +
-                    ' product: float32; complex: complex[float32]}'))
+                ndt.type('{sum: float32, difference: float32,' +
+                    ' product: float32, complex: complex[float32]}'))
         self.assertEqual(nd.as_py(b.sum), [3, 0, 7]),
         self.assertEqual(nd.as_py(b.difference), [-1, -2, -3])
         self.assertEqual(nd.as_py(b.product), [2, -1, 10])
@@ -44,7 +44,7 @@ class TestComputedFields(unittest.TestCase):
             ('A', 0.5, 9),
             ('C', 1, 5),
             ('B', 2, 2)],
-            dtype='{cat: string; x: float32; y: float32}')
+            dtype='{cat: string, x: float32, y: float32}')
         gb = nd.groupby(a, nd.fields(a, 'cat')).eval()
         b = nd.make_computed_fields(gb, 1,
                 fields=[('sum_x', ndt.float32, 'sum(x)'),

@@ -78,7 +78,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         # aligned struct
         tp0 = ndt.type(np.dtype([('x', np.int32), ('y', np.int64)],
                             align=True))
-        tp1 = ndt.type('{x : int32; y : int64}')
+        tp1 = ndt.type('{x : int32, y : int64}')
         self.assertEqual(tp0, tp1)
         # unaligned struct
         tp0 = ndt.type(np.dtype([('x', np.int32), ('y', np.int64)]))
@@ -108,7 +108,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.make_byteswap(ndt.float64).as_numpy(),
                     np.dtype(nonnative + 'f8'))
         # aligned struct
-        tp0 = ndt.type('{x : int32; y : int64}').as_numpy()
+        tp0 = ndt.type('{x : int32, y : int64}').as_numpy()
         tp1 = np.dtype([('x', np.int32), ('y', np.int64)], align=True)
         self.assertEqual(tp0, tp1)
         # unaligned struct
@@ -346,7 +346,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 class TestAsNumpy(unittest.TestCase):
     def test_cstruct_as_numpy(self):
         # Aligned cstruct
-        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32; y: int64}')
+        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32, y: int64}')
         b = nd.as_numpy(a)
         self.assertEqual(b.dtype,
                     np.dtype([('x', np.int32), ('y', np.int64)], align=True))
@@ -354,7 +354,7 @@ class TestAsNumpy(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y), b['y'].tolist())
         # Unaligned cstruct
         a = nd.array([[1, 2], [3, 4]],
-                    dtype='{x : unaligned(int32); y: unaligned(int64)}')
+                    dtype='{x : unaligned[int32], y: unaligned[int64]}')
         b = nd.as_numpy(a)
         self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
         self.assertEqual(nd.as_py(a.x), b['x'].tolist())
@@ -362,7 +362,7 @@ class TestAsNumpy(unittest.TestCase):
 
     def test_cstruct_via_pep3118(self):
         # Aligned cstruct
-        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32; y: int64}')
+        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32, y: int64}')
         b = np.asarray(a)
         self.assertEqual(b.dtype,
                     np.dtype([('x', np.int32), ('y', np.int64)], align=True))
@@ -370,7 +370,7 @@ class TestAsNumpy(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y), b['y'].tolist())
         # Unaligned cstruct
         a = nd.array([[1, 2], [3, 4]],
-                    dtype='{x : unaligned(int32); y: unaligned(int64)}')
+                    dtype='{x : unaligned[int32], y: unaligned[int64]}')
         b = np.asarray(a)
         self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
         self.assertEqual(nd.as_py(a.x), b['x'].tolist())
@@ -428,7 +428,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
         # Create a NumPy struct scalar object, by indexing into
         # a structured array
         a = np.array([(10, 11, 12)], dtype='i4,i8,f8')[0]
-        aligned_tp = ndt.type('{f0: int32; f1: int64; f2: float64}')
+        aligned_tp = ndt.type('{f0: int32, f1: int64, f2: float64}')
         val = {'f0': 10, 'f1': 11, 'f2': 12}
 
         # Construct using nd.array
@@ -466,7 +466,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
     def test_var_dim_conversion(self):
         # A simple instantiated var_dim array should be
         # viewable with numpy without changes
-        a = nd.array([1, 2, 3, 4, 5], type='var, int32')
+        a = nd.array([1, 2, 3, 4, 5], type='var * int32')
         b = nd.as_numpy(a)
         self.assertTrue(isinstance(b, np.ndarray))
         self.assertEqual(b.dtype, np.dtype('int32'))

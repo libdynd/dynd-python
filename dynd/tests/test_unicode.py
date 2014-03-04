@@ -38,7 +38,7 @@ class TestUnicode(unittest.TestCase):
             self.assertRaises(UnicodeEncodeError, str, a)
 
     def test_ascii_decode_error(self):
-        a = nd.array(128, type=ndt.uint8).view_scalars("string(1,'A')")
+        a = nd.array(128, type=ndt.uint8).view_scalars("string[1,'A']")
         self.assertRaises(UnicodeDecodeError, a.ucast("string").eval)
 
 if __name__ == '__main__':

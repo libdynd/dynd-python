@@ -1,18 +1,19 @@
 DyND Array
 ==========
 
-In this preview release of dynd, there is an `array` object
-which hold a multi-dimensional array of elements of a specific `type`.
+In this preview release of DyND, there is an `nd.array` object
+which hold a multi-dimensional array of elements of a specific
+`ndt.type`.
 
 One of the important features of this library is interoperability with
-numpy that is as seamless as possible. When a dtype is compatible across
-both systems, arrays from numpy and dynd will implicitly move
+NumPy that is as seamless as possible. When a dtype is compatible across
+both systems, arrays from NumPy and DyND will implicitly move
 between the libraries.
 
 Importing DyND
 --------------
 
-The standard way to import dynd is with the command::
+The standard way to import DyND is with the command::
 
     >>> from dynd import nd, ndt
 
@@ -22,22 +23,22 @@ Constructing From Python Scalars
 Currently, scalars are always zero-dimensional arrays in the system.
 This is likely to change in a future preview release.
 
-There's a difference with numpy in the default treatment of integers.
-In numpy, the C/C++ ``long`` type is used, which is 32-bits on 32-bit
+There's a difference with NumPy in the default treatment of integers.
+In NumPy, the C/C++ ``long`` type is used, which is 32-bits on 32-bit
 platforms and on 64-bit Windows, and which is 64-bits on Linux and OS X.
-In dynd if the Python integer fits in 32-bits, it will always
+In DyND if the Python integer fits in 32-bits, it will always
 be initialized by default as a 32-bit integer.
 
 .. code-block:: python
 
     >>> nd.array(0)
-    nd.array(0, int32)
+    nd.array(0, type="int32")
 
     >>> nd.array(3.14)
-    nd.array(3.14, float64)
+    nd.array(3.14, type="float64")
 
     >>> nd.array(1 + 1j)
-    nd.array((1,1), complex<float64>)
+    nd.array((1,1), type="complex[float64]")
 
 Strings default to `blockref` strings, which are variable-sized strings.
 The support for them is still preliminary, but some basic functionality
@@ -46,31 +47,28 @@ like converting between different unicode encodings is implemented.
 .. code-block:: python
 
     >>> nd.array('testing')
-    nd.array("testing", string)
-
-    >>> nd.array(u'testing')
-    nd.array("testing", string)
+    nd.array("testing", type="string")
 
 Constructing from Python Lists
 ------------------------------
 
-Similar to in numpy, arrays can be constructed from lists of
-objects. This code does not try to be as clever as numpy, and
+Similar to in NumPy, arrays can be constructed from lists of
+objects. This code does not try to be as clever as NumPy, and
 will fail if something is inconsistent in the input data.
 
 .. code-block:: python
 
     >>> nd.array([True, False])
-    nd.array([true, false], bool)
+    nd.array([true, false], type="strided * bool")
 
     >>> nd.array([1,2,3])
-    nd.array([1, 2, 3], strided_dim<int32>)
+    nd.array([1, 2, 3], type="strided * int32")
 
     >>> nd.array([[1.0,0],[0,1.0]])
-    nd.array([[1, 0], [0, 1]], strided_dim<strided_dim<float64>>)
+    nd.array([[1, 0], [0, 1]], type="strided * strided * float64")
 
     >>> nd.array(["testing", "one", u"two", "three"])
-    nd.array(["testing", "one", "two", "three"], strided_dim<string>)
+    nd.array(["testing", "one", "two", "three"], type="strided * string")
 
 Converting to Python Types
 --------------------------
@@ -100,43 +98,46 @@ in the conversion.
 
     >>> x = np.bool_(False)
     >>> nd.array(x)
-    nd.array(false, bool)
+    nd.array(false, type="bool")
 
     >>> x = np.int16(1000)
     >>> nd.array(x)
-    nd.array(1000, int16)
+    nd.array(1000, type="int16")
 
     >>> x = np.complex128(3.1)
     >>> nd.array(x)
-    nd.array((3.1,0), complex[float64])
+    nd.array((3.1,0), type="complex[float64]")
 
 Constructing from NumPy Arrays
 ------------------------------
 
-When the dtype is supported by dynd, numpy arrays can
-be converted into dynd arrays. When using the `nd.array` constructor,
+When the dtype is supported by DyND, NumPy arrays can
+be converted into DyND arrays. When using the `nd.array` constructor,
 a new array is created, but there is also `nd.asarray` which creates
-a view when possible.
+a view when possible, and `nd.view` which always creates a view and
+raises if that is not possible.
 
 .. code-block:: python
 
     >>> x = np.arange(6.).reshape(3,2)
     >>> nd.array(x)
-    nd.array([[0, 1], [2, 3], [4, 5]], strided_dim<strided_dim<float64>>)
+    nd.array([[0, 1], [2, 3], [4, 5]], type="strided * strided * float64")
     >>> nd.asarray(x)
-    nd.array([[0, 1], [2, 3], [4, 5]], strided_dim<strided_dim<float64>>)
+    nd.array([[0, 1], [2, 3], [4, 5]], type="strided * strided * float64")
+    >>> nd.view(x)
+    nd.array([[0, 1], [2, 3], [4, 5]], type="strided * strided * float64")
 
     >>> x = np.array(['testing', 'one', 'two', 'three'])
     >>> nd.asarray(x)
-    nd.array(["testing", "one", "two", "three"], strided_dim<string<7,'ascii'>>)
+    nd.array(["testing", "one", "two", "three"], type="strided * string[7,'utf32']")
 
 
 Converting to NumPy Arrays
 --------------------------
 
-To support naturally feeding data into numpy operations, the
-numpy array interface is used via the C struct PyArrayInterface.
-This means numpy operations will work on arrays with compatible
+To support naturally feeding data into NumPy operations, the
+NumPy array interface is used via the C struct PyArrayInterface.
+This means NumPy operations will work on arrays with compatible
 dtypes.
 
 .. code-block:: python
@@ -145,15 +146,15 @@ dtypes.
     >>> np.square(x)
     array([  1.  ,   4.  ,  12.25])
 
-There are some cases where a dynd array will not seamlessly convert
-into a numpy array. The behavior of numpy is usually to ignore errors
+There are some cases where a DyND array will not seamlessly convert
+into a NumPy array. The behavior of NumPy is usually to ignore errors
 that occur, and switch to an "object" array instead.
 
 ... code-block:: python
 
     >>> x = nd.array([1, 2, 3]).ucast(ndt.float32)
     >>> x
-    nd.array([1, 2, 3], strided_dim<convert<to=float32, from=int32>>)
+    nd.array([1, 2, 3], type="strided * convert<to=float32, from=int32>")
     >>> np.array(x)
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>

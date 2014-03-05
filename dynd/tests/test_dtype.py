@@ -150,12 +150,12 @@ class TestDType(unittest.TestCase):
 
     def test_fixedbytes_type(self):
         d = ndt.make_fixedbytes(4, 4)
-        self.assertEqual(str(d), 'fixedbytes[4,4]')
+        self.assertEqual(str(d), 'bytes[4, align=4]')
         self.assertEqual(d.data_size, 4)
         self.assertEqual(d.data_alignment, 4)
 
         d = ndt.make_fixedbytes(9, 1)
-        self.assertEqual(str(d), 'fixedbytes[9,1]')
+        self.assertEqual(str(d), 'bytes[9]')
         self.assertEqual(d.data_size, 9)
         self.assertEqual(d.data_alignment, 1)
 
@@ -191,7 +191,7 @@ class TestDType(unittest.TestCase):
         self.assertTrue(tp.data_size is None)
 
     def test_categorical_type(self):
-        a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime['sec','UTC']")
+        a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime['sec',tz='UTC']")
         dt1 = ndt.factor_categorical(a.date)
         #print (dt1)
         self.assertEqual(nd.as_py(dt1.categories.ucast(ndt.string)),

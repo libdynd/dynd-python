@@ -36,7 +36,6 @@ init_w_array_callable_typeobject(w_array_callable)
 init_w_ndt_type_callable_typeobject(w_type_callable)
 
 include "dynd.pxd"
-#include "codegen_cache.pxd"
 include "ndt_type.pxd"
 include "array.pxd"
 include "elwise_gfunc.pxd"
@@ -58,6 +57,9 @@ if any_diagnostics_enabled():
 from cython.operator import dereference
 # Save the built-in type operator, so we can have parameters called 'type'
 builtin_type = type
+
+# Get a boolean indicating whether CUDA support was built in or not
+cuda_support = built_with_cuda()
 
 # Create the codegen cache used by default when making gfuncs
 #cdef w_codegen_cache default_cgcache_c = w_codegen_cache()

@@ -36,6 +36,8 @@ cdef extern from "<dynd/config.hpp>":
     ctypedef Py_ssize_t intptr_t
     ctypedef unsigned int uintptr_t
 
+    bint built_with_cuda "dynd::built_with_cuda" ()
+
 cdef extern from "<dynd/config.hpp>" namespace "dynd":
     extern char[] dynd_version_string
     extern char[] dynd_git_sha1

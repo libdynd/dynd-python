@@ -77,6 +77,12 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.make_view(
                                     ndt.int32, ndt.uint32)),
                         _lowlevel.type_id.VIEW)
+        # CUDA types
+        if ndt.cuda_support:
+            self.assertEqual(self.type_id_of(ndt.type('cuda_device[int32]')),
+                             _lowlevel.type_id.CUDA_DEVICE)
+            self.assertEqual(self.type_id_of(ndt.type('cuda_host[int32]')),
+                             _lowlevel.type_id.CUDA_HOST)
         # Uniform arrays
         self.assertEqual(self.type_id_of(ndt.type('3 * int32')),
                         _lowlevel.type_id.FIXED_DIM)
@@ -85,11 +91,12 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('var * int32')),
                         _lowlevel.type_id.VAR_DIM)
         # GroupBy
-        self.assertEqual(self.type_id_of(nd.type_of(nd.groupby([1, 2], ['a', 'a']))),
+        self.assertEqual(self.type_id_of(nd.type_of(nd.groupby([1, 2],
+                                                               ['a', 'a']))),
                         _lowlevel.type_id.GROUPBY)
         # Type
         self.assertEqual(self.type_id_of(ndt.type('type')),
-                        _lowlevel.type_id.DTYPE)
+                        _lowlevel.type_id.TYPE)
 
     def test_array_from_ptr(self):
         a = (ctypes.c_int32 * 3)()

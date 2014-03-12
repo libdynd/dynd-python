@@ -112,6 +112,8 @@ class _PyLowLevelAPI(ctypes.Structure):
                 ('lift_ckernel_deferred',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
+                ('_lift_reduction_ckernel_deferred',
+                 ctypes.PYFUNCTYPE(*([ctypes.py_object] * 10))),
                 ('ckernel_deferred_from_pyfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
@@ -122,10 +124,67 @@ py_api = _PyLowLevelAPI.from_address(_get_py_lowlevel_api())
 
 # The namespace consists of all the functions in the structs
 __all__ = ([name for name, tp in api._fields_] +
-           [name for name, tp in py_api._fields_])
+           [name for name, tp in py_api._fields_ if not name.startswith('_')] +
+           ['lift_reduction_ckernel_deferred'])
 for a in [api, py_api]:
     for name, tp in a._fields_:
         globals()[name] = getattr(a, name)
+
+def lift_reduction_ckernel_deferred(elwise_reduction, lifted_type,
+                dst_initialization= None, axis=None, keepdims=False,
+                associative=False, commutative=False,
+                right_associative=False, reduction_identity=None):
+    """
+    This function creates a lifted reduction ckernel_deferred,
+    broadcasting or reducing dimensions on top of the elwise_reduction
+    ckernel.
+
+    Parameters
+    ----------
+    elwise_reduction : nd.array of ckernel_deferred type
+        The ckernel_deferred object to lift. This may either be a
+        unary operation which accumulates values, or a binary
+        expr operation.
+    lifted_type : ndt.type
+        The type to lift the reduction to. This is the type of
+        the src value.
+    dst_initialization : nd.array of ckernel_deferred type, optional
+        If provided, this initializes an dst accumulator based
+        on a src value.
+    axis : int OR tuple of int, optional
+        If provided, the set of axes along which to reduce.
+        Defaults to a reduction along all the axes.
+    keepdims: bool, optional
+        If True, the reduced dimensions are kept as size-one.
+        Defaults to False.
+    associative: bool, optional
+        If True, the elwise_reduction is based on an associative
+        operation, e.g. op(op(a, b), c) == op(a, op(b, c)).
+        Defaults to False.
+    commutative : bool, optional
+        If True, the elwise_reduction is based on a commutative
+        operation, e.g. op(a, b) == op(a, b).
+        Defaults to False.
+    right_associative: bool, optional
+        If True, the operation should associate to the right
+        instead of to the left, i.e. should reduce as
+        op(a, op(b, c)) instead of op(op(a, b), c). This means
+        elements in the src are visited from right to left.
+    reduction_identity: nd.array, optional
+        If provided, this is a value ID such that in the operation
+        the reduction is based on, op(a, X) == op(X, a) == a.
+        A reduction of an empty list gets set to this value when
+        provided.
+
+    Returns
+    -------
+    nd.array of ckernel_deferred type
+        The lifted reduction ckernel_deferred object.
+    """
+    return _lift_reduction_ckernel_deferred(elwise_reduction,
+                lifted_type, dst_initialization, axis, keepdims,
+                associative, commutative, right_associative,
+                reduction_identity)
 
 # Documentation for the LowLevelAPI functions
 memory_block_incref.__doc__ = """

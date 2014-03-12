@@ -257,5 +257,72 @@ class TestCKernelDeferred(unittest.TestCase):
                         [['2013-03-11', '2010-10-10'],
                          ['1999-12-31'], []])
 
+
+class TestLiftReductionCKernelDeferred(unittest.TestCase):
+    def test_sum_1d(self):
+        # Use the numpy add ufunc for this lifting test
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+                        (np.int32, np.int32, np.int32),
+                        False)
+        in0 = nd.array([3, 12, -5, 10, 2])
+        # Simple lift
+        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd, 'strided * int32')
+        out = nd.empty(ndt.int32)
+        sum.__call__(out, in0)
+        self.assertEqual(nd.as_py(out), 22)
+        # Lift with keepdims
+        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd, 'strided * int32',
+                                                        keepdims=True)
+        out = nd.empty(1, ndt.int32)
+        sum.__call__(out, in0)
+        self.assertEqual(nd.as_py(out), [22])
+
+    def test_sum_2d_axisall(self):
+        # Use the numpy add ufunc for this lifting test
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+                        (np.int32, np.int32, np.int32),
+                        False)
+        in0 = nd.array([[3, 12, -5], [10, 2, 3]])
+        # Simple lift
+        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+                                                 'strided * strided * int32',
+                                                 commutative=True,
+                                                 associative=True)
+        out = nd.empty(ndt.int32)
+        sum.__call__(out, in0)
+        self.assertEqual(nd.as_py(out), 25)
+
+    def test_sum_2d_axis0(self):
+        # Use the numpy add ufunc for this lifting test
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+                        (np.int32, np.int32, np.int32),
+                        False)
+        in0 = nd.array([[3, 12, -5], [10, 2, 3]])
+        # Reduce along axis 0
+        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+                                                 'strided * strided * int32',
+                                                 axis=0,
+                                                 commutative=True,
+                                                 associative=True)
+        out = nd.empty(3, ndt.int32)
+        sum.__call__(out, in0)
+        self.assertEqual(nd.as_py(out), [13, 14, -2])
+
+    def test_sum_2d_axis1(self):
+        # Use the numpy add ufunc for this lifting test
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+                        (np.int32, np.int32, np.int32),
+                        False)
+        in0 = nd.array([[3, 12, -5], [10, 2, 3]])
+        # Reduce along axis 1
+        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+                                                 'strided * strided * int32',
+                                                 axis=1,
+                                                 commutative=True,
+                                                 associative=True)
+        out = nd.empty(2, ndt.int32)
+        sum.__call__(out, in0)
+        self.assertEqual(nd.as_py(out), [10, 15])
+
 if __name__ == '__main__':
     unittest.main()

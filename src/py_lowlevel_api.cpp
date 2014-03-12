@@ -8,6 +8,7 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/kernels/lift_ckernel_deferred.hpp>
+#include <dynd/kernels/lift_reduction_ckernel_deferred.hpp>
 #include <dynd/types/ckernel_deferred_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 
@@ -221,6 +222,119 @@ namespace {
         }
     }
 
+    PyObject *lift_reduction_ckernel_deferred(PyObject *elwise_reduction_obj, PyObject *lifted_type_obj,
+                    PyObject *dst_initialization_obj, PyObject *axis_obj, PyObject *keepdims_obj,
+                    PyObject *associative_obj, PyObject *commutative_obj,
+                    PyObject *right_associative_obj, PyObject *reduction_identity_obj)
+    {
+        try {
+            nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
+            ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
+            // Convert all the input parameters
+            if (!WArray_Check(elwise_reduction_obj) ||
+                        ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+                stringstream ss;
+                ss << "elwise_reduction must be an nd.array of type ckernel_deferred";
+                throw dynd::type_error(ss.str());
+            }
+            const nd::array& elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
+            const ckernel_deferred *elwise_reduction_ckd =
+                            reinterpret_cast<const ckernel_deferred *>(elwise_reduction.get_readonly_originptr());
+
+            nd::array dst_initialization;
+            if (WArray_Check(dst_initialization_obj) &&
+                        ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() == ckernel_deferred_type_id) {
+                dst_initialization = ((WArray *)dst_initialization_obj)->v;;
+            } else if (dst_initialization_obj != Py_None) {
+                stringstream ss;
+                ss << "dst_initialization must be None or an nd.array of type ckernel_deferred";
+                throw dynd::type_error(ss.str());
+            }
+
+            ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
+
+            // This is the number of dimensions being reduced
+            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_ckd->data_dynd_types[1].get_ndim();
+
+            shortvector<bool> reduction_dimflags(reduction_ndim);
+            if (axis_obj == Py_None) {
+                // None means to reduce all axes
+                for (intptr_t i = 0; i < reduction_ndim; ++i) {
+                    reduction_dimflags[i] = true;
+                }
+            } else {
+                memset(reduction_dimflags.get(), 0, reduction_ndim * sizeof(bool));
+                vector<intptr_t> axis_vec;
+                pyobject_as_vector_intp(axis_obj, axis_vec, true);
+                for (size_t i = 0, i_end = axis_vec.size(); i != i_end; ++i) {
+                    intptr_t ax = axis_vec[i];
+                    if (ax < -reduction_ndim || ax >= reduction_ndim) {
+                        throw axis_out_of_bounds(ax, reduction_ndim);
+                    } else if (ax < 0) {
+                        ax += reduction_ndim;
+                    }
+                    reduction_dimflags[ax] = true;
+                }
+            }
+
+            bool keepdims;
+            if (keepdims_obj == Py_True) {
+                keepdims = true;
+            } else if (keepdims_obj == Py_False) {
+                keepdims = false;
+            } else {
+                throw type_error("keepdims must be either True or False");
+            }
+
+            bool associative;
+            if (associative_obj == Py_True) {
+                associative = true;
+            } else if (associative_obj == Py_False) {
+                associative = false;
+            } else {
+                throw type_error("associative must be either True or False");
+            }
+
+            bool commutative;
+            if (commutative_obj == Py_True) {
+                commutative = true;
+            } else if (commutative_obj == Py_False) {
+                commutative = false;
+            } else {
+                throw type_error("commutative must be either True or False");
+            }
+            
+            bool right_associative;
+            if (right_associative_obj == Py_True) {
+                right_associative = true;
+            } else if (right_associative_obj == Py_False) {
+                right_associative = false;
+            } else {
+                throw type_error("right_associative must be either True or False");
+            }
+            
+            nd::array reduction_identity;
+            if (WArray_Check(reduction_identity_obj)) {
+                reduction_identity = ((WArray *)reduction_identity_obj)->v;;
+            } else if (reduction_identity_obj != Py_None) {
+                stringstream ss;
+                ss << "reduction_identity must be None or an nd.array";
+                throw dynd::type_error(ss.str());
+            }
+
+            dynd::lift_reduction_ckernel_deferred(out_ckd_ptr, elwise_reduction,
+                        lifted_type, dst_initialization, keepdims,
+                        reduction_ndim, reduction_dimflags.get(),
+                        associative, commutative, right_associative,
+                        reduction_identity);
+
+            return wrap_array(out_ckd);
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
+    }
+
     const py_lowlevel_api_t py_lowlevel_api = {
         0, // version, should increment this every time the struct changes at a release
         &get_array_ptr,
@@ -232,6 +346,7 @@ namespace {
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc,
         &lift_ckernel_deferred,
+        &lift_reduction_ckernel_deferred,
         &pydynd::ckernel_deferred_from_pyfunc
     };
 } // anonymous namespace

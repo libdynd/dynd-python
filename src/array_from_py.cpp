@@ -686,7 +686,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& tp, bool f
         // The full type is specified, and requires shape deduction.
         intptr_t ndim = tp.get_ndim();
         dimvector shape(ndim);
-        for (size_t i = 0; i != ndim; ++i) {
+        for (intptr_t i = 0; i < ndim; ++i) {
             shape[i] = pydynd_shape_deduction_uninitialized;
         }
         deduce_pyseq_shape(obj, ndim, shape.get());

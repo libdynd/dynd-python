@@ -102,7 +102,7 @@ static nd::array allocate_nd_arr(
                 ndim == 0 ? NULL : &shape[0]);
     // Fill `coord` with pointers from the allocated arrays,
     // reserving some data for any var dimensions.
-    coord.resize(shape.size());
+    coord.resize(ndim);
     ndt::type tp = result.get_type();
     const char *metadata_ptr = result.get_ndo_meta();
     char *data_ptr = result.get_readwrite_originptr();
@@ -151,7 +151,7 @@ static nd::array allocate_nd_arr(
  *
  * If `promoted_axis` is less than shape.size(), it's for
  * the case where a dim was promoted from strided to var.
- * If `promoted_axis` is euqal to shape.size(), it's for
+ * If `promoted_axis` is equal to shape.size(), it's for
  * promotion of a dtype.
  */
 static void copy_to_promoted_nd_arr(
@@ -168,7 +168,6 @@ static void copy_to_promoted_nd_arr(
     bool copy_final_coord,
     bool final_coordinate)
 {
-    intptr_t ndim = shape.size();
     if (current_axis == promoted_axis - 1) {
         // Base case - the final dimension
         if (shape[current_axis] >= 0) {
@@ -376,7 +375,6 @@ static void promote_nd_arr_dim(
     intptr_t axis,
     bool copy_final_coord)
 {
-    intptr_t ndim = shape.size();
     vector<afpd_coordentry> newcoord;
     afpd_dtype newelem;
     newelem.dtp = elem.dtp;
@@ -881,7 +879,7 @@ static void array_from_py_dynamic(
     }
 
     // If it's the dtype, check for scalars
-    if (current_axis == shape.size()) {
+    if (current_axis == (intptr_t)shape.size()) {
         switch (elem.dtp.get_kind()) {
             case bool_kind:
                 if (!bool_assign(coord[current_axis-1].data_ptr, obj)) {

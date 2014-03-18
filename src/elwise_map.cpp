@@ -382,7 +382,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     }
 
     intptr_t undim = 0;
-    for (intptr_t i = 0; i != n.size(); ++i) {
+    for (size_t i = 0; i != n.size(); ++i) {
         intptr_t undim_i = n[i].get_ndim();
         if (undim_i > undim) {
             undim = undim_i;
@@ -392,7 +392,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     for (intptr_t j = 0; j != undim; ++j) {
         result_shape[j] = 1;
     }
-    for (intptr_t i = 0; i != n.size(); ++i) {
+    for (size_t i = 0; i != n.size(); ++i) {
         intptr_t undim_i = n[i].get_ndim();
         if (undim_i > 0) {
             n[i].get_shape(tmp_shape.get());

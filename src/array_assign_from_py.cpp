@@ -137,7 +137,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             if (dt.value_type().get_type_id() == uint64_type_id) {
                 // Special case uint64 so as to cover its full range
                 unsigned PY_LONG_LONG v = PyLong_AsUnsignedLongLong(value);
-                if (v == -1 && PyErr_Occurred()) {
+                if ((PY_LONG_LONG)v == -1 && PyErr_Occurred()) {
                     throw runtime_error("error converting int value");
                 }
                 typed_data_assign(dt, metadata, data,

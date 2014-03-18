@@ -20,7 +20,7 @@
 
 #=============================================================================
 # Copyright 2001-2009 Kitware, Inc.
-# Copyright 2012 Continuum Analytics, Inc.
+# Copyright 2012-2014 Continuum Analytics, Inc.
 #
 # All rights reserved.
 #

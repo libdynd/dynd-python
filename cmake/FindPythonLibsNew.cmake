@@ -68,11 +68,14 @@ if(NOT PYTHONINTERP_FOUND)
 endif()
 
 # According to http://stackoverflow.com/questions/646518/python-how-to-detect-debug-interpreter
-# testing whether sys has the gettotalrefcount function is a reliable, cross-platform
-# way to detect a CPython debug interpreter.
+# testing whether sys has the gettotalrefcount function is a reliable,
+# cross-platform way to detect a CPython debug interpreter.
 #
 # The library suffix is from the config var LDVERSION sometimes, otherwise
 # VERSION. VERSION will typically be like "2.7" on unix, and "27" on windows.
+#
+# The config var LIBPL is for Linux, and helps on Debian Jessie where the
+# addition of multi-arch support shuffled things around.
 execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
     "from distutils import sysconfig as s;import sys;import struct;
 print('.'.join(str(v) for v in sys.version_info));

@@ -561,8 +561,13 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                 break;
             }
 
-            // Get the size hint
-            intptr_t allocsize = _PyObject_LengthHint(obj, -2);
+            // Get the size hint (the call became part of the official API in 3.4)
+            intptr_t allocsize;
+#if PY_VERSION_HEX >= 0x03040000
+            allocsize = PyObject_LengthHint(obj, -2);
+#else
+            allocsize = _PyObject_LengthHint(obj, -2);
+#endif
             if (allocsize == -1) {
                 // -1 indicates an exception was raised
                 throw exception();

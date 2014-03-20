@@ -4,6 +4,9 @@ DyND-Python
 DyND-Python, a component of [the Blaze project](http://blaze.pydata.org/),
 is the Python exposure of [the DyND dynamic multi-dimensional array library](https://github.com/ContinuumIO/libdynd).
 
+To discuss the development of this library, subscribe to the
+[LibDyND Development List](https://groups.google.com/forum/#!forum/libdynd-dev).
+
 Python versions 2.6, 2.7, and 3.3 are supported.
 
 https://github.com/ContinuumIO/libdynd

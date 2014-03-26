@@ -41,8 +41,8 @@ https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py.cpp#L36
 
 https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py.cpp#L592
 
-Constructing With A Known Type
-==============================
+Constructing With A Known Full Type
+===================================
 
 The simplest case is when the type of the desired array is fully known,
 for example::
@@ -56,4 +56,64 @@ To be able to do this conversion, DyND needs to do these steps:
 * Create an empty ``nd.array`` using the shape information and type
 * Copy the Python object into the array
 
+This code is here:
+
+https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py.cpp#L685
+
+where it first checks whether the shape is required, and deduces
+the shape, then calls ``array_nodim_broadcast_assign_from_py`` which
+does an assignment from the pyobject without allowing new dimensions
+to be broadcast. This function is defined in this file:
+
+https://github.com/ContinuumIO/dynd-python/blob/master/src/array_assign_from_py.cpp
+
+Constructing with a Known DType
+===============================
+
+A little bit more complicated is the case to construct the array
+when the dtype is known, but dimensions should be deduced from the
+PyObject::
+
+    >>> nd.array([1, 2, 3], dtype=ndt.int16)
+    nd.array([1, 2, 3], type="strided * int16")
+
+    >>> nd.array([['test', 1], ['two', 3]],
+                 dtype='{name: string, value: int32}')
+    nd.array([["test", 1], ["two", 3]], type="strided * {name : string, value : int32}")
+
+To be able to do this, DyND needs to:
+
+* Deduce the number of dimensions and shape of the object,
+  using the dtype as a hint. This can be tricky, especially
+  allowing for structure initialization from sequences.
+* Create an empty ``nd.array`` using the shape information and type
+* Copy the Python object into the array
+
+This code is here:
+
+https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py.cpp#L595
+
+The code which deduces the shape and number of dimensions, then reconciles
+it with the provided dtype is here:
+
+https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py.cpp#L626
+
+And finally the object is copied with the same function as in the
+full type case, ``array_nodim_broadcast_assign_from_py``.
+
+Constructing Fully Automatically
+================================
+
+When the PyObject isn't an instantly recognizable type, it gets to here:
+
+https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py.cpp#L536
+
+where it calls ``array_from_py_dynamic``. This function dynamically
+updates the type, promoting both the dtype and dimension types
+as it goes. This function is here:
+
+https://github.com/ContinuumIO/dynd-python/blob/master/src/array_from_py_dynamic.cpp
+
+This function does need some more work, it does not support numpy
+scalar types and arrays intermixed with iterators, for example.
 

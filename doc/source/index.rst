@@ -30,6 +30,7 @@ Contents:
     gfunc
     debugging
     dev
+    dev-frompython
 
 Indices and tables
 ==================

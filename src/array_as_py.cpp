@@ -115,16 +115,15 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
         }
         case date_type_id: {
             const date_type *dd = static_cast<const date_type *>(d.extended());
-            int32_t year, month, day;
-            dd->get_ymd(metadata, data, year, month, day);
-            return PyDate_FromDate(year, month, day);
+            date_ymd ymd = dd->get_ymd(metadata, data);
+            return PyDate_FromDate(ymd.year, ymd.month, ymd.day);
         }
         case datetime_type_id: {
             const datetime_type *dd = static_cast<const datetime_type *>(d.extended());
-            int32_t year, month, day, hour, minute, second, nsecond;
-            dd->get_cal(metadata, data, year, month, day, hour, minute, second, nsecond);
-            int32_t usecond = nsecond / 1000;
-            if (usecond * 1000 != nsecond) {
+            int32_t year, month, day, hour, minute, second, tick;
+            dd->get_cal(metadata, data, year, month, day, hour, minute, second, tick);
+            int32_t usecond = tick / 10;
+            if (usecond * 10 != tick) {
                 stringstream ss;
                 ss << "cannot convert dynd value of type " << d;
                 ss << " with value ";

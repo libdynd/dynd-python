@@ -14,6 +14,7 @@
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/type_type.hpp>
@@ -117,6 +118,12 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
             const date_type *dd = static_cast<const date_type *>(d.extended());
             date_ymd ymd = dd->get_ymd(metadata, data);
             return PyDate_FromDate(ymd.year, ymd.month, ymd.day);
+        }
+        case time_type_id: {
+            const time_type *tt = static_cast<const time_type *>(d.extended());
+            time_hmst hmst = tt->get_time(metadata, data);
+            return PyTime_FromTime(hmst.hour, hmst.minute, hmst.second,
+                                   hmst.tick / DYND_TICKS_PER_MICROSECOND);
         }
         case datetime_type_id: {
             const datetime_type *dd = static_cast<const datetime_type *>(d.extended());

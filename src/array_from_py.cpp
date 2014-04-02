@@ -13,6 +13,7 @@
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
@@ -184,6 +185,18 @@ inline void convert_one_pyscalar_date(const ndt::type& tp, const char *metadata,
                     PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
+inline void convert_one_pyscalar_time(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
+{
+    if (!PyTime_Check(obj)) {
+        throw dynd::type_error("input object is not a time as expected");
+    }
+    const time_type *tt = static_cast<const time_type *>(tp.extended());
+    tt->set_time(
+        metadata, out, assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
+        PyDateTime_TIME_GET_MINUTE(obj), PyDateTime_TIME_GET_SECOND(obj),
+        PyDateTime_TIME_GET_MICROSECOND(obj) * DYND_TICKS_PER_MICROSECOND);
+}
+
 inline void convert_one_pyscalar_datetime(const ndt::type& tp, const char *metadata, char *out, PyObject *obj)
 {
     if (!PyDateTime_Check(obj)) {
@@ -339,6 +352,12 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
         }
         case date_type_id: {
             fill_array_from_pylist<convert_one_pyscalar_date>(result.get_type(), result.get_ndo_meta(),
+                            result.get_readwrite_originptr(),
+                            obj, &shape[0], 0);
+            break;
+        }
+        case time_type_id: {
+            fill_array_from_pylist<convert_one_pyscalar_time>(result.get_type(), result.get_ndo_meta(),
                             result.get_readwrite_originptr(),
                             obj, &shape[0], 0);
             break;

@@ -83,10 +83,10 @@ class TestPythonList(unittest.TestCase):
                datetime(1933, 12, 25),
                datetime(1979, 3, 22, 14, 30)]
         lststr = ['2011-03-15T03:15:12.123456',
-                  '1933-12-25T00:00:00.000000',
-                  '1979-03-22T14:30:00.000000']
+                  '1933-12-25T00:00',
+                  '1979-03-22T14:30']
         a = nd.array(lst)
-        self.assertEqual(nd.dtype_of(a), ndt.type('datetime["usec"]'))
+        self.assertEqual(nd.dtype_of(a), ndt.type('datetime'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), lst)
         self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)

@@ -109,7 +109,7 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unk
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
             throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
         }
-        return ndt::make_datetime(datetime_unit_usecond, tz_abstract);
+        return ndt::make_datetime(tz_abstract);
     } else if (PyDate_Check(obj)) {
         return ndt::make_date();
     } else if (WType_Check(obj)) {

@@ -21,7 +21,7 @@ class TestArange(unittest.TestCase):
 
     def test_specified_dtype(self):
         # Must return the requested type
-        self.assertRaises(OverflowError, nd.range, 10, dtype=ndt.bool)
+        self.assertRaises(TypeError, nd.range, 10, dtype=ndt.bool)
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.int8)), ndt.int8)
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.int16)), ndt.int16)
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.int32)), ndt.int32)
@@ -34,8 +34,8 @@ class TestArange(unittest.TestCase):
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.float64)), ndt.float64)
         # Maybe in the future add complex support when start.imag == stop.imag
         # and step.imag == 0?
-        self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.complex_float32)
-        self.assertRaises(RuntimeError, nd.range, 10, dtype=ndt.complex_float64)
+        self.assertRaises(TypeError, nd.range, 10, dtype=ndt.complex_float32)
+        self.assertRaises(TypeError, nd.range, 10, dtype=ndt.complex_float64)
         # Float/complex should convert when the dtype is specified
         self.assertEqual(nd.dtype_of(nd.range(10.0, dtype=ndt.uint16)), ndt.uint16)
         self.assertEqual(nd.dtype_of(nd.range(1.0, step=0.5+0j, dtype=ndt.float32)), ndt.float32)

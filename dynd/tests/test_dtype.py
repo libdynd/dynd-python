@@ -191,7 +191,7 @@ class TestDType(unittest.TestCase):
         self.assertTrue(tp.data_size is None)
 
     def test_categorical_type(self):
-        a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime['sec',tz='UTC']")
+        a = nd.array(["2012-05-10T02:29:42Z"] * 100, "datetime[tz='UTC']")
         dt1 = ndt.factor_categorical(a.date)
         #print (dt1)
         self.assertEqual(nd.as_py(dt1.categories.ucast(ndt.string)),

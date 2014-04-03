@@ -32,6 +32,8 @@ complex128 = complex_float64
 
 string = type('string')
 date = type('date')
+time = type('time')
+datetime = type('datetime')
 json = type('json')
 bytes = type('bytes')
 

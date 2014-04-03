@@ -148,6 +148,18 @@ class TestDType(unittest.TestCase):
         if sys.version_info[0] >= 3:
             self.assertEqual(ndt.bytes, ndt.type(bytes))
 
+    def test_datetime_types(self):
+        import datetime
+        self.assertEqual(ndt.date, ndt.type(datetime.date))
+        self.assertEqual(str(ndt.date), "date")
+        self.assertEqual(repr(ndt.date), "ndt.date")
+        self.assertEqual(ndt.time, ndt.type(datetime.time))
+        self.assertEqual(str(ndt.time), "time")
+        self.assertEqual(repr(ndt.time), "ndt.time")
+        self.assertEqual(ndt.datetime, ndt.type(datetime.datetime))
+        self.assertEqual(str(ndt.datetime), "datetime")
+        self.assertEqual(repr(ndt.datetime), "ndt.datetime")
+
     def test_fixedbytes_type(self):
         d = ndt.make_fixedbytes(4, 4)
         self.assertEqual(str(d), 'bytes[4, align=4]')

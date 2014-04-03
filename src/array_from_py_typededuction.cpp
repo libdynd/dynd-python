@@ -13,6 +13,7 @@
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/type_promotion.hpp>
@@ -112,6 +113,12 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unk
         return ndt::make_datetime(tz_abstract);
     } else if (PyDate_Check(obj)) {
         return ndt::make_date();
+    } else if (PyTime_Check(obj)) {
+        if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+                        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+            throw runtime_error("Converting times with a timezone to dynd arrays is not yet supported");
+        }
+        return ndt::make_time(tz_abstract);
     } else if (WType_Check(obj)) {
         return ndt::make_type();
     } else if (PyType_Check(obj)) {

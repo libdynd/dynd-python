@@ -56,6 +56,10 @@ class TestLowLevel(unittest.TestCase):
         # Date
         self.assertEqual(self.type_id_of(ndt.date),
                         _lowlevel.type_id.DATE)
+        self.assertEqual(self.type_id_of(ndt.time),
+                        _lowlevel.type_id.TIME)
+        self.assertEqual(self.type_id_of(ndt.datetime),
+                        _lowlevel.type_id.DATETIME)
         # Property
         self.assertEqual(self.type_id_of(nd.type_of(ndt.date(2000, 1, 1).year)),
                         _lowlevel.type_id.PROPERTY)

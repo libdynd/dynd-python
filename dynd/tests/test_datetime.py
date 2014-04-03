@@ -1,6 +1,6 @@
 import sys
 import unittest
-from datetime import date
+from datetime import date, time
 from dynd import nd, ndt
 
 class TestDate(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(ndt.date.canonical_type, ndt.date)
 
     def test_date_properties(self):
-        a = nd.array(date(1955,3,13))
+        a = nd.array(date(1955, 3, 13))
         self.assertEqual(str(a), '1955-03-13')
         self.assertEqual(nd.dtype_of(a.year.eval()), ndt.int32)
         self.assertEqual(nd.dtype_of(a.month.eval()), ndt.int32)
@@ -20,6 +20,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.year), 1955)
         self.assertEqual(nd.as_py(a.month), 3)
         self.assertEqual(nd.as_py(a.day), 13)
+        self.assertEqual(nd.as_py(a), date(1955, 3, 13))
 
     def test_struct_casting(self):
         a = nd.array([date(1912,3,4), date(2002,1,30)])
@@ -70,6 +71,58 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.replace(day=-1,month=7)), date(1955,7,31))
         self.assertEqual(nd.as_py(a.replace(month=2,day=-1)), date(1955,2,28))
         self.assertEqual(nd.as_py(a.replace(month=2,day=-1,year=2000)), date(2000,2,29))
+
+
+class TestTime(unittest.TestCase):
+    def test_time_type_properties(self):
+        self.assertEqual(type(ndt.time), ndt.type)
+        self.assertEqual(str(ndt.time), 'time')
+        self.assertEqual(ndt.time.data_size, 8)
+        self.assertEqual(ndt.time.data_alignment, 8)
+        self.assertEqual(ndt.time.canonical_type, ndt.time)
+
+    def test_time_properties(self):
+        a = nd.array(time(14, 25, 59, 123456))
+        self.assertEqual(str(a), '14:25:59.123456')
+        self.assertEqual(nd.dtype_of(a.hour.eval()), ndt.int32)
+        self.assertEqual(nd.dtype_of(a.minute.eval()), ndt.int32)
+        self.assertEqual(nd.dtype_of(a.second.eval()), ndt.int32)
+        self.assertEqual(nd.dtype_of(a.microsecond.eval()), ndt.int32)
+        self.assertEqual(nd.dtype_of(a.tick.eval()), ndt.int32)
+        self.assertEqual(nd.as_py(a.hour), 14)
+        self.assertEqual(nd.as_py(a.minute), 25)
+        self.assertEqual(nd.as_py(a.second), 59)
+        self.assertEqual(nd.as_py(a.microsecond), 123456)
+        self.assertEqual(nd.as_py(a.tick), 1234560)
+        self.assertEqual(nd.as_py(a), time(14, 25, 59, 123456))
+
+    def test_struct_casting(self):
+        a = nd.array([time(13, 25, 8, 765432), time(23, 52)])
+        # cast from time to struct
+        s = a.ucast(ndt.make_cstruct([ndt.int64, ndt.int16, ndt.int8, ndt.int32],
+                                        ['hour', 'minute', 'second', 'tick']))
+        s = s.eval()
+        self.assertEqual(nd.as_py(s.hour), [13, 23])
+        self.assertEqual(nd.as_py(s.minute), [25, 52])
+        self.assertEqual(nd.as_py(s.second), [8, 0])
+        self.assertEqual(nd.as_py(s.tick), [7654320, 0])
+        # cast from struct back to time
+        t = s.ucast(ndt.time)
+        t = t.eval()
+        self.assertEqual(nd.as_py(t), [time(13, 25, 8, 765432), time(23, 52)])
+
+    def test_struct_function(self):
+        a = nd.array(time(13, 25, 8, 765432))
+        s = a.to_struct().eval()
+        self.assertEqual(nd.dtype_of(s),
+                        ndt.make_cstruct(
+                            [ndt.int8, ndt.int8, ndt.int8, ndt.int32],
+                            ['hour', 'minute', 'second', 'tick']))
+        self.assertEqual(nd.as_py(s.hour), 13)
+        self.assertEqual(nd.as_py(s.minute), 25)
+        self.assertEqual(nd.as_py(s.second), 8)
+        self.assertEqual(nd.as_py(s.tick), 7654320)
+
 
 if __name__ == '__main__':
     unittest.main()

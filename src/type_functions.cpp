@@ -18,6 +18,7 @@
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/shape_tools.hpp>
@@ -71,6 +72,20 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
                 break;
             case date_type_id:
                 ss << "ndt.date";
+                break;
+            case time_type_id:
+                if (static_cast<const time_type *>(d.extended())->get_timezone() == tz_abstract) {
+                    ss << "ndt.time";
+                } else {
+                    ss << "ndt.type('" << d << "')";
+                }
+                break;
+            case datetime_type_id:
+                if (static_cast<const datetime_type *>(d.extended())->get_timezone() == tz_abstract) {
+                    ss << "ndt.datetime";
+                } else {
+                    ss << "ndt.type('" << d << "')";
+                }
                 break;
             case json_type_id:
                 ss << "ndt.json";
@@ -167,6 +182,10 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
         return ndt_type_from_ctypes_cdatatype((PyObject *)obj);
     } else if (obj == PyDateTimeAPI->DateType) {
         return ndt::make_date();
+    } else if (obj == PyDateTimeAPI->TimeType) {
+        return ndt::make_time(tz_abstract);
+    } else if (obj == PyDateTimeAPI->DateTimeType) {
+        return ndt::make_datetime(tz_abstract);
     }
 
     stringstream ss;

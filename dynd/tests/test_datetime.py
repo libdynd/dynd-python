@@ -1,5 +1,6 @@
 import sys
 import unittest
+import ctypes
 from datetime import date, time
 from dynd import nd, ndt
 
@@ -78,7 +79,8 @@ class TestTime(unittest.TestCase):
         self.assertEqual(type(ndt.time), ndt.type)
         self.assertEqual(str(ndt.time), 'time')
         self.assertEqual(ndt.time.data_size, 8)
-        self.assertEqual(ndt.time.data_alignment, 8)
+        self.assertEqual(ndt.time.data_alignment,
+                         ctypes.alignment(ctypes.c_int64))
         self.assertEqual(ndt.time.canonical_type, ndt.time)
 
     def test_time_properties(self):

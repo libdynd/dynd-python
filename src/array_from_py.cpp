@@ -525,21 +525,40 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     } else if (PyDateTime_Check(obj)) {
         if (((PyDateTime_DateTime *)obj)->hastzinfo &&
                         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-            throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
+            throw runtime_error("Converting datetimes with a timezone to dynd "
+                                "arrays is not yet supported");
         }
         ndt::type d = ndt::make_datetime(tz_abstract);
         const datetime_type *dd = static_cast<const datetime_type *>(d.extended());
         result = nd::empty(d);
-        dd->set_cal(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
-                    PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
-                    PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
-                    PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
+        dd->set_cal(result.get_ndo_meta(), result.get_ndo()->m_data_pointer,
+                    assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
+                    PyDateTime_DATE_GET_HOUR(obj),
+                    PyDateTime_DATE_GET_MINUTE(obj),
+                    PyDateTime_DATE_GET_SECOND(obj),
+                    PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
     } else if (PyDate_Check(obj)) {
         ndt::type d = ndt::make_date();
         const date_type *dd = static_cast<const date_type *>(d.extended());
         result = nd::empty(d);
-        dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer, assign_error_fractional,
-                    PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+        dd->set_ymd(result.get_ndo_meta(), result.get_ndo()->m_data_pointer,
+                    assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+    } else if (PyTime_Check(obj)) {
+        if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+                        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+            throw runtime_error("Converting times with a timezone to dynd "
+                                "arrays is not yet supported");
+        }
+        ndt::type d = ndt::make_time(tz_abstract);
+        const time_type *tt = static_cast<const time_type *>(d.extended());
+        result = nd::empty(d);
+        tt->set_time(result.get_ndo_meta(), result.get_ndo()->m_data_pointer,
+                     assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
+                     PyDateTime_TIME_GET_MINUTE(obj),
+                     PyDateTime_TIME_GET_SECOND(obj),
+                     PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
     } else if (WType_Check(obj)) {
         result = nd::array_rw(((WType *)obj)->v);
     } else if (PyList_Check(obj)) {

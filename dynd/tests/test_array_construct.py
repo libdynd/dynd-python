@@ -725,6 +725,9 @@ class TestIteratorConstruct(unittest.TestCase):
                         type='var * var * int32')
         self.assertEqual(nd.type_of(a), ndt.type('var * var * int32'))
         self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
+        # Range of ranges
+        a = nd.array(range(i) for i in range(4))
+        self.assertEqual(nd.as_py(a), [list(range(i)) for i in range(4)])
 
     def test_ragged_fromiter_typepromo(self):
         # 2D nested iterators

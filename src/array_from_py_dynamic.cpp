@@ -212,9 +212,11 @@ static void copy_to_promoted_nd_arr(
                             dst_data_ptr, src_coord[current_axis].reserved_size);
                 dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
                 // Copy up to, and possibly including, the coordinate
-                ck(dst_d->begin, dst_md->stride,
-                    src_d->begin, src_md->stride,
-                    src_coord[current_axis].coord + int(copy_final_coord));
+                if (ck.get_function() != NULL) {
+                    ck(dst_d->begin, dst_md->stride,
+                        src_d->begin, src_md->stride,
+                        src_coord[current_axis].coord + int(copy_final_coord));
+                }
                 dst_coord[current_axis].coord = src_coord[current_axis].coord;
                 dst_coord[current_axis].data_ptr = dst_d->begin +
                             dst_md->stride * dst_coord[current_axis].coord;

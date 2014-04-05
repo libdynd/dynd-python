@@ -15,6 +15,7 @@
 
 #include <dynd/array.hpp>
 #include <dynd/shape_tools.hpp>
+#include <dynd/json_parser.hpp>
 
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"
@@ -212,6 +213,32 @@ inline const char *array_access_flags_string(const dynd::nd::array& n) {
         default:
             return "<invalid flags>";
     }
+}
+
+inline dynd::nd::array dynd_parse_json_type(const dynd::ndt::type &tp,
+                                            const dynd::nd::array &json,
+                                            PyObject *ectx_obj)
+{
+    const dynd::eval::eval_context *ectx;
+    if (ectx_obj == Py_None) {
+        ectx = &dynd::eval::default_eval_context;
+    } else {
+        throw std::runtime_error("TODO: extract ectx from PyObject");
+    }
+    return dynd::parse_json(tp, json, ectx);
+}
+
+inline void dynd_parse_json_array(dynd::nd::array &out,
+                                  const dynd::nd::array &json,
+                                  PyObject *ectx_obj)
+{
+    const dynd::eval::eval_context *ectx;
+    if (ectx_obj == Py_None) {
+        ectx = &dynd::eval::default_eval_context;
+    } else {
+        throw std::runtime_error("TODO: extract ectx from PyObject");
+    }
+    dynd::parse_json(out, json, ectx);
 }
 
 } // namespace pydynd

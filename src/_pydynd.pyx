@@ -1889,9 +1889,9 @@ def fields(w_array struct_array, *fields_list):
     SET(result.v, nd_fields(GET(struct_array.v), fields_list))
     return result
 
-def parse_json(type, json):
+def parse_json(type, json, ectx=None):
     """
-    nd.parse_json(type, json)
+    nd.parse_json(type, json, ectx)
 
     Parses an input JSON string as a particular dynd type.
 
@@ -1902,6 +1902,8 @@ def parse_json(type, json):
         does not match this type, an error is raised during parsing.
     json : string or bytes
         String that contains the JSON to parse.
+    ectx : eval_context, optional
+        If provided an evaluation context to use when processing the JSON.
 
     Examples
     --------
@@ -1916,9 +1918,9 @@ def parse_json(type, json):
     """
     cdef w_array result = w_array()
     if builtin_type(type) is w_array:
-        dynd_parse_json_array(GET((<w_array>type).v), GET(w_array(json).v))
+        dynd_parse_json_array(GET((<w_array>type).v), GET(w_array(json).v), ectx)
     else:
-        SET(result.v, dynd_parse_json_type(GET(w_type(type).v), GET(w_array(json).v)))
+        SET(result.v, dynd_parse_json_type(GET(w_type(type).v), GET(w_array(json).v), ectx))
         return result
 
 def format_json(w_array n):

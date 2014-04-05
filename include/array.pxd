@@ -116,3 +116,6 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
     const char *array_access_flags_string(ndarray&) except +translate_exception
+
+    ndarray dynd_parse_json_type(ndt_type&, ndarray&, object) except +translate_exception
+    void dynd_parse_json_array(ndarray&, ndarray&, object) except +translate_exception

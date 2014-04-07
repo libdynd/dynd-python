@@ -24,12 +24,6 @@ if [ "${PYTHON_VERSION}" == "" ]; then
 fi
 
 if [ `uname` == Darwin ]; then
- # Use gcc instead of clang for now, there was a strange
- # interaction with exception handling/libunwind/cython's
- # exception translation mechanism on clang.
- export CC=gcc
- export CXX=g++
-else
  export CC=cc
  export CXX=c++
 fi

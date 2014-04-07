@@ -37,9 +37,10 @@ namespace {
         free(data);
     }
 
-    static intptr_t instantiate_pyfunc_ckernel_deferred_data(void *self_data_ptr,
-                    dynd::ckernel_builder *out_ckb, intptr_t ckb_offset,
-                    const char *const* dynd_metadata, uint32_t kerntype)
+    static intptr_t instantiate_pyfunc_ckernel_deferred_data(
+        void *self_data_ptr, dynd::ckernel_builder *out_ckb,
+        intptr_t ckb_offset, const char *const *dynd_metadata,
+        uint32_t kerntype, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
         pyfunc_ckernel_deferred_data *data =
@@ -65,13 +66,17 @@ namespace {
             throw runtime_error("unrecognized kernel request type");
         }
 
-        pyobject_ownref args(PyTuple_New(5));
+        // Copy the evaluation context into a WEvalContext object
+        pyobject_ownref ectx_obj(wrap_eval_context(ectx));
+
+        pyobject_ownref args(PyTuple_New(6));
         PyTuple_SET_ITEM(args.get(), 0, out_ckb_obj.release());
         PyTuple_SET_ITEM(args.get(), 1, ckb_offset_obj.release());
         PyTuple_SET_ITEM(args.get(), 2, data->types);
         Py_INCREF(data->types);
         PyTuple_SET_ITEM(args.get(), 3, meta.release());
         PyTuple_SET_ITEM(args.get(), 4, kerntype_str.release());
+        PyTuple_SET_ITEM(args.get(), 5, ectx_obj.release());
 
         pyobject_ownref result_obj(PyObject_Call(data->instantiate_pyfunc, args.get(), NULL));
         intptr_t result = PyLong_AsSsize_t(result_obj);

@@ -29,9 +29,12 @@ struct py_lowlevel_api_t {
     const dynd::base_type *(*get_base_type_ptr)(WType *obj);
     PyObject *(*array_from_ptr)(PyObject *dt, PyObject *ptr, PyObject *owner, PyObject *access);
     PyObject *(*make_assignment_ckernel)(void *out_ckb, intptr_t ckb_offset,
-                    PyObject *dst_tp_obj, const void *dst_metadata,
-                    PyObject *src_tp_obj, const void *src_metadata,
-                    PyObject *funcproto, PyObject *kerntype);
+                                         PyObject *dst_tp_obj,
+                                         const void *dst_metadata,
+                                         PyObject *src_tp_obj,
+                                         const void *src_metadata,
+                                         PyObject *funcproto,
+                                         PyObject *kerntype, PyObject *ectx);
     PyObject *(*make_ckernel_deferred_from_assignment)(PyObject *dst_tp_obj, PyObject *src_tp_obj,
                     PyObject *funcproto, PyObject *errmode);
     PyObject *(*make_ckernel_deferred_from_property)(PyObject *tp_obj, PyObject *propname,

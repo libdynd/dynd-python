@@ -130,65 +130,68 @@ include_directories(
     )
 
 set(pydynd_CPP_SRC
-    include/codegen_cache_functions.hpp
-    include/ctypes_interop.hpp
-    include/do_import_array.hpp
-    include/placement_wrappers.hpp
-    include/type_functions.hpp
-    include/elwise_map.hpp
-    include/exception_translation.hpp
-    include/gfunc_callable_functions.hpp
-    include/git_version.hpp
-    include/array_functions.hpp
-    include/array_from_py.hpp
-    include/array_from_py_dynamic.hpp
-    include/array_from_py_typededuction.hpp
     include/array_assign_from_py.hpp
     include/array_as_pep3118.hpp
     include/array_as_numpy.hpp
     include/array_as_py.hpp
+    include/array_functions.hpp
+    include/array_from_py.hpp
+    include/array_from_py_dynamic.hpp
+    include/array_from_py_typededuction.hpp
+    include/codegen_cache_functions.hpp
     include/ckernel_deferred_from_pyfunc.hpp
+    include/ctypes_interop.hpp
+    include/do_import_array.hpp
+    include/elwise_gfunc_functions.hpp
+    include/elwise_map.hpp
+    include/elwise_reduce_gfunc_functions.hpp
+    include/eval_context_functions.hpp
+    include/exception_translation.hpp
+    include/gfunc_callable_functions.hpp
+    include/git_version.hpp
     include/numpy_interop.hpp
     include/numpy_ufunc_kernel.hpp
+    include/placement_wrappers.hpp
     include/py_lowlevel_api.hpp
-    include/elwise_gfunc_functions.hpp
-    include/elwise_reduce_gfunc_functions.hpp
+    include/type_functions.hpp
     include/utility_functions.hpp
     include/vm_elwise_program_functions.hpp
-    src/codegen_cache_functions.cpp
-    src/ctypes_interop.cpp
-    src/type_functions.cpp
-    src/elwise_map.cpp
-    src/gfunc_callable_functions.cpp
-    src/exception_translation.cpp
-    src/array_functions.cpp
-    src/array_from_py.cpp
-    src/array_from_py_dynamic.cpp
-    src/array_from_py_typededuction.cpp
     src/array_assign_from_py.cpp
     src/array_as_pep3118.cpp
     src/array_as_numpy.cpp
     src/array_as_py.cpp
+    src/array_functions.cpp
+    src/array_from_py.cpp
+    src/array_from_py_dynamic.cpp
+    src/array_from_py_typededuction.cpp
+    src/codegen_cache_functions.cpp
+    src/ctypes_interop.cpp
+    src/elwise_map.cpp
+    src/elwise_gfunc_functions.cpp
+    src/elwise_reduce_gfunc_functions.cpp
+    src/eval_context_functions.cpp
+    src/exception_translation.cpp
+    src/gfunc_callable_functions.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp
+    src/git_version.cpp.in
     src/ckernel_deferred_from_pyfunc.cpp
     src/numpy_interop.cpp
     src/numpy_ufunc_kernel.cpp
     src/py_lowlevel_api.cpp
-    src/elwise_gfunc_functions.cpp
-    src/elwise_reduce_gfunc_functions.cpp
-    src/git_version.cpp.in
-    ${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp
+    src/type_functions.cpp
     src/utility_functions.cpp
     src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
     src/_pydynd.pyx
+    include/array.pxd
     include/codegen_cache.pxd
     include/dynd.pxd
-    include/ndt_type.pxd
-    include/array.pxd
-    include/gfunc_callable.pxd
     include/elwise_gfunc.pxd
     include/elwise_reduce_gfunc.pxd
+    include/eval_context.pxd
+    include/gfunc_callable.pxd
+    include/ndt_type.pxd
     include/vm_elwise_program.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)

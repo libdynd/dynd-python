@@ -34,6 +34,7 @@ init_w_array_typeobject(w_array)
 init_w_type_typeobject(w_type)
 init_w_array_callable_typeobject(w_array_callable)
 init_w_ndt_type_callable_typeobject(w_type_callable)
+init_w_eval_context_typeobject(w_eval_context)
 
 include "dynd.pxd"
 include "ndt_type.pxd"
@@ -42,6 +43,7 @@ include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 include "vm_elwise_program.pxd"
 include "gfunc_callable.pxd"
+include "eval_context.pxd"
 
 # Issue a performance warning if any of the diagnostics macros are enabled
 cdef extern from "<dynd/diagnostics.hpp>" namespace "dynd":
@@ -1005,13 +1007,18 @@ cdef class w_array:
     def __contains__(self, x):
         return array_contains(GET(self.v), x)
 
-    def eval(self):
+    def eval(self, ectx=None):
         """
-        a.eval()
+        a.eval(ectx=<default eval_context>)
 
         Returns a version of the dynd array with plain values,
         all expressions evaluated. This returns the original
         array back if it has no expression type.
+
+        Parameters
+        ----------
+        ectx : nd.eval_context
+            The evaluation context to use.
 
         Examples
         --------
@@ -1027,7 +1034,7 @@ cdef class w_array:
         nd.array([1, 2, 3], strided_dim<int16>)
         """
         cdef w_array result = w_array()
-        SET(result.v, array_eval(GET(self.v)))
+        SET(result.v, array_eval(GET(self.v), ectx))
         return result
 
     def eval_immutable(self):
@@ -1042,9 +1049,9 @@ cdef class w_array:
         SET(result.v, GET(self.v).eval_immutable())
         return result
 
-    def eval_copy(self, access=None):
+    def eval_copy(self, access=None, ectx=None):
         """
-        a.eval_copy(access='readwrite')
+        a.eval_copy(access='readwrite', ectx=<default eval_context>)
 
         Evaluates into a new dynd array, guaranteeing a copy is made.
 
@@ -1052,9 +1059,11 @@ cdef class w_array:
         ----------
         access : 'readwrite' or 'immutable'
             Specifies the access control of the resulting copy.
+        ectx : nd.eval_context
+            The evaluation context to use.
         """
         cdef w_array result = w_array()
-        SET(result.v, array_eval_copy(GET(self.v), access))
+        SET(result.v, array_eval_copy(GET(self.v), access, ectx))
         return result
 
     def storage(self):
@@ -2111,3 +2120,68 @@ cdef class w_type_callable:
 
     def __call__(self, *args, **kwargs):
         return ndt_type_callable_call(GET(self.v), args, kwargs)
+
+cdef class w_eval_context:
+    """
+    nd.eval_context(default_errmode=None,
+                    default_cuda_device_errmode=None,
+                    date_parse_order=None,
+                    century_window=None)
+
+    Create a dynd evaluation context, overriding the defaults via
+    the chosen parameters. Evaluation contexts can be used to
+    adjust default settings
+
+    Parameters
+    ----------
+    default_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+        The default error mode used in computations when none is specified.
+    default_cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+        The default error mode used in cuda computations when none is
+        specified.
+    date_parse_order : 'NoAmbig', 'YMD', 'MDY', 'DMY', optional
+        How to interpret dates being parsed when the order of year, month and
+        day is ambiguous from the format.
+    century_window : int, optional
+        Whether and how to interpret two digit years. If 0, disallow them.
+        If 1-99, use a sliding window beginning that number of years ago.
+        If greater than 1000, use a fixed window starting at that year.
+    """
+    # NOTE: This layout is also accessed from C++
+    cdef eval_context *ectx
+    cdef bint own_ectx
+
+    def __cinit__(self, *args, **kwargs):
+        self.own_ectx = False
+        if len(args) > 0:
+            raise TypeError('nd.eval_context() accepts no positional args')
+
+        # Start with a copy of the default eval context
+        self.ectx = new_eval_context(kwargs)
+        self.own_ectx = True
+
+    def __dealloc__(self):
+        if self.own_ectx:
+            del self.ectx
+
+    property default_errmode:
+        def __get__(self):
+            return get_eval_context_default_errmode(self)
+
+    property default_cuda_device_errmode:
+        def __get__(self):
+            return get_eval_context_default_cuda_device_errmode(self)
+
+    property date_parse_order:
+        def __get__(self):
+            return get_eval_context_date_parse_order(self)
+
+    property century_window:
+        def __get__(self):
+            return get_eval_context_century_window(self)
+
+    def __str__(self):
+        return get_eval_context_repr(self)
+
+    def __repr__(self):
+        return get_eval_context_repr(self)

@@ -247,9 +247,10 @@ namespace {
         data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides, data->ufunc_data);
     }
 
-    static intptr_t instantiate_scalar_ufunc_ckernel(void *self_data_ptr,
-                    dynd::ckernel_builder *out_ckb, intptr_t ckb_offset,
-                    const char *const* dynd_metadata, uint32_t kerntype)
+    static intptr_t instantiate_scalar_ufunc_ckernel(
+        void *self_data_ptr, dynd::ckernel_builder *out_ckb,
+        intptr_t ckb_offset, const char *const *dynd_metadata,
+        uint32_t kerntype, const eval::eval_context *DYND_UNUSED(ectx))
     {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;

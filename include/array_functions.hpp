@@ -22,6 +22,7 @@
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
 #include "placement_wrappers.hpp"
+#include "eval_context_functions.hpp"
 
 namespace pydynd {
 
@@ -71,10 +72,10 @@ void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *acces
 dynd::nd::array array_view(PyObject *obj, PyObject *access);
 dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
 
-dynd::nd::array array_eval(const dynd::nd::array& n);
+dynd::nd::array array_eval(const dynd::nd::array& n, PyObject *ectx);
 dynd::nd::array array_eval_copy(const dynd::nd::array& n,
                 PyObject* access,
-                const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
+                PyObject *ectx);
 
 dynd::nd::array array_zeros(const dynd::ndt::type& d, PyObject *access);
 dynd::nd::array array_zeros(PyObject *shape, const dynd::ndt::type& d, PyObject *access);
@@ -219,26 +220,14 @@ inline dynd::nd::array dynd_parse_json_type(const dynd::ndt::type &tp,
                                             const dynd::nd::array &json,
                                             PyObject *ectx_obj)
 {
-    const dynd::eval::eval_context *ectx;
-    if (ectx_obj == Py_None) {
-        ectx = &dynd::eval::default_eval_context;
-    } else {
-        throw std::runtime_error("TODO: extract ectx from PyObject");
-    }
-    return dynd::parse_json(tp, json, ectx);
+    return dynd::parse_json(tp, json, eval_context_from_pyobj(ectx_obj));
 }
 
 inline void dynd_parse_json_array(dynd::nd::array &out,
                                   const dynd::nd::array &json,
                                   PyObject *ectx_obj)
 {
-    const dynd::eval::eval_context *ectx;
-    if (ectx_obj == Py_None) {
-        ectx = &dynd::eval::default_eval_context;
-    } else {
-        throw std::runtime_error("TODO: extract ectx from PyObject");
-    }
-    dynd::parse_json(out, json, ectx);
+    dynd::parse_json(out, json, eval_context_from_pyobj(ectx_obj));
 }
 
 } // namespace pydynd

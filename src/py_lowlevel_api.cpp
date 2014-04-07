@@ -63,10 +63,12 @@ namespace {
         }
     }
 
-    PyObject *make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
-                    PyObject *dst_tp_obj, const void *dst_metadata,
-                    PyObject *src_tp_obj, const void *src_metadata,
-                    PyObject *funcproto_obj, PyObject *kerntype_obj)
+    PyObject *
+    make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
+                            PyObject *dst_tp_obj, const void *dst_metadata,
+                            PyObject *src_tp_obj, const void *src_metadata,
+                            PyObject *funcproto_obj, PyObject *kerntype_obj,
+                            PyObject *ectx_obj)
     {
         try {
             ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(out_ckb);
@@ -110,17 +112,19 @@ namespace {
                 throw runtime_error(ss.str());
             }
 
+            const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+
             // If an expr kernel is requested, use an adapter
             if (funcproto == expr_operation_funcproto) {
                 ckb_offset = kernels::wrap_unary_as_expr_ckernel(
                                 ckb_ptr, ckb_offset, kerntype);
             }
 
-            intptr_t kernel_size = make_assignment_kernel(ckb_ptr, ckb_offset,
-                            dst_tp, reinterpret_cast<const char *>(dst_metadata),
-                            src_tp, reinterpret_cast<const char *>(src_metadata),
-                            kerntype, assign_error_default,
-                            &eval::default_eval_context);
+            intptr_t kernel_size = make_assignment_kernel(
+                ckb_ptr, ckb_offset, dst_tp,
+                reinterpret_cast<const char *>(dst_metadata), src_tp,
+                reinterpret_cast<const char *>(src_metadata), kerntype,
+                assign_error_default, ectx);
 
             return PyLong_FromSsize_t(kernel_size);
         } catch(...) {

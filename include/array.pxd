@@ -75,8 +75,8 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     void array_init_from_pyobject(ndarray&, object, object) except +translate_exception
     ndarray array_view(object, object) except +translate_exception
     ndarray array_asarray(object, object) except +translate_exception
-    ndarray array_eval(ndarray&) except +translate_exception
-    ndarray array_eval_copy(ndarray&, object) except +translate_exception
+    ndarray array_eval(ndarray&, object) except +translate_exception
+    ndarray array_eval_copy(ndarray&, object, object) except +translate_exception
     ndarray array_zeros(ndt_type&, object) except +translate_exception
     ndarray array_zeros(object, ndt_type&, object) except +translate_exception
     ndarray array_ones(ndt_type&, object) except +translate_exception
@@ -116,3 +116,6 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
     const char *array_access_flags_string(ndarray&) except +translate_exception
+
+    ndarray dynd_parse_json_type(ndt_type&, ndarray&, object) except +translate_exception
+    void dynd_parse_json_array(ndarray&, ndarray&, object) except +translate_exception

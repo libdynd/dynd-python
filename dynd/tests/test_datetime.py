@@ -73,6 +73,33 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.replace(month=2,day=-1)), date(1955,2,28))
         self.assertEqual(nd.as_py(a.replace(month=2,day=-1,year=2000)), date(2000,2,29))
 
+    def test_date_parse(self):
+        # By default, don't allow ambiguous year interpretations
+        self.assertRaises(ValueError, nd.array('01/02/03').cast('date').eval)
+        self.assertEqual(nd.as_py(nd.array('01/02/03').cast('date').eval(
+                                ectx=nd.eval_context(date_parse_order='YMD'))),
+                         date(2001, 2, 3))
+        self.assertEqual(nd.as_py(nd.array('01/02/03').cast('date').eval(
+                                ectx=nd.eval_context(date_parse_order='MDY'))),
+                         date(2003, 1, 2))
+        self.assertEqual(nd.as_py(nd.array('01/02/03').cast('date').eval(
+                                ectx=nd.eval_context(date_parse_order='DMY'))),
+                         date(2003, 2, 1))
+        # Can also change the two year handling
+        # century_window of 0 means don't allow
+        self.assertRaises(ValueError, nd.array('01/02/03').cast('date').eval,
+                          ectx=nd.eval_context(date_parse_order='YMD',
+                                               century_window=0))
+        # century_window of 10 means a sliding window starting 10 years ago
+        self.assertEqual(nd.as_py(nd.array('01/02/03').cast('date').eval(
+                                ectx=nd.eval_context(date_parse_order='YMD',
+                                                     century_window=10))),
+                         date(2101, 2, 3))
+        # century_window of 1850 means a fixed window starting at 1850
+        self.assertEqual(nd.as_py(nd.array('01/02/03').cast('date').eval(
+                                ectx=nd.eval_context(date_parse_order='YMD',
+                                                     century_window=1850))),
+                         date(1901, 2, 3))
 
 class TestTime(unittest.TestCase):
     def test_time_type_properties(self):

@@ -384,16 +384,16 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
     return array_from_py(obj, access_flags, true);
 }
 
-dynd::nd::array pydynd::array_eval(const dynd::nd::array& n)
+dynd::nd::array pydynd::array_eval(const dynd::nd::array &n, PyObject *ectx_obj)
 {
-    return n.eval();
+    return n.eval(eval_context_from_pyobj(ectx_obj));
 }
 
-dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array& n,
-                PyObject* access, const eval::eval_context *ectx)
+dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array &n,
+                                        PyObject *access, PyObject *ectx_obj)
 {
     uint32_t access_flags = pyarg_creation_access_flags(access);
-    return n.eval_copy(access_flags, ectx);
+    return n.eval_copy(access_flags, eval_context_from_pyobj(ectx_obj));
 }
 
 dynd::nd::array pydynd::array_zeros(const dynd::ndt::type& d, PyObject *access)

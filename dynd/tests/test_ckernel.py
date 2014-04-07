@@ -229,12 +229,13 @@ class TestCKernelDeferred(unittest.TestCase):
 
     def test_ckernel_deferred_from_pyfunc(self):
         # Test wrapping make_assignment_ckernel as a deferred ckernel
-        def instantiate_assignment(out_ckb, ckb_offset, types, meta, kerntype):
+        def instantiate_assignment(out_ckb, ckb_offset, types, meta,
+                                   kerntype, ectx):
             out_ckb = _lowlevel.CKernelBuilderStruct.from_address(out_ckb)
             return _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset,
                             types[0], meta[0],
                             types[1], meta[1],
-                            'expr', kerntype)
+                            'expr', kerntype, ectx)
         ckd = _lowlevel.ckernel_deferred_from_pyfunc(instantiate_assignment,
                         [ndt.string, ndt.date])
         self.assertEqual(nd.as_py(ckd.types), [ndt.string, ndt.date])

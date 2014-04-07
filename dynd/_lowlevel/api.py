@@ -83,13 +83,14 @@ class _PyLowLevelAPI(ctypes.Structure):
                 # void make_assignment_kernel(out_ckb, ckb_offset,
                 #               dst_dt, dst_metadata,
                 #               src_dt, src_metadata,
-                #               funcproto, kerntype)
-                ('make_assignment_ckernel',
+                #               funcproto, kerntype, ectx)
+                ('_make_assignment_ckernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         CKernelBuilderStructPtr, c_ssize_t,
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, ctypes.c_void_p,
-                        ctypes.py_object, ctypes.py_object)),
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object)),
                 ('make_ckernel_deferred_from_assignment',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
@@ -125,7 +126,8 @@ py_api = _PyLowLevelAPI.from_address(_get_py_lowlevel_api())
 # The namespace consists of all the functions in the structs
 __all__ = ([name for name, tp in api._fields_] +
            [name for name, tp in py_api._fields_ if not name.startswith('_')] +
-           ['lift_reduction_ckernel_deferred'])
+           ['lift_reduction_ckernel_deferred',
+            'make_assignment_ckernel'])
 for a in [api, py_api]:
     for name, tp in a._fields_:
         globals()[name] = getattr(a, name)
@@ -185,6 +187,43 @@ def lift_reduction_ckernel_deferred(elwise_reduction, lifted_type,
                 lifted_type, dst_initialization, axis, keepdims,
                 associative, commutative, right_associative,
                 reduction_identity)
+
+def make_assignment_ckernel(out_ckb, ckb_offset,
+                           dst_dt, dst_metadata,
+                           src_dt, src_metadata,
+                           funcproto, kerntype, ectx=None):
+    """
+    This ctypes function pointer constructs a unary ckernel
+    into the output ckernel_builder provided. The assignment
+    constructed is from the ``src_tp`` to ``dst_tp``.
+
+    Parameters
+    ----------
+    out_ckb : raw pointer
+        This must point to a valid ckernel_builder object.
+    ckb_offset : integer
+        This is the offset within the output ckernel_builder at which
+        to create the ckernel. This is nonzero when a child kernel
+        is being created.
+    dst_tp : ndt.type
+        The destination type.
+    dst_metadata : raw pointer or None
+        A pointer to metadata for the destination data. This must
+        remain live while the constructed ckernel exists.
+    src_tp : ndt.type
+        The source type
+    src_metadata : raw pointer or None
+        A pointer to metadata for the source data. This must
+        remain live while the constructed ckernel exists.
+    funcproto : 'unary' or 'expr'
+        Whether to create a unary or expr ckernel.
+    kerntype : 'single' or 'strided'
+        Whether to create a single or strided ckernel.
+    """
+    return _make_assignment_ckernel(out_ckb, ckb_offset,
+                                   dst_dt, dst_metadata,
+                                   src_dt, src_metadata,
+                                   funcproto, kerntype, ectx)
 
 # Documentation for the LowLevelAPI functions
 memory_block_incref.__doc__ = """
@@ -406,36 +445,6 @@ array_from_ptr.__doc__ = """
     -------
     nd.array
         The dynd array constructed from the parameters.
-    """
-make_assignment_ckernel.__doc__ = """
-    _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset, dst_tp, dst_metadata, src_tp, src_metadata, funcproto, kerntype)
-
-    This ctypes function pointer constructs a unary ckernel
-    into the output ckernel_builder provided. The assignment
-    constructed is from the ``src_tp`` to ``dst_tp``.
-
-    Parameters
-    ----------
-    out_ckb : raw pointer
-        This must point to a valid ckernel_builder object.
-    ckb_offset : integer
-        This is the offset within the output ckernel_builder at which
-        to create the ckernel. This is nonzero when a child kernel
-        is being created.
-    dst_tp : ndt.type
-        The destination type.
-    dst_metadata : raw pointer or None
-        A pointer to metadata for the destination data. This must
-        remain live while the constructed ckernel exists.
-    src_tp : ndt.type
-        The source type
-    src_metadata : raw pointer or None
-        A pointer to metadata for the source data. This must
-        remain live while the constructed ckernel exists.
-    funcproto : 'unary' or 'expr'
-        Whether to create a unary or expr ckernel.
-    kerntype : 'single' or 'strided'
-        Whether to create a single or strided ckernel.
     """
 make_ckernel_deferred_from_assignment.__doc__ = """
     _lowlevel.make_ckernel_deferred_from_assignment(dst_tp, src_tp, funcproto, errmode)

@@ -9,6 +9,8 @@
 #ifndef _DYND__EVAL_CONTEXT_FUNCTIONS_HPP_
 #define _DYND__EVAL_CONTEXT_FUNCTIONS_HPP_
 
+#include <stdexcept>
+
 #include <Python.h>
 
 #include <dynd/eval/eval_context.hpp>

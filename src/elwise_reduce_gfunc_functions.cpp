@@ -18,9 +18,11 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache,
-            PyCFuncPtrObject *cfunc, bool associative, bool commutative, const nd::array& identity,
-            dynd::gfunc::elwise_reduce_kernel& out_kernel)
+static void create_elwise_reduce_gfunc_kernel_from_ctypes(
+    dynd::codegen_cache &DYND_UNUSED(cgcache),
+    PyCFuncPtrObject *DYND_UNUSED(cfunc), bool DYND_UNUSED(associative),
+    bool DYND_UNUSED(commutative), const nd::array &DYND_UNUSED(identity),
+    dynd::gfunc::elwise_reduce_kernel &DYND_UNUSED(out_kernel))
 {
 #if 0 // TODO reenable
     ndt::type& returntype = out_kernel.m_returntype;
@@ -76,8 +78,11 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(dynd::codegen_cache& c
 #endif // TODO reenable
 }
 
-void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dynd::nd::array& identity)
+void pydynd::elwise_reduce_gfunc_add_kernel(
+    dynd::gfunc::elwise_reduce &DYND_UNUSED(gf),
+    dynd::codegen_cache &DYND_UNUSED(cgcache), PyObject *DYND_UNUSED(kernel),
+    bool DYND_UNUSED(associative), bool DYND_UNUSED(commutative),
+    const dynd::nd::array &DYND_UNUSED(identity))
 {
 #if 0 // TODO reenable
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
@@ -93,8 +98,10 @@ void pydynd::elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd
 #endif // TODO reenable
 }
 
-
-PyObject *pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs)
+PyObject *
+pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce &DYND_UNUSED(gf),
+                                 PyObject *DYND_UNUSED(args),
+                                 PyObject *DYND_UNUSED(kwargs))
 {
 #if 0 // TODO reenable
     Py_ssize_t nargs = PySequence_Size(args);

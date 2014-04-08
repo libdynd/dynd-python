@@ -20,6 +20,7 @@
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/property_type.hpp>
 #include <dynd/shape_tools.hpp>
@@ -101,6 +102,23 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                 return;
 #else
                 throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
+#endif
+            }
+            case datetime_type_id: {
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+                PyArray_Descr *datetimedt = NULL;
+#  if PY_VERSION_HEX >= 0x03000000
+                pyobject_ownref M8str(PyUnicode_FromString("M8[us]"));
+#  else
+                pyobject_ownref M8str(PyString_FromString("M8[us]"));
+#  endif
+                if (!PyArray_DescrConverter2(M8str.get(), &datetimedt)) {
+                    throw dynd::type_error("Failed to create NumPy datetime64[us] dtype");
+                }
+                out_numpy_dtype->reset((PyObject *)datetimedt);
+                return;
+#else
+                throw runtime_error("NumPy >= 1.6 is required for dynd datetime type interop");
 #endif
             }
         case strided_dim_type_id:
@@ -288,6 +306,15 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 break;
             }
             case date_type_id: {
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+                out_numpy_dtype->clear();
+                *out_requires_copy = true;
+                return;
+#else
+                throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
+#endif
+            }
+            case datetime_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
                 out_numpy_dtype->clear();
                 *out_requires_copy = true;
@@ -602,6 +629,30 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
                 break;
 #else
                 throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
+#endif
+            }
+            case datetime_type_id: {
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+                int64_t datetimeval = *reinterpret_cast<const int64_t *>(n.get_readonly_originptr());
+                if (datetimeval < 0) {
+                    datetimeval -= DYND_TICKS_PER_MICROSECOND - 1;
+                }
+                datetimeval /= DYND_TICKS_PER_MICROSECOND;
+                result.reset(PyArrayScalar_New(Datetime));
+
+                PyArrayScalar_VAL(result.get(), Datetime) =
+                                (datetimeval == DYND_DATETIME_NA) ? NPY_DATETIME_NAT
+                                                          : datetimeval;
+                PyArray_DatetimeMetaData &meta = ((PyDatetimeScalarObject *)result.get())->obmeta;
+                meta.base = NPY_FR_us;
+                meta.num = 1;
+#  if NPY_API_VERSION == 6 // Only for NumPy 1.6
+                meta.den = 1;
+                meta.events = 1;
+#  endif
+                break;
+#else
+                throw runtime_error("NumPy >= 1.6 is required for dynd datetime type interop");
 #endif
             }
             default: {

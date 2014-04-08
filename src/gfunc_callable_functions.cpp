@@ -196,7 +196,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
         ss << " cannot accept a dynd type as its value";
         throw runtime_error(ss.str());
     }
-    // The type is encoded as either a raw type id, or a pointer to an base_type,
+    // The type is encoded as either a raw type id, or a pointer to a base_type,
     // just as the gfunc object is expecting.
     ndt::type(value).swap(reinterpret_cast<type_type_data *>(data)->tp);
 }

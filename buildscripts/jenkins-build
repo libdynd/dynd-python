@@ -23,10 +23,8 @@ if [ "${PYTHON_VERSION}" == "" ]; then
  exit 1
 fi
 
-if [ `uname` == Darwin ]; then
- export CC=cc
- export CXX=c++
-fi
+export CC=cc
+export CXX=c++
 
 # Remove the build subdirectory from last time
 rm -rf build

@@ -130,14 +130,6 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
             int32_t year, month, day, hour, minute, second, tick;
             dd->get_cal(metadata, data, year, month, day, hour, minute, second, tick);
             int32_t usecond = tick / 10;
-            if (usecond * 10 != tick) {
-                stringstream ss;
-                ss << "cannot convert dynd value of type " << d;
-                ss << " with value ";
-                dd->print_data(ss, metadata, data);
-                ss << " to python without precision loss";
-                throw runtime_error(ss.str());
-            }
             return PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
         }
         case type_type_id: {

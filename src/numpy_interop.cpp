@@ -17,6 +17,7 @@
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
 #include <dynd/types/property_type.hpp>
 
 #include "type_functions.hpp"
@@ -165,12 +166,41 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
         pyobject_ownref mod(PyImport_ImportModule("numpy"));
         pyobject_ownref dd(PyObject_CallMethod(mod.get(),
                         const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
-        pyobject_ownref unit(PyTuple_GetItem(dd.get(), 0));
-        string s = pystring_as_string(unit.get());
+        PyObject *unit = PyTuple_GetItem(dd.get(), 0);
+        if (unit == NULL) {
+            throw runtime_error("");
+        }
+        string s = pystring_as_string(unit);
         if (s == "D") {
-            // If it's 'datetime64[D]', then use a dynd date dtype, with the needed adapter
+            // If it's 'datetime64[D]', then use a dynd date dtype, with the
+            // needed adapter
             dt = ndt::make_reversed_property(ndt::make_date(),
-                            ndt::make_type<int64_t>(), "days_after_1970_int64");
+                                             ndt::make_type<int64_t>(),
+                                             "days_after_1970_int64");
+        } else if (s == "h") {
+            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
+                                             ndt::make_type<int64_t>(),
+                                             "hours_after_1970");
+        } else if (s == "m") {
+            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
+                                             ndt::make_type<int64_t>(),
+                                             "minutes_after_1970");
+        } else if (s == "s") {
+            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
+                                             ndt::make_type<int64_t>(),
+                                             "seconds_after_1970");
+        } else if (s == "ms") {
+            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
+                                             ndt::make_type<int64_t>(),
+                                             "milliseconds_after_1970");
+        } else if (s == "us") {
+            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
+                                             ndt::make_type<int64_t>(),
+                                             "microseconds_after_1970");
+        } else if (s == "ns") {
+            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
+                                             ndt::make_type<int64_t>(),
+                                             "nanoseconds_after_1970");
         }
         break;
     }
@@ -768,17 +798,70 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
     } else if (PyArray_IsScalar(obj, Datetime)) {
         const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
         int64_t val = scalar->obval;
-        if (scalar->obmeta.base == NPY_FR_D) {
+        if (scalar->obmeta.base <= NPY_FR_D) {
             result = nd::empty(ndt::make_date());
+            int32_t result_val;
             if (val == NPY_DATETIME_NAT) {
-                *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
-                            DYND_DATE_NA;
+                result_val = DYND_DATE_NA;
             } else {
-                *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
-                            static_cast<int32_t>(val);
+                date_ymd ymd;
+                switch (scalar->obmeta.base) {
+                case NPY_FR_Y:
+                    ymd.year = static_cast<int16_t>(val + 1970);
+                    ymd.month = 1;
+                    ymd.day = 1;
+                    result_val = ymd.to_days();
+                    break;
+                case NPY_FR_M:
+                    if (val >= 0) {
+                        ymd.year = static_cast<int16_t>(val / 12 + 1970);
+                    } else {
+                        ymd.year = static_cast<int16_t>((val - 11) / 12 + 1970);
+                    }
+                    ymd.month = static_cast<int8_t>(val - (ymd.year - 1970) * 12 + 1);
+                    ymd.day = 1;
+                    result_val = ymd.to_days();
+                    break;
+                case NPY_FR_D:
+                    result_val = static_cast<int32_t>(val);
+                    break;
+                default:
+                    throw dynd::type_error("Unsupported NumPy date unit");
+                }
             }
+            *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
+                result_val;
         } else {
-            throw dynd::type_error("Unsupported NumPy datetime unit");
+            result = nd::empty(ndt::make_datetime(tz_utc));
+            int64_t result_val;
+            switch (scalar->obmeta.base) {
+            case NPY_FR_h:
+                result_val = val * DYND_TICKS_PER_HOUR;
+                break;
+            case NPY_FR_m:
+                result_val = val * DYND_TICKS_PER_MINUTE;
+                break;
+            case NPY_FR_s:
+                result_val = val * DYND_TICKS_PER_SECOND;
+                break;
+            case NPY_FR_ms:
+                result_val = val * DYND_TICKS_PER_MILLISECOND;
+                break;
+            case NPY_FR_us:
+                result_val = val * DYND_TICKS_PER_MICROSECOND;
+                break;
+            case NPY_FR_ns:
+                if (val >= 0) {
+                    result_val = val / DYND_NANOSECONDS_PER_TICK;
+                } else {
+                    result_val = (val - DYND_NANOSECONDS_PER_TICK + 1) / DYND_NANOSECONDS_PER_TICK;
+                }
+                break;
+            default:
+                throw dynd::type_error("Unsupported NumPy datetime unit");
+            }
+            *reinterpret_cast<int64_t *>(result.get_readwrite_originptr()) =
+                result_val;
         }
 #endif
     } else if (PyArray_IsScalar(obj, Void)) {

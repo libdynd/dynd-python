@@ -2,7 +2,7 @@ import sys
 import unittest
 from dynd import nd, ndt
 import numpy as np
-from datetime import date
+from datetime import date, datetime
 from numpy.testing import *
 
 class TestNumpyDTypeInterop(unittest.TestCase):
@@ -119,6 +119,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(tp0, tp1)
         # check some types which can't be converted
         self.assertRaises(TypeError, ndt.date.as_numpy)
+        self.assertRaises(TypeError, ndt.datetime.as_numpy)
         self.assertRaises(TypeError, ndt.bytes.as_numpy)
         self.assertRaises(TypeError, ndt.string.as_numpy)
 
@@ -395,7 +396,10 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.dtype_of(nd.array(np.complex128(100j))),
                          ndt.complex_float64)
         if np.__version__ >= '1.7':
-            self.assertEqual(nd.dtype_of(nd.array(np.datetime64('2000-12-13'))), ndt.date)
+            self.assertEqual(nd.dtype_of(nd.array(np.datetime64('2000-12-13'))),
+                             ndt.date)
+            self.assertEqual(nd.dtype_of(nd.array(np.datetime64('2000-12-13T12:30'))),
+                             ndt.type('datetime[tz="UTC"]'))
 
     def test_numpy_scalar_conversion_values(self):
         self.assertEqual(nd.as_py(nd.array(np.bool_(True))), True)
@@ -421,8 +425,32 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.as_py(nd.array(np.complex64(2.5-1j))), 2.5-1j)
         self.assertEqual(nd.as_py(nd.array(np.complex128(2.5-1j))), 2.5-1j)
         if np.__version__ >= '1.7':
+            # Various date units
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000'))),
+                             date(2000, 1, 1))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12'))),
+                             date(2000, 12, 1))
             self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13'))),
                              date(2000, 12, 13))
+            # Various datetime units
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12Z'))),
+                             datetime(2000, 12, 13, 12, 0))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12:30Z'))),
+                             datetime(2000, 12, 13, 12, 30))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('1823-12-13T12:30Z'))),
+                             datetime(1823, 12, 13, 12, 30))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12:30:24Z'))),
+                             datetime(2000, 12, 13, 12, 30, 24))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12:30:24.123Z'))),
+                             datetime(2000, 12, 13, 12, 30, 24, 123000))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12:30:24.123456Z'))),
+                             datetime(2000, 12, 13, 12, 30, 24, 123456))
+            self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12:30:24.123456124Z'))),
+                             datetime(2000, 12, 13, 12, 30, 24, 123456))
+            self.assertEqual(str(nd.array(np.datetime64('2000-12-13T12:30:24.123456124Z'))),
+                             '2000-12-13T12:30:24.1234561')
+            self.assertEqual(str(nd.array(np.datetime64('1842-12-13T12:30:24.123456124Z'))),
+                             '1842-12-13T12:30:24.1234561')
 
     def test_numpy_struct_scalar(self):
         # Create a NumPy struct scalar object, by indexing into
@@ -472,6 +500,69 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(b.dtype, np.dtype('int32'))
         # Use the NumPy assertions which support arrays
         assert_equal(b, [1, 2, 3, 4, 5])
+
+    def test_date_from_numpy(self):
+        a = np.array(['2000-12-13', '1995-05-02'], dtype='M8[D]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * date'))
+        self.assertEqual(nd.as_py(b), [date(2000, 12, 13), date(1995, 5, 2)])
+
+    def test_date_as_numpy(self):
+        a = nd.array([date(2000, 12, 13), date(1995, 5, 2)])
+        b = nd.as_numpy(a, allow_copy=True)
+        assert_equal(b, np.array(['2000-12-13', '1995-05-02'], dtype='M8[D]'))
+
+    def tt_datetime_from_numpy(self):
+        # NumPy hours unit
+        a = np.array(['2000-12-13T12Z', '1955-05-02T02Z'],
+                     dtype='M8[h]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12),
+                                   datetime(1955, 5, 2, 2)])
+        # NumPy minutes unit
+        a = np.array(['2000-12-13T12:30Z', '1955-05-02T02:23Z'],
+                     dtype='M8[m]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30),
+                                   datetime(1955, 5, 2, 2, 23)])
+        # NumPy seconds unit
+        a = np.array(['2000-12-13T12:30:51Z', '1955-05-02T02:23:29Z'],
+                     dtype='M8[s]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51),
+                                   datetime(1955, 5, 2, 2, 23, 29)])
+        # NumPy milliseconds unit
+        a = np.array(['2000-12-13T12:30:51.123Z', '1955-05-02T02:23:29.456Z'],
+                     dtype='M8[ms]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51, 123000),
+                                   datetime(1955, 5, 2, 2, 23, 29, 456000)])
+        # NumPy microseconds unit
+        a = np.array(['2000-12-13T12:30:51.123456Z', '1955-05-02T02:23:29.456123Z'],
+                     dtype='M8[us]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51, 123456),
+                                   datetime(1955, 5, 2, 2, 23, 29, 456123)])
+        # NumPy nanoseconds unit (truncated to 100 nanosecond ticks)
+        a = np.array(['2000-12-13T12:30:51.123456987Z', '1955-05-02T02:23:29.456123798Z'],
+                     dtype='M8[ns]')
+        b = nd.array(a)
+        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual([str(x) for x in b], ["2000-12-13T12:30:51.1234569",
+                                           "1955-05-02T02:23:29.4561237"])
+
+    def test_datetime_as_numpy(self):
+        a = nd.array(['2000-12-13T12:30',
+                      '1995-05-02T2:15:33'],
+                     dtype='datetime[tz="UTC"]')
+        b = nd.as_numpy(a, allow_copy=True)
+        assert_equal(b, np.array(['2000-12-13T12:30Z', '1995-05-02T02:15:33Z'],
+                                 dtype='M8[us]'))
 
 if __name__ == '__main__':
     unittest.main()

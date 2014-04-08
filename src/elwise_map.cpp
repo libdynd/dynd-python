@@ -401,7 +401,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     }
 
     ndt::type result_vdt = dst_tp;
-    for (size_t j = 0; j != undim; ++j) {
+    for (intptr_t j = 0; j < undim; ++j) {
         if (result_shape[undim - j - 1] == -1) {
             result_vdt = ndt::make_var_dim(result_vdt);
         } else {

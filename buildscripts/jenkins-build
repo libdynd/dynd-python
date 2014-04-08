@@ -60,6 +60,7 @@ if [ `uname` == 'Darwin' ]; then
 else
     export EXTRA=
 fi
+export EXTRA=-DDYND_BUILD_TESTS=OFF ${EXTRA}
 
 # Create a fresh makefile with cmake, and do the build/install
 cd build

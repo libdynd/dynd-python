@@ -41,7 +41,8 @@ echo on
 REM Use conda to create a conda environment of the required
 REM python version and containing the dependencies.
 SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
-C:\Anaconda\python .\buildscripts\create_conda_pyenv_retry.py %PYTHON_VERSION% %PYENV_PREFIX%
+rd /s /q %PYENV_PREFIX%
+call C:\Anaconda\Scripts\conda create --yes -p %PYENV_PREFIX% python=%PYTHON_VERSION% cython scipy nose
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on
 set PYTHON_EXECUTABLE=%PYENV_PREFIX%\Python.exe

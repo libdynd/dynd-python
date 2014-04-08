@@ -23,8 +23,16 @@ if [ "${PYTHON_VERSION}" == "" ]; then
  exit 1
 fi
 
-export CC=cc
-export CXX=c++
+if [ `uname` == Darwin ]; then
+ # Use gcc instead of clang for now, there was a strange
+ # interaction with exception handling/libunwind/cython's
+ # exception translation mechanism on clang.
+ export CC=gcc
+ export CXX=g++
+else
+ export CC=cc
+ export CXX=c++
+fi
 
 # Remove the build subdirectory from last time
 rm -rf build

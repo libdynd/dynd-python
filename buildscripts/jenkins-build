@@ -68,11 +68,17 @@ if [ `uname` == 'Darwin' ]; then
 else
     export EXTRA=
 fi
-export EXTRA=-DDYND_BUILD_TESTS=OFF ${EXTRA}
+
+# Don't build the C++ tests, slightly faster builds
+export EXTRA='-DDYND_BUILD_TESTS=OFF ${EXTRA}'
 
 # Create a fresh makefile with cmake, and do the build/install
 cd build
-cmake ${EXTRA} -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} .. || exit 1
+cmake ${EXTRA} \
+      -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} \
+      -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} \
+      -DCMAKE_C_COMPILER=${CC} \
+      -DCMAKE_CXX_COMPILER=${CXX} .. || exit 1
 make VERBOSE=1 || exit 1
 make install || exit 1
 

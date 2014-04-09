@@ -70,7 +70,7 @@ else
 fi
 
 # Don't build the C++ tests, slightly faster builds
-export EXTRA='-DDYND_BUILD_TESTS=OFF ${EXTRA}'
+export EXTRA="-DDYND_BUILD_TESTS=OFF ${EXTRA}"
 
 # Create a fresh makefile with cmake, and do the build/install
 cd build

@@ -74,6 +74,11 @@ export EXTRA='-DDYND_BUILD_TESTS=OFF ${EXTRA}'
 
 # Create a fresh makefile with cmake, and do the build/install
 cd build
+echo cmake ${EXTRA} \
+      -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} \
+      -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} \
+      -DCMAKE_C_COMPILER=${CC} \
+      -DCMAKE_CXX_COMPILER=${CXX} ..
 cmake ${EXTRA} \
       -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} \
       -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} \

@@ -228,6 +228,8 @@ elseif(APPLE)
             POST_BUILD COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                 -add_rpath "@loader_path/../../.."
                 $<TARGET_FILE:_pydynd>)
+    else()
+        message(STATUS "NOT adding relative rpath to _pydynd for linking libdynd")
     endif()
 else()
     # We compile with -Werror, and Cython's code generates warnings, so

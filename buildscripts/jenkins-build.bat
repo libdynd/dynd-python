@@ -54,14 +54,12 @@ FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import ctypes;print(8*ctypes.s
 if "%PYTHON_BITS%" == "64" goto :python64
  set MSVC_VCVARS_PLATFORM=x86
  set MSVC_BUILD_PLATFORM=Win32
- if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008"
  if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10"
  if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11"
 goto :python32
 :python64
  set MSVC_VCVARS_PLATFORM=amd64
  set MSVC_BUILD_PLATFORM=x64
- if "%MSVC_VERSION%" == "9.0" set CMAKE_BUILD_TARGET="Visual Studio 9 2008 Win64"
  if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
  if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11 Win64"
 :python32

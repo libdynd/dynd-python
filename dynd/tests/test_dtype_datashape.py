@@ -29,6 +29,11 @@ class TestDTypeDataShape(unittest.TestCase):
         self.assertEqual(ndt.json, ndt.type('json'))
         self.assertEqual(ndt.bytes, ndt.type('bytes'))
 
+    def test_aliases(self):
+        self.assertEqual(ndt.int32, ndt.type('int'))
+        self.assertEqual(ndt.float64, ndt.type('real'))
+        self.assertEqual(ndt.complex_float64, ndt.type('complex'))
+
     def test_fixed_array(self):
         # Tests of datashapes that produce the DyND fixed array type
         self.assertEqual(ndt.make_fixed_dim(3, ndt.int32),

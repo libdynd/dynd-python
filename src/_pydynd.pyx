@@ -1652,11 +1652,11 @@ def full(*args, **kwargs):
         raise TypeError('nd.full() expected at least 1 positional argument, got 0')
     return result
 
-def empty(*args):
+def empty(*args, **kwargs):
     """
-    nd.empty(type)
-    nd.empty(shape, dtype)
-    nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype)
+    nd.empty(type, access=None)
+    nd.empty(shape, dtype, access=None)
+    nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype, access=None)
 
     Creates an uninitialized array of the specified
     type. If just the `type` is provided, it is the full type
@@ -1677,6 +1677,10 @@ def empty(*args):
         The type of the uninitialized array to create. If `shape`
         is not provided, this is the full data type, including
         the multi-dimensional structure.
+    access : 'readwrite', optional
+        Specifies the access control of the resulting empty array
+        Provided for API compatability. Only valid option is
+        "readwrite"
 
     Examples
     --------
@@ -1687,17 +1691,23 @@ def empty(*args):
     >>> nd.empty((2, 2), ndt.int16)
     nd.array([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
     """
+    # Handle the keyword-only arguments
+    access = kwargs.pop('access', None)
+    if kwargs:
+        msg = "nd.empty() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
     cdef w_array result = w_array()
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_empty(GET(w_type(args[0]).v)))
+        SET(result.v, array_empty(GET(w_type(args[0]).v), access))
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_empty(args[0], GET(w_type(args[1]).v)))
+        SET(result.v, array_empty(args[0], GET(w_type(args[1]).v), access))
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_empty(args[:-1], GET(w_type(args[-1]).v)))
+        SET(result.v, array_empty(args[:-1], GET(w_type(args[-1]).v), access))
     else:
         raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
     return result

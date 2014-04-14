@@ -86,7 +86,7 @@ dynd::nd::array array_ones(PyObject *shape, const dynd::ndt::type& d, PyObject *
 dynd::nd::array array_full(const dynd::ndt::type& d, PyObject *value, PyObject *access);
 dynd::nd::array array_full(PyObject *shape, const dynd::ndt::type& d, PyObject *value, PyObject *access);
 
-dynd::nd::array array_empty(const dynd::ndt::type& d, PyObject *acess);
+dynd::nd::array array_empty(const dynd::ndt::type& d, PyObject *access);
 dynd::nd::array array_empty(PyObject *shape, const dynd::ndt::type& d, PyObject *access);
 
 inline dynd::nd::array array_empty_like(const dynd::nd::array& n)

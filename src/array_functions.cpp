@@ -472,13 +472,21 @@ dynd::nd::array pydynd::array_full(PyObject *shape, const dynd::ndt::type& d,
     return n;
 }
 
-dynd::nd::array pydynd::array_empty(const dynd::ndt::type& d)
+dynd::nd::array pydynd::array_empty(const dynd::ndt::type& d, PyObject *access)
 {
+    uint32_t access_flags = pyarg_creation_access_flags(access);
+    if (access_flags && (access_flags != (nd::read_access_flag|nd::write_access_flag))){
+        throw invalid_argument("access type must be readwrite for empty array");
+    }
     return nd::empty(d);
 }
 
-dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type& d)
+dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type& d, PyObject *access)
 {
+    uint32_t access_flags = pyarg_creation_access_flags(access);
+    if (access_flags && (access_flags != (nd::read_access_flag|nd::write_access_flag))){
+        throw invalid_argument("access type must be readwrite for empty array");
+    }
     std::vector<intptr_t> shape_vec;
     pyobject_as_vector_intp(shape, shape_vec, true);
     return nd::make_strided_array(d, (int)shape_vec.size(),

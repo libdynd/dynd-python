@@ -51,6 +51,13 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
+        # Constructor from type with fixed dimension, accesskwarg
+        a = nd.empty('3 * int32', access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(a.shape, (3,))
+        # Can't create with access as immutable
+        self.assertRaises(ValueError, nd.empty, '3 * int32', access='immutable')
         # Constructor from shape as single integer
         a = nd.empty(3, ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
@@ -66,6 +73,14 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
         self.assertEqual(a.shape, (3,4))
+        # Constructor from shape as variadic arguments, access kwarg
+        a = nd.empty(3, 4, ndt.int32, access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(a.shape, (3,4))
+        # Can't create with access as immutable
+        self.assertRaises(ValueError, nd.empty, 3, 4, ndt.int32, access='immutable')
+
 
     def check_constructor(self, cons, value):
         # Constructor from scalar type

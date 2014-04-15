@@ -1679,7 +1679,7 @@ def empty(*args, **kwargs):
         the multi-dimensional structure.
     access : 'readwrite', optional
         Specifies the access control of the resulting empty array
-        Provided for API compatability. Only valid option is
+        Provided for API consistency. Only valid option is
         "readwrite"
 
     Examples

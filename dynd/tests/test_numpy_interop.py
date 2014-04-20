@@ -456,7 +456,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
         # Create a NumPy struct scalar object, by indexing into
         # a structured array
         a = np.array([(10, 11, 12)], dtype='i4,i8,f8')[0]
-        aligned_tp = ndt.type('c{f0: int32, f1: int64, f2: float64}')
+        aligned_tp = ndt.type('{f0: int32, f1: int64, f2: float64}')
         val = {'f0': 10, 'f1': 11, 'f2': 12}
 
         # Construct using nd.array

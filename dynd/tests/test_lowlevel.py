@@ -71,7 +71,9 @@ class TestLowLevel(unittest.TestCase):
                                     [ndt.int32, ndt.int32], ['x', 'y'])),
                         _lowlevel.type_id.STRUCT)
         self.assertEqual(self.type_id_of(ndt.type('{x : int32, y : int32}')),
-                        _lowlevel.type_id.FIXEDSTRUCT)
+                        _lowlevel.type_id.STRUCT)
+        self.assertEqual(self.type_id_of(ndt.type('c{x : int32, y : int32}')),
+                        _lowlevel.type_id.CSTRUCT)
         # Convert/byteswap/view
         self.assertEqual(self.type_id_of(ndt.make_convert(
                                     ndt.int32, ndt.int8)),
@@ -88,8 +90,8 @@ class TestLowLevel(unittest.TestCase):
             self.assertEqual(self.type_id_of(ndt.type('cuda_host[int32]')),
                              _lowlevel.type_id.CUDA_HOST)
         # Uniform arrays
-        self.assertEqual(self.type_id_of(ndt.type('3 * int32')),
-                        _lowlevel.type_id.FIXED_DIM)
+        self.assertEqual(self.type_id_of(ndt.type('cfixed[3] * int32')),
+                        _lowlevel.type_id.CFIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('strided * int32')),
                         _lowlevel.type_id.STRIDED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('var * int32')),

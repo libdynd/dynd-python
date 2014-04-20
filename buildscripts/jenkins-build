@@ -81,7 +81,7 @@ fi
 export EXTRA="-DDYND_BUILD_TESTS=OFF ${EXTRA}"
 
 # Create a fresh makefile with cmake, and do the build/install
-cd build
+pushd build
 cmake ${EXTRA} \
       -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} \
       -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} \
@@ -100,9 +100,9 @@ if [ '${PYDYND_VERSION}' == '' ]; then
     exit 1
 fi
 export PYDYND_VERSION=${PYDYND_VERSION//-/_}
+popd
 
 # Put the conda package by itself in the directory pkgs
-cd ..
 rm -rf pkgs
 mkdir pkgs
 cd pkgs

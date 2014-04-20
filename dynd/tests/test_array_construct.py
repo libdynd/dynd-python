@@ -49,12 +49,12 @@ class TestTypedArrayConstructors(unittest.TestCase):
         # Constructor from type with fixed dimension
         a = nd.empty('3 * int32')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.make_cfixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
         # Constructor from type with fixed dimension, accesskwarg
         a = nd.empty('3 * int32', access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.make_cfixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
         # Can't create with access as immutable
         self.assertRaises(ValueError, nd.empty, '3 * int32', access='immutable')
@@ -91,7 +91,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         # Constructor from type with fixed dimension
         a = cons('3 * int32')
         self.assertEqual(a.access_flags, 'immutable')
-        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.make_cfixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), [value]*3)
         # Constructor from shape as single integer
@@ -139,7 +139,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         # Constructor from type with fixed dimension
         a = cons('3 * int32', access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.make_cfixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), [value]*3)
         # Constructor from shape as single integer
@@ -549,27 +549,27 @@ class TestStructConstruct(unittest.TestCase):
 
     def test_missing_field(self):
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1], type='{x:int32, y:int32, z:int32}')
+                        [0, 1], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1], dtype='{x:int32, y:int32, z:int32}')
+                        [0, 1], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0, 'z':1}, type='{x:int32, y:int32, z:int32}')
+                        {'x':0, 'z':1}, type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0, 'z':1}, dtype='{x:int32, y:int32, z:int32}')
+                        {'x':0, 'z':1}, dtype='c{x:int32, y:int32, z:int32}')
 
     def test_extra_field(self):
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1, 2, 3], type='{x:int32, y:int32, z:int32}')
+                        [0, 1, 2, 3], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1, 2, 3], dtype='{x:int32, y:int32, z:int32}')
+                        [0, 1, 2, 3], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0,'y':1,'z':2,'w':3}, type='{x:int32, y:int32, z:int32}')
+                        {'x':0,'y':1,'z':2,'w':3}, type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0,'y':1,'z':2,'w':3}, dtype='{x:int32, y:int32, z:int32}')
+                        {'x':0,'y':1,'z':2,'w':3}, dtype='c{x:int32, y:int32, z:int32}')
 
 class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators

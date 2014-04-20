@@ -34,17 +34,21 @@ class TestDTypeDataShape(unittest.TestCase):
         self.assertEqual(ndt.float64, ndt.type('real'))
         self.assertEqual(ndt.complex_float64, ndt.type('complex'))
 
-    def test_fixed_array(self):
+    def test_cfixed_array(self):
         # Tests of datashapes that produce the DyND fixed array type
-        self.assertEqual(ndt.make_fixed_dim(3, ndt.int32),
-                        ndt.type('3 * int32'))
-        self.assertEqual(ndt.make_fixed_dim((5, 2), ndt.float64),
-                        ndt.type('5 * 2 * float64'))
+        self.assertEqual(ndt.make_cfixed_dim(3, ndt.int32),
+                        ndt.type('cfixed[3] * int32'))
+        self.assertEqual(ndt.make_cfixed_dim((5, 2), ndt.float64),
+                        ndt.type('cfixed[5] * cfixed[2] * float64'))
 
     def test_struct(self):
+        # Tests of cstruct datashape
+        dt = ndt.type('c{x: 3 * int32, y: string}')
+        self.assertEqual(dt.type_id, 'cstruct')
+        self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
         # Tests of struct datashape
         dt = ndt.type('{x: 3 * int32, y: string}')
-        self.assertEqual(dt.type_id, 'cstruct')
+        self.assertEqual(dt.type_id, 'struct')
         self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
 
     def test_var_dshape(self):

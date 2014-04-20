@@ -759,7 +759,10 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         selected_ndt_types[i] = field_types[selected_index[i]];
     }
     // Create the result udt
-    ndt::type rudt = ndt::make_struct(selected_ndt_types, selected_fields);
+    ndt::type rudt = ndt::make_struct(
+        selected_ndt_types.size(),
+        selected_ndt_types.empty() ? NULL : &selected_ndt_types[0],
+        selected_fields.empty() ? NULL : &selected_fields[0]);
     ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
     const base_struct_type *rudt_bsd = static_cast<const base_struct_type *>(rudt.extended());
 

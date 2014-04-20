@@ -33,7 +33,7 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.z), [3j])
 
     def test_single_struct_array(self):
-        a = nd.empty('3 * {x:int32, y:int32}')
+        a = nd.empty('3 * c{x:int32, y:int32}')
         a[...] = [(0,0), (3,5), (12,10)]
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
@@ -42,7 +42,7 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.x), [1, 4, 14])
         self.assertEqual(nd.as_py(a.y), [2, 7, 190])
 
-        a = nd.empty('2 * var * {count:int32, size:string[1,"A"]}')
+        a = nd.empty('2 * var * c{count:int32, size:string[1,"A"]}')
         a[...] = [[(3, 'X')], [(10, 'L'), (12, 'M')]]
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
@@ -61,7 +61,7 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.size), [['A'], ['B', 'B']])
 
     def test_nested_struct_array(self):
-        a = nd.empty('3 * {x:{a:int16, b:int16}, y:int32}')
+        a = nd.empty('3 * c{x:c{a:int16, b:int16}, y:int32}')
         a[...] = [((0,1),0), ((2,2),5), ((100,10),10)]
         self.assertEqual(nd.as_py(a.x.a), [0, 2, 100])
         self.assertEqual(nd.as_py(a.x.b), [1, 2, 10])
@@ -74,7 +74,7 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.x.b), [2, 6, 110])
         self.assertEqual(nd.as_py(a.y), [5, 7, 110])
 
-        a = nd.empty('2 * var * {count:int32, size:{name:string[1,"A"], id: int8}}')
+        a = nd.empty('2 * var * c{count:int32, size:c{name:string[1,"A"], id: int8}}')
         a[...] = [[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]]
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])

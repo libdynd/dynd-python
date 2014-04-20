@@ -7,7 +7,7 @@
 
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/pointer_type.hpp>
@@ -245,18 +245,22 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
 
         if (is_cstruct_compatible_offsets(field_count, &field_types[0],
                         &field_offsets[0], total_size)) {
-            return ndt::make_cstruct(field_count, &field_types[0], &field_names[0]);
+            return ndt::make_cstruct(
+                field_count, field_types.empty() ? NULL : &field_types[0],
+                field_names.empty() ? NULL : &field_names[0]);
         } else {
-            return ndt::make_struct(field_types, field_names);
+            return ndt::make_struct(
+                field_count, field_types.empty() ? NULL : &field_types[0],
+                field_names.empty() ? NULL : &field_names[0]);
         }
     } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
-        // Translate into a either a fixed_dim or strided_dim
+        // Translate into a either a cfixed_dim or strided_dim
         pyobject_ownref element_tp_obj(PyObject_GetAttrString(d, "_type_"));
         ndt::type element_tp = ndt_type_from_ctypes_cdatatype(element_tp_obj);
         if (element_tp.get_data_size() != 0) {
             pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
-            return ndt::make_fixed_dim(array_length, element_tp);
+            return ndt::make_cfixed_dim(array_length, element_tp);
         } else {
             return ndt::make_strided_dim(element_tp);
         }

@@ -9,7 +9,7 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -455,8 +455,8 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *seq, size_t seqsize)
 {
     switch (dt.get_type_id()) {
-        case fixed_dim_type_id: {
-            const fixed_dim_type *fdd = static_cast<const fixed_dim_type *>(dt.extended());
+        case cfixed_dim_type_id: {
+            const cfixed_dim_type *fdd = static_cast<const cfixed_dim_type *>(dt.extended());
             array_assign_strided_from_pyseq(fdd->get_element_type(), metadata,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), seq, seqsize);
             break;
@@ -536,8 +536,8 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *iter, PyObject *obj)
 {
     switch (dt.get_type_id()) {
-        case fixed_dim_type_id: {
-            const fixed_dim_type *fdd = static_cast<const fixed_dim_type *>(dt.extended());
+        case cfixed_dim_type_id: {
+            const cfixed_dim_type *fdd = static_cast<const cfixed_dim_type *>(dt.extended());
             array_assign_strided_from_pyiter(fdd->get_element_type(), metadata,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), iter);
             break;

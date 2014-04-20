@@ -14,7 +14,7 @@
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -74,9 +74,13 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
     // Make a cstruct if possible, struct otherwise
     if (is_cstruct_compatible_offsets(field_types.size(),
                     &field_types[0], &field_offsets[0], d->elsize)) {
-        return ndt::make_cstruct(field_types.size(), &field_types[0], &field_names[0]);
+        return ndt::make_cstruct(field_types.size(),
+                                 field_types.empty() ? NULL : &field_types[0],
+                                 field_names.empty() ? NULL : &field_names[0]);
     } else {
-        return ndt::make_struct(field_types, field_names);
+        return ndt::make_struct(field_types.size(),
+                                field_types.empty() ? NULL : &field_types[0],
+                                field_names.empty() ? NULL : &field_names[0]);
     }
 }
 
@@ -100,7 +104,7 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
             return ndt::make_strided_dim(dt, ndim);
         } else {
             // Otherwise make a fixed dim array
-            return dynd_make_fixed_dim_type(d->subarray->shape, dt, Py_None);
+            return dynd_make_cfixed_dim_type(d->subarray->shape, dt, Py_None);
         }
     }
 
@@ -484,11 +488,11 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             }
             return result;
         }
-        case fixed_dim_type_id: {
+        case cfixed_dim_type_id: {
             ndt::type child_tp = tp;
             vector<intptr_t> shape;
             do {
-                const fixed_dim_type *ttp = static_cast<const fixed_dim_type *>(child_tp.extended());
+                const cfixed_dim_type *ttp = static_cast<const cfixed_dim_type *>(child_tp.extended());
                 shape.push_back(ttp->get_fixed_dim_size());
                 if (child_tp.get_data_size() != ttp->get_element_type().get_data_size() * shape.back()) {
                     stringstream ss;
@@ -496,7 +500,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
                     throw dynd::type_error(ss.str());
                 }
                 child_tp = ttp->get_element_type();
-            } while (child_tp.get_type_id() == fixed_dim_type_id);
+            } while (child_tp.get_type_id() == cfixed_dim_type_id);
             pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from_ndt_type(child_tp));
             pyobject_ownref shape_obj(intptr_array_as_tuple((int)shape.size(), &shape[0]));
             pyobject_ownref tuple_obj(PyTuple_New(2));

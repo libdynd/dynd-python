@@ -9,7 +9,7 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -614,7 +614,7 @@ static bool ndt_type_requires_shape(const ndt::type& tp)
 {
     if (tp.get_ndim() > 0) {
         switch (tp.get_type_id()) {
-            case fixed_dim_type_id:
+            case cfixed_dim_type_id:
             case var_dim_type_id:
                 return ndt_type_requires_shape(
                                 static_cast<const base_uniform_dim_type *>(

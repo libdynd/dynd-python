@@ -9,6 +9,7 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
@@ -461,11 +462,24 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), seq, seqsize);
             break;
         }
+        case fixed_dim_type_id: {
+            const fixed_dim_type *fdd = dt.tcast<fixed_dim_type>();
+            const fixed_dim_type_metadata *md =
+                reinterpret_cast<const fixed_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyseq(
+                fdd->get_element_type(),
+                metadata + sizeof(fixed_dim_type_metadata), data, md->stride,
+                fdd->get_fixed_dim_size(), seq, seqsize);
+            break;
+        }
         case strided_dim_type_id: {
-            const ndt::type& element_dt = dt.tcast<strided_dim_type>()->get_element_type();
-            const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
-            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(strided_dim_type_metadata),
-                            data, md->stride, md->size, seq, seqsize);
+            const ndt::type &element_dt =
+                dt.tcast<strided_dim_type>()->get_element_type();
+            const strided_dim_type_metadata *md =
+                reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyseq(
+                element_dt, metadata + sizeof(strided_dim_type_metadata), data,
+                md->stride, md->size, seq, seqsize);
             break;
         }
         case var_dim_type_id: {
@@ -539,14 +553,26 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
         case cfixed_dim_type_id: {
             const cfixed_dim_type *fdd = dt.tcast<cfixed_dim_type>();
             array_assign_strided_from_pyiter(fdd->get_element_type(), metadata,
-                            data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), iter);
+                                             data, fdd->get_fixed_stride(),
+                                             fdd->get_fixed_dim_size(), iter);
+            break;
+        }
+        case fixed_dim_type_id: {
+            const fixed_dim_type *fdd = dt.tcast<fixed_dim_type>();
+            const fixed_dim_type_metadata *md = reinterpret_cast<const fixed_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyiter(
+                fdd->get_element_type(),
+                metadata + sizeof(fixed_dim_type_metadata), data, md->stride,
+                fdd->get_fixed_dim_size(), iter);
             break;
         }
         case strided_dim_type_id: {
-            const ndt::type& element_dt = dt.tcast<strided_dim_type>()->get_element_type();
+            const ndt::type &element_dt =
+                dt.tcast<strided_dim_type>()->get_element_type();
             const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
-            array_assign_strided_from_pyiter(element_dt, metadata + sizeof(strided_dim_type_metadata),
-                            data, md->stride, md->size, iter);
+            array_assign_strided_from_pyiter(
+                element_dt, metadata + sizeof(strided_dim_type_metadata), data,
+                md->stride, md->size, iter);
             break;
         }
         case var_dim_type_id: {

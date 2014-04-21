@@ -16,6 +16,7 @@
 #include <dynd/types/pointer_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
@@ -370,14 +371,17 @@ dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *
         field_names_vec.empty() ? NULL : &field_names_vec[0]);
 }
 
+dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp)
+{
+    vector<intptr_t> shape_vec;
+    pyobject_as_vector_intp(shape, shape_vec, true);
+    return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
+}
+
 dynd::ndt::type pydynd::dynd_make_cfixed_dim_type(PyObject *shape, const ndt::type& element_tp, PyObject *axis_perm)
 {
     vector<intptr_t> shape_vec;
-    if (PySequence_Check(shape)) {
-        pyobject_as_vector_intp(shape, shape_vec, false);
-    } else {
-        shape_vec.push_back(pyobject_as_index(shape));
-    }
+    pyobject_as_vector_intp(shape, shape_vec, true);
 
     if (axis_perm != Py_None) {
         vector<int> axis_perm_vec;

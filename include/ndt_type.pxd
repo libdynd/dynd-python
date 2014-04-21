@@ -135,6 +135,7 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
     ndt_type dynd_make_pointer_type(ndt_type&) except +translate_exception
     ndt_type dynd_make_struct_type(object, object) except +translate_exception
     ndt_type dynd_make_cstruct_type(object, object) except +translate_exception
+    ndt_type dynd_make_fixed_dim_type(object, ndt_type&) except +translate_exception
     ndt_type dynd_make_cfixed_dim_type(object, ndt_type&, object) except +translate_exception
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":

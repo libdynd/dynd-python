@@ -213,7 +213,7 @@ class TestDType(unittest.TestCase):
         # The shape attribute of ndt.type
         tp = ndt.type('3 * 4 * int32')
         self.assertEqual(tp.shape, (3, 4))
-        tp = ndt.type('M * 3 * var * int32')
+        tp = ndt.type('strided * 3 * var * int32')
         self.assertEqual(tp.shape, (-1, 3, -1))
         tp = ndt.type('var * 3 * 2 * int32')
         self.assertEqual(tp.shape, (-1, 3, 2))

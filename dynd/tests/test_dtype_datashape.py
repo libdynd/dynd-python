@@ -43,7 +43,7 @@ class TestDTypeDataShape(unittest.TestCase):
 
     def test_struct(self):
         # Tests of cstruct datashape
-        dt = ndt.type('c{x: 3 * int32, y: string}')
+        dt = ndt.type('c{x: cfixed[3] * int32, y: string}')
         self.assertEqual(dt.type_id, 'cstruct')
         self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
         # Tests of struct datashape

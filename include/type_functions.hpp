@@ -114,6 +114,7 @@ dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type& target_tp);
 
 dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names);
 dynd::ndt::type dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names);
+dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp);
 dynd::ndt::type dynd_make_cfixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp, PyObject *axis_perm);
 
 /**

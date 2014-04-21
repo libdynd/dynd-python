@@ -345,6 +345,22 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.view, a, access='rw')
 
 class TestAsNumpy(unittest.TestCase):
+    def test_struct_as_numpy(self):
+        # Aligned cstruct
+        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32, y: int64}')
+        b = nd.as_numpy(a)
+        self.assertEqual(b.dtype,
+                    np.dtype([('x', np.int32), ('y', np.int64)], align=True))
+        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
+        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
+        # Unaligned cstruct
+        a = nd.array([[1, 2], [3, 4]],
+                    dtype='{x : unaligned[int32], y: unaligned[int64]}')
+        b = nd.as_numpy(a)
+        self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
+        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
+        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
+
     def test_cstruct_as_numpy(self):
         # Aligned cstruct
         a = nd.array([[1, 2], [3, 4]], dtype='c{x : int32, y: int64}')
@@ -376,6 +392,18 @@ class TestAsNumpy(unittest.TestCase):
         self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
         self.assertEqual(nd.as_py(a.x), b['x'].tolist())
         self.assertEqual(nd.as_py(a.y), b['y'].tolist())
+
+    def test_fixed_dim(self):
+        a = nd.array([1, 3, 5], type='3 * int32')
+        b = nd.as_numpy(a)
+        self.assertEqual(b.dtype, np.dtype('int32'))
+        self.assertEqual(b.tolist(), [1, 3, 5])
+
+    def test_fixed_dim_via_pep3118(self):
+        a = nd.array([1, 3, 5], type='3 * int32')
+        b = np.asarray(a)
+        self.assertEqual(b.dtype, np.dtype('int32'))
+        self.assertEqual(b.tolist(), [1, 3, 5])
 
 class TestNumpyScalarInterop(unittest.TestCase):
     def test_numpy_scalar_conversion_dtypes(self):

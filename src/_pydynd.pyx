@@ -173,6 +173,16 @@ cdef class w_type:
             else:
                 return None
 
+    property default_data_size:
+        """
+        tp.default_data_size
+
+        The size, in bytes, of the data for a default-constructed
+        instance of this dynd type.
+        """
+        def __get__(self):
+            return (GET(self.v)).get_default_data_size(0, <intptr_t *>0)
+
     property data_alignment:
         """
         tp.data_alignment

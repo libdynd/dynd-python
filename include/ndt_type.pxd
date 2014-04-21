@@ -69,6 +69,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         type_id_t type_id()
         type_kind_t get_kind()
         size_t get_data_size()
+        size_t get_default_data_size(intptr_t, intptr_t*)
         size_t get_data_alignment()
         size_t get_metadata_size()
         base_type* extended()

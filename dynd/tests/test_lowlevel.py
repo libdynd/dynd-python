@@ -97,6 +97,8 @@ class TestLowLevel(unittest.TestCase):
         # Uniform arrays
         self.assertEqual(self.type_id_of(ndt.type('cfixed[3] * int32')),
                         _lowlevel.type_id.CFIXED_DIM)
+        self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
+                        _lowlevel.type_id.FIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('strided * int32')),
                         _lowlevel.type_id.STRIDED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('var * int32')),

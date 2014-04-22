@@ -122,6 +122,9 @@ class _PyLowLevelAPI(ctypes.Structure):
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
+                ('make_builtin_mean1d_ckernel_deferred',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object)),
                ]
 
 api = _LowLevelAPI.from_address(_get_lowlevel_api())
@@ -542,4 +545,11 @@ make_rolling_ckernel_deferred.__doc__ = """
     _lowlevel.make_rolling_ckernel_deferred(dst_tp, src_tp, window_op, window_size)
 
     This function transforms a 1D reduction op into a rolling window op.
+    """
+make_builtin_mean1d_ckernel_deferred.__doc__ = """
+    _lowlevel.make_builtin_mean1d_ckernel_deferred(tp, minp)
+
+    This function creates a ckernel_deferred which computes a 1D
+    mean, using ``minp`` to control NaN behavior. The signature of the
+    ckernel is "(strided * <tp>) -> <tp>".
     """

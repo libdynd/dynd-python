@@ -350,5 +350,19 @@ class TestRollingCKernelDeferred(unittest.TestCase):
         self.assertEqual(result[1:],
                          [3.25 - 1.5 , 7 - 3.25, -3.5 - 7, 1.25 - -3.5])
 
+    def test_rolling_mean(self):
+        mean_1d = _lowlevel.make_builtin_mean1d_ckernel_deferred('float64', -1)
+        rolling_mean = _lowlevel.make_rolling_ckernel_deferred('strided * float64',
+                                                       'strided * float64',
+                                                       mean_1d, 4)
+        in0 = nd.array([3.0, 2, 1, 3, 8, nd.nan, nd.nan])
+        out = nd.empty_like(in0)
+        rolling_mean.__call__(out, in0)
+        result = nd.as_py(out)
+        self.assertTrue(np.all(np.isnan(result[:3])))
+        self.assertTrue(np.isnan(result[-1]))
+        self.assertEqual(result[3:-1], [9.0/4, 14.0/4, 12.0/3])
+
+
 if __name__ == '__main__':
     unittest.main()

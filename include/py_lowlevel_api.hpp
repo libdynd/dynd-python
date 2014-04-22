@@ -60,6 +60,8 @@ struct py_lowlevel_api_t {
                                                PyObject *src_tp_obj,
                                                PyObject *window_op_obj,
                                                PyObject *window_size_obj);
+    PyObject *(*make_builtin_mean1d_ckernel_deferred)(PyObject *tp_obj,
+                                                      PyObject *minp_obj);
 };
 
 } // namespace pydynd

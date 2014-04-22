@@ -69,6 +69,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         type_id_t type_id()
         type_kind_t get_kind()
         size_t get_data_size()
+        size_t get_default_data_size(intptr_t, intptr_t*)
         size_t get_data_alignment()
         size_t get_metadata_size()
         base_type* extended()
@@ -135,7 +136,8 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
     ndt_type dynd_make_pointer_type(ndt_type&) except +translate_exception
     ndt_type dynd_make_struct_type(object, object) except +translate_exception
     ndt_type dynd_make_cstruct_type(object, object) except +translate_exception
-    ndt_type dynd_make_fixed_dim_type(object, ndt_type&, object) except +translate_exception
+    ndt_type dynd_make_fixed_dim_type(object, ndt_type&) except +translate_exception
+    ndt_type dynd_make_cfixed_dim_type(object, ndt_type&, object) except +translate_exception
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from_ndt_type(ndt_type&) except +translate_exception

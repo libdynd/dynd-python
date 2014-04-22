@@ -173,6 +173,16 @@ cdef class w_type:
             else:
                 return None
 
+    property default_data_size:
+        """
+        tp.default_data_size
+
+        The size, in bytes, of the data for a default-constructed
+        instance of this dynd type.
+        """
+        def __get__(self):
+            return (GET(self.v)).get_default_data_size(0, <intptr_t *>0)
+
     property data_alignment:
         """
         tp.data_alignment
@@ -680,11 +690,37 @@ def make_strided_dim(element_tp, ndim=None):
         SET(result.v, dynd_make_strided_dim_type(GET(w_type(element_tp).v), int(ndim)))
     return result
 
-def make_fixed_dim(shape, element_tp, axis_perm=None):
+def make_fixed_dim(shape, element_tp):
     """
-    ndt.make_fixed_dim(shape, element_tp, axis_perm=None)
+    ndt.make_fixed_dim(shape, element_tp)
 
-    Constructs a fixed_dim type of the given shape and axis permutation
+    Constructs a fixed_dim type of the given shape.
+
+    Parameters
+    ----------
+    shape : tuple of int
+        The multi-dimensional shape of the resulting fixed array type.
+    element_tp : dynd type
+        The type of each element in the resulting array type.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> ndt.make_fixed_dim(5, ndt.int32)
+    ndt.type('fixed_dim<5, int32>')
+    >>> ndt.make_fixed_dim((3,5), ndt.int32)
+    ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
+    """
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_tp).v)))
+    return result
+
+def make_cfixed_dim(shape, element_tp, axis_perm=None):
+    """
+    ndt.make_cfixed_dim(shape, element_tp, axis_perm=None)
+
+    Constructs a cfixed_dim type of the given shape and axis permutation
     (default C order).
 
     Parameters
@@ -703,15 +739,15 @@ def make_fixed_dim(shape, element_tp, axis_perm=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixed_dim(5, ndt.int32)
+    >>> ndt.make_cfixed_dim(5, ndt.int32)
     ndt.type('fixed_dim<5, int32>')
-    >>> ndt.make_fixed_dim((3,5), ndt.int32)
+    >>> ndt.make_cfixed_dim((3,5), ndt.int32)
     ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
-    >>> ndt.make_fixed_dim((3,5), ndt.int32, axis_perm=(0,1))
+    >>> ndt.make_cfixed_dim((3,5), ndt.int32, axis_perm=(0,1))
     ndt.type('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_tp).v), axis_perm))
+    SET(result.v, dynd_make_cfixed_dim_type(shape, GET(w_type(element_tp).v), axis_perm))
     return result
 
 def make_cstruct(field_types, field_names):

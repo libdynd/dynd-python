@@ -10,6 +10,7 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -402,7 +403,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *value)
 {
     if (dt.get_kind() == struct_kind) {
-        const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
+        const base_struct_type *fsd = dt.tcast<base_struct_type>();
         size_t field_count = fsd->get_field_count();
         const string *field_names = fsd->get_field_names();
         const ndt::type *field_types = fsd->get_field_types();
@@ -455,21 +456,34 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *seq, size_t seqsize)
 {
     switch (dt.get_type_id()) {
-        case fixed_dim_type_id: {
-            const fixed_dim_type *fdd = static_cast<const fixed_dim_type *>(dt.extended());
+        case cfixed_dim_type_id: {
+            const cfixed_dim_type *fdd = dt.tcast<cfixed_dim_type>();
             array_assign_strided_from_pyseq(fdd->get_element_type(), metadata,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), seq, seqsize);
             break;
         }
+        case fixed_dim_type_id: {
+            const fixed_dim_type *fdd = dt.tcast<fixed_dim_type>();
+            const fixed_dim_type_metadata *md =
+                reinterpret_cast<const fixed_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyseq(
+                fdd->get_element_type(),
+                metadata + sizeof(fixed_dim_type_metadata), data, md->stride,
+                fdd->get_fixed_dim_size(), seq, seqsize);
+            break;
+        }
         case strided_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const strided_dim_type *>(dt.extended())->get_element_type();
-            const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
-            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(strided_dim_type_metadata),
-                            data, md->stride, md->size, seq, seqsize);
+            const ndt::type &element_dt =
+                dt.tcast<strided_dim_type>()->get_element_type();
+            const strided_dim_type_metadata *md =
+                reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyseq(
+                element_dt, metadata + sizeof(strided_dim_type_metadata), data,
+                md->stride, md->size, seq, seqsize);
             break;
         }
         case var_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const var_dim_type *>(dt.extended())->get_element_type();
+            const ndt::type& element_dt = dt.tcast<var_dim_type>()->get_element_type();
             const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
             var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data);
             if (d->begin == NULL) {
@@ -503,7 +517,7 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
         }
         case struct_type_id:
         case cstruct_type_id: {
-            const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
+            const base_struct_type *fsd = dt.tcast<base_struct_type>();
             size_t field_count = fsd->get_field_count();
             const ndt::type *field_types = fsd->get_field_types();
             const size_t *data_offsets = fsd->get_data_offsets(metadata);
@@ -536,21 +550,33 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                 const char *metadata, char *data, PyObject *iter, PyObject *obj)
 {
     switch (dt.get_type_id()) {
-        case fixed_dim_type_id: {
-            const fixed_dim_type *fdd = static_cast<const fixed_dim_type *>(dt.extended());
+        case cfixed_dim_type_id: {
+            const cfixed_dim_type *fdd = dt.tcast<cfixed_dim_type>();
             array_assign_strided_from_pyiter(fdd->get_element_type(), metadata,
-                            data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), iter);
+                                             data, fdd->get_fixed_stride(),
+                                             fdd->get_fixed_dim_size(), iter);
+            break;
+        }
+        case fixed_dim_type_id: {
+            const fixed_dim_type *fdd = dt.tcast<fixed_dim_type>();
+            const fixed_dim_type_metadata *md = reinterpret_cast<const fixed_dim_type_metadata *>(metadata);
+            array_assign_strided_from_pyiter(
+                fdd->get_element_type(),
+                metadata + sizeof(fixed_dim_type_metadata), data, md->stride,
+                fdd->get_fixed_dim_size(), iter);
             break;
         }
         case strided_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const strided_dim_type *>(dt.extended())->get_element_type();
+            const ndt::type &element_dt =
+                dt.tcast<strided_dim_type>()->get_element_type();
             const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
-            array_assign_strided_from_pyiter(element_dt, metadata + sizeof(strided_dim_type_metadata),
-                            data, md->stride, md->size, iter);
+            array_assign_strided_from_pyiter(
+                element_dt, metadata + sizeof(strided_dim_type_metadata), data,
+                md->stride, md->size, iter);
             break;
         }
         case var_dim_type_id: {
-            const ndt::type& element_dt = static_cast<const var_dim_type *>(dt.extended())->get_element_type();
+            const ndt::type& element_dt = dt.tcast<var_dim_type>()->get_element_type();
             const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
             var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data);
             // First check if the var_dim element is already assigned,
@@ -659,7 +685,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
         }
         case struct_type_id:
         case cstruct_type_id: {
-            const base_struct_type *fsd = static_cast<const base_struct_type *>(dt.extended());
+            const base_struct_type *fsd = dt.tcast<base_struct_type>();
             size_t field_count = fsd->get_field_count();
             const ndt::type *field_types = fsd->get_field_types();
             const size_t *data_offsets = fsd->get_data_offsets(metadata);
@@ -746,7 +772,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
                     udt = udt.get_dtype();
                 } else if (udt.get_kind() == struct_kind) {
                     ++dst_ndim;
-                    udt = static_cast<const base_struct_type *>(udt.extended())->get_field_types()[0];
+                    udt = udt.tcast<base_struct_type>()->get_field_types()[0];
                 } else {
                     break;
                 }

@@ -9,7 +9,7 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -243,7 +243,7 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
             if (max_count <= 1) {
                 return max_count;
             } else {
-                const base_struct_type *bsd = static_cast<const base_struct_type *>(tp.extended());
+                const base_struct_type *bsd = tp.tcast<base_struct_type>();
                 size_t field_count = bsd->get_field_count();
                 const ndt::type *field_types = bsd->get_field_types();
                 for (size_t i = 0; i != field_count; ++i) {

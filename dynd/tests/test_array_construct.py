@@ -51,6 +51,11 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
+        # Constructor from type with cfixed dimension
+        a = nd.empty('cfixed[3] * int32')
+        self.assertEqual(a.access_flags, 'readwrite')
+        self.assertEqual(nd.type_of(a), ndt.make_cfixed_dim(3, ndt.int32))
+        self.assertEqual(a.shape, (3,))
         # Constructor from type with fixed dimension, accesskwarg
         a = nd.empty('3 * int32', access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
@@ -549,27 +554,27 @@ class TestStructConstruct(unittest.TestCase):
 
     def test_missing_field(self):
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1], type='{x:int32, y:int32, z:int32}')
+                        [0, 1], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1], dtype='{x:int32, y:int32, z:int32}')
+                        [0, 1], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0, 'z':1}, type='{x:int32, y:int32, z:int32}')
+                        {'x':0, 'z':1}, type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0, 'z':1}, dtype='{x:int32, y:int32, z:int32}')
+                        {'x':0, 'z':1}, dtype='c{x:int32, y:int32, z:int32}')
 
     def test_extra_field(self):
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1, 2, 3], type='{x:int32, y:int32, z:int32}')
+                        [0, 1, 2, 3], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        [0, 1, 2, 3], dtype='{x:int32, y:int32, z:int32}')
+                        [0, 1, 2, 3], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0,'y':1,'z':2,'w':3}, type='{x:int32, y:int32, z:int32}')
+                        {'x':0,'y':1,'z':2,'w':3}, type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(RuntimeError, nd.array,
-                        {'x':0,'y':1,'z':2,'w':3}, dtype='{x:int32, y:int32, z:int32}')
+                        {'x':0,'y':1,'z':2,'w':3}, dtype='c{x:int32, y:int32, z:int32}')
 
 class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators
@@ -731,8 +736,8 @@ class TestIteratorConstruct(unittest.TestCase):
     def test_ragged_fromiter(self):
         # Strided array of var from list of iterators
         a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
-                        [2, 10]], type='M * var * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('M * var * int32'))
+                        [2, 10]], type='strided * var * int32')
+        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int32'))
         self.assertEqual(nd.as_py(a),
                         [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
         # Var array of var from iterator of iterators

@@ -98,7 +98,7 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
         case string_type_id:
         case json_type_id: {
             const char *begin = NULL, *end = NULL;
-            const base_string_type *esd = static_cast<const base_string_type *>(d.extended());
+            const base_string_type *esd = d.tcast<base_string_type>();
             esd->get_string_range(&begin, &end, metadata, data);
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
@@ -115,18 +115,18 @@ static PyObject* element_as_pyobject(const ndt::type& d, const char *data, const
             }
         }
         case date_type_id: {
-            const date_type *dd = static_cast<const date_type *>(d.extended());
+            const date_type *dd = d.tcast<date_type>();
             date_ymd ymd = dd->get_ymd(metadata, data);
             return PyDate_FromDate(ymd.year, ymd.month, ymd.day);
         }
         case time_type_id: {
-            const time_type *tt = static_cast<const time_type *>(d.extended());
+            const time_type *tt = d.tcast<time_type>();
             time_hmst hmst = tt->get_time(metadata, data);
             return PyTime_FromTime(hmst.hour, hmst.minute, hmst.second,
                                    hmst.tick / DYND_TICKS_PER_MICROSECOND);
         }
         case datetime_type_id: {
-            const datetime_type *dd = static_cast<const datetime_type *>(d.extended());
+            const datetime_type *dd = d.tcast<datetime_type>();
             int32_t year, month, day, hour, minute, second, tick;
             dd->get_cal(metadata, data, year, month, day, hour, minute, second, tick);
             int32_t usecond = tick / 10;
@@ -157,7 +157,7 @@ static void nested_struct_as_py(const ndt::type& d, char *data, const char *meta
 {
     array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 
-    const base_struct_type *bsd = static_cast<const base_struct_type *>(d.extended());
+    const base_struct_type *bsd = d.tcast<base_struct_type>();
     size_t field_count = bsd->get_field_count();
     const string *field_names = bsd->get_field_names();
     const ndt::type *field_types = bsd->get_field_types();

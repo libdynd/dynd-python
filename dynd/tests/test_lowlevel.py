@@ -71,7 +71,14 @@ class TestLowLevel(unittest.TestCase):
                                     [ndt.int32, ndt.int32], ['x', 'y'])),
                         _lowlevel.type_id.STRUCT)
         self.assertEqual(self.type_id_of(ndt.type('{x : int32, y : int32}')),
-                        _lowlevel.type_id.FIXEDSTRUCT)
+                        _lowlevel.type_id.STRUCT)
+        self.assertEqual(self.type_id_of(ndt.type('c{x : int32, y : int32}')),
+                        _lowlevel.type_id.CSTRUCT)
+        # Tuple
+        self.assertEqual(self.type_id_of(ndt.type('(int32, int32)')),
+                        _lowlevel.type_id.TUPLE)
+        self.assertEqual(self.type_id_of(ndt.type('c(int32, int32)')),
+                        _lowlevel.type_id.CTUPLE)
         # Convert/byteswap/view
         self.assertEqual(self.type_id_of(ndt.make_convert(
                                     ndt.int32, ndt.int8)),
@@ -88,7 +95,9 @@ class TestLowLevel(unittest.TestCase):
             self.assertEqual(self.type_id_of(ndt.type('cuda_host[int32]')),
                              _lowlevel.type_id.CUDA_HOST)
         # Uniform arrays
-        self.assertEqual(self.type_id_of(ndt.type('3 * int32')),
+        self.assertEqual(self.type_id_of(ndt.type('cfixed[3] * int32')),
+                        _lowlevel.type_id.CFIXED_DIM)
+        self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
                         _lowlevel.type_id.FIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('strided * int32')),
                         _lowlevel.type_id.STRIDED_DIM)
@@ -108,16 +117,16 @@ class TestLowLevel(unittest.TestCase):
         a[1] = 6
         a[2] = 9
         # Readwrite version
-        b = _lowlevel.array_from_ptr(ndt.type('3 * int32'), ctypes.addressof(a),
-                        a, 'readwrite')
+        b = _lowlevel.array_from_ptr(ndt.type('cfixed[3] * int32'),
+                                     ctypes.addressof(a), a, 'readwrite')
         self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
         self.assertEqual(nd.dshape_of(b), '3 * int32')
         self.assertEqual(nd.as_py(b), [3, 6, 9])
         b[1] = 10
         self.assertEqual(a[1], 10)
         # Readonly version
-        b = _lowlevel.array_from_ptr(ndt.type('3 * int32'), ctypes.addressof(a),
-                        a, 'readonly')
+        b = _lowlevel.array_from_ptr(ndt.type('cfixed[3] * int32'),
+                                     ctypes.addressof(a), a, 'readonly')
         self.assertEqual(nd.as_py(b), [3, 10, 9])
         def assign_to(b):
             b[1] = 100

@@ -17,6 +17,7 @@
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -74,14 +75,14 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
                 ss << "ndt.date";
                 break;
             case time_type_id:
-                if (static_cast<const time_type *>(d.extended())->get_timezone() == tz_abstract) {
+                if (d.tcast<time_type>()->get_timezone() == tz_abstract) {
                     ss << "ndt.time";
                 } else {
                     ss << "ndt.type('" << d << "')";
                 }
                 break;
             case datetime_type_id:
-                if (static_cast<const datetime_type *>(d.extended())->get_timezone() == tz_abstract) {
+                if (d.tcast<datetime_type>()->get_timezone() == tz_abstract) {
                     ss << "ndt.datetime";
                 } else {
                     ss << "ndt.type('" << d << "')";
@@ -91,15 +92,15 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
                 ss << "ndt.json";
                 break;
             case bytes_type_id:
-                if (static_cast<const bytes_type *>(d.extended())->get_target_alignment() == 1) {
+                if (d.tcast<bytes_type>()->get_target_alignment() == 1) {
                     ss << "ndt.bytes";
                 } else {
                     ss << "ndt.type('" << d << "')";
                 }
                 break;
             case string_type_id:
-                if (static_cast<const string_type *>(
-                            d.extended())->get_encoding() == string_encoding_utf_8) {
+                if (d.tcast<string_type>()->get_encoding() ==
+                        string_encoding_utf_8) {
                     ss << "ndt.string";
                 } else {
                     ss << "ndt.type('" << d << "')";
@@ -339,7 +340,16 @@ dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types, PyObject *f
     vector<string> field_names_vec;
     pyobject_as_vector_ndt_type(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
-    return ndt::make_struct(field_types_vec, field_names_vec);
+    if (field_types_vec.size() != field_names_vec.size()) {
+        stringstream ss;
+        ss << "creating a struct type requires that the number of types ";
+        ss << field_types_vec.size() << " must equal the number of names ";
+        ss << field_names_vec.size();
+        throw invalid_argument(ss.str());
+    }
+    return ndt::make_struct(field_types_vec.size(),
+                            field_types_vec.empty() ? NULL : &field_types_vec[0],
+                            field_names_vec.empty() ? NULL : &field_names_vec[0]);
 }
 
 dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names)
@@ -349,19 +359,29 @@ dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *
     pyobject_as_vector_ndt_type(field_types, field_types_vec);
     pyobject_as_vector_string(field_names, field_names_vec);
     if (field_types_vec.size() != field_names_vec.size()) {
-        throw runtime_error("The input field types and field names lists must have the same size");
+        stringstream ss;
+        ss << "creating a cstruct type requires that the number of types ";
+        ss << field_types_vec.size() << " must equal the number of names ";
+        ss << field_names_vec.size();
+        throw invalid_argument(ss.str());
     }
-    return ndt::make_cstruct(field_types_vec.size(), &field_types_vec[0], &field_names_vec[0]);
+    return ndt::make_cstruct(
+        field_types_vec.size(),
+        field_types_vec.empty() ? NULL : &field_types_vec[0],
+        field_names_vec.empty() ? NULL : &field_names_vec[0]);
 }
 
-dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const ndt::type& element_tp, PyObject *axis_perm)
+dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp)
 {
     vector<intptr_t> shape_vec;
-    if (PySequence_Check(shape)) {
-        pyobject_as_vector_intp(shape, shape_vec, false);
-    } else {
-        shape_vec.push_back(pyobject_as_index(shape));
-    }
+    pyobject_as_vector_intp(shape, shape_vec, true);
+    return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
+}
+
+dynd::ndt::type pydynd::dynd_make_cfixed_dim_type(PyObject *shape, const ndt::type& element_tp, PyObject *axis_perm)
+{
+    vector<intptr_t> shape_vec;
+    pyobject_as_vector_intp(shape, shape_vec, true);
 
     if (axis_perm != Py_None) {
         vector<int> axis_perm_vec;
@@ -372,9 +392,9 @@ dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const ndt::typ
         if (axis_perm_vec.size() != shape_vec.size()) {
             throw runtime_error("Provided axis_perm is a different size than the provided shape");
         }
-        return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp, &axis_perm_vec[0]);
+        return ndt::make_cfixed_dim(shape_vec.size(), &shape_vec[0], element_tp, &axis_perm_vec[0]);
     } else {
-        return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp, NULL);
+        return ndt::make_cfixed_dim(shape_vec.size(), &shape_vec[0], element_tp, NULL);
     }
 }
 

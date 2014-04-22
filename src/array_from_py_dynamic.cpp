@@ -9,7 +9,7 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -126,11 +126,11 @@ static nd::array allocate_nd_arr(
             }
             // Advance metadata_ptr and data_ptr to the child dimension
             metadata_ptr += sizeof(var_dim_type_metadata);
-            tp = static_cast<const var_dim_type *>(tp.extended())->get_element_type();
+            tp = tp.tcast<var_dim_type>()->get_element_type();
         } else {
             // Advance metadata_ptr and data_ptr to the child dimension
             metadata_ptr += sizeof(strided_dim_type_metadata);
-            tp = static_cast<const strided_dim_type *>(tp.extended())->get_element_type();
+            tp = tp.tcast<strided_dim_type>()->get_element_type();
         }
         c.data_ptr = data_ptr;
     }
@@ -552,7 +552,7 @@ static bool string_assign(const ndt::type& tp, const char *metadata, char *data,
             throw exception();
         }
 
-        const string_type *st = static_cast<const string_type *>(tp.extended());
+        const string_type *st = tp.tcast<string_type>();
         st->set_utf8_string(metadata, data, assign_error_default, s, s + len);
         return true;
     }
@@ -564,7 +564,7 @@ static bool string_assign(const ndt::type& tp, const char *metadata, char *data,
             throw runtime_error("Error getting string data");
         }
 
-        const string_type *st = static_cast<const string_type *>(tp.extended());
+        const string_type *st = tp.tcast<string_type>();
         st->set_utf8_string(metadata, data, assign_error_default, s, s + len);
         return true;
     }
@@ -594,7 +594,7 @@ static bool bytes_assign(const ndt::type& tp, const char *metadata, char *data, 
             throw runtime_error("Error getting bytes data");
         }
 
-        const bytes_type *st = static_cast<const bytes_type *>(tp.extended());
+        const bytes_type *st = tp.tcast<bytes_type>();
         st->set_bytes_data(metadata, data, s, s + len);
         return true;
     }

@@ -118,6 +118,10 @@ class _PyLowLevelAPI(ctypes.Structure):
                 ('ckernel_deferred_from_pyfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
+                ('make_rolling_ckernel_deferred',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object)),
                ]
 
 api = _LowLevelAPI.from_address(_get_lowlevel_api())
@@ -533,4 +537,9 @@ ckernel_deferred_from_pyfunc.__doc__ = """
     _lowlevel.ckernel_deferred_from_pyfunc(instantiate_pyfunc, types)
 
     TODO
+    """
+make_rolling_ckernel_deferred.__doc__ = """
+    _lowlevel.make_rolling_ckernel_deferred(dst_tp, src_tp, window_op, window_size)
+
+    This function transforms a 1D reduction op into a rolling window op.
     """

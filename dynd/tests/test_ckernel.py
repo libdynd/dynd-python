@@ -314,16 +314,55 @@ class TestLiftReductionCKernelDeferred(unittest.TestCase):
         ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
-        in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Reduce along axis 1
         sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
                                                  'strided * strided * int32',
                                                  axis=1,
                                                  commutative=True,
                                                  associative=True)
+        in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         out = nd.empty(2, ndt.int32)
         sum.__call__(out, in0)
         self.assertEqual(nd.as_py(out), [10, 15])
+
+
+class TestRollingCKernelDeferred(unittest.TestCase):
+    def test_diff_op(self):
+        # Use the numpy subtract ufunc for this lifting test
+        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.subtract,
+                        (np.float64, np.float64, np.float64),
+                        False)
+        # Lift it to 1D
+        diff_1d = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+                                                 'strided * float64',
+                                                 axis=0,
+                                                 commutative=False,
+                                                 associative=False)
+        # Apply it as a rolling op
+        diff = _lowlevel.make_rolling_ckernel_deferred('strided * float64',
+                                                       'strided * float64',
+                                                       diff_1d, 2)
+        in0 = nd.array([1.5, 3.25, 7, -3.5, 1.25])
+        out = nd.empty_like(in0)
+        diff.__call__(out, in0)
+        result = nd.as_py(out)
+        self.assertTrue(np.isnan(result[0]))
+        self.assertEqual(result[1:],
+                         [3.25 - 1.5 , 7 - 3.25, -3.5 - 7, 1.25 - -3.5])
+
+    def test_rolling_mean(self):
+        mean_1d = _lowlevel.make_builtin_mean1d_ckernel_deferred('float64', -1)
+        rolling_mean = _lowlevel.make_rolling_ckernel_deferred('strided * float64',
+                                                       'strided * float64',
+                                                       mean_1d, 4)
+        in0 = nd.array([3.0, 2, 1, 3, 8, nd.nan, nd.nan])
+        out = nd.empty_like(in0)
+        rolling_mean.__call__(out, in0)
+        result = nd.as_py(out)
+        self.assertTrue(np.all(np.isnan(result[:3])))
+        self.assertTrue(np.isnan(result[-1]))
+        self.assertEqual(result[3:-1], [9.0/4, 14.0/4, 12.0/3])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -410,13 +410,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     }
 
     // Create the result
-    vector<string> field_names(n.size());
-    for (size_t i = 0; i != n.size(); ++i) {
-        stringstream ss;
-        ss << "arg" << i;
-        field_names[i] = ss.str();
-    }
-    nd::array result = combine_into_struct(n.size(), &field_names[0], &n[0]);
+    nd::array result = combine_into_tuple(n.size(), &n[0]);
 
     // Because the expr type's operand is the result's type,
     // we can swap it in as the type

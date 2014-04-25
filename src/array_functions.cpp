@@ -19,6 +19,7 @@
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
+#include <dynd/view.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -260,7 +261,7 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
     n = array_from_py(obj, access_flags, true);
 }
 
-dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *access)
+dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type, PyObject *access)
 {
     uint32_t access_flags = 0;
     if (access != Py_None) {
@@ -291,12 +292,23 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *access)
                 return result;
             }
         }
-        return obj_dynd;
+        if (type == Py_None) {
+            return obj_dynd;
+        } else {
+            ndt::type tp = make_ndt_type_from_pyobject(type);
+            return nd::view(obj_dynd, tp);
+        }
     }
 
     // If it's a numpy array
     if (PyArray_Check(obj)) {
-        return array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
+        nd::array result = array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
+        if (type == Py_None) {
+            return result;
+        } else {
+            ndt::type tp = make_ndt_type_from_pyobject(type);
+            return nd::view(result, tp);
+        }
     }
 
     // TODO: add python buffer protocol support here

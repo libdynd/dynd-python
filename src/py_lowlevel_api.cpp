@@ -13,6 +13,7 @@
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/kernels/rolling_ckernel_deferred.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
+#include <dynd/kernels/take_ckernel_deferred.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "numpy_ufunc_kernel.hpp"
@@ -369,6 +370,17 @@ namespace {
             tp.get_type_id(), minp));
     }
 
+    PyObject *make_take_ckernel_deferred(PyObject *dst_tp_obj,
+                                         PyObject *src_tp_obj,
+                                         PyObject *mask_tp_obj)
+    {
+        ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+        ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+        ndt::type mask_tp = make_ndt_type_from_pyobject(mask_tp_obj);
+        return wrap_array(
+            kernels::make_take_ckernel_deferred(dst_tp, src_tp, mask_tp));
+    }
+
     const py_lowlevel_api_t py_lowlevel_api = {
         0, // version, should increment this every time the struct changes at a release
         &get_array_ptr,
@@ -383,7 +395,8 @@ namespace {
         &lift_reduction_ckernel_deferred,
         &pydynd::ckernel_deferred_from_pyfunc,
         &make_rolling_ckernel_deferred,
-        &make_builtin_mean1d_ckernel_deferred
+        &make_builtin_mean1d_ckernel_deferred,
+        &make_take_ckernel_deferred
     };
 } // anonymous namespace
 

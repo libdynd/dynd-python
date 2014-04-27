@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 from dynd._pydynd import w_type as type, \
         make_byteswap, make_fixedbytes, make_convert, \
@@ -39,3 +39,5 @@ bytes = type('bytes')
 
 # Includes ctypes definitions
 from . import dynd_ctypes as ctypes
+# Some classes making dimension construction easier
+from .dim_helpers import *

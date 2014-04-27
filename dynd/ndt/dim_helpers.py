@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 from dynd._pydynd import w_type, \
         make_var_dim, make_strided_dim, make_fixed_dim, make_cfixed_dim
 
-__all__ = ['DimCollector', 'var', 'strided', 'fixed', 'cfixed']
+__all__ = ['var', 'strided', 'fixed', 'cfixed']
 
 
 class DimHelper(object):
@@ -18,20 +18,23 @@ class DimHelper(object):
             return rhs
         elif isinstance(rhs, DimHelper):
             # Combine the dimension fragments
-            return DimCollector(*(self.dims + rhs.dims))
+            return DimFragment(self.dims + rhs.dims)
         else:
             raise TypeError('Expected a dynd dimension or type, not %r' % rhs)
 
+    def __pow__(self, count):
+        return DimFragment(self.dims * count)
 
-class DimCollector(DimHelper):
+
+class DimFragment(DimHelper):
     __slots__ = ['dims']
 
-    def __init__(self, *dims):
+    def __init__(self, dims):
         self.dims = dims
 
     def __repr__(self):
-        return 'ndt.DimCollector(%s)' % ', '.join(repr(dim)
-                                                  for dim in self.dims)
+        return ' * '.join(repr(dim) for dim in self.dims)
+
 
 class VarHelper(DimHelper):
     """
@@ -39,14 +42,16 @@ class VarHelper(DimHelper):
 
     Examples
     --------
-
     >>> ndt.var * ndt.int32
+    ndt.type('var * int32')
+    >>> ndt.fixed[5] * ndt.var * ndt.float64
+    ndt.type('5 * var * float64')
     """
     __slots__ = []
 
     @property
     def dims(self):
-        return [self]
+        return (self,)
 
     def create(self, eltype):
         return make_var_dim(eltype)
@@ -56,6 +61,16 @@ class VarHelper(DimHelper):
 
 
 class StridedHelper(DimHelper):
+    """
+    Creates a strided dimension when combined with other types.
+
+    Examples
+    --------
+    >>> ndt.strided * ndt.int32
+    ndt.type('strided * int32')
+    >>> ndt.fixed[5] * ndt.strided * ndt.float64
+    ndt.type('5 * strided * float64')
+    """
     __slots__ = []
 
     @property
@@ -68,11 +83,18 @@ class StridedHelper(DimHelper):
     def __repr__(self):
         return 'ndt.strided'
 
-    def __pow__(self, count):
-        return DimCollector(*((self,) * count))
-
 
 class FixedHelper(DimHelper):
+    """
+    Creates a fixed dimension when combined with other types.
+
+    Examples
+    --------
+    >>> ndt.fixed[3] * ndt.int32
+    ndt.type('3 * int32')
+    >>> ndt.fixed[5] * ndt.var * ndt.float64
+    ndt.type('5 * var * float64')
+    """
     __slots__ = ['dim_size']
 
     def __init__(self, dim_size = None):
@@ -100,6 +122,16 @@ class FixedHelper(DimHelper):
 
 
 class CFixedHelper(DimHelper):
+    """
+    Creates a cfixed dimension when combined with other types.
+
+    Examples
+    --------
+    >>> ndt.cfixed[3] * ndt.int32
+    ndt.type('cfixed[3] * int32')
+    >>> ndt.fixed[5] * ndt.cfixed[2] * ndt.float64
+    ndt.type('5 * cfixed[2] * float64')
+    """
     __slots__ = ['dim_size']
 
     def __init__(self, dim_size = None):

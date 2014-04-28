@@ -150,3 +150,23 @@ similar to the blockref string type.
     >>> ndt.make_pointer(ndt.complex_float32)
     ndt.type('pointer[complex[float32]]')
 
+Array Types
+-----------
+
+There are a few different array types, with different properties
+with respect to the flexibility of size and memory layout.
+
+.. code-block:: python
+
+    >>> ndt.strided * ndt.float32
+    ndt.type('strided * float32')
+
+    >>> ndt.fixed[10] * ndt.bool
+    ndt.type('10 * bool')
+
+    >>> ndt.cfixed[12] * ndt.int32
+    ndt.type('cfixed[12] * int32')
+    
+    >>> ndt.strided * ndt.var * '{x : int32, y : float32}'
+    ndt.type('strided * var * {x : int32, y : float32}')
+

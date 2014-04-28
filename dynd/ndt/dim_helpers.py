@@ -16,6 +16,11 @@ class DimHelper(object):
             for dim in reversed(self.dims):
                 rhs = dim.create(rhs)
             return rhs
+        elif isinstance(rhs, str):
+            rhs = w_type(rhs)
+            for dim in reversed(self.dims):
+                rhs = dim.create(rhs)
+            return rhs
         elif isinstance(rhs, DimHelper):
             # Combine the dimension fragments
             return DimFragment(self.dims + rhs.dims)

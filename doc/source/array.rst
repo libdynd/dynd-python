@@ -150,11 +150,11 @@ There are some cases where a DyND array will not seamlessly convert
 into a NumPy array. The behavior of NumPy is usually to ignore errors
 that occur, and switch to an "object" array instead.
 
-... code-block:: python
+.. code-block:: python
 
     >>> x = nd.array([1, 2, 3]).ucast(ndt.float32)
     >>> x
-    nd.array([1, 2, 3], type="strided * convert<to=float32, from=int32>")
+    nd.array([1, 2, 3], type="strided * convert[to=float32, from=int32]")
     >>> np.array(x)
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>

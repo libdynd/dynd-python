@@ -215,7 +215,7 @@ class TestDType(unittest.TestCase):
         catdt = ndt.factor_categorical(a)
         b = a.ucast(catdt)
         x = repr(b)
-        self.assertEqual('["M", 13]' in x)
+        self.assertTrue('["M", 13]' in x)
 
 
     def test_type_shape(self):

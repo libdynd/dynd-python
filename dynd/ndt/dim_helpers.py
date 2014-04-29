@@ -6,7 +6,7 @@ from dynd._pydynd import w_type, \
 __all__ = ['var', 'strided', 'fixed', 'cfixed']
 
 
-class DimHelper(object):
+class _Dim(object):
     __slots__ = []
 
     def __mul__(self, rhs):
@@ -24,17 +24,17 @@ class DimHelper(object):
             for dim in reversed(self.dims):
                 rhs = dim.create(rhs)
             return rhs
-        elif isinstance(rhs, DimHelper):
+        elif isinstance(rhs, _Dim):
             # Combine the dimension fragments
-            return DimFragment(self.dims + rhs.dims)
+            return _DimFragment(self.dims + rhs.dims)
         else:
             raise TypeError('Expected a dynd dimension or type, not %r' % rhs)
 
     def __pow__(self, count):
-        return DimFragment(self.dims * count)
+        return _DimFragment(self.dims * count)
 
 
-class DimFragment(DimHelper):
+class _DimFragment(_Dim):
     __slots__ = ['dims']
 
     def __init__(self, dims):
@@ -44,7 +44,7 @@ class DimFragment(DimHelper):
         return ' * '.join(repr(dim) for dim in self.dims)
 
 
-class VarHelper(DimHelper):
+class _Var(_Dim):
     """
     Creates a var dimension when combined with other types.
 
@@ -68,7 +68,7 @@ class VarHelper(DimHelper):
         return 'ndt.var'
 
 
-class StridedHelper(DimHelper):
+class _Strided(_Dim):
     """
     Creates a strided dimension when combined with other types.
 
@@ -92,7 +92,7 @@ class StridedHelper(DimHelper):
         return 'ndt.strided'
 
 
-class FixedHelper(DimHelper):
+class _Fixed(_Dim):
     """
     Creates a fixed dimension when combined with other types.
 
@@ -120,7 +120,7 @@ class FixedHelper(DimHelper):
         return make_fixed_dim(self.dim_size, eltype)
 
     def __getitem__(self, dim_size):
-        return FixedHelper(dim_size)
+        return _Fixed(dim_size)
 
     def __repr__(self):
         if self.dim_size is not None:
@@ -129,7 +129,7 @@ class FixedHelper(DimHelper):
             return 'ndt.fixed'
 
 
-class CFixedHelper(DimHelper):
+class _CFixed(_Dim):
     """
     Creates a cfixed dimension when combined with other types.
 
@@ -157,7 +157,7 @@ class CFixedHelper(DimHelper):
         return make_cfixed_dim(self.dim_size, eltype)
 
     def __getitem__(self, dim_size):
-        return CFixedHelper(dim_size)
+        return _CFixed(dim_size)
 
     def __repr__(self):
         if self.dim_size is not None:
@@ -166,7 +166,7 @@ class CFixedHelper(DimHelper):
             return 'ndt.cfixed'
 
 
-var = VarHelper()
-strided = StridedHelper()
-fixed = FixedHelper()
-cfixed = CFixedHelper()
+var = _Var()
+strided = _Strided()
+fixed = _Fixed()
+cfixed = _CFixed()

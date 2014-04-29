@@ -16,7 +16,10 @@ class DimHelper(object):
             for dim in reversed(self.dims):
                 rhs = dim.create(rhs)
             return rhs
-        elif isinstance(rhs, str):
+        elif isinstance(rhs, (str, type)):
+            # Allow:
+            #  ndt.strided * 'int32'
+            #  ndt.strided * int
             rhs = w_type(rhs)
             for dim in reversed(self.dims):
                 rhs = dim.create(rhs)

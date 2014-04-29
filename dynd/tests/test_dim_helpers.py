@@ -15,6 +15,12 @@ class TestDimHelpers(unittest.TestCase):
         self.assertEqual((ndt.strided * ndt.fixed[2]) ** 2 * ndt.int16,
                          ndt.type('strided * 2 * strided * 2 * int16'))
 
+    def test_create_fromtype(self):
+        self.assertEqual(ndt.strided * int, ndt.type('strided * int'))
+        self.assertEqual(ndt.strided * float, ndt.type('strided * real'))
+        self.assertEqual(ndt.strided * complex, ndt.type('strided * complex'))
+        self.assertEqual(ndt.strided * str, ndt.type('strided * string'))
+
     def test_create_struct(self):
         self.assertEqual(ndt.strided * ndt.var * '{x : int32, y : float32}',
                          ndt.type('strided * var * {x : int32, y : float32}'))

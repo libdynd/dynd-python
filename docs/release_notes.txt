@@ -1,5 +1,23 @@
 DyND-Python Release Notes
-===================
+=========================
+
+Release 0.6.2
+-------------
+
+Commits by author since last release:
+
+    73  Mark Wiebe
+     3  T.J. Alumbaugh
+     1  Andy R. Terrel
+     1  Damien Garaud
+
+- Updates to reflect libdynd ndt.type changes, including changes to
+  new datashape spelling from the datashape project, data/time/datetime,
+  cfixed[N] and fixed[N].
+- Expose various ckernel updates from libdynd to Python.
+- Slicing handles out of bounds indices more like Python now.
+- Add type= parameter to nd.view, to switch between some common dimension
+  types, view bytes as POD data, and POD data as bytes.
 
 Release 0.6.1
 -------------

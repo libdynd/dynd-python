@@ -101,6 +101,16 @@ class TestDate(unittest.TestCase):
                                                      century_window=1850))),
                          date(1901, 2, 3))
 
+    def test_json_date_parse(self):
+        a = nd.parse_json('var * date', '["2012-03-17", "1922-12-30"]')
+        self.assertEqual(nd.as_py(a), [date(2012, 3, 17), date(1922, 12, 30)])
+        self.assertRaises(ValueError, nd.parse_json, 'var * date',
+                          '["2012-03-17T17:00:15-0600", "1922-12-30 Thursday"]')
+        a = nd.parse_json('var * date',
+                          '["2012-06-17T17:00:15-0600", "1921-12-30 Thursday"]',
+                          ectx=nd.eval_context(default_errmode='none'))
+        self.assertEqual(nd.as_py(a), [date(2012, 6, 17), date(1921, 12, 30)])
+
 class TestTime(unittest.TestCase):
     def test_time_type_properties(self):
         self.assertEqual(type(ndt.time), ndt.type)

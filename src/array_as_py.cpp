@@ -242,7 +242,7 @@ PyObject* pydynd::array_as_py(const dynd::nd::array& n, bool struct_as_pytuple)
     array_as_py_data result;
     result.struct_as_pytuple = struct_as_pytuple;
 
-    nested_array_as_py(nvals.get_type(), nvals.get_ndo_meta(), nvals.get_ndo()->m_data_pointer, &result);
+    nested_array_as_py(nvals.get_type(), nvals.get_arrmeta(), nvals.get_ndo()->m_data_pointer, &result);
     return result.result.release();
 }
 

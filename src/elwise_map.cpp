@@ -63,12 +63,12 @@ namespace {
             strided_dim_type_metadata *md;
             // Modify the temporary arrays to point at the data.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
-            md = reinterpret_cast<strided_dim_type_metadata *>(ndo[0]->v.get_ndo_meta());
+            md = reinterpret_cast<strided_dim_type_metadata *>(ndo[0]->v.get_arrmeta());
             md->size = count;
             md->stride = dst_stride;
             for (size_t i = 0; i != src_count; ++i) {
                 ndo[i+1]->v.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
-                md = reinterpret_cast<strided_dim_type_metadata *>(ndo[i+1]->v.get_ndo_meta());
+                md = reinterpret_cast<strided_dim_type_metadata *>(ndo[i+1]->v.get_arrmeta());
                 md->size = count;
                 md->stride = src_stride[i];
             }
@@ -280,12 +280,12 @@ public:
         nd::array n(make_array_memory_block(dt.get_metadata_size()));
         n.get_ndo()->m_type = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
-        md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
+        md = reinterpret_cast<strided_dim_type_metadata *>(n.get_arrmeta());
         md->size = 1;
         md->stride = 0;
         if (dst_tp.get_metadata_size() > 0) {
             dst_tp.extended()->metadata_copy_construct(
-                            n.get_ndo_meta() + sizeof(strided_dim_type_metadata),
+                            n.get_arrmeta() + sizeof(strided_dim_type_metadata),
                             dst_metadata, NULL);
         }
         ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
@@ -294,12 +294,12 @@ public:
             n.set(make_array_memory_block(dt.get_metadata_size()));
             n.get_ndo()->m_type = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
-            md = reinterpret_cast<strided_dim_type_metadata *>(n.get_ndo_meta());
+            md = reinterpret_cast<strided_dim_type_metadata *>(n.get_arrmeta());
             md->size = 1;
             md->stride = 0;
             if (src_tp[i].get_metadata_size() > 0) {
                 src_tp[i].extended()->metadata_copy_construct(
-                                n.get_ndo_meta() + sizeof(strided_dim_type_metadata),
+                                n.get_arrmeta() + sizeof(strided_dim_type_metadata),
                                 src_metadata[i], NULL);
             }
             ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));

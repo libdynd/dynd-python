@@ -79,6 +79,9 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.TUPLE)
         self.assertEqual(self.type_id_of(ndt.type('c(int32, int32)')),
                         _lowlevel.type_id.CTUPLE)
+        # NDArrayArg
+        self.assertEqual(self.type_id_of(ndt.type('ndarrayarg')),
+                         _lowlevel.type_id.NDARRAYARG)
         # Convert/byteswap/view
         self.assertEqual(self.type_id_of(ndt.make_convert(
                                     ndt.int32, ndt.int8)),

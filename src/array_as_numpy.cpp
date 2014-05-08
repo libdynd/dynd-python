@@ -735,7 +735,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     n.get_shape(shape.get());
     n.get_strides(strides.get());
     as_numpy_analysis(&numpy_dtype, &requires_copy,
-                    ndim, n.get_type(), n.get_ndo_meta());
+                    ndim, n.get_type(), n.get_arrmeta());
     if (requires_copy) {
         if (!allow_copy) {
             stringstream ss;
@@ -744,7 +744,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
             throw dynd::type_error(ss.str());
         }
         make_numpy_dtype_for_copy(&numpy_dtype,
-                        ndim, n.get_type(), n.get_ndo_meta());
+                        ndim, n.get_type(), n.get_arrmeta());
 
         // Rebuild the strides so that the copy follows 'KEEPORDER'
         intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;

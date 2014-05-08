@@ -123,7 +123,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         if (WArray_Check(value)) {
             const nd::array& v = ((WArray *)value)->v;
             typed_data_assign(dt, metadata, data,
-                        v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
+                        v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         } else if (PyBool_Check(value)) {
             dynd_bool v = (value == Py_True);
             typed_data_assign(dt, metadata, data,
@@ -225,11 +225,11 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         } else if (PyArray_Check(value)) {
             const nd::array& v = array_from_numpy_array((PyArrayObject *)value, 0, false);
             typed_data_assign(dt, metadata, data,
-                        v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
+                        v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         } else if (PyArray_IsScalar(value, Generic)) {
             const nd::array& v = array_from_numpy_scalar(value, 0);
             typed_data_assign(dt, metadata, data,
-                        v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
+                        v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         } else if (PyArray_DescrCheck(value)) {
             const ndt::type& v = make_ndt_type_from_pyobject(value);
             typed_data_assign(dt, metadata, data,
@@ -260,7 +260,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             // Fall back strategy, where we convert to nd::array, then assign
             nd::array v = array_from_py(value, 0, false);
             typed_data_assign(dt, metadata, data,
-                            v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
+                            v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         }
     }
 }
@@ -741,13 +741,13 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
     if (WArray_Check(value)) {
         const nd::array& n = ((WArray *)value)->v;
         typed_data_assign(dt, metadata, data,
-                        n.get_type(), n.get_ndo_meta(), n.get_readonly_originptr());
+                        n.get_type(), n.get_arrmeta(), n.get_readonly_originptr());
         return;
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_Check(value)) {
         const nd::array& v = array_from_numpy_array((PyArrayObject *)value, 0, false);
         typed_data_assign(dt, metadata, data,
-                    v.get_type(), v.get_ndo_meta(), v.get_readonly_originptr());
+                    v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         return;
 #endif // DYND_NUMPY_INTEROP
     }
@@ -788,9 +788,9 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
                             min(dst_ndim - seq_ndim, dt.get_ndim())).get_canonical_type();
             nd::array tmp(make_array_memory_block(partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
                             shape.get() + (dst_ndim - seq_ndim)));
-            array_assign_from_value(tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readwrite_originptr(),
+            array_assign_from_value(tmp.get_type(), tmp.get_arrmeta(), tmp.get_readwrite_originptr(),
                             value);
-            typed_data_assign(dt, metadata, data, tmp.get_type(), tmp.get_ndo_meta(), tmp.get_readonly_originptr());
+            typed_data_assign(dt, metadata, data, tmp.get_type(), tmp.get_arrmeta(), tmp.get_readonly_originptr());
         } else {
             array_assign_from_value(dt, metadata, data, value);
         }
@@ -804,5 +804,5 @@ void pydynd::array_nodim_broadcast_assign_from_py(const dynd::ndt::type& dt, con
 
 void pydynd::array_broadcast_assign_from_py(const dynd::nd::array& n, PyObject *value)
 {
-    array_broadcast_assign_from_py(n.get_type(), n.get_ndo_meta(), n.get_readwrite_originptr(), value);
+    array_broadcast_assign_from_py(n.get_type(), n.get_arrmeta(), n.get_readwrite_originptr(), value);
 }

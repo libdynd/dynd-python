@@ -96,7 +96,7 @@ class TestPythonScalar(unittest.TestCase):
     def test_len(self):
         # Can't get the length of a zero-dimensional dynd array
         a = nd.array(10)
-        self.assertRaises(TypeError, len, a)
+        self.assertRaises(ValueError, len, a)
 
 if __name__ == '__main__':
     unittest.main()

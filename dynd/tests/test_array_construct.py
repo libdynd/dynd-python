@@ -40,6 +40,33 @@ class TestScalarConstructor(unittest.TestCase):
         a = nd.full(ndt.int32, value=1, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
 
+class TestArrayConstruct(unittest.TestCase):
+    def test_empty_array(self):
+        # Empty arrays default to int32
+        a = nd.array([])
+        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(a.shape, (0,))
+        a = nd.array([[], [], []])
+        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(a.shape, (3, 0))
+
+    def test_empty_array_dtype(self):
+        a = nd.array([], dtype=ndt.int64)
+        self.assertEqual(nd.type_of(a), ndt.type('strided * int64'))
+        self.assertEqual(a.shape, (0,))
+        a = nd.array([], dtype='strided * float64')
+        self.assertEqual(nd.type_of(a), ndt.type('strided * float64'))
+        self.assertEqual(a.shape, (0,))
+        a = nd.array([], dtype='var * int16')
+        self.assertEqual(nd.type_of(a), ndt.type('var * int16'))
+        self.assertEqual(len(a), 0)
+        a = nd.array([], dtype='0 * int16')
+        self.assertEqual(nd.type_of(a), ndt.type('0 * int16'))
+        self.assertEqual(len(a), 0)
+        a = nd.array([], dtype='3 * int16')
+        self.assertEqual(nd.type_of(a), ndt.type('strided * 3 * int16'))
+        self.assertEqual(a.shape, (0, 3))
+
 class TestTypedArrayConstructors(unittest.TestCase):
     def test_empty(self):
         # Constructor from scalar type
@@ -409,15 +436,6 @@ class TestAsArrayConstructor(unittest.TestCase):
         self.assertEqual(b.access_flags, 'readwrite')
 
 class TestStringConstruct(unittest.TestCase):
-    def test_empty_array(self):
-        # Empty arrays default to int32
-        a = nd.array([])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
-        self.assertEqual(a.shape, (0,))
-        a = nd.array([[], [], []])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
-        self.assertEqual(a.shape, (3, 0))
-
     def test_string(self):
         a = nd.array('abc', type=ndt.string)
         self.assertEqual(nd.type_of(a), ndt.string)

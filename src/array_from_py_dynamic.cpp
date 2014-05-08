@@ -634,6 +634,11 @@ static void array_from_py_dynamic_first_alloc(
     }
 #endif
 
+    if (PyDict_Check(obj)) {
+        throw invalid_argument("cannot automatically deduce dynd type to "
+                               "convert dict into nd.array");
+    }
+
     if (PySequence_Check(obj)) {
         Py_ssize_t size = PySequence_Size(obj);
         if (size != -1) {
@@ -957,6 +962,11 @@ static void array_from_py_dynamic(
         ss << pystring_as_string(typestr.get());
         ss << " after a dimension type while converting to a dynd array";
         throw runtime_error(ss.str());
+    }
+
+    if (PyDict_Check(obj)) {
+        throw invalid_argument("cannot automatically deduce dynd type to "
+                               "convert dict into nd.array");
     }
 
     // We're processing a dimension

@@ -893,5 +893,12 @@ class TestConstructErrors(unittest.TestCase):
         self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')
         self.assertRaises(ValueError, nd.array, access='readwrite')
 
+    def test_dict_auto_detect(self):
+        # Trigger failure in initial auto detect pass
+        self.assertRaises(ValueError, nd.array, {'x' : 1})
+        self.assertRaises(ValueError, nd.array, [{'x' : 1}])
+        # Trigger failure in later type promotion
+        self.assertRaises(ValueError, nd.array, [['a'], {'x' : 1}])
+
 if __name__ == '__main__':
     unittest.main()

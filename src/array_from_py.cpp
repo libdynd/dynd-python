@@ -651,7 +651,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type& tp, bool f
             }
             else if (size == 0) {
                 // Special case an empty list as the input
-                if (tp.get_dim_size(NULL, NULL) <= 0) {
+                if (tp.get_ndim() > 0 && tp.get_dim_size(NULL, NULL) <= 0) {
                     // The leading dimension is fixed size-0, strided,
                     // or var, so compatible
                     result = nd::empty(0, tp);

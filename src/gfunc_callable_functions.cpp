@@ -247,7 +247,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
             params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], dt);
     nd::array result = c.call_generic(params);
     if (result.get_type().is_scalar()) {
-        return array_as_py(result);
+        return array_as_py(result, false);
     } else {
         return wrap_array(result);
     }

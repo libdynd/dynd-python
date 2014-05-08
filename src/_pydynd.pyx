@@ -1455,9 +1455,9 @@ def is_f_contiguous(w_array a):
     """
     return array_is_f_contiguous(GET(a.v))
 
-def as_py(w_array n):
+def as_py(w_array n, tuple=False):
     """
-    nd.as_py(n)
+    nd.as_py(n, tuple=False)
 
     Evaluates the dynd array, converting it into native Python types.
 
@@ -1469,6 +1469,9 @@ def as_py(w_array n):
     ----------
     n : dynd array
         The dynd array to convert into native Python types.
+    tuple : bool
+        If true, produce tuples instead of dicts when converting
+        dynd struct arrays.
 
     Examples
     --------
@@ -1480,7 +1483,8 @@ def as_py(w_array n):
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
-    return array_as_py(GET(n.v))
+    cdef bint tup = tuple
+    return array_as_py(GET(n.v), tup != 0)
 
 def as_numpy(w_array n, allow_copy=False):
     """

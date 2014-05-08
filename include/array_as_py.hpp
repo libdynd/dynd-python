@@ -15,8 +15,12 @@ namespace pydynd {
 /**
  * Converts an nd::array into a Python object
  * using the default settings.
+ *
+ * \param n  The nd::array to convert into a PyObject*.
+ * \param struct_as_pytuple  If true, converts structs into tuples, otherwise
+ *                           converts them into dicts.
  */
-PyObject *array_as_py(const dynd::nd::array& n);
+PyObject *array_as_py(const dynd::nd::array& n, bool struct_as_pytuple);
 
 } // namespace pydynd
 

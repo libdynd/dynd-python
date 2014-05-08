@@ -704,7 +704,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
                     return array_as_numpy(n_tmp.get(), true);
                 } else if (n.get_type().get_kind() == string_kind) {
                     // If it's a string kind, return it as a Python unicode
-                    return array_as_py(n);
+                    return array_as_py(n, false);
                 }
                 stringstream ss;
                 ss << "dynd as_numpy could not convert dynd type ";

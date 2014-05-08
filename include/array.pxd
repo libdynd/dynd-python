@@ -108,7 +108,7 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
 
     ndarray array_cast(ndarray&, ndt_type&, object) except +translate_exception
     ndarray array_ucast(ndarray&, ndt_type&, size_t, object) except +translate_exception
-    object array_as_py(ndarray&) except +translate_exception
+    object array_as_py(ndarray&, bint) except +translate_exception
     object array_as_numpy(object, bint) except +translate_exception
     ndarray array_from_py(object) except +translate_exception
 

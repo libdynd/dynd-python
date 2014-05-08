@@ -101,7 +101,7 @@ PyObject *pydynd::array_index(const dynd::nd::array& n)
     switch (n.get_type().get_kind()) {
         case int_kind:
         case uint_kind:
-            return array_as_py(n);
+            return array_as_py(n, false);
         default:
             PyErr_SetString(PyExc_TypeError,
                             "dynd array must have kind 'int'"
@@ -530,8 +530,9 @@ namespace {
         bool found;
     };
 
-    void contains_callback(const ndt::type &DYND_UNUSED(dt), char *data,
-                    const char *DYND_UNUSED(metadata), void *callback_data)
+    void contains_callback(const ndt::type &DYND_UNUSED(dt),
+                           const char *DYND_UNUSED(metadata), char *data,
+                           void *callback_data)
     {
         contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
         if (!cd->found && (*cd->k)(cd->x_data, data)) {
@@ -592,7 +593,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     aux.x_data = x_data;
     aux.k = &k;
     aux.found = false;
-    budd->foreach_leading(const_cast<char *>(data), metadata, &contains_callback, &aux);
+    budd->foreach_leading(metadata, const_cast<char *>(data), &contains_callback, &aux);
     return aux.found;
 }
 

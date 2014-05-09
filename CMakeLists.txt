@@ -18,9 +18,9 @@ option(USE_SEPARATE_LIBDYND
 # -DUSE_RELATIVE_RPATH=ON/OFF, For OSX, to use the @rpath mechanism
 #   for creating a build which is linked with relative paths. The
 #   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
-if(APPLE)
+if(UNIX)
     option(USE_RELATIVE_RPATH
-        "OSX: Add a relative rpath for libdynd to the dynd python extension module."
+        "Linux/OSX: Add a relative rpath for libdynd to the dynd python extension module."
         OFF)
 endif()
 ################################################
@@ -239,11 +239,17 @@ else()
         PROPERTIES
         COMPILE_FLAGS
         "-Wno-error"
-        # TODO: The rpath used is Anaconda-specific, should make sure it
-        #       works more generally.
-        INSTALL_RPATH
-        "$ORIGIN/../../.."
         )
+    if (USE_RELATIVE_RPATH)
+        set_target_properties(
+            _pydynd
+            PROPERTIES
+            # TODO: The rpath used is Anaconda-specific, should make sure it
+            #       works more generally.
+            INSTALL_RPATH
+            "$ORIGIN/../../.."
+            )
+    endif()
 endif()
 
 if (USE_SEPARATE_LIBDYND)

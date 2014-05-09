@@ -1,0 +1,43 @@
+language: python
+
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+
+branches:
+  only:
+    - master
+
+install:
+  # Install dependencies
+  - pip install numpy nose cython
+#  - pip install scipy
+  # Install libdynd
+  - git clone --depth=1 https://github.com/ContinuumIO/libdynd.git
+  - mkdir libdynd/build
+  - pushd libdynd/build
+  - cmake -DDYND_BUILD_TESTS=OFF -DDYND_INSTALL_LIB=ON ..
+  - make
+  - sudo make install
+  - sudo ldconfig
+  - popd
+  - mkdir build
+  # Build dynd-python
+  - pushd build
+  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_SEPARATE_LIBDYND=ON ..
+  - make
+  - sudo make install
+  - popd
+
+script:
+  - pushd ~
+  - python -c 'import dynd; dynd.test(verbosity=2, exit=True)'
+  - popd
+
+notifications:
+  email: false
+  flowdock: "b08b3ba4fb86fa48121e90b5f67ccb75"
+  on_success: "change"
+  on_failure: "always" # "change"

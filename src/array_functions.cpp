@@ -51,7 +51,7 @@ PyObject *pydynd::array_str(const dynd::nd::array& n)
     }
     const base_string_type *bsd = n_str.get_type().tcast<base_string_type>();
     const char *begin = NULL, *end = NULL;
-    bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
+    bsd->get_string_range(&begin, &end, n_str.get_arrmeta(), n_str.get_readonly_originptr());
     return PyString_FromStringAndSize(begin, end - begin);
 #endif
 }
@@ -82,7 +82,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array& n)
     const base_string_type *bsd =
                     static_cast<const base_string_type *>(n_str.get_type().extended());
     const char *begin = NULL, *end = NULL;
-    bsd->get_string_range(&begin, &end, n_str.get_ndo_meta(), n_str.get_readonly_originptr());
+    bsd->get_string_range(&begin, &end, n_str.get_arrmeta(), n_str.get_readonly_originptr());
 #if PY_VERSION_HEX >= 0x03030000
     // TODO: Might be more efficient to use a different Python 3 API,
     //       avoiding the creation of intermediate UTF-8
@@ -132,7 +132,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
             nd::array n_eval = n.eval();
             const base_string_type *bsd = n_eval.get_type().tcast<base_string_type>();
             const char *begin = NULL, *end = NULL;
-            bsd->get_string_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
+            bsd->get_string_range(&begin, &end, n_eval.get_arrmeta(), n_eval.get_readonly_originptr());
             if (begin != end) {
                 Py_INCREF(Py_True);
                 return Py_True;
@@ -146,7 +146,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
             nd::array n_eval = n.eval();
             const base_bytes_type *bbd = n_eval.get_type().tcast<base_bytes_type>();
             const char *begin = NULL, *end = NULL;
-            bbd->get_bytes_range(&begin, &end, n_eval.get_ndo_meta(), n_eval.get_readonly_originptr());
+            bbd->get_bytes_range(&begin, &end, n_eval.get_arrmeta(), n_eval.get_readonly_originptr());
             while (begin != end) {
                 if (*begin != 0) {
                     Py_INCREF(Py_True);
@@ -560,7 +560,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     if (n.get_type().get_kind() == uniform_dim_kind) {
         dt = n.get_type();
         budd = dt.tcast<base_uniform_dim_type>();
-        metadata = n.get_ndo_meta();
+        metadata = n.get_arrmeta();
         data = n.get_readonly_originptr();
     } else {
         tmp = n.eval();
@@ -569,14 +569,14 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
         }
         dt = tmp.get_type();
         budd = dt.tcast<base_uniform_dim_type>();
-        metadata = tmp.get_ndo_meta();
+        metadata = tmp.get_arrmeta();
         data = tmp.get_readonly_originptr();
     }
 
     // Turn 'x' into a dynd array, and make a comparison kernel
     nd::array x_ndo = array_from_py(x, 0, false);
     const ndt::type& x_dt = x_ndo.get_type();
-    const char *x_metadata = x_ndo.get_ndo_meta();
+    const char *x_metadata = x_ndo.get_arrmeta();
     const char *x_data = x_ndo.get_readonly_originptr();
     const ndt::type& child_dt = budd->get_element_type();
     const char *child_metadata = metadata + budd->get_element_metadata_offset();
@@ -665,7 +665,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(subscript)) {
         long i = PyInt_AS_LONG(subscript);
-        const char *metadata = n.get_ndo_meta();
+        const char *metadata = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
         ndt::type d = n.get_type().at_single(i, &metadata, const_cast<const char **>(&data));
         array_broadcast_assign_from_py(d, metadata, data, value);
@@ -675,7 +675,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         if (i == -1 && PyErr_Occurred()) {
             throw runtime_error("error converting int value");
         }
-        const char *metadata = n.get_ndo_meta();
+        const char *metadata = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
         ndt::type d = n.get_type().at_single(i, &metadata, const_cast<const char **>(&data));
         array_broadcast_assign_from_py(d, metadata, data, value);
@@ -797,8 +797,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     result.get_ndo()->m_type = ndt::type(result_tp).release();
     // First copy all the array data type metadata
     ndt::type tmp_dt = result_tp;
-    char *dst_metadata = result.get_ndo_meta();
-    const char *src_metadata = n.get_ndo_meta();
+    char *dst_metadata = result.get_arrmeta();
+    const char *src_metadata = n.get_arrmeta();
     while (tmp_dt.get_ndim() > 0) {
         if (tmp_dt.get_kind() != uniform_dim_kind) {
             throw runtime_error("nd.fields doesn't support dimensions with pointers yet");

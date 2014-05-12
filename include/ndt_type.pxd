@@ -13,7 +13,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         string_kind
         composite_kind
         expression_kind
-        pattern_kind
+        symbolic_kind
         custom_kind
 
     cdef enum type_id_t:

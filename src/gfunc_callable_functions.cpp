@@ -330,7 +330,7 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
         }
         // Fill in missing parameters from the defaults
         const nd::array& default_parameters = c.get_default_parameters();
-        if (!default_parameters.is_empty()) {
+        if (!default_parameters.is_null()) {
             // Figure out where to start filling in default parameters
             int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count) {
@@ -363,7 +363,7 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
     } else if (args_count < param_count) {
         // Fill in missing parameters from the defaults
         const nd::array& default_parameters = c.get_default_parameters();
-        if (!default_parameters.is_empty()) {
+        if (!default_parameters.is_null()) {
             // Figure out where to start filling in default parameters
             int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count && first_default_param <= (int)args_count) {

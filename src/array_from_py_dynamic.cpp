@@ -878,7 +878,7 @@ static void array_from_py_dynamic(
     dynd::nd::array& arr,
     intptr_t current_axis)
 {
-    if (arr.is_empty()) {
+    if (arr.is_null()) {
         // If the arr is NULL, we're doing the first recursion determining
         // number of dimensions, etc.
         array_from_py_dynamic_first_alloc(obj, shape, coord, elem, arr, current_axis);
@@ -985,7 +985,7 @@ static void array_from_py_dynamic(
                 }
 
                 // In the strided case, the initial data pointer is the same
-                // as the parent's. Note that for current_axis==0, arr.is_empty()
+                // as the parent's. Note that for current_axis==0, arr.is_null()
                 // is guaranteed to be true, so it is impossible to get here.
                 coord[current_axis].data_ptr = coord[current_axis-1].data_ptr;
                 // Process all the elements
@@ -1014,7 +1014,7 @@ static void array_from_py_dynamic(
         if (iter != NULL) {
             pyobject_ownref iter_owner(iter);
             // In the strided case, the initial data pointer is the same
-            // as the parent's. Note that for current_axis==0, arr.is_empty()
+            // as the parent's. Note that for current_axis==0, arr.is_null()
             // is guaranteed to be true, so it is impossible to get here.
             coord[current_axis].data_ptr = coord[current_axis-1].data_ptr;
             // Process all the elements

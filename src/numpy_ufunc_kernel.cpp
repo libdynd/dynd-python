@@ -15,7 +15,7 @@
 #endif
 
 #include <dynd/kernels/expr_kernels.hpp>
-#include <dynd/types/ckernel_deferred_type.hpp>
+#include <dynd/types/arrfunc_type.hpp>
 
 #include "exception_translation.hpp"
 #include "utility_functions.hpp"

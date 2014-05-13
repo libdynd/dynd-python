@@ -11,7 +11,7 @@
 
 #include <dynd/exceptions.hpp>
 #include <dynd/array.hpp>
-#include <dynd/kernels/ckernel_deferred.hpp>
+#include <dynd/func/arrfunc.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -505,7 +505,7 @@ uint32_t pydynd::pyarg_creation_access_flags(PyObject *access)
 
 const dynd::ckernel_deferred *pydynd::pyarg_ckernel_deferred_ro(PyObject *ckd, const char *paramname)
 {
-    if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+    if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != arrfunc_type_id) {
         stringstream ss;
         ss << paramname << " must be an nd.array of type ckernel_deferred";
         throw runtime_error(ss.str());
@@ -515,7 +515,7 @@ const dynd::ckernel_deferred *pydynd::pyarg_ckernel_deferred_ro(PyObject *ckd, c
 
 dynd::ckernel_deferred *pydynd::pyarg_ckernel_deferred_rw(PyObject *ckd, const char *paramname)
 {
-    if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+    if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != arrfunc_type_id) {
         stringstream ss;
         ss << paramname << " must be an nd.array of type ckernel_deferred";
         throw runtime_error(ss.str());

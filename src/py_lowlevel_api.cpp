@@ -9,7 +9,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/kernels/lift_ckernel_deferred.hpp>
 #include <dynd/kernels/lift_reduction_ckernel_deferred.hpp>
-#include <dynd/types/ckernel_deferred_type.hpp>
+#include <dynd/types/arrfunc_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/kernels/rolling_ckernel_deferred.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
@@ -211,7 +211,7 @@ namespace {
             nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
             ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
             // Convert all the input parameters
-            if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+            if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != arrfunc_type_id) {
                 stringstream ss;
                 ss << "ckd must be an nd.array of type ckernel_deferred";
                 throw dynd::type_error(ss.str());
@@ -239,7 +239,7 @@ namespace {
             ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(elwise_reduction_obj) ||
-                        ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+                        ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
                 stringstream ss;
                 ss << "elwise_reduction must be an nd.array of type ckernel_deferred";
                 throw dynd::type_error(ss.str());
@@ -250,7 +250,7 @@ namespace {
 
             nd::array dst_initialization;
             if (WArray_Check(dst_initialization_obj) &&
-                        ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() == ckernel_deferred_type_id) {
+                        ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() == arrfunc_type_id) {
                 dst_initialization = ((WArray *)dst_initialization_obj)->v;;
             } else if (dst_initialization_obj != Py_None) {
                 stringstream ss;
@@ -350,7 +350,7 @@ namespace {
         ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
         ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
         if (!WArray_Check(window_op_obj) ||
-                    ((WArray *)window_op_obj)->v.get_type().get_type_id() != ckernel_deferred_type_id) {
+                    ((WArray *)window_op_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
             stringstream ss;
             ss << "window_op must be an nd.array of type ckernel_deferred";
             throw dynd::type_error(ss.str());

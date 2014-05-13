@@ -8,7 +8,7 @@
 #include <vector>
 
 #include <dynd/array.hpp>
-#include <dynd/types/ckernel_deferred_type.hpp>
+#include <dynd/types/arrfunc_type.hpp>
 
 #include <array_functions.hpp>
 #include <utility_functions.hpp>

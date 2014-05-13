@@ -8,7 +8,7 @@
 
 #include "numpy_interop.hpp"
 #include <numpy/ufuncobject.h>
-#include <dynd/kernels/ckernel_deferred.hpp>
+#include <dynd/func/arrfunc.hpp>
 
 namespace pydynd {
 

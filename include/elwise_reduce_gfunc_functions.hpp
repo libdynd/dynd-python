@@ -15,7 +15,7 @@
 #include <dynd/type.hpp>
 #include <dynd/array.hpp>
 #include <dynd/codegen/codegen_cache.hpp>
-#include <dynd/gfunc/elwise_reduce_gfunc.hpp>
+#include <dynd/func/elwise_reduce_gfunc.hpp>
 
 namespace pydynd {
 

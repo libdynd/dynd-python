@@ -7,7 +7,7 @@
 
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/kernels/lift_ckernel_deferred.hpp>
+#include <dynd/func/lift_arrfunc.hpp>
 #include <dynd/kernels/lift_reduction_ckernel_deferred.hpp>
 #include <dynd/types/arrfunc_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
@@ -205,7 +205,7 @@ namespace {
     }
 
 
-    PyObject *lift_ckernel_deferred(PyObject *ckd, PyObject *types)
+    PyObject *lift_arrfunc(PyObject *ckd, PyObject *types)
     {
         try {
             nd::array out_ckd = nd::empty(ndt::make_arrfunc());
@@ -220,7 +220,7 @@ namespace {
             vector<ndt::type> types_vec;
             pyobject_as_vector_ndt_type(types, types_vec);
             
-            dynd::lift_ckernel_deferred(out_ckd_ptr, ckd_arr, types_vec);
+            dynd::lift_arrfunc(out_ckd_ptr, ckd_arr, types_vec);
 
             return wrap_array(out_ckd);
         } catch(...) {
@@ -391,7 +391,7 @@ namespace {
         &make_arrfunc_from_property,
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc,
-        &lift_ckernel_deferred,
+        &lift_arrfunc,
         &lift_reduction_ckernel_deferred,
         &pydynd::ckernel_deferred_from_pyfunc,
         &make_rolling_ckernel_deferred,

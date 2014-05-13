@@ -85,7 +85,7 @@ namespace {
                 // Propagate error
                 throw exception();
             } else {
-                throw runtime_error("invalid value returned from pyfunc ckernel_deferred instantiate");
+                throw runtime_error("invalid value returned from pyfunc arrfunc instantiate");
             }
         }
         return result;
@@ -94,8 +94,8 @@ namespace {
 
 PyObject *pydynd::ckernel_deferred_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *types)
 {
-    nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
-    ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
+    nd::array out_ckd = nd::empty(ndt::make_arrfunc());
+    arrfunc *out_ckd_ptr = reinterpret_cast<arrfunc *>(out_ckd.get_readwrite_originptr());
 
     vector<ndt::type> types_vec;
     pyobject_as_vector_ndt_type(types, types_vec);

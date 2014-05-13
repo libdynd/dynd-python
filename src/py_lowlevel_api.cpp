@@ -92,7 +92,7 @@ namespace {
             }
             string kt = pystring_as_string(kerntype_obj);
             string fp = pystring_as_string(funcproto_obj);
-            deferred_ckernel_funcproto_t funcproto;
+            arrfunc_proto_t funcproto;
             if (fp == "unary") {
                 funcproto = unary_operation_funcproto;
             } else if (fp == "expr") {
@@ -136,17 +136,17 @@ namespace {
         }
     }
 
-    PyObject *make_ckernel_deferred_from_assignment(PyObject *dst_tp_obj, PyObject *src_tp_obj,
+    PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj, PyObject *src_tp_obj,
                 PyObject *funcproto_obj, PyObject *errmode_obj)
     {
         try {
-            nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
-            ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+            nd::array ckd = nd::empty(ndt::make_arrfunc());
+            arrfunc *ckd_ptr = reinterpret_cast<arrfunc *>(ckd.get_readwrite_originptr());
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
             string fp = pystring_as_string(funcproto_obj);
-            deferred_ckernel_funcproto_t funcproto;
+            arrfunc_proto_t funcproto;
             if (fp == "unary") {
                 funcproto = unary_operation_funcproto;
             } else if (fp == "expr") {
@@ -160,7 +160,7 @@ namespace {
                 throw runtime_error(ss.str());
             }
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-            dynd::make_ckernel_deferred_from_assignment(dst_tp, src_tp, src_tp,
+            dynd::make_arrfunc_from_assignment(dst_tp, src_tp, src_tp,
                             funcproto, errmode, *ckd_ptr);
 
             return wrap_array(ckd);
@@ -170,17 +170,17 @@ namespace {
         }
     }
 
-    PyObject *make_ckernel_deferred_from_property(PyObject *tp_obj, PyObject *propname_obj,
+    PyObject *make_arrfunc_from_property(PyObject *tp_obj, PyObject *propname_obj,
                 PyObject *funcproto_obj, PyObject *errmode_obj)
     {
         try {
-            nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
-            ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+            nd::array ckd = nd::empty(ndt::make_arrfunc());
+            arrfunc *ckd_ptr = reinterpret_cast<arrfunc *>(ckd.get_readwrite_originptr());
 
             ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
             string propname = pystring_as_string(propname_obj);
             string fp = pystring_as_string(funcproto_obj);
-            deferred_ckernel_funcproto_t funcproto;
+            arrfunc_proto_t funcproto;
             if (fp == "unary") {
                 funcproto = unary_operation_funcproto;
             } else if (fp == "expr") {
@@ -194,7 +194,7 @@ namespace {
                 throw runtime_error(ss.str());
             }
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-            dynd::make_ckernel_deferred_from_property(tp, propname,
+            dynd::make_arrfunc_from_property(tp, propname,
                             funcproto, errmode, *ckd_ptr);
 
             return wrap_array(ckd);
@@ -208,8 +208,8 @@ namespace {
     PyObject *lift_ckernel_deferred(PyObject *ckd, PyObject *types)
     {
         try {
-            nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
-            ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
+            nd::array out_ckd = nd::empty(ndt::make_arrfunc());
+            arrfunc *out_ckd_ptr = reinterpret_cast<arrfunc *>(out_ckd.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(ckd) || ((WArray *)ckd)->v.get_type().get_type_id() != arrfunc_type_id) {
                 stringstream ss;
@@ -235,8 +235,8 @@ namespace {
                     PyObject *right_associative_obj, PyObject *reduction_identity_obj)
     {
         try {
-            nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
-            ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
+            nd::array out_ckd = nd::empty(ndt::make_arrfunc());
+            arrfunc *out_ckd_ptr = reinterpret_cast<arrfunc *>(out_ckd.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(elwise_reduction_obj) ||
                         ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
@@ -245,8 +245,8 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
             const nd::array& elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
-            const ckernel_deferred *elwise_reduction_ckd =
-                            reinterpret_cast<const ckernel_deferred *>(elwise_reduction.get_readonly_originptr());
+            const arrfunc *elwise_reduction_ckd =
+                            reinterpret_cast<const arrfunc *>(elwise_reduction.get_readonly_originptr());
 
             nd::array dst_initialization;
             if (WArray_Check(dst_initialization_obj) &&
@@ -387,8 +387,8 @@ namespace {
         &get_base_type_ptr,
         &array_from_ptr,
         &make_assignment_ckernel,
-        &make_ckernel_deferred_from_assignment,
-        &make_ckernel_deferred_from_property,
+        &make_arrfunc_from_assignment,
+        &make_arrfunc_from_property,
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc,
         &lift_ckernel_deferred,

@@ -36,11 +36,11 @@ struct py_lowlevel_api_t {
                                          const void *src_metadata,
                                          PyObject *funcproto,
                                          PyObject *kerntype, PyObject *ectx);
-    PyObject *(*make_ckernel_deferred_from_assignment)(PyObject *dst_tp_obj,
+    PyObject *(*make_arrfunc_from_assignment)(PyObject *dst_tp_obj,
                                                        PyObject *src_tp_obj,
                                                        PyObject *funcproto,
                                                        PyObject *errmode);
-    PyObject *(*make_ckernel_deferred_from_property)(PyObject *tp_obj,
+    PyObject *(*make_arrfunc_from_property)(PyObject *tp_obj,
                                                      PyObject *propname,
                                                      PyObject *funcproto,
                                                      PyObject *errmode);

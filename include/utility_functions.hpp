@@ -16,7 +16,7 @@
 
 namespace dynd {
     // Forward declaration
-    struct ckernel_deferred;
+    struct arrfunc;
 } // namespace dynd
 
 namespace pydynd {
@@ -251,8 +251,8 @@ uint32_t pyarg_access_flags(PyObject* obj);
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
 
-const dynd::ckernel_deferred *pyarg_ckernel_deferred_ro(PyObject *ckd, const char *paramname);
-dynd::ckernel_deferred *pyarg_ckernel_deferred_rw(PyObject *ckd, const char *paramname);
+const dynd::arrfunc *pyarg_ckernel_deferred_ro(PyObject *ckd, const char *paramname);
+dynd::arrfunc *pyarg_ckernel_deferred_rw(PyObject *ckd, const char *paramname);
 
 } // namespace pydynd
 

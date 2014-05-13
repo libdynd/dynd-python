@@ -41,7 +41,7 @@ PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
  *                              Since numpy doesn't have a nice, rigorous way of
  *                              specifying the need for this, we make it a parameter.
  *
- * \returns A ckernel_deferred inside an nd::array.
+ * \returns An arrfunc inside an nd::array.
  */
 PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
                 PyObject *type_tuple, int ckernel_acquires_gil);

@@ -290,8 +290,8 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                 PyObject *type_tuple, int ckernel_acquires_gil)
 {
     try {
-        nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
-        ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+        nd::array ckd = nd::empty(ndt::make_arrfunc());
+        arrfunc *ckd_ptr = reinterpret_cast<arrfunc *>(ckd.get_readwrite_originptr());
 
         // NOTE: This function does not raise C++ exceptions,
         //       it behaves as a Python C-API function.
@@ -360,7 +360,7 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
                     ckd_ptr->free_func = &delete_scalar_ufunc_deferred_data;
                     ckd_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
                     ckd_ptr->data_types_size = nargs;
-                    // Fill in the ckernel_deferred instance data
+                    // Fill in the arrfunc instance data
                     scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(ckd_ptr->data_ptr);
                     data->ufunc = uf;
                     Py_INCREF(uf);

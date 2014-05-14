@@ -9,7 +9,7 @@
 #include <Python.h>
 
 #include <dynd/type.hpp>
-#include <dynd/gfunc/callable.hpp>
+#include <dynd/func/callable.hpp>
 
 #include <sstream>
 

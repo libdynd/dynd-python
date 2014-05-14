@@ -109,27 +109,27 @@ class TestCKernelBuilder(unittest.TestCase):
 
 class TestCKernelDeferred(unittest.TestCase):
     def test_creation(self):
-        ckd = nd.empty('ckernel_deferred')
-        self.assertEqual(nd.type_of(ckd).type_id, 'ckernel_deferred')
-        # Test there is a string version of a NULL ckernel_deferred
+        ckd = nd.empty('arrfunc')
+        self.assertEqual(nd.type_of(ckd).type_id, 'arrfunc')
+        # Test there is a string version of a NULL arrfunc
         self.assertTrue(str(ckd) != '')
         self.assertEqual(nd.as_py(ckd.types), [])
-        # Test there is a string version of an initialized ckernel_deferred
-        ckd = _lowlevel.make_ckernel_deferred_from_assignment(
+        # Test there is a string version of an initialized arrfunc
+        ckd = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
         self.assertTrue(str(ckd) != '')
         self.assertEqual(nd.as_py(ckd.types), [ndt.float32, ndt.int64])
 
     def test_assignment_ckernel(self):
-        ckd = _lowlevel.make_ckernel_deferred_from_assignment(
+        ckd = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
         self.assertEqual(nd.as_py(ckd.types), [ndt.float32, ndt.int64])
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
-            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "single")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "single")
             ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
@@ -139,7 +139,7 @@ class TestCKernelDeferred(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
-            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "strided")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "strided")
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using ctypes
             i64 = (ctypes.c_int64 * 3)()
@@ -152,15 +152,15 @@ class TestCKernelDeferred(unittest.TestCase):
             self.assertEqual([f32[i] for i in range(3)], [3,7,21])
 
     def check_from_numpy_int32_add(self, requiregil):
-        # Get int32 add as a ckernel_deferred
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+        # Get int32 add as an arrfunc
+        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         requiregil)
         self.assertEqual(nd.as_py(ckd.types), [ndt.int32]*3)
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
-            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "single")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "single")
             ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
             a = ctypes.c_int32(10)
             b = ctypes.c_int32(21)
@@ -173,7 +173,7 @@ class TestCKernelDeferred(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
-            _lowlevel.ckernel_deferred_instantiate(ckd, ckb, 0, meta, "strided")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "strided")
             ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
             a = (ctypes.c_int32 * 3)()
             b = (ctypes.c_int32 * 3)()
@@ -201,14 +201,14 @@ class TestCKernelDeferred(unittest.TestCase):
     def test_lift_ckernel(self):
         # First get a ckernel from numpy
         requiregil = False
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.ldexp,
+        ckd = _lowlevel.arrfunc_from_ufunc(np.ldexp,
                         (np.float64, np.float64, np.int32),
                         requiregil)
         self.assertEqual(nd.as_py(ckd.types),
                         [ndt.float64, ndt.float64, ndt.int32])
 
         # Now lift it
-        ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
+        ckd_lifted = _lowlevel.lift_arrfunc(ckd,
                         ['var * var * float64', 'strided * var * float64',
                          'strided * 1 * int32'])
         self.assertEqual(nd.as_py(ckd_lifted.types),
@@ -227,8 +227,8 @@ class TestCKernelDeferred(unittest.TestCase):
                      [float(6*2**100)],
                      [0.001708984375, 0.002197265625, 0.00244140625]])
 
-    def test_ckernel_deferred_from_pyfunc(self):
-        # Test wrapping make_assignment_ckernel as a deferred ckernel
+    def test_arrfunc_from_pyfunc(self):
+        # Test wrapping make_assignment_ckernel as an arrfunc
         def instantiate_assignment(out_ckb, ckb_offset, types, meta,
                                    kerntype, ectx):
             out_ckb = _lowlevel.CKernelBuilderStruct.from_address(out_ckb)
@@ -236,7 +236,7 @@ class TestCKernelDeferred(unittest.TestCase):
                             types[0], meta[0],
                             types[1], meta[1],
                             'expr', kerntype, ectx)
-        ckd = _lowlevel.ckernel_deferred_from_pyfunc(instantiate_assignment,
+        ckd = _lowlevel.arrfunc_from_pyfunc(instantiate_assignment,
                         [ndt.string, ndt.date])
         self.assertEqual(nd.as_py(ckd.types), [ndt.string, ndt.date])
         out = nd.empty(ndt.string)
@@ -244,7 +244,7 @@ class TestCKernelDeferred(unittest.TestCase):
         ckd.__call__(out, in0)
         self.assertEqual(nd.as_py(out), '2012-11-05')
         # Also test it as a lifted kernel
-        ckd_lifted = _lowlevel.lift_ckernel_deferred(ckd,
+        ckd_lifted = _lowlevel.lift_arrfunc(ckd,
                         ['3 * var * string', '3 * var * date'])
         self.assertEqual(nd.as_py(ckd_lifted.types),
                     [ndt.type('3 * var * string'), ndt.type('3 * var * date')])
@@ -262,17 +262,17 @@ class TestCKernelDeferred(unittest.TestCase):
 class TestLiftReductionCKernelDeferred(unittest.TestCase):
     def test_sum_1d(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         in0 = nd.array([3, 12, -5, 10, 2])
         # Simple lift
-        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd, 'strided * int32')
+        sum = _lowlevel.lift_reduction_arrfunc(ckd, 'strided * int32')
         out = nd.empty(ndt.int32)
         sum.__call__(out, in0)
         self.assertEqual(nd.as_py(out), 22)
         # Lift with keepdims
-        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd, 'strided * int32',
+        sum = _lowlevel.lift_reduction_arrfunc(ckd, 'strided * int32',
                                                         keepdims=True)
         out = nd.empty(1, ndt.int32)
         sum.__call__(out, in0)
@@ -280,12 +280,12 @@ class TestLiftReductionCKernelDeferred(unittest.TestCase):
 
     def test_sum_2d_axisall(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Simple lift
-        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+        sum = _lowlevel.lift_reduction_arrfunc(ckd,
                                                  'strided * strided * int32',
                                                  commutative=True,
                                                  associative=True)
@@ -295,12 +295,12 @@ class TestLiftReductionCKernelDeferred(unittest.TestCase):
 
     def test_sum_2d_axis0(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Reduce along axis 0
-        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+        sum = _lowlevel.lift_reduction_arrfunc(ckd,
                                                  'strided * strided * int32',
                                                  axis=0,
                                                  commutative=True,
@@ -311,11 +311,11 @@ class TestLiftReductionCKernelDeferred(unittest.TestCase):
 
     def test_sum_2d_axis1(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.add,
+        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         # Reduce along axis 1
-        sum = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+        sum = _lowlevel.lift_reduction_arrfunc(ckd,
                                                  'strided * strided * int32',
                                                  axis=1,
                                                  commutative=True,
@@ -329,17 +329,17 @@ class TestLiftReductionCKernelDeferred(unittest.TestCase):
 class TestRollingCKernelDeferred(unittest.TestCase):
     def test_diff_op(self):
         # Use the numpy subtract ufunc for this lifting test
-        ckd = _lowlevel.ckernel_deferred_from_ufunc(np.subtract,
+        ckd = _lowlevel.arrfunc_from_ufunc(np.subtract,
                         (np.float64, np.float64, np.float64),
                         False)
         # Lift it to 1D
-        diff_1d = _lowlevel.lift_reduction_ckernel_deferred(ckd,
+        diff_1d = _lowlevel.lift_reduction_arrfunc(ckd,
                                                  'strided * float64',
                                                  axis=0,
                                                  commutative=False,
                                                  associative=False)
         # Apply it as a rolling op
-        diff = _lowlevel.make_rolling_ckernel_deferred('strided * float64',
+        diff = _lowlevel.make_rolling_arrfunc('strided * float64',
                                                        'strided * float64',
                                                        diff_1d, 2)
         in0 = nd.array([1.5, 3.25, 7, -3.5, 1.25])
@@ -351,8 +351,8 @@ class TestRollingCKernelDeferred(unittest.TestCase):
                          [3.25 - 1.5 , 7 - 3.25, -3.5 - 7, 1.25 - -3.5])
 
     def test_rolling_mean(self):
-        mean_1d = _lowlevel.make_builtin_mean1d_ckernel_deferred('float64', -1)
-        rolling_mean = _lowlevel.make_rolling_ckernel_deferred('strided * float64',
+        mean_1d = _lowlevel.make_builtin_mean1d_arrfunc('float64', -1)
+        rolling_mean = _lowlevel.make_rolling_arrfunc('strided * float64',
                                                        'strided * float64',
                                                        mean_1d, 4)
         in0 = nd.array([3.0, 2, 1, 3, 8, nd.nan, nd.nan])

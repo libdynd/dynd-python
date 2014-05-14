@@ -8,18 +8,18 @@
 #include <vector>
 
 #include <dynd/array.hpp>
-#include <dynd/types/ckernel_deferred_type.hpp>
+#include <dynd/types/arrfunc_type.hpp>
 
 #include <array_functions.hpp>
 #include <utility_functions.hpp>
-#include <ckernel_deferred_from_pyfunc.hpp>
+#include <arrfunc_from_pyfunc.hpp>
 
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
 namespace {
-    struct pyfunc_ckernel_deferred_data {
+    struct pyfunc_arrfunc_data {
         // Callable provided from python
         PyObject *instantiate_pyfunc;
         // nd::array of types
@@ -27,24 +27,24 @@ namespace {
         intptr_t data_types_size;
     };
 
-    static void delete_pyfunc_ckernel_deferred_data(void *self_data_ptr)
+    static void delete_pyfunc_arrfunc_data(void *self_data_ptr)
     {
         PyGILState_RAII pgs;
-        pyfunc_ckernel_deferred_data *data =
-                        reinterpret_cast<pyfunc_ckernel_deferred_data *>(self_data_ptr);
+        pyfunc_arrfunc_data *data =
+                        reinterpret_cast<pyfunc_arrfunc_data *>(self_data_ptr);
         Py_XDECREF(data->instantiate_pyfunc);
         Py_XDECREF(data->types);
         free(data);
     }
 
-    static intptr_t instantiate_pyfunc_ckernel_deferred_data(
+    static intptr_t instantiate_pyfunc_arrfunc_data(
         void *self_data_ptr, dynd::ckernel_builder *out_ckb,
         intptr_t ckb_offset, const char *const *dynd_metadata,
         uint32_t kerntype, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
-        pyfunc_ckernel_deferred_data *data =
-                        reinterpret_cast<pyfunc_ckernel_deferred_data *>(self_data_ptr);
+        pyfunc_arrfunc_data *data =
+                        reinterpret_cast<pyfunc_arrfunc_data *>(self_data_ptr);
 
         // Turn the out_ckb pointer into an integer
         pyobject_ownref out_ckb_obj(PyLong_FromSize_t(reinterpret_cast<size_t>(out_ckb)));
@@ -85,34 +85,34 @@ namespace {
                 // Propagate error
                 throw exception();
             } else {
-                throw runtime_error("invalid value returned from pyfunc ckernel_deferred instantiate");
+                throw runtime_error("invalid value returned from pyfunc arrfunc instantiate");
             }
         }
         return result;
     }
 }
 
-PyObject *pydynd::ckernel_deferred_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *types)
+PyObject *pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *types)
 {
-    nd::array out_ckd = nd::empty(ndt::make_ckernel_deferred());
-    ckernel_deferred *out_ckd_ptr = reinterpret_cast<ckernel_deferred *>(out_ckd.get_readwrite_originptr());
+    nd::array out_af = nd::empty(ndt::make_arrfunc());
+    arrfunc *out_af_ptr = reinterpret_cast<arrfunc *>(out_af.get_readwrite_originptr());
 
     vector<ndt::type> types_vec;
     pyobject_as_vector_ndt_type(types, types_vec);
     nd::array types_arr(types_vec);
     
-    out_ckd_ptr->ckernel_funcproto = expr_operation_funcproto;
-    out_ckd_ptr->free_func = &delete_pyfunc_ckernel_deferred_data;
-    out_ckd_ptr->data_types_size = types_vec.size();
-    out_ckd_ptr->data_dynd_types = reinterpret_cast<const ndt::type *>(types_arr.get_readonly_originptr());
-    out_ckd_ptr->data_ptr = malloc(sizeof(pyfunc_ckernel_deferred_data));
-    out_ckd_ptr->instantiate_func = &instantiate_pyfunc_ckernel_deferred_data;
-    pyfunc_ckernel_deferred_data *data_ptr =
-                    reinterpret_cast<pyfunc_ckernel_deferred_data *>(out_ckd_ptr->data_ptr);
+    out_af_ptr->ckernel_funcproto = expr_operation_funcproto;
+    out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
+    out_af_ptr->data_types_size = types_vec.size();
+    out_af_ptr->data_dynd_types = reinterpret_cast<const ndt::type *>(types_arr.get_readonly_originptr());
+    out_af_ptr->data_ptr = malloc(sizeof(pyfunc_arrfunc_data));
+    out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
+    pyfunc_arrfunc_data *data_ptr =
+                    reinterpret_cast<pyfunc_arrfunc_data *>(out_af_ptr->data_ptr);
     data_ptr->data_types_size = types_vec.size();
     data_ptr->instantiate_pyfunc = instantiate_pyfunc;
     Py_INCREF(instantiate_pyfunc);
     data_ptr->types = wrap_array(types_arr);
 
-    return wrap_array(out_ckd);
+    return wrap_array(out_af);
 }

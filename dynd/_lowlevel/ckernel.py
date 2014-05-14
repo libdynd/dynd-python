@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 __all__ = [
         'CKernel', 'CKernelBuilder',
-        'ckernel_deferred_instantiate']
+        'arrfunc_instantiate']
 
 import ctypes
 from .api import api, py_api
@@ -134,21 +134,21 @@ class CKernelBuilder(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
-def ckernel_deferred_instantiate(ckd, out_ckb, ckb_offset, dynd_metadata, kerntype):
+def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dynd_metadata, kerntype):
     if (not isinstance(ckd, nd.array) or
-                nd.type_of(ckd).type_id != 'ckernel_deferred'):
-        raise TypeError('ckd must be an nd.array with type ckernel_deferred')
+                nd.type_of(ckd).type_id != 'arrfunc'):
+        raise TypeError('ckd must be an nd.array with type arrfunc')
     if kerntype in ["single", 0]:
         kerntype = 0
     elif kerntype in ["strided", 1]:
         kerntype = 1
     else:
         raise ValueError("invalid kernel request type %r" % kerntype)
-    # Get the data pointer to the ckernel_deferred object
+    # Get the data pointer to the arrfunc object
     dp = NDArrayPreambleStruct.from_address(py_api.get_array_ptr(ckd)).data_pointer
     ckd_struct = CKernelDeferredStruct.from_address(dp)
     if ckd_struct.instantiate_func is None:
-        raise ValueError('the provided ckernel_deferred is NULL')
+        raise ValueError('the provided arrfunc is NULL')
     ckd_struct.instantiate_func(ckd_struct.data_ptr,
                     out_ckb, ckb_offset, dynd_metadata,
                     kerntype)

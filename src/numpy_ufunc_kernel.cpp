@@ -15,7 +15,7 @@
 #endif
 
 #include <dynd/kernels/expr_kernels.hpp>
-#include <dynd/types/ckernel_deferred_type.hpp>
+#include <dynd/types/arrfunc_type.hpp>
 
 #include "exception_translation.hpp"
 #include "utility_functions.hpp"
@@ -120,7 +120,7 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
 }
 
 namespace {
-    struct scalar_ufunc_deferred_data {
+    struct scalar_ufunc_data {
         PyUFuncObject *ufunc;
         PyUFuncGenericFunction funcptr;
         void *ufunc_data;
@@ -129,16 +129,16 @@ namespace {
         const dynd::base_type *data_types[1];
     };
 
-    static void delete_scalar_ufunc_deferred_data(void *self_data_ptr)
+    static void delete_scalar_ufunc_data(void *self_data_ptr)
     {
-        scalar_ufunc_deferred_data *data =
-                        reinterpret_cast<scalar_ufunc_deferred_data *>(self_data_ptr);
+        scalar_ufunc_data *data =
+                        reinterpret_cast<scalar_ufunc_data *>(self_data_ptr);
         const dynd::base_type **data_types = &data->data_types[0];
         for (intptr_t i = 0; i < data->data_types_size; ++i) {
             base_type_xdecref(data_types[i]);
         }
         // Call the destructor and free the memory
-        data->~scalar_ufunc_deferred_data();
+        data->~scalar_ufunc_data();
         if (data->ufunc != NULL) {
             // Acquire the GIL for the python decref
             PyGILState_RAII pgs;
@@ -254,50 +254,50 @@ namespace {
     {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        scalar_ufunc_deferred_data *data =
-                        reinterpret_cast<scalar_ufunc_deferred_data *>(self_data_ptr);
+        scalar_ufunc_data *data =
+                        reinterpret_cast<scalar_ufunc_data *>(self_data_ptr);
         intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
         out_ckb->ensure_capacity_leaf(ckb_end);
-        scalar_ufunc_ckernel_data *ckd =
+        scalar_ufunc_ckernel_data *af =
                         out_ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
-        ckd->base.destructor = &delete_scalar_ufunc_ckernel_data;
+        af->base.destructor = &delete_scalar_ufunc_ckernel_data;
         if (kerntype == kernel_request_single) {
             if (data->ckernel_acquires_gil) {
-                ckd->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_acquiregil);
+                af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_acquiregil);
             } else {
-                ckd->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_nogil);
+                af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_nogil);
             }
         } else if (kerntype == kernel_request_strided) {
             if (data->ckernel_acquires_gil) {
-                ckd->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_acquiregil);
+                af->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_acquiregil);
             } else {
-                ckd->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_nogil);
+                af->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_nogil);
             }
         } else {
             throw runtime_error("unsupported kernel request in instantiate_scalar_ufunc_ckernel");
         }
-        ckd->funcptr = data->funcptr;
-        ckd->ufunc_data = data->ufunc_data;
-        ckd->data_types_size = data->data_types_size;
-        ckd->ufunc = data->ufunc;
-        Py_INCREF(ckd->ufunc);
+        af->funcptr = data->funcptr;
+        af->ufunc_data = data->ufunc_data;
+        af->data_types_size = data->data_types_size;
+        af->ufunc = data->ufunc;
+        Py_INCREF(af->ufunc);
         return ckb_end;
     }
 
 } // anonymous namespace
 
-PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
-                PyObject *type_tuple, int ckernel_acquires_gil)
+PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
+                                     int ckernel_acquires_gil)
 {
     try {
-        nd::array ckd = nd::empty(ndt::make_ckernel_deferred());
-        ckernel_deferred *ckd_ptr = reinterpret_cast<ckernel_deferred *>(ckd.get_readwrite_originptr());
+        nd::array af = nd::empty(ndt::make_arrfunc());
+        arrfunc *af_ptr = reinterpret_cast<arrfunc *>(af.get_readwrite_originptr());
 
         // NOTE: This function does not raise C++ exceptions,
         //       it behaves as a Python C-API function.
         if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
             stringstream ss;
-            ss << "a numpy ufunc object is required by this function to create a ckernel_deferred, ";
+            ss << "a numpy ufunc object is required by this function to create a arrfunc, ";
             pyobject_ownref repr_obj(PyObject_Repr(ufunc));
             ss << "got " << pystring_as_string(repr_obj.get());
             PyErr_SetString(PyExc_TypeError, ss.str().c_str());
@@ -353,26 +353,26 @@ PyObject *pydynd::ckernel_deferred_from_ufunc(PyObject *ufunc,
             // If we found a full match, return the kernel
             if (matched) {
                 if (!uf->core_enabled) {
-                    size_t out_ckd_size = sizeof(scalar_ufunc_deferred_data) + (nargs - 1) * sizeof(void *);
-                    ckd_ptr->data_ptr = malloc(out_ckd_size);
-                    memset(ckd_ptr->data_ptr, 0, out_ckd_size);
-                    ckd_ptr->ckernel_funcproto = expr_operation_funcproto;
-                    ckd_ptr->free_func = &delete_scalar_ufunc_deferred_data;
-                    ckd_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
-                    ckd_ptr->data_types_size = nargs;
-                    // Fill in the ckernel_deferred instance data
-                    scalar_ufunc_deferred_data *data = reinterpret_cast<scalar_ufunc_deferred_data *>(ckd_ptr->data_ptr);
+                    size_t out_af_size = sizeof(scalar_ufunc_data) + (nargs - 1) * sizeof(void *);
+                    af_ptr->data_ptr = malloc(out_af_size);
+                    memset(af_ptr->data_ptr, 0, out_af_size);
+                    af_ptr->ckernel_funcproto = expr_operation_funcproto;
+                    af_ptr->free_func = &delete_scalar_ufunc_data;
+                    af_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
+                    af_ptr->data_types_size = nargs;
+                    // Fill in the arrfunc instance data
+                    scalar_ufunc_data *data = reinterpret_cast<scalar_ufunc_data *>(af_ptr->data_ptr);
                     data->ufunc = uf;
                     Py_INCREF(uf);
                     data->data_types_size = nargs;
-                    ckd_ptr->data_dynd_types = reinterpret_cast<ndt::type *>(data->data_types);
+                    af_ptr->data_dynd_types = reinterpret_cast<ndt::type *>(data->data_types);
                     for (intptr_t j = 0; j < nargs; ++j) {
                         data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
                     }
                     data->ckernel_acquires_gil = ckernel_acquires_gil;
                     data->funcptr = uf->functions[i];
                     data->ufunc_data = uf->data[i];
-                    return wrap_array(ckd);
+                    return wrap_array(af);
                 } else {
                     // TODO: support gufunc
                     PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");

@@ -11,9 +11,9 @@
 #include <dynd/func/lift_reduction_arrfunc.hpp>
 #include <dynd/types/arrfunc_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
-#include <dynd/kernels/rolling_ckernel_deferred.hpp>
+#include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
-#include <dynd/kernels/take_ckernel_deferred.hpp>
+#include <dynd/func/take_arrfunc.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "numpy_ufunc_kernel.hpp"
@@ -342,7 +342,7 @@ namespace {
         }
     }
 
-    static PyObject *make_rolling_ckernel_deferred(PyObject *dst_tp_obj,
+    static PyObject *make_rolling_arrfunc(PyObject *dst_tp_obj,
                                                    PyObject *src_tp_obj,
                                                    PyObject *window_op_obj,
                                                    PyObject *window_size_obj)
@@ -357,7 +357,7 @@ namespace {
         }
         const nd::array& window_op = ((WArray *)window_op_obj)->v;
         intptr_t window_size = pyobject_as_index(window_size_obj);
-        return wrap_array(::make_rolling_ckernel_deferred(
+        return wrap_array(::make_rolling_arrfunc(
             dst_tp, src_tp, window_op, window_size));
     }
 
@@ -370,7 +370,7 @@ namespace {
             tp.get_type_id(), minp));
     }
 
-    PyObject *make_take_ckernel_deferred(PyObject *dst_tp_obj,
+    PyObject *make_take_arrfunc(PyObject *dst_tp_obj,
                                          PyObject *src_tp_obj,
                                          PyObject *mask_tp_obj)
     {
@@ -378,7 +378,7 @@ namespace {
         ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
         ndt::type mask_tp = make_ndt_type_from_pyobject(mask_tp_obj);
         return wrap_array(
-            kernels::make_take_ckernel_deferred(dst_tp, src_tp, mask_tp));
+            kernels::make_take_arrfunc(dst_tp, src_tp, mask_tp));
     }
 
     const py_lowlevel_api_t py_lowlevel_api = {
@@ -394,9 +394,9 @@ namespace {
         &lift_arrfunc,
         &lift_reduction_arrfunc,
         &pydynd::ckernel_deferred_from_pyfunc,
-        &make_rolling_ckernel_deferred,
+        &make_rolling_arrfunc,
         &make_builtin_mean1d_ckernel_deferred,
-        &make_take_ckernel_deferred
+        &make_take_arrfunc
     };
 } // anonymous namespace
 

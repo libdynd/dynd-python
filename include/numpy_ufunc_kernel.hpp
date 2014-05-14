@@ -32,7 +32,7 @@ PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
 
 /**
  * Given a ufunc and a type tuple supported by that ufunc,
- * returns a deferred ckernel.
+ * returns an arrfunc.
  *
  * \param ufunc  The numpy ufunc.
  * \param type_tuple  The tuple of types defining the kernel signature.
@@ -43,8 +43,8 @@ PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
  *
  * \returns An arrfunc inside an nd::array.
  */
-PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
-                PyObject *type_tuple, int ckernel_acquires_gil);
+PyObject *arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
+                             int ckernel_acquires_gil);
 
 } // namespace pydynd
 

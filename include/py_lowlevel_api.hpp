@@ -45,22 +45,21 @@ struct py_lowlevel_api_t {
                                                      PyObject *funcproto,
                                                      PyObject *errmode);
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
-    PyObject *(*ckernel_deferred_from_ufunc)(PyObject *ufunc,
-                                             PyObject *type_tuple,
-                                             int ckernel_acquires_gil);
-    PyObject *(*lift_ckernel_deferred)(PyObject *ckd, PyObject *types);
+    PyObject *(*arrfunc_from_ufunc)(PyObject *ufunc, PyObject *type_tuple,
+                                    int ckernel_acquires_gil);
+    PyObject *(*lift_arrfunc)(PyObject *af, PyObject *types);
     PyObject *(*lift_reduction_arrfunc)(
         PyObject *elwise_reduction, PyObject *lifted_type,
         PyObject *dst_initialization, PyObject *axis, PyObject *keepdims,
         PyObject *associative, PyObject *commutative,
         PyObject *right_associative, PyObject *reduction_identity);
-    PyObject *(*ckernel_deferred_from_pyfunc)(PyObject *instantiate_pyfunc,
-                                              PyObject *types);
+    PyObject *(*arrfunc_from_pyfunc)(PyObject *instantiate_pyfunc,
+                                     PyObject *types);
     PyObject *(*make_rolling_arrfunc)(PyObject *dst_tp_obj,
                                                PyObject *src_tp_obj,
                                                PyObject *window_op_obj,
                                                PyObject *window_size_obj);
-    PyObject *(*make_builtin_mean1d_ckernel_deferred)(PyObject *tp_obj,
+    PyObject *(*make_builtin_mean1d_arrfunc)(PyObject *tp_obj,
                                                       PyObject *minp_obj);
     PyObject *(*make_take_arrfunc)(PyObject *dst_tp_obj,
                                             PyObject *src_tp_obj,

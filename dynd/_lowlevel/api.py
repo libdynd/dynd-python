@@ -91,12 +91,12 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object)),
-                ('make_ckernel_deferred_from_assignment',
+                ('make_arrfunc_from_assignment',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object)),
-                ('make_ckernel_deferred_from_property',
+                ('make_arrfunc_from_property',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
@@ -104,28 +104,28 @@ class _PyLowLevelAPI(ctypes.Structure):
                 # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
                 ('numpy_typetuples_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object)),
-                # PyObject *ckernel_deferred_from_ufunc(PyObject *ufunc,
+                # PyObject *arrfunc_from_ufunc(PyObject *ufunc,
                 #   PyObject *type_tuple, int ckernel_acquires_gil);
-                ('ckernel_deferred_from_ufunc',
+                ('arrfunc_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
                         ctypes.py_object, ctypes.c_int)),
-                ('lift_ckernel_deferred',
+                ('lift_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                ('_lift_reduction_ckernel_deferred',
+                ('_lift_reduction_arrfunc',
                  ctypes.PYFUNCTYPE(*([ctypes.py_object] * 10))),
-                ('ckernel_deferred_from_pyfunc',
+                ('arrfunc_from_pyfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                ('make_rolling_ckernel_deferred',
+                ('make_rolling_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                ('make_builtin_mean1d_ckernel_deferred',
+                ('make_builtin_mean1d_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                ('make_take_ckernel_deferred',
+                ('make_take_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object)),
@@ -137,31 +137,31 @@ py_api = _PyLowLevelAPI.from_address(_get_py_lowlevel_api())
 # The namespace consists of all the functions in the structs
 __all__ = ([name for name, tp in api._fields_] +
            [name for name, tp in py_api._fields_ if not name.startswith('_')] +
-           ['lift_reduction_ckernel_deferred',
+           ['lift_reduction_arrfunc',
             'make_assignment_ckernel'])
 for a in [api, py_api]:
     for name, tp in a._fields_:
         globals()[name] = getattr(a, name)
 
-def lift_reduction_ckernel_deferred(elwise_reduction, lifted_type,
+def lift_reduction_arrfunc(elwise_reduction, lifted_type,
                 dst_initialization= None, axis=None, keepdims=False,
                 associative=False, commutative=False,
                 right_associative=False, reduction_identity=None):
     """
-    This function creates a lifted reduction ckernel_deferred,
+    This function creates a lifted reduction arrfunc,
     broadcasting or reducing dimensions on top of the elwise_reduction
     ckernel.
 
     Parameters
     ----------
-    elwise_reduction : nd.array of ckernel_deferred type
-        The ckernel_deferred object to lift. This may either be a
+    elwise_reduction : nd.array of arrfunc type
+        The arrfunc object to lift. This may either be a
         unary operation which accumulates values, or a binary
         expr operation.
     lifted_type : ndt.type
         The type to lift the reduction to. This is the type of
         the src value.
-    dst_initialization : nd.array of ckernel_deferred type, optional
+    dst_initialization : nd.array of arrfunc type, optional
         If provided, this initializes an dst accumulator based
         on a src value.
     axis : int OR tuple of int, optional
@@ -191,10 +191,10 @@ def lift_reduction_ckernel_deferred(elwise_reduction, lifted_type,
 
     Returns
     -------
-    nd.array of ckernel_deferred type
-        The lifted reduction ckernel_deferred object.
+    nd.array of arrfunc type
+        The lifted reduction arrfunc object.
     """
-    return _lift_reduction_ckernel_deferred(elwise_reduction,
+    return _lift_reduction_arrfunc(elwise_reduction,
                 lifted_type, dst_initialization, axis, keepdims,
                 associative, commutative, right_associative,
                 reduction_identity)
@@ -457,10 +457,10 @@ array_from_ptr.__doc__ = """
     nd.array
         The dynd array constructed from the parameters.
     """
-make_ckernel_deferred_from_assignment.__doc__ = """
-    _lowlevel.make_ckernel_deferred_from_assignment(dst_tp, src_tp, funcproto, errmode)
+make_arrfunc_from_assignment.__doc__ = """
+    _lowlevel.make_arrfunc_from_assignment(dst_tp, src_tp, funcproto, errmode)
 
-    This ctypes function pointer constructs a ckernel_deferred
+    This ctypes function pointer constructs a arrfunc
     object for an assignment ``src_tp`` to ``dst_tp``.
 
     Parameters
@@ -470,14 +470,14 @@ make_ckernel_deferred_from_assignment.__doc__ = """
     src_tp : ndt.type
         The source type
     funcproto : 'unary' or 'expr'
-        Which kind of function prototype the ckernel_deferred should
+        Which kind of function prototype the arrfunc should
         be for. In 'unary', there is one src and one dst. In 'expr',
         there is an array of src and one dst.
 
     Returns
     -------
-    nd.array of ckernel_deferred type
-        The lifted ckernel_deferred object.
+    nd.array of arrfunc type
+        The lifted arrfunc object.
     """
 numpy_typetuples_from_ufunc.__doc__ = """
     _lowlevel.numpy_typetuples_from_ufunc(ufunc)
@@ -497,11 +497,11 @@ numpy_typetuples_from_ufunc.__doc__ = """
     list of type tuples
         A list of the type tuples for which this ufunc has functions.
     """
-ckernel_deferred_from_ufunc.__doc__ = """
-    _lowlevel.ckernel_deferred_from_ufunc(ufunc, type_tuple, ckernel_acquires_gil)
+arrfunc_from_ufunc.__doc__ = """
+    _lowlevel.arrfunc_from_ufunc(ufunc, type_tuple, ckernel_acquires_gil)
 
-    Constructs a ckernel_deferred object wrapping the specified
-    kernel of the ufunc. The ckernel_deferred is constructed as an 'expr'
+    Constructs a arrfunc object wrapping the specified
+    kernel of the ufunc. The arrfunc is constructed as an 'expr'
     kernel.
 
     Parameters
@@ -518,50 +518,50 @@ ckernel_deferred_from_ufunc.__doc__ = """
 
     Returns
     -------
-    nd.array of ckernel_deferred type
-        The lifted ckernel_deferred object.
+    nd.array of arrfunc type
+        The lifted arrfunc object.
     """
-lift_ckernel_deferred.__doc__ = """
-    _lowlevel.lift_ckernel_deferred(ckd, types)
+lift_arrfunc.__doc__ = """
+    _lowlevel.lift_arrfunc(ckd, types)
 
-    This function creates a lifted ckernel_deferred, broadcasting
+    This function creates a lifted arrfunc, broadcasting
     the provided ``ckd`` across the additional array dimensions
     in the ``types`` parameter.
 
     Parameters
     ----------
-    ckd : nd.array of ckernel_deferred type
-        The ckernel_deferred object to lift.
+    ckd : nd.array of arrfunc type
+        The arrfunc object to lift.
     types : list of dynd types
         The types to lift the ``ckd`` to.
 
     Returns
     -------
-    nd.array of ckernel_deferred type
-        The lifted ckernel_deferred object.
+    nd.array of arrfunc type
+        The lifted arrfunc object.
     """
-ckernel_deferred_from_pyfunc.__doc__ = """
-    _lowlevel.ckernel_deferred_from_pyfunc(instantiate_pyfunc, types)
+arrfunc_from_pyfunc.__doc__ = """
+    _lowlevel.arrfunc_from_pyfunc(instantiate_pyfunc, types)
 
     TODO
     """
-make_rolling_ckernel_deferred.__doc__ = """
-    _lowlevel.make_rolling_ckernel_deferred(dst_tp, src_tp,
+make_rolling_arrfunc.__doc__ = """
+    _lowlevel.make_rolling_arrfunc(dst_tp, src_tp,
                                             window_op, window_size)
 
     This function transforms a 1D reduction op into a rolling window op.
     """
-make_builtin_mean1d_ckernel_deferred.__doc__ = """
-    _lowlevel.make_builtin_mean1d_ckernel_deferred(tp, minp)
+make_builtin_mean1d_arrfunc.__doc__ = """
+    _lowlevel.make_builtin_mean1d_arrfunc(tp, minp)
 
-    This function creates a ckernel_deferred which computes a 1D
+    This function creates a arrfunc which computes a 1D
     mean, using ``minp`` to control NaN behavior. The signature of the
     ckernel is "(strided * <tp>) -> <tp>".
     """
-make_take_ckernel_deferred.__doc__ = """
-    _lowlevel.make_take_ckernel_deferred(dst_tp, src_tp, mask_tp)
+make_take_arrfunc.__doc__ = """
+    _lowlevel.make_take_arrfunc(dst_tp, src_tp, mask_tp)
 
-    This function creates a ckernel_deferred which applies a take
+    This function creates a arrfunc which applies a take
     operation along the first dimension.
 
     Parameters

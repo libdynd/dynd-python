@@ -49,7 +49,7 @@ struct py_lowlevel_api_t {
                                              PyObject *type_tuple,
                                              int ckernel_acquires_gil);
     PyObject *(*lift_ckernel_deferred)(PyObject *ckd, PyObject *types);
-    PyObject *(*lift_reduction_ckernel_deferred)(
+    PyObject *(*lift_reduction_arrfunc)(
         PyObject *elwise_reduction, PyObject *lifted_type,
         PyObject *dst_initialization, PyObject *axis, PyObject *keepdims,
         PyObject *associative, PyObject *commutative,

@@ -8,7 +8,7 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/func/lift_arrfunc.hpp>
-#include <dynd/kernels/lift_reduction_ckernel_deferred.hpp>
+#include <dynd/func/lift_reduction_arrfunc.hpp>
 #include <dynd/types/arrfunc_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/kernels/rolling_ckernel_deferred.hpp>
@@ -229,7 +229,7 @@ namespace {
         }
     }
 
-    PyObject *lift_reduction_ckernel_deferred(PyObject *elwise_reduction_obj, PyObject *lifted_type_obj,
+    PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj, PyObject *lifted_type_obj,
                     PyObject *dst_initialization_obj, PyObject *axis_obj, PyObject *keepdims_obj,
                     PyObject *associative_obj, PyObject *commutative_obj,
                     PyObject *right_associative_obj, PyObject *reduction_identity_obj)
@@ -329,7 +329,7 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
 
-            dynd::lift_reduction_ckernel_deferred(out_ckd_ptr, elwise_reduction,
+            dynd::lift_reduction_arrfunc(out_ckd_ptr, elwise_reduction,
                         lifted_type, dst_initialization, keepdims,
                         reduction_ndim, reduction_dimflags.get(),
                         associative, commutative, right_associative,
@@ -392,7 +392,7 @@ namespace {
         &pydynd::numpy_typetuples_from_ufunc,
         &pydynd::ckernel_deferred_from_ufunc,
         &lift_arrfunc,
-        &lift_reduction_ckernel_deferred,
+        &lift_reduction_arrfunc,
         &pydynd::ckernel_deferred_from_pyfunc,
         &make_rolling_ckernel_deferred,
         &make_builtin_mean1d_ckernel_deferred,

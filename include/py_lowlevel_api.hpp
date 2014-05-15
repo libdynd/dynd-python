@@ -35,7 +35,7 @@ struct py_lowlevel_api_t {
                                          PyObject *src_tp_obj,
                                          const void *src_metadata,
                                          PyObject *funcproto,
-                                         PyObject *kerntype, PyObject *ectx);
+                                         PyObject *kernreq, PyObject *ectx);
     PyObject *(*make_arrfunc_from_assignment)(PyObject *dst_tp_obj,
                                                        PyObject *src_tp_obj,
                                                        PyObject *funcproto,

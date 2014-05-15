@@ -251,7 +251,7 @@ namespace {
         void *self_data_ptr, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
-        uint32_t kerntype, const eval::eval_context *DYND_UNUSED(ectx))
+        uint32_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
     {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
@@ -278,13 +278,13 @@ namespace {
         scalar_ufunc_ckernel_data *af =
             ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
         af->base.destructor = &delete_scalar_ufunc_ckernel_data;
-        if (kerntype == kernel_request_single) {
+        if (kernreq == kernel_request_single) {
             if (data->ckernel_acquires_gil) {
                 af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_acquiregil);
             } else {
                 af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_nogil);
             }
-        } else if (kerntype == kernel_request_strided) {
+        } else if (kernreq == kernel_request_strided) {
             if (data->ckernel_acquires_gil) {
                 af->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_acquiregil);
             } else {

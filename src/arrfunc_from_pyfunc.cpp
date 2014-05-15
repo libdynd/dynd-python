@@ -13,6 +13,7 @@
 #include <array_functions.hpp>
 #include <utility_functions.hpp>
 #include <arrfunc_from_pyfunc.hpp>
+#include <type_functions.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -38,30 +39,42 @@ namespace {
     }
 
     static intptr_t instantiate_pyfunc_arrfunc_data(
-        void *self_data_ptr, dynd::ckernel_builder *out_ckb,
-        intptr_t ckb_offset, const char *const *dynd_metadata,
-        uint32_t kerntype, const eval::eval_context *ectx)
+        void *self_data_ptr, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
+        const ndt::type &dst_tp, const char *dst_arrmeta,
+        const ndt::type *src_tp, const char *const *src_arrmeta,
+        uint32_t kernreq, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
         pyfunc_arrfunc_data *data =
                         reinterpret_cast<pyfunc_arrfunc_data *>(self_data_ptr);
 
-        // Turn the out_ckb pointer into an integer
-        pyobject_ownref out_ckb_obj(PyLong_FromSize_t(reinterpret_cast<size_t>(out_ckb)));
+        // Turn the ckb pointer into an integer
+        pyobject_ownref ckb_obj(PyLong_FromSize_t(reinterpret_cast<size_t>(ckb)));
         pyobject_ownref ckb_offset_obj(PyLong_FromSsize_t(ckb_offset));
 
-        // Turn the metadata pointers into integers to pass them to python
-        pyobject_ownref meta(PyTuple_New(data->data_types_size));
-        for (intptr_t i = 0; i < data->data_types_size; ++i) {
-            PyTuple_SET_ITEM(meta.get(), i, PyLong_FromSize_t(reinterpret_cast<size_t>(dynd_metadata[i])));
+        // Destination type/arrmeta
+        pyobject_ownref dst_tp_obj(wrap_ndt_type(dst_tp));
+        pyobject_ownref dst_arrmeta_obj(
+            PyLong_FromSize_t(reinterpret_cast<size_t>(dst_arrmeta)));
+
+        // Source types/arrmeta
+        pyobject_ownref src_tp_obj(PyTuple_New(data->data_types_size - 1));
+        for (intptr_t i = 0; i < data->data_types_size - 1; ++i) {
+            PyTuple_SET_ITEM(src_tp_obj.get(), i, wrap_ndt_type(src_tp[i]));
+        }
+        pyobject_ownref src_arrmeta_obj(PyTuple_New(data->data_types_size - 1));
+        for (intptr_t i = 0; i < data->data_types_size - 1; ++i) {
+            PyTuple_SET_ITEM(
+                src_arrmeta_obj.get(), i,
+                PyLong_FromSize_t(reinterpret_cast<size_t>(src_arrmeta[i])));
         }
 
         // Turn the kernel request type into a string
-        pyobject_ownref kerntype_str;
-        if (kerntype == kernel_request_single) {
-            kerntype_str.reset(pystring_from_string("single"));
-        } else if (kerntype == kernel_request_strided) {
-            kerntype_str.reset(pystring_from_string("strided"));
+        pyobject_ownref kernreq_obj;
+        if (kernreq == kernel_request_single) {
+            kernreq_obj.reset(pystring_from_string("single"));
+        } else if (kernreq == kernel_request_strided) {
+            kernreq_obj.reset(pystring_from_string("strided"));
         } else {
             throw runtime_error("unrecognized kernel request type");
         }
@@ -69,14 +82,15 @@ namespace {
         // Copy the evaluation context into a WEvalContext object
         pyobject_ownref ectx_obj(wrap_eval_context(ectx));
 
-        pyobject_ownref args(PyTuple_New(6));
-        PyTuple_SET_ITEM(args.get(), 0, out_ckb_obj.release());
+        pyobject_ownref args(PyTuple_New(8));
+        PyTuple_SET_ITEM(args.get(), 0, ckb_obj.release());
         PyTuple_SET_ITEM(args.get(), 1, ckb_offset_obj.release());
-        PyTuple_SET_ITEM(args.get(), 2, data->types);
-        Py_INCREF(data->types);
-        PyTuple_SET_ITEM(args.get(), 3, meta.release());
-        PyTuple_SET_ITEM(args.get(), 4, kerntype_str.release());
-        PyTuple_SET_ITEM(args.get(), 5, ectx_obj.release());
+        PyTuple_SET_ITEM(args.get(), 2, dst_tp_obj.release());
+        PyTuple_SET_ITEM(args.get(), 3, dst_arrmeta_obj.release());
+        PyTuple_SET_ITEM(args.get(), 4, src_tp_obj.release());
+        PyTuple_SET_ITEM(args.get(), 5, src_arrmeta_obj.release());
+        PyTuple_SET_ITEM(args.get(), 6, kernreq_obj.release());
+        PyTuple_SET_ITEM(args.get(), 7, ectx_obj.release());
 
         pyobject_ownref result_obj(PyObject_Call(data->instantiate_pyfunc, args.get(), NULL));
         intptr_t result = PyLong_AsSsize_t(result_obj);

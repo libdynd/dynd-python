@@ -10,6 +10,7 @@ from .ctypes_types import (CKernelPrefixStruct, NDArrayPreambleStruct,
         CKernelBuilderStruct,
         CKernelDeferredStruct)
 from dynd import nd, ndt
+from .util import data_address_of
 
 class CKernel(object):
     """Wraps a ckernel prefix pointer in a callable interface.
@@ -134,21 +135,27 @@ class CKernelBuilder(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
-def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dynd_metadata, kerntype):
+def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
+                        src_tp, src_arrmeta, kernreq):
     if (not isinstance(ckd, nd.array) or
                 nd.type_of(ckd).type_id != 'arrfunc'):
         raise TypeError('ckd must be an nd.array with type arrfunc')
-    if kerntype in ["single", 0]:
-        kerntype = 0
-    elif kerntype in ["strided", 1]:
-        kerntype = 1
+    if kernreq in ["single", 0]:
+        kernreq = 0
+    elif kernreq in ["strided", 1]:
+        kernreq = 1
     else:
-        raise ValueError("invalid kernel request type %r" % kerntype)
+        raise ValueError("invalid kernel request type %r" % kernreq)
     # Get the data pointer to the arrfunc object
     dp = NDArrayPreambleStruct.from_address(py_api.get_array_ptr(ckd)).data_pointer
     ckd_struct = CKernelDeferredStruct.from_address(dp)
     if ckd_struct.instantiate_func is None:
         raise ValueError('the provided arrfunc is NULL')
+    dst_tp = nd.array(dst_tp, type="type")
+    src_tp = nd.array(src_tp, type="strided * type")
+    src_arrmeta = nd.array(src_arrmeta, type="strided * uintptr")
     ckd_struct.instantiate_func(ckd_struct.data_ptr,
-                    out_ckb, ckb_offset, dynd_metadata,
-                    kerntype)
+                    out_ckb, ckb_offset,
+                    data_address_of(dst_tp), dst_arrmeta,
+                    data_address_of(src_tp), data_address_of(src_arrmeta),
+                    kernreq)

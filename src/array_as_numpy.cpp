@@ -216,18 +216,17 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
         case cstruct_type_id:
         case struct_type_id: {
             const base_struct_type *bs = dt.tcast<base_struct_type>();
-            const ndt::type *field_types = bs->get_field_types();
-            const string *field_names = bs->get_field_names();
             size_t field_count = bs->get_field_count();
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
+                const string_type_data& fn = bs->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
-                pyobject_ownref name_str(PyUnicode_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                pyobject_ownref name_str(
+                    PyUnicode_FromStringAndSize(fn.begin, fn.end - fn.begin));
 #else
-                pyobject_ownref name_str(PyString_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                pyobject_ownref name_str(
+                    PyString_FromStringAndSize(fn.begin, fn.end - fn.begin));
 #endif
                 PyList_SET_ITEM(names_obj.get(), i, name_str.release());
             }
@@ -238,8 +237,8 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
             for (size_t i = 0; i < field_count; ++i) {
                 // Get the numpy dtype of the element
                 pyobject_ownref field_numpy_dtype;
-                make_numpy_dtype_for_copy(&field_numpy_dtype,
-                                0, field_types[i], metadata);
+                make_numpy_dtype_for_copy(&field_numpy_dtype, 0,
+                                          bs->get_field_type(i), metadata);
                 size_t field_alignment = ((PyArray_Descr *)field_numpy_dtype.get())->alignment;
                 size_t field_size = ((PyArray_Descr *)field_numpy_dtype.get())->elsize;
                 standard_offset = inc_to_alignment(standard_offset, field_alignment);
@@ -482,19 +481,18 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 return;
             }
             const base_struct_type *bs = dt.tcast<base_struct_type>();
-            const ndt::type *field_types = bs->get_field_types();
-            const string *field_names = bs->get_field_names();
-            const size_t *offsets = bs->get_data_offsets(metadata);
+            const uintptr_t *offsets = bs->get_data_offsets(metadata);
             size_t field_count = bs->get_field_count();
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
+                const string_type_data& fn = bs->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
-                pyobject_ownref name_str(PyUnicode_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                pyobject_ownref name_str(
+                    PyUnicode_FromStringAndSize(fn.begin, fn.end - fn.begin));
 #else
-                pyobject_ownref name_str(PyString_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                pyobject_ownref name_str(
+                    PyString_FromStringAndSize(fn.begin, fn.end - fn.begin));
 #endif
                 PyList_SET_ITEM(names_obj.get(), i, name_str.release());
             }
@@ -504,7 +502,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
                 // Get the numpy dtype of the element
                 pyobject_ownref field_numpy_dtype;
                 as_numpy_analysis(&field_numpy_dtype, out_requires_copy,
-                                0, field_types[i], metadata);
+                                0, bs->get_field_type(i), metadata);
                 if (*out_requires_copy) {
                     // If the field required a copy, stop right away
                     out_numpy_dtype->clear();

@@ -245,9 +245,8 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
             } else {
                 const base_struct_type *bsd = tp.tcast<base_struct_type>();
                 size_t field_count = bsd->get_field_count();
-                const ndt::type *field_types = bsd->get_field_types();
                 for (size_t i = 0; i != field_count; ++i) {
-                    size_t candidate = 1 + get_nonragged_dim_count(field_types[i], max_count - 1);
+                    size_t candidate = 1 + get_nonragged_dim_count(bsd->get_field_type(i), max_count - 1);
                     if (candidate < max_count) {
                         max_count = candidate;
                         if (max_count <= 1) {

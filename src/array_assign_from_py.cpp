@@ -405,10 +405,8 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
     if (dt.get_kind() == struct_kind) {
         const base_struct_type *fsd = dt.tcast<base_struct_type>();
         size_t field_count = fsd->get_field_count();
-        const string *field_names = fsd->get_field_names();
-        const ndt::type *field_types = fsd->get_field_types();
-        const size_t *data_offsets = fsd->get_data_offsets(metadata);
-        const size_t *metadata_offsets = fsd->get_metadata_offsets();
+        const uintptr_t *data_offsets = fsd->get_data_offsets(metadata);
+        const uintptr_t *arrmeta_offsets = fsd->get_arrmeta_offsets_raw();
 
         // Keep track of which fields we've seen
         shortvector<bool> populated_fields(field_count);
@@ -422,8 +420,8 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
             intptr_t i = fsd->get_field_index(name);
             // TODO: Add an error policy of whether to throw an error
             //       or not. For now, just raise an error
-            if (i != -1) {
-                array_assign_from_value(field_types[i], metadata + metadata_offsets[i],
+            if (i >= 0) {
+                array_assign_from_value(fsd->get_field_type(i), metadata + arrmeta_offsets[i],
                                 data + data_offsets[i], dict_value);
                 populated_fields[i] = true;
             } else {
@@ -439,7 +437,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
             if (!populated_fields[i]) {
                 stringstream ss;
                 ss << "python dict does not contain the field ";
-                print_escaped_utf8_string(ss, field_names[i]);
+                print_escaped_utf8_string(ss, fsd->get_field_name(i));
                 ss << " as required by the data type " << dt;
                 throw runtime_error(ss.str());
             }
@@ -519,9 +517,8 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
         case cstruct_type_id: {
             const base_struct_type *fsd = dt.tcast<base_struct_type>();
             size_t field_count = fsd->get_field_count();
-            const ndt::type *field_types = fsd->get_field_types();
-            const size_t *data_offsets = fsd->get_data_offsets(metadata);
-            const size_t *metadata_offsets = fsd->get_metadata_offsets();
+            const uintptr_t *data_offsets = fsd->get_data_offsets(metadata);
+            const uintptr_t *arrmeta_offsets = fsd->get_arrmeta_offsets_raw();
 
             if (seqsize != field_count) {
                 stringstream ss;
@@ -532,8 +529,9 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
             }
             for (size_t i = 0; i != seqsize; ++i) {
                 pyobject_ownref item(PySequence_GetItem(seq, i));
-                array_assign_from_value(field_types[i], metadata + metadata_offsets[i],
-                                data + data_offsets[i], item.get());
+                array_assign_from_value(fsd->get_field_type(i),
+                                        metadata + arrmeta_offsets[i],
+                                        data + data_offsets[i], item.get());
             }
             break;
         }
@@ -687,9 +685,8 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
         case cstruct_type_id: {
             const base_struct_type *fsd = dt.tcast<base_struct_type>();
             size_t field_count = fsd->get_field_count();
-            const ndt::type *field_types = fsd->get_field_types();
-            const size_t *data_offsets = fsd->get_data_offsets(metadata);
-            const size_t *metadata_offsets = fsd->get_metadata_offsets();
+            const uintptr_t *data_offsets = fsd->get_data_offsets(metadata);
+            const uintptr_t *arrmeta_offsets = fsd->get_arrmeta_offsets_raw();
 
             for (size_t i = 0; i != field_count; ++i) {
                 PyObject *item = PyIter_Next(iter);
@@ -706,7 +703,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                     }
                 }
                 pyobject_ownref item_owner(item);
-                array_assign_from_value(field_types[i], metadata + metadata_offsets[i],
+                array_assign_from_value(fsd->get_field_type(i), metadata + arrmeta_offsets[i],
                                 data + data_offsets[i], item);
             }
 
@@ -772,7 +769,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
                     udt = udt.get_dtype();
                 } else if (udt.get_kind() == struct_kind) {
                     ++dst_ndim;
-                    udt = udt.tcast<base_struct_type>()->get_field_types()[0];
+                    udt = udt.tcast<base_struct_type>()->get_field_type(0);
                 } else {
                     break;
                 }

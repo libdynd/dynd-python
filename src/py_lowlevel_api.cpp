@@ -141,7 +141,7 @@ namespace {
     {
         try {
             nd::array af = nd::empty(ndt::make_arrfunc());
-            arrfunc *af_ptr = reinterpret_cast<arrfunc *>(af.get_readwrite_originptr());
+            arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -175,7 +175,7 @@ namespace {
     {
         try {
             nd::array af = nd::empty(ndt::make_arrfunc());
-            arrfunc *af_ptr = reinterpret_cast<arrfunc *>(af.get_readwrite_originptr());
+            arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
 
             ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
             string propname = pystring_as_string(propname_obj);
@@ -209,7 +209,7 @@ namespace {
     {
         try {
             nd::array out_af = nd::empty(ndt::make_arrfunc());
-            arrfunc *out_af_ptr = reinterpret_cast<arrfunc *>(out_af.get_readwrite_originptr());
+            arrfunc_type_data *out_af_ptr = reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
                 stringstream ss;
@@ -236,7 +236,7 @@ namespace {
     {
         try {
             nd::array out_af = nd::empty(ndt::make_arrfunc());
-            arrfunc *out_af_ptr = reinterpret_cast<arrfunc *>(out_af.get_readwrite_originptr());
+            arrfunc_type_data *out_af_ptr = reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(elwise_reduction_obj) ||
                         ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
@@ -245,8 +245,8 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
             const nd::array& elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
-            const arrfunc *elwise_reduction_af =
-                            reinterpret_cast<const arrfunc *>(elwise_reduction.get_readonly_originptr());
+            const arrfunc_type_data *elwise_reduction_af =
+                            reinterpret_cast<const arrfunc_type_data *>(elwise_reduction.get_readonly_originptr());
 
             nd::array dst_initialization;
             if (WArray_Check(dst_initialization_obj) &&

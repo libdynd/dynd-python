@@ -109,7 +109,8 @@ namespace {
 PyObject *pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *types)
 {
     nd::array out_af = nd::empty(ndt::make_arrfunc());
-    arrfunc *out_af_ptr = reinterpret_cast<arrfunc *>(out_af.get_readwrite_originptr());
+    arrfunc_type_data *out_af_ptr =
+        reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
 
     vector<ndt::type> types_vec;
     pyobject_as_vector_ndt_type(types, types_vec);

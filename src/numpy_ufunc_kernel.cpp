@@ -308,7 +308,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
 {
     try {
         nd::array af = nd::empty(ndt::make_arrfunc());
-        arrfunc *af_ptr = reinterpret_cast<arrfunc *>(af.get_readwrite_originptr());
+        arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
 
         // NOTE: This function does not raise C++ exceptions,
         //       it behaves as a Python C-API function.

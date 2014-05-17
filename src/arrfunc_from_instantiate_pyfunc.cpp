@@ -12,7 +12,7 @@
 
 #include <array_functions.hpp>
 #include <utility_functions.hpp>
-#include <arrfunc_from_pyfunc.hpp>
+#include <arrfunc_from_instantiate_pyfunc.hpp>
 #include <type_functions.hpp>
 #include <exception_translation.hpp>
 
@@ -21,19 +21,13 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-    struct pyfunc_arrfunc_data {
-        // Callable provided from python
-        PyObject *instantiate_pyfunc;
-        intptr_t param_count;
-    };
-
     static void delete_pyfunc_arrfunc_data(void *self_data_ptr)
     {
-        PyGILState_RAII pgs;
-        pyfunc_arrfunc_data *data =
-                        reinterpret_cast<pyfunc_arrfunc_data *>(self_data_ptr);
-        Py_XDECREF(data->instantiate_pyfunc);
-        free(data);
+        PyObject *instantiate_pyfunc = reinterpret_cast<PyObject *>(self_data_ptr);
+        if (instantiate_pyfunc) {
+            PyGILState_RAII pgs;
+            Py_XDECREF(instantiate_pyfunc);
+        }
     }
 
     static intptr_t instantiate_pyfunc_arrfunc_data(
@@ -43,8 +37,8 @@ namespace {
         uint32_t kernreq, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
-        pyfunc_arrfunc_data *data =
-                        reinterpret_cast<pyfunc_arrfunc_data *>(af_self->data_ptr);
+        PyObject *instantiate_pyfunc = reinterpret_cast<PyObject *>(af_self->data_ptr);
+        intptr_t param_count = af_self->get_param_count();
 
         // Turn the ckb pointer into an integer
         pyobject_ownref ckb_obj(PyLong_FromSize_t(reinterpret_cast<size_t>(ckb)));
@@ -56,12 +50,12 @@ namespace {
             PyLong_FromSize_t(reinterpret_cast<size_t>(dst_arrmeta)));
 
         // Source types/arrmeta
-        pyobject_ownref src_tp_obj(PyTuple_New(data->param_count));
-        for (intptr_t i = 0; i < data->param_count; ++i) {
+        pyobject_ownref src_tp_obj(PyTuple_New(param_count));
+        for (intptr_t i = 0; i < param_count; ++i) {
             PyTuple_SET_ITEM(src_tp_obj.get(), i, wrap_ndt_type(src_tp[i]));
         }
-        pyobject_ownref src_arrmeta_obj(PyTuple_New(data->param_count));
-        for (intptr_t i = 0; i < data->param_count; ++i) {
+        pyobject_ownref src_arrmeta_obj(PyTuple_New(param_count));
+        for (intptr_t i = 0; i < param_count; ++i) {
             PyTuple_SET_ITEM(
                 src_arrmeta_obj.get(), i,
                 PyLong_FromSize_t(reinterpret_cast<size_t>(src_arrmeta[i])));
@@ -90,7 +84,7 @@ namespace {
         PyTuple_SET_ITEM(args.get(), 6, kernreq_obj.release());
         PyTuple_SET_ITEM(args.get(), 7, ectx_obj.release());
 
-        pyobject_ownref result_obj(PyObject_Call(data->instantiate_pyfunc, args.get(), NULL));
+        pyobject_ownref result_obj(PyObject_Call(instantiate_pyfunc, args.get(), NULL));
         intptr_t result = PyLong_AsSsize_t(result_obj);
         if (result < 0) {
             if (PyErr_Occurred()) {
@@ -104,7 +98,7 @@ namespace {
     }
 }
 
-PyObject *pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *proto_obj)
+PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc, PyObject *proto_obj)
 {
     try {
         nd::array out_af = nd::empty(ndt::make_arrfunc());
@@ -122,13 +116,9 @@ PyObject *pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *pr
         out_af_ptr->ckernel_funcproto = expr_operation_funcproto;
         out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
         out_af_ptr->func_proto = proto;
-        out_af_ptr->data_ptr = malloc(sizeof(pyfunc_arrfunc_data));
-        out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
-        pyfunc_arrfunc_data *data_ptr =
-                        reinterpret_cast<pyfunc_arrfunc_data *>(out_af_ptr->data_ptr);
-        data_ptr->param_count = proto.tcast<funcproto_type>()->get_param_count();
-        data_ptr->instantiate_pyfunc = instantiate_pyfunc;
+        out_af_ptr->data_ptr = instantiate_pyfunc;
         Py_INCREF(instantiate_pyfunc);
+        out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
 
         return wrap_array(out_af);
     } catch(...) {

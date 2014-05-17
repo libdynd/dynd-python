@@ -7,7 +7,7 @@
 
 namespace pydynd {
 
-PyObject *arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *types);
+PyObject *arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc, PyObject *types);
 
 } // namespace pydynd
 

@@ -19,7 +19,7 @@
 #include "numpy_ufunc_kernel.hpp"
 #include "utility_functions.hpp"
 #include "exception_translation.hpp"
-#include "arrfunc_from_pyfunc.hpp"
+#include "arrfunc_from_instantiate_pyfunc.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -391,7 +391,7 @@ namespace {
         &pydynd::arrfunc_from_ufunc,
         &lift_arrfunc,
         &lift_reduction_arrfunc,
-        &pydynd::arrfunc_from_pyfunc,
+        &pydynd::arrfunc_from_instantiate_pyfunc,
         &make_rolling_arrfunc,
         &make_builtin_mean1d_arrfunc,
         &make_take_arrfunc

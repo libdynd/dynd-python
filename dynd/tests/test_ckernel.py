@@ -231,7 +231,7 @@ class TestArrFunc(unittest.TestCase):
                      [float(6*2**100)],
                      [0.001708984375, 0.002197265625, 0.00244140625]])
 
-    def test_arrfunc_from_pyfunc(self):
+    def test_arrfunc_from_instantiate_pyfunc(self):
         # Test wrapping make_assignment_ckernel as an arrfunc
         def instantiate_assignment(out_ckb, ckb_offset, dst_tp, dst_arrmeta,
                                    src_tp, src_arrmeta, kernreq, ectx):
@@ -240,8 +240,8 @@ class TestArrFunc(unittest.TestCase):
                             dst_tp, dst_arrmeta,
                             src_tp[0], src_arrmeta[0],
                             'expr', kernreq, ectx)
-        ckd = _lowlevel.arrfunc_from_pyfunc(instantiate_assignment,
-                        "(date) -> string")
+        ckd = _lowlevel.arrfunc_from_instantiate_pyfunc(
+                    instantiate_assignment, "(date) -> string")
         self.assertEqual(nd.as_py(ckd.proto), ndt.type("(date) -> string"))
         out = nd.empty(ndt.string)
         in0 = nd.array('2012-11-05', ndt.date)

@@ -115,7 +115,7 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object)),
                 ('_lift_reduction_arrfunc',
                  ctypes.PYFUNCTYPE(*([ctypes.py_object] * 10))),
-                ('arrfunc_from_pyfunc',
+                ('arrfunc_from_instantiate_pyfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
                 ('make_rolling_arrfunc',
@@ -537,10 +537,11 @@ lift_arrfunc.__doc__ = """
     nd.array of arrfunc type
         The lifted arrfunc object.
     """
-arrfunc_from_pyfunc.__doc__ = """
-    _lowlevel.arrfunc_from_pyfunc(instantiate_pyfunc, types)
+arrfunc_from_instantiate_pyfunc.__doc__ = """
+    _lowlevel.arrfunc_from_instantiate_pyfunc(instantiate_pyfunc, types)
 
-    TODO
+    Creates a dynd arrfunc from a python function that implements
+    the ``instantiate`` mechanism.
     """
 make_rolling_arrfunc.__doc__ = """
     _lowlevel.make_rolling_arrfunc(dst_tp, src_tp,

@@ -53,7 +53,7 @@ struct py_lowlevel_api_t {
         PyObject *dst_initialization, PyObject *axis, PyObject *keepdims,
         PyObject *associative, PyObject *commutative,
         PyObject *right_associative, PyObject *reduction_identity);
-    PyObject *(*arrfunc_from_pyfunc)(PyObject *instantiate_pyfunc,
+    PyObject *(*arrfunc_from_instantiate_pyfunc)(PyObject *instantiate_pyfunc,
                                      PyObject *types);
     PyObject *(*make_rolling_arrfunc)(PyObject *dst_tp_obj,
                                                PyObject *src_tp_obj,

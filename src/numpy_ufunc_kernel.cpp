@@ -125,33 +125,27 @@ namespace {
         PyUFuncGenericFunction funcptr;
         void *ufunc_data;
         int ckernel_acquires_gil;
-        intptr_t data_types_size;
-        const dynd::base_type *data_types[1];
+        intptr_t param_count;
     };
 
     static void delete_scalar_ufunc_data(void *self_data_ptr)
     {
         scalar_ufunc_data *data =
                         reinterpret_cast<scalar_ufunc_data *>(self_data_ptr);
-        const dynd::base_type **data_types = &data->data_types[0];
-        for (intptr_t i = 0; i < data->data_types_size; ++i) {
-            base_type_xdecref(data_types[i]);
-        }
-        // Call the destructor and free the memory
-        data->~scalar_ufunc_data();
         if (data->ufunc != NULL) {
             // Acquire the GIL for the python decref
             PyGILState_RAII pgs;
             Py_DECREF(data->ufunc);
         }
-        free(data);
+        // Call the destructor and free the memory
+        delete data;
     }
 
     struct scalar_ufunc_ckernel_data {
         ckernel_prefix base;
         PyUFuncGenericFunction funcptr;
         void *ufunc_data;
-        intptr_t data_types_size;
+        intptr_t param_count;
         PyUFuncObject *ufunc;
     };
 
@@ -173,14 +167,14 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        intptr_t data_types_size = data->data_types_size;
+        intptr_t param_count = data->param_count;
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size - 1] = dst;
+        memcpy(&args[0], &src[0], param_count * sizeof(void *));
+        args[param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t dimsize = 1;
         intptr_t strides[NPY_MAXARGS];
-        memset(strides, 0, data_types_size * sizeof(void *));
+        memset(strides, 0, (param_count + 1) * sizeof(void *));
         {
             PyGILState_RAII pgs;
             data->funcptr(args, &dimsize, strides, data->ufunc_data);
@@ -194,14 +188,14 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        intptr_t data_types_size = data->data_types_size;
+        intptr_t param_count = data->param_count;
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size - 1] = dst;
+        memcpy(&args[0], &src[0], param_count * sizeof(void *));
+        args[param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t dimsize = 1;
         intptr_t strides[NPY_MAXARGS];
-        memset(strides, 0, data_types_size * sizeof(intptr_t));
+        memset(strides, 0, (param_count + 1) * sizeof(intptr_t));
         data->funcptr(args, &dimsize, strides, data->ufunc_data);
     }
 
@@ -213,14 +207,14 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        intptr_t data_types_size = data->data_types_size;
+        intptr_t param_count = data->param_count;
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size - 1] = dst;
+        memcpy(&args[0], &src[0], param_count * sizeof(void *));
+        args[param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t strides[NPY_MAXARGS];
-        memcpy(&strides[0], &src_stride[0], (data_types_size - 1) * sizeof(intptr_t));
-        strides[data_types_size - 1] = dst_stride;
+        memcpy(&strides[0], &src_stride[0], param_count * sizeof(intptr_t));
+        strides[param_count] = dst_stride;
         {
             PyGILState_RAII pgs;
             data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
@@ -236,43 +230,44 @@ namespace {
         scalar_ufunc_ckernel_data *data =
                         reinterpret_cast<scalar_ufunc_ckernel_data *>(ckp);
         char *args[NPY_MAXARGS];
-        intptr_t data_types_size = data->data_types_size;
+        intptr_t param_count = data->param_count;
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], (data_types_size - 1) * sizeof(void *));
-        args[data_types_size - 1] = dst;
+        memcpy(&args[0], &src[0], param_count * sizeof(void *));
+        args[param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t strides[NPY_MAXARGS];
-        memcpy(&strides[0], &src_stride[0], (data_types_size - 1) * sizeof(intptr_t));
-        strides[data_types_size - 1] = dst_stride;
+        memcpy(&strides[0], &src_stride[0], param_count * sizeof(intptr_t));
+        strides[param_count] = dst_stride;
         data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides, data->ufunc_data);
     }
 
     static intptr_t instantiate_scalar_ufunc_ckernel(
-        void *self_data_ptr, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
+        const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
         uint32_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
     {
-        // Acquire the GIL for creating the ckernel
-        PyGILState_RAII pgs;
-        scalar_ufunc_data *data =
-                        reinterpret_cast<scalar_ufunc_data *>(self_data_ptr);
-        const ndt::type *tp_list = reinterpret_cast<const ndt::type *>(&data->data_types[0]);
-        if (dst_tp != tp_list[0]) {
+        if (dst_tp != af_self->get_return_type()) {
             stringstream ss;
             ss << "destination type requested, " << dst_tp
-               << ", does not match the ufunc's type " << tp_list[0];
+               << ", does not match the ufunc's type " << af_self->get_return_type();
             throw type_error(ss.str());
         }
-        for (intptr_t i = 0; i < data->data_types_size - 1; ++i) {
-            if (src_tp[i] != tp_list[i+1]) {
+        size_t param_count = af_self->get_param_count();
+        for (size_t i = 0; i != param_count; ++i) {
+            if (src_tp[i] != af_self->get_param_type(i)) {
                 stringstream ss;
                 ss << "source type requested for parameter " << (i + 1) << ", "
                    << src_tp[i] << ", does not match the ufunc's type "
-                   << tp_list[i + 1];
+                   << af_self->get_param_type(i);
                 throw type_error(ss.str());
             }
         }
+
+        // Acquire the GIL for creating the ckernel
+        PyGILState_RAII pgs;
+        scalar_ufunc_data *data =
+            reinterpret_cast<scalar_ufunc_data *>(af_self->data_ptr);
         intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
         ckb->ensure_capacity_leaf(ckb_end);
         scalar_ufunc_ckernel_data *af =
@@ -295,7 +290,7 @@ namespace {
         }
         af->funcptr = data->funcptr;
         af->ufunc_data = data->ufunc_data;
-        af->data_types_size = data->data_types_size;
+        af->param_count = data->param_count;
         af->ufunc = data->ufunc;
         Py_INCREF(af->ufunc);
         return ckb_end;
@@ -376,16 +371,18 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                     af_ptr->ckernel_funcproto = expr_operation_funcproto;
                     af_ptr->free_func = &delete_scalar_ufunc_data;
                     af_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
-                    af_ptr->data_types_size = nargs;
                     // Fill in the arrfunc instance data
                     scalar_ufunc_data *data = reinterpret_cast<scalar_ufunc_data *>(af_ptr->data_ptr);
                     data->ufunc = uf;
                     Py_INCREF(uf);
-                    data->data_types_size = nargs;
-                    af_ptr->data_dynd_types = reinterpret_cast<ndt::type *>(data->data_types);
-                    for (intptr_t j = 0; j < nargs; ++j) {
-                        data->data_types[j] = ndt_type_from_numpy_type_num(argtypes[j]).release();
+                    data->param_count = nargs - 1;
+                    ndt::type return_type =
+                        ndt_type_from_numpy_type_num(argtypes[0]);
+                    std::vector<ndt::type> param_types(nargs - 1);
+                    for (intptr_t j = 0; j < nargs - 1; ++j) {
+                        param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
                     }
+                    af_ptr->func_proto = ndt::make_funcproto(param_types, return_type);
                     data->ckernel_acquires_gil = ckernel_acquires_gil;
                     data->funcptr = uf->functions[i];
                     data->ufunc_data = uf->data[i];

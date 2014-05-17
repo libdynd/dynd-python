@@ -47,7 +47,7 @@ struct py_lowlevel_api_t {
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
     PyObject *(*arrfunc_from_ufunc)(PyObject *ufunc, PyObject *type_tuple,
                                     int ckernel_acquires_gil);
-    PyObject *(*lift_arrfunc)(PyObject *af, PyObject *types);
+    PyObject *(*lift_arrfunc)(PyObject *af);
     PyObject *(*lift_reduction_arrfunc)(
         PyObject *elwise_reduction, PyObject *lifted_type,
         PyObject *dst_initialization, PyObject *axis, PyObject *keepdims,

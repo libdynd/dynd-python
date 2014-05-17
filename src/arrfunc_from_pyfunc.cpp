@@ -14,6 +14,7 @@
 #include <utility_functions.hpp>
 #include <arrfunc_from_pyfunc.hpp>
 #include <type_functions.hpp>
+#include <exception_translation.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -23,9 +24,7 @@ namespace {
     struct pyfunc_arrfunc_data {
         // Callable provided from python
         PyObject *instantiate_pyfunc;
-        // nd::array of types
-        PyObject *types;
-        intptr_t data_types_size;
+        intptr_t param_count;
     };
 
     static void delete_pyfunc_arrfunc_data(void *self_data_ptr)
@@ -34,19 +33,18 @@ namespace {
         pyfunc_arrfunc_data *data =
                         reinterpret_cast<pyfunc_arrfunc_data *>(self_data_ptr);
         Py_XDECREF(data->instantiate_pyfunc);
-        Py_XDECREF(data->types);
         free(data);
     }
 
     static intptr_t instantiate_pyfunc_arrfunc_data(
-        void *self_data_ptr, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
+        const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *dst_arrmeta,
         const ndt::type *src_tp, const char *const *src_arrmeta,
         uint32_t kernreq, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
         pyfunc_arrfunc_data *data =
-                        reinterpret_cast<pyfunc_arrfunc_data *>(self_data_ptr);
+                        reinterpret_cast<pyfunc_arrfunc_data *>(af_self->data_ptr);
 
         // Turn the ckb pointer into an integer
         pyobject_ownref ckb_obj(PyLong_FromSize_t(reinterpret_cast<size_t>(ckb)));
@@ -58,12 +56,12 @@ namespace {
             PyLong_FromSize_t(reinterpret_cast<size_t>(dst_arrmeta)));
 
         // Source types/arrmeta
-        pyobject_ownref src_tp_obj(PyTuple_New(data->data_types_size - 1));
-        for (intptr_t i = 0; i < data->data_types_size - 1; ++i) {
+        pyobject_ownref src_tp_obj(PyTuple_New(data->param_count));
+        for (intptr_t i = 0; i < data->param_count; ++i) {
             PyTuple_SET_ITEM(src_tp_obj.get(), i, wrap_ndt_type(src_tp[i]));
         }
-        pyobject_ownref src_arrmeta_obj(PyTuple_New(data->data_types_size - 1));
-        for (intptr_t i = 0; i < data->data_types_size - 1; ++i) {
+        pyobject_ownref src_arrmeta_obj(PyTuple_New(data->param_count));
+        for (intptr_t i = 0; i < data->param_count; ++i) {
             PyTuple_SET_ITEM(
                 src_arrmeta_obj.get(), i,
                 PyLong_FromSize_t(reinterpret_cast<size_t>(src_arrmeta[i])));
@@ -106,28 +104,35 @@ namespace {
     }
 }
 
-PyObject *pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *types)
+PyObject *pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc, PyObject *proto_obj)
 {
-    nd::array out_af = nd::empty(ndt::make_arrfunc());
-    arrfunc_type_data *out_af_ptr =
-        reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
+    try {
+        nd::array out_af = nd::empty(ndt::make_arrfunc());
+        arrfunc_type_data *out_af_ptr =
+            reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
 
-    vector<ndt::type> types_vec;
-    pyobject_as_vector_ndt_type(types, types_vec);
-    nd::array types_arr(types_vec);
+        ndt::type proto = make_ndt_type_from_pyobject(proto_obj);
+        if (proto.get_type_id() != funcproto_type_id) {
+            stringstream ss;
+            ss << "creating a dynd arrfunc from a python func requires a function "
+                  "prototype, was given type " << proto;
+            throw type_error(ss.str());
+        }
     
-    out_af_ptr->ckernel_funcproto = expr_operation_funcproto;
-    out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
-    out_af_ptr->data_types_size = types_vec.size();
-    out_af_ptr->data_dynd_types = reinterpret_cast<const ndt::type *>(types_arr.get_readonly_originptr());
-    out_af_ptr->data_ptr = malloc(sizeof(pyfunc_arrfunc_data));
-    out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
-    pyfunc_arrfunc_data *data_ptr =
-                    reinterpret_cast<pyfunc_arrfunc_data *>(out_af_ptr->data_ptr);
-    data_ptr->data_types_size = types_vec.size();
-    data_ptr->instantiate_pyfunc = instantiate_pyfunc;
-    Py_INCREF(instantiate_pyfunc);
-    data_ptr->types = wrap_array(types_arr);
+        out_af_ptr->ckernel_funcproto = expr_operation_funcproto;
+        out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
+        out_af_ptr->func_proto = proto;
+        out_af_ptr->data_ptr = malloc(sizeof(pyfunc_arrfunc_data));
+        out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
+        pyfunc_arrfunc_data *data_ptr =
+                        reinterpret_cast<pyfunc_arrfunc_data *>(out_af_ptr->data_ptr);
+        data_ptr->param_count = proto.tcast<funcproto_type>()->get_param_count();
+        data_ptr->instantiate_pyfunc = instantiate_pyfunc;
+        Py_INCREF(instantiate_pyfunc);
 
-    return wrap_array(out_af);
+        return wrap_array(out_af);
+    } catch(...) {
+        translate_exception();
+        return NULL;
+    }
 }

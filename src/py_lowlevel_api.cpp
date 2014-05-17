@@ -205,7 +205,7 @@ namespace {
     }
 
 
-    PyObject *lift_arrfunc(PyObject *af, PyObject *types)
+    PyObject *lift_arrfunc(PyObject *af)
     {
         try {
             nd::array out_af = nd::empty(ndt::make_arrfunc());
@@ -217,10 +217,8 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
             const nd::array& af_arr = ((WArray *)af)->v;
-            vector<ndt::type> types_vec;
-            pyobject_as_vector_ndt_type(types, types_vec);
             
-            dynd::lift_arrfunc(out_af_ptr, af_arr, types_vec);
+            dynd::lift_arrfunc(out_af_ptr, af_arr);
 
             return wrap_array(out_af);
         } catch(...) {
@@ -261,7 +259,7 @@ namespace {
             ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
 
             // This is the number of dimensions being reduced
-            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->data_dynd_types[1].get_ndim();
+            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->get_param_type(0).get_ndim();
 
             shortvector<bool> reduction_dimflags(reduction_ndim);
             if (axis_obj == Py_None) {

@@ -107,25 +107,25 @@ class TestCKernelBuilder(unittest.TestCase):
             ck(dst.ctypes.data, 4, src.ctypes.data, 15, 3)
             self.assertEqual(dst.tolist(), [3.25, -1000, 1e5])
 
-class TestCKernelDeferred(unittest.TestCase):
+class TestArrFunc(unittest.TestCase):
     def test_creation(self):
         ckd = nd.empty('arrfunc')
         self.assertEqual(nd.type_of(ckd).type_id, 'arrfunc')
         # Test there is a string version of a NULL arrfunc
         self.assertTrue(str(ckd) != '')
-        self.assertEqual(nd.as_py(ckd.types), [])
+        self.assertEqual(nd.as_py(ckd.proto), ndt.type())
         # Test there is a string version of an initialized arrfunc
         ckd = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
         self.assertTrue(str(ckd) != '')
-        self.assertEqual(nd.as_py(ckd.types), [ndt.float32, ndt.int64])
+        self.assertEqual(nd.as_py(ckd.proto), ndt.type("(int64) -> float32"))
 
     def test_assignment_ckernel(self):
         ckd = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
-        self.assertEqual(nd.as_py(ckd.types), [ndt.float32, ndt.int64])
+        self.assertEqual(nd.as_py(ckd.proto), ndt.type("(int64) -> float32"))
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
@@ -158,7 +158,8 @@ class TestCKernelDeferred(unittest.TestCase):
         ckd = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         requiregil)
-        self.assertEqual(nd.as_py(ckd.types), [ndt.int32]*3)
+        self.assertEqual(nd.as_py(ckd.proto),
+                         ndt.type("(int32, int32) -> int32"))
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
@@ -210,16 +211,13 @@ class TestCKernelDeferred(unittest.TestCase):
         ckd = _lowlevel.arrfunc_from_ufunc(np.ldexp,
                         (np.float64, np.float64, np.int32),
                         requiregil)
-        self.assertEqual(nd.as_py(ckd.types),
-                        [ndt.float64, ndt.float64, ndt.int32])
+        self.assertEqual(nd.as_py(ckd.proto),
+                         ndt.type("(float64, int32) -> float64"))
 
         # Now lift it
-        ckd_lifted = _lowlevel.lift_arrfunc(ckd,
-                        ['var * var * float64', 'strided * var * float64',
-                         'strided * 1 * int32'])
-        self.assertEqual(nd.as_py(ckd_lifted.types),
-                        [ndt.type(x) for x in ['var * var * float64',
-                                    'strided * var * float64', 'strided * 1 * int32']])
+        ckd_lifted = _lowlevel.lift_arrfunc(ckd)
+        self.assertEqual(nd.as_py(ckd_lifted.proto),
+                         ndt.type("(Dims... * float64, Dims... * int32) -> Dims... * float64"))
         # Create some compatible arguments
         out = nd.empty('var * var * float64')
         in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='strided * var * float64')
@@ -243,17 +241,16 @@ class TestCKernelDeferred(unittest.TestCase):
                             src_tp[0], src_arrmeta[0],
                             'expr', kernreq, ectx)
         ckd = _lowlevel.arrfunc_from_pyfunc(instantiate_assignment,
-                        [ndt.string, ndt.date])
-        self.assertEqual(nd.as_py(ckd.types), [ndt.string, ndt.date])
+                        "(date) -> string")
+        self.assertEqual(nd.as_py(ckd.proto), ndt.type("(date) -> string"))
         out = nd.empty(ndt.string)
         in0 = nd.array('2012-11-05', ndt.date)
         ckd.__call__(out, in0)
         self.assertEqual(nd.as_py(out), '2012-11-05')
         # Also test it as a lifted kernel
-        ckd_lifted = _lowlevel.lift_arrfunc(ckd,
-                        ['3 * var * string', '3 * var * date'])
-        self.assertEqual(nd.as_py(ckd_lifted.types),
-                    [ndt.type('3 * var * string'), ndt.type('3 * var * date')])
+        ckd_lifted = _lowlevel.lift_arrfunc(ckd)
+        self.assertEqual(nd.as_py(ckd_lifted.proto),
+                         ndt.type("(Dims... * date) -> Dims... * string"))
         out = nd.empty('3 * var * string')
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
@@ -265,7 +262,7 @@ class TestCKernelDeferred(unittest.TestCase):
                          ['1999-12-31'], []])
 
 
-class TestLiftReductionCKernelDeferred(unittest.TestCase):
+class TestLiftReductionArrFunc(unittest.TestCase):
     def test_sum_1d(self):
         # Use the numpy add ufunc for this lifting test
         ckd = _lowlevel.arrfunc_from_ufunc(np.add,
@@ -332,7 +329,7 @@ class TestLiftReductionCKernelDeferred(unittest.TestCase):
         self.assertEqual(nd.as_py(out), [10, 15])
 
 
-class TestRollingCKernelDeferred(unittest.TestCase):
+class TestRollingArrFunc(unittest.TestCase):
     def test_diff_op(self):
         # Use the numpy subtract ufunc for this lifting test
         ckd = _lowlevel.arrfunc_from_ufunc(np.subtract,

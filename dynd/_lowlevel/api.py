@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import sys
 import ctypes
 from dynd._pydynd import _get_lowlevel_api, _get_py_lowlevel_api
-from .ctypes_types import (CKernelDeferredStructPtr,
+from .ctypes_types import (ArrFuncTypeDataPtr,
         CKernelBuilderStructPtr)
 
 if sys.version_info >= (2, 7):
@@ -112,7 +112,7 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.c_int)),
                 ('lift_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object)),
+                        ctypes.py_object)),
                 ('_lift_reduction_arrfunc',
                  ctypes.PYFUNCTYPE(*([ctypes.py_object] * 10))),
                 ('arrfunc_from_pyfunc',
@@ -522,18 +522,15 @@ arrfunc_from_ufunc.__doc__ = """
         The lifted arrfunc object.
     """
 lift_arrfunc.__doc__ = """
-    _lowlevel.lift_arrfunc(ckd, types)
+    _lowlevel.lift_arrfunc(ckd)
 
-    This function creates a lifted arrfunc, broadcasting
-    the provided ``ckd`` across the additional array dimensions
-    in the ``types`` parameter.
+    This function creates a lifted arrfunc, which will
+    broadcast additional dimensions in arguments together.
 
     Parameters
     ----------
     ckd : nd.array of arrfunc type
         The arrfunc object to lift.
-    types : list of dynd types
-        The types to lift the ``ckd`` to.
 
     Returns
     -------

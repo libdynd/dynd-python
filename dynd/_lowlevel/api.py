@@ -115,6 +115,9 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object)),
                 ('_lift_reduction_arrfunc',
                  ctypes.PYFUNCTYPE(*([ctypes.py_object] * 10))),
+                ('arrfunc_from_pyfunc',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object)),
                 ('arrfunc_from_instantiate_pyfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
@@ -537,8 +540,14 @@ lift_arrfunc.__doc__ = """
     nd.array of arrfunc type
         The lifted arrfunc object.
     """
+arrfunc_from_pyfunc.__doc__ = """
+    _lowlevel.arrfunc_from_pyfunc(pyfunc, proto)
+
+    Creates a dynd arrfunc from a python function that follows
+    ``proto`` as its calling convention.
+    """
 arrfunc_from_instantiate_pyfunc.__doc__ = """
-    _lowlevel.arrfunc_from_instantiate_pyfunc(instantiate_pyfunc, types)
+    _lowlevel.arrfunc_from_instantiate_pyfunc(instantiate_pyfunc, proto)
 
     Creates a dynd arrfunc from a python function that implements
     the ``instantiate`` mechanism.

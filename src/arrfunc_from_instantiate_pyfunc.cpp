@@ -26,7 +26,7 @@ namespace {
         PyObject *instantiate_pyfunc = reinterpret_cast<PyObject *>(self_data_ptr);
         if (instantiate_pyfunc) {
             PyGILState_RAII pgs;
-            Py_XDECREF(instantiate_pyfunc);
+            Py_DECREF(instantiate_pyfunc);
         }
     }
 
@@ -98,7 +98,8 @@ namespace {
     }
 }
 
-PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc, PyObject *proto_obj)
+PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
+                                                  PyObject *proto_obj)
 {
     try {
         nd::array out_af = nd::empty(ndt::make_arrfunc());

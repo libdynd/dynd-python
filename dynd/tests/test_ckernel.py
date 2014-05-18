@@ -109,27 +109,27 @@ class TestCKernelBuilder(unittest.TestCase):
 
 class TestArrFunc(unittest.TestCase):
     def test_creation(self):
-        ckd = nd.empty('arrfunc')
-        self.assertEqual(nd.type_of(ckd).type_id, 'arrfunc')
+        af = nd.empty('arrfunc')
+        self.assertEqual(nd.type_of(af).type_id, 'arrfunc')
         # Test there is a string version of a NULL arrfunc
-        self.assertTrue(str(ckd) != '')
-        self.assertEqual(nd.as_py(ckd.proto), ndt.type())
+        self.assertTrue(str(af) != '')
+        self.assertEqual(nd.as_py(af.proto), ndt.type())
         # Test there is a string version of an initialized arrfunc
-        ckd = _lowlevel.make_arrfunc_from_assignment(
+        af = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
-        self.assertTrue(str(ckd) != '')
-        self.assertEqual(nd.as_py(ckd.proto), ndt.type("(int64) -> float32"))
+        self.assertTrue(str(af) != '')
+        self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
 
     def test_assignment_ckernel(self):
-        ckd = _lowlevel.make_arrfunc_from_assignment(
+        af = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64,
                     "unary", "none")
-        self.assertEqual(nd.as_py(ckd.proto), ndt.type("(int64) -> float32"))
+        self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.float32, 0,
+            _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.float32, 0,
                                           [ndt.int64], [0], "single")
             ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
             # Do an assignment using ctypes
@@ -140,7 +140,7 @@ class TestArrFunc(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.float32, 0,
+            _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.float32, 0,
                                           [ndt.int64], [0], "strided")
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using ctypes
@@ -155,15 +155,15 @@ class TestArrFunc(unittest.TestCase):
 
     def check_from_numpy_int32_add(self, requiregil):
         # Get int32 add as an arrfunc
-        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
+        af = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         requiregil)
-        self.assertEqual(nd.as_py(ckd.proto),
+        self.assertEqual(nd.as_py(af.proto),
                          ndt.type("(int32, int32) -> int32"))
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.int32, 0,
+            _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.int32, 0,
                                           [ndt.int32, ndt.int32], [0, 0],
                                           "single")
             ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
@@ -178,7 +178,7 @@ class TestArrFunc(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.int32, 0,
+            _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.int32, 0,
                                           [ndt.int32, ndt.int32], [0, 0],
                                           "strided")
             ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
@@ -208,28 +208,54 @@ class TestArrFunc(unittest.TestCase):
     def test_lift_ckernel(self):
         # First get a ckernel from numpy
         requiregil = False
-        ckd = _lowlevel.arrfunc_from_ufunc(np.ldexp,
+        af = _lowlevel.arrfunc_from_ufunc(np.ldexp,
                         (np.float64, np.float64, np.int32),
                         requiregil)
-        self.assertEqual(nd.as_py(ckd.proto),
+        self.assertEqual(nd.as_py(af.proto),
                          ndt.type("(float64, int32) -> float64"))
 
         # Now lift it
-        ckd_lifted = _lowlevel.lift_arrfunc(ckd)
-        self.assertEqual(nd.as_py(ckd_lifted.proto),
+        af_lifted = _lowlevel.lift_arrfunc(af)
+        self.assertEqual(nd.as_py(af_lifted.proto),
                          ndt.type("(Dims... * float64, Dims... * int32) -> Dims... * float64"))
         # Create some compatible arguments
         out = nd.empty('var * var * float64')
         in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='strided * var * float64')
         in1 = nd.array([[-1], [10], [100], [-12]], type='strided * 1 * int32')
         # Instantiate and call the kernel on these arguments
-        ckd_lifted.__call__(out, in0, in1)
+        af_lifted.__call__(out, in0, in1)
         # Verify that we got the expected result
         self.assertEqual(nd.as_py(out),
                     [[0.5, 1.0, 1.5],
                      [4096.0, 5120.0],
                      [float(6*2**100)],
                      [0.001708984375, 0.002197265625, 0.00244140625]])
+
+    def test_arrfunc_from_pyfunc(self):
+        # Create an arrfunc out of a python function
+        def myweightedsum(wt, a):
+            wt = nd.as_py(wt)
+            a = nd.as_py(a)
+            return sum(x * y for x, y in zip(wt, a)) / sum(wt)
+        af = _lowlevel.arrfunc_from_pyfunc(myweightedsum,
+                                           "(var * real, var * real) -> real")
+        out = nd.empty(ndt.float64)
+        in0 = nd.array([0.5, 1.0, 0.5], type="var * real")
+        in1 = nd.array([1, 3, 5], type="var * real")
+        af.__call__(out, in0, in1)
+        self.assertEqual(nd.as_py(out), (0.5 + 3.0 + 2.5) / 2.0)
+        # Also test it as a lifted kernel
+        af_lifted = _lowlevel.lift_arrfunc(af)
+        out = nd.empty(3, ndt.float64)
+        in0 = nd.array([[0.25, 0.75], [0.5, 1.0, 0.5], [1.0]],
+                       type="strided * var * real")
+        in1 = nd.array([[1, 3], [1, 3, 5], [5]],
+                       type="strided * var * real")
+        af_lifted.__call__(out, in0, in1)
+        self.assertEqual(nd.as_py(out),
+                         [(0.25 + 0.75 * 3),
+                          (0.5 + 3.0 + 2.5) / 2.0,
+                          5.0])
 
     def test_arrfunc_from_instantiate_pyfunc(self):
         # Test wrapping make_assignment_ckernel as an arrfunc
@@ -240,23 +266,23 @@ class TestArrFunc(unittest.TestCase):
                             dst_tp, dst_arrmeta,
                             src_tp[0], src_arrmeta[0],
                             'expr', kernreq, ectx)
-        ckd = _lowlevel.arrfunc_from_instantiate_pyfunc(
+        af = _lowlevel.arrfunc_from_instantiate_pyfunc(
                     instantiate_assignment, "(date) -> string")
-        self.assertEqual(nd.as_py(ckd.proto), ndt.type("(date) -> string"))
+        self.assertEqual(nd.as_py(af.proto), ndt.type("(date) -> string"))
         out = nd.empty(ndt.string)
         in0 = nd.array('2012-11-05', ndt.date)
-        ckd.__call__(out, in0)
+        af.__call__(out, in0)
         self.assertEqual(nd.as_py(out), '2012-11-05')
         # Also test it as a lifted kernel
-        ckd_lifted = _lowlevel.lift_arrfunc(ckd)
-        self.assertEqual(nd.as_py(ckd_lifted.proto),
+        af_lifted = _lowlevel.lift_arrfunc(af)
+        self.assertEqual(nd.as_py(af_lifted.proto),
                          ndt.type("(Dims... * date) -> Dims... * string"))
         out = nd.empty('3 * var * string')
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
                         [date(1999, 12, 31)],
                         []], type='3 * var * date')
-        ckd_lifted.__call__(out, in0)
+        af_lifted.__call__(out, in0)
         self.assertEqual(nd.as_py(out),
                         [['2013-03-11', '2010-10-10'],
                          ['1999-12-31'], []])
@@ -265,17 +291,17 @@ class TestArrFunc(unittest.TestCase):
 class TestLiftReductionArrFunc(unittest.TestCase):
     def test_sum_1d(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
+        af = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         in0 = nd.array([3, 12, -5, 10, 2])
         # Simple lift
-        sum = _lowlevel.lift_reduction_arrfunc(ckd, 'strided * int32')
+        sum = _lowlevel.lift_reduction_arrfunc(af, 'strided * int32')
         out = nd.empty(ndt.int32)
         sum.__call__(out, in0)
         self.assertEqual(nd.as_py(out), 22)
         # Lift with keepdims
-        sum = _lowlevel.lift_reduction_arrfunc(ckd, 'strided * int32',
+        sum = _lowlevel.lift_reduction_arrfunc(af, 'strided * int32',
                                                         keepdims=True)
         out = nd.empty(1, ndt.int32)
         sum.__call__(out, in0)
@@ -283,12 +309,12 @@ class TestLiftReductionArrFunc(unittest.TestCase):
 
     def test_sum_2d_axisall(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
+        af = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Simple lift
-        sum = _lowlevel.lift_reduction_arrfunc(ckd,
+        sum = _lowlevel.lift_reduction_arrfunc(af,
                                                  'strided * strided * int32',
                                                  commutative=True,
                                                  associative=True)
@@ -298,12 +324,12 @@ class TestLiftReductionArrFunc(unittest.TestCase):
 
     def test_sum_2d_axis0(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
+        af = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Reduce along axis 0
-        sum = _lowlevel.lift_reduction_arrfunc(ckd,
+        sum = _lowlevel.lift_reduction_arrfunc(af,
                                                  'strided * strided * int32',
                                                  axis=0,
                                                  commutative=True,
@@ -314,11 +340,11 @@ class TestLiftReductionArrFunc(unittest.TestCase):
 
     def test_sum_2d_axis1(self):
         # Use the numpy add ufunc for this lifting test
-        ckd = _lowlevel.arrfunc_from_ufunc(np.add,
+        af = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         False)
         # Reduce along axis 1
-        sum = _lowlevel.lift_reduction_arrfunc(ckd,
+        sum = _lowlevel.lift_reduction_arrfunc(af,
                                                  'strided * strided * int32',
                                                  axis=1,
                                                  commutative=True,
@@ -332,11 +358,11 @@ class TestLiftReductionArrFunc(unittest.TestCase):
 class TestRollingArrFunc(unittest.TestCase):
     def test_diff_op(self):
         # Use the numpy subtract ufunc for this lifting test
-        ckd = _lowlevel.arrfunc_from_ufunc(np.subtract,
+        af = _lowlevel.arrfunc_from_ufunc(np.subtract,
                         (np.float64, np.float64, np.float64),
                         False)
         # Lift it to 1D
-        diff_1d = _lowlevel.lift_reduction_arrfunc(ckd,
+        diff_1d = _lowlevel.lift_reduction_arrfunc(af,
                                                  'strided * float64',
                                                  axis=0,
                                                  commutative=False,

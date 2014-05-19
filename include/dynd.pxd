@@ -86,6 +86,15 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     # nd::array placement assignment
     void SET(array_placement_wrapper&, ndarray&)
 
+    cdef struct arrfunc_placement_wrapper:
+        pass
+    void placement_new(arrfunc_placement_wrapper&) except +translate_exception
+    void placement_delete(arrfunc_placement_wrapper&)
+    # nd::arrfunc placement cast
+    ndarrfunc& GET(arrfunc_placement_wrapper&)
+    # nd::array placement assignment
+    void SET(arrfunc_placement_wrapper&, ndarrfunc&)
+
 #    cdef struct codegen_cache_placement_wrapper:
 #        pass
 #    void placement_new(codegen_cache_placement_wrapper&) except +translate_exception

@@ -11,6 +11,7 @@
 
 #include <dynd/type.hpp>
 #include <dynd/array.hpp>
+#include <dynd/func/arrfunc.hpp>
 //#include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/vm/elwise_program.hpp>
 #include "gfunc_callable_functions.hpp"
@@ -51,6 +52,7 @@ namespace pydynd {
 
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndt::type, type, ndt_type_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::nd::array, array, array_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(dynd::nd::arrfunc, arrfunc, arrfunc_placement_wrapper);
 //DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache, codegen_cache_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program, vm_elwise_program_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::array_callable_wrapper, array_callable_wrapper,

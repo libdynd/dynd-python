@@ -1000,7 +1000,7 @@ cdef class w_array:
     >>> nd.array([date(2000,2,14), date(2012,1,1)])
     nd.array([2000-02-14, 2012-01-01], strided_dim<date>)
     """
-    # To access the embedded ndt::type, use "GET(self.v)",
+    # To access the embedded nd::array, use "GET(self.v)",
     # which returns a reference to the dynd array, and
     # SET(self.v, <array value>), which sets the embeded
     # array's value.
@@ -1312,6 +1312,28 @@ cdef class w_array:
         cdef w_array result = w_array()
         SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
         return result
+
+cdef class w_arrfunc:
+    """
+    nd.arrfunc(TBD)
+
+    This holds a dynd nd.arrfunc object, which represents a single typed
+    function. The particular abstraction this represents is still being
+    sorted out.
+    """
+    # To access the embedded ndt::arrfunc, use "GET(self.v)",
+    # which returns a reference to the dynd arrfunc, and
+    # SET(self.v, <arrfunc value>), which sets the embeded
+    # arrfunc's value.
+    cdef arrfunc_placement_wrapper v
+
+    def __cinit__(self, pyfunc, proto):
+        placement_new(self.v)
+        SET(self.v, arrfunc_from_pyfunc(pyfunc, proto))
+
+    def __dealloc__(self):
+        placement_delete(self.v)
+
 
 def view(obj, type=None, access=None):
     """

@@ -20,6 +20,7 @@ inline dynd::nd::array arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto_obj
     arrfunc_from_pyfunc(reinterpret_cast<dynd::arrfunc_type_data *>(
                             out_af.get_readwrite_originptr()),
                         pyfunc, proto_obj);
+    out_af.flag_as_immutable();
     return out_af;
 }
 

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include <dynd/array.hpp>
-#include <dynd/types/arrfunc_type.hpp>
+#include <dynd/func/arrfunc.hpp>
 
 #include <array_functions.hpp>
 #include <utility_functions.hpp>
@@ -121,6 +121,7 @@ PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
         Py_INCREF(instantiate_pyfunc);
         out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
 
+        out_af.flag_as_immutable();
         return wrap_array(out_af);
     } catch(...) {
         translate_exception();

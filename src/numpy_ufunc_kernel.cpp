@@ -386,6 +386,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                     data->ckernel_acquires_gil = ckernel_acquires_gil;
                     data->funcptr = uf->functions[i];
                     data->ufunc_data = uf->data[i];
+                    af.flag_as_immutable();
                     return wrap_array(af);
                 } else {
                     // TODO: support gufunc

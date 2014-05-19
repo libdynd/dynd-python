@@ -245,13 +245,9 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
 
         if (is_cstruct_compatible_offsets(field_count, &field_types[0],
                         &field_offsets[0], total_size)) {
-            return ndt::make_cstruct(
-                field_count, field_types.empty() ? NULL : &field_types[0],
-                field_names.empty() ? NULL : &field_names[0]);
+            return ndt::make_cstruct(field_names, field_types);
         } else {
-            return ndt::make_struct(
-                field_count, field_types.empty() ? NULL : &field_types[0],
-                field_names.empty() ? NULL : &field_names[0]);
+            return ndt::make_struct(field_names, field_types);
         }
     } else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
         // Translate into a either a cfixed_dim or strided_dim

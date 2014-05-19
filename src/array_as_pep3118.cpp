@@ -151,11 +151,9 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
         case cstruct_type_id: {
             o << "T{";
             const cstruct_type *tdt = dt.tcast<cstruct_type>();
-            const ndt::type *field_types = tdt->get_field_types();
-            const string *field_names = tdt->get_field_names();
             size_t num_fields = tdt->get_field_count();
-            const size_t *offsets = tdt->get_data_offsets(metadata);
-            const size_t *metadata_offsets = tdt->get_metadata_offsets();
+            const uintptr_t *offsets = tdt->get_data_offsets(metadata);
+            const uintptr_t *arrmeta_offsets = tdt->get_arrmeta_offsets_raw();
             size_t format_offset = 0;
             for (size_t i = 0; i != num_fields; ++i) {
                 size_t offset = offsets[i];
@@ -165,10 +163,12 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
                     ++format_offset;
                 }
                 // The field's type
-                append_pep3118_format(out_itemsize, field_types[i], metadata ? (metadata + metadata_offsets[i]) : NULL, o);
+                append_pep3118_format(
+                    out_itemsize, tdt->get_field_type(i),
+                    metadata ? (metadata + arrmeta_offsets[i]) : NULL, o);
                 format_offset += out_itemsize;
                 // Append the name
-                o << ":" << field_names[i] << ":";
+                o << ":" << tdt->get_field_name(i) << ":";
             }
             out_itemsize = dt.get_data_size();
             // Add padding bytes to the end

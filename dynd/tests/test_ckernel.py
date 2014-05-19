@@ -129,7 +129,8 @@ class TestCKernelDeferred(unittest.TestCase):
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "single")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.float32, 0,
+                                          [ndt.int64], [0], "single")
             ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
@@ -139,7 +140,8 @@ class TestCKernelDeferred(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "strided")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.float32, 0,
+                                          [ndt.int64], [0], "strided")
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using ctypes
             i64 = (ctypes.c_int64 * 3)()
@@ -160,7 +162,9 @@ class TestCKernelDeferred(unittest.TestCase):
         # Instantiate as a single kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "single")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.int32, 0,
+                                          [ndt.int32, ndt.int32], [0, 0],
+                                          "single")
             ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
             a = ctypes.c_int32(10)
             b = ctypes.c_int32(21)
@@ -173,7 +177,9 @@ class TestCKernelDeferred(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 3)()
-            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, meta, "strided")
+            _lowlevel.arrfunc_instantiate(ckd, ckb, 0, ndt.int32, 0,
+                                          [ndt.int32, ndt.int32], [0, 0],
+                                          "strided")
             ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
             a = (ctypes.c_int32 * 3)()
             b = (ctypes.c_int32 * 3)()
@@ -229,13 +235,13 @@ class TestCKernelDeferred(unittest.TestCase):
 
     def test_arrfunc_from_pyfunc(self):
         # Test wrapping make_assignment_ckernel as an arrfunc
-        def instantiate_assignment(out_ckb, ckb_offset, types, meta,
-                                   kerntype, ectx):
+        def instantiate_assignment(out_ckb, ckb_offset, dst_tp, dst_arrmeta,
+                                   src_tp, src_arrmeta, kernreq, ectx):
             out_ckb = _lowlevel.CKernelBuilderStruct.from_address(out_ckb)
             return _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset,
-                            types[0], meta[0],
-                            types[1], meta[1],
-                            'expr', kerntype, ectx)
+                            dst_tp, dst_arrmeta,
+                            src_tp[0], src_arrmeta[0],
+                            'expr', kernreq, ectx)
         ckd = _lowlevel.arrfunc_from_pyfunc(instantiate_assignment,
                         [ndt.string, ndt.date])
         self.assertEqual(nd.as_py(ckd.types), [ndt.string, ndt.date])

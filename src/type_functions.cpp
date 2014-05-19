@@ -347,9 +347,7 @@ dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types, PyObject *f
         ss << field_names_vec.size();
         throw invalid_argument(ss.str());
     }
-    return ndt::make_struct(field_types_vec.size(),
-                            field_types_vec.empty() ? NULL : &field_types_vec[0],
-                            field_names_vec.empty() ? NULL : &field_names_vec[0]);
+    return ndt::make_struct(field_names_vec, field_types_vec);
 }
 
 dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names)
@@ -365,10 +363,7 @@ dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *
         ss << field_names_vec.size();
         throw invalid_argument(ss.str());
     }
-    return ndt::make_cstruct(
-        field_types_vec.size(),
-        field_types_vec.empty() ? NULL : &field_types_vec[0],
-        field_names_vec.empty() ? NULL : &field_names_vec[0]);
+    return ndt::make_cstruct(field_names_vec, field_types_vec);
 }
 
 dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp)

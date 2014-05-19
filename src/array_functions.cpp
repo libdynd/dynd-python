@@ -579,7 +579,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     const char *x_metadata = x_ndo.get_arrmeta();
     const char *x_data = x_ndo.get_readonly_originptr();
     const ndt::type& child_dt = budd->get_element_type();
-    const char *child_metadata = metadata + budd->get_element_metadata_offset();
+    const char *child_metadata = metadata + budd->get_element_arrmeta_offset();
     comparison_ckernel_builder k;
     try {
         make_comparison_kernel(&k, 0,
@@ -751,7 +751,6 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         throw runtime_error(ss.str());
     }
     const base_struct_type *bsd = fdt.tcast<base_struct_type>();
-    const ndt::type *field_types = bsd->get_field_types();
 
     if (selected_fields.empty()) {
         throw runtime_error("nd.fields requires at least one field name to be specified");
@@ -768,13 +767,10 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
             ss << " does not exist in dynd type " << fdt;
             throw runtime_error(ss.str());
         }
-        selected_ndt_types[i] = field_types[selected_index[i]];
+        selected_ndt_types[i] = bsd->get_field_type(selected_index[i]);
     }
     // Create the result udt
-    ndt::type rudt = ndt::make_struct(
-        selected_ndt_types.size(),
-        selected_ndt_types.empty() ? NULL : &selected_ndt_types[0],
-        selected_fields.empty() ? NULL : &selected_fields[0]);
+    ndt::type rudt = ndt::make_struct(selected_fields, selected_ndt_types);
     ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
     const base_struct_type *rudt_bsd = rudt.tcast<base_struct_type>();
 
@@ -811,8 +807,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         tmp_dt = budd->get_element_type();
     }
     // Then create the metadata for the new struct
-    const size_t *metadata_offsets = bsd->get_metadata_offsets();
-    const size_t *result_metadata_offsets = rudt_bsd->get_metadata_offsets();
+    const size_t *arrmeta_offsets = bsd->get_arrmeta_offsets_raw();
+    const size_t *result_arrmeta_offsets = rudt_bsd->get_arrmeta_offsets_raw();
     const size_t *data_offsets = bsd->get_data_offsets(src_metadata);
     size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_metadata);
     for (size_t i = 0; i != selected_fields.size(); ++i) {
@@ -821,8 +817,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         result_data_offsets[i] = data_offsets[selected_index[i]];
         // Copy the metadata for this field
         if (dt.get_metadata_size() > 0) {
-            dt.extended()->metadata_copy_construct(dst_metadata + result_metadata_offsets[i],
-                            src_metadata + metadata_offsets[selected_index[i]],
+            dt.extended()->metadata_copy_construct(dst_metadata + result_arrmeta_offsets[i],
+                            src_metadata + arrmeta_offsets[selected_index[i]],
                             n.get_memblock().get());
         }
     }

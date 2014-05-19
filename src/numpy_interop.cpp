@@ -74,13 +74,9 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
     // Make a cstruct if possible, struct otherwise
     if (is_cstruct_compatible_offsets(field_types.size(),
                     &field_types[0], &field_offsets[0], d->elsize)) {
-        return ndt::make_cstruct(field_types.size(),
-                                 field_types.empty() ? NULL : &field_types[0],
-                                 field_names.empty() ? NULL : &field_names[0]);
+        return ndt::make_cstruct(field_names, field_types);
     } else {
-        return ndt::make_struct(field_types.size(),
-                                field_types.empty() ? NULL : &field_types[0],
-                                field_names.empty() ? NULL : &field_names[0]);
+        return ndt::make_struct(field_names, field_types);
     }
 }
 
@@ -285,10 +281,9 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
             // That's why we have to populate them here.
             PyObject *d_names = d->names;
             const struct_type *sdt = dt.tcast<struct_type>();
-            const ndt::type *fields = sdt->get_field_types();
-            const size_t *metadata_offsets = sdt->get_metadata_offsets();
+            const uintptr_t *arrmeta_offsets = sdt->get_arrmeta_offsets_raw();
             size_t field_count = sdt->get_field_count();
-            size_t *offsets = reinterpret_cast<size_t *>(metadata);
+            uintptr_t *offsets = reinterpret_cast<size_t *>(metadata);
             for (size_t i = 0; i < field_count; ++i) {
                 PyObject *tup = PyDict_GetItem(d->fields, PyTuple_GET_ITEM(d_names, i));
                 PyArray_Descr *fld_dtype;
@@ -300,8 +295,9 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
                 // Set the field offset in the output metadata
                 offsets[i] = offset;
                 // Fill the metadata for the field, if necessary
-                if (!fields[i].is_builtin()) {
-                    fill_metadata_from_numpy_dtype(fields[i], fld_dtype, metadata + metadata_offsets[i]);
+                const ndt::type& ft = sdt->get_field_type(i);
+                if (!ft.is_builtin()) {
+                    fill_metadata_from_numpy_dtype(ft, fld_dtype, metadata + arrmeta_offsets[i]);
                 }
             }
             break;
@@ -435,27 +431,26 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
         */
         case cstruct_type_id: {
             const cstruct_type *ttp = tp.tcast<cstruct_type>();
-            const ndt::type *field_types = ttp->get_field_types();
-            const string *field_names = ttp->get_field_names();
-            const vector<size_t>& offsets = ttp->get_data_offsets_vector();
+            const uintptr_t *offsets = ttp->get_data_offsets_raw();
             size_t field_count = ttp->get_field_count();
             size_t max_numpy_alignment = 1;
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
+                const string_type_data& fname = ttp->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
                 pyobject_ownref name_str(PyUnicode_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                    fname.begin, fname.end - fname.begin));
 #else
                 pyobject_ownref name_str(PyString_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                    fname.begin, fname.end - fname.begin));
 #endif
                 PyList_SET_ITEM((PyObject *)names_obj, i, name_str.release());
             }
 
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyArray_Descr *npdt = numpy_dtype_from_ndt_type(field_types[i]);
+                PyArray_Descr *npdt = numpy_dtype_from_ndt_type(ttp->get_field_type(i));
                 max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
                 PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
             }
@@ -549,21 +544,20 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
                 throw dynd::type_error(ss.str());
             }
             const struct_type *stp = tp.tcast<struct_type>();
-            const ndt::type *field_types = stp->get_field_types();
-            const string *field_names = stp->get_field_names();
-            const size_t *metadata_offsets = stp->get_metadata_offsets();
-            const size_t *offsets = stp->get_data_offsets(metadata);
+            const uintptr_t *arrmeta_offsets = stp->get_arrmeta_offsets_raw();
+            const uintptr_t *offsets = stp->get_data_offsets(metadata);
             size_t field_count = stp->get_field_count();
             size_t max_numpy_alignment = 1;
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
+                const string_type_data& fname = stp->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
                 pyobject_ownref name_str(PyUnicode_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                    fname.begin, fname.end - fname.begin));
 #else
                 pyobject_ownref name_str(PyString_FromStringAndSize(
-                                field_names[i].data(), field_names[i].size()));
+                    fname.begin, fname.end - fname.begin));
 #endif
                 PyList_SET_ITEM((PyObject *)names_obj, i, name_str.release());
             }
@@ -571,7 +565,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
                 PyArray_Descr *npdt = numpy_dtype_from_ndt_type(
-                                field_types[i], metadata + metadata_offsets[i]);
+                                stp->get_field_type(i), metadata + arrmeta_offsets[i]);
                 max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
                 PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
             }

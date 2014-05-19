@@ -574,7 +574,7 @@ class TestStructConstruct(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.array,
                         [0, 1], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(TypeError, nd.array,
                         [0, 1], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(RuntimeError, nd.array,
                         {'x':0, 'z':1}, type='c{x:int32, y:int32, z:int32}')
@@ -586,7 +586,7 @@ class TestStructConstruct(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.array,
                         [0, 1, 2, 3], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(TypeError, nd.array,
                         [0, 1, 2, 3], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(RuntimeError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, type='c{x:int32, y:int32, z:int32}')

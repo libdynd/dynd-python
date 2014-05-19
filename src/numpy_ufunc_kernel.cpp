@@ -248,26 +248,43 @@ namespace {
     }
 
     static intptr_t instantiate_scalar_ufunc_ckernel(
-        void *self_data_ptr, dynd::ckernel_builder *out_ckb,
-        intptr_t ckb_offset, const char *const *dynd_metadata,
-        uint32_t kerntype, const eval::eval_context *DYND_UNUSED(ectx))
+        void *self_data_ptr, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
+        const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
+        const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
+        uint32_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
     {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         scalar_ufunc_data *data =
                         reinterpret_cast<scalar_ufunc_data *>(self_data_ptr);
+        const ndt::type *tp_list = reinterpret_cast<const ndt::type *>(&data->data_types[0]);
+        if (dst_tp != tp_list[0]) {
+            stringstream ss;
+            ss << "destination type requested, " << dst_tp
+               << ", does not match the ufunc's type " << tp_list[0];
+            throw type_error(ss.str());
+        }
+        for (intptr_t i = 0; i < data->data_types_size - 1; ++i) {
+            if (src_tp[i] != tp_list[i+1]) {
+                stringstream ss;
+                ss << "source type requested for parameter " << (i + 1) << ", "
+                   << src_tp[i] << ", does not match the ufunc's type "
+                   << tp_list[i + 1];
+                throw type_error(ss.str());
+            }
+        }
         intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
-        out_ckb->ensure_capacity_leaf(ckb_end);
+        ckb->ensure_capacity_leaf(ckb_end);
         scalar_ufunc_ckernel_data *af =
-                        out_ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
+            ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
         af->base.destructor = &delete_scalar_ufunc_ckernel_data;
-        if (kerntype == kernel_request_single) {
+        if (kernreq == kernel_request_single) {
             if (data->ckernel_acquires_gil) {
                 af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_acquiregil);
             } else {
                 af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_nogil);
             }
-        } else if (kerntype == kernel_request_strided) {
+        } else if (kernreq == kernel_request_strided) {
             if (data->ckernel_acquires_gil) {
                 af->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_acquiregil);
             } else {

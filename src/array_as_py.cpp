@@ -170,28 +170,26 @@ static void nested_struct_as_py(const ndt::type& d, const char *metadata, char *
 
     const base_struct_type *bsd = d.tcast<base_struct_type>();
     size_t field_count = bsd->get_field_count();
-    const ndt::type *field_types = bsd->get_field_types();
-    const size_t *field_metadata_offsets = bsd->get_metadata_offsets();
-    const size_t *field_data_offsets = bsd->get_data_offsets(metadata);
+    const uintptr_t *field_arrmeta_offsets = bsd->get_arrmeta_offsets_raw();
+    const uintptr_t *field_data_offsets = bsd->get_data_offsets(metadata);
 
     if (r->struct_as_pytuple) {
         r->result.reset(PyTuple_New(field_count));
         for (size_t i = 0; i != field_count; ++i) {
             array_as_py_data temp_el;
             temp_el.struct_as_pytuple = r->struct_as_pytuple;
-            nested_array_as_py(field_types[i], metadata + field_metadata_offsets[i],
+            nested_array_as_py(bsd->get_field_type(i), metadata + field_arrmeta_offsets[i],
                                data + field_data_offsets[i], &temp_el);
             PyTuple_SET_ITEM(r->result.get(), i, temp_el.result.release());
         }
     } else {
-        const string *field_names = bsd->get_field_names();
         r->result.reset(PyDict_New());
         for (size_t i = 0; i != field_count; ++i) {
-            const string& fname = field_names[i];
-            pyobject_ownref key(PyUnicode_DecodeUTF8(fname.data(), fname.size(), NULL));
+            const string_type_data& fname = bsd->get_field_name_raw(i);
+            pyobject_ownref key(PyUnicode_DecodeUTF8(fname.begin, fname.end - fname.begin, NULL));
             array_as_py_data temp_el;
             temp_el.struct_as_pytuple = r->struct_as_pytuple;
-            nested_array_as_py(field_types[i], metadata + field_metadata_offsets[i],
+            nested_array_as_py(bsd->get_field_type(i), metadata + field_arrmeta_offsets[i],
                                data + field_data_offsets[i], &temp_el);
             if (PyDict_SetItem(r->result.get(), key.get(), temp_el.result.get()) < 0) {
                 throw runtime_error("propagating dict setitem error");

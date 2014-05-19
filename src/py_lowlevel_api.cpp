@@ -70,7 +70,7 @@ namespace {
     make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
                             PyObject *dst_tp_obj, const void *dst_metadata,
                             PyObject *src_tp_obj, const void *src_metadata,
-                            PyObject *funcproto_obj, PyObject *kerntype_obj,
+                            PyObject *funcproto_obj, PyObject *kernreq_obj,
                             PyObject *ectx_obj)
     {
         try {
@@ -90,7 +90,7 @@ namespace {
                 ss << src_tp;
                 throw runtime_error(ss.str());
             }
-            string kt = pystring_as_string(kerntype_obj);
+            string kr = pystring_as_string(kernreq_obj);
             string fp = pystring_as_string(funcproto_obj);
             arrfunc_proto_t funcproto;
             if (fp == "unary") {
@@ -103,15 +103,15 @@ namespace {
                 print_escaped_utf8_string(ss, fp);
                 throw runtime_error(ss.str());
             }
-            kernel_request_t kerntype;
-            if (kt == "single") {
-                kerntype = kernel_request_single;
-            } else if (kt == "strided") {
-                kerntype = kernel_request_strided;
+            kernel_request_t kernreq;
+            if (kr == "single") {
+                kernreq = kernel_request_single;
+            } else if (kr == "strided") {
+                kernreq = kernel_request_strided;
             } else {
                 stringstream ss;
                 ss << "Invalid kernel request type ";
-                print_escaped_utf8_string(ss, kt);
+                print_escaped_utf8_string(ss, kr);
                 throw runtime_error(ss.str());
             }
 
@@ -120,13 +120,13 @@ namespace {
             // If an expr kernel is requested, use an adapter
             if (funcproto == expr_operation_funcproto) {
                 ckb_offset = kernels::wrap_unary_as_expr_ckernel(
-                                ckb_ptr, ckb_offset, kerntype);
+                                ckb_ptr, ckb_offset, kernreq);
             }
 
             intptr_t kernel_size = make_assignment_kernel(
                 ckb_ptr, ckb_offset, dst_tp,
                 reinterpret_cast<const char *>(dst_metadata), src_tp,
-                reinterpret_cast<const char *>(src_metadata), kerntype,
+                reinterpret_cast<const char *>(src_metadata), kernreq,
                 assign_error_default, ectx);
 
             return PyLong_FromSsize_t(kernel_size);

@@ -242,9 +242,9 @@ PyObject *pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
         ss << "incorrect number of arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
         throw runtime_error(ss.str());
     }
-    set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
-            params.get_arrmeta() + fsdt->get_metadata_offsets()[0],
-            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], dt);
+    set_single_parameter(funcname, fsdt->get_field_name(0), fsdt->get_field_type(0),
+            params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
+            params.get_ndo()->m_data_pointer + fsdt->get_data_offset(0), dt);
     nd::array result = c.call_generic(params);
     if (result.get_type().is_scalar()) {
         return array_as_py(result, false);
@@ -263,9 +263,9 @@ nd::array pydynd::call_gfunc_callable(const std::string& funcname, const dynd::g
         ss << "not enough arguments for dynd callable \"" << funcname << "\" with parameters " << pdt;
         throw runtime_error(ss.str());
     }
-    set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
-            params.get_arrmeta() + fsdt->get_metadata_offsets()[0],
-            params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], n);
+    set_single_parameter(funcname, fsdt->get_field_name(0), fsdt->get_field_type(0),
+            params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
+            params.get_ndo()->m_data_pointer + fsdt->get_data_offset(0), n);
     return c.call_generic(params);
 }
 
@@ -288,9 +288,9 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
 
     // Fill all the positional arguments
     for (size_t i = 0; i < args_count; ++i) {
-        set_single_parameter(fsdt->get_field_types()[i+1],
-                out_params.get_arrmeta() + fsdt->get_metadata_offsets()[i+1],
-                out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[i+1],
+        set_single_parameter(fsdt->get_field_type(i+1),
+                out_params.get_arrmeta() + fsdt->get_arrmeta_offset(i+1),
+                out_params.get_ndo()->m_data_pointer + fsdt->get_data_offset(i+1),
                 PyTuple_GET_ITEM(args, i), out_storage);
     }
 
@@ -313,10 +313,10 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
             size_t i;
             // Search for the parameter in the struct, and fill it if found
             for (i = args_count; i < param_count; ++i) {
-                if (s == fsdt->get_field_names()[i+1]) {
-                    set_single_parameter(fsdt->get_field_types()[i+1],
-                            out_params.get_arrmeta() + fsdt->get_metadata_offsets()[i+1],
-                            out_params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[i+1], value, out_storage);
+                if (s == fsdt->get_field_name(i+1)) {
+                    set_single_parameter(fsdt->get_field_type(i+1),
+                            out_params.get_arrmeta() + fsdt->get_arrmeta_offset(i+1),
+                            out_params.get_ndo()->m_data_pointer + fsdt->get_data_offset(i+1), value, out_storage);
                     filled[i - args_count] = 1;
                     break;
                 }
@@ -340,12 +340,12 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
                 for (size_t i = first_default_param; i < param_count; ++i) {
                     // Fill in the parameters which haven't been touched yet
                     if (filled[i - args_count] == 0) {
-                        size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
-                        size_t data_offset = fsdt->get_data_offsets_vector()[i+1];
-                        typed_data_copy(fsdt->get_field_types()[i+1],
-                                        out_params.get_arrmeta() + metadata_offset,
+                        size_t arrmeta_offset = fsdt->get_arrmeta_offset(i+1);
+                        size_t data_offset = fsdt->get_data_offset(i+1);
+                        typed_data_copy(fsdt->get_field_type(i+1),
+                                        out_params.get_arrmeta() + arrmeta_offset,
                                         out_params.get_ndo()->m_data_pointer + data_offset,
-                                        default_parameters.get_arrmeta() + metadata_offset,
+                                        default_parameters.get_arrmeta() + arrmeta_offset,
                                         default_parameters.get_ndo()->m_data_pointer + data_offset);
                         filled[i - args_count] = 1;
                     }
@@ -368,12 +368,12 @@ static void fill_thiscall_parameters_array(const string& funcname, const gfunc::
             int first_default_param = c.get_first_default_parameter() - 1;
             if (first_default_param < (int)param_count && first_default_param <= (int)args_count) {
                 for (size_t i = args_count; i < param_count; ++i) {
-                    size_t metadata_offset = fsdt->get_metadata_offsets()[i+1];
-                    size_t data_offset = fsdt->get_data_offsets_vector()[i+1];
-                    typed_data_copy(fsdt->get_field_types()[i+1],
-                                    out_params.get_arrmeta() + metadata_offset,
+                    size_t arrmeta_offset = fsdt->get_arrmeta_offset(i+1);
+                    size_t data_offset = fsdt->get_data_offset(i+1);
+                    typed_data_copy(fsdt->get_field_type(i+1),
+                                    out_params.get_arrmeta() + arrmeta_offset,
                                     out_params.get_ndo()->m_data_pointer + data_offset,
-                                    default_parameters.get_arrmeta() + metadata_offset,
+                                    default_parameters.get_arrmeta() + arrmeta_offset,
                                     default_parameters.get_ndo()->m_data_pointer + data_offset);
                 }
             } else {
@@ -410,9 +410,9 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper& ncw, PyObjec
     nd::array params = nd::empty(pdt);
     const cstruct_type *fsdt = pdt.tcast<cstruct_type>();
     // Set the 'self' parameter value
-    set_single_parameter(ncw.funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
-                params.get_arrmeta() + fsdt->get_metadata_offsets()[0],
-                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], ncw.n);
+    set_single_parameter(ncw.funcname, fsdt->get_field_name(0), fsdt->get_field_type(0),
+                params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
+                params.get_ndo()->m_data_pointer + fsdt->get_data_offset(0), ncw.n);
 
     fill_thiscall_parameters_array(ncw.funcname, ncw.c, args, kwargs, params, storage);
 
@@ -441,9 +441,9 @@ static PyObject *ndt_type_callable_call(const std::string& funcname, const gfunc
     nd::array params = nd::empty(pdt);
     const cstruct_type *fsdt = pdt.tcast<cstruct_type>();
     // Set the 'self' parameter value
-    set_single_parameter(funcname, fsdt->get_field_names()[0], fsdt->get_field_types()[0],
-                params.get_arrmeta() + fsdt->get_metadata_offsets()[0],
-                params.get_ndo()->m_data_pointer + fsdt->get_data_offsets_vector()[0], d);
+    set_single_parameter(funcname, fsdt->get_field_name(0), fsdt->get_field_type(0),
+                params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
+                params.get_ndo()->m_data_pointer + fsdt->get_data_offset(0), d);
 
     fill_thiscall_parameters_array(funcname, c, args, kwargs, params, storage);
 

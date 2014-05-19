@@ -101,7 +101,9 @@ CKernelBuilderStructPtr = ctypes.POINTER(CKernelBuilderStruct)
 # CKernel Deferred
 InstantiateDeferredCKernelFunction = ctypes.CFUNCTYPE(c_ssize_t,
         ctypes.c_void_p, CKernelBuilderStructPtr, c_ssize_t,
-        ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint32)
+        ctypes.c_void_p, ctypes.c_void_p,
+        ctypes.c_void_p, ctypes.c_void_p,
+        ctypes.c_uint32)
 class CKernelDeferredStruct(ctypes.Structure):
     _fields_ = [("ckernel_funcproto", c_size_t),
                 ("data_types_size", c_size_t),

@@ -9,12 +9,12 @@ project(dynd-python)
 ################################################
 # Some options configurable from the CMAKE command execution
 #
-# -DUSE_SEPARATE_LIBDYND=ON/OFF, Use a libdynd which has been built
-#   and installed separately. This is for linking against a libdynd
-#   which was configured with the -DDYND_INSTALL_LIB=ON.
-option(USE_SEPARATE_LIBDYND
-    "Use a libdynd built separately."
-    OFF)
+# -DDYND_INSTALL_LIB=ON/OFF, Use a libdynd which has been built
+#   and installed separately. To build with this option off, libdynd
+#   must be checked out into the libraries/libdynd subdirectory.
+option(DYND_INSTALL_LIB
+    "Use a libdynd built and installed somewhere."
+    ON)
 # -DUSE_RELATIVE_RPATH=ON/OFF, For OSX, to use the @rpath mechanism
 #   for creating a build which is linked with relative paths. The
 #   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
@@ -56,7 +56,7 @@ if (NUMPY_VERSION_DECIMAL LESS 10500)
         "DyND-Python requires NumPy >= 1.5")
 endif()
 
-if (USE_SEPARATE_LIBDYND)
+if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
 else()
     # Set some options used by the libdynd CMakeLists.txt
@@ -66,7 +66,6 @@ else()
         set(DYND_SHARED_LIB ON)
     endif()
     # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
-    set(DYND_INSTALL_LIB OFF)
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 
     if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/array.hpp")
@@ -254,7 +253,7 @@ else()
     endif()
 endif()
 
-if (USE_SEPARATE_LIBDYND)
+if (DYND_INSTALL_LIB)
     target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}")
 else()
     target_link_libraries(_pydynd libdynd)
@@ -266,7 +265,7 @@ install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
 # Install the module
 install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
 # Install the libdynd binary if on unix and libdynd wasn't built separately
-if(NOT USE_SEPARATE_LIBDYND AND NOT WIN32)
+if(NOT DYND_INSTALL_LIB AND NOT WIN32)
     get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)
     install(FILES ${dynd_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 endif()

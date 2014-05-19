@@ -38,7 +38,7 @@ git clone https://github.com/ContinuumIO/libdynd.git || exit 1
 mkdir libdynd/build
 chown -R vagrant libdynd
 pushd libdynd/build
-su -c 'cmake -DDYND_INSTALL_LIB=ON -DCMAKE_INSTALL_PREFIX=~/anaconda -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} ..' vagrant || exit 1
+su -c 'cmake -DCMAKE_INSTALL_PREFIX=~/anaconda -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} ..' vagrant || exit 1
 su -c 'make' vagrant || exit 1
 su -c 'make install' vagrant || exit 1
 ldconfig
@@ -49,7 +49,7 @@ git clone https://github.com/ContinuumIO/dynd-python.git || exit 1
 mkdir dynd-python/build
 chown -R vagrant dynd-python
 pushd dynd-python/build
-su -c 'cmake -DDYND_ELWISE_MAX=5 -DPYTHON_EXECUTABLE=~/anaconda/bin/python -DCYTHON_EXECUTABLE=~/anaconda/bin/cython -DUSE_SEPARATE_LIBDYND=ON -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} ..' vagrant || exit 1
+su -c 'cmake -DDYND_ELWISE_MAX=5 -DPYTHON_EXECUTABLE=~/anaconda/bin/python -DCYTHON_EXECUTABLE=~/anaconda/bin/cython -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} ..' vagrant || exit 1
 su -c 'make' vagrant || exit 1
 su -c 'make install' vagrant || exit 1
 popd

@@ -9,9 +9,9 @@ recommended compiler. On Linux, gcc 4.6.1, gcc 4.7.0, and
 clang 3.3-svn have been tested.
 
 2. Get the prerequisites.
-  * CMake >= 2.8
-  * Python 2.6, 2.7, or 3.3
-  * Cython >= 0.18 (>= 0.19 required for Python 3.3)
+  * CMake >= 2.8.11
+  * Python 2.6, 2.7, 3.3, or 3.4
+  * Cython >= 0.19
   * NumPy >= 1.5
   * git (for cloning the github repositories)
   * Nose (Only for generating xunit .xml output when running tests)
@@ -22,84 +22,98 @@ clang 3.3-svn have been tested.
 should work equivalently on Windows and Unix-like operating systems.
 
   ```
+  ~ $ git clone https://github.com/ContinuumIO/libdynd
+  Cloning into libdynd...
   ~ $ git clone https://github.com/ContinuumIO/dynd-python
   Cloning into dynd-python...
-  ~ $ cd dynd-python
-  ~/dynd-python $ mkdir libraries
-  ~/dynd-python $ cd libraries
-  ~/dynd-python/libraries $ git clone https://github.com/ContinuumIO/libdynd
-  Cloning into libdynd...
-  ~/dynd-python/libraries $ cd ..
-  ~/dynd-python $ mkdir build
   ```
 
-4. Use cmake to create the build files.
+4. Build and install libdynd
 
-  **(Windows)** Run CMake-gui. For the 'source code' folder, choose the
-dynd-python folder which is the root of the project. For the
-'build the binaries' folder, choose the 'build' subdirectory
-created during step 3.
-
-  If you want to control where the installation goes, you can edit
-the `CMAKE_INSTALL_PREFIX` and `PYTHON_PACKAGE_INSTALL_PREFIX`
-variables in the GUI after clicking 'Configure', then clicking
-'Configure' again to update.
-
-  Click on 'Configure' and then 'Generate' to create
-dynd-python.sln in the 'build' subdirectory.
-
-  **(OS X)** Run cmake as follows. This describes the 64-bit build,
-for a 32-bit build switch the "-DCMAKE\_OSX\_ARCHITECTURES"
-argument below to "i386".
+  ```
+  ~ $ cd libdynd
+  ~/libdynd $ mkdir build
+  ~/libdynd $ cd build
+  ~/libdynd/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+  <...>
+  ~/libdynd/build $ make
+  <...>
+  ~/libdynd/build $ sudo make install
+  ```
 
   If you want to control where the libdynd shared object is
-installed, and where the Python module goes, add
-`-DCMAKE_INSTALL_PREFIX=<prefix>` and
-`-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
+installed, add `-DCMAKE_INSTALL_PREFIX=<prefix>`
 to the cmake command.
 
-  ```
-  ~/dynd-python $ cd build
-  ~/dynd-python/build $ cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-  ```
-
-  **(Linux)** Run cmake as follows.
-
-  If you want to control where the dynd shared object is
-installed, and where the Python module goes, add
-`-DCMAKE_INSTALL_PREFIX=<prefix>` and
-`-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
-to the cmake command.
+4. Build and install dynd-python
 
   ```
+  ~ $ cd dynd-python
+  ~/dynd-python $ mkdir build
   ~/dynd-python $ cd build
   ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-  ```
-
-  If you want to build with a different compiler, or use
-  the static analyzer in clang, you can customize the compiler
-  at this step.
-
-  ```
-  ~/dynd-python $ mkdir build-analyze
-  ~/dynd-python $ cd build-analyze
-  ~/dynd-python/build $ export CCC_CC=clang
-  ~/dynd-python/build $ export CCC_CXX=clang++
-  ~/dynd-python/build $ cmake -DCMAKE_CXX_COMPILER=c++-analyzer -DCMAKE_C_COMPILER=ccc-analyzer ..
-  ```
-
-5. Run the build and install.
-
-  **(Windows)** Double-click on the 'dynd-python\build\dynd-python.sln'
-file to open up Visual Studio. Select 'Release' or 'RelWithDebInfo'
-if you're building for release, and build. To install the targets,
-right click on the INSTALL project and build it.
-
-  **(OS X and Linux)** From the build directory, run the following.
-
-  ```
+  <...>
   ~/dynd-python/build $ make
-  ~/dynd-python/build $ make install # or "sudo make install"
+  <...>
+  ~/dynd-python/build $ sudo make install
+  ```
+
+  If you want to control where the Python module goes, add
+`-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
+to the cmake command.
+
+COMBINED BUILDS
+===============
+
+In some development environments, such as MSVC or XCode, you may prefer
+to develop libdynd and dynd-python together in one project. This is
+supported by including libdynd in the "libraries/libdynd" subdirectory
+of dynd-python, and running cmake with "-DDYND_INSTALL_LIB=OFF".
+For example, to set this up on Windows with MSVC 2013, do:
+
+  ```
+  D:\>git clone https://github.com/ContinuumIO/dynd-python
+  Cloning into 'dynd-python'...
+  <...>
+
+  D:\>cd dynd-python
+
+  D:\dynd-python>mkdir libraries
+
+  D:\dynd-python>cd libraries
+
+  D:\dynd-python\libraries>git clone https://github.com/ContinuumIO/libdynd
+  Cloning into 'libdynd'...
+  <...>
+
+  D:\dynd-python\libraries>cd ..
+
+  D:\dynd-python>mkdir build
+
+  D:\dynd-python>cd build
+
+  D:\dynd-python\build>cmake -DDYND_INSTALL_LIB=OFF -G"Visual Studio 12 Win64" ..
+  -- The C compiler identification is MSVC 18.0.21005.1
+  <...>
+
+  D:\dynd-python\build>start dynd-python.sln
+  <launches MSVC>
+
+  ```
+
+ALTERNATIVE COMPILERS
+=====================
+
+  If you want to build with a different compiler, for
+  example to use the static analyzer in clang, you can
+  customize the compiler at this step.
+
+  ```
+  ~/libdynd $ mkdir build-analyze
+  ~/libdynd $ cd build-analyze
+  ~/libdynd/build-analyze $ export CCC_CC=clang
+  ~/libdynd/build-analyze $ export CCC_CXX=clang++
+  ~/libdynd/build-analyze $ cmake -DCMAKE_CXX_COMPILER=c++-analyzer -DCMAKE_C_COMPILER=ccc-analyzer ..
   ```
 
 CONFIGURATION OPTIONS

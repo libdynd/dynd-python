@@ -139,6 +139,7 @@ set(pydynd_CPP_SRC
     include/array_from_py_dynamic.hpp
     include/array_from_py_typededuction.hpp
     include/codegen_cache_functions.hpp
+    include/arrfunc_from_instantiate_pyfunc.hpp
     include/arrfunc_from_pyfunc.hpp
     include/ctypes_interop.hpp
     include/do_import_array.hpp
@@ -174,6 +175,7 @@ set(pydynd_CPP_SRC
     src/gfunc_callable_functions.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp
     src/git_version.cpp.in
+    src/arrfunc_from_instantiate_pyfunc.cpp
     src/arrfunc_from_pyfunc.cpp
     src/numpy_interop.cpp
     src/numpy_ufunc_kernel.cpp

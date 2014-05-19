@@ -20,6 +20,7 @@
 #include "utility_functions.hpp"
 #include "exception_translation.hpp"
 #include "arrfunc_from_pyfunc.hpp"
+#include "arrfunc_from_instantiate_pyfunc.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -42,10 +43,10 @@ namespace {
             ndt::type d = make_ndt_type_from_pyobject(tp);
             size_t ptr_val = pyobject_as_size_t(ptr);
             uint32_t access_flags = pyarg_strings_to_int(
-                            access, "access", nd::read_access_flag,
-                                "readwrite", nd::read_access_flag|nd::write_access_flag,
-                                "readonly", nd::read_access_flag,
-                                "immutable", nd::read_access_flag|nd::immutable_access_flag);
+                access, "access", nd::read_access_flag,
+                "readwrite", nd::read_access_flag | nd::write_access_flag,
+                "readonly", nd::read_access_flag,
+                "immutable", nd::read_access_flag | nd::immutable_access_flag);
             if (d.get_metadata_size() != 0) {
                 stringstream ss;
                 ss << "Cannot create a dynd array from a raw pointer with non-empty metadata, type: ";
@@ -141,7 +142,7 @@ namespace {
     {
         try {
             nd::array af = nd::empty(ndt::make_arrfunc());
-            arrfunc *af_ptr = reinterpret_cast<arrfunc *>(af.get_readwrite_originptr());
+            arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -175,7 +176,7 @@ namespace {
     {
         try {
             nd::array af = nd::empty(ndt::make_arrfunc());
-            arrfunc *af_ptr = reinterpret_cast<arrfunc *>(af.get_readwrite_originptr());
+            arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
 
             ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
             string propname = pystring_as_string(propname_obj);
@@ -205,11 +206,11 @@ namespace {
     }
 
 
-    PyObject *lift_arrfunc(PyObject *af, PyObject *types)
+    PyObject *lift_arrfunc(PyObject *af)
     {
         try {
             nd::array out_af = nd::empty(ndt::make_arrfunc());
-            arrfunc *out_af_ptr = reinterpret_cast<arrfunc *>(out_af.get_readwrite_originptr());
+            arrfunc_type_data *out_af_ptr = reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
                 stringstream ss;
@@ -217,10 +218,8 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
             const nd::array& af_arr = ((WArray *)af)->v;
-            vector<ndt::type> types_vec;
-            pyobject_as_vector_ndt_type(types, types_vec);
             
-            dynd::lift_arrfunc(out_af_ptr, af_arr, types_vec);
+            dynd::lift_arrfunc(out_af_ptr, af_arr);
 
             return wrap_array(out_af);
         } catch(...) {
@@ -236,7 +235,7 @@ namespace {
     {
         try {
             nd::array out_af = nd::empty(ndt::make_arrfunc());
-            arrfunc *out_af_ptr = reinterpret_cast<arrfunc *>(out_af.get_readwrite_originptr());
+            arrfunc_type_data *out_af_ptr = reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(elwise_reduction_obj) ||
                         ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
@@ -245,8 +244,8 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
             const nd::array& elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
-            const arrfunc *elwise_reduction_af =
-                            reinterpret_cast<const arrfunc *>(elwise_reduction.get_readonly_originptr());
+            const arrfunc_type_data *elwise_reduction_af =
+                            reinterpret_cast<const arrfunc_type_data *>(elwise_reduction.get_readonly_originptr());
 
             nd::array dst_initialization;
             if (WArray_Check(dst_initialization_obj) &&
@@ -261,7 +260,7 @@ namespace {
             ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
 
             // This is the number of dimensions being reduced
-            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->data_dynd_types[1].get_ndim();
+            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->get_param_type(0).get_ndim();
 
             shortvector<bool> reduction_dimflags(reduction_ndim);
             if (axis_obj == Py_None) {
@@ -342,10 +341,20 @@ namespace {
         }
     }
 
+    PyObject *arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto_obj)
+    {
+        try {
+            return wrap_array(pydynd::arrfunc_from_pyfunc(pyfunc, proto_obj));
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
+    }
+
     static PyObject *make_rolling_arrfunc(PyObject *dst_tp_obj,
-                                                   PyObject *src_tp_obj,
-                                                   PyObject *window_op_obj,
-                                                   PyObject *window_size_obj)
+                                          PyObject *src_tp_obj,
+                                          PyObject *window_op_obj,
+                                          PyObject *window_size_obj)
     {
         ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
         ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -361,8 +370,7 @@ namespace {
             dst_tp, src_tp, window_op, window_size));
     }
 
-    PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj,
-                                                    PyObject *minp_obj)
+    PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj, PyObject *minp_obj)
     {
         ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
         intptr_t minp = pyobject_as_index(minp_obj);
@@ -370,9 +378,8 @@ namespace {
             tp.get_type_id(), minp));
     }
 
-    PyObject *make_take_arrfunc(PyObject *dst_tp_obj,
-                                         PyObject *src_tp_obj,
-                                         PyObject *mask_tp_obj)
+    PyObject *make_take_arrfunc(PyObject *dst_tp_obj, PyObject *src_tp_obj,
+                                PyObject *mask_tp_obj)
     {
         ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
         ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
@@ -393,7 +400,8 @@ namespace {
         &pydynd::arrfunc_from_ufunc,
         &lift_arrfunc,
         &lift_reduction_arrfunc,
-        &pydynd::arrfunc_from_pyfunc,
+        &arrfunc_from_pyfunc,
+        &pydynd::arrfunc_from_instantiate_pyfunc,
         &make_rolling_arrfunc,
         &make_builtin_mean1d_arrfunc,
         &make_take_arrfunc

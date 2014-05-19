@@ -12,8 +12,8 @@ __all__ = ['BaseDTypeMembers', 'BaseDTypeMembersPtr',
         'ExprSingleOperation', 'ExprStridedOperation',
         'BinarySinglePredicate',
         'CKernelBuilderStruct', 'CKernelBuilderStructPtr',
-        'CKernelDeferredStruct', 'CKernelDeferredStructPtr',
-        'InstantiateDeferredCKernelFunction',
+        'ArrFuncTypeData', 'ArrFuncTypeDataPtr',
+        'InstantiateArrFuncFunction',
         ]
 
 import ctypes
@@ -98,18 +98,17 @@ class CKernelBuilderStruct(ctypes.Structure):
                 ("static_data", c_ssize_t * 16)]
 CKernelBuilderStructPtr = ctypes.POINTER(CKernelBuilderStruct)
 
-# CKernel Deferred
-InstantiateDeferredCKernelFunction = ctypes.CFUNCTYPE(c_ssize_t,
+# ArrFunc
+InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t,
         ctypes.c_void_p, CKernelBuilderStructPtr, c_ssize_t,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_uint32)
-class CKernelDeferredStruct(ctypes.Structure):
-    _fields_ = [("ckernel_funcproto", c_size_t),
-                ("data_types_size", c_size_t),
-                ("data_dynd_types", ctypes.c_void_p),
+class ArrFuncTypeData(ctypes.Structure):
+    _fields_ = [("func_proto", ctypes.c_void_p),
+                ("ckernel_funcproto", c_size_t),
                 ("data_ptr", ctypes.c_void_p),
-                ("instantiate_func", InstantiateDeferredCKernelFunction),
+                ("instantiate_func", InstantiateArrFuncFunction),
                 ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
-CKernelDeferredStructPtr = ctypes.POINTER(CKernelDeferredStruct)
+ArrFuncTypeDataPtr = ctypes.POINTER(ArrFuncTypeData)
 

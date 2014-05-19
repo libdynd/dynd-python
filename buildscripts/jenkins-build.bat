@@ -73,7 +73,7 @@ echo on
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=install -G %CMAKE_BUILD_TARGET% -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% ..
+cmake -DDYND_INSTALL_LIB=OFF -DCMAKE_INSTALL_PREFIX=install -G %CMAKE_BUILD_TARGET% -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% ..
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 devenv dynd-python.sln /Build "RelWithDebInfo|%MSVC_BUILD_PLATFORM%"
 IF %ERRORLEVEL% NEQ 0 exit /b 1

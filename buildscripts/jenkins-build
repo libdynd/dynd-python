@@ -83,6 +83,7 @@ export EXTRA="-DDYND_BUILD_TESTS=OFF ${EXTRA}"
 # Create a fresh makefile with cmake, and do the build/install
 pushd build
 cmake ${EXTRA} \
+      -DDYND_INSTALL_LIB=OFF \
       -DCMAKE_INSTALL_PREFIX=${PYENV_PREFIX} \
       -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} \
       -DCMAKE_C_COMPILER=${CC} \

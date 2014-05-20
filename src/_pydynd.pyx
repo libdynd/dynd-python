@@ -31,6 +31,7 @@ init_ctypes_interop()
 
 # Initialize C++ access to the Cython type objects
 init_w_array_typeobject(w_array)
+init_w_arrfunc_typeobject(w_arrfunc)
 init_w_type_typeobject(w_type)
 init_w_array_callable_typeobject(w_array_callable)
 init_w_ndt_type_callable_typeobject(w_type_callable)
@@ -1313,7 +1314,7 @@ cdef class w_array:
         SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
         return result
 
-cdef class w_arrfunc:
+cdef class w_arrfunc(w_array):
     """
     nd.arrfunc(TBD)
 
@@ -1321,18 +1322,13 @@ cdef class w_arrfunc:
     function. The particular abstraction this represents is still being
     sorted out.
     """
-    # To access the embedded ndt::arrfunc, use "GET(self.v)",
-    # which returns a reference to the dynd arrfunc, and
-    # SET(self.v, <arrfunc value>), which sets the embeded
-    # arrfunc's value.
-    cdef arrfunc_placement_wrapper v
 
     def __cinit__(self, pyfunc, proto):
         placement_new(self.v)
         SET(self.v, arrfunc_from_pyfunc(pyfunc, proto))
 
-    def __dealloc__(self):
-        placement_delete(self.v)
+    #def __dealloc__(self):
+    #    placement_delete(self.v)
 
 
 def view(obj, type=None, access=None):

@@ -43,28 +43,26 @@ struct WArray {
 };
 void init_w_array_typeobject(PyObject *type);
 
-inline PyObject *wrap_array(const dynd::nd::array& n) {
-    WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-    result->v = n;
-    return (PyObject *)result;
+/**
+ * This is the typeobject and struct of w_arrfunc from Cython.
+ */
+extern PyTypeObject *WArrFunc_Type;
+inline bool WArrFunc_CheckExact(PyObject *obj) {
+    return Py_TYPE(obj) == WArrFunc_Type;
 }
-#ifdef DYND_RVALUE_REFS
-inline PyObject *wrap_array(dynd::nd::array&& n) {
-    WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-    result->v = DYND_MOVE(n);
-    return (PyObject *)result;
+inline bool WArrFunc_Check(PyObject *obj) {
+    return PyObject_TypeCheck(obj, WArrFunc_Type);
 }
-#endif
+struct WArrFunc {
+  PyObject_HEAD;
+  // This is array_placement_wrapper in Cython-land
+  dynd::nd::arrfunc v;
+};
+void init_w_arrfunc_typeobject(PyObject *type);
+
+PyObject *wrap_array(const dynd::nd::array& n);
+PyObject *wrap_array(const dynd::nd::arrfunc& n);
+
 
 void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform, PyObject *access);
 void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access);

@@ -528,7 +528,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
             throw runtime_error("Converting datetimes with a timezone to dynd "
                                 "arrays is not yet supported");
         }
-        ndt::type d = ndt::make_datetime(tz_abstract);
+        ndt::type d = ndt::make_datetime();
         const datetime_type *dd = d.tcast<datetime_type>();
         result = nd::empty(d);
         dd->set_cal(result.get_arrmeta(), result.get_ndo()->m_data_pointer,

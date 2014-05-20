@@ -184,9 +184,9 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
     } else if (obj == PyDateTimeAPI->DateType) {
         return ndt::make_date();
     } else if (obj == PyDateTimeAPI->TimeType) {
-        return ndt::make_time(tz_abstract);
+        return ndt::make_time();
     } else if (obj == PyDateTimeAPI->DateTimeType) {
-        return ndt::make_datetime(tz_abstract);
+        return ndt::make_datetime();
     }
 
     stringstream ss;

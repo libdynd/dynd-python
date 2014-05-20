@@ -214,5 +214,5 @@ void pydynd::arrfunc_from_pyfunc(arrfunc_type_data *out_af,
     out_af->func_proto = proto;
     out_af->data_ptr = instantiate_pyfunc;
     Py_INCREF(instantiate_pyfunc);
-    out_af->instantiate_func = &instantiate_arrfunc_data;
+    out_af->instantiate = &instantiate_arrfunc_data;
 }

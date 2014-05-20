@@ -169,7 +169,7 @@ namespace {
     }
 
     PyObject *make_arrfunc_from_property(PyObject *tp_obj, PyObject *propname_obj,
-                PyObject *funcproto_obj, PyObject *errmode_obj)
+                PyObject *funcproto_obj)
     {
         try {
             ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
@@ -188,9 +188,8 @@ namespace {
                 print_escaped_utf8_string(ss, fp);
                 throw runtime_error(ss.str());
             }
-            assign_error_mode errmode = pyarg_error_mode(errmode_obj);
             nd::arrfunc af =
-                ::make_arrfunc_from_property(tp, propname, funcproto, errmode);
+                ::make_arrfunc_from_property(tp, propname, funcproto);
 
             return wrap_array(af);
         } catch(...) {

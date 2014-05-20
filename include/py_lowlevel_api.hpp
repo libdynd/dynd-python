@@ -42,8 +42,7 @@ struct py_lowlevel_api_t {
                                                        PyObject *errmode);
     PyObject *(*make_arrfunc_from_property)(PyObject *tp_obj,
                                                      PyObject *propname,
-                                                     PyObject *funcproto,
-                                                     PyObject *errmode);
+                                                     PyObject *funcproto);
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
     PyObject *(*arrfunc_from_ufunc)(PyObject *ufunc, PyObject *type_tuple,
                                     int ckernel_acquires_gil);

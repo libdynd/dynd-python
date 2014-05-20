@@ -99,8 +99,7 @@ class _PyLowLevelAPI(ctypes.Structure):
                 ('make_arrfunc_from_property',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
-                        ctypes.py_object)),
+                        ctypes.py_object, ctypes.py_object)),
                 # PyObject *numpy_typetuples_from_ufunc(PyObject *ufunc);
                 ('numpy_typetuples_from_ufunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.py_object)),

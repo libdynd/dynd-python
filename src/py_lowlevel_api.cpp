@@ -141,9 +141,6 @@ namespace {
                 PyObject *funcproto_obj, PyObject *errmode_obj)
     {
         try {
-            nd::array af = nd::empty(ndt::make_arrfunc());
-            arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
-
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
             string fp = pystring_as_string(funcproto_obj);
@@ -161,8 +158,8 @@ namespace {
                 throw runtime_error(ss.str());
             }
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-            dynd::make_arrfunc_from_assignment(dst_tp, src_tp, src_tp,
-                            funcproto, errmode, *af_ptr);
+            nd::arrfunc af = ::make_arrfunc_from_assignment(dst_tp, src_tp,
+                                                            funcproto, errmode);
 
             return wrap_array(af);
         } catch(...) {

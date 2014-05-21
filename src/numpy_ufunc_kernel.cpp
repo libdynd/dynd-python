@@ -370,7 +370,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                     memset(af_ptr->data_ptr, 0, out_af_size);
                     af_ptr->ckernel_funcproto = expr_operation_funcproto;
                     af_ptr->free_func = &delete_scalar_ufunc_data;
-                    af_ptr->instantiate_func = &instantiate_scalar_ufunc_ckernel;
+                    af_ptr->instantiate = &instantiate_scalar_ufunc_ckernel;
                     // Fill in the arrfunc instance data
                     scalar_ufunc_data *data = reinterpret_cast<scalar_ufunc_data *>(af_ptr->data_ptr);
                     data->ufunc = uf;

@@ -31,6 +31,7 @@ init_ctypes_interop()
 
 # Initialize C++ access to the Cython type objects
 init_w_array_typeobject(w_array)
+init_w_arrfunc_typeobject(w_arrfunc)
 init_w_type_typeobject(w_type)
 init_w_array_callable_typeobject(w_array_callable)
 init_w_ndt_type_callable_typeobject(w_type_callable)
@@ -1000,7 +1001,7 @@ cdef class w_array:
     >>> nd.array([date(2000,2,14), date(2012,1,1)])
     nd.array([2000-02-14, 2012-01-01], strided_dim<date>)
     """
-    # To access the embedded ndt::type, use "GET(self.v)",
+    # To access the embedded nd::array, use "GET(self.v)",
     # which returns a reference to the dynd array, and
     # SET(self.v, <array value>), which sets the embeded
     # array's value.
@@ -1312,6 +1313,31 @@ cdef class w_array:
         cdef w_array result = w_array()
         SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
         return result
+
+cdef class w_arrfunc(w_array):
+    """
+    nd.arrfunc(TBD)
+
+    This holds a dynd nd.arrfunc object, which represents a single typed
+    function. The particular abstraction this represents is still being
+    sorted out.
+    """
+
+    def __cinit__(self, pyfunc, proto):
+        placement_new(self.v)
+        SET(self.v, arrfunc_from_pyfunc(pyfunc, proto))
+
+    #def __dealloc__(self):
+    #    placement_delete(self.v)
+
+    def __call__(self, *args, **kwargs):
+        # Handle the keyword-only arguments
+        ectx = kwargs.pop('ectx', None)
+        if kwargs:
+            msg = "nd.arrfunc call got an unexpected keyword argument '%s'"
+            raise TypeError(msg % (kwargs.keys()[0]))
+        return arrfunc_call(self, args, ectx)
+
 
 def view(obj, type=None, access=None):
     """

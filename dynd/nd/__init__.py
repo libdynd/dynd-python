@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 
 # Expose types and functions directly from the Cython/C++ module
-from dynd._pydynd import w_array as array, w_eval_context as eval_context, \
+from .._pydynd import w_array as array, w_arrfunc as arrfunc, \
+        w_eval_context as eval_context, \
         as_py, as_numpy, zeros, ones, full, empty, empty_like, range, \
         linspace, memmap, fields, groupby, elwise_map, \
         parse_json, format_json, debug_repr, \
@@ -13,6 +14,8 @@ from dynd._pydynd import w_array as array, w_eval_context as eval_context, \
 
 # All the builtin elementwise reduce gfuncs
 #from elwise_reduce_gfuncs import *
+
+from .gfunc import *
 
 from .computed_fields import add_computed_fields, make_computed_fields
 from .array_functions import squeeze

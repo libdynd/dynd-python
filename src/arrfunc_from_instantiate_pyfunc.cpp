@@ -119,7 +119,7 @@ PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
         out_af_ptr->func_proto = proto;
         out_af_ptr->data_ptr = instantiate_pyfunc;
         Py_INCREF(instantiate_pyfunc);
-        out_af_ptr->instantiate_func = &instantiate_pyfunc_arrfunc_data;
+        out_af_ptr->instantiate = &instantiate_pyfunc_arrfunc_data;
 
         out_af.flag_as_immutable();
         return wrap_array(out_af);

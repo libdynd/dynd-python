@@ -219,11 +219,11 @@ class TestArrFunc(unittest.TestCase):
         self.assertEqual(nd.as_py(af_lifted.proto),
                          ndt.type("(Dims... * float64, Dims... * int32) -> Dims... * float64"))
         # Create some compatible arguments
-        out = nd.empty('var * var * float64')
-        in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]], type='strided * var * float64')
+        in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]],
+                       type='strided * var * float64')
         in1 = nd.array([[-1], [10], [100], [-12]], type='strided * 1 * int32')
         # Instantiate and call the kernel on these arguments
-        af_lifted.__call__(out, in0, in1)
+        out = af_lifted(in0, in1)
         # Verify that we got the expected result
         self.assertEqual(nd.as_py(out),
                     [[0.5, 1.0, 1.5],
@@ -239,19 +239,17 @@ class TestArrFunc(unittest.TestCase):
             return sum(x * y for x, y in zip(wt, a)) / sum(wt)
         af = _lowlevel.arrfunc_from_pyfunc(myweightedsum,
                                            "(var * real, var * real) -> real")
-        out = nd.empty(ndt.float64)
         in0 = nd.array([0.5, 1.0, 0.5], type="var * real")
         in1 = nd.array([1, 3, 5], type="var * real")
-        af.__call__(out, in0, in1)
+        out = af(in0, in1)
         self.assertEqual(nd.as_py(out), (0.5 + 3.0 + 2.5) / 2.0)
         # Also test it as a lifted kernel
         af_lifted = _lowlevel.lift_arrfunc(af)
-        out = nd.empty(3, ndt.float64)
         in0 = nd.array([[0.25, 0.75], [0.5, 1.0, 0.5], [1.0]],
                        type="strided * var * real")
         in1 = nd.array([[1, 3], [1, 3, 5], [5]],
                        type="strided * var * real")
-        af_lifted.__call__(out, in0, in1)
+        out = af_lifted(in0, in1)
         self.assertEqual(nd.as_py(out),
                          [(0.25 + 0.75 * 3),
                           (0.5 + 3.0 + 2.5) / 2.0,
@@ -269,20 +267,18 @@ class TestArrFunc(unittest.TestCase):
         af = _lowlevel.arrfunc_from_instantiate_pyfunc(
                     instantiate_assignment, "(date) -> string")
         self.assertEqual(nd.as_py(af.proto), ndt.type("(date) -> string"))
-        out = nd.empty(ndt.string)
         in0 = nd.array('2012-11-05', ndt.date)
-        af.__call__(out, in0)
+        out = af(in0)
         self.assertEqual(nd.as_py(out), '2012-11-05')
         # Also test it as a lifted kernel
         af_lifted = _lowlevel.lift_arrfunc(af)
         self.assertEqual(nd.as_py(af_lifted.proto),
                          ndt.type("(Dims... * date) -> Dims... * string"))
-        out = nd.empty('3 * var * string')
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
                         [date(1999, 12, 31)],
                         []], type='3 * var * date')
-        af_lifted.__call__(out, in0)
+        out = af_lifted(in0)
         self.assertEqual(nd.as_py(out),
                         [['2013-03-11', '2010-10-10'],
                          ['1999-12-31'], []])
@@ -298,13 +294,13 @@ class TestLiftReductionArrFunc(unittest.TestCase):
         # Simple lift
         sum = _lowlevel.lift_reduction_arrfunc(af, 'strided * int32')
         out = nd.empty(ndt.int32)
-        sum.__call__(out, in0)
+        sum.execute(out, in0)
         self.assertEqual(nd.as_py(out), 22)
         # Lift with keepdims
         sum = _lowlevel.lift_reduction_arrfunc(af, 'strided * int32',
                                                         keepdims=True)
         out = nd.empty(1, ndt.int32)
-        sum.__call__(out, in0)
+        sum.execute(out, in0)
         self.assertEqual(nd.as_py(out), [22])
 
     def test_sum_2d_axisall(self):
@@ -319,7 +315,7 @@ class TestLiftReductionArrFunc(unittest.TestCase):
                                                  commutative=True,
                                                  associative=True)
         out = nd.empty(ndt.int32)
-        sum.__call__(out, in0)
+        sum.execute(out, in0)
         self.assertEqual(nd.as_py(out), 25)
 
     def test_sum_2d_axis0(self):
@@ -335,7 +331,7 @@ class TestLiftReductionArrFunc(unittest.TestCase):
                                                  commutative=True,
                                                  associative=True)
         out = nd.empty(3, ndt.int32)
-        sum.__call__(out, in0)
+        sum.execute(out, in0)
         self.assertEqual(nd.as_py(out), [13, 14, -2])
 
     def test_sum_2d_axis1(self):
@@ -351,7 +347,7 @@ class TestLiftReductionArrFunc(unittest.TestCase):
                                                  associative=True)
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         out = nd.empty(2, ndt.int32)
-        sum.__call__(out, in0)
+        sum.execute(out, in0)
         self.assertEqual(nd.as_py(out), [10, 15])
 
 
@@ -368,12 +364,9 @@ class TestRollingArrFunc(unittest.TestCase):
                                                  commutative=False,
                                                  associative=False)
         # Apply it as a rolling op
-        diff = _lowlevel.make_rolling_arrfunc('strided * float64',
-                                                       'strided * float64',
-                                                       diff_1d, 2)
+        diff = _lowlevel.make_rolling_arrfunc(diff_1d, 2)
         in0 = nd.array([1.5, 3.25, 7, -3.5, 1.25])
-        out = nd.empty_like(in0)
-        diff.__call__(out, in0)
+        out = diff(in0)
         result = nd.as_py(out)
         self.assertTrue(np.isnan(result[0]))
         self.assertEqual(result[1:],
@@ -381,12 +374,9 @@ class TestRollingArrFunc(unittest.TestCase):
 
     def test_rolling_mean(self):
         mean_1d = _lowlevel.make_builtin_mean1d_arrfunc('float64', -1)
-        rolling_mean = _lowlevel.make_rolling_arrfunc('strided * float64',
-                                                       'strided * float64',
-                                                       mean_1d, 4)
+        rolling_mean = _lowlevel.make_rolling_arrfunc(mean_1d, 4)
         in0 = nd.array([3.0, 2, 1, 3, 8, nd.nan, nd.nan])
-        out = nd.empty_like(in0)
-        rolling_mean.__call__(out, in0)
+        out = rolling_mean(in0)
         result = nd.as_py(out)
         self.assertTrue(np.all(np.isnan(result[:3])))
         self.assertTrue(np.isnan(result[-1]))

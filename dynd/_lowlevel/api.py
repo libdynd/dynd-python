@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import sys
 import ctypes
-from dynd._pydynd import _get_lowlevel_api, _get_py_lowlevel_api
+from .._pydynd import _get_lowlevel_api, _get_py_lowlevel_api
 from .ctypes_types import (ArrFuncTypeDataPtr,
         CKernelBuilderStructPtr)
 
@@ -122,7 +122,6 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.py_object)),
                 ('make_rolling_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
                 ('make_builtin_mean1d_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
@@ -552,8 +551,7 @@ arrfunc_from_instantiate_pyfunc.__doc__ = """
     the ``instantiate`` mechanism.
     """
 make_rolling_arrfunc.__doc__ = """
-    _lowlevel.make_rolling_arrfunc(dst_tp, src_tp,
-                                            window_op, window_size)
+    _lowlevel.make_rolling_arrfunc(window_op, window_size)
 
     This function transforms a 1D reduction op into a rolling window op.
     """

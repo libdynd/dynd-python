@@ -137,6 +137,7 @@ set(pydynd_CPP_SRC
     include/array_from_py.hpp
     include/array_from_py_dynamic.hpp
     include/array_from_py_typededuction.hpp
+    include/arrfunc_functions.hpp
     include/codegen_cache_functions.hpp
     include/arrfunc_from_instantiate_pyfunc.hpp
     include/arrfunc_from_pyfunc.hpp
@@ -164,6 +165,7 @@ set(pydynd_CPP_SRC
     src/array_from_py.cpp
     src/array_from_py_dynamic.cpp
     src/array_from_py_typededuction.cpp
+    src/arrfunc_functions.cpp
     src/codegen_cache_functions.cpp
     src/ctypes_interop.cpp
     src/elwise_map.cpp

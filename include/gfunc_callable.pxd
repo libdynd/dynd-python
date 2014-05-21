@@ -37,3 +37,14 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void placement_delete(array_callable_placement_wrapper&)
     # ndarray placement cast
     array_callable_wrapper& GET(array_callable_placement_wrapper&)
+
+cdef extern from "dynd/func/arrfunc.hpp" namespace "dynd":
+    cdef cppclass ndarrfunc "dynd::nd::arrfunc":
+        ndarrfunc() except +translate_exception
+
+cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd":
+    ndarrfunc arrfunc_from_pyfunc(object, object) except +translate_exception
+
+cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
+    void init_w_arrfunc_typeobject(object)
+    object arrfunc_call(object, object, object) except +translate_exception

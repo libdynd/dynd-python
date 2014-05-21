@@ -11,6 +11,7 @@
 
 #include <dynd/type.hpp>
 #include <dynd/array.hpp>
+#include <dynd/func/arrfunc.hpp>
 //#include <dynd/codegen/codegen_cache.hpp>
 #include <dynd/vm/elwise_program.hpp>
 #include "gfunc_callable_functions.hpp"
@@ -57,6 +58,12 @@ DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::array_callable_wrapper, array_callable_wra
             array_callable_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::ndt_type_callable_wrapper, ndt_type_callable_wrapper,
             ndt_type_callable_placement_wrapper);
+
+/* placement cast of arrfunc (wrapper is subclass of array) */
+inline dynd::nd::arrfunc& GET_arrfunc(array_placement_wrapper& v)
+{
+    return *(dynd::nd::arrfunc *)&v;
+}
 
 } // namespace pydynd
 

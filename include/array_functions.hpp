@@ -6,8 +6,8 @@
 // access various nd::array parameters
 //
 
-#ifndef _DYND__NDARRAY_FUNCTIONS_HPP_
-#define _DYND__NDARRAY_FUNCTIONS_HPP_
+#ifndef _DYND__ARRAY_FUNCTIONS_HPP_
+#define _DYND__ARRAY_FUNCTIONS_HPP_
 
 #include <Python.h>
 
@@ -43,28 +43,9 @@ struct WArray {
 };
 void init_w_array_typeobject(PyObject *type);
 
-inline PyObject *wrap_array(const dynd::nd::array& n) {
-    WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-    result->v = n;
-    return (PyObject *)result;
-}
-#ifdef DYND_RVALUE_REFS
-inline PyObject *wrap_array(dynd::nd::array&& n) {
-    WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-    result->v = DYND_MOVE(n);
-    return (PyObject *)result;
-}
-#endif
+PyObject *wrap_array(const dynd::nd::array& n);
+PyObject *wrap_array(const dynd::nd::arrfunc& n);
+
 
 void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *dt, bool uniform, PyObject *access);
 void array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access);
@@ -232,4 +213,4 @@ inline void dynd_parse_json_array(dynd::nd::array &out,
 
 } // namespace pydynd
 
-#endif // _DYND__NDARRAY_FUNCTIONS_HPP_
+#endif // _DYND__ARRAY_FUNCTIONS_HPP_

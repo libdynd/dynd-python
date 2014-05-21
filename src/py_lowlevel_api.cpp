@@ -19,6 +19,7 @@
 #include "numpy_ufunc_kernel.hpp"
 #include "utility_functions.hpp"
 #include "exception_translation.hpp"
+#include "arrfunc_functions.hpp"
 #include "arrfunc_from_pyfunc.hpp"
 #include "arrfunc_from_instantiate_pyfunc.hpp"
 
@@ -168,8 +169,9 @@ namespace {
         }
     }
 
-    PyObject *make_arrfunc_from_property(PyObject *tp_obj, PyObject *propname_obj,
-                PyObject *funcproto_obj)
+    PyObject *make_arrfunc_from_property(PyObject *tp_obj,
+                                         PyObject *propname_obj,
+                                         PyObject *funcproto_obj)
     {
         try {
             ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
@@ -202,33 +204,30 @@ namespace {
     PyObject *lift_arrfunc(PyObject *af)
     {
         try {
-            nd::array out_af = nd::empty(ndt::make_arrfunc());
-            arrfunc_type_data *out_af_ptr = reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
             // Convert all the input parameters
-            if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+            if (!WArray_Check(af) ||
+                    ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
                 stringstream ss;
                 ss << "af must be an nd.array of type arrfunc";
                 throw dynd::type_error(ss.str());
             }
-            const nd::array& af_arr = ((WArray *)af)->v;
-            
-            dynd::lift_arrfunc(out_af_ptr, af_arr);
-
-            return wrap_array(out_af);
+            return wrap_array(dynd::lift_arrfunc(((WArray *)af)->v));
         } catch(...) {
             translate_exception();
             return NULL;
         }
     }
 
-    PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj, PyObject *lifted_type_obj,
-                    PyObject *dst_initialization_obj, PyObject *axis_obj, PyObject *keepdims_obj,
-                    PyObject *associative_obj, PyObject *commutative_obj,
-                    PyObject *right_associative_obj, PyObject *reduction_identity_obj)
+    PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
+                                     PyObject *lifted_type_obj,
+                                     PyObject *dst_initialization_obj,
+                                     PyObject *axis_obj, PyObject *keepdims_obj,
+                                     PyObject *associative_obj,
+                                     PyObject *commutative_obj,
+                                     PyObject *right_associative_obj,
+                                     PyObject *reduction_identity_obj)
     {
         try {
-            nd::array out_af = nd::empty(ndt::make_arrfunc());
-            arrfunc_type_data *out_af_ptr = reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
             // Convert all the input parameters
             if (!WArray_Check(elwise_reduction_obj) ||
                         ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
@@ -321,11 +320,10 @@ namespace {
                 throw dynd::type_error(ss.str());
             }
 
-            dynd::lift_reduction_arrfunc(out_af_ptr, elwise_reduction,
-                        lifted_type, dst_initialization, keepdims,
-                        reduction_ndim, reduction_dimflags.get(),
-                        associative, commutative, right_associative,
-                        reduction_identity);
+            nd::arrfunc out_af = ::lift_reduction_arrfunc(
+                elwise_reduction, lifted_type, dst_initialization, keepdims,
+                reduction_ndim, reduction_dimflags.get(), associative,
+                commutative, right_associative, reduction_identity);
 
             return wrap_array(out_af);
         } catch(...) {
@@ -344,41 +342,50 @@ namespace {
         }
     }
 
-    static PyObject *make_rolling_arrfunc(PyObject *dst_tp_obj,
-                                          PyObject *src_tp_obj,
-                                          PyObject *window_op_obj,
+    static PyObject *make_rolling_arrfunc(PyObject *window_op_obj,
                                           PyObject *window_size_obj)
     {
-        ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-        ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-        if (!WArray_Check(window_op_obj) ||
-                    ((WArray *)window_op_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
-            stringstream ss;
-            ss << "window_op must be an nd.array of type arrfunc";
-            throw dynd::type_error(ss.str());
+        try {
+            if (!WArrFunc_Check(window_op_obj)) {
+                stringstream ss;
+                ss << "window_op must be an nd.arrfunc";
+                throw dynd::type_error(ss.str());
+            }
+            const nd::arrfunc& window_op = ((WArrFunc *)window_op_obj)->v;
+            intptr_t window_size = pyobject_as_index(window_size_obj);
+            return wrap_array(::make_rolling_arrfunc(window_op, window_size));
+        } catch(...) {
+            translate_exception();
+            return NULL;
         }
-        const nd::array& window_op = ((WArray *)window_op_obj)->v;
-        intptr_t window_size = pyobject_as_index(window_size_obj);
-        return wrap_array(::make_rolling_arrfunc(
-            dst_tp, src_tp, window_op, window_size));
     }
 
     PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj, PyObject *minp_obj)
     {
-        ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
-        intptr_t minp = pyobject_as_index(minp_obj);
-        return wrap_array(kernels::make_builtin_mean1d_arrfunc(
-            tp.get_type_id(), minp));
+        try {
+            ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
+            intptr_t minp = pyobject_as_index(minp_obj);
+            return wrap_array(kernels::make_builtin_mean1d_arrfunc(
+                tp.get_type_id(), minp));
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
     }
 
     PyObject *make_take_arrfunc(PyObject *dst_tp_obj, PyObject *src_tp_obj,
                                 PyObject *mask_tp_obj)
     {
-        ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-        ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-        ndt::type mask_tp = make_ndt_type_from_pyobject(mask_tp_obj);
-        return wrap_array(
-            kernels::make_take_arrfunc(dst_tp, src_tp, mask_tp));
+        try {
+            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+            ndt::type mask_tp = make_ndt_type_from_pyobject(mask_tp_obj);
+            return wrap_array(
+                kernels::make_take_arrfunc(dst_tp, src_tp, mask_tp));
+        } catch(...) {
+            translate_exception();
+            return NULL;
+        }
     }
 
     const py_lowlevel_api_t py_lowlevel_api = {

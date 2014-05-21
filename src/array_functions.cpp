@@ -4,6 +4,7 @@
 //
 
 #include "array_functions.hpp"
+#include "arrfunc_functions.hpp"
 #include "array_from_py.hpp"
 #include "array_assign_from_py.hpp"
 #include "type_functions.hpp"
@@ -26,16 +27,10 @@ using namespace dynd;
 using namespace pydynd;
 
 PyTypeObject *pydynd::WArray_Type;
-PyTypeObject *pydynd::WArrFunc_Type;
 
 void pydynd::init_w_array_typeobject(PyObject *type)
 {
     WArray_Type = (PyTypeObject *)type;
-}
-
-void pydynd::init_w_arrfunc_typeobject(PyObject *type)
-{
-    WArrFunc_Type = (PyTypeObject *)type;
 }
 
 PyObject *pydynd::wrap_array(const dynd::nd::array &n)

@@ -1330,6 +1330,14 @@ cdef class w_arrfunc(w_array):
     #def __dealloc__(self):
     #    placement_delete(self.v)
 
+    def __call__(self, *args, **kwargs):
+        # Handle the keyword-only arguments
+        ectx = kwargs.pop('ectx', None)
+        if kwargs:
+            msg = "nd.arrfunc call got an unexpected keyword argument '%s'"
+            raise TypeError(msg % (kwargs.keys()[0]))
+        return arrfunc_call(self, args, ectx)
+
 
 def view(obj, type=None, access=None):
     """

@@ -59,7 +59,6 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
 
 cdef extern from "array_functions.hpp" namespace "pydynd":
     void init_w_array_typeobject(object)
-    void init_w_arrfunc_typeobject(object)
 
     string array_repr(ndarray&) except +translate_exception
     object array_str(ndarray&) except +translate_exception

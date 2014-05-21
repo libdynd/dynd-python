@@ -6,8 +6,8 @@
 // access various nd::array parameters
 //
 
-#ifndef _DYND__NDARRAY_FUNCTIONS_HPP_
-#define _DYND__NDARRAY_FUNCTIONS_HPP_
+#ifndef _DYND__ARRAY_FUNCTIONS_HPP_
+#define _DYND__ARRAY_FUNCTIONS_HPP_
 
 #include <Python.h>
 
@@ -42,23 +42,6 @@ struct WArray {
   dynd::nd::array v;
 };
 void init_w_array_typeobject(PyObject *type);
-
-/**
- * This is the typeobject and struct of w_arrfunc from Cython.
- */
-extern PyTypeObject *WArrFunc_Type;
-inline bool WArrFunc_CheckExact(PyObject *obj) {
-    return Py_TYPE(obj) == WArrFunc_Type;
-}
-inline bool WArrFunc_Check(PyObject *obj) {
-    return PyObject_TypeCheck(obj, WArrFunc_Type);
-}
-struct WArrFunc {
-  PyObject_HEAD;
-  // This is array_placement_wrapper in Cython-land
-  dynd::nd::arrfunc v;
-};
-void init_w_arrfunc_typeobject(PyObject *type);
 
 PyObject *wrap_array(const dynd::nd::array& n);
 PyObject *wrap_array(const dynd::nd::arrfunc& n);
@@ -230,4 +213,4 @@ inline void dynd_parse_json_array(dynd::nd::array &out,
 
 } // namespace pydynd
 
-#endif // _DYND__NDARRAY_FUNCTIONS_HPP_
+#endif // _DYND__ARRAY_FUNCTIONS_HPP_

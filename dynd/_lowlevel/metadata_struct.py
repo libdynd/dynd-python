@@ -5,7 +5,7 @@ __all__ = ['build_metadata_struct']
 import ctypes
 
 from .ctypes_types import MemoryBlockData
-from ..ndt import type as ndt_type
+from .._pydynd import w_type as ndt_type
 
 # Metadata ctypes for types that don't have child metadata
 class EmptyMetadata(ctypes.Structure):

@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 
 # Expose types and functions directly from the Cython/C++ module
-from dynd._pydynd import w_array as array, w_eval_context as eval_context, \
+from .._pydynd import w_array as array, w_arrfunc as arrfunc, \
+        w_eval_context as eval_context, \
         as_py, as_numpy, zeros, ones, full, empty, empty_like, range, \
         linspace, memmap, fields, groupby, elwise_map, \
         parse_json, format_json, debug_repr, \

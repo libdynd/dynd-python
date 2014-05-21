@@ -19,6 +19,7 @@
 #include "numpy_ufunc_kernel.hpp"
 #include "utility_functions.hpp"
 #include "exception_translation.hpp"
+#include "arrfunc_functions.hpp"
 #include "arrfunc_from_pyfunc.hpp"
 #include "arrfunc_from_instantiate_pyfunc.hpp"
 
@@ -341,24 +342,18 @@ namespace {
         }
     }
 
-    static PyObject *make_rolling_arrfunc(PyObject *dst_tp_obj,
-                                          PyObject *src_tp_obj,
-                                          PyObject *window_op_obj,
+    static PyObject *make_rolling_arrfunc(PyObject *window_op_obj,
                                           PyObject *window_size_obj)
     {
         try {
-            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-            if (!WArray_Check(window_op_obj) ||
-                        ((WArray *)window_op_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
+            if (!WArrFunc_Check(window_op_obj)) {
                 stringstream ss;
-                ss << "window_op must be an nd.array of type arrfunc";
+                ss << "window_op must be an nd.arrfunc";
                 throw dynd::type_error(ss.str());
             }
-            const nd::array& window_op = ((WArray *)window_op_obj)->v;
+            const nd::arrfunc& window_op = ((WArrFunc *)window_op_obj)->v;
             intptr_t window_size = pyobject_as_index(window_size_obj);
-            return wrap_array(::make_rolling_arrfunc(
-                dst_tp, src_tp, window_op, window_size));
+            return wrap_array(::make_rolling_arrfunc(window_op, window_size));
         } catch(...) {
             translate_exception();
             return NULL;

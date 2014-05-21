@@ -364,9 +364,7 @@ class TestRollingArrFunc(unittest.TestCase):
                                                  commutative=False,
                                                  associative=False)
         # Apply it as a rolling op
-        diff = _lowlevel.make_rolling_arrfunc('strided * float64',
-                                                       'strided * float64',
-                                                       diff_1d, 2)
+        diff = _lowlevel.make_rolling_arrfunc(diff_1d, 2)
         in0 = nd.array([1.5, 3.25, 7, -3.5, 1.25])
         out = nd.empty_like(in0)
         diff.execute(out, in0)
@@ -377,9 +375,7 @@ class TestRollingArrFunc(unittest.TestCase):
 
     def test_rolling_mean(self):
         mean_1d = _lowlevel.make_builtin_mean1d_arrfunc('float64', -1)
-        rolling_mean = _lowlevel.make_rolling_arrfunc('strided * float64',
-                                                       'strided * float64',
-                                                       mean_1d, 4)
+        rolling_mean = _lowlevel.make_rolling_arrfunc(mean_1d, 4)
         in0 = nd.array([3.0, 2, 1, 3, 8, nd.nan, nd.nan])
         out = nd.empty_like(in0)
         rolling_mean.execute(out, in0)

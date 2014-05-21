@@ -45,6 +45,9 @@ void init_w_arrfunc_typeobject(PyObject *type);
 PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj,
                        PyObject *ectx_obj);
 
+PyObject *arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
+                                PyObject *window_size_obj, PyObject *ectx_obj);
+
 } // namespace pydynd
 
 #endif // _DYND__ARRFUNC_FUNCTIONS_HPP_

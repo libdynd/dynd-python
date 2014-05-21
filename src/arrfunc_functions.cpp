@@ -10,6 +10,7 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
+#include "arrfunc_from_pyfunc.hpp"
 
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/base_uniform_dim_type.hpp>
@@ -20,6 +21,7 @@
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/strided_dim_type.hpp>
+#include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/view.hpp>
 
 using namespace std;
@@ -33,7 +35,8 @@ void pydynd::init_w_arrfunc_typeobject(PyObject *type)
     WArrFunc_Type = (PyTypeObject *)type;
 }
 
-PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj, PyObject *ectx_obj)
+PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
+                               PyObject *ectx_obj)
 {
     if (!WArrFunc_Check(af_obj)) {
         PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
@@ -45,7 +48,8 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj, PyObject *e
         return NULL;
     }
     if (!PyTuple_Check(args_obj)) {
-        PyErr_SetString(PyExc_ValueError, "arrfunc_call requires a tuple of arguments");
+        PyErr_SetString(PyExc_ValueError,
+                        "arrfunc_call requires a tuple of arguments");
         return NULL;
     }
     // Convert args into nd::arrays
@@ -56,5 +60,25 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj, PyObject *e
     }
     nd::array result = af.call(args_size, args_size ? &args[0] : NULL,
                                eval_context_from_pyobj(ectx_obj));
+    return wrap_array(result);
+}
+
+PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
+                                        PyObject *window_size_obj,
+                                        PyObject *ectx_obj)
+{
+    nd::array arr = array_from_py(arr_obj, 0, false);
+    intptr_t window_size = pyobject_as_index(window_size_obj);
+    nd::arrfunc func;
+    if (WArrFunc_Check(func_obj)) {
+        func = ((WArrFunc *)func_obj)->v;
+    } else {
+        ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
+        ndt::type proto = ndt::make_funcproto(ndt::make_strided_dim(el_tp), el_tp);
+                                              
+        func = arrfunc_from_pyfunc(func_obj, proto);
+    }
+    nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
+    nd::array result = roll.call(1, &arr, eval_context_from_pyobj(ectx_obj));
     return wrap_array(result);
 }

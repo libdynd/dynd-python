@@ -12,14 +12,14 @@
 namespace pydynd {
 
 void arrfunc_from_pyfunc(dynd::arrfunc_type_data *out_af, PyObject *pyfunc,
-                         PyObject *proto_obj);
+                         const dynd::ndt::type &proto);
 
-inline dynd::nd::arrfunc arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto_obj)
+inline dynd::nd::arrfunc arrfunc_from_pyfunc(PyObject *pyfunc, const dynd::ndt::type &proto)
 {
     dynd::nd::array out_af = dynd::nd::empty(dynd::ndt::make_arrfunc());
     arrfunc_from_pyfunc(reinterpret_cast<dynd::arrfunc_type_data *>(
                             out_af.get_readwrite_originptr()),
-                        pyfunc, proto_obj);
+                        pyfunc, proto);
     out_af.flag_as_immutable();
     return out_af;
 }

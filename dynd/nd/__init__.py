@@ -7,7 +7,8 @@ from .._pydynd import w_array as array, w_arrfunc as arrfunc, \
         linspace, memmap, fields, groupby, elwise_map, \
         parse_json, format_json, debug_repr, \
         BroadcastError, type_of, dtype_of, dshape_of, ndim_of, \
-        view, asarray, is_c_contiguous, is_f_contiguous
+        view, asarray, is_c_contiguous, is_f_contiguous, \
+        rolling_apply
 
 # All the builtin elementwise gfuncs
 #from elwise_gfuncs import *

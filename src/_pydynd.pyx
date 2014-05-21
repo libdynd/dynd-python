@@ -1324,8 +1324,9 @@ cdef class w_arrfunc(w_array):
     """
 
     def __cinit__(self, pyfunc, proto):
-        placement_new(self.v)
-        SET(self.v, arrfunc_from_pyfunc(pyfunc, proto))
+        # placement_new(self.v)
+        # SET(self.v, arrfunc_from_pyfunc(pyfunc, proto))
+        pass
 
     #def __dealloc__(self):
     #    placement_delete(self.v)
@@ -2035,6 +2036,26 @@ def format_json(w_array n):
     cdef w_array result = w_array()
     SET(result.v, dynd_format_json(GET(n.v)))
     return result
+
+def rolling_apply(af, arr, window_size, ectx=None):
+    """
+    nd.rolling_apply(af, arr, window_size, ectx=None)
+
+    Applies a function to successive overlapping windows
+    into the provided array.
+
+    Parameters
+    ----------
+    af : nd.arrfunc or callable
+        The function to apply to each window into ``arr``.
+    arr : nd.array
+        The array to operate on.
+    window_size : int
+        How big the window should be.
+    ectx : nd.eval_context, optional
+        If provided, provides the evaluation context for the operation.
+    """
+    return arrfunc_rolling_apply(af, arr, window_size, ectx)
 
 def elwise_map(n, callable, dst_type, src_type = None):
     """

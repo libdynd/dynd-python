@@ -149,12 +149,14 @@ namespace {
                 // Call the function
                 pyobject_ownref res(
                     PyObject_Call(self->m_pyfunc, args.get(), NULL));
-                // Validate that the call didn't hang onto the ephemeral data
-                // pointers we used
-                self->verify_postcall_consistency(args.get());
                 // Copy the result into the destination memory
                 array_nodim_broadcast_assign_from_py(dst_tp, self->m_dst_arrmeta,
                                                      dst, res.get());
+                res.clear();
+                // Validate that the call didn't hang onto the ephemeral data
+                // pointers we used. This is done after the dst assignment, because
+                // the function result may have contained a reference to an argument.
+                self->verify_postcall_consistency(args.get());
                 // Increment to the next one
                 dst += dst_stride;
                 for (size_t i = 0; i != param_count; ++i) {
@@ -199,9 +201,8 @@ namespace {
 
 void pydynd::arrfunc_from_pyfunc(arrfunc_type_data *out_af,
                                  PyObject *instantiate_pyfunc,
-                                 PyObject *proto_obj)
+                                 const ndt::type &proto)
 {
-    ndt::type proto = make_ndt_type_from_pyobject(proto_obj);
     if (proto.get_type_id() != funcproto_type_id) {
         stringstream ss;
         ss << "creating a dynd arrfunc from a python func requires a function "

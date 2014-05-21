@@ -15,6 +15,8 @@ from .._pydynd import w_array as array, w_arrfunc as arrfunc, \
 # All the builtin elementwise reduce gfuncs
 #from elwise_reduce_gfuncs import *
 
+from .gfunc import *
+
 from .computed_fields import add_computed_fields, make_computed_fields
 from .array_functions import squeeze
 

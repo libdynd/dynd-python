@@ -71,14 +71,18 @@ namespace {
             // Verify that no reference to a temporary array was kept
             for (size_t i = 0; i != param_count; ++i) {
                 PyObject *item = PyTuple_GET_ITEM(args, i);
-                if (Py_REFCNT(item) != 1 || ((WArray *)item)->v.get_ndo()->m_memblockdata.m_use_count != 1) {
+                if (Py_REFCNT(item) != 1 ||
+                        ((WArray *)item)->v.get_ndo()->m_memblockdata.m_use_count !=
+                            1) {
                     stringstream ss;
                     ss << "Python callback function ";
                     pyobject_ownref pyfunc_repr(PyObject_Repr(m_pyfunc));
                     ss << pystring_as_string(pyfunc_repr.get());
                     ss << ", called by dynd, held a reference to parameter ";
                     ss << (i + 1) << " which contained temporary memory.";
-                    ss << " This is disallowed.";
+                    ss << " This is disallowed.\n";
+                    ss << "Python wrapper ref count: " << Py_REFCNT(item) << "\n";
+                    ((WArray *)item)->v.debug_print(ss);
                     // Set all the args' data pointers to NULL as a precaution
                     for (i = 0; i != param_count; ++i) {
                         ((WArray *)item)->v.get_ndo()->m_data_pointer = NULL;
@@ -113,12 +117,14 @@ namespace {
             // Now call the function
             pyobject_ownref res(
                 PyObject_Call(self->m_pyfunc, args.get(), NULL));
-            // Validate that the call didn't hang onto the ephemeral data
-            // pointers we used
-            self->verify_postcall_consistency(args.get());
             // Copy the result into the destination memory
             array_nodim_broadcast_assign_from_py(dst_tp, self->m_dst_arrmeta,
                                                  dst, res.get());
+            res.clear();
+            // Validate that the call didn't hang onto the ephemeral data
+            // pointers we used. This is done after the dst assignment, because
+            // the function result may have contained a reference to an argument.
+            self->verify_postcall_consistency(args.get());
         }
 
         static void strided(char *dst, intptr_t dst_stride,

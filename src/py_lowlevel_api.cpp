@@ -332,10 +332,9 @@ namespace {
         }
     }
 
-    PyObject *arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto_obj)
+    PyObject *arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto)
     {
         try {
-            const ndt::type& proto = make_ndt_type_from_pyobject(proto_obj);
             return wrap_array(pydynd::arrfunc_from_pyfunc(pyfunc, proto));
         } catch(...) {
             translate_exception();

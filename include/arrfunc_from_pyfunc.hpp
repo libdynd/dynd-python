@@ -6,6 +6,8 @@
 #ifndef _DYND__ARRFUNC_FROM_PYFUNC_HPP_
 #define _DYND__ARRFUNC_FROM_PYFUNC_HPP_
 
+#include "type_functions.hpp"
+
 #include <dynd/func/arrfunc.hpp>
 #include <dynd/types/arrfunc_type.hpp>
 
@@ -22,6 +24,11 @@ inline dynd::nd::arrfunc arrfunc_from_pyfunc(PyObject *pyfunc, const dynd::ndt::
                         pyfunc, proto);
     out_af.flag_as_immutable();
     return out_af;
+}
+
+inline dynd::nd::arrfunc arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto)
+{
+    return arrfunc_from_pyfunc(pyfunc, make_ndt_type_from_pyobject(proto));
 }
 
 } // namespace pydynd

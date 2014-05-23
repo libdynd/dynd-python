@@ -127,9 +127,7 @@ class _PyLowLevelAPI(ctypes.Structure):
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
                 ('make_take_arrfunc',
-                 ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
-                        ctypes.py_object)),
+                 ctypes.PYFUNCTYPE(ctypes.py_object)),
                ]
 
 api = _LowLevelAPI.from_address(_get_lowlevel_api())
@@ -563,19 +561,8 @@ make_builtin_mean1d_arrfunc.__doc__ = """
     ckernel is "(strided * <tp>) -> <tp>".
     """
 make_take_arrfunc.__doc__ = """
-    _lowlevel.make_take_arrfunc(dst_tp, src_tp, mask_tp)
+    _lowlevel.make_take_arrfunc()
 
     This function creates a arrfunc which applies a take
     operation along the first dimension.
-
-    Parameters
-    ----------
-    dst_tp : ndt.type
-        Must be "var * T" for some type T.
-    src_tp : ndt.type
-        Must be "Strided * S" for some S, and S must be assignable
-        to T. Strided must be "strided", "fixed[N]", or "cfixed[N]".
-    mask_tp : ndt.type
-        Must be "Strided * bool", where Strided is "strided",
-        "fixed[N]", or "cfixed[N, stride=M]".
     """

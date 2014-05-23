@@ -373,15 +373,11 @@ namespace {
         }
     }
 
-    PyObject *make_take_arrfunc(PyObject *dst_tp_obj, PyObject *src_tp_obj,
-                                PyObject *mask_tp_obj)
+    PyObject *make_take_arrfunc()
     {
         try {
-            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-            ndt::type mask_tp = make_ndt_type_from_pyobject(mask_tp_obj);
             return wrap_array(
-                kernels::make_take_arrfunc(dst_tp, src_tp, mask_tp));
+                kernels::make_take_arrfunc());
         } catch(...) {
             translate_exception();
             return NULL;

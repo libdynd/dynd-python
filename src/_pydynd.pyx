@@ -2246,8 +2246,9 @@ cdef class w_type_callable:
 
 cdef class w_eval_context:
     """
-    nd.eval_context(default_errmode=None,
-                    default_cuda_device_errmode=None,
+    nd.eval_context(reset=False,
+                    errmode=None,
+                    cuda_device_errmode=None,
                     date_parse_order=None,
                     century_window=None)
 
@@ -2257,9 +2258,13 @@ cdef class w_eval_context:
 
     Parameters
     ----------
-    default_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+    reset : bool, optional
+        If set to true, first resets the evaluation context to
+        factory settings instead of starting with the default
+        evaluation context.
+    errmode : 'inexact', 'fractional', 'overflow', 'none', optional
         The default error mode used in computations when none is specified.
-    default_cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
         The default error mode used in cuda computations when none is
         specified.
     date_parse_order : 'NoAmbig', 'YMD', 'MDY', 'DMY', optional
@@ -2287,13 +2292,13 @@ cdef class w_eval_context:
         if self.own_ectx:
             del self.ectx
 
-    property default_errmode:
+    property errmode:
         def __get__(self):
-            return get_eval_context_default_errmode(self)
+            return get_eval_context_errmode(self)
 
-    property default_cuda_device_errmode:
+    property cuda_device_errmode:
         def __get__(self):
-            return get_eval_context_default_cuda_device_errmode(self)
+            return get_eval_context_cuda_device_errmode(self)
 
     property date_parse_order:
         def __get__(self):
@@ -2308,3 +2313,36 @@ cdef class w_eval_context:
 
     def __repr__(self):
         return get_eval_context_repr(self)
+
+def modify_default_eval_context(**kwargs):
+    """
+    nd.modify_default_eval_context(reset=False,
+                    errmode=None,
+                    cuda_device_errmode=None,
+                    date_parse_order=None,
+                    century_window=None)
+
+    Modify the default dynd evaluation context, overriding the defaults via
+    the chosen parameters. This is not recommended for typical use
+    except in interactive sessions. Using the ``ectx=`` parameter to
+    evaluation methods is preferred in library code.
+
+    Parameters
+    ----------
+    reset : bool, optional
+        If set to true, first resets the default evaluation context to
+        factory settings.
+    errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+        The default error mode used in computations when none is specified.
+    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+        The default error mode used in cuda computations when none is
+        specified.
+    date_parse_order : 'NoAmbig', 'YMD', 'MDY', 'DMY', optional
+        How to interpret dates being parsed when the order of year, month and
+        day is ambiguous from the format.
+    century_window : int, optional
+        Whether and how to interpret two digit years. If 0, disallow them.
+        If 1-99, use a sliding window beginning that number of years ago.
+        If greater than 1000, use a fixed window starting at that year.
+    """
+    dynd_modify_default_eval_context(kwargs)

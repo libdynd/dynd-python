@@ -62,12 +62,19 @@ inline const dynd::eval::eval_context *eval_context_from_pyobj(PyObject *obj)
 
 /**
  * Makes a copy of eval::default_eval_context, setting parameters
- * in the keyword args.
+ * in the keyword args. This returns unprotected memory allocated
+ * by 'new', to be wrapped up in a WEvalContext wrapper.
  */
 dynd::eval::eval_context *new_eval_context(PyObject *kwargs);
 
-PyObject *get_eval_context_default_errmode(PyObject *ectx_obj);
-PyObject *get_eval_context_default_cuda_device_errmode(PyObject *ectx_obj);
+/**
+ * Accepts parameters like new_eval_context, but changes the
+ * default eval context in place.
+ */
+void modify_default_eval_context(PyObject *kwargs);
+
+PyObject *get_eval_context_errmode(PyObject *ectx_obj);
+PyObject *get_eval_context_cuda_device_errmode(PyObject *ectx_obj);
 PyObject *get_eval_context_date_parse_order(PyObject *ectx_obj);
 PyObject *get_eval_context_century_window(PyObject *ectx_obj);
 PyObject *get_eval_context_repr(PyObject *ectx_obj);

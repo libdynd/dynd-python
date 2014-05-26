@@ -17,43 +17,47 @@ void pydynd::init_w_eval_context_typeobject(PyObject *type)
     WEvalContext_Type = (PyTypeObject *)type;
 }
 
-eval::eval_context *pydynd::new_eval_context(PyObject *kwargs)
+static void modify_eval_context(eval::eval_context *ectx, PyObject *kwargs)
 {
-    // Allocate the eval_context, copying eval::default_eval_context to start
-    eval::eval_context ectx(eval::default_eval_context);
-
-    // Validate the kwargs is a non-empty dictionary
-    if (kwargs == NULL || kwargs == Py_None) {
-        return new eval::eval_context(ectx);
-    }
     if (!PyDict_Check(kwargs)) {
         throw invalid_argument(
             "nd.eval_context(): invalid kwargs, expected a dict");
     }
     if (PyDict_Size(kwargs) == 0) {
-        return new eval::eval_context(ectx);
+        return;
     }
     PyObject *obj;
-    // default_errmode
-    obj = PyDict_GetItemString(kwargs, "default_errmode");
+    // reset to factory settings
+    obj = PyDict_GetItemString(kwargs, "reset");
     if (obj != NULL) {
-        ectx.default_errmode = pyarg_error_mode_no_default(obj);
-        if (PyDict_DelItemString(kwargs, "default_errmode") < 0) {
+        if (PyObject_IsTrue(obj)) {
+            // Reset to factory settings
+            *ectx = eval::eval_context();
+        }
+        if (PyDict_DelItemString(kwargs, "reset") < 0) {
+            throw runtime_error("");
+        }
+    }
+    // errmode
+    obj = PyDict_GetItemString(kwargs, "errmode");
+    if (obj != NULL) {
+        ectx->default_errmode = pyarg_error_mode_no_default(obj);
+        if (PyDict_DelItemString(kwargs, "errmode") < 0) {
             throw runtime_error("");
         }
     }
     // default_cuda_device_errmode
-    obj = PyDict_GetItemString(kwargs, "default_cuda_device_errmode");
+    obj = PyDict_GetItemString(kwargs, "cuda_device_errmode");
     if (obj != NULL) {
-        ectx.default_cuda_device_errmode = pyarg_error_mode_no_default(obj);
-        if (PyDict_DelItemString(kwargs, "default_cuda_device_errmode") < 0) {
+        ectx->default_cuda_device_errmode = pyarg_error_mode_no_default(obj);
+        if (PyDict_DelItemString(kwargs, "cuda_device_errmode") < 0) {
             throw runtime_error("");
         }
     }
     // date_parse_order
     obj = PyDict_GetItemString(kwargs, "date_parse_order");
     if (obj != NULL) {
-        ectx.date_parse_order = (date_parse_order_t)pyarg_strings_to_int(
+        ectx->date_parse_order = (date_parse_order_t)pyarg_strings_to_int(
             obj, "date_parse_order", date_parse_no_ambig, "NoAmbig",
             date_parse_no_ambig, "YMD", date_parse_ymd, "MDY", date_parse_mdy,
             "DMY", date_parse_dmy);
@@ -73,7 +77,7 @@ eval::eval_context *pydynd::new_eval_context(PyObject *kwargs)
             ss << ", 1-99 (sliding window), or 1000 and up (fixed window)";
             throw invalid_argument(ss.str());
         }
-        ectx.century_window = (int)century_window;
+        ectx->century_window = (int)century_window;
         if (PyDict_DelItemString(kwargs, "century_window") < 0) {
             throw runtime_error("");
         }
@@ -89,11 +93,29 @@ eval::eval_context *pydynd::new_eval_context(PyObject *kwargs)
         ss << "'" << pystring_as_string(key) << "'";
         throw invalid_argument(ss.str());
     }
+}
+
+eval::eval_context *pydynd::new_eval_context(PyObject *kwargs)
+{
+    // Allocate the eval_context, copying eval::default_eval_context to start
+    eval::eval_context ectx(eval::default_eval_context);
+
+    // Validate the kwargs is a non-empty dictionary
+    if (kwargs == NULL || kwargs == Py_None) {
+        return new eval::eval_context(ectx);
+    }
+
+    modify_eval_context(&ectx, kwargs);
 
     return new eval::eval_context(ectx);
 }
 
-PyObject *pydynd::get_eval_context_default_errmode(PyObject *ectx_obj)
+void pydynd::modify_default_eval_context(PyObject *kwargs)
+{
+    modify_eval_context(&eval::default_eval_context, kwargs);
+}
+
+PyObject *pydynd::get_eval_context_errmode(PyObject *ectx_obj)
 {
     if (!WEvalContext_Check(ectx_obj)) {
         throw invalid_argument("expected an nd.eval_context object");
@@ -102,7 +124,7 @@ PyObject *pydynd::get_eval_context_default_errmode(PyObject *ectx_obj)
     return pyarg_error_mode_to_pystring(ectx->default_errmode);
 }
 
-PyObject *pydynd::get_eval_context_default_cuda_device_errmode(PyObject *ectx_obj)
+PyObject *pydynd::get_eval_context_cuda_device_errmode(PyObject *ectx_obj)
 {
     if (!WEvalContext_Check(ectx_obj)) {
         throw invalid_argument("expected an nd.eval_context object");
@@ -148,8 +170,8 @@ PyObject *pydynd::get_eval_context_repr(PyObject *ectx_obj)
     }
     const eval::eval_context *ectx = ((WEvalContext *)ectx_obj)->ectx;
     stringstream ss;
-    ss << "nd.eval_context(default_errmode='" << ectx->default_errmode << "',\n";
-    ss << "                default_cuda_device_errmode='" << ectx->default_cuda_device_errmode << "',\n";
+    ss << "nd.eval_context(errmode='" << ectx->default_errmode << "',\n";
+    ss << "                cuda_device_errmode='" << ectx->default_cuda_device_errmode << "',\n";
     ss << "                date_parse_order='" << ectx->date_parse_order << "',\n";
     ss << "                century_window=" << ectx->century_window << ")";
 #if PY_VERSION_HEX < 0x03000000

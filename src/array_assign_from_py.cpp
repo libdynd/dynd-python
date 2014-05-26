@@ -147,6 +147,63 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             } else {
                 PY_LONG_LONG v = PyLong_AsLongLong(value);
                 if (v == -1 && PyErr_Occurred()) {
+                    if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
+                        // If the type is int128 or uint128, try again because
+                        // it might fit
+                        if (dt.value_type().get_type_id() == int128_type_id) {
+                            PyErr_Clear();
+                            uint64_t lo = PyLong_AsUnsignedLongLongMask(value);
+                            pyobject_ownref sixtyfour(PyLong_FromLong(64));
+                            pyobject_ownref value_shr1(
+                                PyNumber_Rshift(value, sixtyfour.get()));
+                            uint64_t hi =
+                                PyLong_AsUnsignedLongLongMask(value_shr1.get());
+                            dynd_int128 result(hi, lo);
+
+                            // Shift right another 64 bits, and check that nothing is remaining
+                            pyobject_ownref value_shr2(PyNumber_Rshift(
+                                value_shr1.get(), sixtyfour.get()));
+                            long remaining = PyLong_AsLong(value_shr2.get());
+                            if ((remaining != 0 ||
+                                    (remaining == 0 && result.is_negative())) &&
+                                    (remaining != -1 || PyErr_Occurred() ||
+                                     (remaining == -1 && !result.is_negative()))) {
+                                PyErr_SetString(PyExc_OverflowError, "int is too big to fit in an int128");
+                                throw exception();
+                            }
+
+                            typed_data_assign(
+                                dt, metadata, data,
+                                ndt::make_type<dynd_int128>(), NULL,
+                                reinterpret_cast<const char *>(&result));
+                            return;
+                        } else if (dt.value_type().get_type_id() ==
+                                   uint128_type_id) {
+                            PyErr_Clear();
+                            uint64_t lo = PyLong_AsUnsignedLongLongMask(value);
+                            pyobject_ownref sixtyfour(PyLong_FromLong(64));
+                            pyobject_ownref value_shr1(
+                                PyNumber_Rshift(value, sixtyfour.get()));
+                            uint64_t hi =
+                                PyLong_AsUnsignedLongLongMask(value_shr1.get());
+                            dynd_uint128 result(hi, lo);
+
+                            // Shift right another 64 bits, and check that nothing is remaining
+                            pyobject_ownref value_shr2(PyNumber_Rshift(
+                                value_shr1.get(), sixtyfour.get()));
+                            long remaining = PyLong_AsLong(value_shr2.get());
+                            if (remaining != 0) {
+                                PyErr_SetString(PyExc_OverflowError, "int is too big to fit in a uint128");
+                                throw exception();
+                            }
+
+                            typed_data_assign(
+                                dt, metadata, data,
+                                ndt::make_type<dynd_uint128>(), NULL,
+                                reinterpret_cast<const char *>(&result));
+                            return;
+                        }
+                    }
                     throw runtime_error("error converting int value");
                 }
                 typed_data_assign(dt, metadata, data,

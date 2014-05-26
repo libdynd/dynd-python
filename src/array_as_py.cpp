@@ -33,6 +33,34 @@ struct init_pydatetime {
 init_pydatetime pdt;
 } // anonymous namespace
 
+PyObject *pydynd::pylong_from_uint128(const dynd_uint128& val)
+{
+    if (val.m_hi == 0ULL) {
+        return PyLong_FromUnsignedLongLong(val.m_lo);
+    }
+    // Use the pynumber methods to shift and or together the 64 bit parts
+    pyobject_ownref hi(PyLong_FromUnsignedLongLong(val.m_hi));
+    pyobject_ownref sixtyfour(PyLong_FromLong(64));
+    pyobject_ownref hi_shifted(PyNumber_Lshift(hi.get(), sixtyfour));
+    pyobject_ownref lo(PyLong_FromUnsignedLongLong(val.m_lo));
+    return PyNumber_Or(hi_shifted.get(), lo.get());
+}
+
+PyObject *pydynd::pylong_from_int128(const dynd_int128& val)
+{
+    if (val.is_negative()) {
+        if (val.m_hi == 0xffffffffffffffffULL &&
+                (val.m_hi & 0x8000000000000000ULL) != 0) {
+            return PyLong_FromLongLong(static_cast<int64_t>(val.m_lo));
+        }
+        pyobject_ownref absval(
+            pylong_from_uint128(static_cast<dynd_uint128>(-val)));
+        return PyNumber_Negative(absval.get());
+    } else {
+        return pylong_from_uint128(static_cast<dynd_uint128>(val));
+    }
+}
+
 /**
  * Converts an array element into a python object.
  *
@@ -72,6 +100,8 @@ static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
 #endif
         case int64_type_id:
             return PyLong_FromLongLong(*(const int64_t *)data);
+        case int128_type_id:
+            return pylong_from_int128(*(const dynd_int128 *)data);
         case uint8_type_id:
 #if PY_VERSION_HEX >= 0x03000000
             return PyLong_FromLong(*(const uint8_t *)data);
@@ -88,6 +118,8 @@ static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
             return PyLong_FromUnsignedLong(*(const uint32_t *)data);
         case uint64_type_id:
             return PyLong_FromUnsignedLongLong(*(const uint64_t *)data);
+        case uint128_type_id:
+            return pylong_from_uint128(*(const dynd_uint128 *)data);
         case float32_type_id:
             return PyFloat_FromDouble(*(const float *)data);
         case float64_type_id:

@@ -300,6 +300,8 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             const ndt::type& v = make_ndt_type_from_pyobject(value);
             typed_data_assign(dt, metadata, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
+        } else if (value == Py_None) {
+            nd::assign_na(dt, metadata, data, &eval::default_eval_context);
         } else if (PyDict_Check(value)) {
             array_assign_from_pydict(dt, metadata, data, value);
         } else {

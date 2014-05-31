@@ -16,6 +16,7 @@
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
+#include <dynd/types/option_type.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/exceptions.hpp>
 
@@ -127,6 +128,8 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unk
     } else if (PyArray_DescrCheck(obj)) {
         return ndt::make_type();
 #endif // DYND_NUMPY_INTEROP
+    } else if (obj == Py_None) {
+        return ndt::make_option(ndt::make_type<void>());
     }
 
     // Check for a blaze.Array, or something which looks similar,

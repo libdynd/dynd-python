@@ -16,6 +16,7 @@
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
+#include <dynd/types/option_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/type_promotion.hpp>
@@ -213,11 +214,24 @@ inline void convert_one_pyscalar_datetime(const ndt::type& tp, const char *metad
                     PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
 }
 
-inline void convert_one_pyscalar_ndt_type(const ndt::type& DYND_UNUSED(tp),
-                const char *DYND_UNUSED(metadata), char *out, PyObject *obj)
+inline void convert_one_pyscalar_ndt_type(const ndt::type &DYND_UNUSED(tp),
+                                          const char *DYND_UNUSED(metadata),
+                                          char *out, PyObject *obj)
 {
     ndt::type obj_as_tp = make_ndt_type_from_pyobject(obj);
     obj_as_tp.swap(reinterpret_cast<type_type_data *>(out)->tp);
+}
+
+inline void convert_one_pyscalar_option(const ndt::type &tp,
+                                        const char *arrmeta, char *out,
+                                        PyObject *obj)
+{
+    if (obj == Py_None) {
+        tp.tcast<option_type>()->assign_na(arrmeta, out,
+                                           &eval::default_eval_context);
+    } else {
+        array_nodim_broadcast_assign_from_py(tp, arrmeta, out, obj);
+    }
 }
 
 template<convert_one_pyscalar_function_t ConvertOneFn>
@@ -295,83 +309,89 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     }
 
     // Create the array
-    nd::array result = nd::make_strided_array(tp, (int)shape.size(), &shape[0],
-                    nd::read_access_flag|nd::write_access_flag, NULL);
+    nd::array result = nd::make_strided_array(
+        tp, (int)shape.size(), &shape[0],
+        nd::read_access_flag | nd::write_access_flag, NULL);
 
     // Populate the array with data
     switch (tp.get_type_id()) {
         case bool_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_bool>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_bool>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case int32_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_int32>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_int32>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case int64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_int64>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_int64>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case float32_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_float32>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_float32>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_float64>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_float64>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case complex_float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_cdouble>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_cdouble>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case bytes_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_bytes>(result.get_type(),
-                            result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_bytes>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         case string_type_id: {
             const base_string_type *ext = tp.tcast<base_string_type>();
             if (ext->get_encoding() == string_encoding_utf_8) {
-                fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_type(),
-                                result.get_arrmeta(),
-                                result.get_readwrite_originptr(),
-                                obj, &shape[0], 0);
+                fill_array_from_pylist<convert_one_pyscalar_ustring>(
+                    result.get_type(), result.get_arrmeta(),
+                    result.get_readwrite_originptr(), obj, &shape[0], 0);
             } else {
                 stringstream ss;
-                ss << "Internal error: deduced type from Python list, " << tp << ", doesn't have a dynd array conversion";
+                ss << "Internal error: deduced type from Python list, " << tp
+                   << ", doesn't have a dynd array conversion";
                 throw runtime_error(ss.str());
             }
             break;
         }
         case date_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_date>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_date>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         }
         case time_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_time>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_time>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         }
         case datetime_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_datetime>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_datetime>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         }
         case type_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_ndt_type>(result.get_type(), result.get_arrmeta(),
-                            result.get_readwrite_originptr(),
-                            obj, &shape[0], 0);
+            fill_array_from_pylist<convert_one_pyscalar_ndt_type>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
+            break;
+        }
+        case option_type_id: {
+            fill_array_from_pylist<convert_one_pyscalar_option>(
+                result.get_type(), result.get_arrmeta(),
+                result.get_readwrite_originptr(), obj, &shape[0], 0);
             break;
         }
         default: {

@@ -1316,6 +1316,11 @@ cdef class w_array:
         SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
         return result
 
+    def __truediv__(lhs, rhs):
+        cdef w_array result = w_array()
+        SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
+        return result
+
 cdef class w_arrfunc(w_array):
     """
     nd.arrfunc(func, proto)

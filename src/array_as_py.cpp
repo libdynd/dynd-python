@@ -18,6 +18,7 @@
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/type_type.hpp>
+#include <dynd/types/option_type.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -175,6 +176,14 @@ static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
         case type_type_id: {
             ndt::type tp(reinterpret_cast<const type_type_data *>(data)->tp, true);
             return wrap_ndt_type(DYND_MOVE(tp));
+        }
+        case option_type_id: {
+            const option_type *ot = d.tcast<option_type>();
+            if (ot->is_avail(metadata, data, &eval::default_eval_context)) {
+                return element_as_pyobject(ot->get_value_type(), metadata, data);
+            } else {
+                Py_RETURN_NONE;
+            }
         }
         default: {
             stringstream ss;

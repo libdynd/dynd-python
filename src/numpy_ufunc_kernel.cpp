@@ -273,20 +273,15 @@ namespace {
         scalar_ufunc_ckernel_data *af =
             ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
         af->base.destructor = &delete_scalar_ufunc_ckernel_data;
-        if (kernreq == kernel_request_single) {
-            if (data->ckernel_acquires_gil) {
-                af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_acquiregil);
-            } else {
-                af->base.set_function<expr_single_operation_t>(&scalar_ufunc_single_ckernel_nogil);
-            }
-        } else if (kernreq == kernel_request_strided) {
-            if (data->ckernel_acquires_gil) {
-                af->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_acquiregil);
-            } else {
-                af->base.set_function<expr_strided_operation_t>(&scalar_ufunc_strided_ckernel_nogil);
-            }
+        if (data->ckernel_acquires_gil) {
+            af->base.set_expr_function(
+                (kernel_request_t)kernreq,
+                &scalar_ufunc_single_ckernel_acquiregil,
+                &scalar_ufunc_strided_ckernel_acquiregil);
         } else {
-            throw runtime_error("unsupported kernel request in instantiate_scalar_ufunc_ckernel");
+            af->base.set_expr_function((kernel_request_t)kernreq,
+                                       &scalar_ufunc_single_ckernel_nogil,
+                                       &scalar_ufunc_strided_ckernel_nogil);
         }
         af->funcptr = data->funcptr;
         af->ufunc_data = data->ufunc_data;

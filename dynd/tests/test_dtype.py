@@ -199,7 +199,7 @@ class TestDType(unittest.TestCase):
         tp = ndt.make_struct([ndt.int32, ndt.int64], ['x', 'y'])
         self.assertTrue(nd.as_py(tp.field_types), [ndt.int32, ndt.int64])
         self.assertTrue(nd.as_py(tp.field_names), ['x', 'y'])
-        self.assertEqual(tp.metadata_size, 2 * ctypes.sizeof(ctypes.c_void_p))
+        self.assertEqual(tp.arrmeta_size, 2 * ctypes.sizeof(ctypes.c_void_p))
         self.assertTrue(tp.data_size is None)
 
     def test_categorical_type(self):

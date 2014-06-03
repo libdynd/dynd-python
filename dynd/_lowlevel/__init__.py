@@ -4,6 +4,6 @@ from .ctypes_types import *
 from .api import *
 from .util import *
 from .ckernel import *
-from .metadata_struct import build_metadata_struct
+from .arrmeta_struct import build_arrmeta_struct
 from . import type_id
 from . import kind

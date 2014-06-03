@@ -39,7 +39,7 @@ namespace {
         {
             WArray **ndo = reinterpret_cast<WArray **>(this + 1);
             // Modify the temporary arrays to point at the data.
-            // The constructor sets the metadata to be a size-1 array,
+            // The constructor sets the arrmeta to be a size-1 array,
             // so no need to modify any of it.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
             for (size_t i = 0; i != src_count; ++i) {
@@ -60,15 +60,15 @@ namespace {
                         size_t count)
         {
             WArray **ndo = reinterpret_cast<WArray **>(this + 1);
-            strided_dim_type_metadata *md;
+            strided_dim_type_arrmeta *md;
             // Modify the temporary arrays to point at the data.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
-            md = reinterpret_cast<strided_dim_type_metadata *>(ndo[0]->v.get_arrmeta());
+            md = reinterpret_cast<strided_dim_type_arrmeta *>(ndo[0]->v.get_arrmeta());
             md->size = count;
             md->stride = dst_stride;
             for (size_t i = 0; i != src_count; ++i) {
                 ndo[i+1]->v.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
-                md = reinterpret_cast<strided_dim_type_metadata *>(ndo[i+1]->v.get_arrmeta());
+                md = reinterpret_cast<strided_dim_type_arrmeta *>(ndo[i+1]->v.get_arrmeta());
                 md->size = count;
                 md->stride = src_stride[i];
             }
@@ -211,8 +211,8 @@ public:
 
     size_t make_expr_kernel(
                 ckernel_builder *out, size_t offset_out,
-                const ndt::type& dst_tp, const char *dst_metadata,
-                size_t src_count, const ndt::type *src_tp, const char *const*src_metadata,
+                const ndt::type& dst_tp, const char *dst_arrmeta,
+                size_t src_count, const ndt::type *src_tp, const char *const*src_arrmeta,
                 kernel_request_t kernreq, const eval::eval_context *ectx) const
     {
         if (src_count != m_src_tp.size()) {
@@ -236,8 +236,8 @@ public:
         // kernel generator to call
         if (require_elwise) {
             return make_elwise_dimension_expr_kernel(out, offset_out,
-                            dst_tp, dst_metadata,
-                            src_count, src_tp, src_metadata,
+                            dst_tp, dst_arrmeta,
+                            src_count, src_tp, src_arrmeta,
                             kernreq, ectx,
                             this);
         }
@@ -275,32 +275,32 @@ public:
         e->callable = m_callable.get();
         Py_INCREF(e->callable);
         // Create shell WArrays which are used to give the kernel data to Python
-        strided_dim_type_metadata *md;
+        strided_dim_type_arrmeta *md;
         ndt::type dt = ndt::make_strided_dim(dst_tp);
-        nd::array n(make_array_memory_block(dt.get_metadata_size()));
+        nd::array n(make_array_memory_block(dt.get_arrmeta_size()));
         n.get_ndo()->m_type = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
-        md = reinterpret_cast<strided_dim_type_metadata *>(n.get_arrmeta());
+        md = reinterpret_cast<strided_dim_type_arrmeta *>(n.get_arrmeta());
         md->size = 1;
         md->stride = 0;
-        if (dst_tp.get_metadata_size() > 0) {
-            dst_tp.extended()->metadata_copy_construct(
-                            n.get_arrmeta() + sizeof(strided_dim_type_metadata),
-                            dst_metadata, NULL);
+        if (dst_tp.get_arrmeta_size() > 0) {
+            dst_tp.extended()->arrmeta_copy_construct(
+                            n.get_arrmeta() + sizeof(strided_dim_type_arrmeta),
+                            dst_arrmeta, NULL);
         }
         ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
         for (size_t i = 0; i != src_count; ++i) {
             dt = ndt::make_strided_dim(src_tp[i]);
-            n.set(make_array_memory_block(dt.get_metadata_size()));
+            n.set(make_array_memory_block(dt.get_arrmeta_size()));
             n.get_ndo()->m_type = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
-            md = reinterpret_cast<strided_dim_type_metadata *>(n.get_arrmeta());
+            md = reinterpret_cast<strided_dim_type_arrmeta *>(n.get_arrmeta());
             md->size = 1;
             md->stride = 0;
-            if (src_tp[i].get_metadata_size() > 0) {
-                src_tp[i].extended()->metadata_copy_construct(
-                                n.get_arrmeta() + sizeof(strided_dim_type_metadata),
-                                src_metadata[i], NULL);
+            if (src_tp[i].get_arrmeta_size() > 0) {
+                src_tp[i].extended()->arrmeta_copy_construct(
+                                n.get_arrmeta() + sizeof(strided_dim_type_arrmeta),
+                                src_arrmeta[i], NULL);
             }
             ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));
         }

@@ -188,7 +188,7 @@ void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
-            const ndt::type& paramtype, char *metadata, char *data, const ndt::type& value)
+            const ndt::type& paramtype, char *arrmeta, char *data, const ndt::type& value)
 {
     if (paramtype.get_type_id() != type_type_id) {
         stringstream ss;
@@ -202,7 +202,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
 }
 
 static void set_single_parameter(const std::string& funcname, const std::string& paramname,
-            const ndt::type& paramtype, char *metadata, char *data, const nd::array& value)
+            const ndt::type& paramtype, char *arrmeta, char *data, const nd::array& value)
 {
     // NOTE: ndarrayarg is a borrowed reference to an nd::array
     if (paramtype.get_type_id() != ndarrayarg_type_id) {
@@ -220,7 +220,7 @@ static void set_single_parameter(const std::string& funcname, const std::string&
  *
  * \param out_storage  This is a hack because dynd doesn't support object lifetime management
  */
-static void set_single_parameter(const ndt::type& paramtype, char *metadata, char *data,
+static void set_single_parameter(const ndt::type& paramtype, char *arrmeta, char *data,
                 PyObject *value, vector<nd::array>& out_storage)
 {
     // NOTE: ndarrayarg is a borrowed reference to an nd::array
@@ -228,7 +228,7 @@ static void set_single_parameter(const ndt::type& paramtype, char *metadata, cha
         out_storage.push_back(array_from_py(value, 0, false));
         *(const void **)data = out_storage.back().get_ndo();
     } else {
-        array_nodim_broadcast_assign_from_py(paramtype, metadata, data, value);
+        array_nodim_broadcast_assign_from_py(paramtype, arrmeta, data, value);
     }
 }
 

@@ -19,29 +19,33 @@ namespace pydynd {
  * \param n  The array which is being assigned to.
  * \param obj  value PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::nd::array& n, PyObject *value);
+void array_broadcast_assign_from_py(const dynd::nd::array &n, PyObject *value);
 
 /**
- * Assigns the values from 'obj' to the 'dt/metadata/data' raw nd::array, broadcasting
+ * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array, broadcasting
  * the input.
  *
  * \param dt  The dynd type of the destination.
- * \param metadata  The metadata of the destination.
+ * \param arrmeta  The arrmeta of the destination.
  * \param data  The data of the destination.
  * \param value The PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::ndt::type& dt, const char *metadata, char *data, PyObject *value);
+void array_broadcast_assign_from_py(const dynd::ndt::type &dt,
+                                    const char *arrmeta, char *data,
+                                    PyObject *value);
 
 /**
- * Assigns the values from 'obj' to the 'dt/metadata/data' raw nd::array, broadcasting
+ * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array, broadcasting
  * the individual input dimensions, but not broadcasting by skipping dimensions.
  *
  * \param dt  The dynd type of the destination.
- * \param metadata  The metadata of the destination.
+ * \param arrmeta  The arrmeta of the destination.
  * \param data  The data of the destination.
  * \param value The PyObject for the source data.
  */
-void array_nodim_broadcast_assign_from_py(const dynd::ndt::type& dt, const char *metadata, char *data, PyObject *value);
+void array_nodim_broadcast_assign_from_py(const dynd::ndt::type &dt,
+                                          const char *arrmeta, char *data,
+                                          PyObject *value);
 
 } // namespace pydynd
 

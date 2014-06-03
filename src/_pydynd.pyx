@@ -142,7 +142,7 @@ cdef class w_type:
 
         The shape of the array dimensions of the type. For
         dimensions whose size is unknown without additional
-        array metadata or array data, a -1 is returned.
+        array arrmeta or array data, a -1 is returned.
         """
         def __get__(self):
             return ndt_type_get_shape(GET(self.v))
@@ -163,9 +163,9 @@ cdef class w_type:
         The size, in bytes, of the data for an instance
         of this dynd type.
 
-        None is returned if array metadata is required to
+        None is returned if array arrmeta is required to
         fully specify it. For example, both the strided_dim and
-        struct types require such metadata.
+        struct types require such arrmeta.
         """
         def __get__(self):
             cdef ssize_t result = (GET(self.v)).get_data_size()
@@ -198,15 +198,15 @@ cdef class w_type:
         def __get__(self):
             return GET(self.v).get_data_alignment()
 
-    property metadata_size:
+    property arrmeta_size:
         """
-        tp.metadata_size
+        tp.arrmeta_size
 
-        The size, in bytes, of the metadata for
+        The size, in bytes, of the arrmeta for
         this dynd type.
         """
         def __get__(self):
-            return GET(self.v).get_metadata_size()
+            return GET(self.v).get_arrmeta_size()
 
     property kind:
         """
@@ -790,7 +790,7 @@ def make_struct(field_types, field_names):
 
     If a subset of fields from a fixed_struct are taken,
     the result is a struct, with the layout specified
-    in the dynd array's metadata.
+    in the dynd array's arrmeta.
 
     Parameters
     ----------
@@ -2130,7 +2130,7 @@ def debug_repr(obj):
     Returns a raw representation of dynd array data.
 
     This can be useful for diagnosing bugs in the dynd array
-    or type/metadata/data abstraction arrays are based on.
+    or type/arrmeta/data abstraction arrays are based on.
 
     Parameters
     ----------

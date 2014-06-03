@@ -66,10 +66,10 @@ PyObject *pydynd::pylong_from_int128(const dynd_int128& val)
  * Converts an array element into a python object.
  *
  * \param d  The type of the data.
- * \param metadata  The arrmeta of the data.
+ * \param arrmeta  The arrmeta of the data.
  * \param data  The data pointer.
  */
-static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
+static PyObject *element_as_pyobject(const ndt::type &d, const char *arrmeta,
                                      const char *data)
 {
     switch (d.get_type_id()) {
@@ -140,7 +140,7 @@ static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
         case json_type_id: {
             const char *begin = NULL, *end = NULL;
             const base_string_type *esd = d.tcast<base_string_type>();
-            esd->get_string_range(&begin, &end, metadata, data);
+            esd->get_string_range(&begin, &end, arrmeta, data);
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return PyUnicode_DecodeASCII(begin, end - begin, NULL);
@@ -157,21 +157,22 @@ static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
         }
         case date_type_id: {
             const date_type *dd = d.tcast<date_type>();
-            date_ymd ymd = dd->get_ymd(metadata, data);
+            date_ymd ymd = dd->get_ymd(arrmeta, data);
             return PyDate_FromDate(ymd.year, ymd.month, ymd.day);
         }
         case time_type_id: {
             const time_type *tt = d.tcast<time_type>();
-            time_hmst hmst = tt->get_time(metadata, data);
+            time_hmst hmst = tt->get_time(arrmeta, data);
             return PyTime_FromTime(hmst.hour, hmst.minute, hmst.second,
                                    hmst.tick / DYND_TICKS_PER_MICROSECOND);
         }
         case datetime_type_id: {
             const datetime_type *dd = d.tcast<datetime_type>();
             int32_t year, month, day, hour, minute, second, tick;
-            dd->get_cal(metadata, data, year, month, day, hour, minute, second, tick);
+            dd->get_cal(arrmeta, data, year, month, day, hour, minute, second, tick);
             int32_t usecond = tick / 10;
-            return PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
+            return PyDateTime_FromDateAndTime(year, month, day, hour, minute,
+                                              second, usecond);
         }
         case type_type_id: {
             ndt::type tp(reinterpret_cast<const type_type_data *>(data)->tp, true);
@@ -179,8 +180,8 @@ static PyObject *element_as_pyobject(const ndt::type &d, const char *metadata,
         }
         case option_type_id: {
             const option_type *ot = d.tcast<option_type>();
-            if (ot->is_avail(metadata, data, &eval::default_eval_context)) {
-                return element_as_pyobject(ot->get_value_type(), metadata, data);
+            if (ot->is_avail(arrmeta, data, &eval::default_eval_context)) {
+                return element_as_pyobject(ot->get_value_type(), arrmeta, data);
             } else {
                 Py_RETURN_NONE;
             }
@@ -203,36 +204,42 @@ namespace {
     };
 } // anonymous namespace
 
-static void nested_array_as_py(const ndt::type& d, const char *metadata, char *data, void *result);
+static void nested_array_as_py(const ndt::type &d, const char *arrmeta,
+                               char *data, void *result);
 
-static void nested_struct_as_py(const ndt::type& d, const char *metadata, char *data, void *result)
+static void nested_struct_as_py(const ndt::type &d, const char *arrmeta,
+                                char *data, void *result)
 {
     array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
 
     const base_struct_type *bsd = d.tcast<base_struct_type>();
     size_t field_count = bsd->get_field_count();
     const uintptr_t *field_arrmeta_offsets = bsd->get_arrmeta_offsets_raw();
-    const uintptr_t *field_data_offsets = bsd->get_data_offsets(metadata);
+    const uintptr_t *field_data_offsets = bsd->get_data_offsets(arrmeta);
 
     if (r->struct_as_pytuple) {
         r->result.reset(PyTuple_New(field_count));
         for (size_t i = 0; i != field_count; ++i) {
             array_as_py_data temp_el;
             temp_el.struct_as_pytuple = r->struct_as_pytuple;
-            nested_array_as_py(bsd->get_field_type(i), metadata + field_arrmeta_offsets[i],
+            nested_array_as_py(bsd->get_field_type(i),
+                               arrmeta + field_arrmeta_offsets[i],
                                data + field_data_offsets[i], &temp_el);
             PyTuple_SET_ITEM(r->result.get(), i, temp_el.result.release());
         }
     } else {
         r->result.reset(PyDict_New());
         for (size_t i = 0; i != field_count; ++i) {
-            const string_type_data& fname = bsd->get_field_name_raw(i);
-            pyobject_ownref key(PyUnicode_DecodeUTF8(fname.begin, fname.end - fname.begin, NULL));
+            const string_type_data &fname = bsd->get_field_name_raw(i);
+            pyobject_ownref key(PyUnicode_DecodeUTF8(
+                fname.begin, fname.end - fname.begin, NULL));
             array_as_py_data temp_el;
             temp_el.struct_as_pytuple = r->struct_as_pytuple;
-            nested_array_as_py(bsd->get_field_type(i), metadata + field_arrmeta_offsets[i],
+            nested_array_as_py(bsd->get_field_type(i),
+                               arrmeta + field_arrmeta_offsets[i],
                                data + field_data_offsets[i], &temp_el);
-            if (PyDict_SetItem(r->result.get(), key.get(), temp_el.result.get()) < 0) {
+            if (PyDict_SetItem(r->result.get(), key.get(),
+                               temp_el.result.get()) < 0) {
                 throw runtime_error("propagating dict setitem error");
             }
         }
@@ -243,12 +250,12 @@ static void nested_struct_as_py(const ndt::type& d, const char *metadata, char *
  * Converts an array element into a python object.
  *
  * \param d  The type of the data.
- * \param metadata  The arrmeta of the data.
+ * \param arrmeta  The arrmeta of the data.
  * \param data  The data pointer.
  * \param result An array_as_py_data struct used to track the result and
  *               carry parameters through the foreach_leading.
  */
-static void nested_array_as_py(const ndt::type &d, const char *metadata,
+static void nested_array_as_py(const ndt::type &d, const char *arrmeta,
                                char *data, void *result)
 {
     array_as_py_data *r = reinterpret_cast<array_as_py_data *>(result);
@@ -256,15 +263,15 @@ static void nested_array_as_py(const ndt::type &d, const char *metadata,
     array_as_py_data el;
     el.struct_as_pytuple = r->struct_as_pytuple;
     if (d.is_scalar()) {
-        el.result.reset(element_as_pyobject(d, metadata, data));
+        el.result.reset(element_as_pyobject(d, arrmeta, data));
     } else if (d.get_kind() == struct_kind) {
-        nested_struct_as_py(d, metadata, data, &el);
+        nested_struct_as_py(d, arrmeta, data, &el);
     } else {
-        intptr_t size = d.get_dim_size(metadata, data);
+        intptr_t size = d.get_dim_size(arrmeta, data);
         el.result.reset(PyList_New(size));
         el.index = 0;
 
-        d.extended()->foreach_leading(metadata, data, &nested_array_as_py, &el);
+        d.extended()->foreach_leading(arrmeta, data, &nested_array_as_py, &el);
     }
 
     if (r->result) {

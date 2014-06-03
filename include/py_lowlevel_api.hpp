@@ -31,9 +31,9 @@ struct py_lowlevel_api_t {
                                 PyObject *access);
     PyObject *(*make_assignment_ckernel)(void *out_ckb, intptr_t ckb_offset,
                                          PyObject *dst_tp_obj,
-                                         const void *dst_metadata,
+                                         const void *dst_arrmeta,
                                          PyObject *src_tp_obj,
-                                         const void *src_metadata,
+                                         const void *src_arrmeta,
                                          PyObject *funcproto,
                                          PyObject *kernreq, PyObject *ectx);
     PyObject *(*make_arrfunc_from_assignment)(PyObject *dst_tp_obj,

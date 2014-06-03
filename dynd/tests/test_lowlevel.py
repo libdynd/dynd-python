@@ -136,7 +136,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertRaises(RuntimeError, assign_to, b)
 
     def test_array_from_ptr_error(self):
-        # Should raise an exception if the type has metadata
+        # Should raise an exception if the type has arrmeta
         a = (ctypes.c_int32 * 4)()
         self.assertRaises(RuntimeError, _lowlevel.array_from_ptr,
                         ndt.type('strided * int32'), ctypes.addressof(a),

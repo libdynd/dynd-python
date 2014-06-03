@@ -85,14 +85,14 @@ static intptr_t get_pyseq_ndim(PyObject *seq, bool& ends_in_dict)
 }
 
 static void array_assign_from_pyseq(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *seq, size_t seqsize);
+                const char *arrmeta, char *data, PyObject *seq, size_t seqsize);
 static void array_assign_from_pyiter(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *iter, PyObject *obj);
+                const char *arrmeta, char *data, PyObject *iter, PyObject *obj);
 static void array_assign_from_pydict(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *value);
+                const char *arrmeta, char *data, PyObject *value);
 
 static void array_assign_from_value(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *value)
+                const char *arrmeta, char *data, PyObject *value)
 {
     if (dt.get_ndim() > 0) {
         if (PySequence_Check(value)) {
@@ -100,7 +100,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
             if (seqsize == -1 && PyErr_Occurred()) {
                 PyErr_Clear();
             } else {
-                array_assign_from_pyseq(dt, metadata, data, value, seqsize);
+                array_assign_from_pyseq(dt, arrmeta, data, value, seqsize);
                 return;
             }
         }
@@ -110,7 +110,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         if (iter != NULL) {
             // Since iter was valid, give it a smart pointer as owner
             pyobject_ownref iter_owner(iter);
-            array_assign_from_pyiter(dt, metadata, data, iter, value);
+            array_assign_from_pyiter(dt, arrmeta, data, iter, value);
             return;
         }
 
@@ -122,16 +122,16 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
         // Do some special case assignments
         if (WArray_Check(value)) {
             const nd::array& v = ((WArray *)value)->v;
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         } else if (PyBool_Check(value)) {
             dynd_bool v = (value == Py_True);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type<dynd_bool>(), NULL, reinterpret_cast<const char *>(&v));
     #if PY_VERSION_HEX < 0x03000000
         } else if (PyInt_Check(value)) {
             long v = PyInt_AS_LONG(value);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type<long>(), NULL, reinterpret_cast<const char *>(&v));
     #endif // PY_VERSION_HEX < 0x03000000
         } else if (PyLong_Check(value)) {
@@ -141,7 +141,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 if ((PY_LONG_LONG)v == -1 && PyErr_Occurred()) {
                     throw runtime_error("error converting int value");
                 }
-                typed_data_assign(dt, metadata, data,
+                typed_data_assign(dt, arrmeta, data,
                             ndt::make_type<unsigned PY_LONG_LONG>(), NULL,
                             reinterpret_cast<const char *>(&v));
             } else {
@@ -173,7 +173,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                             }
 
                             typed_data_assign(
-                                dt, metadata, data,
+                                dt, arrmeta, data,
                                 ndt::make_type<dynd_int128>(), NULL,
                                 reinterpret_cast<const char *>(&result));
                             return;
@@ -198,7 +198,7 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                             }
 
                             typed_data_assign(
-                                dt, metadata, data,
+                                dt, arrmeta, data,
                                 ndt::make_type<dynd_uint128>(), NULL,
                                 reinterpret_cast<const char *>(&result));
                             return;
@@ -206,16 +206,16 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                     }
                     throw runtime_error("error converting int value");
                 }
-                typed_data_assign(dt, metadata, data,
+                typed_data_assign(dt, arrmeta, data,
                             ndt::make_type<PY_LONG_LONG>(), NULL, reinterpret_cast<const char *>(&v));
             }
         } else if (PyFloat_Check(value)) {
             double v = PyFloat_AS_DOUBLE(value);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type<double>(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyComplex_Check(value)) {
             complex<double> v(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type<complex<double> >(), NULL, reinterpret_cast<const char *>(&v));
 #if PY_VERSION_HEX < 0x03000000
         } else if (PyString_Check(value)) {
@@ -234,12 +234,12 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 str_dt = ndt::make_string(string_encoding_ascii);
             }
             string_type_data str_d;
-            string_type_metadata str_md;
+            string_type_arrmeta str_md;
             str_d.begin = pystr_data;
             str_d.end = pystr_data + pystr_len;
             str_md.blockref = NULL;
 
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
 #else
         } else if (PyBytes_Check(value)) {
@@ -251,12 +251,12 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
 
             ndt::type bytes_dt = ndt::make_bytes(1);
             string_type_data bytes_d;
-            string_type_metadata bytes_md;
+            string_type_arrmeta bytes_md;
             bytes_d.begin = pybytes_data;
             bytes_d.end = pybytes_data + pybytes_len;
             bytes_md.blockref = NULL;
 
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         bytes_dt, reinterpret_cast<const char *>(&bytes_md), reinterpret_cast<const char *>(&bytes_d));
 #endif
         } else if (PyUnicode_Check(value)) {
@@ -271,39 +271,39 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
 
             ndt::type str_dt = ndt::make_string(string_encoding_utf_8);
             string_type_data str_d;
-            string_type_metadata str_md;
+            string_type_arrmeta str_md;
             str_d.begin = s;
             str_d.end = s + len;
             str_md.blockref = NULL;
 
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         str_dt, reinterpret_cast<const char *>(&str_md), reinterpret_cast<const char *>(&str_d));
     #if DYND_NUMPY_INTEROP
         } else if (PyArray_Check(value)) {
             const nd::array& v = array_from_numpy_array((PyArrayObject *)value, 0, false);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         } else if (PyArray_IsScalar(value, Generic)) {
             const nd::array& v = array_from_numpy_scalar(value, 0);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         } else if (PyArray_DescrCheck(value)) {
             const ndt::type& v = make_ndt_type_from_pyobject(value);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
     #endif // DYND_NUMPY_INTEROP
         } else if (WType_Check(value)) {
             const ndt::type& v = ((WType *)value)->v;
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (PyType_Check(value)) {
             const ndt::type& v = make_ndt_type_from_pyobject(value);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                         ndt::make_type(), NULL, reinterpret_cast<const char *>(&v));
         } else if (value == Py_None) {
-            nd::assign_na(dt, metadata, data, &eval::default_eval_context);
+            nd::assign_na(dt, arrmeta, data, &eval::default_eval_context);
         } else if (PyDict_Check(value)) {
-            array_assign_from_pydict(dt, metadata, data, value);
+            array_assign_from_pydict(dt, arrmeta, data, value);
         } else {
             // Check if the value is a sequence
             if (PySequence_Check(value)) {
@@ -311,36 +311,36 @@ static void array_assign_from_value(const dynd::ndt::type& dt,
                 if (seqsize == -1 && PyErr_Occurred()) {
                     PyErr_Clear();
                 } else {
-                    array_assign_from_pyseq(dt, metadata, data, value, seqsize);
+                    array_assign_from_pyseq(dt, arrmeta, data, value, seqsize);
                     return;
                 }
             }
 
             // Fall back strategy, where we convert to nd::array, then assign
             nd::array v = array_from_py(value, 0, false);
-            typed_data_assign(dt, metadata, data,
+            typed_data_assign(dt, arrmeta, data,
                             v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         }
     }
 }
 
 static void array_assign_strided_from_pyseq(const dynd::ndt::type& element_dt,
-                const char *element_metadata, char *dst_data, intptr_t dst_stride, size_t dst_size,
+                const char *element_arrmeta, char *dst_data, intptr_t dst_stride, size_t dst_size,
                 PyObject *seq, size_t seqsize)
 {
     // Raise a broadcast error if it doesn't work
     if (seqsize != 1 && dst_size != seqsize) {
-        throw broadcast_error(element_dt, element_metadata, "nested python sequence object");
+        throw broadcast_error(element_dt, element_arrmeta, "nested python sequence object");
     }
     if (seqsize == 1 && dst_size > 1) {
         // If there's one input value and many outputs,
         // convert it from Python once and copy to the rest
         pyobject_ownref item(PySequence_GetItem(seq, 0));
-        array_assign_from_value(element_dt, element_metadata, dst_data, item.get());
+        array_assign_from_value(element_dt, element_arrmeta, dst_data, item.get());
         // Get a strided kernel, and use it to assign from the first element to the rest of them
         assignment_ckernel_builder k;
-        make_assignment_kernel(&k, 0, element_dt, element_metadata,
-                        element_dt, element_metadata, kernel_request_strided,
+        make_assignment_kernel(&k, 0, element_dt, element_arrmeta,
+                        element_dt, element_arrmeta, kernel_request_strided,
                         assign_error_default, &eval::default_eval_context);
         ckernel_prefix *kdp = k.get();
         kdp->get_function<unary_strided_operation_t>()(
@@ -350,7 +350,7 @@ static void array_assign_strided_from_pyseq(const dynd::ndt::type& element_dt,
         // Loop through the dst array and assign values
         for (size_t i = 0; i != dst_size; ++i) {
             pyobject_ownref item(PySequence_GetItem(seq, i));
-            array_assign_from_value(element_dt, element_metadata,
+            array_assign_from_value(element_dt, element_arrmeta,
                             dst_data + i * dst_stride, item.get());
         }
     }
@@ -364,7 +364,7 @@ static void array_assign_strided_from_pyseq(const dynd::ndt::type& element_dt,
  * or copy elementwise in the other case.
  */
 static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
-                const char *element_metadata, char *dst_data, intptr_t dst_stride, size_t dst_size,
+                const char *element_arrmeta, char *dst_data, intptr_t dst_stride, size_t dst_size,
                 PyObject *iter)
 {
     // If the destination size is zero, the iteration should stop immediately
@@ -400,7 +400,7 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
     }
     // Assign ownership of the item and assign it to 
     pyobject_ownref item_owner(item);
-    array_assign_from_value(element_dt, element_metadata, dst_data, item);
+    array_assign_from_value(element_dt, element_arrmeta, dst_data, item);
 
     // Get the second item, to determine whether to broadcast or not
     item = PyIter_Next(iter);
@@ -412,8 +412,8 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
         if (dst_size > 1) {
             // Get a strided kernel, and use it to assign from the first element to the rest of them
             assignment_ckernel_builder k;
-            make_assignment_kernel(&k, 0, element_dt, element_metadata,
-                            element_dt, element_metadata, kernel_request_strided,
+            make_assignment_kernel(&k, 0, element_dt, element_arrmeta,
+                            element_dt, element_arrmeta, kernel_request_strided,
                             assign_error_default, &eval::default_eval_context);
             ckernel_prefix *kdp = k.get();
             kdp->get_function<unary_strided_operation_t>()(
@@ -437,7 +437,7 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
             }
             // Assign ownership of 'item' so it will be freed as appropriate
             item_owner.reset(item);
-            array_assign_from_value(element_dt, element_metadata,
+            array_assign_from_value(element_dt, element_arrmeta,
                             dst_data + i * dst_stride, item);
             // Get the next item
             item = PyIter_Next(iter);
@@ -459,12 +459,12 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
 }
 
 static void array_assign_from_pydict(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *value)
+                const char *arrmeta, char *data, PyObject *value)
 {
     if (dt.get_kind() == struct_kind) {
         const base_struct_type *fsd = dt.tcast<base_struct_type>();
         size_t field_count = fsd->get_field_count();
-        const uintptr_t *data_offsets = fsd->get_data_offsets(metadata);
+        const uintptr_t *data_offsets = fsd->get_data_offsets(arrmeta);
         const uintptr_t *arrmeta_offsets = fsd->get_arrmeta_offsets_raw();
 
         // Keep track of which fields we've seen
@@ -480,7 +480,7 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
             // TODO: Add an error policy of whether to throw an error
             //       or not. For now, just raise an error
             if (i >= 0) {
-                array_assign_from_value(fsd->get_field_type(i), metadata + arrmeta_offsets[i],
+                array_assign_from_value(fsd->get_field_type(i), arrmeta + arrmeta_offsets[i],
                                 data + data_offsets[i], dict_value);
                 populated_fields[i] = true;
             } else {
@@ -510,43 +510,47 @@ static void array_assign_from_pydict(const dynd::ndt::type& dt,
 }
 
 static void array_assign_from_pyseq(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *seq, size_t seqsize)
+                const char *arrmeta, char *data, PyObject *seq, size_t seqsize)
 {
     switch (dt.get_type_id()) {
         case cfixed_dim_type_id: {
             const cfixed_dim_type *fdd = dt.tcast<cfixed_dim_type>();
-            array_assign_strided_from_pyseq(fdd->get_element_type(), metadata,
+            array_assign_strided_from_pyseq(fdd->get_element_type(), arrmeta,
                             data, fdd->get_fixed_stride(), fdd->get_fixed_dim_size(), seq, seqsize);
             break;
         }
         case fixed_dim_type_id: {
             const fixed_dim_type *fdd = dt.tcast<fixed_dim_type>();
-            const fixed_dim_type_metadata *md =
-                reinterpret_cast<const fixed_dim_type_metadata *>(metadata);
+            const fixed_dim_type_arrmeta *md =
+                reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
             array_assign_strided_from_pyseq(
                 fdd->get_element_type(),
-                metadata + sizeof(fixed_dim_type_metadata), data, md->stride,
+                arrmeta + sizeof(fixed_dim_type_arrmeta), data, md->stride,
                 fdd->get_fixed_dim_size(), seq, seqsize);
             break;
         }
         case strided_dim_type_id: {
             const ndt::type &element_dt =
                 dt.tcast<strided_dim_type>()->get_element_type();
-            const strided_dim_type_metadata *md =
-                reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+            const strided_dim_type_arrmeta *md =
+                reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
             array_assign_strided_from_pyseq(
-                element_dt, metadata + sizeof(strided_dim_type_metadata), data,
+                element_dt, arrmeta + sizeof(strided_dim_type_arrmeta), data,
                 md->stride, md->size, seq, seqsize);
             break;
         }
         case var_dim_type_id: {
-            const ndt::type& element_dt = dt.tcast<var_dim_type>()->get_element_type();
-            const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
+            const ndt::type &element_dt =
+                dt.tcast<var_dim_type>()->get_element_type();
+            const var_dim_type_arrmeta *md =
+                reinterpret_cast<const var_dim_type_arrmeta *>(arrmeta);
             var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data);
             if (d->begin == NULL) {
                 // Need to allocate the destination data
                 if (md->offset != 0) {
-                    throw runtime_error("Cannot assign to an uninitialized dynd var_dim which has a non-zero offset");
+                    throw runtime_error("Cannot assign to an uninitialized "
+                                        "dynd var_dim which has a non-zero "
+                                        "offset");
                 }
                 intptr_t dst_stride = md->stride;
                 // Have to allocate the output
@@ -568,7 +572,7 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
                 }
                 d->size = seqsize;
             }
-            array_assign_strided_from_pyseq(element_dt, metadata + sizeof(var_dim_type_metadata),
+            array_assign_strided_from_pyseq(element_dt, arrmeta + sizeof(var_dim_type_arrmeta),
                             d->begin + md->offset, md->stride, d->size, seq, seqsize);
             break;
         }
@@ -576,7 +580,7 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
         case cstruct_type_id: {
             const base_struct_type *fsd = dt.tcast<base_struct_type>();
             size_t field_count = fsd->get_field_count();
-            const uintptr_t *data_offsets = fsd->get_data_offsets(metadata);
+            const uintptr_t *data_offsets = fsd->get_data_offsets(arrmeta);
             const uintptr_t *arrmeta_offsets = fsd->get_arrmeta_offsets_raw();
 
             if (seqsize != field_count) {
@@ -589,7 +593,7 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
             for (size_t i = 0; i != seqsize; ++i) {
                 pyobject_ownref item(PySequence_GetItem(seq, i));
                 array_assign_from_value(fsd->get_field_type(i),
-                                        metadata + arrmeta_offsets[i],
+                                        arrmeta + arrmeta_offsets[i],
                                         data + data_offsets[i], item.get());
             }
             break;
@@ -604,43 +608,48 @@ static void array_assign_from_pyseq(const dynd::ndt::type& dt,
 }
 
 static void array_assign_from_pyiter(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *iter, PyObject *obj)
+                const char *arrmeta, char *data, PyObject *iter, PyObject *obj)
 {
     switch (dt.get_type_id()) {
         case cfixed_dim_type_id: {
             const cfixed_dim_type *fdd = dt.tcast<cfixed_dim_type>();
-            array_assign_strided_from_pyiter(fdd->get_element_type(), metadata,
+            array_assign_strided_from_pyiter(fdd->get_element_type(), arrmeta,
                                              data, fdd->get_fixed_stride(),
                                              fdd->get_fixed_dim_size(), iter);
             break;
         }
         case fixed_dim_type_id: {
             const fixed_dim_type *fdd = dt.tcast<fixed_dim_type>();
-            const fixed_dim_type_metadata *md = reinterpret_cast<const fixed_dim_type_metadata *>(metadata);
+            const fixed_dim_type_arrmeta *md =
+                reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
             array_assign_strided_from_pyiter(
                 fdd->get_element_type(),
-                metadata + sizeof(fixed_dim_type_metadata), data, md->stride,
+                arrmeta + sizeof(fixed_dim_type_arrmeta), data, md->stride,
                 fdd->get_fixed_dim_size(), iter);
             break;
         }
         case strided_dim_type_id: {
             const ndt::type &element_dt =
                 dt.tcast<strided_dim_type>()->get_element_type();
-            const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+            const strided_dim_type_arrmeta *md =
+                reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
             array_assign_strided_from_pyiter(
-                element_dt, metadata + sizeof(strided_dim_type_metadata), data,
+                element_dt, arrmeta + sizeof(strided_dim_type_arrmeta), data,
                 md->stride, md->size, iter);
             break;
         }
         case var_dim_type_id: {
-            const ndt::type& element_dt = dt.tcast<var_dim_type>()->get_element_type();
-            const var_dim_type_metadata *md = reinterpret_cast<const var_dim_type_metadata *>(metadata);
+            const ndt::type &element_dt =
+                dt.tcast<var_dim_type>()->get_element_type();
+            const var_dim_type_arrmeta *md =
+                reinterpret_cast<const var_dim_type_arrmeta *>(arrmeta);
             var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data);
             // First check if the var_dim element is already assigned,
             // in which case we do a strided assignment
             if (d->begin != NULL) {
-                array_assign_strided_from_pyiter(element_dt, metadata + sizeof(var_dim_type_metadata),
-                                d->begin + md->offset, md->stride, d->size, iter);
+                array_assign_strided_from_pyiter(
+                    element_dt, arrmeta + sizeof(var_dim_type_arrmeta),
+                    d->begin + md->offset, md->stride, d->size, iter);
                 break;
             }
 
@@ -663,7 +672,8 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
 
             // Need to allocate the destination data
             if (md->offset != 0) {
-                throw runtime_error("Cannot assign to an uninitialized dynd var_dim which has a non-zero offset");
+                throw runtime_error("Cannot assign to an uninitialized dynd "
+                                    "var_dim which has a non-zero offset");
             }
             intptr_t filledsize = 0;
             intptr_t dst_stride = md->stride;
@@ -683,11 +693,13 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
 
                     if (allocsize == filledsize) {
                         allocsize = 3 * allocsize / 2;
-                        d->begin = allocator->resize(memblock, d->begin, allocsize);
+                        d->begin =
+                            allocator->resize(memblock, d->begin, allocsize);
                     }
 
-                    array_assign_from_value(element_dt, metadata + sizeof(var_dim_type_metadata),
-                                    d->begin + filledsize * md->stride, item);
+                    array_assign_from_value(
+                        element_dt, arrmeta + sizeof(var_dim_type_arrmeta),
+                        d->begin + filledsize * md->stride, item);
                     ++filledsize;
                 }
 
@@ -718,11 +730,13 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
 
                     if (allocsize == filledsize) {
                         allocsize = 3 * allocsize / 2;
-                        allocator->resize(memblock, allocsize * dst_stride, &d->begin, &dst_end);
+                        allocator->resize(memblock, allocsize * dst_stride,
+                                          &d->begin, &dst_end);
                     }
 
-                    array_assign_from_value(element_dt, metadata + sizeof(var_dim_type_metadata),
-                                    d->begin + filledsize * md->stride, item);
+                    array_assign_from_value(
+                        element_dt, arrmeta + sizeof(var_dim_type_arrmeta),
+                        d->begin + filledsize * md->stride, item);
                     ++filledsize;
                 }
 
@@ -744,7 +758,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
         case cstruct_type_id: {
             const base_struct_type *fsd = dt.tcast<base_struct_type>();
             size_t field_count = fsd->get_field_count();
-            const uintptr_t *data_offsets = fsd->get_data_offsets(metadata);
+            const uintptr_t *data_offsets = fsd->get_data_offsets(arrmeta);
             const uintptr_t *arrmeta_offsets = fsd->get_arrmeta_offsets_raw();
 
             for (size_t i = 0; i != field_count; ++i) {
@@ -762,7 +776,7 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
                     }
                 }
                 pyobject_ownref item_owner(item);
-                array_assign_from_value(fsd->get_field_type(i), metadata + arrmeta_offsets[i],
+                array_assign_from_value(fsd->get_field_type(i), arrmeta + arrmeta_offsets[i],
                                 data + data_offsets[i], item);
             }
 
@@ -791,18 +805,18 @@ static void array_assign_from_pyiter(const dynd::ndt::type& dt,
 }
 
 void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
-                const char *metadata, char *data, PyObject *value)
+                const char *arrmeta, char *data, PyObject *value)
 {
     // Special-case assigning from known array types
     if (WArray_Check(value)) {
         const nd::array& n = ((WArray *)value)->v;
-        typed_data_assign(dt, metadata, data,
+        typed_data_assign(dt, arrmeta, data,
                         n.get_type(), n.get_arrmeta(), n.get_readonly_originptr());
         return;
 #if DYND_NUMPY_INTEROP
     } else if (PyArray_Check(value)) {
         const nd::array& v = array_from_numpy_array((PyArrayObject *)value, 0, false);
-        typed_data_assign(dt, metadata, data,
+        typed_data_assign(dt, arrmeta, data,
                     v.get_type(), v.get_arrmeta(), v.get_readonly_originptr());
         return;
 #endif // DYND_NUMPY_INTEROP
@@ -811,7 +825,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
     intptr_t dst_ndim = dt.get_ndim();
     bool ends_in_dict = false;
     if (dst_ndim == 0) {
-        array_assign_from_value(dt, metadata, data, value);
+        array_assign_from_value(dt, arrmeta, data, value);
     } else {
         intptr_t seq_ndim = get_pyseq_ndim(value, ends_in_dict);
         // Special handling when the destination is a struct,
@@ -839,23 +853,28 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type& dt,
             // Make a temporary value with just the trailing dimensions, then
             // assign to the output
             dimvector shape(original_dst_ndim);
-            dt.extended()->get_shape(original_dst_ndim, 0, shape.get(), metadata, data);
-            ndt::type partial_dt = dt.get_type_at_dimension(NULL,
-                            min(dst_ndim - seq_ndim, dt.get_ndim())).get_canonical_type();
-            nd::array tmp(make_array_memory_block(partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
-                            shape.get() + (dst_ndim - seq_ndim)));
-            array_assign_from_value(tmp.get_type(), tmp.get_arrmeta(), tmp.get_readwrite_originptr(),
-                            value);
-            typed_data_assign(dt, metadata, data, tmp.get_type(), tmp.get_arrmeta(), tmp.get_readonly_originptr());
+            dt.extended()->get_shape(original_dst_ndim, 0, shape.get(), arrmeta,
+                                     data);
+            ndt::type partial_dt =
+                dt.get_type_at_dimension(
+                       NULL, min(dst_ndim - seq_ndim, dt.get_ndim()))
+                    .get_canonical_type();
+            nd::array tmp(make_array_memory_block(
+                partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
+                shape.get() + (dst_ndim - seq_ndim)));
+            array_assign_from_value(tmp.get_type(), tmp.get_arrmeta(),
+                                    tmp.get_readwrite_originptr(), value);
+            typed_data_assign(dt, arrmeta, data, tmp.get_type(),
+                              tmp.get_arrmeta(), tmp.get_readonly_originptr());
         } else {
-            array_assign_from_value(dt, metadata, data, value);
+            array_assign_from_value(dt, arrmeta, data, value);
         }
     }
 }
 
-void pydynd::array_nodim_broadcast_assign_from_py(const dynd::ndt::type& dt, const char *metadata, char *data, PyObject *value)
+void pydynd::array_nodim_broadcast_assign_from_py(const dynd::ndt::type& dt, const char *arrmeta, char *data, PyObject *value)
 {
-    array_assign_from_value(dt, metadata, data, value);
+    array_assign_from_value(dt, arrmeta, data, value);
 }
 
 void pydynd::array_broadcast_assign_from_py(const dynd::nd::array& n, PyObject *value)

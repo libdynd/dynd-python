@@ -273,17 +273,17 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
     }
 }
 
-void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d, char *metadata)
+void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d, char *arrmeta)
 {
     switch (dt.get_type_id()) {
         case struct_type_id: {
-            // In DyND, the struct offsets are part of the metadata instead of the dtype.
+            // In DyND, the struct offsets are part of the arrmeta instead of the dtype.
             // That's why we have to populate them here.
             PyObject *d_names = d->names;
             const struct_type *sdt = dt.tcast<struct_type>();
             const uintptr_t *arrmeta_offsets = sdt->get_arrmeta_offsets_raw();
             size_t field_count = sdt->get_field_count();
-            uintptr_t *offsets = reinterpret_cast<size_t *>(metadata);
+            uintptr_t *offsets = reinterpret_cast<size_t *>(arrmeta);
             for (size_t i = 0; i < field_count; ++i) {
                 PyObject *tup = PyDict_GetItem(d->fields, PyTuple_GET_ITEM(d_names, i));
                 PyArray_Descr *fld_dtype;
@@ -292,29 +292,29 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
                 if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
                     throw dynd::type_error("Numpy struct dtype has corrupt data");
                 }
-                // Set the field offset in the output metadata
+                // Set the field offset in the output arrmeta
                 offsets[i] = offset;
-                // Fill the metadata for the field, if necessary
+                // Fill the arrmeta for the field, if necessary
                 const ndt::type& ft = sdt->get_field_type(i);
                 if (!ft.is_builtin()) {
-                    fill_metadata_from_numpy_dtype(ft, fld_dtype, metadata + arrmeta_offsets[i]);
+                    fill_arrmeta_from_numpy_dtype(ft, fld_dtype, arrmeta + arrmeta_offsets[i]);
                 }
             }
             break;
         }
         case strided_dim_type_id: {
             // The Numpy subarray becomes a series of strided_dim_types, so we
-            // need to copy the strides into the metadata.
+            // need to copy the strides into the arrmeta.
             ndt::type el;
             PyArray_ArrayDescr *adescr = d->subarray;
             if (adescr == NULL) {
                 stringstream ss;
-                ss << "Internal error building dynd metadata: Numpy dtype has NULL subarray corresponding to strided_dim type";
+                ss << "Internal error building dynd arrmeta: Numpy dtype has NULL subarray corresponding to strided_dim type";
                 throw dynd::type_error(ss.str());
             }
             if (PyTuple_Check(adescr->shape)) {
                 int ndim = (int)PyTuple_GET_SIZE(adescr->shape);
-                strided_dim_type_metadata *md = reinterpret_cast<strided_dim_type_metadata *>(metadata);
+                strided_dim_type_arrmeta *md = reinterpret_cast<strided_dim_type_arrmeta *>(arrmeta);
                 intptr_t stride = adescr->base->elsize;
                 el = dt;
                 for (int i = ndim-1; i >= 0; --i) {
@@ -323,17 +323,17 @@ void pydynd::fill_metadata_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *
                     stride *= md[i].size;
                     el = el.tcast<strided_dim_type>()->get_element_type();
                 }
-                metadata += ndim * sizeof(strided_dim_type_metadata);
+                arrmeta += ndim * sizeof(strided_dim_type_arrmeta);
             } else {
-                strided_dim_type_metadata *md = reinterpret_cast<strided_dim_type_metadata *>(metadata);
-                metadata += sizeof(strided_dim_type_metadata);
+                strided_dim_type_arrmeta *md = reinterpret_cast<strided_dim_type_arrmeta *>(arrmeta);
+                arrmeta += sizeof(strided_dim_type_arrmeta);
                 md->size = pyobject_as_index(adescr->shape);
                 md->stride = adescr->base->elsize;
                 el = dt.tcast<strided_dim_type>()->get_element_type();
             }
-            // Fill the metadata for the array element, if necessary
+            // Fill the arrmeta for the array element, if necessary
             if (!el.is_builtin()) {
-                fill_metadata_from_numpy_dtype(el, adescr->base, metadata);
+                fill_arrmeta_from_numpy_dtype(el, adescr->base, arrmeta);
             }
             break;
         }
@@ -534,18 +534,18 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
     throw dynd::type_error(ss.str());
 }
 
-PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *metadata)
+PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *arrmeta)
 {
     switch (tp.get_type_id()) {
         case struct_type_id: {
-            if (metadata == NULL) {
+            if (arrmeta == NULL) {
                 stringstream ss;
-                ss << "Can only convert dynd type " << tp << " into a numpy dtype with array metadata";
+                ss << "Can only convert dynd type " << tp << " into a numpy dtype with array arrmeta";
                 throw dynd::type_error(ss.str());
             }
             const struct_type *stp = tp.tcast<struct_type>();
             const uintptr_t *arrmeta_offsets = stp->get_arrmeta_offsets_raw();
-            const uintptr_t *offsets = stp->get_data_offsets(metadata);
+            const uintptr_t *offsets = stp->get_data_offsets(arrmeta);
             size_t field_count = stp->get_field_count();
             size_t max_numpy_alignment = 1;
 
@@ -565,7 +565,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
                 PyArray_Descr *npdt = numpy_dtype_from_ndt_type(
-                                stp->get_field_type(i), metadata + arrmeta_offsets[i]);
+                                stp->get_field_type(i), arrmeta + arrmeta_offsets[i]);
                 max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
                 PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
             }
@@ -736,14 +736,14 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject* obj, uint32_t access_fla
     }
 
     // Create the result nd::array
-    char *metadata = NULL;
+    char *arrmeta = NULL;
     nd::array result = nd::make_strided_array_from_data(d, PyArray_NDIM(obj),
                     PyArray_DIMS(obj), PyArray_STRIDES(obj),
                     nd::read_access_flag | (PyArray_ISWRITEABLE(obj) ? nd::write_access_flag : 0),
-                    PyArray_BYTES(obj), DYND_MOVE(memblock), &metadata);
+                    PyArray_BYTES(obj), DYND_MOVE(memblock), &arrmeta);
     if (d.get_type_id() == struct_type_id) {
-        // If it's a struct, there's additional metadata that needs to be populated
-        pydynd::fill_metadata_from_numpy_dtype(d, PyArray_DESCR(obj), metadata);
+        // If it's a struct, there's additional arrmeta that needs to be populated
+        pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);
     }
 
     if (always_copy) {

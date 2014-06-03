@@ -48,9 +48,9 @@ namespace {
                 "readwrite", nd::read_access_flag | nd::write_access_flag,
                 "readonly", nd::read_access_flag,
                 "immutable", nd::read_access_flag | nd::immutable_access_flag);
-            if (d.get_metadata_size() != 0) {
+            if (d.get_arrmeta_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create a dynd array from a raw pointer with non-empty metadata, type: ";
+                ss << "Cannot create a dynd array from a raw pointer with non-empty arrmeta, type: ";
                 ss << d;
                 throw runtime_error(ss.str());
             }
@@ -70,8 +70,8 @@ namespace {
 
     PyObject *
     make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
-                            PyObject *dst_tp_obj, const void *dst_metadata,
-                            PyObject *src_tp_obj, const void *src_metadata,
+                            PyObject *dst_tp_obj, const void *dst_arrmeta,
+                            PyObject *src_tp_obj, const void *src_arrmeta,
                             PyObject *funcproto_obj, PyObject *kernreq_obj,
                             PyObject *ectx_obj)
     {
@@ -80,15 +80,15 @@ namespace {
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-            if (dst_metadata == NULL && dst_tp.get_metadata_size() != 0) {
+            if (dst_arrmeta == NULL && dst_tp.get_arrmeta_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
+                ss << "Cannot create an assignment kernel independent of arrmeta with non-empty arrmeta, type: ";
                 ss << dst_tp;
                 throw runtime_error(ss.str());
             }
-            if (src_metadata == NULL && src_tp.get_metadata_size() != 0) {
+            if (src_arrmeta == NULL && src_tp.get_arrmeta_size() != 0) {
                 stringstream ss;
-                ss << "Cannot create an assignment kernel independent of metadata with non-empty metadata, type: ";
+                ss << "Cannot create an assignment kernel independent of arrmeta with non-empty arrmeta, type: ";
                 ss << src_tp;
                 throw runtime_error(ss.str());
             }
@@ -127,8 +127,8 @@ namespace {
 
             intptr_t kernel_size = make_assignment_kernel(
                 ckb_ptr, ckb_offset, dst_tp,
-                reinterpret_cast<const char *>(dst_metadata), src_tp,
-                reinterpret_cast<const char *>(src_metadata), kernreq,
+                reinterpret_cast<const char *>(dst_arrmeta), src_tp,
+                reinterpret_cast<const char *>(src_arrmeta), kernreq,
                 assign_error_default, ectx);
 
             return PyLong_FromSsize_t(kernel_size);

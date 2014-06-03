@@ -559,7 +559,7 @@ namespace {
     };
 
     void contains_callback(const ndt::type &DYND_UNUSED(dt),
-                           const char *DYND_UNUSED(metadata), char *data,
+                           const char *DYND_UNUSED(arrmeta), char *data,
                            void *callback_data)
     {
         contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
@@ -580,15 +580,15 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
         throw runtime_error("cannot call __contains__ on a scalar dynd array");
     }
 
-    // Turn 'n' into type/metadata/data with a uniform_dim leading dimension
+    // Turn 'n' into type/arrmeta/data with a uniform_dim leading dimension
     nd::array tmp;
     ndt::type dt;
     const base_uniform_dim_type *budd;
-    const char *metadata, *data;
+    const char *arrmeta, *data;
     if (n.get_type().get_kind() == uniform_dim_kind) {
         dt = n.get_type();
         budd = dt.tcast<base_uniform_dim_type>();
-        metadata = n.get_arrmeta();
+        arrmeta = n.get_arrmeta();
         data = n.get_readonly_originptr();
     } else {
         tmp = n.eval();
@@ -597,21 +597,21 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
         }
         dt = tmp.get_type();
         budd = dt.tcast<base_uniform_dim_type>();
-        metadata = tmp.get_arrmeta();
+        arrmeta = tmp.get_arrmeta();
         data = tmp.get_readonly_originptr();
     }
 
     // Turn 'x' into a dynd array, and make a comparison kernel
     nd::array x_ndo = array_from_py(x, 0, false);
     const ndt::type& x_dt = x_ndo.get_type();
-    const char *x_metadata = x_ndo.get_arrmeta();
+    const char *x_arrmeta = x_ndo.get_arrmeta();
     const char *x_data = x_ndo.get_readonly_originptr();
     const ndt::type& child_dt = budd->get_element_type();
-    const char *child_metadata = metadata + budd->get_element_arrmeta_offset();
+    const char *child_arrmeta = arrmeta + budd->get_element_arrmeta_offset();
     comparison_ckernel_builder k;
     try {
         make_comparison_kernel(&k, 0,
-                    x_dt, x_metadata, child_dt, child_metadata,
+                    x_dt, x_arrmeta, child_dt, child_arrmeta,
                     comparison_type_equal, &eval::default_eval_context);
     } catch(const not_comparable_error&) {
         return false;
@@ -621,7 +621,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     aux.x_data = x_data;
     aux.k = &k;
     aux.found = false;
-    budd->foreach_leading(metadata, const_cast<char *>(data), &contains_callback, &aux);
+    budd->foreach_leading(arrmeta, const_cast<char *>(data), &contains_callback, &aux);
     return aux.found;
 }
 
@@ -693,20 +693,20 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(subscript)) {
         long i = PyInt_AS_LONG(subscript);
-        const char *metadata = n.get_arrmeta();
+        const char *arrmeta = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
-        ndt::type d = n.get_type().at_single(i, &metadata, const_cast<const char **>(&data));
-        array_broadcast_assign_from_py(d, metadata, data, value);
+        ndt::type d = n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
+        array_broadcast_assign_from_py(d, arrmeta, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
         intptr_t i = PyLong_AsSsize_t(subscript);
         if (i == -1 && PyErr_Occurred()) {
             throw runtime_error("error converting int value");
         }
-        const char *metadata = n.get_arrmeta();
+        const char *arrmeta = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
-        ndt::type d = n.get_type().at_single(i, &metadata, const_cast<const char **>(&data));
-        array_broadcast_assign_from_py(d, metadata, data, value);
+        ndt::type d = n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
+        array_broadcast_assign_from_py(d, arrmeta, data, value);
     } else {
         intptr_t size;
         shortvector<irange> indices;
@@ -803,8 +803,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     const base_struct_type *rudt_bsd = rudt.tcast<base_struct_type>();
 
     // Allocate the new memory block.
-    size_t metadata_size = result_tp.get_metadata_size();
-    nd::array result(make_array_memory_block(metadata_size));
+    size_t arrmeta_size = result_tp.get_arrmeta_size();
+    nd::array result(make_array_memory_block(arrmeta_size));
 
     // Clone the data pointer
     result.get_ndo()->m_data_pointer = n.get_ndo()->m_data_pointer;
@@ -817,36 +817,36 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     // Copy the flags
     result.get_ndo()->m_flags = n.get_ndo()->m_flags;
 
-    // Set the type and transform the metadata
+    // Set the type and transform the arrmeta
     result.get_ndo()->m_type = ndt::type(result_tp).release();
-    // First copy all the array data type metadata
+    // First copy all the array data type arrmeta
     ndt::type tmp_dt = result_tp;
-    char *dst_metadata = result.get_arrmeta();
-    const char *src_metadata = n.get_arrmeta();
+    char *dst_arrmeta = result.get_arrmeta();
+    const char *src_arrmeta = n.get_arrmeta();
     while (tmp_dt.get_ndim() > 0) {
         if (tmp_dt.get_kind() != uniform_dim_kind) {
             throw runtime_error("nd.fields doesn't support dimensions with pointers yet");
         }
         const base_uniform_dim_type *budd = tmp_dt.tcast<base_uniform_dim_type>();
-        size_t offset = budd->metadata_copy_construct_onedim(dst_metadata, src_metadata,
+        size_t offset = budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta,
                         n.get_memblock().get());
-        dst_metadata += offset;
-        src_metadata += offset;
+        dst_arrmeta += offset;
+        src_arrmeta += offset;
         tmp_dt = budd->get_element_type();
     }
-    // Then create the metadata for the new struct
+    // Then create the arrmeta for the new struct
     const size_t *arrmeta_offsets = bsd->get_arrmeta_offsets_raw();
     const size_t *result_arrmeta_offsets = rudt_bsd->get_arrmeta_offsets_raw();
-    const size_t *data_offsets = bsd->get_data_offsets(src_metadata);
-    size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_metadata);
+    const size_t *data_offsets = bsd->get_data_offsets(src_arrmeta);
+    size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_arrmeta);
     for (size_t i = 0; i != selected_fields.size(); ++i) {
         const ndt::type& dt = selected_ndt_types[i];
         // Copy the data offset
         result_data_offsets[i] = data_offsets[selected_index[i]];
-        // Copy the metadata for this field
-        if (dt.get_metadata_size() > 0) {
-            dt.extended()->metadata_copy_construct(dst_metadata + result_arrmeta_offsets[i],
-                            src_metadata + arrmeta_offsets[selected_index[i]],
+        // Copy the arrmeta for this field
+        if (dt.get_arrmeta_size() > 0) {
+            dt.extended()->arrmeta_copy_construct(dst_arrmeta + result_arrmeta_offsets[i],
+                            src_arrmeta + arrmeta_offsets[selected_index[i]],
                             n.get_memblock().get());
         }
     }

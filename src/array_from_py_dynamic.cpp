@@ -51,8 +51,8 @@ struct afpd_coordentry {
     intptr_t coord;
     // The type in the output array for this axis
     ndt::type tp;
-    // The metadata pointer in the output array for this axis
-    const char *metadata_ptr;
+    // The arrmeta pointer in the output array for this axis
+    const char *arrmeta_ptr;
     // The data pointer in the output array for the next axis (or element)
     char *data_ptr;
     // Used for var dimensions, the amount of presently reserved space
@@ -62,12 +62,12 @@ struct afpd_coordentry {
 struct afpd_dtype {
     // The data type after all the dimensions
     ndt::type dtp;
-    // The metadata pointer in the output array for the dtype
-    const char *metadata_ptr;
+    // The arrmeta pointer in the output array for the dtype
+    const char *arrmeta_ptr;
 
     void swap(afpd_dtype& rhs) {
         dtp.swap(rhs.dtp);
-        std::swap(metadata_ptr, rhs.metadata_ptr);
+        std::swap(arrmeta_ptr, rhs.arrmeta_ptr);
     }
 };
 
@@ -104,37 +104,37 @@ static nd::array allocate_nd_arr(
     // reserving some data for any var dimensions.
     coord.resize(ndim);
     ndt::type tp = result.get_type();
-    const char *metadata_ptr = result.get_arrmeta();
+    const char *arrmeta_ptr = result.get_arrmeta();
     char *data_ptr = result.get_readwrite_originptr();
     for (intptr_t i = 0; i < ndim; ++i) {
         afpd_coordentry& c = coord[i];
         c.coord = 0;
         c.tp = tp;
-        c.metadata_ptr = metadata_ptr;
+        c.arrmeta_ptr = arrmeta_ptr;
         // If it's a var dim, reserve some space
         if (tp.get_type_id() == var_dim_type_id) {
             if (i < promoted_axis) {
                 // Only initialize the var dim elements prior
                 // to the promoted axis
                 intptr_t initial_count = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
-                ndt::var_dim_element_initialize(tp, metadata_ptr,
+                ndt::var_dim_element_initialize(tp, arrmeta_ptr,
                                     data_ptr, initial_count);
                 c.reserved_size = initial_count;
                 data_ptr = reinterpret_cast<const var_dim_type_data *>(data_ptr)->begin;
             } else {
                 data_ptr = NULL;
             }
-            // Advance metadata_ptr and data_ptr to the child dimension
-            metadata_ptr += sizeof(var_dim_type_metadata);
+            // Advance arrmeta_ptr and data_ptr to the child dimension
+            arrmeta_ptr += sizeof(var_dim_type_arrmeta);
             tp = tp.tcast<var_dim_type>()->get_element_type();
         } else {
-            // Advance metadata_ptr and data_ptr to the child dimension
-            metadata_ptr += sizeof(strided_dim_type_metadata);
+            // Advance arrmeta_ptr and data_ptr to the child dimension
+            arrmeta_ptr += sizeof(strided_dim_type_arrmeta);
             tp = tp.tcast<strided_dim_type>()->get_element_type();
         }
         c.data_ptr = data_ptr;
     }
-    elem.metadata_ptr = metadata_ptr;
+    elem.arrmeta_ptr = arrmeta_ptr;
 
     return result;
 }
@@ -172,10 +172,10 @@ static void copy_to_promoted_nd_arr(
         // Base case - the final dimension
         if (shape[current_axis] >= 0) {
             // strided dimension case
-            const strided_dim_type_metadata *dst_md =
-                reinterpret_cast<const strided_dim_type_metadata *>(dst_coord[current_axis].metadata_ptr);
-            const strided_dim_type_metadata *src_md =
-                reinterpret_cast<const strided_dim_type_metadata *>(src_coord[current_axis].metadata_ptr);
+            const strided_dim_type_arrmeta *dst_md =
+                reinterpret_cast<const strided_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
+            const strided_dim_type_arrmeta *src_md =
+                reinterpret_cast<const strided_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
             if (!final_coordinate) {
                 // Copy the full dimension
                 ck(dst_data_ptr, dst_md->stride,
@@ -190,17 +190,17 @@ static void copy_to_promoted_nd_arr(
             }
         } else {
             // var dimension case
-            const var_dim_type_metadata *dst_md =
-                reinterpret_cast<const var_dim_type_metadata *>(dst_coord[current_axis].metadata_ptr);
-            const var_dim_type_metadata *src_md =
-                reinterpret_cast<const var_dim_type_metadata *>(src_coord[current_axis].metadata_ptr);
+            const var_dim_type_arrmeta *dst_md =
+                reinterpret_cast<const var_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
+            const var_dim_type_arrmeta *src_md =
+                reinterpret_cast<const var_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
             var_dim_type_data *dst_d =
                 reinterpret_cast<var_dim_type_data *>(dst_data_ptr);
             const var_dim_type_data *src_d =
                 reinterpret_cast<const var_dim_type_data *>(src_data_ptr);
             if (!final_coordinate) {
                 ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].metadata_ptr,
+                            dst_coord[current_axis].arrmeta_ptr,
                             dst_data_ptr, src_d->size);
                 // Copy the full dimension
                 ck(dst_d->begin, dst_md->stride,
@@ -208,7 +208,7 @@ static void copy_to_promoted_nd_arr(
             } else {
                 // Initialize the var element to the same reserved space as the input
                 ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].metadata_ptr,
+                            dst_coord[current_axis].arrmeta_ptr,
                             dst_data_ptr, src_coord[current_axis].reserved_size);
                 dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
                 // Copy up to, and possibly including, the coordinate
@@ -226,10 +226,10 @@ static void copy_to_promoted_nd_arr(
         // Recursive case
         if (shape[current_axis] >= 0) {
             // strided dimension case
-            const strided_dim_type_metadata *dst_md =
-                reinterpret_cast<const strided_dim_type_metadata *>(dst_coord[current_axis].metadata_ptr);
-            const strided_dim_type_metadata *src_md =
-                reinterpret_cast<const strided_dim_type_metadata *>(src_coord[current_axis].metadata_ptr);
+            const strided_dim_type_arrmeta *dst_md =
+                reinterpret_cast<const strided_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
+            const strided_dim_type_arrmeta *src_md =
+                reinterpret_cast<const strided_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
             if (!final_coordinate) {
                 // Copy the full dimension
                 intptr_t size = shape[current_axis];
@@ -261,17 +261,17 @@ static void copy_to_promoted_nd_arr(
             }
         } else {
             // var dimension case
-            const var_dim_type_metadata *dst_md =
-                reinterpret_cast<const var_dim_type_metadata *>(dst_coord[current_axis].metadata_ptr);
-            const var_dim_type_metadata *src_md =
-                reinterpret_cast<const var_dim_type_metadata *>(src_coord[current_axis].metadata_ptr);
+            const var_dim_type_arrmeta *dst_md =
+                reinterpret_cast<const var_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
+            const var_dim_type_arrmeta *src_md =
+                reinterpret_cast<const var_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
             var_dim_type_data *dst_d =
                 reinterpret_cast<var_dim_type_data *>(dst_data_ptr);
             const var_dim_type_data *src_d =
                 reinterpret_cast<const var_dim_type_data *>(src_data_ptr);
             if (!final_coordinate) {
                 ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].metadata_ptr,
+                            dst_coord[current_axis].arrmeta_ptr,
                             dst_data_ptr, src_d->size);
                 // Copy the full dimension
                 intptr_t size = src_d->size;
@@ -290,7 +290,7 @@ static void copy_to_promoted_nd_arr(
             } else {
                 // Initialize the var element to the same reserved space as the input
                 ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].metadata_ptr,
+                            dst_coord[current_axis].arrmeta_ptr,
                             dst_data_ptr, src_coord[current_axis].reserved_size);
                 dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
                 // Copy up to, and including, the size
@@ -343,8 +343,8 @@ static void promote_nd_arr_dtype(
     // from the old `arr` to the new one
     assignment_strided_ckernel_builder k;
     if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newelem.dtp, newelem.metadata_ptr,
-                        elem.dtp, elem.metadata_ptr,
+        make_assignment_kernel(&k, 0, newelem.dtp, newelem.arrmeta_ptr,
+                        elem.dtp, elem.arrmeta_ptr,
                         kernel_request_strided,
                         assign_error_none, &eval::default_eval_context);
     } else {
@@ -390,8 +390,8 @@ static void promote_nd_arr_dim(
     // created kernel.
     assignment_strided_ckernel_builder k;
     if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newcoord[axis].tp, newcoord[axis].metadata_ptr,
-                        coord[axis].tp, coord[axis].metadata_ptr,
+        make_assignment_kernel(&k, 0, newcoord[axis].tp, newcoord[axis].arrmeta_ptr,
+                        coord[axis].tp, coord[axis].arrmeta_ptr,
                         kernel_request_strided,
                         assign_error_none, &eval::default_eval_context);
     }
@@ -534,13 +534,13 @@ static bool complex_assign(char *data, PyObject *obj)
  * Assign a string pyobject to an array element.
  *
  * \param  tp  The string type.
- * \param  metadata  Metadata for the string.
+ * \param  arrmeta  Arrmeta for the string.
  * \param  data  The data element being assigned to.
  * \param  obj  The Python object containing the value
  *
  * \return  True if the assignment was successful, false if the input type is incompatible.
  */
-static bool string_assign(const ndt::type& tp, const char *metadata, char *data, PyObject *obj)
+static bool string_assign(const ndt::type& tp, const char *arrmeta, char *data, PyObject *obj)
 {
     if (PyUnicode_Check(obj)) {
         // Go through UTF8 (was accessing the cpython unicode values directly
@@ -553,7 +553,7 @@ static bool string_assign(const ndt::type& tp, const char *metadata, char *data,
         }
 
         const string_type *st = tp.tcast<string_type>();
-        st->set_utf8_string(metadata, data, assign_error_default, s, s + len);
+        st->set_utf8_string(arrmeta, data, assign_error_default, s, s + len);
         return true;
     }
 #if PY_VERSION_HEX < 0x03000000
@@ -565,7 +565,7 @@ static bool string_assign(const ndt::type& tp, const char *metadata, char *data,
         }
 
         const string_type *st = tp.tcast<string_type>();
-        st->set_utf8_string(metadata, data, assign_error_default, s, s + len);
+        st->set_utf8_string(arrmeta, data, assign_error_default, s, s + len);
         return true;
     }
 #endif
@@ -579,13 +579,15 @@ static bool string_assign(const ndt::type& tp, const char *metadata, char *data,
  * Assign a bytes pyobject to an array element.
  *
  * \param  tp  The string type.
- * \param  metadata  Metadata for the type.
+ * \param  arrmeta  Arrmeta for the type.
  * \param  data  The data element being assigned to.
  * \param  obj  The Python object containing the value
  *
- * \return  True if the assignment was successful, false if the input type is incompatible.
+ * \return  True if the assignment was successful, false if the input type is
+ *          incompatible.
  */
-static bool bytes_assign(const ndt::type& tp, const char *metadata, char *data, PyObject *obj)
+static bool bytes_assign(const ndt::type &tp, const char *arrmeta, char *data,
+                         PyObject *obj)
 {
     if (PyBytes_Check(obj)) {
         char *s = NULL;
@@ -595,7 +597,7 @@ static bool bytes_assign(const ndt::type& tp, const char *metadata, char *data, 
         }
 
         const bytes_type *st = tp.tcast<bytes_type>();
-        st->set_bytes_data(metadata, data, s, s + len);
+        st->set_bytes_data(arrmeta, data, s, s + len);
         return true;
     }
     else {
@@ -620,7 +622,8 @@ static void array_from_py_dynamic_first_alloc(
         // Special case strings, because they act as sequences too
         elem.dtp = ndt::make_string();
         arr = allocate_nd_arr(shape, coord, elem, shape.size());
-        string_assign(elem.dtp, elem.metadata_ptr, coord[current_axis-1].data_ptr, obj);
+        string_assign(elem.dtp, elem.arrmeta_ptr,
+                      coord[current_axis - 1].data_ptr, obj);
         return;
     }
 
@@ -629,7 +632,8 @@ static void array_from_py_dynamic_first_alloc(
         // Special case bytes, because they act as sequences too
         elem.dtp = ndt::make_bytes(1);
         arr = allocate_nd_arr(shape, coord, elem, shape.size());
-        bytes_assign(elem.dtp, elem.metadata_ptr, coord[current_axis-1].data_ptr, obj);
+        bytes_assign(elem.dtp, elem.arrmeta_ptr,
+                     coord[current_axis - 1].data_ptr, obj);
         return;
     }
 #endif
@@ -644,7 +648,8 @@ static void array_from_py_dynamic_first_alloc(
         if (size != -1) {
             // Add this size to the shape
             shape.push_back(size);
-            // Initialize the data pointer for child elements with the one for this element
+            // Initialize the data pointer for child elements with the one for
+            // this element
             if (!coord.empty() && current_axis > 0) {
                 coord[current_axis].data_ptr = coord[current_axis-1].data_ptr;
             }
@@ -658,9 +663,10 @@ static void array_from_py_dynamic_first_alloc(
                             arr, current_axis + 1);
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
-                // need to get the stride from the metadata each time.
-                const strided_dim_type_metadata *md =
-                    reinterpret_cast<const strided_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                // need to get the stride from the arrmeta each time.
+                const strided_dim_type_arrmeta *md =
+                    reinterpret_cast<const strided_dim_type_arrmeta *>(
+                        coord[current_axis].arrmeta_ptr);
                 coord[current_axis].data_ptr += md->stride;
             }
 
@@ -774,13 +780,13 @@ static void array_from_py_dynamic_first_alloc(
                             // Increase the reserved capacity if needed
                             coord[current_axis].reserved_size *= 2;
                             ndt::var_dim_element_resize(coord[current_axis].tp,
-                                        coord[current_axis].metadata_ptr,
+                                        coord[current_axis].arrmeta_ptr,
                                         data_ptr, coord[current_axis].reserved_size);
                         }
                         // Set the data pointer for the child element
                         var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data_ptr);
-                        const var_dim_type_metadata *md =
-                            reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                        const var_dim_type_arrmeta *md =
+                            reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                         coord[current_axis].data_ptr = d->begin + i * md->stride;
                     }
                     array_from_py_dynamic(item, shape, coord, elem,
@@ -798,7 +804,7 @@ static void array_from_py_dynamic_first_alloc(
                 char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
                                                     : arr.get_readwrite_originptr();
                 ndt::var_dim_element_resize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr,
+                            coord[current_axis].arrmeta_ptr,
                             data_ptr, i);
                 return;
             } else {
@@ -815,7 +821,7 @@ static void array_from_py_dynamic_first_alloc(
                 char *data_ptr = (current_axis > 0) ? coord[current_axis-1].data_ptr
                                                     : arr.get_readwrite_originptr();
                 ndt::var_dim_element_resize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr, data_ptr, 0);
+                            coord[current_axis].arrmeta_ptr, data_ptr, 0);
                 return;
             }
         } else {
@@ -892,7 +898,7 @@ static void array_from_py_dynamic(
                 if (!bool_assign(coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
@@ -900,7 +906,7 @@ static void array_from_py_dynamic(
                 if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
@@ -908,7 +914,7 @@ static void array_from_py_dynamic(
                 if (!real_assign(coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
@@ -916,19 +922,19 @@ static void array_from_py_dynamic(
                 if (!complex_assign(coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, obj);
                 }
                 return;
             case string_kind:
-                if (!string_assign(elem.dtp, elem.metadata_ptr,
+                if (!string_assign(elem.dtp, elem.arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, obj)) {
                     throw runtime_error("TODO: Handle string type promotion");
                 }
                 return;
 #if PY_VERSION_HEX >= 0x03000000
             case bytes_kind:
-                if (!bytes_assign(elem.dtp, elem.metadata_ptr,
+                if (!bytes_assign(elem.dtp, elem.arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, obj)) {
                     throw runtime_error("TODO: Handle bytes type promotion");
                 }
@@ -939,7 +945,7 @@ static void array_from_py_dynamic(
                 // an actual element from which to deduce a type.
                 promote_nd_arr_dtype(shape, coord, elem, arr,
                                     deduce_ndt_type_from_pyobject(obj));
-                array_broadcast_assign_from_py(elem.dtp, elem.metadata_ptr,
+                array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                             coord[current_axis-1].data_ptr, obj);
                 return;
             default:
@@ -996,9 +1002,9 @@ static void array_from_py_dynamic(
                                 arr, current_axis + 1);
                     // Advance to the next element. Because the array may be
                     // dynamically reallocated deeper in the recursive call, we
-                    // need to get the stride from the metadata each time.
-                    const strided_dim_type_metadata *md =
-                        reinterpret_cast<const strided_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    // need to get the stride from the arrmeta each time.
+                    const strided_dim_type_arrmeta *md =
+                        reinterpret_cast<const strided_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr += md->stride;
                 }
                 return;
@@ -1031,7 +1037,7 @@ static void array_from_py_dynamic(
                     promote_nd_arr_dim(shape, coord, elem, arr, current_axis, true);
                     // Shrink the var dim element to fit
                     ndt::var_dim_element_resize(coord[current_axis].tp,
-                                coord[current_axis].metadata_ptr,
+                                coord[current_axis].arrmeta_ptr,
                                 coord[current_axis-1].data_ptr, i);
                     return;
                 }
@@ -1040,9 +1046,9 @@ static void array_from_py_dynamic(
                             arr, current_axis + 1);
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
-                // need to get the stride from the metadata each time.
-                const strided_dim_type_metadata *md =
-                    reinterpret_cast<const strided_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                // need to get the stride from the arrmeta each time.
+                const strided_dim_type_arrmeta *md =
+                    reinterpret_cast<const strided_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                 coord[current_axis].data_ptr += md->stride;
             }
 
@@ -1057,7 +1063,7 @@ static void array_from_py_dynamic(
                 coord[current_axis].reserved_size =
                             std::max(size*2, ARRAY_FROM_DYNAMIC_INITIAL_COUNT);
                 ndt::var_dim_element_resize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr,
+                            coord[current_axis].arrmeta_ptr,
                             coord[current_axis-1].data_ptr,
                             coord[current_axis].reserved_size);
                 item_ownref_outer.release();
@@ -1070,13 +1076,13 @@ static void array_from_py_dynamic(
                         // Increase the reserved capacity if needed
                         coord[current_axis].reserved_size *= 2;
                         ndt::var_dim_element_resize(coord[current_axis].tp,
-                                    coord[current_axis].metadata_ptr,
+                                    coord[current_axis].arrmeta_ptr,
                                     data_ptr, coord[current_axis].reserved_size);
                     }
                     // Set the data pointer for the child element
                     var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data_ptr);
-                    const var_dim_type_metadata *md =
-                        reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    const var_dim_type_arrmeta *md =
+                        reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr = d->begin + i * md->stride;
                     array_from_py_dynamic(item, shape, coord, elem,
                                 arr, current_axis + 1);
@@ -1092,7 +1098,7 @@ static void array_from_py_dynamic(
                 // Shrink the var element to fit
                 char *data_ptr = coord[current_axis-1].data_ptr;
                 ndt::var_dim_element_resize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr,
+                            coord[current_axis].arrmeta_ptr,
                             data_ptr, i);
                 return;
             } else if (PyErr_Occurred()) {
@@ -1107,7 +1113,7 @@ static void array_from_py_dynamic(
             Py_ssize_t size = PySequence_Size(obj);
             if (size != -1) {
                 ndt::var_dim_element_initialize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr,
+                            coord[current_axis].arrmeta_ptr,
                             coord[current_axis-1].data_ptr, size);
                 coord[current_axis].reserved_size = size;
                 // Process all the elements
@@ -1118,8 +1124,8 @@ static void array_from_py_dynamic(
                     // re-retrieve from `coord` each time, because the recursive
                     // call could reallocate the destination array.
                     var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(coord[current_axis-1].data_ptr);
-                    const var_dim_type_metadata *md =
-                        reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    const var_dim_type_arrmeta *md =
+                        reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr = d->begin + i * md->stride;
                     array_from_py_dynamic(item, shape, coord, elem,
                                 arr, current_axis + 1);
@@ -1141,7 +1147,7 @@ static void array_from_py_dynamic(
                 intptr_t i = 0;
                 coord[current_axis].reserved_size = ARRAY_FROM_DYNAMIC_INITIAL_COUNT;
                 ndt::var_dim_element_initialize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr,
+                            coord[current_axis].arrmeta_ptr,
                             coord[current_axis-1].data_ptr,
                             coord[current_axis].reserved_size);
                 item_ownref_outer.release();
@@ -1153,13 +1159,13 @@ static void array_from_py_dynamic(
                         // Increase the reserved capacity if needed
                         coord[current_axis].reserved_size *= 2;
                         ndt::var_dim_element_resize(coord[current_axis].tp,
-                                    coord[current_axis].metadata_ptr,
+                                    coord[current_axis].arrmeta_ptr,
                                     data_ptr, coord[current_axis].reserved_size);
                     }
                     // Set the data pointer for the child element
                     var_dim_type_data *d = reinterpret_cast<var_dim_type_data *>(data_ptr);
-                    const var_dim_type_metadata *md =
-                        reinterpret_cast<const var_dim_type_metadata *>(coord[current_axis].metadata_ptr);
+                    const var_dim_type_arrmeta *md =
+                        reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr = d->begin + i * md->stride;
                     array_from_py_dynamic(item, shape, coord, elem,
                                 arr, current_axis + 1);
@@ -1175,14 +1181,14 @@ static void array_from_py_dynamic(
                 // Shrink the var element to fit
                 char *data_ptr = coord[current_axis-1].data_ptr;
                 ndt::var_dim_element_resize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr,
+                            coord[current_axis].arrmeta_ptr,
                             data_ptr, i);
                 return;
             } else {
                 // Set it to a zero-sized var element
                 char *data_ptr = coord[current_axis-1].data_ptr;
                 ndt::var_dim_element_initialize(coord[current_axis].tp,
-                            coord[current_axis].metadata_ptr, data_ptr, 0);
+                            coord[current_axis].arrmeta_ptr, data_ptr, 0);
                 return;
             }
         } else {
@@ -1217,7 +1223,7 @@ dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj)
     array_from_py_dynamic(obj, shape, coord, elem, arr, 0);
     // Finalize any variable-sized buffers, etc
     if (!arr.get_type().is_builtin()) {
-        arr.get_type().extended()->metadata_finalize_buffers(arr.get_arrmeta());
+        arr.get_type().extended()->arrmeta_finalize_buffers(arr.get_arrmeta());
     }
     // As a special case, convert the outer dimension from var to strided
     if (arr.get_type().get_type_id() == var_dim_type_id) {

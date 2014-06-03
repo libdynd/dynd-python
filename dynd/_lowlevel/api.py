@@ -81,8 +81,8 @@ class _PyLowLevelAPI(ctypes.Structure):
                         ctypes.py_object, ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
                 # void make_assignment_kernel(out_ckb, ckb_offset,
-                #               dst_dt, dst_metadata,
-                #               src_dt, src_metadata,
+                #               dst_dt, dst_arrmeta,
+                #               src_dt, src_arrmeta,
                 #               funcproto, kerntype, ectx)
                 ('_make_assignment_ckernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
@@ -199,8 +199,8 @@ def lift_reduction_arrfunc(elwise_reduction, lifted_type,
                 reduction_identity)
 
 def make_assignment_ckernel(out_ckb, ckb_offset,
-                           dst_dt, dst_metadata,
-                           src_dt, src_metadata,
+                           dst_dt, dst_arrmeta,
+                           src_dt, src_arrmeta,
                            funcproto, kerntype, ectx=None):
     """
     This ctypes function pointer constructs a unary ckernel
@@ -217,13 +217,13 @@ def make_assignment_ckernel(out_ckb, ckb_offset,
         is being created.
     dst_tp : ndt.type
         The destination type.
-    dst_metadata : raw pointer or None
-        A pointer to metadata for the destination data. This must
+    dst_arrmeta : raw pointer or None
+        A pointer to arrmeta for the destination data. This must
         remain live while the constructed ckernel exists.
     src_tp : ndt.type
         The source type
-    src_metadata : raw pointer or None
-        A pointer to metadata for the source data. This must
+    src_arrmeta : raw pointer or None
+        A pointer to arrmeta for the source data. This must
         remain live while the constructed ckernel exists.
     funcproto : 'unary' or 'expr'
         Whether to create a unary or expr ckernel.
@@ -231,8 +231,8 @@ def make_assignment_ckernel(out_ckb, ckb_offset,
         Whether to create a single or strided ckernel.
     """
     return _make_assignment_ckernel(out_ckb, ckb_offset,
-                                   dst_dt, dst_metadata,
-                                   src_dt, src_metadata,
+                                   dst_dt, dst_arrmeta,
+                                   src_dt, src_arrmeta,
                                    funcproto, kerntype, ectx)
 
 # Documentation for the LowLevelAPI functions
@@ -439,7 +439,7 @@ array_from_ptr.__doc__ = """
     ----------
     tp : ndt.type
         The type of the array to create. This type should have
-        ``metadata_size`` of zero.
+        ``arrmeta_size`` of zero.
     data_ptr : raw address
         The address of the data for the array
     owner : object

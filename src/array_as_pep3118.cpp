@@ -54,7 +54,7 @@ static void debug_print_py_buffer(std::ostream& o, const Py_buffer *buffer, int 
 }
 
 static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
-                const char *metadata, std::stringstream& o)
+                const char *arrmeta, std::stringstream& o)
 {
     switch (dt.get_type_id()) {
         case bool_type_id:
@@ -144,7 +144,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
                 o << ")";
                 child_dt = tdt->get_element_type();
             } while (child_dt.get_type_id() == cfixed_dim_type_id && (o << ","));
-            append_pep3118_format(out_itemsize, child_dt, metadata, o);
+            append_pep3118_format(out_itemsize, child_dt, arrmeta, o);
             out_itemsize = dt.get_data_size();
             return;
         }
@@ -152,7 +152,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
             o << "T{";
             const cstruct_type *tdt = dt.tcast<cstruct_type>();
             size_t num_fields = tdt->get_field_count();
-            const uintptr_t *offsets = tdt->get_data_offsets(metadata);
+            const uintptr_t *offsets = tdt->get_data_offsets(arrmeta);
             const uintptr_t *arrmeta_offsets = tdt->get_arrmeta_offsets_raw();
             size_t format_offset = 0;
             for (size_t i = 0; i != num_fields; ++i) {
@@ -165,7 +165,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
                 // The field's type
                 append_pep3118_format(
                     out_itemsize, tdt->get_field_type(i),
-                    metadata ? (metadata + arrmeta_offsets[i]) : NULL, o);
+                    arrmeta ? (arrmeta + arrmeta_offsets[i]) : NULL, o);
                 format_offset += out_itemsize;
                 // Append the name
                 o << ":" << tdt->get_field_name(i) << ":";
@@ -187,7 +187,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
             vals.u = '>' + ('<' << 8);
             const byteswap_type *bd = dt.tcast<byteswap_type>();
             o << vals.s[0];
-            append_pep3118_format(out_itemsize, bd->get_value_type(), metadata, o);
+            append_pep3118_format(out_itemsize, bd->get_value_type(), arrmeta, o);
             return;
         }
         case view_type_id: {
@@ -195,7 +195,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
             // If it's a view of bytes, usually to view unaligned data, can ignore it
             // since the buffer format we're creating doesn't use alignment
             if (vd->get_operand_type().get_type_id() == fixedbytes_type_id) {
-                append_pep3118_format(out_itemsize, vd->get_value_type(), metadata, o);
+                append_pep3118_format(out_itemsize, vd->get_value_type(), arrmeta, o);
                 return;
             }
             break;
@@ -208,7 +208,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
     throw dynd::type_error(ss.str());
 }
 
-std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type& tp, const char *metadata)
+std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type& tp, const char *arrmeta)
 {
     std::stringstream result;
     // Specify native alignment/storage if it's a builtin scalar type
@@ -217,11 +217,11 @@ std::string pydynd::make_pep3118_format(intptr_t& out_itemsize, const ndt::type&
     } else if (tp.get_type_id() != byteswap_type_id) {
         result << "=";
     }
-    append_pep3118_format(out_itemsize, tp, metadata, result);
+    append_pep3118_format(out_itemsize, tp, arrmeta, result);
     return result.str();
 }
 
-static void array_getbuffer_pep3118_bytes(const ndt::type& dt, const char *metadata,
+static void array_getbuffer_pep3118_bytes(const ndt::type& dt, const char *arrmeta,
                 char *data, Py_buffer *buffer, int flags)
 {
     buffer->itemsize = 1;
@@ -292,11 +292,11 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         }
 
         // Create the format, and allocate the dynamic memory but Py_buffer needs
-        char *uniform_metadata = n.get_arrmeta();
-        ndt::type uniform_tp = dt.get_type_at_dimension(&uniform_metadata, buffer->ndim);
+        char *uniform_arrmeta = n.get_arrmeta();
+        ndt::type uniform_tp = dt.get_type_at_dimension(&uniform_arrmeta, buffer->ndim);
         if ((flags&PyBUF_FORMAT) || uniform_tp.get_data_size() == 0) {
             // If the array data type doesn't have a fixed size, make_pep3118 fills buffer->itemsize as a side effect
-            string format = make_pep3118_format(buffer->itemsize, uniform_tp, uniform_metadata);
+            string format = make_pep3118_format(buffer->itemsize, uniform_tp, uniform_arrmeta);
             if (flags&PyBUF_FORMAT) {
                 buffer->internal = malloc(2*buffer->ndim*sizeof(intptr_t) + format.size() + 1);
                 buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
@@ -318,15 +318,15 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         }
 
         // Fill in the shape and strides
-        const char *metadata = n.get_arrmeta();
+        const char *arrmeta = n.get_arrmeta();
         for (int i = 0; i < buffer->ndim; ++i) {
             switch (dt.get_type_id()) {
                 case strided_dim_type_id: {
                     const strided_dim_type *tdt = dt.tcast<strided_dim_type>();
-                    const strided_dim_type_metadata *md = reinterpret_cast<const strided_dim_type_metadata *>(metadata);
+                    const strided_dim_type_arrmeta *md = reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
                     buffer->shape[i] = md->size;
                     buffer->strides[i] = md->stride;
-                    metadata += sizeof(strided_dim_type_metadata);
+                    arrmeta += sizeof(strided_dim_type_arrmeta);
                     dt = tdt->get_element_type();
                     break;
                 }

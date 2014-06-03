@@ -39,7 +39,7 @@ class BaseDTypeMembers(ctypes.Structure):
                 ('alignment', ctypes.c_uint8),
                 ('flags', FlagsType),
                 ('data_size', ctypes.c_size_t),
-                ('metadata_size', ctypes.c_size_t),
+                ('arrmeta_size', ctypes.c_size_t),
                 ('undim', ctypes.c_uint8)]
 BaseDTypeMembersPtr = ctypes.POINTER(BaseDTypeMembers)
 

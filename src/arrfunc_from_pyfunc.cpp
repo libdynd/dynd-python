@@ -104,12 +104,12 @@ namespace {
             pyobject_ownref args(PyTuple_New(param_count));
             for (size_t i = 0; i != param_count; ++i) {
                 ndt::type tp = src_tp[i];
-                nd::array n(make_array_memory_block(tp.get_metadata_size()));
+                nd::array n(make_array_memory_block(tp.get_arrmeta_size()));
                 n.get_ndo()->m_type = tp.release();
                 n.get_ndo()->m_flags = nd::read_access_flag;
                 n.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
-                if (src_tp[i].get_metadata_size() > 0) {
-                    src_tp[i].extended()->metadata_copy_construct(
+                if (src_tp[i].get_arrmeta_size() > 0) {
+                    src_tp[i].extended()->arrmeta_copy_construct(
                         n.get_arrmeta(), self->m_src_arrmeta[i], NULL);
                 }
                 PyTuple_SET_ITEM(args.get(), i, wrap_array(DYND_MOVE(n)));
@@ -140,12 +140,12 @@ namespace {
             pyobject_ownref args(PyTuple_New(param_count));
             for (size_t i = 0; i != param_count; ++i) {
                 ndt::type tp = src_tp[i];
-                nd::array n(make_array_memory_block(tp.get_metadata_size()));
+                nd::array n(make_array_memory_block(tp.get_arrmeta_size()));
                 n.get_ndo()->m_type = tp.release();
                 n.get_ndo()->m_flags = nd::read_access_flag;
                 n.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
-                if (src_tp[i].get_metadata_size() > 0) {
-                    src_tp[i].extended()->metadata_copy_construct(
+                if (src_tp[i].get_arrmeta_size() > 0) {
+                    src_tp[i].extended()->arrmeta_copy_construct(
                         n.get_arrmeta(), self->m_src_arrmeta[i], NULL);
                 }
                 PyTuple_SET_ITEM(args.get(), i, wrap_array(DYND_MOVE(n)));

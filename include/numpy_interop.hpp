@@ -94,14 +94,14 @@ dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num);
 
 /**
  * When the function ndt_type_from_numpy_dtype returns a type which requires
- * additional metadata to be filled in, this function should be called to populate
- * that metadata in a created nd::array.
+ * additional arrmeta to be filled in, this function should be called to populate
+ * that arrmeta in a created nd::array.
  *
  * \param dt  The dynd type returned by ndt_type_from_numpy_dtype.
  * \param d  The numpy dtype passed to ndt_type_from_numpy_dtype.
- * \param metadata  A pointer to the metadata to populate.
+ * \param arrmeta  A pointer to the arrmeta to populate.
  */
-void fill_metadata_from_numpy_dtype(const dynd::ndt::type& tp, PyArray_Descr *d, char *metadata);
+void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type& tp, PyArray_Descr *d, char *arrmeta);
 
 /**
  * Converts a dynd type to a numpy dtype.
@@ -118,12 +118,12 @@ inline PyObject *numpy_dtype_obj_from_ndt_type(const dynd::ndt::type& tp)
 
 /**
  * Converts a dynd type to a numpy dtype, also supporting types which
- * rely on their metadata for field offset information.
+ * rely on their arrmeta for field offset information.
  *
  * \param dt  The dynd type to convert.
- * \param metadata  The metadata for the dynd type.
+ * \param arrmeta  The arrmeta for the dynd type.
  */
-PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *metadata);
+PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *arrmeta);
 
 /**
  * Converts a pytypeobject for a n`umpy scalar

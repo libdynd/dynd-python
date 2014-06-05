@@ -339,9 +339,9 @@ static void array_assign_strided_from_pyseq(const dynd::ndt::type& element_dt,
         array_assign_from_value(element_dt, element_arrmeta, dst_data, item.get());
         // Get a strided kernel, and use it to assign from the first element to the rest of them
         assignment_ckernel_builder k;
-        make_assignment_kernel(&k, 0, element_dt, element_arrmeta,
-                        element_dt, element_arrmeta, kernel_request_strided,
-                        assign_error_default, &eval::default_eval_context);
+        make_assignment_kernel(&k, 0, element_dt, element_arrmeta, element_dt,
+                               element_arrmeta, kernel_request_strided,
+                               &eval::default_eval_context);
         ckernel_prefix *kdp = k.get();
         kdp->get_function<unary_strided_operation_t>()(
                         dst_data + dst_stride, dst_stride,
@@ -412,9 +412,9 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type& element_dt,
         if (dst_size > 1) {
             // Get a strided kernel, and use it to assign from the first element to the rest of them
             assignment_ckernel_builder k;
-            make_assignment_kernel(&k, 0, element_dt, element_arrmeta,
-                            element_dt, element_arrmeta, kernel_request_strided,
-                            assign_error_default, &eval::default_eval_context);
+            make_assignment_kernel(
+                &k, 0, element_dt, element_arrmeta, element_dt, element_arrmeta,
+                kernel_request_strided, &eval::default_eval_context);
             ckernel_prefix *kdp = k.get();
             kdp->get_function<unary_strided_operation_t>()(
                             dst_data + dst_stride, dst_stride,

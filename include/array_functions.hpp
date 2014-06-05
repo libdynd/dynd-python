@@ -148,12 +148,10 @@ inline std::string array_debug_print(const dynd::nd::array& n)
 
 bool array_contains(const dynd::nd::array& n, PyObject *x);
 
+dynd::nd::array array_cast(const dynd::nd::array &n, const dynd::ndt::type &dt);
 
-dynd::nd::array array_cast(const dynd::nd::array& n, const dynd::ndt::type& dt,
-                PyObject *assign_error_obj);
-
-dynd::nd::array array_ucast(const dynd::nd::array& n, const dynd::ndt::type& dt,
-                intptr_t replace_ndim, PyObject *assign_error_obj);
+dynd::nd::array array_ucast(const dynd::nd::array &n, const dynd::ndt::type &dt,
+                            intptr_t replace_ndim);
 
 PyObject *array_get_shape(const dynd::nd::array& n);
 

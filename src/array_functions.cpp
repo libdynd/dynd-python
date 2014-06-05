@@ -439,7 +439,7 @@ dynd::nd::array pydynd::array_zeros(const dynd::ndt::type& d, PyObject *access)
 {
     uint32_t access_flags = pyarg_creation_access_flags(access);
     nd::array n = nd::empty(d);
-    n.val_assign(0, assign_error_none);
+    n.val_assign(0);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -453,7 +453,7 @@ dynd::nd::array pydynd::array_zeros(PyObject *shape, const dynd::ndt::type& d, P
     pyobject_as_vector_intp(shape, shape_vec, true);
     nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]);
-    n.val_assign(0, assign_error_none);
+    n.val_assign(0);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -464,7 +464,7 @@ dynd::nd::array pydynd::array_ones(const dynd::ndt::type& d, PyObject *access)
 {
     uint32_t access_flags = pyarg_creation_access_flags(access);
     nd::array n = nd::empty(d);
-    n.val_assign(1, assign_error_none);
+    n.val_assign(1);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -478,7 +478,7 @@ dynd::nd::array pydynd::array_ones(PyObject *shape, const dynd::ndt::type& d, Py
     pyobject_as_vector_intp(shape, shape_vec, true);
     nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]);
-    n.val_assign(1, assign_error_none);
+    n.val_assign(1);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -625,16 +625,15 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     return aux.found;
 }
 
-dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt,
-                PyObject *assign_error_obj)
+dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt)
 {
-    return n.cast(dt, pyarg_error_mode(assign_error_obj));
+    return n.cast(dt);
 }
 
-dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const ndt::type& dt,
-                intptr_t replace_ndim, PyObject *assign_error_obj)
+dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
+                                    const ndt::type &dt, intptr_t replace_ndim)
 {
-    return n.ucast(dt, replace_ndim, pyarg_error_mode(assign_error_obj));
+    return n.ucast(dt, replace_ndim);
 }
 
 PyObject *pydynd::array_get_shape(const dynd::nd::array& n)

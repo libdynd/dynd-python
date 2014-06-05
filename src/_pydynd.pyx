@@ -493,13 +493,12 @@ def make_fixedbytes(int data_size, int data_alignment=1):
     SET(result.v, dynd_make_fixedbytes_type(data_size, data_alignment))
     return result
 
-def make_convert(to_tp, from_tp, errmode=None):
+def make_convert(to_tp, from_tp):
     """
-    ndt.make_convert(to_tp, from_tp, errmode='fractional')
+    ndt.make_convert(to_tp, from_tp)
 
     Constructs an expression type which converts from one
-    dynd type to another, using a specified mode for handling
-    conversion errors.
+    dynd type to another.
 
     Parameters
     ----------
@@ -509,24 +508,16 @@ def make_convert(to_tp, from_tp, errmode=None):
     from_tp : dynd type
         The dynd type being converted from. This is the 'operand_type'
         of the resulting expression dynd type.
-    errmode : 'inexact', 'fractional', 'overflow', 'none'
-        How conversion errors are treated. For 'inexact', the value
-        must be preserved precisely. For 'fractional', conversion errors
-        due to precision loss are accepted, but not for loss of the
-        fraction part. For 'overflow', only overflow errors are raised.
-        For 'none', no conversion errors are raised
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
     >>> ndt.make_convert(ndt.int16, ndt.float32)
-    ndt.type('convert<to=int16, from=float32>')
-    >>> ndt.make_convert(ndt.uint8, ndt.uint16, 'none')
-    ndt.type('convert<to=uint8, from=uint16, errmode=none>')
+    ndt.type('convert[to=int16, from=float32]')
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_convert_type(GET(w_type(to_tp).v), GET(w_type(from_tp).v), errmode))
+    SET(result.v, dynd_make_convert_type(GET(w_type(to_tp).v), GET(w_type(from_tp).v)))
     return result
 
 def make_view(value_type, operand_type):
@@ -1149,9 +1140,9 @@ cdef class w_array:
         SET(result.v, GET(self.v).storage())
         return result
 
-    def cast(self, type, errmode=None):
+    def cast(self, type):
         """
-        a.cast(type, errmode='fractional')
+        a.cast(type)
 
         Casts the dynd array's type to the requested type,
         producing a conversion type. If the data for the
@@ -1162,21 +1153,14 @@ cdef class w_array:
         ----------
         type : dynd type
             The type is cast into this type.
-        errmode : 'inexact', 'fractional', 'overflow', 'none'
-            How conversion errors are treated. For 'inexact', the value
-            must be preserved precisely. For 'fractional', conversion errors
-            due to precision loss are accepted, but not for loss of the
-            fraction part. For 'overflow', only overflow errors are raised.
-            For 'none', no conversion errors are raised
-
         """
         cdef w_array result = w_array()
-        SET(result.v, array_cast(GET(self.v), GET(w_type(type).v), errmode))
+        SET(result.v, array_cast(GET(self.v), GET(w_type(type).v)))
         return result
 
-    def ucast(self, dtype, int replace_ndim=0, errmode=None):
+    def ucast(self, dtype, int replace_ndim=0):
         """
-        a.ucast(dtype, replace_ndim=0, errmode='fractional')
+        a.ucast(dtype, replace_ndim=0)
 
         Casts the dynd array's dtype to the requested type,
         producing a conversion type. The dtype is the type
@@ -1191,26 +1175,20 @@ cdef class w_array:
         replace_ndim : integer, optional
             The number of array dimensions to replace in doing
             the cast.
-        errmode : 'inexact', 'fractional', 'overflow', 'none'
-            How conversion errors are treated. For 'inexact', the value
-            must be preserved precisely. For 'fractional', conversion errors
-            due to precision loss are accepted, but not for loss of the
-            fraction part. For 'overflow', only overflow errors are raised.
-            For 'none', no conversion errors are raised
 
         Examples
         --------
         >>> from dynd import nd, ndt
 
         >>> from datetime import date
-        >>> a = nd.array([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32; year: int32; day: float32}')
+        >>> a = nd.array([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32, year: int32, day: float32}')
         >>> a
-        nd.array([[3, 1929, 13], [3, 1979, 22]], strided_dim<convert<to=cstruct<int32 month, int32 year, float32 day>, from=date>>)
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="strided * convert[to={month : int32, year : int32, day : float32}, from=date]")
         >>> a.eval()
-        nd.array([[3, 1929, 13], [3, 1979, 22]], strided_dim<cstruct<int32 month, int32 year, float32 day>>)
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="strided * {month : int32, year : int32, day : float32}")
         """
         cdef w_array result = w_array()
-        SET(result.v, array_ucast(GET(self.v), GET(w_type(dtype).v), replace_ndim, errmode))
+        SET(result.v, array_ucast(GET(self.v), GET(w_type(dtype).v), replace_ndim))
         return result
 
     def view_scalars(self, dtype):

@@ -343,17 +343,15 @@ static void promote_nd_arr_dtype(
     // from the old `arr` to the new one
     assignment_strided_ckernel_builder k;
     if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newelem.dtp, newelem.arrmeta_ptr,
-                        elem.dtp, elem.arrmeta_ptr,
-                        kernel_request_strided,
-                        assign_error_none, &eval::default_eval_context);
+        make_assignment_kernel(
+            &k, 0, newelem.dtp, newelem.arrmeta_ptr, elem.dtp, elem.arrmeta_ptr,
+            kernel_request_strided, &eval::default_eval_context);
     } else {
         // An assignment kernel which copies one byte - will only
         // be called with count==0 when dtp is uninitialized
-        make_assignment_kernel(&k, 0, ndt::make_type<char>(),
-                        NULL, ndt::make_type<char>(), NULL,
-                        kernel_request_strided,
-                        assign_error_none, &eval::default_eval_context);
+        make_assignment_kernel(
+            &k, 0, ndt::make_type<char>(), NULL, ndt::make_type<char>(), NULL,
+            kernel_request_strided, &eval::default_eval_context);
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
@@ -390,10 +388,10 @@ static void promote_nd_arr_dim(
     // created kernel.
     assignment_strided_ckernel_builder k;
     if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newcoord[axis].tp, newcoord[axis].arrmeta_ptr,
-                        coord[axis].tp, coord[axis].arrmeta_ptr,
-                        kernel_request_strided,
-                        assign_error_none, &eval::default_eval_context);
+        make_assignment_kernel(&k, 0, newcoord[axis].tp,
+                               newcoord[axis].arrmeta_ptr, coord[axis].tp,
+                               coord[axis].arrmeta_ptr, kernel_request_strided,
+                               &eval::default_eval_context);
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),

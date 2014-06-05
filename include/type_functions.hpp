@@ -90,7 +90,7 @@ dynd::ndt::type make_ndt_type_from_pyobject(PyObject* obj);
 /**
  * Creates a convert type.
  */
-dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp, PyObject *errmode);
+dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp);
 
 /**
  * Creates a view type.

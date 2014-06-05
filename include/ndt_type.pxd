@@ -132,7 +132,7 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
     ndt_type ndt_type_getitem(ndt_type&, object) except +translate_exception
     object ndt_type_array_property_names(ndt_type&) except +translate_exception
 
-    ndt_type dynd_make_convert_type(ndt_type&, ndt_type&, object) except +translate_exception
+    ndt_type dynd_make_convert_type(ndt_type&, ndt_type&) except +translate_exception
     ndt_type dynd_make_view_type(ndt_type&, ndt_type&) except +translate_exception
     ndt_type dynd_make_fixedstring_type(int, object) except +translate_exception
     ndt_type dynd_make_string_type(object) except +translate_exception

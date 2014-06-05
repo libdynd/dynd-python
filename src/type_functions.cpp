@@ -304,9 +304,9 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     }
 }
 
-dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp, PyObject *errmode)
+dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp)
 {
-    return ndt::make_convert(to_tp, from_tp, pyarg_error_mode(errmode));
+    return ndt::make_convert(to_tp, from_tp);
 }
 
 dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type)

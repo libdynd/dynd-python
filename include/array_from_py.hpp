@@ -25,7 +25,9 @@ namespace pydynd {
  * \param always_copy If this is set to true, a new copy is always
  *                    created.
  */
-dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags, bool always_copy);
+dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
+                              bool always_copy,
+                              const dynd::eval::eval_context *ectx);
 
 /**
  * Converts a Python object into an nd::array using
@@ -45,8 +47,9 @@ dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags, bool always_
  *                  additional leading dimensions.
  * \param access_flags The access flags for the result, or 0 for the default immutable.
  */
-dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type& tp,
-                bool fulltype, uint32_t access_flags);
+dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type &tp,
+                              bool fulltype, uint32_t access_flags,
+                              const dynd::eval::eval_context *ectx);
 
 } // namespace pydynd
 

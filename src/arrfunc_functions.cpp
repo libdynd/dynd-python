@@ -52,14 +52,14 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
                         "arrfunc_call requires a tuple of arguments");
         return NULL;
     }
+    const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
     // Convert args into nd::arrays
     intptr_t args_size = PyTuple_Size(args_obj);
     std::vector<nd::array> args(args_size);
     for (intptr_t i = 0; i < args_size; ++i) {
-        args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false);
+        args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
     }
-    nd::array result = af.call(args_size, args_size ? &args[0] : NULL,
-                               eval_context_from_pyobj(ectx_obj));
+    nd::array result = af.call(args_size, args_size ? &args[0] : NULL, ectx);
     return wrap_array(result);
 }
 
@@ -67,18 +67,20 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                         PyObject *window_size_obj,
                                         PyObject *ectx_obj)
 {
-    nd::array arr = array_from_py(arr_obj, 0, false);
+    const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+    nd::array arr = array_from_py(arr_obj, 0, false, ectx);
     intptr_t window_size = pyobject_as_index(window_size_obj);
     nd::arrfunc func;
     if (WArrFunc_Check(func_obj)) {
         func = ((WArrFunc *)func_obj)->v;
     } else {
         ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
-        ndt::type proto = ndt::make_funcproto(ndt::make_strided_dim(el_tp), el_tp);
-                                              
+        ndt::type proto =
+            ndt::make_funcproto(ndt::make_strided_dim(el_tp), el_tp);
+
         func = arrfunc_from_pyfunc(func_obj, proto);
     }
     nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
-    nd::array result = roll.call(1, &arr, eval_context_from_pyobj(ectx_obj));
+    nd::array result = roll.call(1, &arr, ectx);
     return wrap_array(result);
 }

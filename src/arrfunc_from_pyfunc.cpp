@@ -31,6 +31,7 @@ namespace {
         // The arrmeta
         const char *m_dst_arrmeta;
         vector<const char *> m_src_arrmeta;
+        eval::eval_context m_ectx;
 
         inline pyfunc_expr_ck()
             : m_pyfunc(NULL)
@@ -119,7 +120,7 @@ namespace {
                 PyObject_Call(self->m_pyfunc, args.get(), NULL));
             // Copy the result into the destination memory
             array_nodim_broadcast_assign_from_py(dst_tp, self->m_dst_arrmeta,
-                                                 dst, res.get());
+                                                 dst, res.get(), &self->m_ectx);
             res.clear();
             // Validate that the call didn't hang onto the ephemeral data
             // pointers we used. This is done after the dst assignment, because
@@ -156,8 +157,8 @@ namespace {
                 pyobject_ownref res(
                     PyObject_Call(self->m_pyfunc, args.get(), NULL));
                 // Copy the result into the destination memory
-                array_nodim_broadcast_assign_from_py(dst_tp, self->m_dst_arrmeta,
-                                                     dst, res.get());
+                array_nodim_broadcast_assign_from_py(
+                    dst_tp, self->m_dst_arrmeta, dst, res.get(), &self->m_ectx);
                 res.clear();
                 // Validate that the call didn't hang onto the ephemeral data
                 // pointers we used. This is done after the dst assignment, because
@@ -186,7 +187,7 @@ namespace {
         const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *dst_arrmeta,
         const ndt::type *src_tp, const char *const *src_arrmeta,
-        uint32_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
+        uint32_t kernreq, const eval::eval_context *ectx)
     {
         typedef pyfunc_expr_ck self_type;
         PyGILState_RAII pgs;
@@ -201,6 +202,7 @@ namespace {
         self->m_src_arrmeta.resize(param_count);
         copy(src_arrmeta, src_arrmeta + param_count,
              self->m_src_arrmeta.begin());
+        self->m_ectx = *ectx;
         return ckb_end;
     }
 }

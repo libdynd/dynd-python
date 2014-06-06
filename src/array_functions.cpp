@@ -696,7 +696,7 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         const char *arrmeta = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
         ndt::type d = n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-        array_broadcast_assign_from_py(d, arrmeta, data, value);
+        array_broadcast_assign_from_py(d, arrmeta, data, value, &eval::default_eval_context);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
         intptr_t i = PyLong_AsSsize_t(subscript);

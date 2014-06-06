@@ -565,8 +565,7 @@ static bool string_assign(const ndt::type &tp, const char *arrmeta, char *data,
         }
 
         const string_type *st = tp.tcast<string_type>();
-        st->set_from_utf8_string(arrmeta, data, assign_error_default, s,
-                                 s + len, ectx);
+        st->set_from_utf8_string(arrmeta, data, s, s + len, ectx);
         return true;
     }
 #endif

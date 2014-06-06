@@ -331,7 +331,7 @@ public:
 static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
                 PyObject *dst_type, PyObject *src_type)
 {
-    nd::array n = array_from_py(n_obj, 0, false);
+    nd::array n = array_from_py(n_obj, 0, false, &eval::default_eval_context);
     if (n.get_ndo() == NULL) {
         throw runtime_error("elwise_map received a NULL dynd array");
     }
@@ -359,7 +359,8 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
 {
     vector<nd::array> n(PyList_Size(n_list));
     for (size_t i = 0; i != n.size(); ++i) {
-        n[i] = array_from_py(PyList_GET_ITEM(n_list, i), 0, false);
+        n[i] = array_from_py(PyList_GET_ITEM(n_list, i), 0, false,
+                             &eval::default_eval_context);
         if (n[i].get_ndo() == NULL) {
             throw runtime_error("elwise_map received a NULL dynd array");
         }

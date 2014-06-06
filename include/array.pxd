@@ -48,7 +48,7 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         ndarray storage() except +translate_exception
 
         ndarray view_scalars(ndt_type&) except +translate_exception
-        ndarray ucast(ndt_type&, size_t, assign_error_mode) except +translate_exception
+        ndarray ucast(ndt_type&, size_t) except +translate_exception
 
         void flag_as_immutable() except +translate_exception
 
@@ -106,8 +106,8 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     ndarray array_linspace(object, object, object, object) except +translate_exception
     ndarray nd_fields(ndarray&, object) except +translate_exception
 
-    ndarray array_cast(ndarray&, ndt_type&, object) except +translate_exception
-    ndarray array_ucast(ndarray&, ndt_type&, size_t, object) except +translate_exception
+    ndarray array_cast(ndarray&, ndt_type&) except +translate_exception
+    ndarray array_ucast(ndarray&, ndt_type&, size_t) except +translate_exception
     object array_as_py(ndarray&, bint) except +translate_exception
     object array_as_numpy(object, bint) except +translate_exception
     ndarray array_from_py(object) except +translate_exception

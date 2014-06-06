@@ -116,6 +116,9 @@ cdef extern from "dynd/types/property_type.hpp" namespace "dynd":
 cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
 
+cdef extern from "dynd/types/type_pattern_match.hpp" namespace "dynd::ndt":
+    bint type_pattern_match(ndt_type&, ndt_type&) except +translate_exception
+
 cdef extern from "type_functions.hpp" namespace "pydynd":
     void init_w_type_typeobject(object)
 
@@ -129,7 +132,7 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
     ndt_type ndt_type_getitem(ndt_type&, object) except +translate_exception
     object ndt_type_array_property_names(ndt_type&) except +translate_exception
 
-    ndt_type dynd_make_convert_type(ndt_type&, ndt_type&, object) except +translate_exception
+    ndt_type dynd_make_convert_type(ndt_type&, ndt_type&) except +translate_exception
     ndt_type dynd_make_view_type(ndt_type&, ndt_type&) except +translate_exception
     ndt_type dynd_make_fixedstring_type(int, object) except +translate_exception
     ndt_type dynd_make_string_type(object) except +translate_exception

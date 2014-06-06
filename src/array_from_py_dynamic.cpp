@@ -79,7 +79,8 @@ static void array_from_py_dynamic(
     std::vector<afpd_coordentry>& coord,
     afpd_dtype& elem,
     dynd::nd::array& arr,
-    intptr_t current_axis);
+    intptr_t current_axis,
+    const eval::eval_context *ectx);
 
 /**
  * This allocates an nd::array for the first time,
@@ -343,17 +344,15 @@ static void promote_nd_arr_dtype(
     // from the old `arr` to the new one
     assignment_strided_ckernel_builder k;
     if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newelem.dtp, newelem.arrmeta_ptr,
-                        elem.dtp, elem.arrmeta_ptr,
-                        kernel_request_strided,
-                        assign_error_none, &eval::default_eval_context);
+        make_assignment_kernel(
+            &k, 0, newelem.dtp, newelem.arrmeta_ptr, elem.dtp, elem.arrmeta_ptr,
+            kernel_request_strided, &eval::default_eval_context);
     } else {
         // An assignment kernel which copies one byte - will only
         // be called with count==0 when dtp is uninitialized
-        make_assignment_kernel(&k, 0, ndt::make_type<char>(),
-                        NULL, ndt::make_type<char>(), NULL,
-                        kernel_request_strided,
-                        assign_error_none, &eval::default_eval_context);
+        make_assignment_kernel(
+            &k, 0, ndt::make_type<char>(), NULL, ndt::make_type<char>(), NULL,
+            kernel_request_strided, &eval::default_eval_context);
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
@@ -390,10 +389,10 @@ static void promote_nd_arr_dim(
     // created kernel.
     assignment_strided_ckernel_builder k;
     if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newcoord[axis].tp, newcoord[axis].arrmeta_ptr,
-                        coord[axis].tp, coord[axis].arrmeta_ptr,
-                        kernel_request_strided,
-                        assign_error_none, &eval::default_eval_context);
+        make_assignment_kernel(&k, 0, newcoord[axis].tp,
+                               newcoord[axis].arrmeta_ptr, coord[axis].tp,
+                               coord[axis].arrmeta_ptr, kernel_request_strided,
+                               &eval::default_eval_context);
     }
     copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
                 newcoord, newelem, arr.get_readonly_originptr(),
@@ -540,7 +539,8 @@ static bool complex_assign(char *data, PyObject *obj)
  *
  * \return  True if the assignment was successful, false if the input type is incompatible.
  */
-static bool string_assign(const ndt::type& tp, const char *arrmeta, char *data, PyObject *obj)
+static bool string_assign(const ndt::type &tp, const char *arrmeta, char *data,
+                          PyObject *obj, const eval::eval_context *ectx)
 {
     if (PyUnicode_Check(obj)) {
         // Go through UTF8 (was accessing the cpython unicode values directly
@@ -553,7 +553,7 @@ static bool string_assign(const ndt::type& tp, const char *arrmeta, char *data, 
         }
 
         const string_type *st = tp.tcast<string_type>();
-        st->set_utf8_string(arrmeta, data, assign_error_default, s, s + len);
+        st->set_from_utf8_string(arrmeta, data, s, s + len, ectx);
         return true;
     }
 #if PY_VERSION_HEX < 0x03000000
@@ -565,7 +565,7 @@ static bool string_assign(const ndt::type& tp, const char *arrmeta, char *data, 
         }
 
         const string_type *st = tp.tcast<string_type>();
-        st->set_utf8_string(arrmeta, data, assign_error_default, s, s + len);
+        st->set_from_utf8_string(arrmeta, data, s, s + len, ectx);
         return true;
     }
 #endif
@@ -612,7 +612,8 @@ static void array_from_py_dynamic_first_alloc(
     std::vector<afpd_coordentry>& coord,
     afpd_dtype& elem,
     dynd::nd::array& arr,
-    intptr_t current_axis)
+    intptr_t current_axis,
+    const eval::eval_context *ectx)
 {
     if (PyUnicode_Check(obj)
 #if PY_VERSION_HEX < 0x03000000
@@ -623,7 +624,7 @@ static void array_from_py_dynamic_first_alloc(
         elem.dtp = ndt::make_string();
         arr = allocate_nd_arr(shape, coord, elem, shape.size());
         string_assign(elem.dtp, elem.arrmeta_ptr,
-                      coord[current_axis - 1].data_ptr, obj);
+                      coord[current_axis - 1].data_ptr, obj, ectx);
         return;
     }
 
@@ -659,8 +660,8 @@ static void array_from_py_dynamic_first_alloc(
                     coord[current_axis].coord = i;
                 }
                 pyobject_ownref item(PySequence_GetItem(obj, i));
-                array_from_py_dynamic(item.get(), shape, coord, elem,
-                            arr, current_axis + 1);
+                array_from_py_dynamic(item.get(), shape, coord, elem, arr,
+                                      current_axis + 1, ectx);
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
                 // need to get the stride from the arrmeta each time.
@@ -789,8 +790,8 @@ static void array_from_py_dynamic_first_alloc(
                             reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                         coord[current_axis].data_ptr = d->begin + i * md->stride;
                     }
-                    array_from_py_dynamic(item, shape, coord, elem,
-                                arr, current_axis + 1);
+                    array_from_py_dynamic(item, shape, coord, elem, arr,
+                                          current_axis + 1, ectx);
 
                     item = PyIter_Next(iter);
                     ++i;
@@ -882,12 +883,13 @@ static void array_from_py_dynamic(
     std::vector<afpd_coordentry>& coord,
     afpd_dtype& elem,
     dynd::nd::array& arr,
-    intptr_t current_axis)
+    intptr_t current_axis,
+    const eval::eval_context *ectx)
 {
     if (arr.is_null()) {
         // If the arr is NULL, we're doing the first recursion determining
         // number of dimensions, etc.
-        array_from_py_dynamic_first_alloc(obj, shape, coord, elem, arr, current_axis);
+        array_from_py_dynamic_first_alloc(obj, shape, coord, elem, arr, current_axis, ectx);
         return;
     }
 
@@ -898,37 +900,42 @@ static void array_from_py_dynamic(
                 if (!bool_assign(coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
-                                coord[current_axis-1].data_ptr, obj);
+                    array_broadcast_assign_from_py(
+                        elem.dtp, elem.arrmeta_ptr,
+                        coord[current_axis - 1].data_ptr, obj, ectx);
                 }
                 return;
             case int_kind:
                 if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
-                                coord[current_axis-1].data_ptr, obj);
+                    array_broadcast_assign_from_py(
+                        elem.dtp, elem.arrmeta_ptr,
+                        coord[current_axis - 1].data_ptr, obj, ectx);
                 }
                 return;
             case real_kind:
                 if (!real_assign(coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
-                                coord[current_axis-1].data_ptr, obj);
+                    array_broadcast_assign_from_py(
+                        elem.dtp, elem.arrmeta_ptr,
+                        coord[current_axis - 1].data_ptr, obj, ectx);
                 }
                 return;
             case complex_kind:
                 if (!complex_assign(coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));
-                    array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
-                                coord[current_axis-1].data_ptr, obj);
+                    array_broadcast_assign_from_py(
+                        elem.dtp, elem.arrmeta_ptr,
+                        coord[current_axis - 1].data_ptr, obj, ectx);
                 }
                 return;
             case string_kind:
                 if (!string_assign(elem.dtp, elem.arrmeta_ptr,
-                                coord[current_axis-1].data_ptr, obj)) {
+                                   coord[current_axis - 1].data_ptr, obj,
+                                   ectx)) {
                     throw runtime_error("TODO: Handle string type promotion");
                 }
                 return;
@@ -946,7 +953,8 @@ static void array_from_py_dynamic(
                 promote_nd_arr_dtype(shape, coord, elem, arr,
                                     deduce_ndt_type_from_pyobject(obj));
                 array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
-                            coord[current_axis-1].data_ptr, obj);
+                                               coord[current_axis - 1].data_ptr,
+                                               obj, ectx);
                 return;
             default:
                 throw runtime_error("internal error: unexpected type in recursive pyobject to dynd array conversion");
@@ -986,7 +994,8 @@ static void array_from_py_dynamic(
                     // Promote the current axis from strided to var
                     promote_nd_arr_dim(shape, coord, elem, arr, current_axis, false);
                     // Re-invoke this call, this time triggering the var dimension code
-                    array_from_py_dynamic(obj, shape, coord, elem, arr, current_axis);
+                    array_from_py_dynamic(obj, shape, coord, elem, arr,
+                                          current_axis, ectx);
                     return;
                 }
 
@@ -998,8 +1007,8 @@ static void array_from_py_dynamic(
                 for (intptr_t i = 0; i < size; ++i) {
                     coord[current_axis].coord = i;
                     pyobject_ownref item(PySequence_GetItem(obj, i));
-                    array_from_py_dynamic(item.get(), shape, coord, elem,
-                                arr, current_axis + 1);
+                    array_from_py_dynamic(item.get(), shape, coord, elem, arr,
+                                          current_axis + 1, ectx);
                     // Advance to the next element. Because the array may be
                     // dynamically reallocated deeper in the recursive call, we
                     // need to get the stride from the arrmeta each time.
@@ -1042,8 +1051,8 @@ static void array_from_py_dynamic(
                     return;
                 }
                 pyobject_ownref item_ownref(item);
-                array_from_py_dynamic(item, shape, coord, elem,
-                            arr, current_axis + 1);
+                array_from_py_dynamic(item, shape, coord, elem, arr,
+                                      current_axis + 1, ectx);
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
                 // need to get the stride from the arrmeta each time.
@@ -1084,8 +1093,8 @@ static void array_from_py_dynamic(
                     const var_dim_type_arrmeta *md =
                         reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr = d->begin + i * md->stride;
-                    array_from_py_dynamic(item, shape, coord, elem,
-                                arr, current_axis + 1);
+                    array_from_py_dynamic(item, shape, coord, elem, arr,
+                                          current_axis + 1, ectx);
 
                     item = PyIter_Next(iter);
                     ++i;
@@ -1127,8 +1136,8 @@ static void array_from_py_dynamic(
                     const var_dim_type_arrmeta *md =
                         reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr = d->begin + i * md->stride;
-                    array_from_py_dynamic(item, shape, coord, elem,
-                                arr, current_axis + 1);
+                    array_from_py_dynamic(item, shape, coord, elem, arr,
+                                          current_axis + 1, ectx);
                 }
                 return;
             } else {
@@ -1167,8 +1176,8 @@ static void array_from_py_dynamic(
                     const var_dim_type_arrmeta *md =
                         reinterpret_cast<const var_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr = d->begin + i * md->stride;
-                    array_from_py_dynamic(item, shape, coord, elem,
-                                arr, current_axis + 1);
+                    array_from_py_dynamic(item, shape, coord, elem, arr,
+                                          current_axis + 1, ectx);
 
                     item = PyIter_Next(iter);
                     ++i;
@@ -1213,14 +1222,15 @@ static void array_from_py_dynamic(
     throw runtime_error(ss.str());
 }
 
-dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj)
+dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj,
+                                              const eval::eval_context *ectx)
 {
     std::vector<afpd_coordentry> coord;
     std::vector<intptr_t> shape;
     afpd_dtype elem;
     nd::array arr;
     memset(&elem, 0, sizeof(elem));
-    array_from_py_dynamic(obj, shape, coord, elem, arr, 0);
+    array_from_py_dynamic(obj, shape, coord, elem, arr, 0, ectx);
     // Finalize any variable-sized buffers, etc
     if (!arr.get_type().is_builtin()) {
         arr.get_type().extended()->arrmeta_finalize_buffers(arr.get_arrmeta());

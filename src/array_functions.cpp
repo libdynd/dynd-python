@@ -271,7 +271,8 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
                             "r",  nd::read_access_flag,
                             "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
-    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), fulltype, access_flags);
+    n = array_from_py(obj, make_ndt_type_from_pyobject(dt), fulltype,
+                      access_flags, &eval::default_eval_context);
 }
 
 void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access)
@@ -286,7 +287,7 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
                             "r",  nd::read_access_flag,
                             "immutable", nd::read_access_flag|nd::immutable_access_flag);
     }
-    n = array_from_py(obj, access_flags, true);
+    n = array_from_py(obj, access_flags, true, &eval::default_eval_context);
 }
 
 dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type, PyObject *access)
@@ -420,7 +421,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
 
     // TODO: Check for the python buffer protocol.
 
-    return array_from_py(obj, access_flags, true);
+    return array_from_py(obj, access_flags, true, &eval::default_eval_context);
 }
 
 dynd::nd::array pydynd::array_eval(const dynd::nd::array &n, PyObject *ectx_obj)
@@ -439,7 +440,7 @@ dynd::nd::array pydynd::array_zeros(const dynd::ndt::type& d, PyObject *access)
 {
     uint32_t access_flags = pyarg_creation_access_flags(access);
     nd::array n = nd::empty(d);
-    n.val_assign(0, assign_error_none);
+    n.val_assign(0);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -453,7 +454,7 @@ dynd::nd::array pydynd::array_zeros(PyObject *shape, const dynd::ndt::type& d, P
     pyobject_as_vector_intp(shape, shape_vec, true);
     nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]);
-    n.val_assign(0, assign_error_none);
+    n.val_assign(0);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -464,7 +465,7 @@ dynd::nd::array pydynd::array_ones(const dynd::ndt::type& d, PyObject *access)
 {
     uint32_t access_flags = pyarg_creation_access_flags(access);
     nd::array n = nd::empty(d);
-    n.val_assign(1, assign_error_none);
+    n.val_assign(1);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -478,7 +479,7 @@ dynd::nd::array pydynd::array_ones(PyObject *shape, const dynd::ndt::type& d, Py
     pyobject_as_vector_intp(shape, shape_vec, true);
     nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]);
-    n.val_assign(1, assign_error_none);
+    n.val_assign(1);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -489,7 +490,7 @@ dynd::nd::array pydynd::array_full(const dynd::ndt::type& d, PyObject *value, Py
 {
     uint32_t access_flags = pyarg_creation_access_flags(access);
     nd::array n = nd::empty(d);
-    array_broadcast_assign_from_py(n, value);
+    array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -504,7 +505,7 @@ dynd::nd::array pydynd::array_full(PyObject *shape, const dynd::ndt::type& d,
     pyobject_as_vector_intp(shape, shape_vec, true);
     nd::array n = nd::make_strided_array(d, (int)shape_vec.size(),
                     shape_vec.empty() ? NULL : &shape_vec[0]);
-    array_broadcast_assign_from_py(n, value);
+    array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
     if ((access_flags&nd::write_access_flag) == 0) {
         n.flag_as_immutable();
     }
@@ -602,7 +603,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     }
 
     // Turn 'x' into a dynd array, and make a comparison kernel
-    nd::array x_ndo = array_from_py(x, 0, false);
+    nd::array x_ndo = array_from_py(x, 0, false, &eval::default_eval_context);
     const ndt::type& x_dt = x_ndo.get_type();
     const char *x_arrmeta = x_ndo.get_arrmeta();
     const char *x_data = x_ndo.get_readonly_originptr();
@@ -625,16 +626,15 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     return aux.found;
 }
 
-dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt,
-                PyObject *assign_error_obj)
+dynd::nd::array pydynd::array_cast(const dynd::nd::array& n, const ndt::type& dt)
 {
-    return n.cast(dt, pyarg_error_mode(assign_error_obj));
+    return n.cast(dt);
 }
 
-dynd::nd::array pydynd::array_ucast(const dynd::nd::array& n, const ndt::type& dt,
-                intptr_t replace_ndim, PyObject *assign_error_obj)
+dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
+                                    const ndt::type &dt, intptr_t replace_ndim)
 {
-    return n.ucast(dt, replace_ndim, pyarg_error_mode(assign_error_obj));
+    return n.ucast(dt, replace_ndim);
 }
 
 PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
@@ -689,14 +689,14 @@ dynd::nd::array pydynd::array_getitem(const dynd::nd::array& n, PyObject *subscr
 void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObject *value)
 {
     if (subscript == Py_Ellipsis) {
-        array_broadcast_assign_from_py(n, value);
+        array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyInt_Check(subscript)) {
         long i = PyInt_AS_LONG(subscript);
         const char *arrmeta = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
         ndt::type d = n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-        array_broadcast_assign_from_py(d, arrmeta, data, value);
+        array_broadcast_assign_from_py(d, arrmeta, data, value, &eval::default_eval_context);
 #endif // PY_VERSION_HEX < 0x03000000
     } else if (PyLong_Check(subscript)) {
         intptr_t i = PyLong_AsSsize_t(subscript);
@@ -706,12 +706,13 @@ void pydynd::array_setitem(const dynd::nd::array& n, PyObject *subscript, PyObje
         const char *arrmeta = n.get_arrmeta();
         char *data = n.get_readwrite_originptr();
         ndt::type d = n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-        array_broadcast_assign_from_py(d, arrmeta, data, value);
+        array_broadcast_assign_from_py(d, arrmeta, data, value, &eval::default_eval_context);
     } else {
         intptr_t size;
         shortvector<irange> indices;
         pyobject_as_irange_array(size, indices, subscript);
-        array_broadcast_assign_from_py(n.at_array(size, indices.get(), false), value);
+        array_broadcast_assign_from_py(n.at_array(size, indices.get(), false),
+                                       value, &eval::default_eval_context);
     }
 }
 
@@ -721,13 +722,13 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step, P
     ndt::type dt_nd;
 
     if (start != Py_None) {
-        start_nd = array_from_py(start, 0, false);
+        start_nd = array_from_py(start, 0, false, &eval::default_eval_context);
     } else {
         start_nd = 0;
     }
-    stop_nd = array_from_py(stop, 0, false);
+    stop_nd = array_from_py(stop, 0, false, &eval::default_eval_context);
     if (step != Py_None) {
-        step_nd = array_from_py(step, 0, false);
+        step_nd = array_from_py(step, 0, false, &eval::default_eval_context);
     } else {
         step_nd = 1;
     }
@@ -756,8 +757,8 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop, PyObject
 {
     nd::array start_nd, stop_nd;
     intptr_t count_val = pyobject_as_index(count);
-    start_nd = array_from_py(start, 0, false);
-    stop_nd = array_from_py(stop, 0, false);
+    start_nd = array_from_py(start, 0, false, &eval::default_eval_context);
+    stop_nd = array_from_py(stop, 0, false, &eval::default_eval_context);
     if (dt == Py_None) {
         return nd::linspace(start_nd, stop_nd, count_val);
     } else {

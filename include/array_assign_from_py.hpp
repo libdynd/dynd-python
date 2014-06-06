@@ -19,7 +19,8 @@ namespace pydynd {
  * \param n  The array which is being assigned to.
  * \param obj  value PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::nd::array &n, PyObject *value);
+void array_broadcast_assign_from_py(const dynd::nd::array &n, PyObject *value,
+                                    const dynd::eval::eval_context *ectx);
 
 /**
  * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array, broadcasting
@@ -32,7 +33,8 @@ void array_broadcast_assign_from_py(const dynd::nd::array &n, PyObject *value);
  */
 void array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                     const char *arrmeta, char *data,
-                                    PyObject *value);
+                                    PyObject *value,
+                                    const dynd::eval::eval_context *ectx);
 
 /**
  * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array, broadcasting
@@ -45,7 +47,8 @@ void array_broadcast_assign_from_py(const dynd::ndt::type &dt,
  */
 void array_nodim_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                           const char *arrmeta, char *data,
-                                          PyObject *value);
+                                          PyObject *value,
+                                          const dynd::eval::eval_context *ectx);
 
 } // namespace pydynd
 

@@ -160,7 +160,8 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array& n, PyObject 
     return NULL;
 }
 
-void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name, PyObject *value)
+void pydynd::set_array_dynamic_property(const dynd::nd::array &n,
+                                        PyObject *name, PyObject *value)
 {
     ndt::type dt = n.get_type();
     const std::pair<std::string, gfunc::callable> *properties;
@@ -169,15 +170,18 @@ void pydynd::set_array_dynamic_property(const dynd::nd::array& n, PyObject *name
     if (!dt.is_builtin()) {
         dt.extended()->get_dynamic_array_properties(&properties, &count);
     } else {
-        get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties, &count);
+        get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties,
+                                                  &count);
     }
-    // TODO: We probably want to make some kind of acceleration structure for the name lookup
+    // TODO: We probably want to make some kind of acceleration structure for
+    // the name lookup
     if (count > 0) {
         string nstr = pystring_as_string(name);
         for (size_t i = 0; i < count; ++i) {
             if (properties[i].first == nstr) {
                 nd::array p = call_gfunc_callable(nstr, properties[i].second, n);
-                array_broadcast_assign_from_py(p, value);
+                array_broadcast_assign_from_py(p, value,
+                                               &eval::default_eval_context);
                 return;
             }
         }
@@ -225,10 +229,12 @@ static void set_single_parameter(const ndt::type& paramtype, char *arrmeta, char
 {
     // NOTE: ndarrayarg is a borrowed reference to an nd::array
     if (paramtype.get_type_id() == ndarrayarg_type_id) {
-        out_storage.push_back(array_from_py(value, 0, false));
+        out_storage.push_back(
+            array_from_py(value, 0, false, &eval::default_eval_context));
         *(const void **)data = out_storage.back().get_ndo();
     } else {
-        array_nodim_broadcast_assign_from_py(paramtype, arrmeta, data, value);
+        array_nodim_broadcast_assign_from_py(paramtype, arrmeta, data, value,
+                                             &eval::default_eval_context);
     }
 }
 

@@ -128,8 +128,7 @@ namespace {
             intptr_t kernel_size = make_assignment_kernel(
                 ckb_ptr, ckb_offset, dst_tp,
                 reinterpret_cast<const char *>(dst_arrmeta), src_tp,
-                reinterpret_cast<const char *>(src_arrmeta), kernreq,
-                assign_error_default, ectx);
+                reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx);
 
             return PyLong_FromSsize_t(kernel_size);
         } catch(...) {

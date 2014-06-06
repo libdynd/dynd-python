@@ -2313,6 +2313,10 @@ cdef class w_eval_context:
         def __get__(self):
             return get_eval_context_century_window(self)
 
+    property _ectx_ptr:
+        def __get__(self):
+            return <uintptr_t>self.ectx
+
     def __str__(self):
         return get_eval_context_repr(self)
 

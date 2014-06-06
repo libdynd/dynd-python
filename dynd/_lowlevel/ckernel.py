@@ -5,7 +5,8 @@ __all__ = [
         'arrfunc_instantiate']
 
 import ctypes
-from .._pydynd import w_array as nd_array, type_of as nd_type_of
+from .._pydynd import w_array as nd_array, type_of as nd_type_of, \
+                      w_eval_context as nd_eval_context
 from .api import api, py_api
 from .ctypes_types import (CKernelPrefixStruct, NDArrayPreambleStruct,
         CKernelBuilderStruct,
@@ -136,7 +137,7 @@ class CKernelBuilder(object):
         self.close()
 
 def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
-                        src_tp, src_arrmeta, kernreq):
+                        src_tp, src_arrmeta, kernreq, ectx):
     if (not isinstance(ckd, nd_array) or
                 nd_type_of(ckd).type_id != 'arrfunc'):
         raise TypeError('ckd must be an nd.array with type arrfunc')
@@ -154,8 +155,9 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
     dst_tp = nd_array(dst_tp, type="type")
     src_tp = nd_array(src_tp, type="strided * type")
     src_arrmeta = nd_array(src_arrmeta, type="strided * uintptr")
+    ectx_ptr = ectx._ectx_ptr if isinstance(ectx, nd_eval_context) else ectx
     ckd_struct.instantiate_func(dp,
                     out_ckb, ckb_offset,
                     data_address_of(dst_tp), dst_arrmeta,
                     data_address_of(src_tp), data_address_of(src_arrmeta),
-                    kernreq)
+                    kernreq, ectx_ptr)

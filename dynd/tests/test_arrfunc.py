@@ -36,8 +36,10 @@ class TestArrFunc(unittest.TestCase):
         # Instantiate as a strided kernel
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
             meta = (ctypes.c_void_p * 2)()
+            ectx = nd.eval_context()
             _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.float32, 0,
-                                          [ndt.int64], [0], "strided")
+                                          [ndt.int64], [0], "strided",
+                                          ectx._ectx_ptr)
             ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
             # Do an assignment using ctypes
             i64 = (ctypes.c_int64 * 3)()

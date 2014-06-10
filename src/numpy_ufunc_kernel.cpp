@@ -245,7 +245,7 @@ namespace {
         const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
-        uint32_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
+        kernel_request_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
     {
         if (dst_tp != af_self->get_return_type()) {
             stringstream ss;
@@ -363,7 +363,6 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                     size_t out_af_size = sizeof(scalar_ufunc_data) + (nargs - 1) * sizeof(void *);
                     af_ptr->data_ptr = malloc(out_af_size);
                     memset(af_ptr->data_ptr, 0, out_af_size);
-                    af_ptr->ckernel_funcproto = expr_operation_funcproto;
                     af_ptr->free_func = &delete_scalar_ufunc_data;
                     af_ptr->instantiate = &instantiate_scalar_ufunc_ckernel;
                     // Fill in the arrfunc instance data

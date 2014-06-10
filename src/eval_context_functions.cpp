@@ -41,15 +41,15 @@ static void modify_eval_context(eval::eval_context *ectx, PyObject *kwargs)
     // errmode
     obj = PyDict_GetItemString(kwargs, "errmode");
     if (obj != NULL) {
-        ectx->default_errmode = pyarg_error_mode_no_default(obj);
+        ectx->errmode = pyarg_error_mode_no_default(obj);
         if (PyDict_DelItemString(kwargs, "errmode") < 0) {
             throw runtime_error("");
         }
     }
-    // default_cuda_device_errmode
+    // cuda_device_errmode
     obj = PyDict_GetItemString(kwargs, "cuda_device_errmode");
     if (obj != NULL) {
-        ectx->default_cuda_device_errmode = pyarg_error_mode_no_default(obj);
+        ectx->cuda_device_errmode = pyarg_error_mode_no_default(obj);
         if (PyDict_DelItemString(kwargs, "cuda_device_errmode") < 0) {
             throw runtime_error("");
         }
@@ -121,7 +121,7 @@ PyObject *pydynd::get_eval_context_errmode(PyObject *ectx_obj)
         throw invalid_argument("expected an nd.eval_context object");
     }
     const eval::eval_context *ectx = ((WEvalContext *)ectx_obj)->ectx;
-    return pyarg_error_mode_to_pystring(ectx->default_errmode);
+    return pyarg_error_mode_to_pystring(ectx->errmode);
 }
 
 PyObject *pydynd::get_eval_context_cuda_device_errmode(PyObject *ectx_obj)
@@ -130,7 +130,7 @@ PyObject *pydynd::get_eval_context_cuda_device_errmode(PyObject *ectx_obj)
         throw invalid_argument("expected an nd.eval_context object");
     }
     const eval::eval_context *ectx = ((WEvalContext *)ectx_obj)->ectx;
-    return pyarg_error_mode_to_pystring(ectx->default_cuda_device_errmode);
+    return pyarg_error_mode_to_pystring(ectx->cuda_device_errmode);
 }
 
 PyObject *pydynd::get_eval_context_date_parse_order(PyObject *ectx_obj)
@@ -170,8 +170,8 @@ PyObject *pydynd::get_eval_context_repr(PyObject *ectx_obj)
     }
     const eval::eval_context *ectx = ((WEvalContext *)ectx_obj)->ectx;
     stringstream ss;
-    ss << "nd.eval_context(errmode='" << ectx->default_errmode << "',\n";
-    ss << "                cuda_device_errmode='" << ectx->default_cuda_device_errmode << "',\n";
+    ss << "nd.eval_context(errmode='" << ectx->errmode << "',\n";
+    ss << "                cuda_device_errmode='" << ectx->cuda_device_errmode << "',\n";
     ss << "                date_parse_order='" << ectx->date_parse_order << "',\n";
     ss << "                century_window=" << ectx->century_window << ")";
 #if PY_VERSION_HEX < 0x03000000

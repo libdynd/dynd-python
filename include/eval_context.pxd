@@ -12,10 +12,7 @@ cdef extern from "dynd/types/date_util.hpp" namespace "dynd":
 
 cdef extern from "dynd/eval/eval_context.hpp" namespace "dynd":
     cdef cppclass eval_context "dynd::eval::eval_context":
-        assign_error_mode default_assign_error_mode
-        assign_error_mode default_cuda_assign_error_mode
-        date_parse_order_t date_parse_order
-        int century_window
+        pass
 
 cdef extern from "eval_context_functions.hpp" namespace "pydynd":
     void init_w_eval_context_typeobject(object)

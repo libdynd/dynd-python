@@ -68,12 +68,12 @@ namespace {
         }
     }
 
-    PyObject *
-    make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
-                            PyObject *dst_tp_obj, const void *dst_arrmeta,
-                            PyObject *src_tp_obj, const void *src_arrmeta,
-                            PyObject *funcproto_obj, PyObject *kernreq_obj,
-                            PyObject *ectx_obj)
+    PyObject *make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
+                                      PyObject *dst_tp_obj,
+                                      const void *dst_arrmeta,
+                                      PyObject *src_tp_obj,
+                                      const void *src_arrmeta,
+                                      PyObject *kernreq_obj, PyObject *ectx_obj)
     {
         try {
             ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(out_ckb);
@@ -93,18 +93,6 @@ namespace {
                 throw runtime_error(ss.str());
             }
             string kr = pystring_as_string(kernreq_obj);
-            string fp = pystring_as_string(funcproto_obj);
-            arrfunc_proto_t funcproto;
-            if (fp == "unary") {
-                funcproto = unary_operation_funcproto;
-            } else if (fp == "expr") {
-                funcproto = expr_operation_funcproto;
-            } else {
-                stringstream ss;
-                ss << "Invalid function prototype type ";
-                print_escaped_utf8_string(ss, fp);
-                throw runtime_error(ss.str());
-            }
             kernel_request_t kernreq;
             if (kr == "single") {
                 kernreq = kernel_request_single;
@@ -119,12 +107,6 @@ namespace {
 
             const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
 
-            // If an expr kernel is requested, use an adapter
-            if (funcproto == expr_operation_funcproto) {
-                ckb_offset = kernels::wrap_unary_as_expr_ckernel(
-                                ckb_ptr, ckb_offset, kernreq);
-            }
-
             intptr_t kernel_size = make_assignment_kernel(
                 ckb_ptr, ckb_offset, dst_tp,
                 reinterpret_cast<const char *>(dst_arrmeta), src_tp,
@@ -137,29 +119,16 @@ namespace {
         }
     }
 
-    PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj, PyObject *src_tp_obj,
-                PyObject *funcproto_obj, PyObject *errmode_obj)
+    PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj,
+                                           PyObject *src_tp_obj,
+                                           PyObject *errmode_obj)
     {
         try {
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-            string fp = pystring_as_string(funcproto_obj);
-            arrfunc_proto_t funcproto;
-            if (fp == "unary") {
-                funcproto = unary_operation_funcproto;
-            } else if (fp == "expr") {
-                funcproto = expr_operation_funcproto;
-            } else if (fp == "binary_predicate") {
-                funcproto = binary_predicate_funcproto;
-            } else {
-                stringstream ss;
-                ss << "Invalid function prototype type ";
-                print_escaped_utf8_string(ss, fp);
-                throw runtime_error(ss.str());
-            }
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-            nd::arrfunc af = ::make_arrfunc_from_assignment(dst_tp, src_tp,
-                                                            funcproto, errmode);
+            nd::arrfunc af =
+                ::make_arrfunc_from_assignment(dst_tp, src_tp, errmode);
 
             return wrap_array(af);
         } catch(...) {
@@ -169,28 +138,13 @@ namespace {
     }
 
     PyObject *make_arrfunc_from_property(PyObject *tp_obj,
-                                         PyObject *propname_obj,
-                                         PyObject *funcproto_obj)
+                                         PyObject *propname_obj)
     {
         try {
             ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
             string propname = pystring_as_string(propname_obj);
-            string fp = pystring_as_string(funcproto_obj);
-            arrfunc_proto_t funcproto;
-            if (fp == "unary") {
-                funcproto = unary_operation_funcproto;
-            } else if (fp == "expr") {
-                funcproto = expr_operation_funcproto;
-            } else if (fp == "binary_predicate") {
-                funcproto = binary_predicate_funcproto;
-            } else {
-                stringstream ss;
-                ss << "Invalid function prototype type ";
-                print_escaped_utf8_string(ss, fp);
-                throw runtime_error(ss.str());
-            }
             nd::arrfunc af =
-                ::make_arrfunc_from_property(tp, propname, funcproto);
+                ::make_arrfunc_from_property(tp, propname);
 
             return wrap_array(af);
         } catch(...) {

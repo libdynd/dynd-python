@@ -8,7 +8,6 @@ __all__ = ['BaseDTypeMembers', 'BaseDTypeMembersPtr',
         'NDArrayPreambleStruct',
         'CKernelPrefixStruct', 'CKernelPrefixStructPtr',
         'CKernelPrefixDestructor',
-        'UnarySingleOperation', 'UnaryStridedOperation',
         'ExprSingleOperation', 'ExprStridedOperation',
         'BinarySinglePredicate',
         'CKernelBuilderStruct', 'CKernelBuilderStructPtr',
@@ -62,25 +61,14 @@ class CKernelPrefixStruct(ctypes.Structure):
                 ("destructor", CKernelPrefixDestructor)]
 CKernelPrefixStructPtr = ctypes.POINTER(CKernelPrefixStruct)
 
-# Unary operation function prototypes (like assignment functions)
-UnarySingleOperation = ctypes.CFUNCTYPE(None,
-                ctypes.c_void_p,                  # dst
-                ctypes.c_void_p,                  # src
-                CKernelPrefixStructPtr)           # ckp
-UnaryStridedOperation = ctypes.CFUNCTYPE(None,
-                ctypes.c_void_p, c_ssize_t,      # dst, dst_stride
-                ctypes.c_void_p, c_ssize_t,      # src, src_stride
-                c_ssize_t,                       # count
-                CKernelPrefixStructPtr)          # ckp
-
 # Expr operation function prototypes (array of src operands, # of operands is baked in)
 ExprSingleOperation = ctypes.CFUNCTYPE(None,
                 ctypes.c_void_p,                   # dst
-                ctypes.POINTER(ctypes.c_void_p),   # src
+                ctypes.c_void_p,                   # src
                 CKernelPrefixStructPtr)            # ckp
 ExprStridedOperation = ctypes.CFUNCTYPE(None,
                 ctypes.c_void_p, c_ssize_t,        # dst, dst_stride
-                ctypes.POINTER(ctypes.c_void_p),
+                ctypes.c_void_p,
                         ctypes.POINTER(c_ssize_t), # src, src_stride
                 c_ssize_t,                         # count
                 CKernelPrefixStructPtr)            # ckp
@@ -106,9 +94,10 @@ InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t,
         ctypes.c_uint32, ctypes.c_void_p)
 class ArrFuncTypeData(ctypes.Structure):
     _fields_ = [("func_proto", ctypes.c_void_p),
-                ("ckernel_funcproto", c_size_t),
                 ("data_ptr", ctypes.c_void_p),
                 ("instantiate_func", InstantiateArrFuncFunction),
+                ("resolve_dst_type", ctypes.c_void_p),
+                ("resolve_dst_shape", ctypes.c_void_p),
                 ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
 ArrFuncTypeDataPtr = ctypes.POINTER(ArrFuncTypeData)
 

@@ -356,15 +356,17 @@ static void array_assign_strided_from_pyseq(const dynd::ndt::type &element_dt,
                                element_arrmeta, kernel_request_strided,
                                &eval::default_eval_context);
         ckernel_prefix *kdp = k.get();
-        kdp->get_function<unary_strided_operation_t>()(
-                        dst_data + dst_stride, dst_stride,
-                        dst_data, 0, dst_size - 1, kdp);
+        intptr_t zero_stride = 0;
+        kdp->get_function<expr_strided_t>()(dst_data + dst_stride, dst_stride,
+                                            &dst_data, &zero_stride,
+                                            dst_size - 1, kdp);
     } else {
         // Loop through the dst array and assign values
         for (size_t i = 0; i != dst_size; ++i) {
             pyobject_ownref item(PySequence_GetItem(seq, i));
             array_assign_from_value(element_dt, element_arrmeta,
-                            dst_data + i * dst_stride, item.get(), ectx);
+                                    dst_data + i * dst_stride, item.get(),
+                                    ectx);
         }
     }
 }
@@ -432,9 +434,10 @@ static void array_assign_strided_from_pyiter(const dynd::ndt::type &element_dt,
                 &k, 0, element_dt, element_arrmeta, element_dt, element_arrmeta,
                 kernel_request_strided, &eval::default_eval_context);
             ckernel_prefix *kdp = k.get();
-            kdp->get_function<unary_strided_operation_t>()(
+            intptr_t zero_stride = 0;
+            kdp->get_function<expr_strided_t>()(
                             dst_data + dst_stride, dst_stride,
-                            dst_data, 0, dst_size - 1, kdp);
+                            &dst_data, &zero_stride, dst_size - 1, kdp);
         }
     } else {
         // Copy the second item, and the rest

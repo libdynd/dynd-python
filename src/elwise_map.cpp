@@ -115,19 +115,6 @@ namespace {
             }
         }
 
-        static void single_unary(char *dst, const char *src,
-                        ckernel_prefix *extra)
-        {
-            PyGILState_RAII pgs;
-
-            extra_type *e = reinterpret_cast<extra_type *>(extra);
-            pyobject_ownref args(e->set_data_pointers(dst, &src));
-            // Call the function
-            pyobject_ownref res(PyObject_Call(e->callable, args.get(), NULL));
-            args.clear();
-            e->verify_postcall_consistency(res.get());
-        }
-
         static void single(char *dst, const char * const *src,
                         ckernel_prefix *extra)
         {
@@ -135,21 +122,6 @@ namespace {
 
             extra_type *e = reinterpret_cast<extra_type *>(extra);
             pyobject_ownref args(e->set_data_pointers(dst, src));
-            // Call the function
-            pyobject_ownref res(PyObject_Call(e->callable, args.get(), NULL));
-            args.clear();
-            e->verify_postcall_consistency(res.get());
-        }
-
-        static void strided_unary(char *dst, intptr_t dst_stride,
-                    const char *src, intptr_t src_stride,
-                    size_t count, ckernel_prefix *extra)
-        {
-            PyGILState_RAII pgs;
-
-            extra_type *e = reinterpret_cast<extra_type *>(extra);
-            // Put all the arrays in a tuple
-            pyobject_ownref args(e->set_data_pointers(dst, dst_stride, &src, &src_stride, count));
             // Call the function
             pyobject_ownref res(PyObject_Call(e->callable, args.get(), NULL));
             args.clear();
@@ -247,29 +219,7 @@ public:
         out->ensure_capacity_leaf(offset_out + extra_size);
         pyobject_expr_kernel_extra *e = out->get_at<pyobject_expr_kernel_extra>(offset_out);
         WArray **ndo = reinterpret_cast<WArray **>(e + 1);
-        switch (kernreq) {
-            case kernel_request_single:
-                if (src_count == 1) {
-                    // Unary kernels are special-cased to be the same as assignment kernels
-                    e->base.set_function<unary_single_operation_t>(&pyobject_expr_kernel_extra::single_unary);
-                } else {
-                    e->base.set_function<expr_single_operation_t>(&pyobject_expr_kernel_extra::single);
-                }
-                break;
-            case kernel_request_strided:
-                if (src_count == 1) {
-                    // Unary kernels are special-cased to be the same as assignment kernels
-                    e->base.set_function<unary_strided_operation_t>(&pyobject_expr_kernel_extra::strided_unary);
-                } else {
-                    e->base.set_function<expr_strided_operation_t>(&pyobject_expr_kernel_extra::strided);
-                }
-                break;
-            default: {
-                stringstream ss;
-                ss << "pyobject_elwise_expr_kernel_generator: unrecognized request " << (int)kernreq;
-                throw runtime_error(ss.str());
-            }
-        }
+        e->base.set_expr_function<pyobject_expr_kernel_extra>(kernreq);
         e->base.destructor = &pyobject_expr_kernel_extra::destruct;
         e->src_count = src_count;
         e->callable = m_callable.get();

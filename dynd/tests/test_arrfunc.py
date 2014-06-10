@@ -5,6 +5,14 @@ import unittest
 from dynd import nd, ndt, _lowlevel
 import numpy as np
 
+if sys.version_info >= (2, 7):
+    c_ssize_t = ctypes.c_ssize_t
+else:
+    if ctypes.sizeof(ctypes.c_void_p) == 4:
+        c_ssize_t = ctypes.c_int32
+    else:
+        c_ssize_t = ctypes.c_int64
+
 class TestArrFunc(unittest.TestCase):
     def test_creation(self):
         af = nd.empty('arrfunc')
@@ -14,8 +22,7 @@ class TestArrFunc(unittest.TestCase):
         self.assertEqual(nd.as_py(af.proto), ndt.type())
         # Test there is a string version of an initialized arrfunc
         af = _lowlevel.make_arrfunc_from_assignment(
-                    ndt.float32, ndt.int64,
-                    "unary", "none")
+                    ndt.float32, ndt.int64, "none")
         self.assertTrue(str(af) != '')
         self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
 
@@ -26,8 +33,7 @@ class TestArrFunc(unittest.TestCase):
 
     def test_assignment_arrfunc(self):
         af = _lowlevel.make_arrfunc_from_assignment(
-                    ndt.float32, ndt.int64,
-                    "unary", "none")
+                    ndt.float32, ndt.int64, "none")
         self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
         a = nd.array(1234, type=ndt.int64)
         b = af(a)
@@ -40,14 +46,16 @@ class TestArrFunc(unittest.TestCase):
             _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.float32, 0,
                                           [ndt.int64], [0], "strided",
                                           ectx._ectx_ptr)
-            ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
+            ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
             # Do an assignment using ctypes
             i64 = (ctypes.c_int64 * 3)()
             for i, v in enumerate([3,7,21]):
                 i64[i] = v
+            pi64 = ctypes.pointer(i64)
+            i64_stride = c_ssize_t(8)
             f32 = (ctypes.c_float * 3)()
             ck(ctypes.addressof(f32), 4,
-                        ctypes.addressof(i64), 8,
+                        ctypes.addressof(pi64), ctypes.pointer(i64_stride),
                         3)
             self.assertEqual([f32[i] for i in range(3)], [3,7,21])
 
@@ -134,7 +142,7 @@ class TestArrFunc(unittest.TestCase):
             return _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset,
                             dst_tp, dst_arrmeta,
                             src_tp[0], src_arrmeta[0],
-                            'expr', kernreq, ectx)
+                            kernreq, ectx)
         af = _lowlevel.arrfunc_from_instantiate_pyfunc(
                     instantiate_assignment, "(date) -> string")
         self.assertEqual(nd.as_py(af.proto), ndt.type("(date) -> string"))

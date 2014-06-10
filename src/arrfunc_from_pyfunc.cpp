@@ -53,10 +53,10 @@ namespace {
         {
             switch (kernreq) {
             case kernel_request_single:
-                base.set_function<expr_single_operation_t>(&self_type::single);
+                base.set_function<expr_single_t>(&self_type::single);
                 break;
             case kernel_request_strided:
-                base.set_function<expr_strided_operation_t>(&self_type::strided);
+                base.set_function<expr_strided_t>(&self_type::strided);
                 break;
             default: {
                 std::stringstream ss;
@@ -187,7 +187,7 @@ namespace {
         const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *dst_arrmeta,
         const ndt::type *src_tp, const char *const *src_arrmeta,
-        uint32_t kernreq, const eval::eval_context *ectx)
+        kernel_request_t kernreq, const eval::eval_context *ectx)
     {
         typedef pyfunc_expr_ck self_type;
         PyGILState_RAII pgs;
@@ -218,7 +218,6 @@ void pydynd::arrfunc_from_pyfunc(arrfunc_type_data *out_af,
         throw type_error(ss.str());
     }
     
-    out_af->ckernel_funcproto = expr_operation_funcproto;
     out_af->free_func = &delete_arrfunc_data;
     out_af->func_proto = proto;
     out_af->data_ptr = instantiate_pyfunc;

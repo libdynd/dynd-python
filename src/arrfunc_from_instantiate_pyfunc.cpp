@@ -34,7 +34,7 @@ namespace {
         const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb, intptr_t ckb_offset,
         const ndt::type &dst_tp, const char *dst_arrmeta,
         const ndt::type *src_tp, const char *const *src_arrmeta,
-        uint32_t kernreq, const eval::eval_context *ectx)
+        kernel_request_t kernreq, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
         PyObject *instantiate_pyfunc = reinterpret_cast<PyObject *>(af_self->data_ptr);
@@ -114,7 +114,6 @@ PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
             throw type_error(ss.str());
         }
     
-        out_af_ptr->ckernel_funcproto = expr_operation_funcproto;
         out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
         out_af_ptr->func_proto = proto;
         out_af_ptr->data_ptr = instantiate_pyfunc;

@@ -86,12 +86,13 @@ class TestCKernelBuilder(unittest.TestCase):
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
                         ndt.float32, None, ndt.int64, None,
-                        "unary", "single")
-            ck = ckb.ckernel(_lowlevel.UnarySingleOperation)
+                        "single")
+            ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
+            pi64 = ctypes.pointer(i64)
             f32 = ctypes.c_float(1)
-            ck(ctypes.addressof(f32), ctypes.addressof(i64))
+            ck(ctypes.addressof(f32), ctypes.addressof(pi64))
             self.assertEqual(f32.value, 1234.0)
 
     def test_assignment_ckernel_strided(self):
@@ -99,12 +100,15 @@ class TestCKernelBuilder(unittest.TestCase):
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
                         ndt.float32, None, ndt.type('string[15,"A"]'), None,
-                        'unary', 'strided')
-            ck = ckb.ckernel(_lowlevel.UnaryStridedOperation)
+                        'strided')
+            ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
             # Do an assignment using a numpy array
             src = np.array(['3.25', '-1000', '1e5'], dtype='S15')
+            src_ptr = ctypes.c_void_p(src.ctypes.data)
+            src_stride = c_ssize_t(15)
             dst = np.arange(3, dtype=np.float32)
-            ck(dst.ctypes.data, 4, src.ctypes.data, 15, 3)
+            ck(dst.ctypes.data, 4,
+               ctypes.pointer(src_ptr), ctypes.pointer(src_stride), 3)
             self.assertEqual(dst.tolist(), [3.25, -1000, 1e5])
 
 

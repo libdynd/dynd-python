@@ -34,15 +34,12 @@ struct py_lowlevel_api_t {
                                          const void *dst_arrmeta,
                                          PyObject *src_tp_obj,
                                          const void *src_arrmeta,
-                                         PyObject *funcproto,
                                          PyObject *kernreq, PyObject *ectx);
     PyObject *(*make_arrfunc_from_assignment)(PyObject *dst_tp_obj,
-                                                       PyObject *src_tp_obj,
-                                                       PyObject *funcproto,
-                                                       PyObject *errmode);
+                                              PyObject *src_tp_obj,
+                                              PyObject *errmode);
     PyObject *(*make_arrfunc_from_property)(PyObject *tp_obj,
-                                                     PyObject *propname,
-                                                     PyObject *funcproto);
+                                            PyObject *propname);
     PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
     PyObject *(*arrfunc_from_ufunc)(PyObject *ufunc, PyObject *type_tuple,
                                     int ckernel_acquires_gil);

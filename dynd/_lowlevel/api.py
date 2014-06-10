@@ -83,19 +83,17 @@ class _PyLowLevelAPI(ctypes.Structure):
                 # void make_assignment_kernel(out_ckb, ckb_offset,
                 #               dst_dt, dst_arrmeta,
                 #               src_dt, src_arrmeta,
-                #               funcproto, kerntype, ectx)
+                #               kerntype, ectx)
                 ('_make_assignment_ckernel',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         CKernelBuilderStructPtr, c_ssize_t,
                         ctypes.py_object, ctypes.c_void_p,
                         ctypes.py_object, ctypes.c_void_p,
-                        ctypes.py_object, ctypes.py_object,
-                        ctypes.py_object)),
+                        ctypes.py_object, ctypes.py_object)),
                 ('make_arrfunc_from_assignment',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object,
-                        ctypes.py_object)),
+                        ctypes.py_object, ctypes.py_object)),
                 ('make_arrfunc_from_property',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object,
@@ -201,7 +199,7 @@ def lift_reduction_arrfunc(elwise_reduction, lifted_type,
 def make_assignment_ckernel(out_ckb, ckb_offset,
                            dst_dt, dst_arrmeta,
                            src_dt, src_arrmeta,
-                           funcproto, kerntype, ectx=None):
+                           kerntype, ectx=None):
     """
     This ctypes function pointer constructs a unary ckernel
     into the output ckernel_builder provided. The assignment
@@ -225,15 +223,13 @@ def make_assignment_ckernel(out_ckb, ckb_offset,
     src_arrmeta : raw pointer or None
         A pointer to arrmeta for the source data. This must
         remain live while the constructed ckernel exists.
-    funcproto : 'unary' or 'expr'
-        Whether to create a unary or expr ckernel.
     kerntype : 'single' or 'strided'
         Whether to create a single or strided ckernel.
     """
     return _make_assignment_ckernel(out_ckb, ckb_offset,
                                    dst_dt, dst_arrmeta,
                                    src_dt, src_arrmeta,
-                                   funcproto, kerntype, ectx)
+                                   kerntype, ectx)
 
 # Documentation for the LowLevelAPI functions
 memory_block_incref.__doc__ = """
@@ -457,7 +453,7 @@ array_from_ptr.__doc__ = """
         The dynd array constructed from the parameters.
     """
 make_arrfunc_from_assignment.__doc__ = """
-    _lowlevel.make_arrfunc_from_assignment(dst_tp, src_tp, funcproto, errmode)
+    _lowlevel.make_arrfunc_from_assignment(dst_tp, src_tp, errmode)
 
     This ctypes function pointer constructs a arrfunc
     object for an assignment ``src_tp`` to ``dst_tp``.
@@ -468,10 +464,6 @@ make_arrfunc_from_assignment.__doc__ = """
         The destination type.
     src_tp : ndt.type
         The source type
-    funcproto : 'unary' or 'expr'
-        Which kind of function prototype the arrfunc should
-        be for. In 'unary', there is one src and one dst. In 'expr',
-        there is an array of src and one dst.
 
     Returns
     -------

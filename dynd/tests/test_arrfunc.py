@@ -22,7 +22,7 @@ class TestArrFunc(unittest.TestCase):
         self.assertEqual(nd.as_py(af.proto), ndt.type())
         # Test there is a string version of an initialized arrfunc
         af = _lowlevel.make_arrfunc_from_assignment(
-                    ndt.float32, ndt.int64, "none")
+                    ndt.float32, ndt.int64, "nocheck")
         self.assertTrue(str(af) != '')
         self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
 
@@ -33,7 +33,7 @@ class TestArrFunc(unittest.TestCase):
 
     def test_assignment_arrfunc(self):
         af = _lowlevel.make_arrfunc_from_assignment(
-                    ndt.float32, ndt.int64, "none")
+                    ndt.float32, ndt.int64, "nocheck")
         self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
         a = nd.array(1234, type=ndt.int64)
         b = af(a)

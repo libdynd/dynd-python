@@ -148,7 +148,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case real_kind:
         case complex_kind:
             // Follow Python in not raising errors here
-            if (n.as<bool>(assign_error_none)) {
+            if (n.as<bool>(assign_error_nocheck)) {
                 Py_INCREF(Py_True);
                 return Py_True;
             } else {

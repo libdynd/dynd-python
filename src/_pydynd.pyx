@@ -1079,9 +1079,9 @@ cdef class w_array:
         >>> a = nd.array([1.5, 2, 3])
         >>> a
         nd.array([1.5, 2, 3], strided_dim<float64>)
-        >>> b = a.ucast(ndt.int16, errmode='none')
+        >>> b = a.ucast(ndt.int16, errmode='nocheck')
         >>> b
-        nd.array([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=none>>)
+        nd.array([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=nocheck>>)
         >>> b.eval()
         nd.array([1, 2, 3], strided_dim<int16>)
         """
@@ -2267,9 +2267,9 @@ cdef class w_eval_context:
         If set to true, first resets the evaluation context to
         factory settings instead of starting with the default
         evaluation context.
-    errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+    errmode : 'inexact', 'fractional', 'overflow', 'nocheck', optional
         The default error mode used in computations when none is specified.
-    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'nocheck', optional
         The default error mode used in cuda computations when none is
         specified.
     date_parse_order : 'NoAmbig', 'YMD', 'MDY', 'DMY', optional
@@ -2341,9 +2341,9 @@ def modify_default_eval_context(**kwargs):
     reset : bool, optional
         If set to true, first resets the default evaluation context to
         factory settings.
-    errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+    errmode : 'inexact', 'fractional', 'overflow', 'nocheck', optional
         The default error mode used in computations when none is specified.
-    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'none', optional
+    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'nocheck', optional
         The default error mode used in cuda computations when none is
         specified.
     date_parse_order : 'NoAmbig', 'YMD', 'MDY', 'DMY', optional

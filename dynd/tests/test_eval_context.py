@@ -7,7 +7,7 @@ class TestEvalContext(unittest.TestCase):
         ectx = nd.eval_context()
         # The default settings of an evaluation context
         self.assertEqual(ectx.errmode, 'fractional')
-        self.assertEqual(ectx.cuda_device_errmode, 'none'),
+        self.assertEqual(ectx.cuda_device_errmode, 'nocheck'),
         self.assertEqual(ectx.date_parse_order, 'NoAmbig')
         self.assertEqual(ectx.century_window, 70)
 
@@ -30,8 +30,8 @@ class TestEvalContext(unittest.TestCase):
         a = nd.array(1.5).cast(ndt.int32)
         # Default error mode raises
         self.assertRaises(RuntimeError, a.eval)
-        # But with an evaluation context with a 'none' default error mode...
-        self.assertEqual(nd.as_py(a.eval(ectx=nd.eval_context(errmode='none'))),
+        # But with an evaluation context with a 'nocheck' default error mode...
+        self.assertEqual(nd.as_py(a.eval(ectx=nd.eval_context(errmode='nocheck'))),
                          1)
 
     def test_modify_default(self):
@@ -40,7 +40,7 @@ class TestEvalContext(unittest.TestCase):
             self.assertRaises(ValueError, nd.array, '123X', ndt.int32)
             self.assertRaises(ValueError, nd.array, '01/02/03', ndt.date)
             # If we disable error checking, the first will work
-            nd.modify_default_eval_context(errmode='none')
+            nd.modify_default_eval_context(errmode='nocheck')
             self.assertEqual(nd.as_py(nd.array('123X', ndt.int32)), 123)
             self.assertRaises(ValueError, nd.array, '01/02/03', ndt.date)
             # If we set a default date parse error, the second will also work

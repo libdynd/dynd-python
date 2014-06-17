@@ -82,7 +82,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
 
 cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
-        assign_error_none
+        assign_error_nocheck
         assign_error_overflow
         assign_error_fractional
         assign_error_inexact

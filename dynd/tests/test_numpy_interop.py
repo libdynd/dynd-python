@@ -476,9 +476,9 @@ class TestNumpyScalarInterop(unittest.TestCase):
             self.assertEqual(nd.as_py(nd.array(np.datetime64('2000-12-13T12:30:24.123456124Z'))),
                              datetime(2000, 12, 13, 12, 30, 24, 123456))
             self.assertEqual(str(nd.array(np.datetime64('2000-12-13T12:30:24.123456124Z'))),
-                             '2000-12-13T12:30:24.1234561')
+                             '2000-12-13T12:30:24.1234561Z')
             self.assertEqual(str(nd.array(np.datetime64('1842-12-13T12:30:24.123456124Z'))),
-                             '1842-12-13T12:30:24.1234561')
+                             '1842-12-13T12:30:24.1234561Z')
 
     def test_numpy_struct_scalar(self):
         # Create a NumPy struct scalar object, by indexing into

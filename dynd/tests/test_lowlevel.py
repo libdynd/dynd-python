@@ -82,7 +82,10 @@ class TestLowLevel(unittest.TestCase):
         # NDArrayArg
         self.assertEqual(self.type_id_of(ndt.type('ndarrayarg')),
                          _lowlevel.type_id.NDARRAYARG)
-        # Convert/byteswap/view
+        # Adapt/convert/byteswap/view
+        self.assertEqual(
+            self.type_id_of(ndt.type('adapt[date, int, "days since 1970-01-01"]')),
+            _lowlevel.type_id.ADAPT)
         self.assertEqual(self.type_id_of(ndt.make_convert(
                                     ndt.int32, ndt.int8)),
                         _lowlevel.type_id.CONVERT)

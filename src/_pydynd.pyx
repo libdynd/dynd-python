@@ -104,10 +104,10 @@ cdef class w_type:
 
     >>> ndt.type('int16')
     ndt.int16
-    >>> ndt.type('5, var, float32')
-    ndt.type('fixed_dim<5, var_dim<float32>>')
-    >>> ndt.type('{x: float32; y: float32; z: float32}')
-    ndt.type('cstruct<float32 x, float32 y, float32 z>')
+    >>> ndt.type('5 * var * float32')
+    ndt.type("5 * var * float32")
+    >>> ndt.type('{x: float32, y: float32, z: float32}')
+    ndt.type("{x : float32, y : float32, z : float32}")
     """
     # To access the embedded ndt::type, use "GET(self.v)",
     # which returns a reference to the ndt::type, and
@@ -395,11 +395,11 @@ def replace_dtype(w_type dt, replacement_dt, size_t replace_ndim=0):
     --------
     >>> from dynd import nd, ndt
 
-    >>> d = ndt.type('3, var, int32')
-    >>> ndt.replace_dtype(d, 'M, float64')
-    ndt.type('fixed_dim<3, var_dim<strided_dim<float64>>>')
-    >>> ndt.replace_dtype(d, '{x: int32; y:int32}', 1)
-    ndt.type('fixed_dim<3, cstruct<int32 x, int32 y>>')
+    >>> d = ndt.type('3 * var * int32')
+    >>> ndt.replace_dtype(d, 'strided * float64')
+    ndt.type("3 * var * strided * float64")
+    >>> ndt.replace_dtype(d, '{x: int32, y:int32}', 1)
+    ndt.type("3 * {x : int32, y : int32}")
     """
     cdef w_type result = w_type()
     SET(result.v, GET(dt.v).with_replaced_dtype(GET(w_type(replacement_dt).v), replace_ndim))
@@ -425,11 +425,11 @@ def extract_dtype(dt, size_t include_ndim=0):
     --------
     >>> from dynd import nd, ndt
 
-    >>> d = ndt.type('3, var, int32')
+    >>> d = ndt.type('3 * var * int32')
     >>> ndt.extract_dtype(d)
     ndt.int32
     >>> ndt.extract_dtype(d, 1)
-    ndt.type('var_dim<int32>')
+    ndt.type("var * int32")
     """
     cdef w_type result = w_type()
     SET(result.v, GET(w_type(dt).v).get_dtype(include_ndim))
@@ -457,7 +457,7 @@ def make_byteswap(builtin_type, operand_type=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_byteswap(ndt.int16)
-    ndt.type('byteswap<int16>')
+    ndt.type("byteswap[int16]")
     """
     cdef w_type result = w_type()
     if operand_type is None:
@@ -485,9 +485,9 @@ def make_fixedbytes(int data_size, int data_alignment=1):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixedbytes(4)
-    ndt.type('fixedbytes<4,1>')
+    ndt.type("bytes[4]")
     >>> ndt.make_fixedbytes(6, 2)
-    ndt.type('fixedbytes<6,2>')
+    ndt.type("bytes[6, align=2]")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedbytes_type(data_size, data_alignment))
@@ -514,7 +514,7 @@ def make_convert(to_tp, from_tp):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_convert(ndt.int16, ndt.float32)
-    ndt.type('convert[to=int16, from=float32]')
+    ndt.type("convert[to=int16, from=float32]")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_convert_type(GET(w_type(to_tp).v), GET(w_type(from_tp).v)))
@@ -541,7 +541,7 @@ def make_view(value_type, operand_type):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_view(ndt.int32, ndt.uint32)
-    ndt.type('view<as=int32, original=uint32>')
+    ndt.type("view[as=int32, original=uint32]")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_view_type(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
@@ -565,7 +565,7 @@ def make_unaligned(aligned_tp):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_unaligned(ndt.int32)
-    ndt.type('unaligned<int32>')
+    ndt.type("unaligned[int32]")
     >>> ndt.make_unaligned(ndt.uint8)
     ndt.uint8
     """
@@ -596,9 +596,9 @@ def make_fixedstring(int size, encoding=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixedstring(10)
-    ndt.type('string<10>')
+    ndt.type("string[10]")
     >>> ndt.make_fixedstring(10, 'utf_32')
-    ndt.type('string<10,utf_32>')
+    ndt.type("string[10,'utf32']")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixedstring_type(size, encoding))
@@ -625,7 +625,7 @@ def make_string(encoding=None):
     >>> ndt.make_string()
     ndt.string
     >>> ndt.make_string('utf_16')
-    ndt.type('string<utf_16>')
+    ndt.type("string['utf16']")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_string_type(encoding))
@@ -649,8 +649,8 @@ def make_bytes(size_t alignment=1):
 
     >>> ndt.make_bytes()
     ndt.bytes
-    >>> ndt.make_string(4)
-    ndt.type('bytes<align=4>')
+    >>> ndt.make_bytes(4)
+    ndt.type("bytes[align=4]")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_bytes_type(alignment))
@@ -693,9 +693,9 @@ def make_strided_dim(element_tp, ndim=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_strided_dim(ndt.int32)
-    ndt.type('strided_dim<int32>')
+    ndt.type("strided * int32")
     >>> ndt.make_strided_dim(ndt.int32, 3)
-    ndt.type('strided_dim<strided_dim<strided_dim<int32>>>')
+    ndt.type("strided * strided * strided * int32")
     """
     cdef w_type result = w_type()
     if (ndim is None):
@@ -722,9 +722,9 @@ def make_fixed_dim(shape, element_tp):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixed_dim(5, ndt.int32)
-    ndt.type('fixed_dim<5, int32>')
+    ndt.type("5 * int32")
     >>> ndt.make_fixed_dim((3,5), ndt.int32)
-    ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
+    ndt.type("3 * 5 * int32")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_tp).v)))
@@ -754,11 +754,11 @@ def make_cfixed_dim(shape, element_tp, axis_perm=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_cfixed_dim(5, ndt.int32)
-    ndt.type('fixed_dim<5, int32>')
+    ndt.type("cfixed[5] * int32")
     >>> ndt.make_cfixed_dim((3,5), ndt.int32)
-    ndt.type('fixed_dim<3, fixed_dim<5, int32>>')
+    ndt.type("cfixed[3] * cfixed[5] * int32")
     >>> ndt.make_cfixed_dim((3,5), ndt.int32, axis_perm=(0,1))
-    ndt.type('fixed_dim<3, stride=4, fixed_dim<5, stride=12, int32>>')
+    ndt.type("cfixed[3, stride=4] * cfixed[5, stride=12] * int32")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_cfixed_dim_type(shape, GET(w_type(element_tp).v), axis_perm))
@@ -788,7 +788,7 @@ def make_cstruct(field_types, field_names):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_cstruct([ndt.int32, ndt.float64], ['x', 'y'])
-    ndt.type('cstruct<int32 x, float64 y>')
+    ndt.type("c{x : int32, y : float64}")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_cstruct_type(field_types, field_names))
@@ -817,7 +817,7 @@ def make_struct(field_types, field_names):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_struct([ndt.int32, ndt.float64], ['x', 'y'])
-    ndt.type('struct<int32 x, float64 y>')
+    ndt.type("{x : int32, y : float64}")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_struct_type(field_types, field_names))
@@ -839,7 +839,7 @@ def make_var_dim(element_tp):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_var_dim(ndt.float32)
-    ndt.type('var_dim<float32>')
+    ndt.type("var * float32")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_var_dim_type(GET(w_type(element_tp).v)))
@@ -919,7 +919,7 @@ def make_categorical(values):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_categorical(['sunny', 'rainy', 'cloudy', 'stormy'])
-    ndt.type('categorical<string<ascii>, ["sunny", "rainy", "cloudy", "stormy"]>')
+    ndt.type("categorical[string, [\"sunny\", \"rainy\", \"cloudy\", \"stormy\"]]")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_make_categorical_type(GET(w_array(values).v)))
@@ -945,7 +945,7 @@ def factor_categorical(values):
     >>> from dynd import nd, ndt
 
     >>> ndt.factor_categorical(['M', 'M', 'F', 'F', 'M', 'F', 'M'])
-    ndt.type('categorical<string<ascii>, ["F", "M"]>')
+    ndt.type("categorical[string, [\"F\", \"M\"]]")
     """
     cdef w_type result = w_type()
     SET(result.v, dynd_factor_categorical_type(GET(w_array(values).v)))
@@ -1422,7 +1422,8 @@ def adapt(arr, tp, op):
     >>> a = nd.array([1, 3, 10, 31, 365])
     >>> nd.adapt(a, ndt.date, 'days since 2012')
     nd.array([2012-01-02, 2012-01-04, 2012-01-11, 2012-02-01, 2012-12-31],
-             type="strided * adapt[int32, date, "days since 2012"]")
+             type="strided * adapt[(int32) -> date, 'days since 2012']")
+
 
     """
     return array_adapt(arr, tp, op)
@@ -1465,9 +1466,9 @@ def type_of(w_array a):
     >>> from dynd import nd, ndt
 
     >>> nd.type_of(nd.array([1,2,3,4]))
-    ndt.type('strided_dim<int32>')
+    ndt.type("strided * int32")
     >>> nd.type_of(nd.array([[1,2],[3.0]]))
-    ndt.type('strided_dim<var_dim<float64>>')
+    ndt.type("strided * var * float64")
     """
     cdef w_type result = w_type()
     SET(result.v, GET(a.v).get_type())

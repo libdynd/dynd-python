@@ -1396,6 +1396,37 @@ def view(obj, type=None, access=None):
     SET(result.v, array_view(obj, type, access))
     return result
 
+def adapt(arr, tp, op):
+    """
+    nd.adapt(arr, tp, op)
+
+    Adapt an array to the given type, using the adaptation operation
+    provided. The resulting array is a view of ``arr``, and has an
+    ``adapt`` type.
+
+    Parameters
+    ----------
+    arr : nd.array
+        The array whose dtype is to be adapted.
+    tp : ndt.type
+        The type the adaptation results in.
+    op : string
+        A string describing the operation. For example
+        an ``int`` to ``date`` adaptation can be done with
+        an ``op`` value like "days since 2000-01-01".
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    >>> a = nd.array([1, 3, 10, 31, 365])
+    >>> nd.adapt(a, ndt.date, 'days since 2012')
+    nd.array([2012-01-02, 2012-01-04, 2012-01-11, 2012-02-01, 2012-12-31],
+             type="strided * adapt[int32, date, "days since 2012"]")
+
+    """
+    return array_adapt(arr, tp, op)
+
 def asarray(obj, access=None):
     """
     nd.asarray(obj, access=None)

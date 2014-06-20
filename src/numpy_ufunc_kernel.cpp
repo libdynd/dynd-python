@@ -128,10 +128,9 @@ namespace {
         intptr_t param_count;
     };
 
-    static void delete_scalar_ufunc_data(void *self_data_ptr)
+    static void delete_scalar_ufunc_data(arrfunc_type_data *self_af)
     {
-        scalar_ufunc_data *data =
-                        reinterpret_cast<scalar_ufunc_data *>(self_data_ptr);
+        scalar_ufunc_data *data = self_af->get_data_as<scalar_ufunc_data *>();
         if (data->ufunc != NULL) {
             // Acquire the GIL for the python decref
             PyGILState_RAII pgs;
@@ -266,8 +265,7 @@ namespace {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        scalar_ufunc_data *data =
-            reinterpret_cast<scalar_ufunc_data *>(af_self->data_ptr);
+        scalar_ufunc_data *data = af_self->get_data_as<scalar_ufunc_data *>();
         intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
         ckb->ensure_capacity_leaf(ckb_end);
         scalar_ufunc_ckernel_data *af =
@@ -361,12 +359,16 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
             if (matched) {
                 if (!uf->core_enabled) {
                     size_t out_af_size = sizeof(scalar_ufunc_data) + (nargs - 1) * sizeof(void *);
-                    af_ptr->data_ptr = malloc(out_af_size);
-                    memset(af_ptr->data_ptr, 0, out_af_size);
+                    void *data_raw = malloc(out_af_size);
+                    if (data_raw == NULL) {
+                        throw std::bad_alloc();
+                    }
+                    af_ptr->get_data_as<void *>() = data_raw;
+                    memset(data_raw, 0, out_af_size);
                     af_ptr->free_func = &delete_scalar_ufunc_data;
                     af_ptr->instantiate = &instantiate_scalar_ufunc_ckernel;
                     // Fill in the arrfunc instance data
-                    scalar_ufunc_data *data = reinterpret_cast<scalar_ufunc_data *>(af_ptr->data_ptr);
+                    scalar_ufunc_data *data = reinterpret_cast<scalar_ufunc_data *>(data_raw);
                     data->ufunc = uf;
                     Py_INCREF(uf);
                     data->param_count = nargs - 1;

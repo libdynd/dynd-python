@@ -130,7 +130,7 @@ namespace {
 
     static void delete_scalar_ufunc_data(arrfunc_type_data *self_af)
     {
-        scalar_ufunc_data *data = self_af->get_data_as<scalar_ufunc_data *>();
+        scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
         if (data->ufunc != NULL) {
             // Acquire the GIL for the python decref
             PyGILState_RAII pgs;
@@ -265,7 +265,7 @@ namespace {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        scalar_ufunc_data *data = af_self->get_data_as<scalar_ufunc_data *>();
+        scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
         intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
         ckb->ensure_capacity_leaf(ckb_end);
         scalar_ufunc_ckernel_data *af =
@@ -363,7 +363,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                     if (data_raw == NULL) {
                         throw std::bad_alloc();
                     }
-                    af_ptr->get_data_as<void *>() = data_raw;
+                    *af_ptr->get_data_as<void *>() = data_raw;
                     memset(data_raw, 0, out_af_size);
                     af_ptr->free_func = &delete_scalar_ufunc_data;
                     af_ptr->instantiate = &instantiate_scalar_ufunc_ckernel;

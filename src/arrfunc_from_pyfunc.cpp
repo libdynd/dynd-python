@@ -174,9 +174,9 @@ namespace {
         }
     };
 
-    static void delete_arrfunc_data(void *self_data_ptr)
+    static void delete_arrfunc_data(arrfunc_type_data *self_af)
     {
-        PyObject *pyfunc = reinterpret_cast<PyObject *>(self_data_ptr);
+        PyObject *pyfunc = *self_af->get_data_as<PyObject *>();
         if (pyfunc) {
             PyGILState_RAII pgs;
             Py_DECREF(pyfunc);
@@ -196,7 +196,7 @@ namespace {
         self_type *self = self_type::create(ckb, ckb_offset, (kernel_request_t)kernreq);
         intptr_t ckb_end = ckb_offset + sizeof(self_type);
         self->m_proto = ndt::make_funcproto(param_count, src_tp, dst_tp);
-        self->m_pyfunc = reinterpret_cast<PyObject *>(af_self->data_ptr);
+        self->m_pyfunc = *af_self->get_data_as<PyObject *>();
         Py_XINCREF(self->m_pyfunc);
         self->m_dst_arrmeta = dst_arrmeta;
         self->m_src_arrmeta.resize(param_count);
@@ -220,7 +220,7 @@ void pydynd::arrfunc_from_pyfunc(arrfunc_type_data *out_af,
     
     out_af->free_func = &delete_arrfunc_data;
     out_af->func_proto = proto;
-    out_af->data_ptr = instantiate_pyfunc;
+    *out_af->get_data_as<PyObject *>() = instantiate_pyfunc;
     Py_INCREF(instantiate_pyfunc);
     out_af->instantiate = &instantiate_arrfunc_data;
 }

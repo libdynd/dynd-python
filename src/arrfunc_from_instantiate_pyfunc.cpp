@@ -21,9 +21,9 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-    static void delete_pyfunc_arrfunc_data(void *self_data_ptr)
+    static void delete_pyfunc_arrfunc_data(arrfunc_type_data *self_af)
     {
-        PyObject *instantiate_pyfunc = reinterpret_cast<PyObject *>(self_data_ptr);
+        PyObject *instantiate_pyfunc = *self_af->get_data_as<PyObject *>();
         if (instantiate_pyfunc) {
             PyGILState_RAII pgs;
             Py_DECREF(instantiate_pyfunc);
@@ -37,7 +37,7 @@ namespace {
         kernel_request_t kernreq, const eval::eval_context *ectx)
     {
         PyGILState_RAII pgs;
-        PyObject *instantiate_pyfunc = reinterpret_cast<PyObject *>(af_self->data_ptr);
+        PyObject *instantiate_pyfunc = *af_self->get_data_as<PyObject *>();
         intptr_t param_count = af_self->get_param_count();
 
         // Turn the ckb pointer into an integer
@@ -116,7 +116,7 @@ PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
     
         out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
         out_af_ptr->func_proto = proto;
-        out_af_ptr->data_ptr = instantiate_pyfunc;
+        *out_af_ptr->get_data_as<PyObject *>() = instantiate_pyfunc;
         Py_INCREF(instantiate_pyfunc);
         out_af_ptr->instantiate = &instantiate_pyfunc_arrfunc_data;
 

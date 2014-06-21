@@ -19,6 +19,7 @@
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/property_type.hpp>
+#include <dynd/types/adapt_type.hpp>
 
 #include "type_functions.hpp"
 #include "array_functions.hpp"
@@ -172,35 +173,34 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignm
         }
         string s = pystring_as_string(unit);
         if (s == "D") {
-            // If it's 'datetime64[D]', then use a dynd date dtype, with the
-            // needed adapter
-            dt = ndt::make_reversed_property(ndt::make_date(),
-                                             ndt::make_type<int64_t>(),
-                                             "days_after_1970_int64");
+            // If it's 'datetime64[D]', then use an adapter type with appropriate
+            // metadata
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(), ndt::make_date(),
+                                 "days since 1970");
         } else if (s == "h") {
-            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
-                                             ndt::make_type<int64_t>(),
-                                             "hours_after_1970");
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                                 ndt::make_datetime(tz_utc),
+                                 "hours since 1970");
         } else if (s == "m") {
-            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
-                                             ndt::make_type<int64_t>(),
-                                             "minutes_after_1970");
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                                 ndt::make_datetime(tz_utc),
+                                 "minutes since 1970");
         } else if (s == "s") {
-            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
-                                             ndt::make_type<int64_t>(),
-                                             "seconds_after_1970");
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                                 ndt::make_datetime(tz_utc),
+                                 "seconds since 1970");
         } else if (s == "ms") {
-            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
-                                             ndt::make_type<int64_t>(),
-                                             "milliseconds_after_1970");
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                                 ndt::make_datetime(tz_utc),
+                                 "milliseconds since 1970");
         } else if (s == "us") {
-            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
-                                             ndt::make_type<int64_t>(),
-                                             "microseconds_after_1970");
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                                 ndt::make_datetime(tz_utc),
+                                 "microseconds since 1970");
         } else if (s == "ns") {
-            dt = ndt::make_reversed_property(ndt::make_datetime(tz_utc),
-                                             ndt::make_type<int64_t>(),
-                                             "nanoseconds_after_1970");
+            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                                 ndt::make_datetime(tz_utc),
+                                 "nanoseconds since 1970");
         }
         break;
     }

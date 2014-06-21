@@ -637,6 +637,13 @@ dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
     return n.ucast(dt, replace_ndim);
 }
 
+PyObject *pydynd::array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op)
+{
+  return wrap_array(array_from_py(a, 0, false, &eval::default_eval_context)
+                        .adapt(make_ndt_type_from_pyobject(tp_obj),
+                               pystring_as_string(adapt_op)));
+}
+
 PyObject *pydynd::array_get_shape(const dynd::nd::array& n)
 {
     size_t ndim = n.get_type().get_ndim();

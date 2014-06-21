@@ -153,6 +153,8 @@ dynd::nd::array array_cast(const dynd::nd::array &n, const dynd::ndt::type &dt);
 dynd::nd::array array_ucast(const dynd::nd::array &n, const dynd::ndt::type &dt,
                             intptr_t replace_ndim);
 
+PyObject *array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op);
+
 PyObject *array_get_shape(const dynd::nd::array& n);
 
 PyObject *array_get_strides(const dynd::nd::array& n);

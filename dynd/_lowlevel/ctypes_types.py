@@ -94,7 +94,10 @@ InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t,
         ctypes.c_uint32, ctypes.c_void_p)
 class ArrFuncTypeData(ctypes.Structure):
     _fields_ = [("func_proto", ctypes.c_void_p),
-                ("data_ptr", ctypes.c_void_p),
+                ("data0", ctypes.c_void_p),
+                ("data1", ctypes.c_void_p),
+                ("data2", ctypes.c_void_p),
+                ("data3", ctypes.c_void_p),
                 ("instantiate_func", InstantiateArrFuncFunction),
                 ("resolve_dst_type", ctypes.c_void_p),
                 ("resolve_dst_shape", ctypes.c_void_p),

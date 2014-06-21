@@ -53,77 +53,86 @@ PyTypeObject *pydynd::WType_Type;
 
 void pydynd::init_w_type_typeobject(PyObject *type)
 {
-    pydynd::WType_Type = (PyTypeObject *)type;
+  pydynd::WType_Type = (PyTypeObject *)type;
+}
+
+inline void print_generic_type_repr(ostream& o, const ndt::type& d)
+{
+  stringstream sstmp;
+  sstmp << d;
+  o << "ndt.type(";
+  print_escaped_utf8_string(o, sstmp.str(), false);
+  o << ")";
 }
 
 std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
 {
-    std::stringstream ss;
-    if (d.is_builtin() &&
-                    d.get_type_id() != dynd::complex_float32_type_id &&
-                    d.get_type_id() != dynd::complex_float64_type_id) {
-        ss << "ndt." << d;
-    } else {
-        switch (d.get_type_id()) {
-            case complex_float32_type_id:
-                ss << "ndt.complex_float32";
-                break;
-            case complex_float64_type_id:
-                ss << "ndt.complex_float64";
-                break;
-            case date_type_id:
-                ss << "ndt.date";
-                break;
-            case time_type_id:
-                if (d.tcast<time_type>()->get_timezone() == tz_abstract) {
-                    ss << "ndt.time";
-                } else {
-                    ss << "ndt.type('" << d << "')";
-                }
-                break;
-            case datetime_type_id:
-                if (d.tcast<datetime_type>()->get_timezone() == tz_abstract) {
-                    ss << "ndt.datetime";
-                } else {
-                    ss << "ndt.type('" << d << "')";
-                }
-                break;
-            case json_type_id:
-                ss << "ndt.json";
-                break;
-            case bytes_type_id:
-                if (d.tcast<bytes_type>()->get_target_alignment() == 1) {
-                    ss << "ndt.bytes";
-                } else {
-                    ss << "ndt.type('" << d << "')";
-                }
-                break;
-            case string_type_id:
-                if (d.tcast<string_type>()->get_encoding() ==
-                        string_encoding_utf_8) {
-                    ss << "ndt.string";
-                } else {
-                    ss << "ndt.type('" << d << "')";
-                }
-                break;
-            default:
-                ss << "ndt.type('" << d << "')";
-                break;
-        }
+  std::stringstream ss;
+  if (d.is_builtin() && d.get_type_id() != dynd::complex_float32_type_id &&
+      d.get_type_id() != dynd::complex_float64_type_id) {
+    ss << "ndt." << d;
+  } else {
+    switch (d.get_type_id()) {
+    case complex_float32_type_id:
+      ss << "ndt.complex_float32";
+      break;
+    case complex_float64_type_id:
+      ss << "ndt.complex_float64";
+      break;
+    case date_type_id:
+      ss << "ndt.date";
+      break;
+    case time_type_id:
+      if (d.tcast<time_type>()->get_timezone() == tz_abstract) {
+        ss << "ndt.time";
+      } else {
+        print_generic_type_repr(ss, d);
+      }
+      break;
+    case datetime_type_id:
+      if (d.tcast<datetime_type>()->get_timezone() == tz_abstract) {
+        ss << "ndt.datetime";
+      } else if (d.tcast<datetime_type>()->get_timezone() == tz_utc) {
+        ss << "ndt.datetimeutc";
+      } else {
+        print_generic_type_repr(ss, d);
+      }
+      break;
+    case json_type_id:
+      ss << "ndt.json";
+      break;
+    case bytes_type_id:
+      if (d.tcast<bytes_type>()->get_target_alignment() == 1) {
+        ss << "ndt.bytes";
+      } else {
+        print_generic_type_repr(ss, d);
+      }
+      break;
+    case string_type_id:
+      if (d.tcast<string_type>()->get_encoding() == string_encoding_utf_8) {
+        ss << "ndt.string";
+      } else {
+        print_generic_type_repr(ss, d);
+      }
+      break;
+    default:
+      print_generic_type_repr(ss, d);
+      break;
     }
-    return ss.str();
+  }
+  return ss.str();
 }
 
 PyObject *pydynd::ndt_type_get_shape(const dynd::ndt::type& d)
 {
-    size_t ndim = d.get_ndim();
-    if (ndim > 0) {
-        dimvector shape(ndim);
-        d.extended()->get_shape(ndim, 0, shape.get(), NULL, NULL);
-        return intptr_array_as_tuple(ndim, shape.get());
-    } else {
-        return PyTuple_New(0);
-    }
+  size_t ndim = d.get_ndim();
+  if (ndim > 0) {
+    dimvector shape(ndim);
+    d.extended()->get_shape(ndim, 0, shape.get(), NULL, NULL);
+    return intptr_array_as_tuple(ndim, shape.get());
+  } else {
+    return PyTuple_New(0);
+  }
 }
 
 PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type& d)

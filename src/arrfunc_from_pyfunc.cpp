@@ -10,6 +10,7 @@
 #include <dynd/array.hpp>
 #include <dynd/types/arrfunc_type.hpp>
 #include <dynd/kernels/expr_kernels.hpp>
+#include <dynd/func/callable.hpp>
 
 #include <array_functions.hpp>
 #include <utility_functions.hpp>

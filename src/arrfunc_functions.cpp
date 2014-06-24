@@ -23,6 +23,7 @@
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/view.hpp>
+#include <dynd/func/callable.hpp>
 
 using namespace std;
 using namespace dynd;

@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <dynd/memblock/external_memory_block.hpp>
+#include <dynd/func/callable.hpp>
 
 #include "elwise_reduce_gfunc_functions.hpp"
 #include "array_functions.hpp"

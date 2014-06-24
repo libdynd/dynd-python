@@ -14,6 +14,7 @@
 #include <dynd/kernels/expr_kernel_generator.hpp>
 #include <dynd/kernels/elwise_expr_kernels.hpp>
 #include <dynd/shape_tools.hpp>
+#include <dynd/func/callable.hpp>
 
 #include "utility_functions.hpp"
 #include "elwise_map.hpp"

@@ -894,9 +894,9 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                 dt.get_type_at_dimension(
                        NULL, min(dst_ndim - seq_ndim, dt.get_ndim()))
                     .get_canonical_type();
-            nd::array tmp(make_array_memory_block(
-                partial_dt, original_dst_ndim - (dst_ndim - seq_ndim),
-                shape.get() + (dst_ndim - seq_ndim)));
+            nd::array tmp(nd::typed_empty(
+                original_dst_ndim - (dst_ndim - seq_ndim),
+                shape.get() + (dst_ndim - seq_ndim), partial_dt));
             array_assign_from_value(tmp.get_type(), tmp.get_arrmeta(),
                                     tmp.get_readwrite_originptr(), value, ectx);
             typed_data_assign(dt, arrmeta, data, tmp.get_type(),

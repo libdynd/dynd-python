@@ -134,7 +134,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
             o << "(";
             do {
                 const cfixed_dim_type *tdt = child_dt.tcast<cfixed_dim_type>();
-                size_t dim_size = tdt->get_fixed_dim_size();
+                intptr_t dim_size = tdt->get_fixed_dim_size();
                 o << dim_size;
                 if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * dim_size) {
                     stringstream ss;

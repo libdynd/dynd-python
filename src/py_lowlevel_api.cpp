@@ -68,7 +68,7 @@ namespace {
         }
     }
 
-    PyObject *make_assignment_ckernel(void *out_ckb, intptr_t ckb_offset,
+    PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
                                       PyObject *dst_tp_obj,
                                       const void *dst_arrmeta,
                                       PyObject *src_tp_obj,
@@ -76,7 +76,7 @@ namespace {
                                       PyObject *kernreq_obj, PyObject *ectx_obj)
     {
         try {
-            ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(out_ckb);
+            ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(ckb);
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);

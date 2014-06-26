@@ -28,8 +28,8 @@ class TestCKernelBuilder(unittest.TestCase):
             # is being used
             self.assertEqual(ckb.ckb.data,
                         ctypes.addressof(ckb.ckb.static_data))
-            # The capacity is 16 pointer-sized objects
-            initial_capacity = 16 * ctypes.sizeof(ctypes.c_void_p)
+            # The capacity is 128 bytes
+            initial_capacity = 128
             self.assertEqual(ckb.ckb.capacity, initial_capacity)
             # Requesting exactly the space already there should do nothing
             ckb.ensure_capacity(initial_capacity -
@@ -51,8 +51,8 @@ class TestCKernelBuilder(unittest.TestCase):
             # is being used
             self.assertEqual(ckb.ckb.data,
                         ctypes.addressof(ckb.ckb.static_data))
-            # The capacity is 16 pointer-sized objects
-            initial_capacity = 16 * ctypes.sizeof(ctypes.c_void_p)
+            # The capacity is 128 bytes
+            initial_capacity = 128
             self.assertEqual(ckb.ckb.capacity, initial_capacity)
             # Requesting exactly the space already there should do nothing
             ckb.ensure_capacity_leaf(initial_capacity)
@@ -70,7 +70,7 @@ class TestCKernelBuilder(unittest.TestCase):
 
     def test_reset(self):
         with _lowlevel.ckernel.CKernelBuilder() as ckb:
-            initial_capacity = 16 * ctypes.sizeof(ctypes.c_void_p)
+            initial_capacity = 128
             # put the ckernel builder in a non-initial state
             ckb.ensure_capacity_leaf(initial_capacity + 16)
             self.assertTrue(ckb.ckb.data !=

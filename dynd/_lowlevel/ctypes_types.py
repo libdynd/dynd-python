@@ -83,7 +83,7 @@ BinarySinglePredicate = ctypes.CFUNCTYPE(ctypes.c_int, # boolean result
 class CKernelBuilderStruct(ctypes.Structure):
     _fields_ = [("data", ctypes.c_void_p),
                 ("capacity", c_size_t),
-                ("static_data", c_ssize_t * 16)]
+                ("static_data", ctypes.c_byte * 128)]
 CKernelBuilderStructPtr = ctypes.POINTER(CKernelBuilderStruct)
 
 # ArrFunc
@@ -92,15 +92,33 @@ InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_uint32, ctypes.c_void_p)
-class ArrFuncTypeData(ctypes.Structure):
-    _fields_ = [("func_proto", ctypes.c_void_p),
-                ("data0", ctypes.c_void_p),
-                ("data1", ctypes.c_void_p),
-                ("data2", ctypes.c_void_p),
-                ("data3", ctypes.c_void_p),
-                ("instantiate_func", InstantiateArrFuncFunction),
-                ("resolve_dst_type", ctypes.c_void_p),
-                ("resolve_dst_shape", ctypes.c_void_p),
-                ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
+if ctypes.sizeof(ctypes.c_void_p) == 8:
+    class ArrFuncTypeData(ctypes.Structure):
+        _fields_ = [("func_proto", ctypes.c_void_p),
+                    ("data0", ctypes.c_void_p),
+                    ("data1", ctypes.c_void_p),
+                    ("data2", ctypes.c_void_p),
+                    ("data3", ctypes.c_void_p),
+                    ("instantiate_func", InstantiateArrFuncFunction),
+                    ("resolve_dst_type", ctypes.c_void_p),
+                    ("resolve_dst_shape", ctypes.c_void_p),
+                    ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
+else:
+    class ArrFuncTypeData(ctypes.Structure):
+        _fields_ = [("func_proto", ctypes.c_void_p),
+                    ("data0", ctypes.c_void_p),
+                    ("data1", ctypes.c_void_p),
+                    ("data2", ctypes.c_void_p),
+                    ("data3", ctypes.c_void_p),
+                    ("data4", ctypes.c_void_p),
+                    ("data5", ctypes.c_void_p),
+                    ("data6", ctypes.c_void_p),
+                    ("data7", ctypes.c_void_p),
+                    ("data8", ctypes.c_void_p),
+                    ("instantiate_func", InstantiateArrFuncFunction),
+                    ("resolve_dst_type", ctypes.c_void_p),
+                    ("resolve_dst_shape", ctypes.c_void_p),
+                    ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
+
 ArrFuncTypeDataPtr = ctypes.POINTER(ArrFuncTypeData)
 

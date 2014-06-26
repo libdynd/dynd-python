@@ -246,47 +246,44 @@ namespace {
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
         kernel_request_t kernreq, const eval::eval_context *DYND_UNUSED(ectx))
     {
-        if (dst_tp != af_self->get_return_type()) {
-            stringstream ss;
-            ss << "destination type requested, " << dst_tp
-               << ", does not match the ufunc's type " << af_self->get_return_type();
-            throw type_error(ss.str());
+      if (dst_tp != af_self->get_return_type()) {
+        stringstream ss;
+        ss << "destination type requested, " << dst_tp
+           << ", does not match the ufunc's type "
+           << af_self->get_return_type();
+        throw type_error(ss.str());
+      }
+      intptr_t param_count = af_self->get_param_count();
+      for (intptr_t i = 0; i != param_count; ++i) {
+        if (src_tp[i] != af_self->get_param_type(i)) {
+          stringstream ss;
+          ss << "source type requested for parameter " << (i + 1) << ", "
+             << src_tp[i] << ", does not match the ufunc's type "
+             << af_self->get_param_type(i);
+          throw type_error(ss.str());
         }
-        size_t param_count = af_self->get_param_count();
-        for (size_t i = 0; i != param_count; ++i) {
-            if (src_tp[i] != af_self->get_param_type(i)) {
-                stringstream ss;
-                ss << "source type requested for parameter " << (i + 1) << ", "
-                   << src_tp[i] << ", does not match the ufunc's type "
-                   << af_self->get_param_type(i);
-                throw type_error(ss.str());
-            }
-        }
+      }
 
-        // Acquire the GIL for creating the ckernel
-        PyGILState_RAII pgs;
-        scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
-        intptr_t ckb_end = ckb_offset + sizeof(scalar_ufunc_ckernel_data);
-        ckb->ensure_capacity_leaf(ckb_end);
-        scalar_ufunc_ckernel_data *af =
-            ckb->get_at<scalar_ufunc_ckernel_data>(ckb_offset);
-        af->base.destructor = &delete_scalar_ufunc_ckernel_data;
-        if (data->ckernel_acquires_gil) {
-            af->base.set_expr_function(
-                (kernel_request_t)kernreq,
-                &scalar_ufunc_single_ckernel_acquiregil,
-                &scalar_ufunc_strided_ckernel_acquiregil);
-        } else {
-            af->base.set_expr_function((kernel_request_t)kernreq,
-                                       &scalar_ufunc_single_ckernel_nogil,
-                                       &scalar_ufunc_strided_ckernel_nogil);
-        }
-        af->funcptr = data->funcptr;
-        af->ufunc_data = data->ufunc_data;
-        af->param_count = data->param_count;
-        af->ufunc = data->ufunc;
-        Py_INCREF(af->ufunc);
-        return ckb_end;
+      // Acquire the GIL for creating the ckernel
+      PyGILState_RAII pgs;
+      scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
+      scalar_ufunc_ckernel_data *af =
+          ckb->alloc_ck_leaf<scalar_ufunc_ckernel_data>(ckb_offset);
+      af->base.destructor = &delete_scalar_ufunc_ckernel_data;
+      if (data->ckernel_acquires_gil) {
+        af->base.set_expr_function(kernreq,
+                                   &scalar_ufunc_single_ckernel_acquiregil,
+                                   &scalar_ufunc_strided_ckernel_acquiregil);
+      } else {
+        af->base.set_expr_function(kernreq, &scalar_ufunc_single_ckernel_nogil,
+                                   &scalar_ufunc_strided_ckernel_nogil);
+      }
+      af->funcptr = data->funcptr;
+      af->ufunc_data = data->ufunc_data;
+      af->param_count = data->param_count;
+      af->ufunc = data->ufunc;
+      Py_INCREF(af->ufunc);
+      return ckb_offset;
     }
 
 } // anonymous namespace

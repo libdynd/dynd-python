@@ -69,9 +69,9 @@ namespace {
 
         inline void verify_postcall_consistency(PyObject *args)
         {
-            size_t param_count = PyTuple_GET_SIZE(args);
+            intptr_t param_count = PyTuple_GET_SIZE(args);
             // Verify that no reference to a temporary array was kept
-            for (size_t i = 0; i != param_count; ++i) {
+            for (intptr_t i = 0; i != param_count; ++i) {
                 PyObject *item = PyTuple_GET_ITEM(args, i);
                 if (Py_REFCNT(item) != 1 ||
                         ((WArray *)item)->v.get_ndo()->m_memblockdata.m_use_count !=
@@ -99,12 +99,12 @@ namespace {
         {
             self_type *self = get_self(rawself);
             const funcproto_type *fpt = self->m_proto.tcast<funcproto_type>();
-            size_t param_count = fpt->get_param_count();
+            intptr_t param_count = fpt->get_param_count();
             const ndt::type& dst_tp = fpt->get_return_type();
             const ndt::type *src_tp = fpt->get_param_types_raw();
             // First set up the parameters in a tuple
             pyobject_ownref args(PyTuple_New(param_count));
-            for (size_t i = 0; i != param_count; ++i) {
+            for (intptr_t i = 0; i != param_count; ++i) {
                 ndt::type tp = src_tp[i];
                 nd::array n(make_array_memory_block(tp.get_arrmeta_size()));
                 n.get_ndo()->m_type = tp.release();
@@ -135,12 +135,12 @@ namespace {
         {
             self_type *self = get_self(rawself);
             const funcproto_type *fpt = self->m_proto.tcast<funcproto_type>();
-            size_t param_count = fpt->get_param_count();
+            intptr_t param_count = fpt->get_param_count();
             const ndt::type& dst_tp = fpt->get_return_type();
             const ndt::type *src_tp = fpt->get_param_types_raw();
             // First set up the parameters in a tuple
             pyobject_ownref args(PyTuple_New(param_count));
-            for (size_t i = 0; i != param_count; ++i) {
+            for (intptr_t i = 0; i != param_count; ++i) {
                 ndt::type tp = src_tp[i];
                 nd::array n(make_array_memory_block(tp.get_arrmeta_size()));
                 n.get_ndo()->m_type = tp.release();
@@ -167,7 +167,7 @@ namespace {
                 self->verify_postcall_consistency(args.get());
                 // Increment to the next one
                 dst += dst_stride;
-                for (size_t i = 0; i != param_count; ++i) {
+                for (intptr_t i = 0; i != param_count; ++i) {
                     const nd::array& n = ((WArray *)PyTuple_GET_ITEM(args.get(), i))->v;
                     n.get_ndo()->m_data_pointer += src_stride[i];
                 }
@@ -194,8 +194,7 @@ namespace {
         PyGILState_RAII pgs;
         intptr_t param_count = af_self->get_param_count();
 
-        self_type *self = self_type::create(ckb, ckb_offset, (kernel_request_t)kernreq);
-        intptr_t ckb_end = ckb_offset + sizeof(self_type);
+        self_type *self = self_type::create(ckb, kernreq, ckb_offset);
         self->m_proto = ndt::make_funcproto(param_count, src_tp, dst_tp);
         self->m_pyfunc = *af_self->get_data_as<PyObject *>();
         Py_XINCREF(self->m_pyfunc);
@@ -204,7 +203,7 @@ namespace {
         copy(src_arrmeta, src_arrmeta + param_count,
              self->m_src_arrmeta.begin());
         self->m_ectx = *ectx;
-        return ckb_end;
+        return ckb_offset;
     }
 }
 

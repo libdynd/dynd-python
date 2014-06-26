@@ -183,11 +183,12 @@ public:
     }
 
     size_t make_expr_kernel(
-                ckernel_builder *out, size_t offset_out,
+                ckernel_builder *ckb, intptr_t ckb_offset,
                 const ndt::type& dst_tp, const char *dst_arrmeta,
                 size_t src_count, const ndt::type *src_tp, const char *const*src_arrmeta,
                 kernel_request_t kernreq, const eval::eval_context *ectx) const
     {
+      intptr_t root_ckb_offset = ckb_offset;
         if (src_count != m_src_tp.size()) {
             stringstream ss;
             ss << "This elwise_map kernel requires " << m_src_tp.size() << " src operands, ";
@@ -208,17 +209,20 @@ public:
         // or handle input/output buffering, giving 'this' as the next
         // kernel generator to call
         if (require_elwise) {
-            return make_elwise_dimension_expr_kernel(out, offset_out,
+            return make_elwise_dimension_expr_kernel(ckb, ckb_offset,
                             dst_tp, dst_arrmeta,
                             src_count, src_tp, src_arrmeta,
                             kernreq, ectx,
                             this);
         }
 
-        size_t extra_size = sizeof(pyobject_expr_kernel_extra) +
-                        (src_count + 1) * sizeof(WArray *);
-        out->ensure_capacity_leaf(offset_out + extra_size);
-        pyobject_expr_kernel_extra *e = out->get_at<pyobject_expr_kernel_extra>(offset_out);
+        kernels::inc_ckb_offset(ckb_offset,
+                                sizeof(pyobject_expr_kernel_extra) +
+                                    (src_count + 1) * sizeof(WArray *));
+        ckb->ensure_capacity_leaf(ckb_offset);
+        pyobject_expr_kernel_extra *e =
+            ckb->get_at<pyobject_expr_kernel_extra>(root_ckb_offset);
+
         WArray **ndo = reinterpret_cast<WArray **>(e + 1);
         e->base.set_expr_function<pyobject_expr_kernel_extra>(kernreq);
         e->base.destructor = &pyobject_expr_kernel_extra::destruct;
@@ -256,7 +260,7 @@ public:
             ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));
         }
 
-        return offset_out + extra_size;
+        return ckb_offset;
     }
 
     void print_type(std::ostream& o) const

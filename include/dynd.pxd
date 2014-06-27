@@ -58,7 +58,7 @@ cdef extern from "<iostream>" namespace "std":
     extern ostream cout
 
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
-    ndarray dynd_format_json "dynd::format_json" (ndarray&) except +translate_exception
+    ndarray dynd_format_json "dynd::format_json" (ndarray&, bint) except +translate_exception
 
 cdef extern from "<dynd/types/datashape_formatter.hpp>" namespace "dynd":
     string dynd_format_datashape "dynd::format_datashape" (ndarray&) except +translate_exception

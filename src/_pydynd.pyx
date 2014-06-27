@@ -2072,9 +2072,9 @@ def parse_json(type, json, ectx=None):
         SET(result.v, dynd_parse_json_type(GET(w_type(type).v), GET(w_array(json).v), ectx))
         return result
 
-def format_json(w_array n):
+def format_json(w_array a, bint tuple=False):
     """
-    nd.format_json(n)
+    nd.format_json(a, tuple=False)
 
     Formats a dynd array as JSON.
 
@@ -2082,6 +2082,9 @@ def format_json(w_array n):
     ----------
     n : dynd array
         The object to format as JSON.
+    tuple : bool
+        If set to true, outputs lists instead of objects/dicts for
+        structured types.
 
     Examples
     --------
@@ -2089,12 +2092,12 @@ def format_json(w_array n):
 
     >>> a = nd.array([[1, 2, 3], [1, 2]])
     >>> a
-    nd.array([[1, 2, 3], [1, 2]], strided_dim<var_dim<int32>>)
+    nd.array([[1, 2, 3], [1, 2]], type="strided * var * int32")
     >>> nd.format_json(a)
     nd.array("[[1,2,3],[1,2]]", string)
     """
     cdef w_array result = w_array()
-    SET(result.v, dynd_format_json(GET(n.v)))
+    SET(result.v, dynd_format_json(GET(a.v), tuple != 0))
     return result
 
 def rolling_apply(af, arr, window_size, ectx=None):

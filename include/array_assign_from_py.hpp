@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DYND__NDOBJECT_ASSIGN_FROM_PY_HPP_
-#define _DYND__NDOBJECT_ASSIGN_FROM_PY_HPP_
+#ifndef PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
+#define PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
 
 #include <Python.h>
 
@@ -52,5 +52,5 @@ void array_nodim_broadcast_assign_from_py(const dynd::ndt::type &dt,
 
 } // namespace pydynd
 
-#endif // _DYND__NDOBJECT_ASSIGN_FROM_PY_HPP_
+#endif // PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
 

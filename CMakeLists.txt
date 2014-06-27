@@ -129,14 +129,15 @@ include_directories(
     )
 
 set(pydynd_CPP_SRC
-    include/array_assign_from_py.hpp
-    include/array_as_pep3118.hpp
     include/array_as_numpy.hpp
+    include/array_as_pep3118.hpp
     include/array_as_py.hpp
-    include/array_functions.hpp
+    include/array_assign_from_py.hpp
+    include/array_assign_to_numpy.hpp
     include/array_from_py.hpp
     include/array_from_py_dynamic.hpp
     include/array_from_py_typededuction.hpp
+    include/array_functions.hpp
     include/arrfunc_functions.hpp
     include/codegen_cache_functions.hpp
     include/arrfunc_from_instantiate_pyfunc.hpp
@@ -157,10 +158,11 @@ set(pydynd_CPP_SRC
     include/type_functions.hpp
     include/utility_functions.hpp
     include/vm_elwise_program_functions.hpp
-    src/array_assign_from_py.cpp
-    src/array_as_pep3118.cpp
     src/array_as_numpy.cpp
+    src/array_as_pep3118.cpp
     src/array_as_py.cpp
+    src/array_assign_from_py.cpp
+    src/array_assign_to_numpy.cpp
     src/array_functions.cpp
     src/array_from_py.cpp
     src/array_from_py_dynamic.cpp

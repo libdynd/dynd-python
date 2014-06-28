@@ -142,6 +142,7 @@ set(pydynd_CPP_SRC
     include/codegen_cache_functions.hpp
     include/arrfunc_from_instantiate_pyfunc.hpp
     include/arrfunc_from_pyfunc.hpp
+    include/copy_to_pyobject_ckernel.hpp
     include/ctypes_interop.hpp
     include/do_import_array.hpp
     include/elwise_gfunc_functions.hpp
@@ -169,6 +170,7 @@ set(pydynd_CPP_SRC
     src/array_from_py_typededuction.cpp
     src/arrfunc_functions.cpp
     src/codegen_cache_functions.cpp
+    src/copy_to_pyobject_ckernel.cpp
     src/ctypes_interop.cpp
     src/elwise_map.cpp
     src/elwise_gfunc_functions.cpp

@@ -8,11 +8,11 @@
 
 #include <Python.h>
 
-#include <dynd/array.hpp>
+#include <dynd/func/arrfunc.hpp>
 
 namespace pydynd {
 
-
+extern dynd::nd::arrfunc copy_to_numpy;
 
 } // namespace pydynd
 

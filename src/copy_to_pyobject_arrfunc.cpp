@@ -6,7 +6,7 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include "copy_to_pyobject_ckernel.hpp"
+#include "copy_to_pyobject_arrfunc.hpp"
 #include "utility_functions.hpp"
 #include "type_functions.hpp"
 

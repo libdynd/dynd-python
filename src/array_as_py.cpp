@@ -9,7 +9,7 @@
 #include "array_functions.hpp"
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
-#include "copy_to_pyobject_ckernel.hpp"
+#include "copy_to_pyobject_arrfunc.hpp"
 
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>

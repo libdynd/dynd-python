@@ -14,7 +14,7 @@
 #include <dynd/kernels/make_lifted_ckernel.hpp>
 
 #include "array_assign_to_numpy.hpp"
-#include "copy_to_pyobject_ckernel.hpp"
+#include "copy_to_pyobject_arrfunc.hpp"
 
 using namespace std;
 using namespace dynd;

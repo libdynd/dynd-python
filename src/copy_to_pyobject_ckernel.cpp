@@ -18,6 +18,9 @@
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/option_type.hpp>
+#include <dynd/types/var_dim_type.hpp>
+#include <dynd/types/base_tuple_type.hpp>
+#include <dynd/types/base_struct_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 
 using namespace std;
@@ -410,12 +413,145 @@ struct option_ck : public kernels::unary_ck<option_ck> {
   }
 };
 
+struct strided_ck : public kernels::unary_ck<strided_ck> {
+  intptr_t m_dim_size, m_stride;
+  inline void single(char *dst, const char *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    pyobject_ownref lst(PyList_New(m_dim_size));
+    ckernel_prefix *copy_el = get_child_ckernel();
+    expr_strided_t copy_el_fn = copy_el->get_function<expr_strided_t>();
+    copy_el_fn(reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
+      sizeof(PyObject *), &src, &m_stride, m_dim_size, copy_el);
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = lst.release();
+  }
+
+  inline void destruct_children()
+  {
+    get_child_ckernel()->destroy();
+  }
+};
+
+struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
+  intptr_t m_offset, m_stride;
+
+  inline void single(char *dst, const char *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    const var_dim_type_data *vd =
+        reinterpret_cast<const var_dim_type_data *>(src);
+    pyobject_ownref lst(PyList_New(vd->size));
+    ckernel_prefix *copy_el = get_child_ckernel();
+    expr_strided_t copy_el_fn = copy_el->get_function<expr_strided_t>();
+    const char *el_src = vd->begin + m_offset;
+    copy_el_fn(reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
+               sizeof(PyObject *), &el_src, &m_stride, vd->size, copy_el);
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = lst.release();
+  }
+
+  inline void destruct_children()
+  {
+    get_child_ckernel()->destroy();
+  }
+};
+
+// TODO: Should make a more efficient strided kernel function
+struct struct_ck : public kernels::unary_ck<struct_ck> {
+  ndt::type m_src_tp;
+  const char *m_src_arrmeta;
+  vector<intptr_t> m_copy_el_offsets;
+  pyobject_ownref m_field_names;
+
+  inline void single(char *dst, const char *src)
+  {
+cout << "called struct single" << endl;
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    intptr_t field_count = m_src_tp.tcast<base_tuple_type>()->get_field_count();
+    const uintptr_t *field_offsets =
+        m_src_tp.tcast<base_tuple_type>()->get_data_offsets(m_src_arrmeta);
+    pyobject_ownref dct(PyDict_New());
+    for (intptr_t i = 0; i < field_count; ++i) {
+      ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+      expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
+      const char *el_src = src + field_offsets[i];
+      pyobject_ownref el;
+      copy_el_fn(reinterpret_cast<char *>(el.obj_addr()), &el_src, copy_el);
+      PyDict_SetItem(dct.get(), PyTuple_GET_ITEM(m_field_names.get(), i),
+                     el.get());
+    }
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = dct.release();
+  }
+
+  inline void destruct_children()
+  {
+    for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+      base.destroy_child_ckernel(m_copy_el_offsets[i]);
+    }
+  }
+};
+
+// TODO: Should make a more efficient strided kernel function
+struct tuple_ck : public kernels::unary_ck<tuple_ck> {
+  ndt::type m_src_tp;
+  const char *m_src_arrmeta;
+  vector<intptr_t> m_copy_el_offsets;
+
+  inline void single(char *dst, const char *src)
+  {
+cout << "called tuple single" << endl;
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    intptr_t field_count = m_src_tp.tcast<base_tuple_type>()->get_field_count();
+    const uintptr_t *field_offsets =
+        m_src_tp.tcast<base_tuple_type>()->get_data_offsets(m_src_arrmeta);
+    pyobject_ownref tup(PyTuple_New(field_count));
+    for (intptr_t i = 0; i < field_count; ++i) {
+cout << "copying field " << i << endl;
+cout << "child ckernel is at " << m_copy_el_offsets[i] << endl;
+      ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+      expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
+      const char *el_src = src + field_offsets[i];
+      char *el_dst =
+          reinterpret_cast<char *>(((PyTupleObject *)tup.get())->ob_item + i);
+      copy_el_fn(el_dst, &el_src, copy_el);
+    }
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = tup.release();
+  }
+
+  inline void destruct_children()
+  {
+    for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+      base.destroy_child_ckernel(m_copy_el_offsets[i]);
+    }
+  }
+};
+
 } // anonymous namespace
 
 intptr_t pydynd::make_copy_to_pyobject_kernel(
     dynd::ckernel_builder *ckb, intptr_t ckb_offset,
     const dynd::ndt::type &src_tp, const char *src_arrmeta,
-    dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx)
+    bool struct_as_pytuple, dynd::kernel_request_t kernreq,
+    const dynd::eval::eval_context *ectx)
 {
   switch (src_tp.get_type_id()) {
   case bool_type_id:
@@ -562,7 +698,90 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ckb_offset = make_copy_to_pyobject_kernel(
         ckb, ckb_offset, src_tp.tcast<option_type>()->get_value_type(),
-        src_arrmeta, kernel_request_single, ectx);
+        src_arrmeta, struct_as_pytuple, kernel_request_single, ectx);
+    return ckb_offset;
+  }
+  case strided_dim_type_id:
+  case fixed_dim_type_id:
+  case cfixed_dim_type_id: {
+    intptr_t dim_size, stride;
+    ndt::type el_tp;
+    const char *el_arrmeta;
+    if (src_tp.get_as_strided_dim(src_arrmeta, dim_size, stride, el_tp,
+                                  el_arrmeta)) {
+      strided_ck *self = strided_ck::create(ckb, kernreq, ckb_offset);
+      self->m_dim_size = dim_size;
+      self->m_stride = stride;
+      return make_copy_to_pyobject_kernel(ckb, ckb_offset, el_tp, el_arrmeta,
+                                          struct_as_pytuple,
+                                          kernel_request_strided, ectx);
+    }
+    break;
+  }
+  case var_dim_type_id: {
+    var_dim_ck *self = var_dim_ck::create(ckb, kernreq, ckb_offset);
+    self->m_offset =
+        reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta)->offset;
+    self->m_stride =
+        reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta)->stride;
+    return make_copy_to_pyobject_kernel(
+        ckb, ckb_offset, src_tp.tcast<var_dim_type>()->get_element_type(),
+        src_arrmeta + sizeof(var_dim_type_arrmeta), struct_as_pytuple,
+        kernel_request_strided, ectx);
+  }
+  case cstruct_type_id:
+  case struct_type_id:
+    if (!struct_as_pytuple) {
+      intptr_t root_ckb_offset = ckb_offset;
+      struct_ck *self = struct_ck::create(ckb, kernreq, ckb_offset);
+      self->m_src_tp = src_tp;
+      self->m_src_arrmeta = src_arrmeta;
+      intptr_t field_count = src_tp.tcast<base_struct_type>()->get_field_count();
+      const ndt::type *field_types =
+          src_tp.tcast<base_struct_type>()->get_field_types_raw();
+      const uintptr_t *arrmeta_offsets =
+          src_tp.tcast<base_struct_type>()->get_arrmeta_offsets_raw();
+      self->m_field_names.reset(PyTuple_New(field_count));
+      for (intptr_t i = 0; i < field_count; ++i) {
+        const string_type_data &rawname =
+            src_tp.tcast<base_struct_type>()->get_field_name_raw(i);
+        pyobject_ownref name(PyUnicode_DecodeUTF8(
+            rawname.begin, rawname.end - rawname.begin, NULL));
+        PyTuple_SET_ITEM(self->m_field_names.get(), i, name.release());
+      }
+      self->m_copy_el_offsets.resize(field_count);
+      for (intptr_t i = 0; i < field_count; ++i) {
+        ckb->ensure_capacity(ckb_offset);
+        self = ckb->get_at<struct_ck>(root_ckb_offset);
+        self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+        ckb_offset = make_copy_to_pyobject_kernel(
+            ckb, ckb_offset, field_types[i], src_arrmeta + arrmeta_offsets[i],
+            struct_as_pytuple, kernel_request_single, ectx);
+      }
+      return ckb_offset;
+    }
+    // Otherwise fall through to the tuple case
+  case ctuple_type_id:
+  case tuple_type_id: {
+    intptr_t root_ckb_offset = ckb_offset;
+    tuple_ck *self = tuple_ck::create(ckb, kernreq, ckb_offset);
+    self->m_src_tp = src_tp;
+    self->m_src_arrmeta = src_arrmeta;
+    intptr_t field_count = src_tp.tcast<base_tuple_type>()->get_field_count();
+    const ndt::type *field_types =
+        src_tp.tcast<base_tuple_type>()->get_field_types_raw();
+    const uintptr_t *arrmeta_offsets =
+        src_tp.tcast<base_tuple_type>()->get_arrmeta_offsets_raw();
+    self->m_copy_el_offsets.resize(field_count);
+    for (intptr_t i = 0; i < field_count; ++i) {
+      ckb->ensure_capacity(ckb_offset);
+      self = ckb->get_at<tuple_ck>(root_ckb_offset);
+      self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+cout << "set copy for field " << i << " to offset " << self->m_copy_el_offsets[i] << endl;
+      ckb_offset = make_copy_to_pyobject_kernel(
+          ckb, ckb_offset, field_types[i], src_arrmeta + arrmeta_offsets[i],
+          struct_as_pytuple, kernel_request_single, ectx);
+    }
     return ckb_offset;
   }
   default:

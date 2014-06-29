@@ -94,7 +94,7 @@ static intptr_t instantiate_copy_to_numpy(
                                     src_arrmeta[0], kernreq, ectx);
     } else if (PyDataType_ISOBJECT(dtype)) {
       return make_copy_to_pyobject_kernel(ckb, ckb_offset, src_tp[0],
-                                          src_arrmeta[0], kernreq, ectx);
+                                          src_arrmeta[0], true, kernreq, ectx);
     } else {
     }
   }

@@ -69,6 +69,10 @@ public:
         Py_XDECREF(m_obj);
     }
 
+    inline PyObject **obj_addr() {
+      return &m_obj;
+    }
+
     /**
      * Resets the reference owned by this object to the one provided.
      * This steals a reference to the input parameter, 'obj'.

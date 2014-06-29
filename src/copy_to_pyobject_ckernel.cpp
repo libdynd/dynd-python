@@ -22,6 +22,8 @@
 #include <dynd/types/base_tuple_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
+#include <dynd/func/copy_arrfunc.hpp>
+#include <dynd/func/chain_arrfunc.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -474,7 +476,6 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
 
   inline void single(char *dst, const char *src)
   {
-cout << "called struct single" << endl;
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
@@ -513,7 +514,6 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
 
   inline void single(char *dst, const char *src)
   {
-cout << "called tuple single" << endl;
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
@@ -522,8 +522,6 @@ cout << "called tuple single" << endl;
         m_src_tp.tcast<base_tuple_type>()->get_data_offsets(m_src_arrmeta);
     pyobject_ownref tup(PyTuple_New(field_count));
     for (intptr_t i = 0; i < field_count; ++i) {
-cout << "copying field " << i << endl;
-cout << "child ckernel is at " << m_copy_el_offsets[i] << endl;
       ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
       expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
       const char *el_src = src + field_offsets[i];
@@ -547,13 +545,23 @@ cout << "child ckernel is at " << m_copy_el_offsets[i] << endl;
 
 } // anonymous namespace
 
-intptr_t pydynd::make_copy_to_pyobject_kernel(
-    dynd::ckernel_builder *ckb, intptr_t ckb_offset,
-    const dynd::ndt::type &src_tp, const char *src_arrmeta,
-    bool struct_as_pytuple, dynd::kernel_request_t kernreq,
-    const dynd::eval::eval_context *ectx)
+static intptr_t instantiate_copy_to_pyobject(
+    const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
+    intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
+    const ndt::type *src_tp, const char *const *src_arrmeta,
+    kernel_request_t kernreq, const eval::eval_context *ectx)
 {
-  switch (src_tp.get_type_id()) {
+  if (dst_tp.get_type_id() != void_type_id) {
+    stringstream ss;
+    ss << "Cannot instantiate arrfunc with signature ";
+    ss << self_af->func_proto << " with types (";
+    ss << src_tp[0] << ") -> " << dst_tp;
+    throw type_error(ss.str());
+  }
+
+  bool struct_as_pytuple = *self_af->get_data_as<bool>();
+
+  switch (src_tp[0].get_type_id()) {
   case bool_type_id:
     bool_ck::create_leaf(ckb, kernreq, ckb_offset);
     return ckb_offset;
@@ -607,14 +615,14 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
     return ckb_offset;
   case fixedbytes_type_id: {
     fixedbytes_ck *self = fixedbytes_ck::create_leaf(ckb, kernreq, ckb_offset);
-    self->m_data_size = src_tp.tcast<fixedbytes_type>()->get_data_size();
+    self->m_data_size = src_tp[0].tcast<fixedbytes_type>()->get_data_size();
     return ckb_offset;
   }
   case char_type_id:
     char_ck::create_leaf(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case string_type_id:
-    switch (src_tp.tcast<base_string_type>()->get_encoding()) {
+    switch (src_tp[0].tcast<base_string_type>()->get_encoding()) {
     case string_encoding_ascii:
       string_ascii_ck::create_leaf(ckb, kernreq, ckb_offset);
       return ckb_offset;
@@ -633,30 +641,30 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
     }
     break;
   case fixedstring_type_id:
-    switch (src_tp.tcast<base_string_type>()->get_encoding()) {
+    switch (src_tp[0].tcast<base_string_type>()->get_encoding()) {
     case string_encoding_ascii: {
       fixedstring_ascii_ck *self =
           fixedstring_ascii_ck::create_leaf(ckb, kernreq, ckb_offset);
-      self->m_data_size = src_tp.get_data_size();
+      self->m_data_size = src_tp[0].get_data_size();
       return ckb_offset;
     }
     case string_encoding_utf_8: {
       fixedstring_utf8_ck *self =
           fixedstring_utf8_ck::create_leaf(ckb, kernreq, ckb_offset);
-      self->m_data_size = src_tp.get_data_size();
+      self->m_data_size = src_tp[0].get_data_size();
       return ckb_offset;
     }
     case string_encoding_ucs_2:
     case string_encoding_utf_16: {
       fixedstring_utf16_ck *self =
           fixedstring_utf16_ck::create_leaf(ckb, kernreq, ckb_offset);
-      self->m_data_size = src_tp.get_data_size();
+      self->m_data_size = src_tp[0].get_data_size();
       return ckb_offset;
     }
     case string_encoding_utf_32: {
       fixedstring_utf32_ck *self =
           fixedstring_utf32_ck::create_leaf(ckb, kernreq, ckb_offset);
-      self->m_data_size = src_tp.get_data_size();
+      self->m_data_size = src_tp[0].get_data_size();
       return ckb_offset;
     }
     default:
@@ -665,20 +673,20 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
     break;
   case date_type_id: {
     date_ck *self = date_ck::create_leaf(ckb, kernreq, ckb_offset);
-    self->m_src_tp = src_tp;
-    self->m_src_arrmeta = src_arrmeta;
+    self->m_src_tp = src_tp[0];
+    self->m_src_arrmeta = src_arrmeta[0];
     return ckb_offset;
   }
   case time_type_id: {
     time_ck *self = time_ck::create_leaf(ckb, kernreq, ckb_offset);
-    self->m_src_tp = src_tp;
-    self->m_src_arrmeta = src_arrmeta;
+    self->m_src_tp = src_tp[0];
+    self->m_src_arrmeta = src_arrmeta[0];
     return ckb_offset;
   }
   case datetime_type_id: {
     datetime_ck *self = datetime_ck::create_leaf(ckb, kernreq, ckb_offset);
-    self->m_src_tp = src_tp;
-    self->m_src_arrmeta = src_arrmeta;
+    self->m_src_tp = src_tp[0];
+    self->m_src_arrmeta = src_arrmeta[0];
     return ckb_offset;
   }
   case type_type_id: {
@@ -689,16 +697,17 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
     intptr_t root_ckb_offset = ckb_offset;
     option_ck *self = option_ck::create(ckb, kernreq, ckb_offset);
     const arrfunc_type_data *is_avail_af =
-        src_tp.tcast<option_type>()->get_is_avail_arrfunc();
+        src_tp[0].tcast<option_type>()->get_is_avail_arrfunc();
     ckb_offset = is_avail_af->instantiate(
         is_avail_af, ckb, ckb_offset, ndt::make_type<dynd_bool>(), NULL,
-        &src_tp, &src_arrmeta, kernel_request_single, ectx);
+        src_tp, src_arrmeta, kernel_request_single, ectx);
     ckb->ensure_capacity(ckb_offset);
     self = ckb->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
-    ckb_offset = make_copy_to_pyobject_kernel(
-        ckb, ckb_offset, src_tp.tcast<option_type>()->get_value_type(),
-        src_arrmeta, struct_as_pytuple, kernel_request_single, ectx);
+    ndt::type src_value_tp = src_tp[0].tcast<option_type>()->get_value_type();
+    ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, dst_tp,
+                                      dst_arrmeta, &src_value_tp, src_arrmeta,
+                                      kernel_request_single, ectx);
     return ckb_offset;
   }
   case strided_dim_type_id:
@@ -707,44 +716,45 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
     intptr_t dim_size, stride;
     ndt::type el_tp;
     const char *el_arrmeta;
-    if (src_tp.get_as_strided_dim(src_arrmeta, dim_size, stride, el_tp,
+    if (src_tp[0].get_as_strided_dim(src_arrmeta[0], dim_size, stride, el_tp,
                                   el_arrmeta)) {
       strided_ck *self = strided_ck::create(ckb, kernreq, ckb_offset);
       self->m_dim_size = dim_size;
       self->m_stride = stride;
-      return make_copy_to_pyobject_kernel(ckb, ckb_offset, el_tp, el_arrmeta,
-                                          struct_as_pytuple,
-                                          kernel_request_strided, ectx);
+      return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
+                                  &el_tp, &el_arrmeta, kernel_request_strided,
+                                  ectx);
     }
     break;
   }
   case var_dim_type_id: {
     var_dim_ck *self = var_dim_ck::create(ckb, kernreq, ckb_offset);
     self->m_offset =
-        reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta)->offset;
+        reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta[0])->offset;
     self->m_stride =
-        reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta)->stride;
-    return make_copy_to_pyobject_kernel(
-        ckb, ckb_offset, src_tp.tcast<var_dim_type>()->get_element_type(),
-        src_arrmeta + sizeof(var_dim_type_arrmeta), struct_as_pytuple,
-        kernel_request_strided, ectx);
+        reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta[0])->stride;
+    ndt::type el_tp = src_tp[0].tcast<var_dim_type>()->get_element_type();
+    const char *el_arrmeta = src_arrmeta[0] + sizeof(var_dim_type_arrmeta);
+    return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
+                                &el_tp, &el_arrmeta, kernel_request_strided,
+                                ectx);
   }
   case cstruct_type_id:
   case struct_type_id:
     if (!struct_as_pytuple) {
       intptr_t root_ckb_offset = ckb_offset;
       struct_ck *self = struct_ck::create(ckb, kernreq, ckb_offset);
-      self->m_src_tp = src_tp;
-      self->m_src_arrmeta = src_arrmeta;
-      intptr_t field_count = src_tp.tcast<base_struct_type>()->get_field_count();
+      self->m_src_tp = src_tp[0];
+      self->m_src_arrmeta = src_arrmeta[0];
+      intptr_t field_count = src_tp[0].tcast<base_struct_type>()->get_field_count();
       const ndt::type *field_types =
-          src_tp.tcast<base_struct_type>()->get_field_types_raw();
+          src_tp[0].tcast<base_struct_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          src_tp.tcast<base_struct_type>()->get_arrmeta_offsets_raw();
+          src_tp[0].tcast<base_struct_type>()->get_arrmeta_offsets_raw();
       self->m_field_names.reset(PyTuple_New(field_count));
       for (intptr_t i = 0; i < field_count; ++i) {
         const string_type_data &rawname =
-            src_tp.tcast<base_struct_type>()->get_field_name_raw(i);
+            src_tp[0].tcast<base_struct_type>()->get_field_name_raw(i);
         pyobject_ownref name(PyUnicode_DecodeUTF8(
             rawname.begin, rawname.end - rawname.begin, NULL));
         PyTuple_SET_ITEM(self->m_field_names.get(), i, name.release());
@@ -754,9 +764,10 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
         ckb->ensure_capacity(ckb_offset);
         self = ckb->get_at<struct_ck>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
-        ckb_offset = make_copy_to_pyobject_kernel(
-            ckb, ckb_offset, field_types[i], src_arrmeta + arrmeta_offsets[i],
-            struct_as_pytuple, kernel_request_single, ectx);
+        const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
+        ckb_offset = self_af->instantiate(
+            self_af, ckb, ckb_offset, dst_tp, dst_arrmeta, &field_types[i],
+            &field_arrmeta, kernel_request_single, ectx);
       }
       return ckb_offset;
     }
@@ -765,22 +776,22 @@ intptr_t pydynd::make_copy_to_pyobject_kernel(
   case tuple_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
     tuple_ck *self = tuple_ck::create(ckb, kernreq, ckb_offset);
-    self->m_src_tp = src_tp;
-    self->m_src_arrmeta = src_arrmeta;
-    intptr_t field_count = src_tp.tcast<base_tuple_type>()->get_field_count();
+    self->m_src_tp = src_tp[0];
+    self->m_src_arrmeta = src_arrmeta[0];
+    intptr_t field_count = src_tp[0].tcast<base_tuple_type>()->get_field_count();
     const ndt::type *field_types =
-        src_tp.tcast<base_tuple_type>()->get_field_types_raw();
+        src_tp[0].tcast<base_tuple_type>()->get_field_types_raw();
     const uintptr_t *arrmeta_offsets =
-        src_tp.tcast<base_tuple_type>()->get_arrmeta_offsets_raw();
+        src_tp[0].tcast<base_tuple_type>()->get_arrmeta_offsets_raw();
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
       ckb->ensure_capacity(ckb_offset);
       self = ckb->get_at<tuple_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
-cout << "set copy for field " << i << " to offset " << self->m_copy_el_offsets[i] << endl;
-      ckb_offset = make_copy_to_pyobject_kernel(
-          ckb, ckb_offset, field_types[i], src_arrmeta + arrmeta_offsets[i],
-          struct_as_pytuple, kernel_request_single, ectx);
+      const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
+      ckb_offset = self_af->instantiate(
+          self_af, ckb, ckb_offset, dst_tp, dst_arrmeta, &field_types[i],
+          &field_arrmeta, kernel_request_single, ectx);
     }
     return ckb_offset;
   }
@@ -788,8 +799,29 @@ cout << "set copy for field " << i << " to offset " << self->m_copy_el_offsets[i
     break;
   }
 
+  if (src_tp[0].get_kind() == expression_kind) {
+    return make_chain_buf_tp_ckernel(
+        make_copy_arrfunc().get(), self_af, src_tp[0].value_type(), ckb,
+        ckb_offset, dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq, ectx);
+  }
+
   stringstream ss;
-  ss << "Unable to copy dynd value with type " << src_tp
+  ss << "Unable to copy dynd value with type " << src_tp[0]
      << " to a Python object";
   throw invalid_argument(ss.str());
 }
+
+static nd::arrfunc make_copy_to_pyobject_arrfunc(bool struct_as_pytuple)
+{
+  nd::array out_af = nd::empty(ndt::make_arrfunc());
+  arrfunc_type_data *af =
+      reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
+  af->func_proto = ndt::type("(A... * T) -> void");
+  af->instantiate = &instantiate_copy_to_pyobject;
+  *af->get_data_as<bool>() = struct_as_pytuple;
+  out_af.flag_as_immutable();
+  return out_af;
+}
+
+dynd::nd::arrfunc pydynd::copy_to_pyobject_dict = make_copy_to_pyobject_arrfunc(false);
+dynd::nd::arrfunc pydynd::copy_to_pyobject_tuple = make_copy_to_pyobject_arrfunc(true);

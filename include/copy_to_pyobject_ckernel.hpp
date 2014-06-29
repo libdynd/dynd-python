@@ -9,16 +9,12 @@
 #include <Python.h>
 
 #include <dynd/kernels/ckernel_builder.hpp>
+#include <dynd/func/arrfunc.hpp>
 
 namespace pydynd {
 
-intptr_t make_copy_to_pyobject_kernel(dynd::ckernel_builder *ckb,
-                                      intptr_t ckb_offset,
-                                      const dynd::ndt::type &src_tp,
-                                      const char *src_arrmeta,
-                                      bool struct_as_pytuple,
-                                      dynd::kernel_request_t kernreq,
-                                      const dynd::eval::eval_context *ectx);
+extern dynd::nd::arrfunc copy_to_pyobject_dict;
+extern dynd::nd::arrfunc copy_to_pyobject_tuple;
 
 } // namespace pydynd
 

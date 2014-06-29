@@ -29,11 +29,21 @@ PyObject* pydynd::array_as_py(const dynd::nd::array& a, bool struct_as_pytuple)
 {
   // Evaluate the nd::array
   assignment_ckernel_builder ckb;
-  make_copy_to_pyobject_kernel(&ckb, 0, a.get_type(), a.get_arrmeta(),
-                               struct_as_pytuple, kernel_request_single,
-                               &eval::default_eval_context);
+  const arrfunc_type_data *af;
+  if (struct_as_pytuple) {
+    af = copy_to_pyobject_tuple.get();
+  } else {
+    af = copy_to_pyobject_dict.get();
+  }
+  ndt::type tp = a.get_type();
+  const char *arrmeta = a.get_arrmeta();
+  af->instantiate(af, &ckb, 0, ndt::make_type<void>(), NULL, &tp, &arrmeta,
+                  kernel_request_single, &eval::default_eval_context);
   pyobject_ownref result;
   ckb(reinterpret_cast<char *>(result.obj_addr()), a.get_readonly_originptr());
+  if (PyErr_Occurred()) {
+    throw exception();
+  }
   return result.release();
 }
 

@@ -93,8 +93,9 @@ static intptr_t instantiate_copy_to_numpy(
       return make_assignment_kernel(ckb, ckb_offset, dst_view_tp, NULL, src_tp[0],
                                     src_arrmeta[0], kernreq, ectx);
     } else if (PyDataType_ISOBJECT(dtype)) {
-      return make_copy_to_pyobject_kernel(ckb, ckb_offset, src_tp[0],
-                                          src_arrmeta[0], true, kernreq, ectx);
+      const arrfunc_type_data *af = copy_to_pyobject_tuple.get();
+      return af->instantiate(af, ckb, ckb_offset, ndt::make_type<void>(), NULL,
+                             src_tp, src_arrmeta, kernreq, ectx);
     } else {
     }
   }

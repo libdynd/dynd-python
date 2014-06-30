@@ -93,6 +93,21 @@ dynd::ndt::type ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignmen
 dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num);
 
 /**
+ * Given a NumPy struct/record dtype, extracts the field types, names,
+ * and offsets.
+ *
+ * \param d  The struct/record dtype.
+ * \param out_field_dtypes  This is filled with borrowed references to the field
+ *                          dtypes.
+ * \param out_field_names  This is filled with the field names.
+ * \param out_field_offsets  This is filled with the field offsets.
+ */
+void extract_fields_from_numpy_struct(PyArray_Descr *d,
+                                      std::vector<PyArray_Descr *> &out_field_dtypes,
+                                      std::vector<std::string> &out_field_names,
+                                      std::vector<size_t> &out_field_offsets);
+
+/**
  * When the function ndt_type_from_numpy_dtype returns a type which requires
  * additional arrmeta to be filled in, this function should be called to populate
  * that arrmeta in a created nd::array.

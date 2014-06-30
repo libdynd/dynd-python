@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef PYDYND_COPY_TO_PYOBJECT_CKERNEL_HPP
-#define PYDYND_COPY_TO_PYOBJECT_CKERNEL_HPP
+#ifndef PYDYND_COPY_TO_PYOBJECT_ARRFUNC_HPP
+#define PYDYND_COPY_TO_PYOBJECT_ARRFUNC_HPP
 
 #include <Python.h>
 
@@ -18,4 +18,4 @@ extern dynd::nd::arrfunc copy_to_pyobject_tuple;
 
 } // namespace pydynd
 
-#endif // PYDYND_COPY_TO_PYOBJECT_CKERNEL_HPP
+#endif // PYDYND_COPY_TO_PYOBJECT_ARRFUNC_HPP

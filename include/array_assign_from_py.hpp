@@ -13,13 +13,13 @@
 namespace pydynd {
 
 /**
- * Assigns the values from 'obj' to 'n', broadcasting
+ * Assigns the values from 'obj' to 'a', broadcasting
  * the input if requested.
  *
- * \param n  The array which is being assigned to.
+ * \param a  The array which is being assigned to.
  * \param obj  value PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::nd::array &n, PyObject *value,
+void array_broadcast_assign_from_py(const dynd::nd::array &a, PyObject *value,
                                     const dynd::eval::eval_context *ectx);
 
 /**

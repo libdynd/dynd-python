@@ -14,6 +14,7 @@
 #include "numpy_interop.hpp"
 #include "array_functions.hpp"
 #include "utility_functions.hpp"
+#include "copy_to_numpy_arrfunc.hpp"
 
 #include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
@@ -25,6 +26,7 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/property_type.hpp>
 #include <dynd/shape_tools.hpp>
+#include <dynd/kernels/assignment_kernels.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -329,6 +331,12 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
+  case string_type_id: {
+    // Convert to numpy object type, requires copy
+    out_numpy_dtype->clear();
+    *out_requires_copy = true;
+    return;
+  }
   case date_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     out_numpy_dtype->clear();
@@ -563,26 +571,26 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   throw dynd::type_error(ss.str());
 }
 
-PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
+PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
 {
-  if (!WArray_Check(n_obj)) {
+  if (!WArray_Check(a_obj)) {
     throw runtime_error("can only call dynd's as_numpy on dynd arrays");
   }
-  nd::array n = ((WArray *)n_obj)->v;
-  if (n.get_ndo() == NULL) {
+  nd::array a = ((WArray *)a_obj)->v;
+  if (a.get_ndo() == NULL) {
     throw runtime_error("cannot convert NULL dynd array to numpy");
   }
 
   // If a copy is allowed, convert the builtin scalars to NumPy scalars
-  if (allow_copy && n.get_type().is_scalar()) {
+  if (allow_copy && a.get_type().is_scalar()) {
     pyobject_ownref result;
-    switch (n.get_type().get_type_id()) {
+    switch (a.get_type().get_type_id()) {
     case uninitialized_type_id:
       throw runtime_error("cannot convert uninitialized dynd array to numpy");
     case void_type_id:
       throw runtime_error("cannot convert void dynd array to numpy");
     case bool_type_id:
-      if (*n.get_readonly_originptr()) {
+      if (*a.get_readonly_originptr()) {
         Py_INCREF(PyArrayScalar_True);
         result.reset(PyArrayScalar_True);
       } else {
@@ -594,80 +602,80 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
       result.reset(PyArrayScalar_New(Int8));
       PyArrayScalar_ASSIGN(
           result.get(), Int8,
-          *reinterpret_cast<const int8_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const int8_t *>(a.get_readonly_originptr()));
       break;
     case int16_type_id:
       result.reset(PyArrayScalar_New(Int16));
       PyArrayScalar_ASSIGN(
           result.get(), Int16,
-          *reinterpret_cast<const int16_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const int16_t *>(a.get_readonly_originptr()));
       break;
     case int32_type_id:
       result.reset(PyArrayScalar_New(Int32));
       PyArrayScalar_ASSIGN(
           result.get(), Int32,
-          *reinterpret_cast<const int32_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const int32_t *>(a.get_readonly_originptr()));
       break;
     case int64_type_id:
       result.reset(PyArrayScalar_New(Int64));
       PyArrayScalar_ASSIGN(
           result.get(), Int64,
-          *reinterpret_cast<const int64_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const int64_t *>(a.get_readonly_originptr()));
       break;
     case uint8_type_id:
       result.reset(PyArrayScalar_New(UInt8));
       PyArrayScalar_ASSIGN(
           result.get(), UInt8,
-          *reinterpret_cast<const uint8_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const uint8_t *>(a.get_readonly_originptr()));
       break;
     case uint16_type_id:
       result.reset(PyArrayScalar_New(UInt16));
       PyArrayScalar_ASSIGN(
           result.get(), UInt16,
-          *reinterpret_cast<const uint16_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const uint16_t *>(a.get_readonly_originptr()));
       break;
     case uint32_type_id:
       result.reset(PyArrayScalar_New(UInt32));
       PyArrayScalar_ASSIGN(
           result.get(), UInt32,
-          *reinterpret_cast<const uint32_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const uint32_t *>(a.get_readonly_originptr()));
       break;
     case uint64_type_id:
       result.reset(PyArrayScalar_New(UInt64));
       PyArrayScalar_ASSIGN(
           result.get(), UInt64,
-          *reinterpret_cast<const uint64_t *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const uint64_t *>(a.get_readonly_originptr()));
       break;
     case float32_type_id:
       result.reset(PyArrayScalar_New(Float32));
       PyArrayScalar_ASSIGN(
           result.get(), Float32,
-          *reinterpret_cast<const float *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const float *>(a.get_readonly_originptr()));
       break;
     case float64_type_id:
       result.reset(PyArrayScalar_New(Float64));
       PyArrayScalar_ASSIGN(
           result.get(), Float64,
-          *reinterpret_cast<const double *>(n.get_readonly_originptr()));
+          *reinterpret_cast<const double *>(a.get_readonly_originptr()));
       break;
     case complex_float32_type_id:
       result.reset(PyArrayScalar_New(Complex64));
       PyArrayScalar_VAL(result.get(), Complex64).real =
-          reinterpret_cast<const float *>(n.get_readonly_originptr())[0];
+          reinterpret_cast<const float *>(a.get_readonly_originptr())[0];
       PyArrayScalar_VAL(result.get(), Complex64).imag =
-          reinterpret_cast<const float *>(n.get_readonly_originptr())[1];
+          reinterpret_cast<const float *>(a.get_readonly_originptr())[1];
       break;
     case complex_float64_type_id:
       result.reset(PyArrayScalar_New(Complex128));
       PyArrayScalar_VAL(result.get(), Complex128).real =
-          reinterpret_cast<const double *>(n.get_readonly_originptr())[0];
+          reinterpret_cast<const double *>(a.get_readonly_originptr())[0];
       PyArrayScalar_VAL(result.get(), Complex128).imag =
-          reinterpret_cast<const double *>(n.get_readonly_originptr())[1];
+          reinterpret_cast<const double *>(a.get_readonly_originptr())[1];
       break;
     case date_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
       int32_t dateval =
-          *reinterpret_cast<const int32_t *>(n.get_readonly_originptr());
+          *reinterpret_cast<const int32_t *>(a.get_readonly_originptr());
       result.reset(PyArrayScalar_New(Datetime));
 
       PyArrayScalar_VAL(result.get(), Datetime) =
@@ -689,7 +697,7 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     case datetime_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
       int64_t datetimeval =
-          *reinterpret_cast<const int64_t *>(n.get_readonly_originptr());
+          *reinterpret_cast<const int64_t *>(a.get_readonly_originptr());
       if (datetimeval < 0) {
         datetimeval -= DYND_TICKS_PER_MICROSECOND - 1;
       }
@@ -716,17 +724,17 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
       // Because 'allow_copy' is true
       // we can evaluate any expressions and
       // make copies of strings
-      if (n.get_type().get_kind() == expression_kind) {
+      if (a.get_type().get_kind() == expression_kind) {
         // If it's an expression kind
-        pyobject_ownref n_tmp(wrap_array(n.eval()));
+        pyobject_ownref n_tmp(wrap_array(a.eval()));
         return array_as_numpy(n_tmp.get(), true);
-      } else if (n.get_type().get_kind() == string_kind) {
+      } else if (a.get_type().get_kind() == string_kind) {
         // If it's a string kind, return it as a Python unicode
-        return array_as_py(n, false);
+        return array_as_py(a, false);
       }
       stringstream ss;
       ss << "dynd as_numpy could not convert dynd type ";
-      ss << n.get_type();
+      ss << a.get_type();
       ss << " to a numpy dtype";
       throw dynd::type_error(ss.str());
     }
@@ -734,10 +742,10 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     return result.release();
   }
 
-  if (n.get_type().get_type_id() == var_dim_type_id) {
+  if (a.get_type().get_type_id() == var_dim_type_id) {
     // If it's a var_dim, use "[:]" indexing to
     // strip away this leading part so it's compatible with NumPy.
-    pyobject_ownref n_tmp(wrap_array(n(irange())));
+    pyobject_ownref n_tmp(wrap_array(a(irange())));
     return array_as_numpy(n_tmp.get(), allow_copy);
   }
   // TODO: Handle pointer type nicely as well
@@ -747,22 +755,22 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
   // convert it to NumPy
   bool requires_copy = false;
   pyobject_ownref numpy_dtype;
-  size_t ndim = n.get_ndim();
+  size_t ndim = a.get_ndim();
   dimvector shape(ndim), strides(ndim);
 
-  n.get_shape(shape.get());
-  n.get_strides(strides.get());
-  as_numpy_analysis(&numpy_dtype, &requires_copy, ndim, n.get_type(),
-                    n.get_arrmeta());
+  a.get_shape(shape.get());
+  a.get_strides(strides.get());
+  as_numpy_analysis(&numpy_dtype, &requires_copy, ndim, a.get_type(),
+                    a.get_arrmeta());
   if (requires_copy) {
     if (!allow_copy) {
       stringstream ss;
-      ss << "cannot view dynd array with dtype " << n.get_type();
+      ss << "cannot view dynd array with dtype " << a.get_type();
       ss << " as numpy without making a copy";
       throw dynd::type_error(ss.str());
     }
-    make_numpy_dtype_for_copy(&numpy_dtype, ndim, n.get_type(),
-                              n.get_arrmeta());
+    make_numpy_dtype_for_copy(&numpy_dtype, ndim, a.get_type(),
+                              a.get_arrmeta());
 
     // Rebuild the strides so that the copy follows 'KEEPORDER'
     intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;
@@ -779,24 +787,32 @@ PyObject *pydynd::array_as_numpy(PyObject *n_obj, bool allow_copy)
     pyobject_ownref result(PyArray_NewFromDescr(
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
         shape.get(), strides.get(), NULL, 0, NULL));
-    // Create a dynd array view of this result
-    nd::array result_dynd =
-        array_from_numpy_array((PyArrayObject *)result.get(), 0, false);
-    // Copy the values using this view
-    result_dynd.vals() = n;
+    assignment_ckernel_builder ckb;
+    copy_to_numpy_arrmeta dst_arrmeta;
+    dst_arrmeta.dst_obj = result.get();
+    dst_arrmeta.dst_alignment = 0;
+    const arrfunc_type_data *af = copy_to_numpy.get();
+    const char *src_arrmeta = a.get_arrmeta();
+    af->instantiate(af, &ckb, 0, ndt::make_type<void>(),
+                    reinterpret_cast<const char *>(&dst_arrmeta), &a.get_type(),
+                    &src_arrmeta, kernel_request_single,
+                    &eval::default_eval_context);
+    ckb((char *)PyArray_DATA((PyArrayObject *)result.get()),
+        a.get_readonly_originptr());
+
     // Return the NumPy array
     return result.release();
   } else {
     // Create a view directly to the dynd array
     pyobject_ownref result(PyArray_NewFromDescr(
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
-        shape.get(), strides.get(), n.get_ndo()->m_data_pointer,
-        ((n.get_flags() & nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) |
+        shape.get(), strides.get(), a.get_ndo()->m_data_pointer,
+        ((a.get_flags() & nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) |
             NPY_ARRAY_ALIGNED,
         NULL));
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
-    Py_INCREF(n_obj);
-    if (PyArray_SetBaseObject((PyArrayObject *)result.get(), n_obj) < 0) {
+    Py_INCREF(a_obj);
+    if (PyArray_SetBaseObject((PyArrayObject *)result.get(), a_obj) < 0) {
       throw runtime_error("propagating python exception");
     }
 #else

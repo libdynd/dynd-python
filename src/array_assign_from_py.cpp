@@ -914,10 +914,10 @@ void pydynd::array_nodim_broadcast_assign_from_py(
     array_assign_from_value(dt, arrmeta, data, value, ectx);
 }
 
-void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &n,
+void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
                                             PyObject *value,
                                             const eval::eval_context *ectx)
 {
-    array_broadcast_assign_from_py(n.get_type(), n.get_arrmeta(),
-                                   n.get_readwrite_originptr(), value, ectx);
+  array_broadcast_assign_from_py(a.get_type(), a.get_arrmeta(),
+                                 a.get_readwrite_originptr(), value, ectx);
 }

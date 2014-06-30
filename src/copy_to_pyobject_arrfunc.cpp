@@ -89,11 +89,7 @@ PyObject *pyint_from_int(int32_t v) {
 }
 
 PyObject *pyint_from_int(uint32_t v) {
-#if PY_VERSION_HEX >= 0x03000000
   return PyLong_FromUnsignedLong(v);
-#else
-  return PyInt_FromUnsignedLong(v);
-#endif
 }
 
 #if SIZEOF_LONG == 8
@@ -106,11 +102,7 @@ PyObject *pyint_from_int(int64_t v) {
 }
 
 PyObject *pyint_from_int(uint64_t v) {
-#if PY_VERSION_HEX >= 0x03000000
   return PyLong_FromUnsignedLong(v);
-#else
-  return PyInt_FromUnsignedLong(v);
-#endif
 }
 #else
 PyObject *pyint_from_int(int64_t v) {

@@ -25,19 +25,9 @@ using namespace pydynd;
 
 namespace {
 
-struct numpy_arrmeta {
-  // This is either the destination PyArrayObject *,
-  // or the destination PyArray_Descr *.
-  PyObject *dst_obj;
-  // This is the | together of the root data
-  // pointer and all the strides/offsets, and
-  // can be used to determine the minimum data alignment.
-  uintptr_t dst_alignment;
-};
-
 struct strided_of_numpy_arrmeta {
   strided_dim_type_arrmeta sdt[NPY_MAXDIMS];
-  numpy_arrmeta am;
+  copy_to_numpy_arrmeta am;
 };
 } // anonymous namespace
 
@@ -64,10 +54,12 @@ static intptr_t instantiate_copy_to_numpy(
 
   PyObject *dst_obj = *reinterpret_cast<PyObject *const *>(dst_arrmeta);
   uintptr_t dst_alignment = reinterpret_cast<const uintptr_t *>(dst_arrmeta)[1];
+
   if (PyArray_Check(dst_obj)) {
     PyArrayObject *dst_arr = reinterpret_cast<PyArrayObject *>(dst_obj);
     intptr_t dst_ndim = PyArray_NDIM(dst_arr);
     intptr_t src_ndim = src_tp[0].get_ndim();
+    dst_alignment |= reinterpret_cast<uintptr_t>(PyArray_DATA(dst_arr));
 
     strided_of_numpy_arrmeta dst_am_holder;
     const char *dst_am = reinterpret_cast<const char *>(
@@ -156,7 +148,7 @@ static intptr_t instantiate_copy_to_numpy(
       }
 
       vector<ndt::type> dst_fields_tp(field_count, ndt::make_type<void>());
-      vector<numpy_arrmeta> dst_arrmeta_values(field_count);
+      vector<copy_to_numpy_arrmeta> dst_arrmeta_values(field_count);
       vector<const char *> dst_fields_arrmeta(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         dst_arrmeta_values[i].dst_obj = (PyObject *)field_dtypes[i];

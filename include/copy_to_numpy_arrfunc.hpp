@@ -12,6 +12,20 @@
 
 namespace pydynd {
 
+/**
+ * This is the arrmeta to provide for the destination
+ * void type when instantiating the copy_to_numpy arrfunc.
+ */
+struct copy_to_numpy_arrmeta {
+  // This is either the destination PyArrayObject *,
+  // or the destination PyArray_Descr *.
+  PyObject *dst_obj;
+  // This is the | together of the root data
+  // pointer and all the strides/offsets, and
+  // can be used to determine the minimum data alignment.
+  uintptr_t dst_alignment;
+};
+
 extern dynd::nd::arrfunc copy_to_numpy;
 
 } // namespace pydynd

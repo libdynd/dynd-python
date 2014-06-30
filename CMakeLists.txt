@@ -129,18 +129,20 @@ include_directories(
     )
 
 set(pydynd_CPP_SRC
-    include/array_assign_from_py.hpp
-    include/array_as_pep3118.hpp
     include/array_as_numpy.hpp
+    include/array_as_pep3118.hpp
     include/array_as_py.hpp
-    include/array_functions.hpp
+    include/array_assign_from_py.hpp
     include/array_from_py.hpp
     include/array_from_py_dynamic.hpp
     include/array_from_py_typededuction.hpp
+    include/array_functions.hpp
     include/arrfunc_functions.hpp
     include/codegen_cache_functions.hpp
     include/arrfunc_from_instantiate_pyfunc.hpp
     include/arrfunc_from_pyfunc.hpp
+    include/copy_to_numpy_arrfunc.hpp
+    include/copy_to_pyobject_arrfunc.hpp
     include/ctypes_interop.hpp
     include/do_import_array.hpp
     include/elwise_gfunc_functions.hpp
@@ -157,16 +159,18 @@ set(pydynd_CPP_SRC
     include/type_functions.hpp
     include/utility_functions.hpp
     include/vm_elwise_program_functions.hpp
-    src/array_assign_from_py.cpp
-    src/array_as_pep3118.cpp
     src/array_as_numpy.cpp
+    src/array_as_pep3118.cpp
     src/array_as_py.cpp
+    src/array_assign_from_py.cpp
     src/array_functions.cpp
     src/array_from_py.cpp
     src/array_from_py_dynamic.cpp
     src/array_from_py_typededuction.cpp
     src/arrfunc_functions.cpp
     src/codegen_cache_functions.cpp
+    src/copy_to_numpy_arrfunc.cpp
+    src/copy_to_pyobject_arrfunc.cpp
     src/ctypes_interop.cpp
     src/elwise_map.cpp
     src/elwise_gfunc_functions.cpp

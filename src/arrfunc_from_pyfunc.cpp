@@ -52,19 +52,7 @@ namespace {
          */
         inline void init_kernfunc(kernel_request_t kernreq)
         {
-            switch (kernreq) {
-            case kernel_request_single:
-                base.set_function<expr_single_t>(&self_type::single);
-                break;
-            case kernel_request_strided:
-                base.set_function<expr_strided_t>(&self_type::strided);
-                break;
-            default: {
-                std::stringstream ss;
-                ss << "assignment ckernel init: unrecognized ckernel request " << (int)kernreq;
-                throw std::invalid_argument(ss.str());
-            }
-            }
+          base.set_expr_function<self_type>(kernreq);
         }
 
         inline void verify_postcall_consistency(PyObject *args)

@@ -31,54 +31,71 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
+void pydynd::extract_fields_from_numpy_struct(
+    PyArray_Descr *d, vector<PyArray_Descr *> &out_field_dtypes,
+    vector<string> &out_field_names, vector<size_t> &out_field_offsets)
+{
+  if (!PyDataType_HASFIELDS(d)) {
+    throw dynd::type_error(
+        "Tried to treat a non-structured NumPy dtype as a structure");
+  }
+
+  PyObject *names = d->names;
+  Py_ssize_t names_size = PyTuple_GET_SIZE(names);
+
+  for (Py_ssize_t i = 0; i < names_size; ++i) {
+    PyObject *key = PyTuple_GET_ITEM(names, i);
+    PyObject *tup = PyDict_GetItem(d->fields, key);
+    PyArray_Descr *fld_dtype;
+    PyObject *title;
+    int offset = 0;
+    if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
+      throw dynd::type_error("Numpy struct dtype has corrupt data");
+    }
+    out_field_dtypes.push_back(fld_dtype);
+    out_field_names.push_back(pystring_as_string(key));
+    out_field_offsets.push_back(offset);
+  }
+}
+
 ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
 {
-    vector<ndt::type> field_types;
-    vector<string> field_names;
-    vector<size_t> field_offsets;
+  vector<PyArray_Descr *> field_dtypes;
+  vector<string> field_names;
+  vector<size_t> field_offsets;
 
-    if (!PyDataType_HASFIELDS(d)) {
-        throw dynd::type_error("Tried to make a tuple dtype from a Numpy descr without fields");
+  extract_fields_from_numpy_struct(d, field_dtypes, field_names, field_offsets);
+
+  vector<ndt::type> field_types;
+
+  if (data_alignment == 0) {
+    data_alignment = (size_t)d->alignment;
+  }
+
+  // The alignment must divide into the total element size,
+  // shrink it until it does.
+  while (!offset_is_aligned((size_t)d->elsize, data_alignment)) {
+    data_alignment >>= 1;
+  }
+
+  for (size_t i = 0; i < field_dtypes.size(); ++i) {
+    PyArray_Descr *fld_dtype = field_dtypes[i];
+    size_t offset = field_offsets[i];
+    field_types.push_back(ndt_type_from_numpy_dtype(fld_dtype, data_alignment));
+    // If the field isn't aligned enough, turn it into an unaligned type
+    if (!offset_is_aligned(offset | data_alignment,
+                           field_types.back().get_data_alignment())) {
+      field_types.back() = make_unaligned(field_types.back());
     }
+  }
 
-    if (data_alignment == 0) {
-        data_alignment = (size_t)d->alignment;
-    }
-
-    PyObject *names = d->names;
-    Py_ssize_t names_size = PyTuple_GET_SIZE(names);
-
-    // The alignment must divide into the total element size,
-    // shrink it until it does.
-    while (!offset_is_aligned((size_t)d->elsize, data_alignment)) {
-        data_alignment >>= 1;
-    }
-
-    for (Py_ssize_t i = 0; i < names_size; ++i) {
-        PyObject *key = PyTuple_GET_ITEM(names, i);
-        PyObject *tup = PyDict_GetItem(d->fields, key);
-        PyArray_Descr *fld_dtype;
-        PyObject *title;
-        int offset = 0;
-        if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
-            throw dynd::type_error("Numpy struct dtype has corrupt data");
-        }
-        field_types.push_back(ndt_type_from_numpy_dtype(fld_dtype, data_alignment));
-        // If the field isn't aligned enough, turn it into an unaligned type
-        if (!offset_is_aligned(offset | data_alignment, field_types.back().get_data_alignment())) {
-            field_types.back() = make_unaligned(field_types.back());
-        }
-        field_names.push_back(pystring_as_string(key));
-        field_offsets.push_back(offset);
-    }
-
-    // Make a cstruct if possible, struct otherwise
-    if (is_cstruct_compatible_offsets(field_types.size(),
-                    &field_types[0], &field_offsets[0], d->elsize)) {
-        return ndt::make_cstruct(field_names, field_types);
-    } else {
-        return ndt::make_struct(field_names, field_types);
-    }
+  // Make a cstruct if possible, struct otherwise
+  if (is_cstruct_compatible_offsets(field_types.size(), &field_types[0],
+                                    &field_offsets[0], d->elsize)) {
+    return ndt::make_cstruct(field_names, field_types);
+  } else {
+    return ndt::make_struct(field_names, field_types);
+  }
 }
 
 ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
@@ -863,12 +880,8 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
         }
 #endif
     } else if (PyArray_IsScalar(obj, Void)) {
-        const PyVoidScalarObject *scalar = (const PyVoidScalarObject *)obj;
-        ndt::type tp = ndt_type_from_numpy_dtype(scalar->descr,
-                            reinterpret_cast<size_t>(scalar->obval));
-        // Use the canonical type (get rid of unaligned, etc)
-        result = nd::empty(tp.get_canonical_type());
-        result.val_assign(tp, NULL, scalar->obval);
+      pyobject_ownref arr(PyArray_FromAny(obj, NULL, 0, 0, 0, NULL));
+      return array_from_numpy_array((PyArrayObject *)arr.get(), access_flags, true);
     } else {
         stringstream ss;
         pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));

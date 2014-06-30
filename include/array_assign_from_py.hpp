@@ -3,8 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DYND__NDOBJECT_ASSIGN_FROM_PY_HPP_
-#define _DYND__NDOBJECT_ASSIGN_FROM_PY_HPP_
+#ifndef PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
+#define PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
 
 #include <Python.h>
 
@@ -13,13 +13,13 @@
 namespace pydynd {
 
 /**
- * Assigns the values from 'obj' to 'n', broadcasting
+ * Assigns the values from 'obj' to 'a', broadcasting
  * the input if requested.
  *
- * \param n  The array which is being assigned to.
+ * \param a  The array which is being assigned to.
  * \param obj  value PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::nd::array &n, PyObject *value,
+void array_broadcast_assign_from_py(const dynd::nd::array &a, PyObject *value,
                                     const dynd::eval::eval_context *ectx);
 
 /**
@@ -52,5 +52,5 @@ void array_nodim_broadcast_assign_from_py(const dynd::ndt::type &dt,
 
 } // namespace pydynd
 
-#endif // _DYND__NDOBJECT_ASSIGN_FROM_PY_HPP_
+#endif // PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
 

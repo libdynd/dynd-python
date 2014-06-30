@@ -591,6 +591,21 @@ class TestNumpyScalarInterop(unittest.TestCase):
         b = nd.as_numpy(a, allow_copy=True)
         assert_equal(b, np.array(['2000-12-13T12:30Z', '1995-05-02T02:15:33Z'],
                                  dtype='M8[us]'))
+    def test_string_as_numpy(self):
+        a = nd.array(["this", "is", "a", "test of varlen strings"])
+        b = nd.as_numpy(a, allow_copy=True)
+        self.assertEqual(b.dtype, np.dtype('O'))
+        assert_equal(b, np.array(["this", "is", "a", "test of varlen strings"],
+                                 dtype='O'))
+        # Also in a struct
+        a = nd.array([(1, "testing", 1.5), (10, "abc", 2)],
+                     type="strided * {x: int, y: string, z: real}")
+        b = nd.as_numpy(a, allow_copy=True)
+        self.assertEqual(b.dtype, np.dtype([('x', 'int32'),
+                                            ('y', 'O'),
+                                            ('z', 'float64')], align=True))
+        self.assertEqual(b.tolist(), [(1, "testing", 1.5), (10, "abc", 2)])
+
 
 if __name__ == '__main__':
     unittest.main()

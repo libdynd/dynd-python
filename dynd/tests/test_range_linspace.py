@@ -21,7 +21,7 @@ class TestArange(unittest.TestCase):
 
     def test_specified_dtype(self):
         # Must return the requested type
-        self.assertRaises(TypeError, nd.range, 10, dtype=ndt.bool)
+        self.assertRaises(OverflowError, nd.range, 10, dtype=ndt.bool)
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.int8)), ndt.int8)
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.int16)), ndt.int16)
         self.assertEqual(nd.dtype_of(nd.range(10, dtype=ndt.int32)), ndt.int32)

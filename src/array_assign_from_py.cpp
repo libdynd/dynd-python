@@ -26,6 +26,7 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
+#include "copy_from_pyobject_arrfunc.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -268,7 +269,7 @@ static void array_assign_from_value(const dynd::ndt::type &dt,
                         bytes_dt, reinterpret_cast<const char *>(&bytes_md), reinterpret_cast<const char *>(&bytes_d));
 #endif
         } else if (PyUnicode_Check(value)) {
-            // Go through UTF8 (was accessing the cpython uniocde values directly
+            // Go through UTF8 (was accessing the cpython unicode values directly
             // before, but on Python 3.3 OS X it didn't work correctly.)
             pyobject_ownref utf8(PyUnicode_AsUTF8String(value));
             char *s = NULL;
@@ -840,6 +841,15 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                             PyObject *value,
                                             const eval::eval_context *ectx)
 {
+  assignment_ckernel_builder ckb;
+  const arrfunc_type_data *af = copy_from_pyobject.get();
+  ndt::type src_tp = ndt::make_type<void>();
+  const char *src_arrmeta = NULL;
+  af->instantiate(af, &ckb, 0, dt, arrmeta, &src_tp, &src_arrmeta,
+                  kernel_request_single, ectx);
+  ckb(data, reinterpret_cast<const char *>(&value));
+  return;
+
     // Special-case assigning from known array types
     if (WArray_Check(value)) {
         const nd::array& n = ((WArray *)value)->v;

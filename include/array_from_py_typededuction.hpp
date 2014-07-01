@@ -112,6 +112,13 @@ void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type& tp,
  */
 size_t get_nonragged_dim_count(const dynd::ndt::type& tp, size_t max_count=std::numeric_limits<size_t>::max());
 
+/**
+ * Analyzes the Python object against the dynd type to heuristically
+ * determine whether copying should broadcast it as a scalar or consume
+ * a dimension of the object.
+ */
+bool broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj);
+
 
 } // namespace pydynd
 

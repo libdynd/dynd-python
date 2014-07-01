@@ -676,19 +676,19 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 
 static bool ndt_type_requires_shape(const ndt::type& tp)
 {
-    if (tp.get_ndim() > 0) {
-        switch (tp.get_type_id()) {
-            case cfixed_dim_type_id:
-            case var_dim_type_id:
-                return ndt_type_requires_shape(
-                                static_cast<const base_uniform_dim_type *>(
-                                    tp.extended())->get_element_type());
-            default:
-                return true;
-        }
-    } else {
-        return false;
+  if (tp.get_ndim() > 0) {
+    switch (tp.get_type_id()) {
+    case cfixed_dim_type_id:
+    case fixed_dim_type_id:
+    case var_dim_type_id:
+      return ndt_type_requires_shape(static_cast<const base_uniform_dim_type *>(
+                                         tp.extended())->get_element_type());
+    default:
+      return true;
     }
+  } else {
+    return false;
+  }
 }
 
 dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,

@@ -266,7 +266,7 @@ inline void convert_one_pyscalar_option(const ndt::type &tp,
         tp.tcast<option_type>()->assign_na(arrmeta, out,
                                            &eval::default_eval_context);
     } else {
-        array_nodim_broadcast_assign_from_py(tp, arrmeta, out, obj, ectx);
+        array_no_dim_broadcast_assign_from_py(tp, arrmeta, out, obj, ectx);
     }
 }
 
@@ -801,7 +801,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
         result = nd::empty(tp);
     }
 
-    array_nodim_broadcast_assign_from_py(
+    array_no_dim_broadcast_assign_from_py(
         result.get_type(), result.get_arrmeta(),
         result.get_readwrite_originptr(), obj, ectx);
 

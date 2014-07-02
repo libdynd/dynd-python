@@ -228,13 +228,13 @@ static void set_single_parameter(const ndt::type& paramtype, char *arrmeta, char
                 PyObject *value, vector<nd::array>& out_storage)
 {
     // NOTE: ndarrayarg is a borrowed reference to an nd::array
-    if (paramtype.get_type_id() == ndarrayarg_type_id) {
-        out_storage.push_back(
-            array_from_py(value, 0, false, &eval::default_eval_context));
-        *(const void **)data = out_storage.back().get_ndo();
-    } else {
-        array_nodim_broadcast_assign_from_py(paramtype, arrmeta, data, value,
-                                             &eval::default_eval_context);
+  if (paramtype.get_type_id() == ndarrayarg_type_id) {
+    out_storage.push_back(
+        array_from_py(value, 0, false, &eval::default_eval_context));
+    *(const void **)data = out_storage.back().get_ndo();
+  } else {
+      array_no_dim_broadcast_assign_from_py(paramtype, arrmeta, data, value,
+                                            &eval::default_eval_context);
     }
 }
 

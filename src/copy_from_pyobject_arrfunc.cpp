@@ -93,7 +93,6 @@ void pyint_to_int(int32_t *out, PyObject *obj) {
   if (v == -1 && PyErr_Occurred()) {
     throw exception();
   }
-cout << "v is " << v << endl;
   if (parse::overflow_check<int32_t>::is_overflow(v)) {
     throw overflow_error("overflow assigning to dynd int32");
   }
@@ -192,7 +191,16 @@ struct int_ck : public kernels::unary_ck<int_ck<T> > {
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
-    pyint_to_int(reinterpret_cast<T *>(dst), src_obj);
+    if (PyLong_Check(src_obj)
+#if PY_VERSION_HEX < 0x03000000
+        || PyInt_Check(src_obj)
+#endif
+        ) {
+      pyint_to_int(reinterpret_cast<T *>(dst), src_obj);
+    } else {
+      *reinterpret_cast<T *>(dst) =
+          array_from_py(src_obj, 0, false, &eval::default_eval_context).as<T>();
+    }
   }
 };
 
@@ -201,11 +209,16 @@ struct float_ck : public kernels::unary_ck<float_ck<T> > {
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
-    double v = PyFloat_AsDouble(src_obj);
-    if (v == -1 && PyErr_Occurred()) {
-      throw exception();
+    if (PyFloat_Check(src_obj)) {
+      double v = PyFloat_AsDouble(src_obj);
+      if (v == -1 && PyErr_Occurred()) {
+        throw exception();
+      }
+      *reinterpret_cast<T *>(dst) = static_cast<T>(v);
+    } else {
+      *reinterpret_cast<T *>(dst) =
+          array_from_py(src_obj, 0, false, &eval::default_eval_context).as<T>();
     }
-    *reinterpret_cast<T *>(dst) = static_cast<T>(v);
   }
 };
 
@@ -214,12 +227,18 @@ struct complex_float_ck : public kernels::unary_ck<complex_float_ck<T> > {
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
-    Py_complex v = PyComplex_AsCComplex(src_obj);
-    if (v.real == -1 && PyErr_Occurred()) {
-      throw exception();
+    if (PyComplex_Check(src_obj)) {
+      Py_complex v = PyComplex_AsCComplex(src_obj);
+      if (v.real == -1 && PyErr_Occurred()) {
+        throw exception();
+      }
+      reinterpret_cast<T *>(dst)[0] = static_cast<T>(v.real);
+      reinterpret_cast<T *>(dst)[1] = static_cast<T>(v.imag);
+    } else {
+      *reinterpret_cast<dynd_complex<T> *>(dst) =
+          array_from_py(src_obj, 0, false, &eval::default_eval_context)
+              .as<dynd_complex<T> >();
     }
-    reinterpret_cast<T *>(dst)[0] = static_cast<T>(v.real);
-    reinterpret_cast<T *>(dst)[1] = static_cast<T>(v.imag);
   }
 };
 
@@ -267,7 +286,6 @@ struct any_string_ck : public kernels::unary_ck<any_string_ck> {
   const char *m_dst_arrmeta;
   inline void single(char *dst, const char *src)
   {
-cout << "processing string " << m_dst_tp << endl;
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
     char *pybytes_data = NULL;
     intptr_t pybytes_len = 0;
@@ -292,7 +310,7 @@ cout << "processing string " << m_dst_tp << endl;
                         reinterpret_cast<const char *>(&str_md),
                         reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
-    } else if {
+    } else if (PyString_Check(src_obj)) {
       char *pystr_data = NULL;
       intptr_t pystr_len = 0;
       if (PyString_AsStringAndSize(value, &pystr_data, &pystr_len) < 0) {
@@ -319,17 +337,6 @@ cout << "processing string " << m_dst_tp << endl;
          << " to a dynd bytes value";
       throw invalid_argument(ss.str());
     }
-
-    ndt::type bytes_tp = ndt::make_bytes(1);
-    string_type_data bytes_d;
-    string_type_arrmeta bytes_md;
-    bytes_d.begin = pybytes_data;
-    bytes_d.end = pybytes_data + pybytes_len;
-    bytes_md.blockref = NULL;
-
-    typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, bytes_tp,
-                      reinterpret_cast<const char *>(&bytes_md),
-                      reinterpret_cast<const char *>(&bytes_d));
   }
 };
 
@@ -366,10 +373,9 @@ struct date_ck : public kernels::unary_ck<date_ck> {
     } else if (WArray_Check(src_obj)) {
       typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((WArray *)src_obj)->v);
     } else {
-      stringstream ss;
-      ss << "Cannot assign object " << pyobject_repr(src_obj)
-         << " to a dynd date value";
-      throw invalid_argument(ss.str());
+      typed_data_assign(
+          m_dst_tp, m_dst_arrmeta, dst,
+          array_from_py(src_obj, 0, false, &eval::default_eval_context));
     }
   }
 };
@@ -391,10 +397,9 @@ struct time_ck : public kernels::unary_ck<time_ck> {
     } else if (WArray_Check(src_obj)) {
       typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((WArray *)src_obj)->v);
     } else {
-      stringstream ss;
-      ss << "Cannot assign object " << pyobject_repr(src_obj)
-         << " to a dynd time value";
-      throw invalid_argument(ss.str());
+      typed_data_assign(
+          m_dst_tp, m_dst_arrmeta, dst,
+          array_from_py(src_obj, 0, false, &eval::default_eval_context));
     }
   }
 };
@@ -422,10 +427,9 @@ struct datetime_ck : public kernels::unary_ck<datetime_ck> {
     } else if (WArray_Check(src_obj)) {
       typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((WArray *)src_obj)->v);
     } else {
-      stringstream ss;
-      ss << "Cannot assign object " << pyobject_repr(src_obj)
-         << " to a dynd date value";
-      throw invalid_argument(ss.str());
+      typed_data_assign(
+          m_dst_tp, m_dst_arrmeta, dst,
+          array_from_py(src_obj, 0, false, &eval::default_eval_context));
     }
   }
 };
@@ -473,6 +477,9 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
   intptr_t m_dim_size, m_stride;
   ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
+  bool m_dim_broadcast;
+  // Offset to ckernel which copies from dst to dst, for broadcasting case
+  intptr_t m_copy_dst_offset;
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
@@ -490,14 +497,13 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
 
     ckernel_prefix *copy_el = get_child_ckernel();
     expr_strided_t copy_el_fn = copy_el->get_function<expr_strided_t>();
-cout << "copy_el function is " << (void *)copy_el_fn << endl;
 
     // Get the input as an array of PyObject *
     pyobject_ownref src_fast;
     const char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
-    if (broadcast_as_scalar(m_dst_tp, src_obj)) {
+    if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
       child_src = src;
       src_dim_size = 1;
     } else {
@@ -509,23 +515,22 @@ cout << "copy_el function is " << (void *)copy_el_fn << endl;
     }
 
     if (src_dim_size != 1 && m_dim_size != src_dim_size) {
-        throw broadcast_error(m_dst_tp, m_dst_arrmeta, "python sequence object");
+      stringstream ss;
+      ss << "Cannot assign python value " << pyobject_repr(src_obj)
+         << " to a dynd " << m_dst_tp << " value";
+      throw broadcast_error(ss.str());
     }
     if (src_dim_size == 1 && m_dim_size > 1) {
       // Copy once from Python, then duplicate that element
-cout << "copy el function dst type is " << m_dst_tp << endl;
       intptr_t src_stride = 0;
-      copy_el_fn(dst, 0, &src, &src_stride, 1, copy_el);
-cout << "copy to all the rest" << endl;
-      assignment_strided_ckernel_builder ckb;
-      make_assignment_kernel(&ckb, 0, m_dst_tp, m_dst_arrmeta, m_dst_tp,
-                             m_dst_arrmeta, kernel_request_strided,
-                             &eval::default_eval_context);
-      ckb(dst + m_stride, m_stride, dst, 0, m_dim_size - 1);
+      copy_el_fn(dst, 0, &child_src, &child_stride, 1, copy_el);
+      ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
+      expr_strided_t copy_dst_fn = copy_dst->get_function<expr_strided_t>();
+      intptr_t zero = 0;
+      copy_dst_fn(dst + m_stride, m_stride, &dst, &zero, m_dim_size - 1,
+                  copy_dst);
     } else {
-cout << "copy el function dst type is " << m_dst_tp << endl;
       copy_el_fn(dst, m_stride, &child_src, &child_stride, m_dim_size, copy_el);
-cout << "copied all" << endl;
     }
     if (PyErr_Occurred()) {
       throw std::exception();
@@ -542,6 +547,9 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
   intptr_t m_offset, m_stride;
   ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
+  bool m_dim_broadcast;
+  // Offset to ckernel which copies from dst to dst, for broadcasting case
+  intptr_t m_copy_dst_offset;
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
@@ -565,7 +573,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
     const char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
-    if (broadcast_as_scalar(m_dst_tp, src_obj)) {
+    if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
       child_src = src;
       src_dim_size = 1;
     } else {
@@ -588,18 +596,22 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
     }
 
     if (src_dim_size != 1 && vdd->size != src_dim_size) {
-        throw broadcast_error(m_dst_tp, m_dst_arrmeta, "python sequence object");
+      stringstream ss;
+      ss << "Cannot assign python value " << pyobject_repr(src_obj)
+         << " to a dynd " << m_dst_tp << " value";
+      throw broadcast_error(ss.str());
     }
     if (src_dim_size == 1 && vdd->size > 1) {
       // Copy once from Python, then duplicate that element
       intptr_t src_stride = 0;
-      copy_el_fn(vdd->begin + m_offset, 0, &src, &src_stride, 1, copy_el);
-      assignment_strided_ckernel_builder ckb;
-      make_assignment_kernel(&ckb, 0, m_dst_tp, m_dst_arrmeta, m_dst_tp,
-                             m_dst_arrmeta, kernel_request_strided,
-                             &eval::default_eval_context);
-      ckb(vdd->begin + m_offset + m_stride, m_stride, vdd->begin + m_offset, 0,
-          vdd->size - 1);
+      copy_el_fn(vdd->begin + m_offset, 0, &child_src, &child_stride, 1,
+                 copy_el);
+      ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
+      expr_strided_t copy_dst_fn = copy_dst->get_function<expr_strided_t>();
+      intptr_t zero = 0;
+      const char *src_to_dup = vdd->begin + m_offset;
+      copy_dst_fn(vdd->begin + m_offset + m_stride, m_stride, &src_to_dup,
+                  &zero, vdd->size - 1, copy_dst);
     } else {
       copy_el_fn(vdd->begin + m_offset, m_stride, &child_src, &child_stride,
                  vdd->size, copy_el);
@@ -619,6 +631,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
 struct tuple_ck : public kernels::unary_ck<tuple_ck> {
   ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
+  bool m_dim_broadcast;
   vector<intptr_t> m_copy_el_offsets;
 
   inline void single(char *dst, const char *src)
@@ -645,7 +658,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
     const char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
-    if (broadcast_as_scalar(m_dst_tp, src_obj)) {
+    if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
       child_src = src;
       src_dim_size = 1;
     } else {
@@ -657,7 +670,10 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
     }
 
     if (src_dim_size != 1 && field_count != src_dim_size) {
-        throw broadcast_error(m_dst_tp, m_dst_arrmeta, "python sequence object");
+      stringstream ss;
+      ss << "Cannot assign python value " << pyobject_repr(src_obj)
+         << " to a dynd " << m_dst_tp << " value";
+      throw broadcast_error(ss.str());
     }
     if (src_dim_size == 1) {
       child_stride = 0;
@@ -686,6 +702,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
 struct struct_ck : public kernels::unary_ck<struct_ck> {
   ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
+  bool m_dim_broadcast;
   vector<intptr_t> m_copy_el_offsets;
 
   inline void single(char *dst, const char *src)
@@ -732,7 +749,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
           ss << "Input python dict has key ";
           print_escaped_utf8_string(ss, name);
           ss << ", but no such field is in destination dynd type " << m_dst_tp;
-          throw runtime_error(ss.str());
+          throw broadcast_error(ss.str());
         }
       }
 
@@ -743,7 +760,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
           print_escaped_utf8_string(
               ss, m_dst_tp.tcast<base_struct_type>()->get_field_name(i));
           ss << " as required by the data type " << m_dst_tp;
-          throw runtime_error(ss.str());
+          throw broadcast_error(ss.str());
         }
       }
     } else {
@@ -752,7 +769,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
       const char *child_src;
       intptr_t child_stride = sizeof(PyObject *);
       intptr_t src_dim_size;
-      if (broadcast_as_scalar(m_dst_tp, src_obj)) {
+      if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
         child_src = src;
         src_dim_size = 1;
       } else {
@@ -764,7 +781,10 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
       }
 
       if (src_dim_size != 1 && field_count != src_dim_size) {
-          throw broadcast_error(m_dst_tp, m_dst_arrmeta, "python sequence object");
+        stringstream ss;
+        ss << "Cannot assign python value " << pyobject_repr(src_obj)
+           << " to a dynd " << m_dst_tp << " value";
+        throw broadcast_error(ss.str());
       }
       if (src_dim_size == 1) {
         child_stride = 0;
@@ -805,7 +825,8 @@ static intptr_t instantiate_copy_from_pyobject(
     ss << src_tp[0] << ") -> " << dst_tp;
     throw type_error(ss.str());
   }
-cout << "instantiate_copy_from_pyobject with type " << dst_tp << endl;
+
+  bool dim_broadcast = *self_af->get_data_as<bool>();
 
   switch (dst_tp.get_type_id()) {
   case bool_type_id:
@@ -865,11 +886,9 @@ cout << "instantiate_copy_from_pyobject with type " << dst_tp << endl;
   }
   case string_type_id:
   case fixedstring_type_id: {
-cout << "instantiate string at offset " << ckb_offset << endl;
     any_string_ck *self = any_string_ck::create_leaf(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
-cout << "function is " << self->base.function << endl;
     return ckb_offset;
   }
   case date_type_id: {
@@ -919,20 +938,27 @@ cout << "function is " << self->base.function << endl;
     const char *el_arrmeta;
     if (dst_tp.get_as_strided_dim(dst_arrmeta, dim_size, stride, el_tp,
                                   el_arrmeta)) {
-cout << "instantiating strided for type " << dst_tp << endl;
+      intptr_t root_ckb_offset = ckb_offset;
       strided_ck *self = strided_ck::create(ckb, kernreq, ckb_offset);
       self->m_dim_size = dim_size;
       self->m_stride = stride;
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
-cout << "recursive call with type " << el_tp << " ckb_offset is " << ckb_offset << endl;
-      return self_af->instantiate(self_af, ckb, ckb_offset, el_tp, el_arrmeta,
-                                  src_tp, src_arrmeta, kernel_request_strided,
-                                  ectx);
+      self->m_dim_broadcast = dim_broadcast;
+      // from pyobject ckernel
+      ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, el_tp,
+                                        el_arrmeta, src_tp, src_arrmeta,
+                                        kernel_request_strided, ectx);
+      self = ckb->get_at<strided_ck>(root_ckb_offset);
+      self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
+      // dst to dst ckernel, for broadcasting case
+      return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
+                                    el_arrmeta, kernel_request_strided, ectx);
     }
     break;
   }
   case var_dim_type_id: {
+    intptr_t root_ckb_offset = ckb_offset;
     var_dim_ck *self = var_dim_ck::create(ckb, kernreq, ckb_offset);
     self->m_offset =
         reinterpret_cast<const var_dim_type_arrmeta *>(dst_arrmeta)->offset;
@@ -940,11 +966,17 @@ cout << "recursive call with type " << el_tp << " ckb_offset is " << ckb_offset 
         reinterpret_cast<const var_dim_type_arrmeta *>(dst_arrmeta)->stride;
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
+    self->m_dim_broadcast = dim_broadcast;
     ndt::type el_tp = dst_tp.tcast<var_dim_type>()->get_element_type();
     const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
-    return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
-                                &el_tp, &el_arrmeta, kernel_request_strided,
-                                ectx);
+    ckb_offset =
+        self_af->instantiate(self_af, ckb, ckb_offset, el_tp, el_arrmeta,
+                             src_tp, src_arrmeta, kernel_request_strided, ectx);
+    self = ckb->get_at<var_dim_ck>(root_ckb_offset);
+    self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
+    // dst to dst ckernel, for broadcasting case
+    return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
+                                  el_arrmeta, kernel_request_strided, ectx);
   }
   case tuple_type_id:
   case ctuple_type_id: {
@@ -957,6 +989,7 @@ cout << "recursive call with type " << el_tp << " ckb_offset is " << ckb_offset 
         dst_tp.tcast<base_tuple_type>()->get_field_types_raw();
     const uintptr_t *arrmeta_offsets =
         dst_tp.tcast<base_tuple_type>()->get_arrmeta_offsets_raw();
+    self->m_dim_broadcast = dim_broadcast;
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
       ckb->ensure_capacity(ckb_offset);
@@ -980,6 +1013,7 @@ cout << "recursive call with type " << el_tp << " ckb_offset is " << ckb_offset 
         dst_tp.tcast<base_struct_type>()->get_field_types_raw();
     const uintptr_t *arrmeta_offsets =
         dst_tp.tcast<base_struct_type>()->get_arrmeta_offsets_raw();
+    self->m_dim_broadcast = dim_broadcast;
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
       ckb->ensure_capacity(ckb_offset);
@@ -994,21 +1028,31 @@ cout << "recursive call with type " << el_tp << " ckb_offset is " << ckb_offset 
   }
   }
 
+  if (dst_tp.get_kind() == expression_kind) {
+    return make_chain_buf_tp_ckernel(
+        self_af, make_copy_arrfunc().get(), dst_tp.value_type(), ckb,
+        ckb_offset, dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq, ectx);
+  }
+
   stringstream ss;
   ss << "Unable to copy a Python object to dynd value with type " << dst_tp;
   throw invalid_argument(ss.str());
 }
 
-static nd::arrfunc make_copy_from_pyobject_arrfunc()
+static nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast)
 {
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
   af->func_proto = ndt::type("(void) -> A... * T");
   af->instantiate = &instantiate_copy_from_pyobject;
+  *af->get_data_as<bool>() = dim_broadcast;
   out_af.flag_as_immutable();
   return out_af;
 }
 
 dynd::nd::arrfunc pydynd::copy_from_pyobject =
-    make_copy_from_pyobject_arrfunc();
+    make_copy_from_pyobject_arrfunc(true);
+
+dynd::nd::arrfunc pydynd::copy_from_pyobject_no_dim_broadcast =
+    make_copy_from_pyobject_arrfunc(false);

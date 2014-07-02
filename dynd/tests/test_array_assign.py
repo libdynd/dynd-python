@@ -68,8 +68,8 @@ class TestStructAssign(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a[...] = [{'x':{'a':1,'b':2},'y':5},
-                        {'x':{'a':3,'b':6},'y':7},
-                        {'x':{'a':1001,'b':110},'y':110}]
+                  {'x':{'a':3,'b':6},'y':7},
+                  {'x':{'a':1001,'b':110},'y':110}]
         self.assertEqual(nd.as_py(a.x.a), [1, 3, 1001])
         self.assertEqual(nd.as_py(a.x.b), [2, 6, 110])
         self.assertEqual(nd.as_py(a.y), [5, 7, 110])
@@ -84,15 +84,15 @@ class TestStructAssign(unittest.TestCase):
         a = nd.empty('{x:int32, y:int32, z:int32}')
         def assign(x, y):
             x[...] = y
-        self.assertRaises(RuntimeError, assign, a, [0, 1])
-        self.assertRaises(RuntimeError, assign, a, {'x':0, 'z':1})
+        self.assertRaises(nd.BroadcastError, assign, a, [0, 1])
+        self.assertRaises(nd.BroadcastError, assign, a, {'x':0, 'z':1})
 
     def test_extra_field(self):
         a = nd.empty('{x:int32, y:int32, z:int32}')
         def assign(x, y):
             x[...] = y
-        self.assertRaises(RuntimeError, assign, a, [0, 1, 2, 3])
-        self.assertRaises(RuntimeError, assign, a, {'x':0,'y':1,'z':2,'w':3})
+        self.assertRaises(nd.BroadcastError, assign, a, [0, 1, 2, 3])
+        self.assertRaises(nd.BroadcastError, assign, a, {'x':0,'y':1,'z':2,'w':3})
 
 class TestIteratorAssign(unittest.TestCase):
     def test_simple_var_dim(self):

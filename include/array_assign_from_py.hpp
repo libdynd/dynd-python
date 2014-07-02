@@ -45,10 +45,9 @@ void array_broadcast_assign_from_py(const dynd::ndt::type &dt,
  * \param data  The data of the destination.
  * \param value The PyObject for the source data.
  */
-void array_nodim_broadcast_assign_from_py(const dynd::ndt::type &dt,
-                                          const char *arrmeta, char *data,
-                                          PyObject *value,
-                                          const dynd::eval::eval_context *ectx);
+void array_no_dim_broadcast_assign_from_py(
+    const dynd::ndt::type &dt, const char *arrmeta, char *data, PyObject *value,
+    const dynd::eval::eval_context *ectx);
 
 } // namespace pydynd
 

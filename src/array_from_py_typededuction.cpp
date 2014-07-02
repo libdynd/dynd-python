@@ -397,7 +397,6 @@ static intptr_t get_leading_dim_count(const dynd::ndt::type &tp) {
 bool pydynd::broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj)
 {
   intptr_t obj_ndim = 0;
-  bool dict_final = false;
   // Estimate the number of dimensions in ``obj`` by repeatedly indexing
   // along zero
   pyobject_ownref v(obj);
@@ -405,7 +404,11 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj)
   for(;;) {
     // Don't treat these types as sequences
     if (PyDict_Check(v)) {
-      dict_final = true;
+      if (tp.get_dtype().get_kind() == struct_kind) {
+        // If the object to assign to a dynd struct ends in a dict, apply
+        // the dict as the struct's value
+        return (tp.get_ndim() > obj_ndim);
+      }
       break;
     } else if (PyUnicode_Check(v) || PyBytes_Check(v)) {
       break;
@@ -414,15 +417,16 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj)
     if (iter != NULL) {
       ++obj_ndim;
       if (iter == v.get()) {
-        // This was already an iterator, treat it as the last
-        // dimension to avoid consuming any of its items
+        // This was already an iterator, don't do any broadcasting,
+        // because we have no visibility into it.
         Py_DECREF(iter);
-        break;
+        return false;
       } else {
         pyobject_ownref iter_owner(iter);
         PyObject *item = PyIter_Next(iter);
         if (item == NULL) {
           if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
+            PyErr_Clear();
             break;
           } else {
             throw exception();
@@ -437,8 +441,5 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj)
     }
   }
 
-  // If the dtype is a struct, adjust the ndim to let the struct absorb
-  // some of the sequences, by comparing get_leading_dim_count with our
-  // python heuristic
   return (get_leading_dim_count(tp) > obj_ndim);
 }

@@ -15,6 +15,8 @@ namespace pydynd {
 
 extern dynd::nd::arrfunc copy_from_pyobject;
 
+extern dynd::nd::arrfunc copy_from_pyobject_no_dim_broadcast;
+
 } // namespace pydynd
 
 #endif // PYDYND_COPY_FROM_PYOBJECT_ARRFUNC_HPP

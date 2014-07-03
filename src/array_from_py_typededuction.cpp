@@ -232,36 +232,37 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
 
 size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
 {
-    switch (tp.get_kind()) {    
-        case uniform_dim_kind:
-            if (max_count <= 1) {
-                return max_count;
-            } else {
-                return min(max_count,
-                        1 + get_nonragged_dim_count(
-                            static_cast<const base_uniform_dim_type *>(
-                                tp.extended())->get_element_type(), max_count - 1));
-            }
-        case struct_kind:
-            if (max_count <= 1) {
-                return max_count;
-            } else {
-                const base_struct_type *bsd = tp.tcast<base_struct_type>();
-                size_t field_count = bsd->get_field_count();
-                for (size_t i = 0; i != field_count; ++i) {
-                    size_t candidate = 1 + get_nonragged_dim_count(bsd->get_field_type(i), max_count - 1);
-                    if (candidate < max_count) {
-                        max_count = candidate;
-                        if (max_count <= 1) {
-                            return max_count;
-                        }
-                    }
-                }
-                return max_count;
-            }
-        default:
-            return 0;
+  switch (tp.get_kind()) {
+  case uniform_dim_kind:
+    if (max_count <= 1) {
+      return max_count;
+    } else {
+      return min(max_count, 1 + get_nonragged_dim_count(
+                                    static_cast<const base_uniform_dim_type *>(
+                                        tp.extended())->get_element_type(),
+                                    max_count - 1));
     }
+  case struct_kind:
+    if (max_count <= 1) {
+      return max_count;
+    } else {
+      const base_struct_type *bsd = tp.tcast<base_struct_type>();
+      size_t field_count = bsd->get_field_count();
+      for (size_t i = 0; i != field_count; ++i) {
+        size_t candidate =
+            1 + get_nonragged_dim_count(bsd->get_field_type(i), max_count - 1);
+        if (candidate < max_count) {
+          max_count = candidate;
+          if (max_count <= 1) {
+            return max_count;
+          }
+        }
+      }
+      return max_count;
+    }
+  default:
+    return 0;
+  }
 }
 
 void pydynd::deduce_pyseq_shape(PyObject *obj, size_t ndim, intptr_t *shape)
@@ -369,4 +370,76 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type& tp,
             }
         }
     }
+}
+
+/**
+ * Gets the number of dimensions at index 0, including tuple
+ * and struct as dimensions.
+ */
+static intptr_t get_leading_dim_count(const dynd::ndt::type &tp) {
+  intptr_t ndim = tp.get_ndim();
+  if (ndim) {
+    return ndim + get_leading_dim_count(tp.get_dtype());
+  } else if (tp.get_kind() == expression_kind) {
+    return get_leading_dim_count(tp.value_type());
+  } else if (tp.get_kind() == tuple_kind || tp.get_kind() == struct_kind) {
+    if (tp.tcast<base_tuple_type>()->get_field_count() == 0) {
+      return 1;
+    } else {
+      return 1 + get_leading_dim_count(
+                     tp.tcast<base_tuple_type>()->get_field_type(0));
+    }
+  } else {
+    return 0;
+  }
+}
+
+bool pydynd::broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj)
+{
+  intptr_t obj_ndim = 0;
+  // Estimate the number of dimensions in ``obj`` by repeatedly indexing
+  // along zero
+  pyobject_ownref v(obj);
+  Py_INCREF(v);
+  for(;;) {
+    // Don't treat these types as sequences
+    if (PyDict_Check(v)) {
+      if (tp.get_dtype().get_kind() == struct_kind) {
+        // If the object to assign to a dynd struct ends in a dict, apply
+        // the dict as the struct's value
+        return (tp.get_ndim() > obj_ndim);
+      }
+      break;
+    } else if (PyUnicode_Check(v) || PyBytes_Check(v)) {
+      break;
+    }
+    PyObject *iter = PyObject_GetIter(v);
+    if (iter != NULL) {
+      ++obj_ndim;
+      if (iter == v.get()) {
+        // This was already an iterator, don't do any broadcasting,
+        // because we have no visibility into it.
+        Py_DECREF(iter);
+        return false;
+      } else {
+        pyobject_ownref iter_owner(iter);
+        PyObject *item = PyIter_Next(iter);
+        if (item == NULL) {
+          if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
+            PyErr_Clear();
+            break;
+          } else {
+            throw exception();
+          }
+        } else {
+          v.reset(item);
+        }
+      }
+    } else {
+      PyErr_Clear();
+      break;
+    }
+  }
+
+  return (get_leading_dim_count(tp) > obj_ndim);
 }

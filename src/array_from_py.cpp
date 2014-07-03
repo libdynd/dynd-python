@@ -266,7 +266,7 @@ inline void convert_one_pyscalar_option(const ndt::type &tp,
         tp.tcast<option_type>()->assign_na(arrmeta, out,
                                            &eval::default_eval_context);
     } else {
-        array_nodim_broadcast_assign_from_py(tp, arrmeta, out, obj, ectx);
+        array_no_dim_broadcast_assign_from_py(tp, arrmeta, out, obj, ectx);
     }
 }
 
@@ -676,19 +676,19 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 
 static bool ndt_type_requires_shape(const ndt::type& tp)
 {
-    if (tp.get_ndim() > 0) {
-        switch (tp.get_type_id()) {
-            case cfixed_dim_type_id:
-            case var_dim_type_id:
-                return ndt_type_requires_shape(
-                                static_cast<const base_uniform_dim_type *>(
-                                    tp.extended())->get_element_type());
-            default:
-                return true;
-        }
-    } else {
-        return false;
+  if (tp.get_ndim() > 0) {
+    switch (tp.get_type_id()) {
+    case cfixed_dim_type_id:
+    case fixed_dim_type_id:
+    case var_dim_type_id:
+      return ndt_type_requires_shape(static_cast<const base_uniform_dim_type *>(
+                                         tp.extended())->get_element_type());
+    default:
+      return true;
     }
+  } else {
+    return false;
+  }
 }
 
 dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
@@ -801,7 +801,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
         result = nd::empty(tp);
     }
 
-    array_nodim_broadcast_assign_from_py(
+    array_no_dim_broadcast_assign_from_py(
         result.get_type(), result.get_arrmeta(),
         result.get_readwrite_originptr(), obj, ectx);
 

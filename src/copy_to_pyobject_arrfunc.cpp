@@ -141,8 +141,6 @@ PyObject *pyint_from_int(const dynd_int128& val)
   }
 }
 
-
-
 template <class T>
 struct int_ck : public kernels::unary_ck<int_ck<T> > {
   inline void single(char *dst, const char *src)
@@ -389,7 +387,7 @@ struct option_ck : public kernels::unary_ck<option_ck> {
     ckernel_prefix *is_avail = get_child_ckernel();
     expr_single_t is_avail_fn = is_avail->get_function<expr_single_t>();
     ckernel_prefix *copy_value = get_child_ckernel(m_copy_value_offset);
-    expr_single_t copy_value_fn = is_avail->get_function<expr_single_t>();
+    expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
     char value_is_avail = 0;
     is_avail_fn(&value_is_avail, &src, is_avail);
     if (value_is_avail != 0) {
@@ -681,10 +679,9 @@ static intptr_t instantiate_copy_to_pyobject(
     self->m_src_arrmeta = src_arrmeta[0];
     return ckb_offset;
   }
-  case type_type_id: {
+  case type_type_id:
     type_ck::create_leaf(ckb, kernreq, ckb_offset);
     return ckb_offset;
-  }
   case option_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
     option_ck *self = option_ck::create(ckb, kernreq, ckb_offset);
@@ -815,5 +812,7 @@ static nd::arrfunc make_copy_to_pyobject_arrfunc(bool struct_as_pytuple)
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::copy_to_pyobject_dict = make_copy_to_pyobject_arrfunc(false);
-dynd::nd::arrfunc pydynd::copy_to_pyobject_tuple = make_copy_to_pyobject_arrfunc(true);
+dynd::nd::arrfunc pydynd::copy_to_pyobject_dict =
+    make_copy_to_pyobject_arrfunc(false);
+dynd::nd::arrfunc pydynd::copy_to_pyobject_tuple =
+    make_copy_to_pyobject_arrfunc(true);

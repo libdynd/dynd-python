@@ -145,18 +145,23 @@ std::string pystring_as_string(PyObject *str);
 inline PyObject *pystring_from_string(const char *str)
 {
 #if PY_VERSION_HEX >= 0x03000000
-        return PyUnicode_FromString(str);
+  return PyUnicode_FromString(str);
 #else
-        return PyString_FromString(str);
+  return PyString_FromString(str);
 #endif
 }
-inline PyObject *pystring_from_string(const std::string& str)
+inline PyObject *pystring_from_string(const std::string &str)
 {
 #if PY_VERSION_HEX >= 0x03000000
-        return PyUnicode_FromStringAndSize(str.data(), str.size());
+  return PyUnicode_FromStringAndSize(str.data(), str.size());
 #else
-        return PyString_FromStringAndSize(str.data(), str.size());
+  return PyString_FromStringAndSize(str.data(), str.size());
 #endif
+}
+inline std::string pyobject_repr(PyObject *obj)
+{
+  pyobject_ownref src_repr(PyObject_Repr(obj));
+  return pystring_as_string(src_repr.get());
 }
 
 void pyobject_as_vector_ndt_type(PyObject *list_dtype, std::vector<dynd::ndt::type>& vector_dtype);

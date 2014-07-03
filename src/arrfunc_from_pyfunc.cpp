@@ -108,7 +108,7 @@ namespace {
             pyobject_ownref res(
                 PyObject_Call(self->m_pyfunc, args.get(), NULL));
             // Copy the result into the destination memory
-            array_nodim_broadcast_assign_from_py(dst_tp, self->m_dst_arrmeta,
+            array_no_dim_broadcast_assign_from_py(dst_tp, self->m_dst_arrmeta,
                                                  dst, res.get(), &self->m_ectx);
             res.clear();
             // Validate that the call didn't hang onto the ephemeral data
@@ -146,7 +146,7 @@ namespace {
                 pyobject_ownref res(
                     PyObject_Call(self->m_pyfunc, args.get(), NULL));
                 // Copy the result into the destination memory
-                array_nodim_broadcast_assign_from_py(
+                array_no_dim_broadcast_assign_from_py(
                     dst_tp, self->m_dst_arrmeta, dst, res.get(), &self->m_ectx);
                 res.clear();
                 // Validate that the call didn't hang onto the ephemeral data

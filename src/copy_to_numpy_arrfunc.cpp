@@ -29,6 +29,7 @@ struct strided_of_numpy_arrmeta {
   strided_dim_type_arrmeta sdt[NPY_MAXDIMS];
   copy_to_numpy_arrmeta am;
 };
+
 } // anonymous namespace
 
 /**
@@ -171,14 +172,11 @@ static intptr_t instantiate_copy_to_numpy(
           src_fields_arrmeta.get(), kernreq, ectx);
     } else {
       stringstream ss;
-      pyobject_ownref dtype_str(PyObject_Str((PyObject *)dtype));
       ss << "TODO: implement assign from source dynd type " << src_tp[0]
-         << " to numpy type " << pystring_as_string(dtype_str.get());
+         << " to numpy type " << pyobject_repr((PyObject *)dtype);
       throw invalid_argument(ss.str());
     }
   }
-
-  return ckb_offset;
 }
 
 static nd::arrfunc make_copy_to_numpy_arrfunc()

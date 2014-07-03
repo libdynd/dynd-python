@@ -571,27 +571,27 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a.size.id), [[10], [7, 5]])
 
     def test_missing_field(self):
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         [0, 1], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(TypeError, nd.array,
                         [0, 1], dtype='c{x:int32, y:int32, z:int32}')
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0, 'z':1}, type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0, 'z':1}, dtype='c{x:int32, y:int32, z:int32}')
 
     def test_extra_field(self):
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         [0, 1, 2, 3], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(TypeError, nd.array,
                         [0, 1, 2, 3], dtype='c{x:int32, y:int32, z:int32}')
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, dtype='c{x:int32, y:int32, z:int32}')
 
 class TestIteratorConstruct(unittest.TestCase):

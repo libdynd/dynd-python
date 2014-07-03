@@ -22,7 +22,7 @@ def fix_version(v):
             try:
                 vtup = vtup + (int(vlst[3]),)
                 # Zero pad the post version #, so it sorts lexicographically
-                vlst[3] = 'post%02d' % int(vlst[3])
+                vlst[3] = 'post%03d' % int(vlst[3])
             except ValueError:
                 pass
         return '.'.join(vlst), vtup

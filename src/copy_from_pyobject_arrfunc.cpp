@@ -109,6 +109,13 @@ void pyint_to_int(int64_t *out, PyObject *obj) {
 }
 
 void pyint_to_int(dynd_int128 *out, PyObject *obj) {
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
+    long value = PyInt_AS_LONG(obj);
+    *out = value;
+    return;
+  }
+#endif
   uint64_t lo = PyLong_AsUnsignedLongLongMask(obj);
   pyobject_ownref sixtyfour(PyLong_FromLong(64));
   pyobject_ownref value_shr1(PyNumber_Rshift(obj, sixtyfour.get()));
@@ -162,6 +169,16 @@ void pyint_to_int(uint32_t *out, PyObject *obj) {
 }
 
 void pyint_to_int(uint64_t *out, PyObject *obj) {
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
+    long value = PyInt_AS_LONG(obj);
+    if (value < 0) {
+      throw overflow_error("overflow assigning to dynd uint64");
+    }
+    *out = static_cast<unsigned long>(value);
+    return;
+  }
+#endif
   uint64_t v = PyLong_AsUnsignedLongLong(obj);
   if (v == -1 && PyErr_Occurred()) {
     throw exception();
@@ -170,6 +187,16 @@ void pyint_to_int(uint64_t *out, PyObject *obj) {
 }
 
 void pyint_to_int(dynd_uint128 *out, PyObject *obj) {
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
+    long value = PyInt_AS_LONG(obj);
+    if (value < 0) {
+      throw overflow_error("overflow assigning to dynd uint128");
+    }
+    *out = static_cast<unsigned long>(value);
+    return;
+  }
+#endif
   uint64_t lo = PyLong_AsUnsignedLongLongMask(obj);
   pyobject_ownref sixtyfour(PyLong_FromLong(64));
   pyobject_ownref value_shr1(PyNumber_Rshift(obj, sixtyfour.get()));

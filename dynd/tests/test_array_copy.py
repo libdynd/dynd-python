@@ -2,8 +2,76 @@ import sys
 import unittest
 from datetime import date
 from dynd import nd, ndt
+import numpy as np
 
-class TestStructAssign(unittest.TestCase):
+class TestCopyFromNumPy(unittest.TestCase):
+    def test_simple_strided(self):
+        a = nd.empty('3 * int32')
+        a[...] = np.int64(1)
+        self.assertEqual(nd.as_py(a), [1] * 3)
+        a[...] = np.array(2.0)
+        self.assertEqual(nd.as_py(a), [2] * 3)
+        a[...] = np.array([3], dtype=np.int8)
+        self.assertEqual(nd.as_py(a), [3] * 3)
+        a[...] = np.array([1, 2, 3])
+        self.assertEqual(nd.as_py(a), [1, 2, 3])
+
+    def test_simple_var(self):
+        a = nd.empty('var * int32')
+        a[...] = np.int64(1)
+        self.assertEqual(nd.as_py(a), [1])
+
+        a = nd.empty('var * int32')
+        a[...] = np.array(2.0)
+        self.assertEqual(nd.as_py(a), [2])
+
+        a = nd.empty('var * int32')
+        a[...] = np.array([3], dtype=np.int8)
+        self.assertEqual(nd.as_py(a), [3])
+
+        a = nd.empty('var * int32')
+        a[...] = np.array([1, 2, 3])
+        self.assertEqual(nd.as_py(a), [1, 2, 3])
+        a[...] = np.array([4])
+        self.assertEqual(nd.as_py(a), [4] * 3)
+
+    def test_object_arr(self):
+        a = nd.empty('3 * int')
+        a[...] = np.array([1, 2, 3.0], dtype=object)
+        self.assertEqual(nd.as_py(a), [1, 2, 3])
+
+        a = nd.empty('3 * string')
+        a[...] = np.array(['testing', 'one', u'two'], dtype=object)
+        self.assertEqual(nd.as_py(a), ['testing', 'one', 'two'])
+
+        a = nd.empty('3 * string')
+        a[...] = np.array(['broadcast_string'], dtype=object)
+        self.assertEqual(nd.as_py(a), ['broadcast_string'] * 3)
+
+        a = nd.empty('3 * string')
+        a[...] = np.array('testing', dtype=object)
+        self.assertEqual(nd.as_py(a), ['testing'] * 3)
+
+    def test_object_in_struct_arr(self):
+        a = nd.empty('3 * {x: int, y: string}')
+        a[...] = np.array([(1, 'test'), (2, u'one'), (3.0, 'two')],
+                          dtype=[('x', np.int64), ('y', object)])
+        self.assertEqual(nd.as_py(a, tuple=True),
+                         [(1, 'test'), (2, 'one'), (3, 'two')])
+
+        a = nd.empty('3 * {x: int, y: string}')
+        a[...] = np.array([('opposite', 4)],
+                          dtype=[('y', object), ('x', np.int64)])
+        self.assertEqual(nd.as_py(a, tuple=True),
+                         [(4, 'opposite')] * 3)
+
+        a = nd.empty('var * {x: int, y: string}')
+        a[...] = np.array([(1, 'test'), (2, u'one'), (3.0, 'two')],
+                          dtype=[('x', object), ('y', object)])
+        self.assertEqual(nd.as_py(a, tuple=True),
+                         [(1, 'test'), (2, 'one'), (3, 'two')])
+
+class TestStructCopy(unittest.TestCase):
     def test_single_struct(self):
         a = nd.empty('{x:int32, y:string, z:bool}')
         a[...] = [3, 'test', False]
@@ -155,7 +223,7 @@ class TestIteratorAssign(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, assign, a,
                         (x + 2 for x in range(11)))
 
-class TestStringAssign(unittest.TestCase):
+class TestStringCopy(unittest.TestCase):
     def test_string_assign_to_slice(self):
         a = nd.array(['a', 'b', 'c', 'd', 'e'], 'string[8]', access='rw')
         a[:3] = 'test'

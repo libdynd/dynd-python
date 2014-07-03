@@ -7,6 +7,7 @@
 #include <datetime.h>
 
 #include "copy_from_pyobject_arrfunc.hpp"
+#include "copy_from_numpy_arrfunc.hpp"
 #include "numpy_interop.hpp"
 #include "utility_functions.hpp"
 #include "type_functions.hpp"
@@ -313,7 +314,7 @@ struct any_string_ck : public kernels::unary_ck<any_string_ck> {
     } else if (PyString_Check(src_obj)) {
       char *pystr_data = NULL;
       intptr_t pystr_len = 0;
-      if (PyString_AsStringAndSize(value, &pystr_data, &pystr_len) < 0) {
+      if (PyString_AsStringAndSize(src_obj, &pystr_data, &pystr_len) < 0) {
         throw runtime_error("Error getting string data");
       }
 
@@ -490,7 +491,10 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
     }
 #ifdef DYND_NUMPY_INTEROP
     if (PyArray_Check(src_obj)) {
-      throw runtime_error("TODO: implement copy_from_pyobject call to numpy assignment");
+      array_copy_from_numpy(m_dst_tp, m_dst_arrmeta, dst,
+                            (PyArrayObject *)src_obj,
+                            &eval::default_eval_context);
+      return;
     }
 #endif
     // TODO: PEP 3118 support here
@@ -522,7 +526,6 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
     }
     if (src_dim_size == 1 && m_dim_size > 1) {
       // Copy once from Python, then duplicate that element
-      intptr_t src_stride = 0;
       copy_el_fn(dst, 0, &child_src, &child_stride, 1, copy_el);
       ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
       expr_strided_t copy_dst_fn = copy_dst->get_function<expr_strided_t>();
@@ -560,7 +563,10 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
     }
 #ifdef DYND_NUMPY_INTEROP
     if (PyArray_Check(src_obj)) {
-      throw runtime_error("TODO: implement copy_from_pyobject call to numpy assignment");
+      array_copy_from_numpy(m_dst_tp, m_dst_arrmeta, dst,
+                            (PyArrayObject *)src_obj,
+                            &eval::default_eval_context);
+      return;
     }
 #endif
     // TODO: PEP 3118 support here
@@ -603,7 +609,6 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
     }
     if (src_dim_size == 1 && vdd->size > 1) {
       // Copy once from Python, then duplicate that element
-      intptr_t src_stride = 0;
       copy_el_fn(vdd->begin + m_offset, 0, &child_src, &child_stride, 1,
                  copy_el);
       ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
@@ -644,7 +649,10 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
     }
 #ifdef DYND_NUMPY_INTEROP
     if (PyArray_Check(src_obj)) {
-      throw runtime_error("TODO: implement copy_from_pyobject call to numpy assignment");
+      array_copy_from_numpy(m_dst_tp, m_dst_arrmeta, dst,
+                            (PyArrayObject *)src_obj,
+                            &eval::default_eval_context);
+      return;
     }
 #endif
     // TODO: PEP 3118 support here
@@ -715,7 +723,10 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
     }
 #ifdef DYND_NUMPY_INTEROP
     if (PyArray_Check(src_obj)) {
-      throw runtime_error("TODO: implement copy_from_pyobject call to numpy assignment");
+      array_copy_from_numpy(m_dst_tp, m_dst_arrmeta, dst,
+                            (PyArrayObject *)src_obj,
+                            &eval::default_eval_context);
+      return;
     }
 #endif
     // TODO: PEP 3118 support here
@@ -820,7 +831,7 @@ static intptr_t instantiate_copy_from_pyobject(
 {
   if (src_tp[0].get_type_id() != void_type_id) {
     stringstream ss;
-    ss << "Cannot instantiate arrfunc with signature ";
+    ss << "Cannot instantiate arrfunc copy_from_pyobject with signature ";
     ss << self_af->func_proto << " with types (";
     ss << src_tp[0] << ") -> " << dst_tp;
     throw type_error(ss.str());
@@ -1026,6 +1037,8 @@ static intptr_t instantiate_copy_from_pyobject(
     }
     return ckb_offset;
   }
+  default:
+    break;
   }
 
   if (dst_tp.get_kind() == expression_kind) {

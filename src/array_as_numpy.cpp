@@ -54,8 +54,9 @@ static int dynd_to_numpy_type_id[builtin_type_id_count] = {
   NPY_NOTYPE
 };
 
-static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, 
-                intptr_t ndim, const ndt::type& dt, const char *arrmeta)
+static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
+                                      intptr_t ndim, const ndt::type &dt,
+                                      const char *arrmeta)
 {
   // DyND builtin types
   if (dt.is_builtin()) {

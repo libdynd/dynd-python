@@ -58,7 +58,8 @@ void pydynd::extract_fields_from_numpy_struct(
   }
 }
 
-ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
+ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
+                                             size_t data_alignment)
 {
   vector<PyArray_Descr *> field_dtypes;
   vector<string> field_names;
@@ -98,151 +99,183 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_align
   }
 }
 
-ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
+ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
+                                            size_t data_alignment)
 {
-    ndt::type dt;
+  ndt::type dt;
 
-    // We ignore d->alignment, because on some platforms dynd's alignmkent
-    // is more strict than the platform/numpy's alignment.
-    // E.g. On 32-bit linux, int64 is aligned to 8-bytes in dynd,
-    // but 4-bytes on the platform.
+  if (d->subarray) {
+    dt = ndt_type_from_numpy_dtype(d->subarray->base, data_alignment);
+    if (dt.get_data_size() == 0) {
+      // If the element size isn't fixed, use the strided array
+      int ndim = 1;
+      if (PyTuple_Check(d->subarray->shape)) {
+        ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
+      }
+      return ndt::make_strided_dim(dt, ndim);
+    } else {
+      // Otherwise make a fixed dim array
+      return dynd_make_cfixed_dim_type(d->subarray->shape, dt, Py_None);
+    }
+  }
 
-    if (d->subarray) {
-        dt = ndt_type_from_numpy_dtype(d->subarray->base, data_alignment);
-        if (dt.get_data_size() == 0) {
-            // If the element size isn't fixed, use the strided array
-            int ndim = 1;
-            if (PyTuple_Check(d->subarray->shape)) {
-                ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
+  switch (d->type_num) {
+  case NPY_BOOL:
+    dt = ndt::make_type<dynd_bool>();
+    break;
+  case NPY_BYTE:
+    dt = ndt::make_type<npy_byte>();
+    break;
+  case NPY_UBYTE:
+    dt = ndt::make_type<npy_ubyte>();
+    break;
+  case NPY_SHORT:
+    dt = ndt::make_type<npy_short>();
+    break;
+  case NPY_USHORT:
+    dt = ndt::make_type<npy_ushort>();
+    break;
+  case NPY_INT:
+    dt = ndt::make_type<npy_int>();
+    break;
+  case NPY_UINT:
+    dt = ndt::make_type<npy_uint>();
+    break;
+  case NPY_LONG:
+    dt = ndt::make_type<npy_long>();
+    break;
+  case NPY_ULONG:
+    dt = ndt::make_type<npy_ulong>();
+    break;
+  case NPY_LONGLONG:
+    dt = ndt::make_type<npy_longlong>();
+    break;
+  case NPY_ULONGLONG:
+    dt = ndt::make_type<npy_ulonglong>();
+    break;
+  case NPY_FLOAT:
+    dt = ndt::make_type<float>();
+    break;
+  case NPY_DOUBLE:
+    dt = ndt::make_type<double>();
+    break;
+  case NPY_CFLOAT:
+    dt = ndt::make_type<complex<float> >();
+    break;
+  case NPY_CDOUBLE:
+    dt = ndt::make_type<complex<double> >();
+    break;
+  case NPY_STRING:
+    dt = ndt::make_fixedstring(d->elsize, string_encoding_ascii);
+    break;
+  case NPY_UNICODE:
+    dt = ndt::make_fixedstring(d->elsize / 4, string_encoding_utf_32);
+    break;
+  case NPY_VOID:
+    dt = make_struct_type_from_numpy_struct(d, data_alignment);
+    break;
+  case NPY_OBJECT: {
+    if (d->fields != NULL && d->fields != Py_None) {
+      // Check for an h5py vlen string type (h5py 2.2 style)
+      PyObject *vlen_tup = PyMapping_GetItemString(d->fields, "vlen");
+      if (vlen_tup != NULL) {
+        pyobject_ownref vlen_tup_owner(vlen_tup);
+        if (PyTuple_Check(vlen_tup) && PyTuple_GET_SIZE(vlen_tup) == 3) {
+          PyObject *type_dict = PyTuple_GET_ITEM(vlen_tup, 2);
+          if (PyDict_Check(type_dict)) {
+            PyObject *type = PyDict_GetItemString(type_dict, "type");
+#if PY_VERSION_HEX < 0x03000000
+            if (type == (PyObject *)&PyString_Type ||
+                type == (PyObject *)&PyUnicode_Type) {
+#else
+            if (type == (PyObject *)&PyUnicode_Type) {
+#endif
+              dt = ndt::make_string();
             }
-            return ndt::make_strided_dim(dt, ndim);
-        } else {
-            // Otherwise make a fixed dim array
-            return dynd_make_cfixed_dim_type(d->subarray->shape, dt, Py_None);
+          }
         }
+      } else {
+        PyErr_Clear();
+      }
     }
-
-    switch (d->type_num) {
-    case NPY_BOOL:
-        dt = ndt::make_type<dynd_bool>();
-        break;
-    case NPY_BYTE:
-        dt = ndt::make_type<npy_byte>();
-        break;
-    case NPY_UBYTE:
-        dt = ndt::make_type<npy_ubyte>();
-        break;
-    case NPY_SHORT:
-        dt = ndt::make_type<npy_short>();
-        break;
-    case NPY_USHORT:
-        dt = ndt::make_type<npy_ushort>();
-        break;
-    case NPY_INT:
-        dt = ndt::make_type<npy_int>();
-        break;
-    case NPY_UINT:
-        dt = ndt::make_type<npy_uint>();
-        break;
-    case NPY_LONG:
-        dt = ndt::make_type<npy_long>();
-        break;
-    case NPY_ULONG:
-        dt = ndt::make_type<npy_ulong>();
-        break;
-    case NPY_LONGLONG:
-        dt = ndt::make_type<npy_longlong>();
-        break;
-    case NPY_ULONGLONG:
-        dt = ndt::make_type<npy_ulonglong>();
-        break;
-    case NPY_FLOAT:
-        dt = ndt::make_type<float>();
-        break;
-    case NPY_DOUBLE:
-        dt = ndt::make_type<double>();
-        break;
-    case NPY_CFLOAT:
-        dt = ndt::make_type<complex<float> >();
-        break;
-    case NPY_CDOUBLE:
-        dt = ndt::make_type<complex<double> >();
-        break;
-    case NPY_STRING:
-        dt = ndt::make_fixedstring(d->elsize, string_encoding_ascii);
-        break;
-    case NPY_UNICODE:
-        dt = ndt::make_fixedstring(d->elsize / 4, string_encoding_utf_32);
-        break;
-    case NPY_VOID:
-        dt = make_struct_type_from_numpy_struct(d, data_alignment);
-        break;
+    // Check for an h5py vlen string type (h5py 2.3 style)
+    if (d->metadata != NULL && PyDict_Check(d->metadata)) {
+      PyObject *type = PyDict_GetItemString(d->metadata, "vlen");
+#if PY_VERSION_HEX < 0x03000000
+      if (type == (PyObject *)&PyString_Type ||
+          type == (PyObject *)&PyUnicode_Type) {
+#else
+      if (type == (PyObject *)&PyUnicode_Type) {
+#endif
+        dt = ndt::make_string();
+      }
+    }
+    break;
+  }
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
-    case NPY_DATETIME: {
-        // Get the dtype info through the CPython API, slower
-        // but lets NumPy's datetime API change without issue.
-        pyobject_ownref mod(PyImport_ImportModule("numpy"));
-        pyobject_ownref dd(PyObject_CallMethod(mod.get(),
-                        const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
-        PyObject *unit = PyTuple_GetItem(dd.get(), 0);
-        if (unit == NULL) {
-            throw runtime_error("");
-        }
-        string s = pystring_as_string(unit);
-        if (s == "D") {
-            // If it's 'datetime64[D]', then use an adapter type with appropriate
-            // metadata
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(), ndt::make_date(),
-                                 "days since 1970");
-        } else if (s == "h") {
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
-                                 ndt::make_datetime(tz_utc),
-                                 "hours since 1970");
-        } else if (s == "m") {
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
-                                 ndt::make_datetime(tz_utc),
-                                 "minutes since 1970");
-        } else if (s == "s") {
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
-                                 ndt::make_datetime(tz_utc),
-                                 "seconds since 1970");
-        } else if (s == "ms") {
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
-                                 ndt::make_datetime(tz_utc),
-                                 "milliseconds since 1970");
-        } else if (s == "us") {
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
-                                 ndt::make_datetime(tz_utc),
-                                 "microseconds since 1970");
-        } else if (s == "ns") {
-            dt = ndt::make_adapt(ndt::make_type<int64_t>(),
-                                 ndt::make_datetime(tz_utc),
-                                 "nanoseconds since 1970");
-        }
-        break;
+  case NPY_DATETIME: {
+    // Get the dtype info through the CPython API, slower
+    // but lets NumPy's datetime API change without issue.
+    pyobject_ownref mod(PyImport_ImportModule("numpy"));
+    pyobject_ownref dd(PyObject_CallMethod(mod.get(),
+                                           const_cast<char *>("datetime_data"),
+                                           const_cast<char *>("O"), d));
+    PyObject *unit = PyTuple_GetItem(dd.get(), 0);
+    if (unit == NULL) {
+      throw runtime_error("");
     }
+    string s = pystring_as_string(unit);
+    if (s == "D") {
+      // If it's 'datetime64[D]', then use an adapter type with appropriate
+      // metadata
+      dt = ndt::make_adapt(ndt::make_type<int64_t>(), ndt::make_date(),
+                           "days since 1970");
+    } else if (s == "h") {
+      dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                           ndt::make_datetime(tz_utc), "hours since 1970");
+    } else if (s == "m") {
+      dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                           ndt::make_datetime(tz_utc), "minutes since 1970");
+    } else if (s == "s") {
+      dt = ndt::make_adapt(ndt::make_type<int64_t>(),
+                           ndt::make_datetime(tz_utc), "seconds since 1970");
+    } else if (s == "ms") {
+      dt =
+          ndt::make_adapt(ndt::make_type<int64_t>(), ndt::make_datetime(tz_utc),
+                          "milliseconds since 1970");
+    } else if (s == "us") {
+      dt =
+          ndt::make_adapt(ndt::make_type<int64_t>(), ndt::make_datetime(tz_utc),
+                          "microseconds since 1970");
+    } else if (s == "ns") {
+      dt =
+          ndt::make_adapt(ndt::make_type<int64_t>(), ndt::make_datetime(tz_utc),
+                          "nanoseconds since 1970");
+    }
+    break;
+  }
 #endif // At least NumPy 1.6
-    default:
-        break;
-    }
+  default:
+    break;
+  }
 
-    if (dt.get_type_id() == uninitialized_type_id) {
-        stringstream ss;
-        ss << "unsupported Numpy dtype with type id " << d->type_num;
-        throw dynd::type_error(ss.str());
-    }
+  if (dt.get_type_id() == uninitialized_type_id) {
+    stringstream ss;
+    ss << "unsupported Numpy dtype with type id " << d->type_num;
+    throw dynd::type_error(ss.str());
+  }
 
-    if (!PyArray_ISNBO(d->byteorder)) {
-        dt = ndt::make_byteswap(dt);
-    }
+  if (!PyArray_ISNBO(d->byteorder)) {
+    dt = ndt::make_byteswap(dt);
+  }
 
-    // If the data this dtype is for isn't aligned enough,
-    // make an unaligned version.
-    if (data_alignment != 0 && data_alignment < dt.get_data_alignment()) {
-        dt = make_unaligned(dt);
-    }
+  // If the data this dtype is for isn't aligned enough,
+  // make an unaligned version.
+  if (data_alignment != 0 && data_alignment < dt.get_data_alignment()) {
+    dt = make_unaligned(dt);
+  }
 
-    return dt;
+  return dt;
 }
 
 dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)

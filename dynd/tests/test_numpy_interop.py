@@ -87,6 +87,20 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                         ['x', 'y'])
         self.assertEqual(tp0, tp1)
 
+    def test_ndt_type_from_h5py_special(self):
+        # h5py 2.3 style "special dtype"
+        dt = np.dtype(object, metadata={'vlen' : str})
+        self.assertEqual(ndt.type(dt), ndt.string)
+        if sys.version_info < (3, 0):
+            dt = np.dtype(object, metadata={'vlen' : unicode})
+            self.assertEqual(ndt.type(dt), ndt.string)
+        # h5py 2.2 style "special dtype"
+        dt = np.dtype(('O', [( ({'type': str},'vlen'), 'O' )] ))
+        self.assertEqual(ndt.type(dt), ndt.string)
+        if sys.version_info < (3, 0):
+            dt = np.dtype(('O', [( ({'type': unicode},'vlen'), 'O' )] ))
+            self.assertEqual(ndt.type(dt), ndt.string)
+
     def test_ndt_type_as_numpy(self):
         self.assertEqual(ndt.bool.as_numpy(), np.dtype('bool'))
         self.assertEqual(ndt.int8.as_numpy(), np.dtype('int8'))

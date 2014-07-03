@@ -43,27 +43,18 @@ struct init_pydatetime {
 };
 init_pydatetime pdt;
 
-inline void disallow_pyseq(PyObject *obj, const char *msg)
-{
-  PyObject *iter = PyObject_GetIter(obj);
-  if (iter != NULL) {
-    Py_DECREF(iter);
-    throw broadcast_error(msg);
-  } else {
-    PyErr_Clear();
-  }
-}
-
 struct bool_ck : public kernels::unary_ck<bool_ck> {
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
-    disallow_pyseq(src_obj, "Cannot assign a sequence to a dynd bool");
-    int result = PyObject_IsTrue(src_obj);
-    if (result < 0) {
-      throw exception();
+    if (src_obj == Py_True) {
+      *dst = 1;
+    } else if (src_obj == Py_False) {
+      *dst = 0;
+    } else {
+      *dst = array_from_py(src_obj, 0, false, &eval::default_eval_context)
+                 .as<dynd_bool>();
     }
-    *dst = (result != 0);
   }
 };
 

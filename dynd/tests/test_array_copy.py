@@ -4,6 +4,12 @@ from datetime import date
 from dynd import nd, ndt
 import numpy as np
 
+class TestCopyFromPy(unittest.TestCase):
+    def test_bool(self):
+        a = nd.empty('var * bool')
+        a[...] = [True, False, 1, 0, 'true', 'false', 'on', 'off']
+        self.assertEqual(nd.as_py(a), [True, False] * 4)
+
 class TestCopyFromNumPy(unittest.TestCase):
     def test_simple_strided(self):
         a = nd.empty('3 * int32')

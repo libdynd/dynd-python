@@ -194,7 +194,7 @@ set(pydynd_CPP_SRC
     src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
-    src/_pydynd.pyx
+    src/dynd._pydynd.pyx
     include/array.pxd
     include/codegen_cache.pxd
     include/dynd.pxd
@@ -210,13 +210,17 @@ set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
-cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
+cython_add_module(dynd._pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
 
-set_target_properties(_pydynd PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(
+    dynd._pydynd
+    PROPERTIES
+    OUTPUT_NAME _pydynd
+    LINKER_LANGUAGE CXX)
 if(WIN32)
     if(MSVC12)
     set_target_properties(
-        _pydynd PROPERTIES
+        dynd._pydynd PROPERTIES
         COMPILE_FLAGS
         "-DHAVE_ROUND"
         )
@@ -225,7 +229,7 @@ elseif(APPLE)
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.
     set_target_properties(
-        _pydynd PROPERTIES
+        dynd._pydynd PROPERTIES
         #SOVERSION ${DYND_PYTHON_VERSION}
         #VERSION ${DYND_PYTHON_VERSION}
         COMPILE_FLAGS
@@ -235,10 +239,10 @@ elseif(APPLE)
         message(STATUS "Adding relative rpath to _pydynd for linking libdynd")
         # TODO: The rpath used is Anaconda-specific, should calculate
         #       the relative install path instead of using "../../..".
-        add_custom_command(TARGET _pydynd
+        add_custom_command(TARGET dynd._pydynd
             POST_BUILD COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                 -add_rpath "@loader_path/../../.."
-                $<TARGET_FILE:_pydynd>)
+                $<TARGET_FILE:dynd._pydynd>)
     else()
         message(STATUS "NOT adding relative rpath to _pydynd for linking libdynd")
     endif()
@@ -246,14 +250,14 @@ else()
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.
     set_target_properties(
-        _pydynd
+        dynd._pydynd
         PROPERTIES
         COMPILE_FLAGS
         "-Wno-error"
         )
     if (USE_RELATIVE_RPATH)
         set_target_properties(
-            _pydynd
+            dynd._pydynd
             PROPERTIES
             # TODO: The rpath used is Anaconda-specific, should make sure it
             #       works more generally.
@@ -263,17 +267,19 @@ else()
     endif()
 endif()
 
+
+
 if (DYND_INSTALL_LIB)
-    target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}")
+    target_link_libraries(dynd._pydynd "${LIBDYND_LIBRARIES}")
 else()
-    target_link_libraries(_pydynd libdynd)
+    target_link_libraries(dynd._pydynd libdynd)
 endif()
 
 # Install all the Python scripts
 install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
-install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
+install(TARGETS dynd._pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
 # Install the libdynd binary if on unix and libdynd wasn't built separately
 if(NOT DYND_INSTALL_LIB AND NOT WIN32)
     get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)

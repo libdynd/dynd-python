@@ -117,7 +117,7 @@ cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
 
 cdef extern from "dynd/types/type_pattern_match.hpp" namespace "dynd::ndt":
-    bint type_pattern_match(ndt_type&, ndt_type&) except +translate_exception
+    bint pattern_match(ndt_type&, ndt_type&) except +translate_exception
 
 cdef extern from "type_functions.hpp" namespace "pydynd":
     void init_w_type_typeobject(object)

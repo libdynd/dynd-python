@@ -156,7 +156,7 @@ cdef class w_type:
         >>> ndt.type("10 * {x : ?int32, y : ?int32}").matches("M * {x: ?T, y: T}")
         False
         """
-        return type_pattern_match(GET(self.v), GET(w_type(rhs).v))
+        return pattern_match(GET(self.v), GET(w_type(rhs).v))
 
     property shape:
         """

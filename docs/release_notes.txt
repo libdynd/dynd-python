@@ -1,6 +1,28 @@
 DyND-Python Release Notes
 =========================
 
+Release 0.6.3
+-------------
+
+Commits by author since last release:
+
+   105  Mark Wiebe
+     4  T.J. Alumbaugh
+
+- Expose float16 and UTC datetime as ndt.float16 and ndt.datetimeutc.
+- Add tuple= option to nd.as_py, which outputs structs as tuples instead
+  of dicts.
+- Change default build configuration to build libdynd and dynd-python
+  separately.
+- Expose nd::arrfunc to Python.
+- Enable nd.arrfunc constructor to accept a python function and type
+  as initialization, for example
+  "nd.arrfunc(lambda x: x + 1.0, '(float64) -> float64')".
+- Improve speed/flexibility of DyND <-> NumPy copying, including support
+  for NumPy's object type.
+- Add detection of the special object dtype created by h5py for variable
+  length string support.
+
 Release 0.6.2
 -------------
 

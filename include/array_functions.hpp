@@ -126,8 +126,11 @@ inline dynd::nd::array array_divide(const dynd::nd::array& lhs, const dynd::nd::
 
 inline std::string array_repr(const dynd::nd::array& n)
 {
+    std::stringstream n_ss;
+    n_ss << n;
     std::stringstream ss;
-    ss << "nd." << n;
+    ss << "nd.";
+    dynd::print_indented(ss, "   ", n_ss.str(), true);
     return ss.str();
 }
 

@@ -4,6 +4,12 @@ from dynd import nd, ndt
 import math
 
 class TestBasics(unittest.TestCase):
+    def test_null_array(self):
+        a = nd.array()
+        self.assertEqual(str(a), "nd.array()")
+        self.assertEqual(repr(a), "nd.array()")
+        self.assertRaises(AttributeError, lambda: a.real)
+
     def test_index(self):
         # Test that the __index__ method/nb_index slot
         # in dynd arrays is working

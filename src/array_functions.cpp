@@ -60,27 +60,34 @@ PyObject *pydynd::wrap_array(const dynd::nd::arrfunc &n)
     return (PyObject *)result;
 }
 
-PyObject *pydynd::array_str(const dynd::nd::array& n)
+PyObject *pydynd::array_str(const dynd::nd::array &n)
 {
 #if PY_VERSION_HEX >= 0x03000000
-    // In Python 3, str is unicode
-    return array_unicode(n);
+  // In Python 3, str is unicode
+  if (n.is_null()) {
+    return PyUnicode_FromString("nd.array()");
+  }
+  return array_unicode(n);
 #else
-    nd::array n_str;
-    if (n.get_type().get_kind() == string_kind &&
-            n.get_type().tcast<base_string_type>()->get_encoding() ==
-                string_encoding_ascii) {
-        // If it's already an ASCII string, pass-through
-        n_str = n;
-    } else {
-        // Otherwise, convert to an ASCII string
-        n_str = nd::empty(ndt::make_string(string_encoding_ascii));
-        n_str.vals() = n;
-    }
-    const base_string_type *bsd = n_str.get_type().tcast<base_string_type>();
-    const char *begin = NULL, *end = NULL;
-    bsd->get_string_range(&begin, &end, n_str.get_arrmeta(), n_str.get_readonly_originptr());
-    return PyString_FromStringAndSize(begin, end - begin);
+  if (n.is_null()) {
+    return PyString_FromString("nd.array()");
+  }
+  nd::array n_str;
+  if (n.get_type().get_kind() == string_kind &&
+      n.get_type().tcast<base_string_type>()->get_encoding() ==
+          string_encoding_ascii) {
+    // If it's already an ASCII string, pass-through
+    n_str = n;
+  } else {
+    // Otherwise, convert to an ASCII string
+    n_str = nd::empty(ndt::make_string(string_encoding_ascii));
+    n_str.vals() = n;
+  }
+  const base_string_type *bsd = n_str.get_type().tcast<base_string_type>();
+  const char *begin = NULL, *end = NULL;
+  bsd->get_string_range(&begin, &end, n_str.get_arrmeta(),
+                        n_str.get_readonly_originptr());
+  return PyString_FromStringAndSize(begin, end - begin);
 #endif
 }
 

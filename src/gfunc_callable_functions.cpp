@@ -124,6 +124,10 @@ void pydynd::add_array_names_to_dir_dict(const dynd::nd::array& n, PyObject *dic
 PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
                                              PyObject *name)
 {
+  if (n.is_null()) {
+    PyErr_SetObject(PyExc_AttributeError, name);
+    return NULL;
+  }
   ndt::type dt = n.get_type();
   const std::pair<std::string, gfunc::callable> *properties;
   size_t count;

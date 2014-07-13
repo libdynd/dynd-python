@@ -64,8 +64,14 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
 {
 #if PY_VERSION_HEX >= 0x03000000
   // In Python 3, str is unicode
+  if (n.is_null()) {
+    return PyUnicode_FromString("nd.array()");
+  }
   return array_unicode(n);
 #else
+  if (n.is_null()) {
+    return PyString_FromString("nd.array()");
+  }
   nd::array n_str;
   if (n.get_type().get_kind() == string_kind &&
       n.get_type().tcast<base_string_type>()->get_encoding() ==

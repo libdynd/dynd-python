@@ -705,8 +705,8 @@ static intptr_t instantiate_copy_to_pyobject(
     intptr_t dim_size, stride;
     ndt::type el_tp;
     const char *el_arrmeta;
-    if (src_tp[0].get_as_strided_dim(src_arrmeta[0], dim_size, stride, el_tp,
-                                  el_arrmeta)) {
+    if (src_tp[0].get_as_strided(src_arrmeta[0], &dim_size, &stride, &el_tp,
+                                 &el_arrmeta)) {
       strided_ck *self = strided_ck::create(ckb, kernreq, ckb_offset);
       self->m_dim_size = dim_size;
       self->m_stride = stride;

@@ -118,6 +118,7 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.TYPE)
 
     def test_array_from_ptr(self):
+        # cfixed_dim arrmeta is redundant so this is ok
         a = (ctypes.c_int32 * 3)()
         a[0] = 3
         a[1] = 6

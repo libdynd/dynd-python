@@ -135,65 +135,23 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   case fixed_dim_type_id:
   case cfixed_dim_type_id: {
     if (ndim > 0) {
-      // If this is one of the array dimensions, it simply
-      // becomes one of the numpy ndarray dimensions
-      switch (dt.get_type_id()) {
-      case strided_dim_type_id: {
-        const strided_dim_type *sad = dt.tcast<strided_dim_type>();
-        make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
-                                  sad->get_element_type(),
-                                  arrmeta + sizeof(strided_dim_type_arrmeta));
-        return;
-      }
-      case fixed_dim_type_id: {
-        const fixed_dim_type *fad = dt.tcast<fixed_dim_type>();
-        make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
-                                  fad->get_element_type(),
-                                  arrmeta + sizeof(fixed_dim_type_arrmeta));
-        return;
-      }
-      case cfixed_dim_type_id: {
-        const cfixed_dim_type *fad = dt.tcast<cfixed_dim_type>();
-        make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
-                                  fad->get_element_type(), arrmeta);
-        return;
-      }
-      }
+      const base_uniform_dim_type *bdt = dt.tcast<base_uniform_dim_type>();
+      make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
+                                bdt->get_element_type(),
+                                arrmeta + sizeof(strided_dim_type_arrmeta));
+      return;
     } else {
       // If this isn't one of the array dimensions, it maps into
       // a numpy dtype with a shape
-      if (arrmeta == NULL) {
-        stringstream ss;
-        ss << "cannot determine shape of dynd type " << dt;
-        ss << " to convert it to a numpy dtype";
-        throw dynd::type_error(ss.str());
-      }
       // Build up the shape of the array for NumPy
       pyobject_ownref shape(PyList_New(0));
       ndt::type element_tp = dt;
       while (ndim > 0) {
-        size_t dim_size = 0;
-        if (dt.get_type_id() == strided_dim_type_id) {
-          const strided_dim_type *sad = element_tp.tcast<strided_dim_type>();
-          dim_size = sad->get_dim_size(arrmeta, NULL);
-          element_tp = sad->get_element_type();
-          arrmeta += sizeof(strided_dim_type_arrmeta);
-        } else if (dt.get_type_id() == fixed_dim_type_id) {
-          const fixed_dim_type *fad = element_tp.tcast<fixed_dim_type>();
-          dim_size = fad->get_fixed_dim_size();
-          element_tp = fad->get_element_type();
-          arrmeta += sizeof(fixed_dim_type_arrmeta);
-        } else if (dt.get_type_id() == cfixed_dim_type_id) {
-          const cfixed_dim_type *fad = element_tp.tcast<cfixed_dim_type>();
-          dim_size = fad->get_fixed_dim_size();
-          element_tp = fad->get_element_type();
-        } else {
-          stringstream ss;
-          ss << "dynd as_numpy could not convert dynd type ";
-          ss << dt;
-          ss << " to a numpy dtype";
-          throw dynd::type_error(ss.str());
-        }
+        const strided_dim_type_arrmeta *am =
+            reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
+        intptr_t dim_size = am->dim_size;
+        element_tp = dt.tcast<base_uniform_dim_type>()->get_element_type();
+        arrmeta += sizeof(strided_dim_type_arrmeta);
         --ndim;
         if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
           throw runtime_error("propagating python error");
@@ -388,32 +346,15 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
         (PyArray_Descr *)swapdt.get(), NPY_SWAP));
     return;
   }
+  case fixed_dim_type_id:
   case strided_dim_type_id: {
-    const strided_dim_type *sad = dt.tcast<strided_dim_type>();
+    const base_uniform_dim_type *bdt = dt.tcast<base_uniform_dim_type>();
     if (ndim > 0) {
       // If this is one of the array dimensions, it simply
       // becomes one of the numpy ndarray dimensions
       as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim - 1,
-                        sad->get_element_type(),
+                        bdt->get_element_type(),
                         arrmeta + sizeof(strided_dim_type_arrmeta));
-      return;
-    } else {
-      // If this isn't one of the array dimensions, it maps into
-      // a numpy dtype with a shape
-      out_numpy_dtype->clear();
-      *out_requires_copy = true;
-      return;
-    }
-    break;
-  }
-  case fixed_dim_type_id: {
-    const fixed_dim_type *fad = dt.tcast<fixed_dim_type>();
-    if (ndim > 0) {
-      // If this is one of the array dimensions, it simply
-      // becomes one of the numpy ndarray dimensions
-      as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim - 1,
-                        fad->get_element_type(),
-                        arrmeta + sizeof(fixed_dim_type_arrmeta));
       return;
     } else {
       // If this isn't one of the array dimensions, it maps into

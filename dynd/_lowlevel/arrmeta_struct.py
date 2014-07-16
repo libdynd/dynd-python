@@ -32,15 +32,23 @@ def build_arrmeta_struct(tp):
         return EmptyMetadata
     tid = tp.type_id
     if tid == 'strided_dim':
-        class StridedMetadata(ctypes.Structure):
-            _fields_ = [('size', ctypes.c_ssize_t),
+        class StridedDimMetadata(ctypes.Structure):
+            _fields_ = [('dim_size', ctypes.c_ssize_t),
                         ('stride', ctypes.c_ssize_t),
                         ('element', build_arrmeta_struct(tp.element_type))]
-        result = StridedMetadata
+        result = StridedDimMetadata
     elif tid == 'fixed_dim':
-        class FixedMetadata(ctypes.Structure):
-            _fields_ = [('element', build_arrmeta_struct(tp.element_type))]
-        result = FixedMetadata
+        class FixedDimMetadata(ctypes.Structure):
+            _fields_ = [('dim_size', ctypes.c_ssize_t),
+                        ('stride', ctypes.c_ssize_t),
+                        ('element', build_arrmeta_struct(tp.element_type))]
+        result = FixedDimMetadata
+    elif tid == 'cfixed_dim':
+        class CFixedDimMetadata(ctypes.Structure):
+            _fields_ = [('dim_size', ctypes.c_ssize_t),
+                        ('stride', ctypes.c_ssize_t),
+                        ('element', build_arrmeta_struct(tp.element_type))]
+        result = CFixedDimMetadata
     elif tid == 'var_dim':
         class VarMetadata(ctypes.Structure):
             _fields_ = [('blockref', ctypes.POINTER(MemoryBlockData)),

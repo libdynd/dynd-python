@@ -318,14 +318,14 @@ struct any_string_ck : public kernels::unary_ck<any_string_ck> {
         throw exception();
       }
 
-      ndt::type str_dt = ndt::make_string();
+      ndt::type str_tp = ndt::make_string();
       string_type_data str_d;
       string_type_arrmeta str_md;
       str_d.begin = s;
       str_d.end = s + len;
       str_md.blockref = NULL;
 
-      typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, str_dt,
+      typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, str_tp,
                         reinterpret_cast<const char *>(&str_md),
                         reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
@@ -470,15 +470,56 @@ struct option_ck : public kernels::unary_ck<option_ck> {
   inline void single(char *dst, const char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
-    ckernel_prefix *assign_na = get_child_ckernel();
-    expr_single_t assign_na_fn = assign_na->get_function<expr_single_t>();
-    ckernel_prefix *copy_value = get_child_ckernel(m_copy_value_offset);
-    expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
     if (src_obj == Py_None) {
+      ckernel_prefix *assign_na = get_child_ckernel();
+      expr_single_t assign_na_fn = assign_na->get_function<expr_single_t>();
       assign_na_fn(dst, NULL, assign_na);
     } else if (WArray_Check(src_obj)) {
       typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((WArray *)src_obj)->v);
+    } else if (m_dst_tp.get_kind() != string_kind && PyUnicode_Check(src_obj)) {
+      // Copy from the string
+      pyobject_ownref utf8(PyUnicode_AsUTF8String(src_obj));
+      char *s = NULL;
+      Py_ssize_t len = 0;
+      if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
+        throw exception();
+      }
+
+      ndt::type str_tp = ndt::make_string();
+      string_type_arrmeta str_md;
+      string_type_data str_d;
+      str_d.begin = s;
+      str_d.end = s + len;
+      const char *src_str = reinterpret_cast<const char *>(&str_d);
+      str_md.blockref = NULL;
+
+      typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, str_tp,
+                        reinterpret_cast<const char *>(&str_md),
+                        reinterpret_cast<const char *>(&str_d));
+#if PY_VERSION_HEX < 0x03000000
+    } else if (m_dst_tp.get_kind() != string_kind && PyString_Check(src_obj)) {
+      // Copy from the string
+      char *s = NULL;
+      Py_ssize_t len = 0;
+      if (PyString_AsStringAndSize(src_obj, &s, &len) < 0) {
+        throw exception();
+      }
+
+      ndt::type str_tp = ndt::make_string();
+      string_type_arrmeta str_md;
+      string_type_data str_d;
+      str_d.begin = s;
+      str_d.end = s + len;
+      const char *src_str = reinterpret_cast<const char *>(&str_d);
+      str_md.blockref = NULL;
+
+      typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, str_tp,
+                        reinterpret_cast<const char *>(&str_md),
+                        reinterpret_cast<const char *>(&str_d));
+#endif
     } else {
+      ckernel_prefix *copy_value = get_child_ckernel(m_copy_value_offset);
+      expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
       copy_value_fn(dst, &src, copy_value);
     }
   }

@@ -83,6 +83,11 @@ def _get_lowlevel_api():
 def _get_py_lowlevel_api():
     return <size_t>dynd_get_py_lowlevel_api()
 
+# Helper for cases where we can't use None for a missing argument default
+class UnsuppliedType(object):
+    pass
+Unsupplied = UnsuppliedType()
+
 cdef class w_type:
     """
     ndt.type(obj=None)
@@ -1023,8 +1028,8 @@ cdef class w_array:
     def __cinit__(self):
         placement_new(self.v)
 
-    def __init__(self, value=None, dtype=None, type=None, access=None):
-        if value is not None:
+    def __init__(self, value=Unsupplied, dtype=None, type=None, access=None):
+        if value is not Unsupplied:
             # Get the array data
             if dtype is not None:
                 if type is not None:

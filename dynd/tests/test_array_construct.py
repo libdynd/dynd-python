@@ -918,5 +918,36 @@ class TestConstructErrors(unittest.TestCase):
         # Trigger failure in later type promotion
         self.assertRaises(ValueError, nd.array, [['a'], {'x' : 1}])
 
+class TestOptionArrayConstruct(unittest.TestCase):
+    def check_scalars(self, dtype, input_expected):
+        dtype = ndt.type(dtype)
+        for input, expected in input_expected:
+            a = nd.array(input, dtype=dtype)
+            self.assertEqual(nd.type_of(a), dtype)
+            self.assertEqual(nd.as_py(a), expected)
+
+    def test_scalar_option(self):
+        self.check_scalars('?bool', [(None, None),
+                                     ('', None),
+                                     ('NA', None),
+                                     (False, False),
+                                     ('true', True)])
+        self.check_scalars('?int', [(None, None),
+                                    ('', None),
+                                    ('NA', None),
+                                    (-10, -10),
+                                    ('12354', 12354)])
+        self.check_scalars('?real', [(None, None),
+                                     ('', None),
+                                     ('NA', None),
+                                     (-10, -10),
+                                     ('12354', 12354),
+                                     (1.25, 1.25),
+                                     ('125e20', 125e20)])
+        self.check_scalars('?string', [(None, None),
+                                       ('', ''),
+                                       ('NA', 'NA'),
+                                       (u'\uc548\ub155', u'\uc548\ub155')])
+
 if __name__ == '__main__':
     unittest.main()

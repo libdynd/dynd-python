@@ -65,8 +65,8 @@ static intptr_t instantiate_copy_from_numpy(
     // specific data.
     for (intptr_t i = 0; i < src_ndim; ++i) {
       strided_dim_type_arrmeta &am = src_am_holder.sdt[NPY_MAXDIMS - src_ndim + i];
-      am.size = PyArray_DIM(src_arr, (int)i);
-      am.stride = am.size != 1 ? PyArray_STRIDE(src_arr, (int)i) : 0;
+      am.dim_size = PyArray_DIM(src_arr, (int)i);
+      am.stride = am.dim_size != 1 ? PyArray_STRIDE(src_arr, (int)i) : 0;
       src_alignment |= static_cast<uintptr_t>(am.stride);
     }
     ndt::type src_am_tp =

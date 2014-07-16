@@ -368,16 +368,16 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
                 intptr_t stride = adescr->base->elsize;
                 el = dt;
                 for (int i = ndim-1; i >= 0; --i) {
-                    md[i].size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));
+                    md[i].dim_size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));
                     md[i].stride = stride;
-                    stride *= md[i].size;
+                    stride *= md[i].dim_size;
                     el = el.tcast<strided_dim_type>()->get_element_type();
                 }
                 arrmeta += ndim * sizeof(strided_dim_type_arrmeta);
             } else {
                 strided_dim_type_arrmeta *md = reinterpret_cast<strided_dim_type_arrmeta *>(arrmeta);
                 arrmeta += sizeof(strided_dim_type_arrmeta);
-                md->size = pyobject_as_index(adescr->shape);
+                md->dim_size = pyobject_as_index(adescr->shape);
                 md->stride = adescr->base->elsize;
                 el = dt.tcast<strided_dim_type>()->get_element_type();
             }

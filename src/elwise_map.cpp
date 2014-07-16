@@ -65,12 +65,12 @@ namespace {
             // Modify the temporary arrays to point at the data.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
             md = reinterpret_cast<strided_dim_type_arrmeta *>(ndo[0]->v.get_arrmeta());
-            md->size = count;
+            md->dim_size = count;
             md->stride = dst_stride;
             for (size_t i = 0; i != src_count; ++i) {
                 ndo[i+1]->v.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
                 md = reinterpret_cast<strided_dim_type_arrmeta *>(ndo[i+1]->v.get_arrmeta());
-                md->size = count;
+                md->dim_size = count;
                 md->stride = src_stride[i];
             }
 
@@ -236,7 +236,7 @@ public:
         n.get_ndo()->m_type = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
         md = reinterpret_cast<strided_dim_type_arrmeta *>(n.get_arrmeta());
-        md->size = 1;
+        md->dim_size = 1;
         md->stride = 0;
         if (dst_tp.get_arrmeta_size() > 0) {
             dst_tp.extended()->arrmeta_copy_construct(
@@ -250,7 +250,7 @@ public:
             n.get_ndo()->m_type = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
             md = reinterpret_cast<strided_dim_type_arrmeta *>(n.get_arrmeta());
-            md->size = 1;
+            md->dim_size = 1;
             md->stride = 0;
             if (src_tp[i].get_arrmeta_size() > 0) {
                 src_tp[i].extended()->arrmeta_copy_construct(

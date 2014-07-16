@@ -72,7 +72,7 @@ static intptr_t instantiate_copy_to_numpy(
       strided_dim_type_arrmeta &am = dst_am_holder.sdt[NPY_MAXDIMS - dst_ndim + i];
       am.stride = PyArray_STRIDE(dst_arr, (int)i);
       dst_alignment |= static_cast<uintptr_t>(am.stride);
-      am.size = PyArray_DIM(dst_arr, (int)i);
+      am.dim_size = PyArray_DIM(dst_arr, (int)i);
     }
     ndt::type dst_am_tp =
         ndt::make_strided_dim(ndt::make_type<void>(), dst_ndim);

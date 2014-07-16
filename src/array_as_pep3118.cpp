@@ -324,7 +324,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
                 case strided_dim_type_id: {
                     const strided_dim_type *tdt = dt.tcast<strided_dim_type>();
                     const strided_dim_type_arrmeta *md = reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
-                    buffer->shape[i] = md->size;
+                    buffer->shape[i] = md->dim_size;
                     buffer->strides[i] = md->stride;
                     arrmeta += sizeof(strided_dim_type_arrmeta);
                     dt = tdt->get_element_type();

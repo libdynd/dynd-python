@@ -81,7 +81,9 @@ else()
     # Include libdynd in the build
     add_subdirectory(libraries/libdynd)
 
-    set(LIBDYND_INCLUDE_DIRS "libraries/libdynd/include")
+    set(LIBDYND_INCLUDE_DIRS
+        "libraries/libdynd/include"
+        "${CMAKE_CURRENT_BINARY_DIR}/libraries/libdynd/include")
 endif()
 
 # Get the git revision

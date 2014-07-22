@@ -13,7 +13,7 @@
 #include "arrfunc_from_pyfunc.hpp"
 
 #include <dynd/types/string_type.hpp>
-#include <dynd/types/base_uniform_dim_type.hpp>
+#include <dynd/types/base_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
 #include <dynd/type_promotion.hpp>

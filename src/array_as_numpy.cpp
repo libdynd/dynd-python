@@ -135,7 +135,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   case fixed_dim_type_id:
   case cfixed_dim_type_id: {
     if (ndim > 0) {
-      const base_uniform_dim_type *bdt = dt.tcast<base_uniform_dim_type>();
+      const base_dim_type *bdt = dt.tcast<base_dim_type>();
       make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
                                 bdt->get_element_type(),
                                 arrmeta + sizeof(strided_dim_type_arrmeta));
@@ -150,7 +150,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
         const strided_dim_type_arrmeta *am =
             reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
         intptr_t dim_size = am->dim_size;
-        element_tp = dt.tcast<base_uniform_dim_type>()->get_element_type();
+        element_tp = dt.tcast<base_dim_type>()->get_element_type();
         arrmeta += sizeof(strided_dim_type_arrmeta);
         --ndim;
         if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
@@ -237,7 +237,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   }
   }
 
-  if (dt.get_kind() == expression_kind) {
+  if (dt.get_kind() == expr_kind) {
     // Convert the value type for the copy
     make_numpy_dtype_for_copy(out_numpy_dtype, ndim, dt.value_type(), NULL);
     return;
@@ -336,7 +336,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     break;
   }
   case byteswap_type_id: {
-    const base_expression_type *bed = dt.tcast<base_expression_type>();
+    const base_expr_type *bed = dt.tcast<base_expr_type>();
     // Analyze the unswapped version
     as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim,
                       bed->get_value_type(), arrmeta);
@@ -348,7 +348,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   }
   case fixed_dim_type_id:
   case strided_dim_type_id: {
-    const base_uniform_dim_type *bdt = dt.tcast<base_uniform_dim_type>();
+    const base_dim_type *bdt = dt.tcast<base_dim_type>();
     if (ndim > 0) {
       // If this is one of the array dimensions, it simply
       // becomes one of the numpy ndarray dimensions
@@ -497,7 +497,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   }
   }
 
-  if (dt.get_kind() == expression_kind) {
+  if (dt.get_kind() == expr_kind) {
     // If none of the prior checks caught this expression,
     // a copy is required.
     out_numpy_dtype->clear();
@@ -666,7 +666,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       // Because 'allow_copy' is true
       // we can evaluate any expressions and
       // make copies of strings
-      if (a.get_type().get_kind() == expression_kind) {
+      if (a.get_type().get_kind() == expr_kind) {
         // If it's an expression kind
         pyobject_ownref n_tmp(wrap_array(a.eval()));
         return array_as_numpy(n_tmp.get(), true);
@@ -729,7 +729,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     pyobject_ownref result(PyArray_NewFromDescr(
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
         shape.get(), strides.get(), NULL, 0, NULL));
-    assignment_ckernel_builder ckb;
+    unary_ckernel_builder ckb;
     copy_to_numpy_arrmeta dst_arrmeta;
     dst_arrmeta.dst_obj = result.get();
     dst_arrmeta.dst_alignment = 0;

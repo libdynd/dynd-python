@@ -12,7 +12,7 @@
 #include "numpy_interop.hpp"
 
 #include <dynd/types/string_type.hpp>
-#include <dynd/types/base_uniform_dim_type.hpp>
+#include <dynd/types/base_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
 #include <dynd/type_promotion.hpp>
@@ -588,23 +588,23 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
         throw runtime_error("cannot call __contains__ on a scalar dynd array");
     }
 
-    // Turn 'n' into type/arrmeta/data with a uniform_dim leading dimension
+    // Turn 'n' into type/arrmeta/data with a dim leading dimension
     nd::array tmp;
     ndt::type dt;
-    const base_uniform_dim_type *budd;
+    const base_dim_type *budd;
     const char *arrmeta, *data;
-    if (n.get_type().get_kind() == uniform_dim_kind) {
+    if (n.get_type().get_kind() == dim_kind) {
         dt = n.get_type();
-        budd = dt.tcast<base_uniform_dim_type>();
+        budd = dt.tcast<base_dim_type>();
         arrmeta = n.get_arrmeta();
         data = n.get_readonly_originptr();
     } else {
         tmp = n.eval();
-        if (tmp.get_type().get_kind() != uniform_dim_kind) {
-            throw runtime_error("internal error in array_contains: expected uniform_dim kind after eval() call");
+        if (tmp.get_type().get_kind() != dim_kind) {
+            throw runtime_error("internal error in array_contains: expected dim kind after eval() call");
         }
         dt = tmp.get_type();
-        budd = dt.tcast<base_uniform_dim_type>();
+        budd = dt.tcast<base_dim_type>();
         arrmeta = tmp.get_arrmeta();
         data = tmp.get_readonly_originptr();
     }
@@ -839,10 +839,10 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     char *dst_arrmeta = result.get_arrmeta();
     const char *src_arrmeta = n.get_arrmeta();
     while (tmp_dt.get_ndim() > 0) {
-        if (tmp_dt.get_kind() != uniform_dim_kind) {
+        if (tmp_dt.get_kind() != dim_kind) {
             throw runtime_error("nd.fields doesn't support dimensions with pointers yet");
         }
-        const base_uniform_dim_type *budd = tmp_dt.tcast<base_uniform_dim_type>();
+        const base_dim_type *budd = tmp_dt.tcast<base_dim_type>();
         size_t offset = budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta,
                         n.get_memblock().get());
         dst_arrmeta += offset;

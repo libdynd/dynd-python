@@ -12,7 +12,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         complex_kind
         string_kind
         composite_kind
-        expression_kind
+        expr_kind
         symbolic_kind
         custom_kind
 

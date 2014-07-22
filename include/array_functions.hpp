@@ -187,17 +187,23 @@ dynd::nd::array array_linspace(PyObject *start, PyObject *stop, PyObject *count,
  */
 dynd::nd::array nd_fields(const dynd::nd::array& n, PyObject *field_list);
 
-inline const char *array_access_flags_string(const dynd::nd::array& n) {
-    switch (n.get_access_flags()) {
-        case dynd::nd::read_access_flag|dynd::nd::immutable_access_flag:
-            return "immutable";
-        case dynd::nd::read_access_flag:
-            return "readonly";
-        case dynd::nd::read_access_flag|dynd::nd::write_access_flag:
-            return "readwrite";
-        default:
-            return "<invalid flags>";
-    }
+inline const char *array_access_flags_string(const dynd::nd::array &n)
+{
+  if (n.is_null()) {
+    PyErr_SetString(PyExc_AttributeError,
+                    "Cannot access attribute of null dynd array");
+    throw std::exception();
+  }
+  switch (n.get_access_flags()) {
+  case dynd::nd::read_access_flag | dynd::nd::immutable_access_flag:
+    return "immutable";
+  case dynd::nd::read_access_flag:
+    return "readonly";
+  case dynd::nd::read_access_flag | dynd::nd::write_access_flag:
+    return "readwrite";
+  default:
+    return "<invalid flags>";
+  }
 }
 
 inline dynd::nd::array dynd_parse_json_type(const dynd::ndt::type &tp,

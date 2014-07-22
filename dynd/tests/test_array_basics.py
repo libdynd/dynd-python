@@ -9,6 +9,9 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(str(a), "nd.array()")
         self.assertEqual(repr(a), "nd.array()")
         self.assertRaises(AttributeError, lambda: a.real)
+        self.assertRaises(AttributeError, lambda: a.access_flags)
+        self.assertRaises(AttributeError, lambda: a.shape)
+        self.assertRaises(AttributeError, lambda: a.strides)
 
     def test_index(self):
         # Test that the __index__ method/nb_index slot

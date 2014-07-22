@@ -1239,15 +1239,6 @@ cdef class w_array:
         def __get__(self):
             return str(<char *>array_access_flags_string(GET(self.v)))
 
-    property is_scalar:
-        """
-        a.is_scalar
-
-        True if the dynd array is a scalar.
-        """
-        def __get__(self):
-            return GET(self.v).is_scalar()
-
     property shape:
         def __get__(self):
             return array_get_shape(GET(self.v))

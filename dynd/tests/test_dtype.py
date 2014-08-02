@@ -247,5 +247,10 @@ class TestDType(unittest.TestCase):
         self.assertEqual(tp.name, 'MyEll')
         self.assertEqual(tp.element_type, ndt.int32)
 
+    def test_str_getitem(self):
+        t = ndt.type('{key: string, val: int32}')
+        self.assertEqual(t['key'], t[0])
+        self.assertEqual(t['val'], t[1])
+
 if __name__ == '__main__':
     unittest.main()

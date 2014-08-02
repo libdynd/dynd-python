@@ -98,6 +98,7 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     void array_setitem(ndarray&, object, object) except +translate_exception
     object array_get_shape(ndarray&) except +translate_exception
     object array_get_strides(ndarray&) except +translate_exception
+    bint array_is_scalar(ndarray&) except +translate_exception
 
     bint array_is_c_contiguous(ndarray&) except +translate_exception
     bint array_is_f_contiguous(ndarray&) except +translate_exception

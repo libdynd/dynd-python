@@ -162,6 +162,8 @@ PyObject *array_get_shape(const dynd::nd::array& n);
 
 PyObject *array_get_strides(const dynd::nd::array& n);
 
+bool array_is_scalar(const dynd::nd::array& n);
+
 /**
  * Implementation of __getitem__ for the wrapped array object.
  */

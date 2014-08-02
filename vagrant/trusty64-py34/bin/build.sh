@@ -3,14 +3,14 @@
 pushd ~/libdynd/build || exit 1
 cmake .
 make
-makeinstall
+make install
 sudo ldconfig
 popd
 
 pushd ~/dynd-python/build || exit 1
 cmake .
 make
-makeinstall
+make install
 popd
 
 

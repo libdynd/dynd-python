@@ -75,5 +75,11 @@ class TestArrayGetItem(unittest.TestCase):
         self.assertEqual(nd.as_py(a[1:]), {'y':'testing one two three', 'z':-3.25})
         self.assertEqual(nd.as_py(a[::-2]), {'x':20, 'z':-3.25})
 
+    def test_nd_array_int(self):
+        a = nd.range(3)
+        self.assertEqual(nd.as_py(a[a[0]]), 0)
+        self.assertEqual(nd.as_py(a[a[0] + 1]), 1)
+
+
 if __name__ == '__main__':
     unittest.main()

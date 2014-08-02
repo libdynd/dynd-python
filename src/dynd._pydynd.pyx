@@ -5,11 +5,6 @@
 
 # cython: c_string_type=str, c_string_encoding=ascii
 
-try:
-    basestring
-except NameError:
-    basestring = str
-
 cdef extern from "exception_translation.hpp" namespace "pydynd":
     void translate_exception()
     void set_broadcast_exception(object)

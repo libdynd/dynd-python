@@ -18,14 +18,14 @@ To provision and start one of these images, use
 the following commands:
 
 ```
-$ cd saucy64-py33
-$ vagrant up
+$ cd trusty64-py34
+$ make start
 ```
 
 To connect with ssh, use:
 
 ```
-$ vagrant ssh
+$ make login
 ```
 
 On Windows,

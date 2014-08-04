@@ -681,7 +681,7 @@ static bool ndt_type_requires_shape(const ndt::type& tp)
     case cfixed_dim_type_id:
     case fixed_dim_type_id:
     case var_dim_type_id:
-      return ndt_type_requires_shape(static_cast<const base_uniform_dim_type *>(
+      return ndt_type_requires_shape(static_cast<const base_dim_type *>(
                                          tp.extended())->get_element_type());
     default:
       return true;

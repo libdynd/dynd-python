@@ -191,7 +191,7 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
                                    PyArrayObject *value,
                                    const dynd::eval::eval_context *ectx)
 {
-  assignment_ckernel_builder ckb;
+  unary_ckernel_builder ckb;
   copy_from_numpy_arrmeta src_arrmeta;
   src_arrmeta.src_obj = (PyObject *)value;
   src_arrmeta.src_alignment = 0;

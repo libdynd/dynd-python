@@ -1100,7 +1100,7 @@ static intptr_t instantiate_copy_from_pyobject(
     break;
   }
 
-  if (dst_tp.get_kind() == expression_kind) {
+  if (dst_tp.get_kind() == expr_kind) {
     return make_chain_buf_tp_ckernel(
         self_af, make_copy_arrfunc().get(), dst_tp.value_type(), ckb,
         ckb_offset, dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq, ectx);

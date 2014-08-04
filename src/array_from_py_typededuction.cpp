@@ -233,12 +233,12 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
 size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
 {
   switch (tp.get_kind()) {
-  case uniform_dim_kind:
+  case dim_kind:
     if (max_count <= 1) {
       return max_count;
     } else {
       return min(max_count, 1 + get_nonragged_dim_count(
-                                    static_cast<const base_uniform_dim_type *>(
+                                    static_cast<const base_dim_type *>(
                                         tp.extended())->get_element_type(),
                                     max_count - 1));
     }
@@ -380,7 +380,7 @@ static intptr_t get_leading_dim_count(const dynd::ndt::type &tp) {
   intptr_t ndim = tp.get_ndim();
   if (ndim) {
     return ndim + get_leading_dim_count(tp.get_dtype());
-  } else if (tp.get_kind() == expression_kind) {
+  } else if (tp.get_kind() == expr_kind) {
     return get_leading_dim_count(tp.value_type());
   } else if (tp.get_kind() == tuple_kind || tp.get_kind() == struct_kind) {
     if (tp.tcast<base_tuple_type>()->get_field_count() == 0) {

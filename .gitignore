@@ -3,3 +3,12 @@
 bld.bat
 build
 libraries/libdynd
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+cmake/src/
+cmake/cython_debug/
+cmake/dynd._pydynd.cxx

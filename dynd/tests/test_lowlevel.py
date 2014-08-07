@@ -117,34 +117,5 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('type')),
                         _lowlevel.type_id.TYPE)
 
-    def test_array_from_ptr(self):
-        # cfixed_dim arrmeta is redundant so this is ok
-        a = (ctypes.c_int32 * 3)()
-        a[0] = 3
-        a[1] = 6
-        a[2] = 9
-        # Readwrite version
-        b = _lowlevel.array_from_ptr(ndt.type('cfixed[3] * int32'),
-                                     ctypes.addressof(a), a, 'readwrite')
-        self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
-        self.assertEqual(nd.dshape_of(b), '3 * int32')
-        self.assertEqual(nd.as_py(b), [3, 6, 9])
-        b[1] = 10
-        self.assertEqual(a[1], 10)
-        # Readonly version
-        b = _lowlevel.array_from_ptr(ndt.type('cfixed[3] * int32'),
-                                     ctypes.addressof(a), a, 'readonly')
-        self.assertEqual(nd.as_py(b), [3, 10, 9])
-        def assign_to(b):
-            b[1] = 100
-        self.assertRaises(RuntimeError, assign_to, b)
-
-    def test_array_from_ptr_error(self):
-        # Should raise an exception if the type has arrmeta
-        a = (ctypes.c_int32 * 4)()
-        self.assertRaises(RuntimeError, _lowlevel.array_from_ptr,
-                        ndt.type('strided * int32'), ctypes.addressof(a),
-                        a, 'readwrite')
-
 if __name__ == '__main__':
     unittest.main(verbosity=2)

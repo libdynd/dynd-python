@@ -24,5 +24,16 @@ class TestArraySetItem(unittest.TestCase):
         a[4] = 101.0 + 0j
         self.assertEqual(nd.as_py(a[4]), 101)
 
+    def test_assign_to_struct(self):
+        value = [(8, u'world', 4.5), (16, u'!', 8.75)]
+        # Assign list of tuples
+        a = nd.empty('2 * { i : int32, msg : string, price : float64 }')
+        a[:] = value
+        self.assertEqual(nd.as_py(a, tuple=True), value)
+        # Assign iterator of tuples
+        a = nd.empty('2 * { i : int32, msg : string, price : float64 }')
+        a[:] = iter(value)
+        self.assertEqual(nd.as_py(a, tuple=True), value)
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

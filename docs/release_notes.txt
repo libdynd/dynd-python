@@ -1,6 +1,19 @@
 DyND-Python Release Notes
 =========================
 
+Release 0.6.4
+-------------
+
+Commits by author since last release:
+
+    19  Mark Wiebe
+     6  Phillip Cloud
+
+- Add handling of NULL/empty array cases.
+- Fixes for initializing option type arrays.
+- Updated vagrant file for creating VM dev environment.
+- Removed the array_from_ptr function.
+
 Release 0.6.3
 -------------
 

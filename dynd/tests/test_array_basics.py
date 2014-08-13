@@ -1,7 +1,7 @@
-import sys
 import unittest
 from dynd import nd, ndt
 import math
+
 
 class TestBasics(unittest.TestCase):
     def test_null_array(self):
@@ -12,6 +12,7 @@ class TestBasics(unittest.TestCase):
         self.assertRaises(AttributeError, lambda: a.access_flags)
         self.assertRaises(AttributeError, lambda: a.shape)
         self.assertRaises(AttributeError, lambda: a.strides)
+        self.assertRaises(AttributeError, lambda: a.is_scalar)
 
     def test_index(self):
         # Test that the __index__ method/nb_index slot
@@ -153,6 +154,7 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.float64)
         a = nd.array(nd.nan, ndt.float32)
         self.assertTrue(math.isnan(nd.as_py(a)))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

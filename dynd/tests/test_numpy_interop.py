@@ -554,7 +554,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
         b = nd.as_numpy(a, allow_copy=True)
         assert_equal(b, np.array(['2000-12-13', '1995-05-02'], dtype='M8[D]'))
 
-    def tt_datetime_from_numpy(self):
+    def test_datetime_from_numpy(self):
         # NumPy hours unit
         a = np.array(['2000-12-13T12Z', '1955-05-02T02Z'],
                      dtype='M8[h]')
@@ -591,12 +591,27 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51, 123456),
                                    datetime(1955, 5, 2, 2, 23, 29, 456123)])
         # NumPy nanoseconds unit (truncated to 100 nanosecond ticks)
-        a = np.array(['2000-12-13T12:30:51.123456987Z', '1955-05-02T02:23:29.456123798Z'],
+        a = np.array(['2000-12-13T12:30:51.123456987Z',
+                      '1955-05-02T02:23:29.456123798Z'],
                      dtype='M8[ns]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
-        self.assertEqual([str(x) for x in b], ["2000-12-13T12:30:51.1234569",
-                                           "1955-05-02T02:23:29.4561237"])
+        self.assertEqual(nd.type_of(b),
+                         ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual([str(x) for x in b], ["2000-12-13T12:30:51.1234569Z",
+                                               "1955-05-02T02:23:29.4561237Z"])
+
+    def test_misaligned_datetime_from_numpy(self):
+        a = np.array([(1, "2000-12-25T00:00:01Z"),
+                      (2, "2001-12-25T00:00:01Z"),
+                      (3, "2002-12-25T00:00:01Z")],
+                     dtype=[('id', 'int8'), ('ts', 'M8[us]')])
+        b = nd.view(a)
+        self.assertEqual(nd.type_of(b),
+            ndt.type("strided * c{id : int8, ts: adapt[(unaligned[int64]) -> datetime[tz='UTC'], 'microseconds since 1970']}"))
+        self.assertEqual(nd.as_py(b, tuple=True),
+                         [(1, datetime(2000, 12, 25, 0, 0, 1)),
+                          (2, datetime(2001, 12, 25, 0, 0, 1)),
+                          (3, datetime(2002, 12, 25, 0, 0, 1))])
 
     def test_datetime_as_numpy(self):
         a = nd.array(['2000-12-13T12:30',

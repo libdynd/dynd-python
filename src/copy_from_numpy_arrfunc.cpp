@@ -174,6 +174,7 @@ static intptr_t instantiate_copy_from_numpy(
 
 static nd::arrfunc make_copy_from_numpy_arrfunc()
 {
+std::cout << "cfna " << __LINE__ << std::endl;
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
@@ -183,8 +184,17 @@ static nd::arrfunc make_copy_from_numpy_arrfunc()
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::copy_from_numpy =
-    make_copy_from_numpy_arrfunc();
+dynd::nd::pod_arrfunc pydynd::copy_from_numpy;
+
+void pydynd::init_copy_from_numpy()
+{
+  pydynd::copy_from_numpy.init(make_copy_from_numpy_arrfunc());
+}
+
+void pydynd::cleanup_copy_from_numpy()
+{
+  pydynd::copy_from_numpy.cleanup();
+}
 
 void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
                                    const char *dst_arrmeta, char *dst_data,

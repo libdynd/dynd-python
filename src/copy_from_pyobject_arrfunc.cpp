@@ -34,15 +34,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-namespace {
-// Initialize the pydatetime API
-struct init_pydatetime {
-    init_pydatetime() {
-        PyDateTime_IMPORT;
-    }
-};
-init_pydatetime pdt;
-
 struct bool_ck : public kernels::unary_ck<bool_ck> {
   inline void single(char *dst, const char *src)
   {
@@ -880,8 +871,6 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
   }
 };
 
-} // anonymous namespace
-
 static intptr_t instantiate_copy_from_pyobject(
     const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
@@ -1113,6 +1102,7 @@ static intptr_t instantiate_copy_from_pyobject(
 
 static nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast)
 {
+std::cout << "cfpa " << __LINE__ << std::endl;
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
@@ -1123,8 +1113,20 @@ static nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast)
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::copy_from_pyobject =
-    make_copy_from_pyobject_arrfunc(true);
+dynd::nd::pod_arrfunc pydynd::copy_from_pyobject;
+dynd::nd::pod_arrfunc pydynd::copy_from_pyobject_no_dim_broadcast;
 
-dynd::nd::arrfunc pydynd::copy_from_pyobject_no_dim_broadcast =
-    make_copy_from_pyobject_arrfunc(false);
+void pydynd::init_copy_from_pyobject()
+{
+  // Initialize the pydatetime API
+  PyDateTime_IMPORT;
+  pydynd::copy_from_pyobject.init(make_copy_from_pyobject_arrfunc(true));
+  pydynd::copy_from_pyobject_no_dim_broadcast.init(
+      make_copy_from_pyobject_arrfunc(false));
+}
+
+void pydynd::cleanup_copy_from_pyobject()
+{
+  pydynd::copy_from_pyobject.cleanup();
+  pydynd::copy_from_pyobject_no_dim_broadcast.cleanup();
+}

@@ -35,9 +35,7 @@ struct ctypes_info {
 extern ctypes_info ctypes;
 
 /**
- * Should be called at module initialization, this
- * stores some internal information about the ctypes
- * classes for later.
+ * Is called by pydynd_init()
  */
 void init_ctypes_interop();
 

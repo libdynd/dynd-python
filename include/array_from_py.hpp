@@ -51,6 +51,8 @@ dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type &tp,
                               bool fulltype, uint32_t access_flags,
                               const dynd::eval::eval_context *ectx);
 
+void init_array_from_py();
+
 } // namespace pydynd
 
 #endif // _DYND__ARRAY_FROM_PY_HPP_

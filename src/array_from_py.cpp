@@ -35,15 +35,11 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-// Initialize the pydatetime API
-namespace {
-struct init_pydatetime {
-    init_pydatetime() {
-        PyDateTime_IMPORT;
-    }
-};
-init_pydatetime pdt;
-} // anonymous namespace
+void pydynd::init_array_from_py()
+{
+  // Initialize the pydatetime API
+  PyDateTime_IMPORT;
+}
 
 typedef void (*convert_one_pyscalar_function_t)(const ndt::type &tp,
                                                 const char *arrmeta, char *out,
@@ -55,7 +51,7 @@ convert_one_pyscalar_bool(const ndt::type &tp, const char *arrmeta, char *out,
                           PyObject *obj,
                           const eval::eval_context *DYND_UNUSED(ectx))
 {
-    *out = (PyObject_IsTrue(obj) != 0);
+  *out = (PyObject_IsTrue(obj) != 0);
 }
 
 inline void

@@ -124,6 +124,8 @@ dynd::ndt::type ndt_type_getitem(const dynd::ndt::type& d, PyObject *subscript);
 
 PyObject *ndt_type_array_property_names(const dynd::ndt::type& d);
 
+void init_type_functions();
+
 } // namespace pydynd
 
 #endif // _DYND__DTYPE_FUNCTIONS_HPP_

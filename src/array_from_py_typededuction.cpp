@@ -31,15 +31,11 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-// Initialize the pydatetime API
-namespace {
-struct init_pydatetime {
-    init_pydatetime() {
-        PyDateTime_IMPORT;
-    }
-};
-init_pydatetime pdt;
-} // anonymous namespace
+void pydynd::init_array_from_py_typededuction()
+{
+  // Initialize the pydatetime API
+  PyDateTime_IMPORT;
+}
 
 ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unknown)
 {

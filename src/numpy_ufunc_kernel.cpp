@@ -292,6 +292,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                                      int ckernel_acquires_gil)
 {
     try {
+std::cout << "nuk " << __LINE__ << std::endl;
         nd::array af = nd::empty(ndt::make_arrfunc());
         arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
 

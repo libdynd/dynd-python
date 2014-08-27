@@ -181,6 +181,7 @@ static intptr_t instantiate_copy_to_numpy(
 
 static nd::arrfunc make_copy_to_numpy_arrfunc()
 {
+std::cout << "ctna " << __LINE__ << std::endl;
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
@@ -190,6 +191,13 @@ static nd::arrfunc make_copy_to_numpy_arrfunc()
   return out_af;
 }
 
-nd::arrfunc pydynd::copy_to_numpy = make_copy_to_numpy_arrfunc();
+nd::pod_arrfunc pydynd::copy_to_numpy;
+
+void pydynd::init_copy_to_numpy()
+{
+  pydynd::copy_to_numpy.init(make_copy_to_numpy_arrfunc());
+}
+
+void pydynd::cleanup_copy_to_numpy() { pydynd::copy_to_numpy.cleanup(); }
 
 #endif // DYND_NUMPY_INTEROP

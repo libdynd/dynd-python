@@ -156,6 +156,7 @@ set(pydynd_CPP_SRC
     include/exception_translation.hpp
     include/gfunc_callable_functions.hpp
     include/git_version.hpp
+    include/init.hpp
     include/numpy_interop.hpp
     include/numpy_ufunc_kernel.hpp
     include/placement_wrappers.hpp
@@ -171,6 +172,8 @@ set(pydynd_CPP_SRC
     src/array_from_py.cpp
     src/array_from_py_dynamic.cpp
     src/array_from_py_typededuction.cpp
+    src/arrfunc_from_instantiate_pyfunc.cpp
+    src/arrfunc_from_pyfunc.cpp
     src/arrfunc_functions.cpp
     src/codegen_cache_functions.cpp
     src/copy_from_numpy_arrfunc.cpp
@@ -186,8 +189,7 @@ set(pydynd_CPP_SRC
     src/gfunc_callable_functions.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp
     src/git_version.cpp.in
-    src/arrfunc_from_instantiate_pyfunc.cpp
-    src/arrfunc_from_pyfunc.cpp
+    src/init.cpp
     src/numpy_interop.cpp
     src/numpy_ufunc_kernel.cpp
     src/py_lowlevel_api.cpp

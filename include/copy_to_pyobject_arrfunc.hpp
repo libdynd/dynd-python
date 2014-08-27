@@ -13,8 +13,11 @@
 
 namespace pydynd {
 
-extern dynd::nd::arrfunc copy_to_pyobject_dict;
-extern dynd::nd::arrfunc copy_to_pyobject_tuple;
+extern dynd::nd::pod_arrfunc copy_to_pyobject_dict;
+extern dynd::nd::pod_arrfunc copy_to_pyobject_tuple;
+
+void init_copy_to_pyobject();
+void cleanup_copy_to_pyobject();
 
 } // namespace pydynd
 

@@ -37,14 +37,13 @@ using namespace pydynd;
 
 static const intptr_t ARRAY_FROM_DYNAMIC_INITIAL_COUNT = 16;
 
-// Initialize the pydatetime API
+void pydynd::init_array_from_py_dynamic()
+{
+  // Initialize the pydatetime API
+  PyDateTime_IMPORT;
+}
+
 namespace {
-struct init_pydatetime {
-    init_pydatetime() {
-        PyDateTime_IMPORT;
-    }
-};
-init_pydatetime pdt;
 
 struct afpd_coordentry {
     // The current coordinate of this axis being processed

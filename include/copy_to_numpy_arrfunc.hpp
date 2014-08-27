@@ -26,7 +26,10 @@ struct copy_to_numpy_arrmeta {
   uintptr_t dst_alignment;
 };
 
-extern dynd::nd::arrfunc copy_to_numpy;
+extern dynd::nd::pod_arrfunc copy_to_numpy;
+
+void init_copy_to_numpy();
+void cleanup_copy_to_numpy();
 
 } // namespace pydynd
 

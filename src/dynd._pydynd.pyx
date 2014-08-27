@@ -9,13 +9,6 @@ cdef extern from "exception_translation.hpp" namespace "pydynd":
     void translate_exception()
     void set_broadcast_exception(object)
 
-# Exceptions to convert from C++
-class BroadcastError(Exception):
-    pass
-
-# Register all the exception objects with the exception translator
-set_broadcast_exception(BroadcastError)
-
 # Initialize Numpy
 cdef extern from "do_import_array.hpp":
     pass
@@ -24,10 +17,17 @@ cdef extern from "numpy_interop.hpp" namespace "pydynd":
     void import_numpy()
 import_numpy()
 
+# Exceptions to convert from C++
+class BroadcastError(Exception):
+    pass
+
 # Initialize ctypes C level interop data
-cdef extern from "ctypes_interop.hpp" namespace "pydynd":
-    void init_ctypes_interop() except +translate_exception
-init_ctypes_interop()
+cdef extern from "init.hpp" namespace "pydynd":
+    void pydynd_init() except +translate_exception
+pydynd_init()
+
+# Register all the exception objects with the exception translator
+set_broadcast_exception(BroadcastError)
 
 # Initialize C++ access to the Cython type objects
 init_w_array_typeobject(w_array)

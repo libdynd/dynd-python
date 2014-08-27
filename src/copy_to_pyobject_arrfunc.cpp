@@ -795,7 +795,6 @@ static intptr_t instantiate_copy_to_pyobject(
 
 static nd::arrfunc make_copy_to_pyobject_arrfunc(bool struct_as_pytuple)
 {
-std::cout << "ctpa " << __LINE__ << std::endl;
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());

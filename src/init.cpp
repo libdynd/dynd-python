@@ -16,20 +16,19 @@
 #include "array_from_py_typededuction.hpp"
 #include "type_functions.hpp"
 
-static int pydynd_cleanup()
+static void pydynd_cleanup()
 {
   pydynd::cleanup_copy_from_pyobject();
   pydynd::cleanup_copy_to_pyobject();
   pydynd::cleanup_copy_from_numpy();
   pydynd::cleanup_copy_to_numpy();
   dynd::libdynd_cleanup();
-  return 0;
 }
 
 void pydynd::pydynd_init()
 {
   dynd::libdynd_init();
-  onexit(pydynd_cleanup);
+  atexit(pydynd_cleanup);
   pydynd::init_type_functions();
   pydynd::init_array_from_py_typededuction();
   pydynd::init_array_from_py_dynamic();

@@ -18,7 +18,6 @@ void arrfunc_from_pyfunc(dynd::arrfunc_type_data *out_af, PyObject *pyfunc,
 
 inline dynd::nd::arrfunc arrfunc_from_pyfunc(PyObject *pyfunc, const dynd::ndt::type &proto)
 {
-std::cout << "AFFP " << __LINE__ << std::endl;
     dynd::nd::array out_af = dynd::nd::empty(dynd::ndt::make_arrfunc());
     arrfunc_from_pyfunc(reinterpret_cast<dynd::arrfunc_type_data *>(
                             out_af.get_readwrite_originptr()),

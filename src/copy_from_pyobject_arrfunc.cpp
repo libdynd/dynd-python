@@ -1102,7 +1102,6 @@ static intptr_t instantiate_copy_from_pyobject(
 
 static nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast)
 {
-std::cout << "cfpa " << __LINE__ << std::endl;
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());

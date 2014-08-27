@@ -102,7 +102,6 @@ PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
                                                   PyObject *proto_obj)
 {
     try {
-std::cout << "afip " << __LINE__ << std::endl;
         nd::array out_af = nd::empty(ndt::make_arrfunc());
         arrfunc_type_data *out_af_ptr =
             reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());

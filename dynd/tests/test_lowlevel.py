@@ -147,11 +147,6 @@ class TestLowLevel(unittest.TestCase):
                           lambda: _lowlevel.array_from_ptr('strided * int32',
                                                            ctypes.addressof(a),
                                                            a, 'readonly'))
-        # Should get an error if we try var, because it is blockref-based
-        self.assertRaises(TypeError,
-                          lambda: _lowlevel.array_from_ptr('var * int32',
-                                                           ctypes.addressof(a),
-                                                           a, 'readonly'))
 
     def test_array_from_ptr_struct(self):
         class SomeStruct(ctypes.Structure):
@@ -166,6 +161,11 @@ class TestLowLevel(unittest.TestCase):
                                      ctypes.addressof(a), a, 'readonly')
         self.assertEqual(nd.as_py(b, tuple=True), (1, 2, 3.75))
 
+    def test_array_from_ptr_blockref(self):
+        a = ctypes.pointer(ctypes.c_double(1.25))
+        b = _lowlevel.array_from_ptr('pointer[float64]',
+                                     ctypes.addressof(a), a, 'readonly')
+        self.assertEqual(nd.as_py(b), 1.25)
 
     def test_array_from_ptr_error(self):
         # Should raise an exception if the type has arrmeta

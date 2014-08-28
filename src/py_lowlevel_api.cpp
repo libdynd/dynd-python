@@ -50,15 +50,16 @@ namespace {
             nd::read_access_flag, "immutable",
             nd::read_access_flag | nd::immutable_access_flag);
         nd::array result(make_array_memory_block(d.get_arrmeta_size()));
-        if (d.get_flags() & (type_flag_blockref|type_flag_destructor)) {
+        if (d.get_flags() & (type_flag_destructor)) {
           stringstream ss;
           ss << "Cannot view raw memory using dynd type " << d;
           throw type_error(ss.str());
         }
-        // Create the nd.array with default-constructed arrmeta.
+        // Create the nd.array with default-constructed arrmeta, WITHOUT
+        // allocating memory blocks for the blockref types.
         if (d.get_arrmeta_size() > 0) {
           d.extended()->arrmeta_default_construct(
-              result.get_ndo()->get_arrmeta(), 0, NULL);
+              result.get_ndo()->get_arrmeta(), 0, NULL, false);
         }
         d.swap(result.get_ndo()->m_type);
         result.get_ndo()->m_data_pointer = reinterpret_cast<char *>(ptr_val);

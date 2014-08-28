@@ -31,11 +31,15 @@ struct copy_from_numpy_arrmeta {
   uintptr_t src_alignment;
 };
 
-extern dynd::nd::arrfunc copy_from_numpy;
+extern dynd::nd::pod_arrfunc copy_from_numpy;
 
-void array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-                           char *dst_data, PyArrayObject *value,
+void array_copy_from_numpy(const dynd::ndt::type &dst_tp,
+                           const char *dst_arrmeta, char *dst_data,
+                           PyArrayObject *value,
                            const dynd::eval::eval_context *ectx);
+
+void init_copy_from_numpy();
+void cleanup_copy_from_numpy();
 
 #endif
 

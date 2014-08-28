@@ -183,8 +183,17 @@ static nd::arrfunc make_copy_from_numpy_arrfunc()
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::copy_from_numpy =
-    make_copy_from_numpy_arrfunc();
+dynd::nd::pod_arrfunc pydynd::copy_from_numpy;
+
+void pydynd::init_copy_from_numpy()
+{
+  pydynd::copy_from_numpy.init(make_copy_from_numpy_arrfunc());
+}
+
+void pydynd::cleanup_copy_from_numpy()
+{
+  pydynd::copy_from_numpy.cleanup();
+}
 
 void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
                                    const char *dst_arrmeta, char *dst_data,

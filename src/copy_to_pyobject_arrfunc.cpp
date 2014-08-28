@@ -30,13 +30,6 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-// Initialize the pydatetime API
-struct init_pydatetime {
-    init_pydatetime() {
-        PyDateTime_IMPORT;
-    }
-};
-init_pydatetime pdt;
 
 struct bool_ck : public kernels::unary_ck<bool_ck> {
   inline void single(char *dst, const char *src)
@@ -812,7 +805,18 @@ static nd::arrfunc make_copy_to_pyobject_arrfunc(bool struct_as_pytuple)
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::copy_to_pyobject_dict =
-    make_copy_to_pyobject_arrfunc(false);
-dynd::nd::arrfunc pydynd::copy_to_pyobject_tuple =
-    make_copy_to_pyobject_arrfunc(true);
+dynd::nd::pod_arrfunc pydynd::copy_to_pyobject_dict;
+dynd::nd::pod_arrfunc pydynd::copy_to_pyobject_tuple;
+
+void pydynd::init_copy_to_pyobject()
+{
+  PyDateTime_IMPORT;
+  pydynd::copy_to_pyobject_dict.init(make_copy_to_pyobject_arrfunc(false));
+  pydynd::copy_to_pyobject_tuple.init(make_copy_to_pyobject_arrfunc(true));
+}
+
+void pydynd::cleanup_copy_to_pyobject()
+{
+  pydynd::copy_to_pyobject_dict.cleanup();
+  pydynd::copy_to_pyobject_tuple.cleanup();
+}

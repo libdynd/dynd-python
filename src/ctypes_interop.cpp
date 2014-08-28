@@ -26,38 +26,45 @@ ctypes_info pydynd::ctypes;
 
 void pydynd::init_ctypes_interop()
 {
+  memset(&ctypes, 0, sizeof(ctypes));
+
+  // The C _ctypes module
+  ctypes._ctypes = PyImport_ImportModule("_ctypes");
+  if (ctypes._ctypes == NULL) {
+    throw runtime_error("Could not import module _ctypes");
+  }
+
+  // The internal type objects used by ctypes
+  ctypes.PyCStructType_Type =
+      PyObject_GetAttrString(ctypes._ctypes, "Structure");
+  // _ctypes doesn't expose PyCData_Type, but we know it's the base class of
+  // PyCStructType_Type
+  ctypes.PyCData_Type =
+      (PyObject *)((PyTypeObject *)ctypes.PyCStructType_Type)->tp_base;
+  ctypes.UnionType_Type = PyObject_GetAttrString(ctypes._ctypes, "Union");
+  ctypes.PyCPointerType_Type =
+      PyObject_GetAttrString(ctypes._ctypes, "_Pointer");
+  ctypes.PyCArrayType_Type = PyObject_GetAttrString(ctypes._ctypes, "Array");
+  ctypes.PyCSimpleType_Type =
+      PyObject_GetAttrString(ctypes._ctypes, "_SimpleCData");
+  ctypes.PyCFuncPtrType_Type =
+      PyObject_GetAttrString(ctypes._ctypes, "CFuncPtr");
+
+  if (PyErr_Occurred()) {
+    Py_XDECREF(ctypes._ctypes);
+
+    Py_XDECREF(ctypes.PyCData_Type);
+    Py_XDECREF(ctypes.PyCStructType_Type);
+    Py_XDECREF(ctypes.UnionType_Type);
+    Py_XDECREF(ctypes.PyCPointerType_Type);
+    Py_XDECREF(ctypes.PyCArrayType_Type);
+    Py_XDECREF(ctypes.PyCSimpleType_Type);
+    Py_XDECREF(ctypes.PyCFuncPtrType_Type);
+
     memset(&ctypes, 0, sizeof(ctypes));
-
-    // The C _ctypes module
-    ctypes._ctypes = PyImport_ImportModule("_ctypes");
-    if (ctypes._ctypes == NULL) {
-        throw runtime_error("Could not import module _ctypes");
-    }
-
-    // The internal type objects used by ctypes
-    ctypes.PyCStructType_Type = PyObject_GetAttrString(ctypes._ctypes, "Structure");
-    // _ctypes doesn't expose PyCData_Type, but we know it's the base class of PyCStructType_Type
-    ctypes.PyCData_Type = (PyObject *)((PyTypeObject *)ctypes.PyCStructType_Type)->tp_base;
-    ctypes.UnionType_Type = PyObject_GetAttrString(ctypes._ctypes, "Union");
-    ctypes.PyCPointerType_Type = PyObject_GetAttrString(ctypes._ctypes, "_Pointer");
-    ctypes.PyCArrayType_Type = PyObject_GetAttrString(ctypes._ctypes, "Array");
-    ctypes.PyCSimpleType_Type = PyObject_GetAttrString(ctypes._ctypes, "_SimpleCData");
-    ctypes.PyCFuncPtrType_Type = PyObject_GetAttrString(ctypes._ctypes, "CFuncPtr");
-
-    if (PyErr_Occurred()) {
-        Py_XDECREF(ctypes._ctypes);
-
-        Py_XDECREF(ctypes.PyCData_Type);
-        Py_XDECREF(ctypes.PyCStructType_Type);
-        Py_XDECREF(ctypes.UnionType_Type);
-        Py_XDECREF(ctypes.PyCPointerType_Type);
-        Py_XDECREF(ctypes.PyCArrayType_Type);
-        Py_XDECREF(ctypes.PyCSimpleType_Type);
-        Py_XDECREF(ctypes.PyCFuncPtrType_Type);
-
-        memset(&ctypes, 0, sizeof(ctypes));
-        throw std::runtime_error("Error initializing ctypes C-level data for low level interop");
-    }
+    throw std::runtime_error(
+        "Error initializing ctypes C-level data for low level interop");
+  }
 }
 
 

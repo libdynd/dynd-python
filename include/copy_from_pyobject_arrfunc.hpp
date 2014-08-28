@@ -13,9 +13,12 @@
 
 namespace pydynd {
 
-extern dynd::nd::arrfunc copy_from_pyobject;
+extern dynd::nd::pod_arrfunc copy_from_pyobject;
 
-extern dynd::nd::arrfunc copy_from_pyobject_no_dim_broadcast;
+extern dynd::nd::pod_arrfunc copy_from_pyobject_no_dim_broadcast;
+
+void init_copy_from_pyobject();
+void cleanup_copy_from_pyobject();
 
 } // namespace pydynd
 

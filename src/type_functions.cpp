@@ -32,22 +32,11 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-// Initialize the pydatetime API
-namespace {
-struct init_pydatetime {
-    init_pydatetime() {
-#if !(PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION <= 6)
-        PyDateTime_IMPORT;
-#else
-        // The Python 2 API isn't const-correct, was causing build failures on some configurations
-        // This is a copy/paste of the macro to here, with an explicit cast added.
-        PyDateTimeAPI = (PyDateTime_CAPI*) PyCObject_Import((char *) "datetime",
-                                                            (char *) "datetime_CAPI");
-#endif
-    }
-};
-init_pydatetime pdt;
-} // anonymous namespace
+void pydynd::init_type_functions()
+{
+  // Initialize the pydatetime API
+  PyDateTime_IMPORT;
+}
 
 PyTypeObject *pydynd::WType_Type;
 

@@ -119,6 +119,7 @@ size_t get_nonragged_dim_count(const dynd::ndt::type& tp, size_t max_count=std::
  */
 bool broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj);
 
+void init_array_from_py_typededuction();
 
 } // namespace pydynd
 

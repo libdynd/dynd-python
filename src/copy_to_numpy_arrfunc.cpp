@@ -190,6 +190,13 @@ static nd::arrfunc make_copy_to_numpy_arrfunc()
   return out_af;
 }
 
-nd::arrfunc pydynd::copy_to_numpy = make_copy_to_numpy_arrfunc();
+nd::pod_arrfunc pydynd::copy_to_numpy;
+
+void pydynd::init_copy_to_numpy()
+{
+  pydynd::copy_to_numpy.init(make_copy_to_numpy_arrfunc());
+}
+
+void pydynd::cleanup_copy_to_numpy() { pydynd::copy_to_numpy.cleanup(); }
 
 #endif // DYND_NUMPY_INTEROP

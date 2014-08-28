@@ -75,6 +75,11 @@ class _PyLowLevelAPI(ctypes.Structure):
                 # const dynd::base_type *get_base_type_ptr(WDType *obj);
                 ('get_base_type_ptr',
                  ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
+                # object array_from_ptr(dt, ptr, owner, access)
+                ('array_from_ptr',
+                 ctypes.PYFUNCTYPE(ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object,
+                        ctypes.py_object, ctypes.py_object)),
                 # void make_assignment_kernel(out_ckb, ckb_offset,
                 #               dst_dt, dst_arrmeta,
                 #               src_dt, src_arrmeta,
@@ -417,6 +422,35 @@ get_base_type_ptr.__doc__ = """
     -------
     ctypes.c_void_p
         The raw pointer to the ndt::base_type object.
+    """
+array_from_ptr.__doc__ = """
+    _lowlevel.array_from_ptr(tp, data_ptr, owner, access)
+
+    This ctypes function pointer constructs an nd::array object
+    from a type and a raw pointer. The ``owner`` is an object
+    reference which holds on to the data pointed to by ``data_ptr``,
+    and ``access` specifies permitted access.
+
+    Parameters
+    ----------
+    tp : ndt.type
+        The type of the array to create. This type should have
+        ``arrmeta_size`` of zero.
+    data_ptr : raw address
+        The address of the data for the array
+    owner : object
+        An object reference which manages the memory pointed to
+        by ``data_ptr``.
+    access : 'readwrite', 'readonly', 'immutable'
+        The access control of the data pointer. Note that 'immutable'
+        should *only* be used when it is guaranteed that no other
+        code will write to the memory while the ``owner`` reference
+        is kept.
+
+    Returns
+    -------
+    nd.array
+        The dynd array constructed from the parameters.
     """
 make_arrfunc_from_assignment.__doc__ = """
     _lowlevel.make_arrfunc_from_assignment(dst_tp, src_tp, errmode)

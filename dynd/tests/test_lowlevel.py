@@ -117,5 +117,62 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('type')),
                         _lowlevel.type_id.TYPE)
 
+    def test_array_from_ptr(self):
+        # cfixed_dim arrmeta is redundant so this is ok
+        a = (ctypes.c_int32 * 3)()
+        a[0] = 3
+        a[1] = 6
+        a[2] = 9
+        # Readwrite version using cfixed
+        b = _lowlevel.array_from_ptr('cfixed[3] * int32',
+                                     ctypes.addressof(a), a, 'readwrite')
+        self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
+        self.assertEqual(nd.dshape_of(b), '3 * int32')
+        self.assertEqual(nd.as_py(b), [3, 6, 9])
+        b[1] = 10
+        self.assertEqual(a[1], 10)
+        # Readonly version using cfixed
+        b = _lowlevel.array_from_ptr('cfixed[3] * int32',
+                                     ctypes.addressof(a), a, 'readonly')
+        self.assertEqual(nd.as_py(b), [3, 10, 9])
+        def assign_to(b):
+            b[1] = 100
+        self.assertRaises(RuntimeError, assign_to, b)
+        # Using a fixed dim default-constructs the arrmeta, so works too
+        b = _lowlevel.array_from_ptr('3 * int32', ctypes.addressof(a),
+                                     a, 'readonly')
+        self.assertEqual(nd.as_py(b), [3, 10, 9])
+        # Should get an error if we try strided, because the size is unknown
+        self.assertRaises(RuntimeError,
+                          lambda: _lowlevel.array_from_ptr('strided * int32',
+                                                           ctypes.addressof(a),
+                                                           a, 'readonly'))
+
+    def test_array_from_ptr_struct(self):
+        class SomeStruct(ctypes.Structure):
+            _fields_ = [('x', ctypes.c_int8),
+                        ('y', ctypes.c_int32),
+                        ('z', ctypes.c_double)]
+        a = SomeStruct()
+        a.x = 1
+        a.y = 2
+        a.z = 3.75
+        b = _lowlevel.array_from_ptr('{x: int8, y: int32, z: float64}',
+                                     ctypes.addressof(a), a, 'readonly')
+        self.assertEqual(nd.as_py(b, tuple=True), (1, 2, 3.75))
+
+    def test_array_from_ptr_blockref(self):
+        a = ctypes.pointer(ctypes.c_double(1.25))
+        b = _lowlevel.array_from_ptr('pointer[float64]',
+                                     ctypes.addressof(a), a, 'readonly')
+        self.assertEqual(nd.as_py(b), 1.25)
+
+    def test_array_from_ptr_error(self):
+        # Should raise an exception if the type has arrmeta
+        a = (ctypes.c_int32 * 4)()
+        self.assertRaises(RuntimeError, _lowlevel.array_from_ptr,
+                        ndt.type('strided * int32'), ctypes.addressof(a),
+                        a, 'readwrite')
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

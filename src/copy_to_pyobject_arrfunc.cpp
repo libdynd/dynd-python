@@ -21,6 +21,7 @@
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_tuple_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/pointer_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/copy_arrfunc.hpp>
 #include <dynd/func/chain_arrfunc.hpp>
@@ -526,6 +527,26 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
   }
 };
 
+struct pointer_ck : public kernels::unary_ck<pointer_ck> {
+  inline void single(char *dst, const char *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    ckernel_prefix *copy_value = get_child_ckernel();
+    expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
+    // The src value is a pointer, and copy_value_fn expects a pointer
+    // to that pointer
+    const char *const *src_ptr = reinterpret_cast<const char *const *>(src);
+    copy_value_fn(dst, src_ptr, copy_value);
+  }
+
+  inline void destruct_children()
+  {
+    get_child_ckernel()->destroy();
+  }
+};
+
 } // anonymous namespace
 
 static intptr_t instantiate_copy_to_pyobject(
@@ -776,6 +797,13 @@ static intptr_t instantiate_copy_to_pyobject(
           &field_arrmeta, kernel_request_single, ectx);
     }
     return ckb_offset;
+  }
+  case pointer_type_id: {
+    pointer_ck *self = pointer_ck::create(ckb, kernreq, ckb_offset);
+    ndt::type src_value_tp = src_tp[0].tcast<pointer_type>()->get_target_type();
+    return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
+                                &src_value_tp, src_arrmeta,
+                                kernel_request_single, ectx);
   }
   default:
     break;

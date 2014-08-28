@@ -38,6 +38,45 @@ namespace {
         return obj->v.extended();
     }
 
+    PyObject *array_from_ptr(PyObject *tp, PyObject *ptr, PyObject *owner, PyObject *access)
+    {
+      try
+      {
+        ndt::type d = make_ndt_type_from_pyobject(tp);
+        size_t ptr_val = pyobject_as_size_t(ptr);
+        uint32_t access_flags = pyarg_strings_to_int(
+            access, "access", nd::read_access_flag, "readwrite",
+            nd::read_access_flag | nd::write_access_flag, "readonly",
+            nd::read_access_flag, "immutable",
+            nd::read_access_flag | nd::immutable_access_flag);
+        nd::array result(make_array_memory_block(d.get_arrmeta_size()));
+        if (d.get_flags() & (type_flag_destructor)) {
+          stringstream ss;
+          ss << "Cannot view raw memory using dynd type " << d;
+          throw type_error(ss.str());
+        }
+        // Create the nd.array with default-constructed arrmeta, WITHOUT
+        // allocating memory blocks for the blockref types.
+        if (d.get_arrmeta_size() > 0) {
+          d.extended()->arrmeta_default_construct(
+              result.get_ndo()->get_arrmeta(), 0, NULL, false);
+        }
+        d.swap(result.get_ndo()->m_type);
+        result.get_ndo()->m_data_pointer = reinterpret_cast<char *>(ptr_val);
+        memory_block_ptr owner_memblock =
+            make_external_memory_block(owner, &py_decref_function);
+        Py_INCREF(owner);
+        result.get_ndo()->m_data_reference = owner_memblock.release();
+        result.get_ndo()->m_flags = access_flags;
+        return wrap_array(DYND_MOVE(result));
+      }
+      catch (...)
+      {
+        translate_exception();
+        return NULL;
+      }
+    }
+
     PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
                                       PyObject *dst_tp_obj,
                                       const void *dst_arrmeta,
@@ -311,6 +350,7 @@ namespace {
         0, // version, should increment this every time the struct changes at a release
         &get_array_ptr,
         &get_base_type_ptr,
+        &array_from_ptr,
         &make_assignment_ckernel,
         &make_arrfunc_from_assignment,
         &make_arrfunc_from_property,

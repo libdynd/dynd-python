@@ -49,17 +49,14 @@ namespace {
             nd::read_access_flag | nd::write_access_flag, "readonly",
             nd::read_access_flag, "immutable",
             nd::read_access_flag | nd::immutable_access_flag);
-        if (d.get_arrmeta_size() != 0 &&
-            !(d.get_type_id() == cfixed_dim_type_id &&
-              d.get_arrmeta_size() == sizeof(size_stride_t))) {
+        nd::array result(make_array_memory_block(d.get_arrmeta_size()));
+        if (d.get_flags() & (type_flag_blockref|type_flag_destructor)) {
           stringstream ss;
-          ss << "Cannot create a dynd array from a raw pointer with non-empty "
-                "arrmeta, type: ";
-          ss << d;
-          throw runtime_error(ss.str());
+          ss << "Cannot view raw memory using dynd type " << d;
+          throw type_error(ss.str());
         }
-        nd::array result(make_array_memory_block(0));
-        if (d.get_type_id() == cfixed_dim_type_id) {
+        // Create the nd.array with default-constructed arrmeta.
+        if (d.get_arrmeta_size() > 0) {
           d.extended()->arrmeta_default_construct(
               result.get_ndo()->get_arrmeta(), 0, NULL);
         }

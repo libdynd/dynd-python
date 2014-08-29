@@ -1,6 +1,20 @@
 DyND-Python Release Notes
 =========================
 
+Release 0.6.5
+-------------
+
+Commits by author since last release:
+
+     6  Mark Wiebe
+     1  Phillip Cloud
+
+- Initialization/cleanup of libdynd changed to use libdynd_init
+  and libdynd_cleanup functions, update to reflect that.
+- Reinstate the array_from_ptr function, with some enhancements
+  to allow it to work with default-constructed arrmeta, as
+  well as blockref types like pointer[T].
+
 Release 0.6.4
 -------------
 

@@ -122,6 +122,7 @@ fi
 ~/anaconda/bin/conda package -p ${PYENV_PREFIX} --pkg-name=dynd-python --pkg-version=${PYDYND_VERSION}
 
 # Upload the package to binstar
-~/anaconda/bin/binstar -t ${BINSTAR_AUTH} upload --force dynd-python*.tar.bz2
+~/anaconda/bin/binstar -t ${BINSTAR_MWIEBE_AUTH} upload --force dynd-python*.tar.bz2
+~/anaconda/bin/binstar -t ${BINSTAR_BLAZE_AUTH} upload --force dynd-python*.tar.bz2
 
 cd ..

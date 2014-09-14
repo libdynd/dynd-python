@@ -93,7 +93,14 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   }
   case string_type_id: {
     // Convert variable-length strings into NumPy object arrays
-    out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(NPY_OBJECT));
+    PyArray_Descr *dtype = PyArray_DescrNewFromType(NPY_OBJECT);
+    // Add metadata to the string type being created so that
+    // it can round-trip. This metadata is compatible with h5py.
+    out_numpy_dtype->reset((PyObject *)dtype);
+    if (dtype->metadata == NULL) {
+      dtype->metadata = PyDict_New();
+    }
+    PyDict_SetItemString(dtype->metadata, "vlen", (PyObject *)&PyUnicode_Type);
     return;
   }
   case date_type_id: {

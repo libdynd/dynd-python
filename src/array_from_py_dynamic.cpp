@@ -876,14 +876,11 @@ static void array_from_py_dynamic_first_alloc(
  * \param current_axis  The axis within shape being processed at
  *                      the current level of recursion.
  */
-static void array_from_py_dynamic(
-    PyObject *obj,
-    std::vector<intptr_t>& shape,
-    std::vector<afpd_coordentry>& coord,
-    afpd_dtype& elem,
-    dynd::nd::array& arr,
-    intptr_t current_axis,
-    const eval::eval_context *ectx)
+static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
+                                  std::vector<afpd_coordentry> &coord,
+                                  afpd_dtype &elem, dynd::nd::array &arr,
+                                  intptr_t current_axis,
+                                  const eval::eval_context *ectx)
 {
     if (arr.is_null()) {
         // If the arr is NULL, we're doing the first recursion determining

@@ -282,19 +282,20 @@ void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObjec
                       access_flags, &eval::default_eval_context);
 }
 
-void pydynd::array_init_from_pyobject(dynd::nd::array& n, PyObject* obj, PyObject *access)
+void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
+                                      PyObject *access)
 {
-    uint32_t access_flags = 0;
-    if (access != Py_None) {
-        access_flags = pyarg_strings_to_int(
-                        access, "access", 0,
-                            "readwrite", nd::read_access_flag|nd::write_access_flag,
-                            "rw",  nd::read_access_flag|nd::write_access_flag,
-                            "readonly", nd::read_access_flag,
-                            "r",  nd::read_access_flag,
-                            "immutable", nd::read_access_flag|nd::immutable_access_flag);
-    }
-    n = array_from_py(obj, access_flags, true, &eval::default_eval_context);
+  uint32_t access_flags = 0;
+  if (access != Py_None) {
+    access_flags = pyarg_strings_to_int(
+        access, "access", 0,
+        "readwrite", nd::read_access_flag | nd::write_access_flag,
+        "rw", nd::read_access_flag | nd::write_access_flag,
+        "readonly", nd::read_access_flag,
+        "r", nd::read_access_flag,
+        "immutable", nd::read_access_flag | nd::immutable_access_flag);
+  }
+  n = array_from_py(obj, access_flags, true, &eval::default_eval_context);
 }
 
 dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type, PyObject *access)

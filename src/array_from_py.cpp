@@ -446,228 +446,239 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                                       bool always_copy,
                                       const eval::eval_context *ectx)
 {
-    // If it's a Cython w_array
-    if (WArray_Check(obj)) {
-        const nd::array& result = ((WArray *)obj)->v;
-        if (always_copy) {
-            return result.eval_copy(access_flags);
-        } else {
-            if (access_flags != 0) {
-                uint32_t raf = result.get_access_flags();
-                if ((access_flags&nd::immutable_access_flag) && !(raf&nd::immutable_access_flag)) {
-                    throw runtime_error("cannot view a non-immutable dynd array as immutable");
-                }
-                if ((access_flags&nd::write_access_flag) && !(raf&nd::write_access_flag)) {
-                    throw runtime_error("cannot view a readonly dynd array as readwrite");
-                }
-            }
-            return result;
+  // If it's a Cython w_array
+  if (WArray_Check(obj)) {
+    const nd::array &result = ((WArray *)obj)->v;
+    if (always_copy) {
+      return result.eval_copy(access_flags);
+    } else {
+      if (access_flags != 0) {
+        uint32_t raf = result.get_access_flags();
+        if ((access_flags & nd::immutable_access_flag) &&
+            !(raf & nd::immutable_access_flag)) {
+          throw runtime_error(
+              "cannot view a non-immutable dynd array as immutable");
         }
+        if ((access_flags & nd::write_access_flag) &&
+            !(raf & nd::write_access_flag)) {
+          throw runtime_error("cannot view a readonly dynd array as readwrite");
+        }
+      }
+      return result;
     }
+  }
 
 #if DYND_NUMPY_INTEROP
-    if (PyArray_Check(obj)) {
-        return array_from_numpy_array((PyArrayObject *)obj, access_flags, always_copy);
-    } else if (PyArray_IsScalar(obj, Generic)) {
-        return array_from_numpy_scalar(obj, access_flags);
-    }
+  if (PyArray_Check(obj)) {
+    return array_from_numpy_array((PyArrayObject *)obj, access_flags,
+                                  always_copy);
+  } else if (PyArray_IsScalar(obj, Generic)) {
+    return array_from_numpy_scalar(obj, access_flags);
+  }
 #endif // DYND_NUMPY_INTEROP
 
-    nd::array result;
+  nd::array result;
 
-    if (PyBool_Check(obj)) {
-        result = nd::array_rw(obj == Py_True);
+  if (PyBool_Check(obj)) {
+    result = nd::array_rw(obj == Py_True);
 #if PY_VERSION_HEX < 0x03000000
-    } else if (PyInt_Check(obj)) {
-        long value = PyInt_AS_LONG(obj);
+  } else if (PyInt_Check(obj)) {
+    long value = PyInt_AS_LONG(obj);
 # if SIZEOF_LONG > SIZEOF_INT
-        // Use a 32-bit int if it fits.
-        if (value >= INT_MIN && value <= INT_MAX) {
-            result = nd::array_rw(static_cast<int>(value));
-        } else {
-            result = nd::array_rw(value);
-        }
-# else
-        result = nd::array_rw(value);
-# endif
-#endif // PY_VERSION_HEX < 0x03000000
-    } else if (PyLong_Check(obj)) {
-        PY_LONG_LONG value = PyLong_AsLongLong(obj);
-        if (value == -1 && PyErr_Occurred()) {
-            throw runtime_error("error converting int value");
-        }
-
-        // Use a 32-bit int if it fits.
-        if (value >= INT_MIN && value <= INT_MAX) {
-            result = nd::array_rw(static_cast<int>(value));
-        } else {
-            result = nd::array_rw(value);
-        }
-    } else if (PyFloat_Check(obj)) {
-        result = nd::array_rw(PyFloat_AS_DOUBLE(obj));
-    } else if (PyComplex_Check(obj)) {
-        result = nd::array_rw(
-                complex<double>(PyComplex_RealAsDouble(obj),
-                                PyComplex_ImagAsDouble(obj)));
-#if PY_VERSION_HEX < 0x03000000
-    } else if (PyString_Check(obj)) {
-        char *data = NULL;
-        Py_ssize_t len = 0;
-        if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
-            throw runtime_error("Error getting string data");
-        }
-
-        for (Py_ssize_t i = 0; i < len; ++i) {
-            // Only let valid ascii get through
-            if ((unsigned char)data[i] >= 128) {
-                throw string_decode_error(data+i, data+i+1, string_encoding_ascii);
-            }
-        }
-
-        result = nd::make_string_array(data, len,
-                    string_encoding_utf_8, nd::readwrite_access_flags);
-        
+    // Use a 32-bit int if it fits.
+    if (value >= INT_MIN && value <= INT_MAX) {
+      result = nd::array_rw(static_cast<int>(value));
+    } else {
+      result = nd::array_rw(value);
+    }
 #else
-    } else if (PyBytes_Check(obj)) {
-        // Cannot provide write access unless a copy is being made
-        if ((access_flags&nd::write_access_flag) != 0) {
-            if (always_copy) {
-                // If a readwrite copy is requested, make a new bytes array and copy the data.
-                // For readonly copies, no need to copy because the data is immutable.
-                char *data = NULL;
-                intptr_t len = 0;
-                if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
-                    throw runtime_error("Error getting byte string data");
-                }
-                result = nd::make_bytes_array(data, len);
-                result.get_ndo()->m_flags = access_flags;
-                return result;
-            } else {
-                throw runtime_error("cannot create a writable view of a python bytes object");
-            }
-        }
+    result = nd::array_rw(value);
+#endif
+#endif // PY_VERSION_HEX < 0x03000000
+  } else if (PyLong_Check(obj)) {
+    PY_LONG_LONG value = PyLong_AsLongLong(obj);
+    if (value == -1 && PyErr_Occurred()) {
+      throw runtime_error("error converting int value");
+    }
 
+    // Use a 32-bit int if it fits.
+    if (value >= INT_MIN && value <= INT_MAX) {
+      result = nd::array_rw(static_cast<int>(value));
+    } else {
+      result = nd::array_rw(value);
+    }
+  } else if (PyFloat_Check(obj)) {
+    result = nd::array_rw(PyFloat_AS_DOUBLE(obj));
+  } else if (PyComplex_Check(obj)) {
+    result = nd::array_rw(complex<double>(PyComplex_RealAsDouble(obj),
+                                          PyComplex_ImagAsDouble(obj)));
+#if PY_VERSION_HEX < 0x03000000
+  } else if (PyString_Check(obj)) {
+    char *data = NULL;
+    Py_ssize_t len = 0;
+    if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
+      throw runtime_error("Error getting string data");
+    }
+
+    for (Py_ssize_t i = 0; i < len; ++i) {
+      // Only let valid ascii get through
+      if ((unsigned char)data[i] >= 128) {
+        throw string_decode_error(data + i, data + i + 1,
+                                  string_encoding_ascii);
+      }
+    }
+
+    result = nd::make_string_array(data, len, string_encoding_utf_8,
+                                   nd::readwrite_access_flags);
+
+#else
+  } else if (PyBytes_Check(obj)) {
+    // Cannot provide write access unless a copy is being made
+    if ((access_flags & nd::write_access_flag) != 0) {
+      if (always_copy) {
+        // If a readwrite copy is requested, make a new bytes array and copy the
+        // data.
+        // For readonly copies, no need to copy because the data is immutable.
         char *data = NULL;
         intptr_t len = 0;
         if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
-            throw runtime_error("Error getting byte string data");
+          throw runtime_error("Error getting byte string data");
         }
-        ndt::type d = ndt::make_bytes(1);
-        // Python bytes are immutable, so simply use the existing memory with an external memory 
-        Py_INCREF(obj);
-        memory_block_ptr bytesref = make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
-        char *data_ptr;
-        result = nd::array(make_array_memory_block(d.extended()->get_arrmeta_size(),
-                        d.get_data_size(), d.get_data_alignment(), &data_ptr));
-        result.get_ndo()->m_data_pointer = data_ptr;
-        result.get_ndo()->m_data_reference = NULL;
-        result.get_ndo()->m_type = d.extended();
-        base_type_incref(result.get_ndo()->m_type);
-        // The scalar consists of pointers to the byte string data
-        ((const char **)data_ptr)[0] = data;
-        ((const char **)data_ptr)[1] = data + len;
-        // The arrmeta
-        string_type_arrmeta *md = reinterpret_cast<string_type_arrmeta *>(result.get_arrmeta());
-        md->blockref = bytesref.release();
-        result.get_ndo()->m_flags = nd::immutable_access_flag|nd::read_access_flag;
-        // Because this is a view into another object's memory, skip the later processing
+        result = nd::make_bytes_array(data, len);
+        result.get_ndo()->m_flags = access_flags;
         return result;
-#endif
-    } else if (PyUnicode_Check(obj)) {
-        pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
-        char *s = NULL;
-        Py_ssize_t len = 0;
-        if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
-            throw exception();
-        }
-        result = nd::make_string_array(s, len,
-                    string_encoding_utf_8, nd::readwrite_access_flags);
-    } else if (PyDateTime_Check(obj)) {
-        if (((PyDateTime_DateTime *)obj)->hastzinfo &&
-                        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-            throw runtime_error("Converting datetimes with a timezone to dynd "
-                                "arrays is not yet supported");
-        }
-        ndt::type d = ndt::make_datetime();
-        const datetime_type *dd = d.tcast<datetime_type>();
-        result = nd::empty(d);
-        dd->set_cal(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
-                    assign_error_fractional, PyDateTime_GET_YEAR(obj),
-                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
-                    PyDateTime_DATE_GET_HOUR(obj),
-                    PyDateTime_DATE_GET_MINUTE(obj),
-                    PyDateTime_DATE_GET_SECOND(obj),
-                    PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
-    } else if (PyDate_Check(obj)) {
-        ndt::type d = ndt::make_date();
-        const date_type *dd = d.tcast<date_type>();
-        result = nd::empty(d);
-        dd->set_ymd(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
-                    assign_error_fractional, PyDateTime_GET_YEAR(obj),
-                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-    } else if (PyTime_Check(obj)) {
-        if (((PyDateTime_DateTime *)obj)->hastzinfo &&
-                        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-            throw runtime_error("Converting times with a timezone to dynd "
-                                "arrays is not yet supported");
-        }
-        ndt::type d = ndt::make_time(tz_abstract);
-        const time_type *tt = d.tcast<time_type>();
-        result = nd::empty(d);
-        tt->set_time(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
-                     assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
-                     PyDateTime_TIME_GET_MINUTE(obj),
-                     PyDateTime_TIME_GET_SECOND(obj),
-                     PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
-    } else if (WType_Check(obj)) {
-        result = nd::array_rw(((WType *)obj)->v);
-    } else if (PyList_Check(obj)) {
-        result = array_from_pylist(obj, ectx);
-    } else if (PyType_Check(obj)) {
-        result = nd::array_rw(make_ndt_type_from_pyobject(obj));
-#if DYND_NUMPY_INTEROP
-    } else if (PyArray_DescrCheck(obj)) {
-        result = nd::array_rw(make_ndt_type_from_pyobject(obj));
-#endif // DYND_NUMPY_INTEROP
+      } else {
+        throw runtime_error(
+            "cannot create a writable view of a python bytes object");
+      }
     }
 
-    if (result.get_ndo() == NULL) {
-        // If it supports the iterator protocol, use array_from_py_dynamic,
-        // which promotes to new types on the fly as needed during processing.
-        PyObject *iter = PyObject_GetIter(obj);
-        if (iter != NULL) {
-            Py_DECREF(iter);
-            return array_from_py_dynamic(obj, ectx);
-        } else {
-            if (PyErr_ExceptionMatches(PyExc_TypeError)) {
-                // A TypeError indicates that the object doesn't support
-                // the iterator protocol
-                PyErr_Clear();
-            } else {
-                // Propagate the error
-                throw exception();
-            }
-        }
+    char *data = NULL;
+    intptr_t len = 0;
+    if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
+      throw runtime_error("Error getting byte string data");
     }
-
-    if (result.get_ndo() == NULL) {
-        pyobject_ownref pytpstr(PyObject_Str((PyObject *)Py_TYPE(obj)));
-        stringstream ss;
-        ss << "could not convert python object of type ";
-        ss << pystring_as_string(pytpstr.get());
-        ss << " into a dynd array";
-        throw std::runtime_error(ss.str());
-    }
-
-    // If write access wasn't specified, we can flag it as
-    // immutable, because it's a newly allocated object.
-    // This also covers the default case (access_flags==0),
-    // which we want to be immutable as well.
-    if ((access_flags&nd::write_access_flag) == 0) {
-        result.flag_as_immutable();
-    }
-
+    ndt::type d = ndt::make_bytes(1);
+    // Python bytes are immutable, so simply use the existing memory with an
+    // external memory
+    Py_INCREF(obj);
+    memory_block_ptr bytesref = make_external_memory_block(
+        reinterpret_cast<void *>(obj), &py_decref_function);
+    char *data_ptr;
+    result = nd::array(make_array_memory_block(
+        d.extended()->get_arrmeta_size(), d.get_data_size(),
+        d.get_data_alignment(), &data_ptr));
+    result.get_ndo()->m_data_pointer = data_ptr;
+    result.get_ndo()->m_data_reference = NULL;
+    result.get_ndo()->m_type = d.extended();
+    base_type_incref(result.get_ndo()->m_type);
+    // The scalar consists of pointers to the byte string data
+    ((const char **)data_ptr)[0] = data;
+    ((const char **)data_ptr)[1] = data + len;
+    // The arrmeta
+    string_type_arrmeta *md =
+        reinterpret_cast<string_type_arrmeta *>(result.get_arrmeta());
+    md->blockref = bytesref.release();
+    result.get_ndo()->m_flags =
+        nd::immutable_access_flag | nd::read_access_flag;
+    // Because this is a view into another object's memory, skip the later
+    // processing
     return result;
+#endif
+  } else if (PyUnicode_Check(obj)) {
+    pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
+    char *s = NULL;
+    Py_ssize_t len = 0;
+    if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
+      throw exception();
+    }
+    result = nd::make_string_array(s, len, string_encoding_utf_8,
+                                   nd::readwrite_access_flags);
+  } else if (PyDateTime_Check(obj)) {
+    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+      throw runtime_error("Converting datetimes with a timezone to dynd "
+                          "arrays is not yet supported");
+    }
+    ndt::type d = ndt::make_datetime();
+    const datetime_type *dd = d.tcast<datetime_type>();
+    result = nd::empty(d);
+    dd->set_cal(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
+                assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
+                PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
+                PyDateTime_DATE_GET_SECOND(obj),
+                PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
+  } else if (PyDate_Check(obj)) {
+    ndt::type d = ndt::make_date();
+    const date_type *dd = d.tcast<date_type>();
+    result = nd::empty(d);
+    dd->set_ymd(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
+                assign_error_fractional, PyDateTime_GET_YEAR(obj),
+                PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+  } else if (PyTime_Check(obj)) {
+    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+      throw runtime_error("Converting times with a timezone to dynd "
+                          "arrays is not yet supported");
+    }
+    ndt::type d = ndt::make_time(tz_abstract);
+    const time_type *tt = d.tcast<time_type>();
+    result = nd::empty(d);
+    tt->set_time(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
+                 assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
+                 PyDateTime_TIME_GET_MINUTE(obj),
+                 PyDateTime_TIME_GET_SECOND(obj),
+                 PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
+  } else if (WType_Check(obj)) {
+    result = nd::array_rw(((WType *)obj)->v);
+  } else if (PyList_Check(obj)) {
+    result = array_from_pylist(obj, ectx);
+  } else if (PyType_Check(obj)) {
+    result = nd::array_rw(make_ndt_type_from_pyobject(obj));
+#if DYND_NUMPY_INTEROP
+  } else if (PyArray_DescrCheck(obj)) {
+    result = nd::array_rw(make_ndt_type_from_pyobject(obj));
+#endif // DYND_NUMPY_INTEROP
+  }
+
+  if (result.get_ndo() == NULL) {
+    // If it supports the iterator protocol, use array_from_py_dynamic,
+    // which promotes to new types on the fly as needed during processing.
+    PyObject *iter = PyObject_GetIter(obj);
+    if (iter != NULL) {
+      Py_DECREF(iter);
+      return array_from_py_dynamic(obj, ectx);
+    } else {
+      if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+        // A TypeError indicates that the object doesn't support
+        // the iterator protocol
+        PyErr_Clear();
+      } else {
+        // Propagate the error
+        throw exception();
+      }
+    }
+  }
+
+  if (result.get_ndo() == NULL) {
+    pyobject_ownref pytpstr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+    stringstream ss;
+    ss << "could not convert python object of type ";
+    ss << pystring_as_string(pytpstr.get());
+    ss << " into a dynd array";
+    throw std::runtime_error(ss.str());
+  }
+
+  // If write access wasn't specified, we can flag it as
+  // immutable, because it's a newly allocated object.
+  // This also covers the default case (access_flags==0),
+  // which we want to be immutable as well.
+  if ((access_flags & nd::write_access_flag) == 0) {
+    result.flag_as_immutable();
+  }
+
+  return result;
 }
 
 static bool ndt_type_requires_shape(const ndt::type& tp)

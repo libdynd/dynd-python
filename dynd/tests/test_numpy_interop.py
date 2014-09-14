@@ -110,7 +110,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         else:
             self.assertEqual(y.dtype.metadata, {'vlen' : str})
         z = nd.array(y)
-        self.assertEqual(nd.type_of(z), ndt.type_of(x))
+        self.assertEqual(nd.type_of(z), nd.type_of(x))
         self.assertEqual(nd.as_py(z), nd.as_py(x))
 
     def test_ndt_type_as_numpy(self):

@@ -100,6 +100,18 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         if sys.version_info < (3, 0):
             dt = np.dtype(('O', [( ({'type': unicode},'vlen'), 'O' )] ))
             self.assertEqual(ndt.type(dt), ndt.string)
+        # Should be able to roundtrip dynd -> numpy -> dynd
+        x = nd.array(['testing', 'one', 'two'])
+        self.assertEqual(nd.type_of(x), ndt.type('strided * string'))
+        y = nd.as_numpy(x, allow_copy=True)
+        self.assertEqual(y.dtype.kind, 'O')
+        if sys.version_info < (3, 0):
+            self.assertEqual(y.dtype.metadata, {'vlen' : unicode})
+        else:
+            self.assertEqual(y.dtype.metadata, {'vlen' : str})
+        z = nd.array(y)
+        self.assertEqual(nd.type_of(z), nd.type_of(x))
+        self.assertEqual(nd.as_py(z), nd.as_py(x))
 
     def test_ndt_type_as_numpy(self):
         self.assertEqual(ndt.bool.as_numpy(), np.dtype('bool'))

@@ -24,6 +24,7 @@
 #include "type_functions.hpp"
 #include "array_functions.hpp"
 #include "utility_functions.hpp"
+#include "copy_from_numpy_arrfunc.hpp"
 
 #include <numpy/arrayscalars.h>
 
@@ -754,57 +755,82 @@ inline size_t get_alignment_of(PyArrayObject* obj)
     return get_alignment_of(align_bits);
 }
 
-nd::array pydynd::array_from_numpy_array(PyArrayObject* obj, uint32_t access_flags, bool always_copy)
+nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
+                                         uint32_t access_flags,
+                                         bool always_copy)
 {
-    // If a copy isn't requested, make sure the access flags are ok
-    if (!always_copy) {
-        if ((access_flags&nd::write_access_flag) && !PyArray_ISWRITEABLE(obj)) {
-            throw runtime_error("cannot view a readonly numpy array as readwrite");
-        }
-        if (access_flags&nd::immutable_access_flag) {
-            throw runtime_error("cannot view a numpy array as immutable");
-        }
+  // If a copy isn't requested, make sure the access flags are ok
+  if (!always_copy) {
+    if ((access_flags & nd::write_access_flag) && !PyArray_ISWRITEABLE(obj)) {
+      throw runtime_error("cannot view a readonly numpy array as readwrite");
     }
+    if (access_flags & nd::immutable_access_flag) {
+      throw runtime_error("cannot view a numpy array as immutable");
+    }
+  }
 
+  PyArray_Descr *dtype = PyArray_DESCR(obj);
+
+  if (always_copy || PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
+    // TODO would be nicer without the extra type transformation of the
+    // get_canonical_type call
+    nd::array result = nd::typed_empty(
+        PyArray_NDIM(obj), PyArray_SHAPE(obj),
+        ndt::make_strided_dim(pydynd::ndt_type_from_numpy_dtype(
+                                  PyArray_DESCR(obj)).get_canonical_type(),
+                              PyArray_NDIM(obj)));
+    array_copy_from_numpy(result.get_type(), result.get_arrmeta(),
+                          result.get_readwrite_originptr(), obj,
+                          &eval::default_eval_context);
+    if (access_flags != 0) {
+      // Use the requested access flags
+      result.get_ndo()->m_flags = access_flags;
+    } else {
+      result.get_ndo()->m_flags = nd::default_access_flags;
+    }
+    return result;
+  } else {
     // Get the dtype of the array
-    ndt::type d = pydynd::ndt_type_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
+    ndt::type d = pydynd::ndt_type_from_numpy_dtype(PyArray_DESCR(obj),
+                                                    get_alignment_of(obj));
 
     // Get a shared pointer that tracks buffer ownership
     PyObject *base = PyArray_BASE(obj);
     memory_block_ptr memblock;
-    if (base == NULL || (PyArray_FLAGS(obj)&NPY_ARRAY_UPDATEIFCOPY) != 0) {
-        Py_INCREF(obj);
-        memblock = make_external_memory_block(obj, py_decref_function);
-    } else {
-        if (WArray_CheckExact(base)) {
-            // If the base of the numpy array is an nd::array, skip the Python reference
-            memblock = ((WArray *)base)->v.get_data_memblock();
-        } else {
-            Py_INCREF(base);
-            memblock = make_external_memory_block(base, py_decref_function);
-        }
+    if (base == NULL || (PyArray_FLAGS(obj) & NPY_ARRAY_UPDATEIFCOPY) != 0) {
+      Py_INCREF(obj);
+      memblock = make_external_memory_block(obj, py_decref_function);
+    }
+    else {
+      if (WArray_CheckExact(base)) {
+        // If the base of the numpy array is an nd::array, skip the Python
+        // reference
+        memblock = ((WArray *)base)->v.get_data_memblock();
+      }
+      else {
+        Py_INCREF(base);
+        memblock = make_external_memory_block(base, py_decref_function);
+      }
     }
 
     // Create the result nd::array
     char *arrmeta = NULL;
-    nd::array result = nd::make_strided_array_from_data(d, PyArray_NDIM(obj),
-                    PyArray_DIMS(obj), PyArray_STRIDES(obj),
-                    nd::read_access_flag | (PyArray_ISWRITEABLE(obj) ? nd::write_access_flag : 0),
-                    PyArray_BYTES(obj), DYND_MOVE(memblock), &arrmeta);
+    nd::array result = nd::make_strided_array_from_data(
+        d, PyArray_NDIM(obj), PyArray_DIMS(obj), PyArray_STRIDES(obj),
+        nd::read_access_flag |
+            (PyArray_ISWRITEABLE(obj) ? nd::write_access_flag : 0),
+        PyArray_BYTES(obj), DYND_MOVE(memblock), &arrmeta);
     if (d.get_type_id() == struct_type_id) {
-        // If it's a struct, there's additional arrmeta that needs to be populated
-        pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);
+      // If it's a struct, there's additional arrmeta that needs to be populated
+      pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);
     }
 
-    if (always_copy) {
-        return result.eval_copy(access_flags);
-    } else {
-        if (access_flags != 0) {
-            // Use the requested access flags
-            result.get_ndo()->m_flags = access_flags;
-        }
-        return result;
+    if (access_flags != 0) {
+      // Use the requested access flags
+      result.get_ndo()->m_flags = access_flags;
     }
+    return result;
+  }
 }
 
 dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_flags)

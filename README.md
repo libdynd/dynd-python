@@ -1,6 +1,8 @@
 DyND-Python
 ===========
 
+[![Build Status](https://api.travis-ci.org/ContinuumIO/dynd-python.svg?branch=master)](https://travis-ci.org/ContinuumIO/dynd-python)
+
 DyND-Python, a component of [the Blaze project](http://blaze.pydata.org/),
 is the Python exposure of [the DyND dynamic multi-dimensional array library](https://github.com/ContinuumIO/libdynd).
 

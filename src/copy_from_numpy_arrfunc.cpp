@@ -38,7 +38,7 @@ static intptr_t instantiate_copy_from_numpy(
     const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
-    kernel_request_t kernreq, const eval::eval_context *ectx)
+    kernel_request_t kernreq, aux_buffer *aux, const eval::eval_context *ectx)
 {
   if (src_tp[0].get_type_id() != void_type_id) {
     stringstream ss;
@@ -46,6 +46,11 @@ static intptr_t instantiate_copy_from_numpy(
     ss << self_af->func_proto << " with types (";
     ss << src_tp[0] << ") -> " << dst_tp;
     throw type_error(ss.str());
+  }
+
+  if (aux != NULL) {
+    throw invalid_argument("unexpected non-NULL aux value to "
+                           "copy_from_numpy instantiation");
   }
 
   PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src_arrmeta[0]);
@@ -90,7 +95,7 @@ static intptr_t instantiate_copy_from_numpy(
     } else if (PyDataType_ISOBJECT(dtype)) {
       const arrfunc_type_data *af = copy_from_pyobject.get();
       return af->instantiate(af, ckb, ckb_offset, dst_tp, dst_arrmeta, src_tp,
-                             src_arrmeta, kernreq, ectx);
+                             src_arrmeta, kernreq, NULL, ectx);
     } else if (PyDataType_HASFIELDS(dtype)) {
       if (dst_tp.get_kind() != struct_kind &&
           dst_tp.get_kind() != tuple_kind) {
@@ -207,9 +212,8 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   const char *src_arrmeta_ptr = reinterpret_cast<const char *>(&src_arrmeta);
   const arrfunc_type_data *af = copy_from_numpy.get();
   ndt::type src_tp = ndt::make_type<void>();
-  af->instantiate(af, &ckb, 0, dst_tp, dst_arrmeta, &src_tp,
-                  &src_arrmeta_ptr, kernel_request_single,
-                  &eval::default_eval_context);
+  af->instantiate(af, &ckb, 0, dst_tp, dst_arrmeta, &src_tp, &src_arrmeta_ptr,
+                  kernel_request_single, NULL, &eval::default_eval_context);
   ckb(dst_data, (const char *)PyArray_DATA(value));
 }
 

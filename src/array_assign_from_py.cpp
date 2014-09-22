@@ -29,7 +29,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   af->instantiate(af, &ckb, 0, dt, arrmeta, &src_tp, &src_arrmeta,
-                  kernel_request_single, ectx);
+                  kernel_request_single, NULL, ectx);
   ckb(data, reinterpret_cast<const char *>(&value));
   return;
 }
@@ -51,7 +51,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   af->instantiate(af, &ckb, 0, dt, arrmeta, &src_tp, &src_arrmeta,
-                  kernel_request_single, ectx);
+                  kernel_request_single, NULL, ectx);
   ckb(data, reinterpret_cast<const char *>(&value));
   return;
 }

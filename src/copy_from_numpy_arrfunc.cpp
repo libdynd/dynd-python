@@ -182,7 +182,7 @@ static nd::arrfunc make_copy_from_numpy_arrfunc()
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
-  af->func_proto = ndt::type("(void) -> A... * T");
+  af->func_proto = ndt::type("const (void) -> A... * T");
   af->instantiate = &instantiate_copy_from_numpy;
   out_af.flag_as_immutable();
   return out_af;

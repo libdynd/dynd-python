@@ -381,7 +381,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
                     for (intptr_t j = 0; j < nargs - 1; ++j) {
                         param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
                     }
-                    af_ptr->func_proto = ndt::make_funcproto(param_types, return_type);
+                    af_ptr->func_proto = ndt::make_funcproto(param_types, return_type, true);
                     data->ckernel_acquires_gil = ckernel_acquires_gil;
                     data->funcptr = uf->functions[i];
                     data->ufunc_data = uf->data[i];

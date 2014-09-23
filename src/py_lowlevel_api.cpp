@@ -103,7 +103,11 @@ namespace {
             }
             string kr = pystring_as_string(kernreq_obj);
             kernel_request_t kernreq;
-            if (kr == "single") {
+            if (kr == "const_single") {
+                kernreq = kernel_request_const_single;
+            } else if (kr == "const_strided") {
+                kernreq = kernel_request_const_strided;
+            } else if (kr == "single") {
                 kernreq = kernel_request_single;
             } else if (kr == "strided") {
                 kernreq = kernel_request_strided;

@@ -77,7 +77,7 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
     } else {
         ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
         ndt::type proto =
-            ndt::make_funcproto(ndt::make_strided_dim(el_tp), el_tp);
+            ndt::make_funcproto(ndt::make_strided_dim(el_tp), el_tp, true);
 
         func = arrfunc_from_pyfunc(func_obj, proto);
     }

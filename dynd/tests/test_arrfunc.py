@@ -27,14 +27,14 @@ class TestArrFunc(unittest.TestCase):
         self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
 
     def test_arrfunc_constructor(self):
-        af = nd.arrfunc(lambda x, y : [x, y], '(int, int) -> {x:int, y:int}')
+        af = nd.arrfunc(lambda x, y : [x, y], 'const (int, int) -> {x:int, y:int}')
         a = af(1, 10)
         self.assertEqual(nd.as_py(a), {'x': 1, 'y': 10})
 
     def test_assignment_arrfunc(self):
         af = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64, "nocheck")
-        self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
+        self.assertEqual(nd.as_py(af.proto), ndt.type("const (int64) -> float32"))
         a = nd.array(1234, type=ndt.int64)
         b = af(a)
         self.assertEqual(nd.type_of(b), ndt.float32)
@@ -44,7 +44,7 @@ class TestArrFunc(unittest.TestCase):
             meta = (ctypes.c_void_p * 2)()
             ectx = nd.eval_context()
             _lowlevel.arrfunc_instantiate(af, ckb, 0, ndt.float32, 0,
-                                          [ndt.int64], [0], "strided",
+                                          [ndt.int64], [0], "const_strided",
                                           ectx._ectx_ptr)
             ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
             # Do an assignment using ctypes
@@ -65,7 +65,7 @@ class TestArrFunc(unittest.TestCase):
                         (np.int32, np.int32, np.int32),
                         requiregil)
         self.assertEqual(nd.as_py(af.proto),
-                         ndt.type("(int32, int32) -> int32"))
+                         ndt.type("const (int32, int32) -> int32"))
 
         a = nd.array(10, ndt.int32)
         b = nd.array(21, ndt.int32)
@@ -91,12 +91,12 @@ class TestArrFunc(unittest.TestCase):
                         (np.float64, np.float64, np.int32),
                         requiregil)
         self.assertEqual(nd.as_py(af.proto),
-                         ndt.type("(float64, int32) -> float64"))
+                         ndt.type("const (float64, int32) -> float64"))
 
         # Now lift it
         af_lifted = _lowlevel.lift_arrfunc(af)
         self.assertEqual(nd.as_py(af_lifted.proto),
-                         ndt.type("(Dims... * float64, Dims... * int32) -> Dims... * float64"))
+                         ndt.type("const (Dims... * float64, Dims... * int32) -> Dims... * float64"))
         # Create some compatible arguments
         in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]],
                        type='strided * var * float64')
@@ -117,7 +117,7 @@ class TestArrFunc(unittest.TestCase):
             a = nd.as_py(a)
             return sum(x * y for x, y in zip(wt, a)) / sum(wt)
         af = _lowlevel.arrfunc_from_pyfunc(myweightedsum,
-                                           "(var * real, var * real) -> real")
+                                           "const (var * real, var * real) -> real")
         in0 = nd.array([0.5, 1.0, 0.5], type="var * real")
         in1 = nd.array([1, 3, 5], type="var * real")
         out = af(in0, in1)
@@ -144,7 +144,7 @@ class TestArrFunc(unittest.TestCase):
                             src_tp[0], src_arrmeta[0],
                             kernreq, ectx)
         af = _lowlevel.arrfunc_from_instantiate_pyfunc(
-                    instantiate_assignment, "(date) -> string")
+                    instantiate_assignment, "const (date) -> string")
         self.assertEqual(nd.as_py(af.proto), ndt.type("(date) -> string"))
         in0 = nd.array('2012-11-05', ndt.date)
         out = af(in0)
@@ -152,7 +152,7 @@ class TestArrFunc(unittest.TestCase):
         # Also test it as a lifted kernel
         af_lifted = _lowlevel.lift_arrfunc(af)
         self.assertEqual(nd.as_py(af_lifted.proto),
-                         ndt.type("(Dims... * date) -> Dims... * string"))
+                         ndt.type("const (Dims... * date) -> Dims... * string"))
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
                         [date(1999, 12, 31)],

@@ -182,7 +182,7 @@ static nd::arrfunc make_copy_from_numpy_arrfunc()
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
-  af->func_proto = ndt::type("(void) -> A... * T");
+  af->func_proto = ndt::type("const (void) -> A... * T");
   af->instantiate = &instantiate_copy_from_numpy;
   out_af.flag_as_immutable();
   return out_af;
@@ -213,7 +213,8 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   const arrfunc_type_data *af = copy_from_numpy.get();
   ndt::type src_tp = ndt::make_type<void>();
   af->instantiate(af, &ckb, 0, dst_tp, dst_arrmeta, &src_tp, &src_arrmeta_ptr,
-                  kernel_request_single, NULL, &eval::default_eval_context);
+                  kernel_request_const_single, NULL,
+                  &eval::default_eval_context);
   ckb(dst_data, (const char *)PyArray_DATA(value));
 }
 

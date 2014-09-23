@@ -69,7 +69,11 @@ namespace {
 
         // Turn the kernel request type into a string
         pyobject_ownref kernreq_obj;
-        if (kernreq == kernel_request_single) {
+        if (kernreq == kernel_request_const_single) {
+            kernreq_obj.reset(pystring_from_string("const_single"));
+        } else if (kernreq == kernel_request_const_strided) {
+            kernreq_obj.reset(pystring_from_string("const_strided"));
+        } else if (kernreq == kernel_request_single) {
             kernreq_obj.reset(pystring_from_string("single"));
         } else if (kernreq == kernel_request_strided) {
             kernreq_obj.reset(pystring_from_string("strided"));

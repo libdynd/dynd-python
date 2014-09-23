@@ -189,7 +189,7 @@ namespace {
         }
 
         self_type *self = self_type::create(ckb, kernreq, ckb_offset);
-        self->m_proto = ndt::make_funcproto(param_count, src_tp, dst_tp);
+        self->m_proto = ndt::make_funcproto(param_count, src_tp, dst_tp, true);
         self->m_pyfunc = *af_self->get_data_as<PyObject *>();
         Py_XINCREF(self->m_pyfunc);
         self->m_dst_arrmeta = dst_arrmeta;

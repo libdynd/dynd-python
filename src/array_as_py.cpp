@@ -38,7 +38,8 @@ PyObject* pydynd::array_as_py(const dynd::nd::array& a, bool struct_as_pytuple)
   ndt::type tp = a.get_type();
   const char *arrmeta = a.get_arrmeta();
   af->instantiate(af, &ckb, 0, ndt::make_type<void>(), NULL, &tp, &arrmeta,
-                  kernel_request_single, NULL, &eval::default_eval_context);
+                  kernel_request_const_single, NULL,
+                  &eval::default_eval_context);
   pyobject_ownref result;
   ckb(reinterpret_cast<char *>(result.obj_addr()), a.get_readonly_originptr());
   if (PyErr_Occurred()) {

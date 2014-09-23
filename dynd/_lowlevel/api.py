@@ -223,7 +223,7 @@ def make_assignment_ckernel(out_ckb, ckb_offset,
     src_arrmeta : raw pointer or None
         A pointer to arrmeta for the source data. This must
         remain live while the constructed ckernel exists.
-    kerntype : 'single' or 'strided'
+    kerntype : 'single', 'strided', 'const_single', or 'const_strided'
         Whether to create a single or strided ckernel.
     """
     return _make_assignment_ckernel(out_ckb, ckb_offset,

@@ -86,7 +86,7 @@ class TestCKernelBuilder(unittest.TestCase):
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
                         ndt.float32, None, ndt.int64, None,
-                        "single")
+                        'const_single')
             ck = ckb.ckernel(_lowlevel.ExprSingleOperation)
             # Do an assignment using ctypes
             i64 = ctypes.c_int64(1234)
@@ -100,7 +100,7 @@ class TestCKernelBuilder(unittest.TestCase):
             _lowlevel.make_assignment_ckernel(
                         ckb, 0,
                         ndt.float32, None, ndt.type('string[15,"A"]'), None,
-                        'strided')
+                        'const_strided')
             ck = ckb.ckernel(_lowlevel.ExprStridedOperation)
             # Do an assignment using a numpy array
             src = np.array(['3.25', '-1000', '1e5'], dtype='S15')

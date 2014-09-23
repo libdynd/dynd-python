@@ -463,7 +463,8 @@ struct option_ck : public kernels::unary_ck<option_ck> {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
     if (src_obj == Py_None) {
       ckernel_prefix *assign_na = get_child_ckernel();
-      expr_single_t assign_na_fn = assign_na->get_function<expr_single_t>();
+      expr_const_single_t assign_na_fn =
+          assign_na->get_function<expr_const_single_t>();
       assign_na_fn(dst, NULL, assign_na);
     } else if (WArray_Check(src_obj)) {
       typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((WArray *)src_obj)->v);
@@ -510,7 +511,8 @@ struct option_ck : public kernels::unary_ck<option_ck> {
 #endif
     } else {
       ckernel_prefix *copy_value = get_child_ckernel(m_copy_value_offset);
-      expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
+      expr_const_single_t copy_value_fn =
+          copy_value->get_function<expr_const_single_t>();
       copy_value_fn(dst, &src, copy_value);
     }
   }
@@ -550,7 +552,7 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
     // TODO: PEP 3118 support here
 
     ckernel_prefix *copy_el = get_child_ckernel();
-    expr_strided_t copy_el_fn = copy_el->get_function<expr_strided_t>();
+    expr_const_strided_t copy_el_fn = copy_el->get_function<expr_const_strided_t>();
 
     // Get the input as an array of PyObject *
     pyobject_ownref src_fast;
@@ -578,7 +580,7 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
       // Copy once from Python, then duplicate that element
       copy_el_fn(dst, 0, &child_src, &child_stride, 1, copy_el);
       ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
-      expr_strided_t copy_dst_fn = copy_dst->get_function<expr_strided_t>();
+      expr_const_strided_t copy_dst_fn = copy_dst->get_function<expr_const_strided_t>();
       intptr_t zero = 0;
       copy_dst_fn(dst + m_stride, m_stride, &dst, &zero, m_dim_size - 1,
                   copy_dst);
@@ -622,7 +624,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
     // TODO: PEP 3118 support here
 
     ckernel_prefix *copy_el = get_child_ckernel();
-    expr_strided_t copy_el_fn = copy_el->get_function<expr_strided_t>();
+    expr_const_strided_t copy_el_fn = copy_el->get_function<expr_const_strided_t>();
 
     // Get the input as an array of PyObject *
     pyobject_ownref src_fast;
@@ -662,7 +664,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
       copy_el_fn(vdd->begin + m_offset, 0, &child_src, &child_stride, 1,
                  copy_el);
       ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
-      expr_strided_t copy_dst_fn = copy_dst->get_function<expr_strided_t>();
+      expr_const_strided_t copy_dst_fn = copy_dst->get_function<expr_const_strided_t>();
       intptr_t zero = 0;
       const char *src_to_dup = vdd->begin + m_offset;
       copy_dst_fn(vdd->begin + m_offset + m_stride, m_stride, &src_to_dup,
@@ -738,7 +740,8 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
     }
     for (intptr_t i = 0; i < field_count; ++i) {
       ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
-      expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
+      expr_const_single_t copy_el_fn =
+          copy_el->get_function<expr_const_single_t>();
       char *el_dst = dst + field_offsets[i];
       const char *el_src = child_src + i * child_stride;
       copy_el_fn(el_dst, &el_src, copy_el);
@@ -800,7 +803,8 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
         //       or not. For now, just raise an error
         if (i >= 0) {
           ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
-          expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
+          expr_const_single_t copy_el_fn =
+              copy_el->get_function<expr_const_single_t>();
           char *el_dst = dst + field_offsets[i];
           const char *el_src = reinterpret_cast<const char *>(&dict_value);
           copy_el_fn(el_dst, &el_src, copy_el);
@@ -852,7 +856,8 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
       }
       for (intptr_t i = 0; i < field_count; ++i) {
         ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
-        expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
+        expr_const_single_t copy_el_fn =
+            copy_el->get_function<expr_const_single_t>();
         char *el_dst = dst + field_offsets[i];
         const char *el_src = child_src + i * child_stride;
         copy_el_fn(el_dst, &el_src, copy_el);
@@ -983,15 +988,16 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_dst_arrmeta = dst_arrmeta;
     const arrfunc_type_data *assign_na_af =
         dst_tp.tcast<option_type>()->get_assign_na_arrfunc();
-    ckb_offset = assign_na_af->instantiate(assign_na_af, ckb, ckb_offset,
-                                           dst_tp, dst_arrmeta, NULL, NULL,
-                                           kernel_request_single, NULL, ectx);
+    ckb_offset = assign_na_af->instantiate(
+        assign_na_af, ckb, ckb_offset, dst_tp, dst_arrmeta, NULL, NULL,
+        kernel_request_const_single, NULL, ectx);
     ckb->ensure_capacity(ckb_offset);
     self = ckb->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ckb_offset = self_af->instantiate(
         self_af, ckb, ckb_offset, dst_tp.tcast<option_type>()->get_value_type(),
-        dst_arrmeta, src_tp, src_arrmeta, kernel_request_single, NULL, ectx);
+        dst_arrmeta, src_tp, src_arrmeta, kernel_request_const_single, NULL,
+        ectx);
     return ckb_offset;
   }
   case strided_dim_type_id:
@@ -1010,14 +1016,15 @@ static intptr_t instantiate_copy_from_pyobject(
       self->m_dst_arrmeta = dst_arrmeta;
       self->m_dim_broadcast = dim_broadcast;
       // from pyobject ckernel
-      ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, el_tp,
-                                        el_arrmeta, src_tp, src_arrmeta,
-                                        kernel_request_strided, NULL, ectx);
+      ckb_offset = self_af->instantiate(
+          self_af, ckb, ckb_offset, el_tp, el_arrmeta, src_tp, src_arrmeta,
+          kernel_request_const_strided, NULL, ectx);
       self = ckb->get_at<strided_ck>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
       return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
-                                    el_arrmeta, kernel_request_strided, ectx);
+                                    el_arrmeta, kernel_request_const_strided,
+                                    ectx);
     }
     break;
   }
@@ -1035,12 +1042,13 @@ static intptr_t instantiate_copy_from_pyobject(
     const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
     ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, el_tp,
                                       el_arrmeta, src_tp, src_arrmeta,
-                                      kernel_request_strided, NULL, ectx);
+                                      kernel_request_const_strided, NULL, ectx);
     self = ckb->get_at<var_dim_ck>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case
     return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
-                                  el_arrmeta, kernel_request_strided, ectx);
+                                  el_arrmeta, kernel_request_const_strided,
+                                  ectx);
   }
   case tuple_type_id:
   case ctuple_type_id: {
@@ -1062,7 +1070,7 @@ static intptr_t instantiate_copy_from_pyobject(
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(
           self_af, ckb, ckb_offset, field_types[i], field_arrmeta, src_tp,
-          src_arrmeta, kernel_request_single, NULL, ectx);
+          src_arrmeta, kernel_request_const_single, NULL, ectx);
     }
     return ckb_offset;
   }
@@ -1086,7 +1094,7 @@ static intptr_t instantiate_copy_from_pyobject(
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(
           self_af, ckb, ckb_offset, field_types[i], field_arrmeta, src_tp,
-          src_arrmeta, kernel_request_single, NULL, ectx);
+          src_arrmeta, kernel_request_const_single, NULL, ectx);
     }
     return ckb_offset;
   }
@@ -1110,7 +1118,7 @@ static nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast)
   nd::array out_af = nd::empty(ndt::make_arrfunc());
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
-  af->func_proto = ndt::type("(void) -> A... * T");
+  af->func_proto = ndt::type("const (void) -> A... * T");
   af->instantiate = &instantiate_copy_from_pyobject;
   *af->get_data_as<bool>() = dim_broadcast;
   out_af.flag_as_immutable();

@@ -245,7 +245,7 @@ namespace {
         intptr_t ckb_offset, const ndt::type &dst_tp,
         const char *DYND_UNUSED(dst_arrmeta), const ndt::type *src_tp,
         const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
-        aux_buffer *aux, const eval::eval_context *DYND_UNUSED(ectx))
+        const nd::array &aux, const eval::eval_context *DYND_UNUSED(ectx))
     {
       if (dst_tp != af_self->get_return_type()) {
         stringstream ss;
@@ -265,7 +265,7 @@ namespace {
         }
       }
 
-      if (aux != NULL) {
+      if (!aux.is_null()) {
         throw invalid_argument("unexpected non-NULL aux value to "
                                "numpy ufunc/arrfunc adapter instantiation");
       }

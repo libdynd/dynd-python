@@ -553,7 +553,7 @@ static intptr_t instantiate_copy_to_pyobject(
     const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
-    kernel_request_t kernreq, aux_buffer *aux, const eval::eval_context *ectx)
+    kernel_request_t kernreq, const nd::array &aux, const eval::eval_context *ectx)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;
@@ -563,7 +563,7 @@ static intptr_t instantiate_copy_to_pyobject(
     throw type_error(ss.str());
   }
 
-  if (aux != NULL) {
+  if (!aux.is_null()) {
     throw invalid_argument("unexpected non-NULL aux value to "
                            "copy_to_pyobject instantiation");
   }

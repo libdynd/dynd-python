@@ -14,6 +14,7 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/fixedbytes_type.hpp>
 #include <dynd/types/string_type.hpp>
+#include <dynd/types/categorical_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -680,6 +681,16 @@ static intptr_t instantiate_copy_to_pyobject(
       break;
     }
     break;
+  case categorical_type_id: {
+    // Assign via an intermediate category_type buffer
+    const ndt::type &buf_tp =
+        src_tp[0].tcast<categorical_type>()->get_category_type();
+    nd::arrfunc copy_af =
+        make_arrfunc_from_assignment(buf_tp, src_tp[0], assign_error_default);
+    return make_chain_buf_tp_ckernel(copy_af.get(), self_af, buf_tp, ckb,
+                                     ckb_offset, dst_tp, dst_arrmeta, src_tp,
+                                     src_arrmeta, kernreq, ectx);
+  }
   case date_type_id: {
     date_ck *self = date_ck::create_leaf(ckb, kernreq, ckb_offset);
     self->m_src_tp = src_tp[0];

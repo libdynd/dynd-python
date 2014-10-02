@@ -171,7 +171,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         n = nd.array(a)
         self.assertEqual(nd.type_of(n), ndt.int64)
         self.assertEqual(nd.as_py(n), 3)
-        self.assertEqual(n.access_flags, 'immutable')
+        self.assertEqual(n.access_flags, 'readwrite')
         # Ensure it's not a view
         a[...] = 4
         self.assertEqual(nd.as_py(n), 3)
@@ -517,7 +517,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
         b = nd.array(a)
         self.assertEqual(nd.type_of(b), aligned_tp)
         self.assertEqual(nd.as_py(b), val)
-        self.assertEqual(b.access_flags, 'immutable')
+        self.assertEqual(b.access_flags, 'readwrite')
         b = nd.array(a, access='rw')
         self.assertEqual(nd.type_of(b), aligned_tp)
         self.assertEqual(nd.as_py(b), val)
@@ -527,7 +527,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
         b = nd.asarray(a)
         self.assertEqual(nd.type_of(b), aligned_tp)
         self.assertEqual(nd.as_py(b), val)
-        self.assertEqual(b.access_flags, 'immutable')
+        self.assertEqual(b.access_flags, 'readwrite')
         b = nd.asarray(a, access='rw')
         self.assertEqual(nd.type_of(b), aligned_tp)
         self.assertEqual(nd.as_py(b), val)

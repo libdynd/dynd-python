@@ -279,9 +279,10 @@ class TestArrayConstructor(unittest.TestCase):
 
     def test_access_from_immutable_array(self):
         # `a` is an immutable array
-        a = nd.array([1, 2, 3])
+        a = nd.array([1, 2, 3], access='r')
+        self.assertEqual(a.access_flags, 'immutable')
         b = nd.array(a)
-        self.assertEqual(b.access_flags, 'immutable')
+        self.assertEqual(b.access_flags, 'readwrite')
         b = nd.array(a, access='immutable')
         self.assertEqual(b.access_flags, 'immutable')
         b = nd.array(a, access='readonly')
@@ -296,8 +297,9 @@ class TestArrayConstructor(unittest.TestCase):
     def test_access_from_readwrite_array(self):
         # `a` is a readwrite array
         a = nd.array([1, 2, 3], access='rw')
+        self.assertEqual(a.access_flags, 'readwrite')
         b = nd.array(a)
-        self.assertEqual(b.access_flags, 'immutable')
+        self.assertEqual(b.access_flags, 'readwrite')
         b = nd.array(a, access='immutable')
         self.assertEqual(b.access_flags, 'immutable')
         b = nd.array(a, access='readonly')

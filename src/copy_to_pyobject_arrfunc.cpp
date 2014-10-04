@@ -14,6 +14,7 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/fixedbytes_type.hpp>
 #include <dynd/types/string_type.hpp>
+#include <dynd/types/categorical_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -553,7 +554,8 @@ static intptr_t instantiate_copy_to_pyobject(
     const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
-    kernel_request_t kernreq, const nd::array &aux, const eval::eval_context *ectx)
+    kernel_request_t kernreq, const nd::array &aux,
+    const eval::eval_context *ectx)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;
@@ -680,6 +682,16 @@ static intptr_t instantiate_copy_to_pyobject(
       break;
     }
     break;
+  case categorical_type_id: {
+    // Assign via an intermediate category_type buffer
+    const ndt::type &buf_tp =
+        src_tp[0].tcast<categorical_type>()->get_category_type();
+    nd::arrfunc copy_af =
+        make_arrfunc_from_assignment(buf_tp, src_tp[0], assign_error_default);
+    return make_chain_buf_tp_ckernel(copy_af.get(), self_af, buf_tp, ckb,
+                                     ckb_offset, dst_tp, dst_arrmeta, src_tp,
+                                     src_arrmeta, kernreq, ectx);
+  }
   case date_type_id: {
     date_ck *self = date_ck::create_leaf(ckb, kernreq, ckb_offset);
     self->m_src_tp = src_tp[0];
@@ -708,14 +720,14 @@ static intptr_t instantiate_copy_to_pyobject(
         src_tp[0].tcast<option_type>()->get_is_avail_arrfunc();
     ckb_offset = is_avail_af->instantiate(
         is_avail_af, ckb, ckb_offset, ndt::make_type<dynd_bool>(), NULL, src_tp,
-        src_arrmeta, kernel_request_single, NULL, ectx);
+        src_arrmeta, kernel_request_single, nd::array(), ectx);
     ckb->ensure_capacity(ckb_offset);
     self = ckb->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ndt::type src_value_tp = src_tp[0].tcast<option_type>()->get_value_type();
     ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, dst_tp,
                                       dst_arrmeta, &src_value_tp, src_arrmeta,
-                                      kernel_request_single, NULL, ectx);
+                                      kernel_request_single, nd::array(), ectx);
     return ckb_offset;
   }
   case strided_dim_type_id:
@@ -731,7 +743,7 @@ static intptr_t instantiate_copy_to_pyobject(
       self->m_stride = stride;
       return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
                                   &el_tp, &el_arrmeta, kernel_request_strided,
-                                  NULL, ectx);
+                                  nd::array(), ectx);
     }
     break;
   }
@@ -745,7 +757,7 @@ static intptr_t instantiate_copy_to_pyobject(
     const char *el_arrmeta = src_arrmeta[0] + sizeof(var_dim_type_arrmeta);
     return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
                                 &el_tp, &el_arrmeta, kernel_request_strided,
-                                NULL, ectx);
+                                nd::array(), ectx);
   }
   case cstruct_type_id:
   case struct_type_id:
@@ -775,7 +787,7 @@ static intptr_t instantiate_copy_to_pyobject(
         const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
         ckb_offset = self_af->instantiate(
             self_af, ckb, ckb_offset, dst_tp, dst_arrmeta, &field_types[i],
-            &field_arrmeta, kernel_request_single, NULL, ectx);
+            &field_arrmeta, kernel_request_single, nd::array(), ectx);
       }
       return ckb_offset;
     }
@@ -799,7 +811,7 @@ static intptr_t instantiate_copy_to_pyobject(
       const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(
           self_af, ckb, ckb_offset, dst_tp, dst_arrmeta, &field_types[i],
-          &field_arrmeta, kernel_request_single, NULL, ectx);
+          &field_arrmeta, kernel_request_single, nd::array(), ectx);
     }
     return ckb_offset;
   }
@@ -808,7 +820,7 @@ static intptr_t instantiate_copy_to_pyobject(
     ndt::type src_value_tp = src_tp[0].tcast<pointer_type>()->get_target_type();
     return self_af->instantiate(self_af, ckb, ckb_offset, dst_tp, dst_arrmeta,
                                 &src_value_tp, src_arrmeta,
-                                kernel_request_single, NULL, ectx);
+                                kernel_request_single, nd::array(), ectx);
   }
   default:
     break;

@@ -202,22 +202,6 @@ class TestDType(unittest.TestCase):
         self.assertEqual(tp.arrmeta_size, 2 * ctypes.sizeof(ctypes.c_void_p))
         self.assertTrue(tp.data_size is None)
 
-    def test_categorical_type(self):
-        a = nd.array(["2012-05-10T02:29:42"] * 100, "datetime")
-        dt1 = ndt.factor_categorical(a.date)
-        #print (dt1)
-        self.assertEqual(nd.as_py(dt1.categories.ucast(ndt.string)),
-                        ['2012-05-10'])
-
-        adata = [('M', 13), ('F', 17), ('F', 34), ('M', 19),
-                 ('M', 13), ('F', 34), ('F', 22)]
-        a = nd.array(adata, dtype='{gender: string[1], age: int32}')
-        catdt = ndt.factor_categorical(a)
-        b = a.ucast(catdt)
-        x = repr(b)
-        self.assertTrue('["M", 13]' in x)
-
-
     def test_type_shape(self):
         # The shape attribute of ndt.type
         tp = ndt.type('3 * 4 * int32')

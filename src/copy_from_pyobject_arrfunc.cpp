@@ -18,6 +18,7 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/fixedbytes_type.hpp>
 #include <dynd/types/string_type.hpp>
+#include <dynd/types/categorical_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -875,7 +876,8 @@ static intptr_t instantiate_copy_from_pyobject(
     const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
-    kernel_request_t kernreq, const nd::array &aux, const eval::eval_context *ectx)
+    kernel_request_t kernreq, const nd::array &aux,
+    const eval::eval_context *ectx)
 {
   if (src_tp[0].get_type_id() != void_type_id) {
     stringstream ss;
@@ -955,6 +957,16 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
   }
+  case categorical_type_id: {
+    // Assign via an intermediate category_type buffer
+    const ndt::type &buf_tp =
+        dst_tp.tcast<categorical_type>()->get_category_type();
+    nd::arrfunc copy_af =
+        make_arrfunc_from_assignment(dst_tp, buf_tp, assign_error_default);
+    return make_chain_buf_tp_ckernel(self_af, copy_af.get(), buf_tp, ckb,
+                                     ckb_offset, dst_tp, dst_arrmeta, src_tp,
+                                     src_arrmeta, kernreq, ectx);
+  }
   case date_type_id: {
     date_ck *self = date_ck::create_leaf(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
@@ -983,15 +995,16 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_dst_arrmeta = dst_arrmeta;
     const arrfunc_type_data *assign_na_af =
         dst_tp.tcast<option_type>()->get_assign_na_arrfunc();
-    ckb_offset = assign_na_af->instantiate(assign_na_af, ckb, ckb_offset,
-                                           dst_tp, dst_arrmeta, NULL, NULL,
-                                           kernel_request_single, NULL, ectx);
+    ckb_offset = assign_na_af->instantiate(
+        assign_na_af, ckb, ckb_offset, dst_tp, dst_arrmeta, NULL, NULL,
+        kernel_request_single, nd::array(), ectx);
     ckb->ensure_capacity(ckb_offset);
     self = ckb->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ckb_offset = self_af->instantiate(
         self_af, ckb, ckb_offset, dst_tp.tcast<option_type>()->get_value_type(),
-        dst_arrmeta, src_tp, src_arrmeta, kernel_request_single, NULL, ectx);
+        dst_arrmeta, src_tp, src_arrmeta, kernel_request_single, nd::array(),
+        ectx);
     return ckb_offset;
   }
   case strided_dim_type_id:
@@ -1010,9 +1023,9 @@ static intptr_t instantiate_copy_from_pyobject(
       self->m_dst_arrmeta = dst_arrmeta;
       self->m_dim_broadcast = dim_broadcast;
       // from pyobject ckernel
-      ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, el_tp,
-                                        el_arrmeta, src_tp, src_arrmeta,
-                                        kernel_request_strided, NULL, ectx);
+      ckb_offset = self_af->instantiate(
+          self_af, ckb, ckb_offset, el_tp, el_arrmeta, src_tp, src_arrmeta,
+          kernel_request_strided, nd::array(), ectx);
       self = ckb->get_at<strided_ck>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
@@ -1033,9 +1046,9 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_dim_broadcast = dim_broadcast;
     ndt::type el_tp = dst_tp.tcast<var_dim_type>()->get_element_type();
     const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
-    ckb_offset = self_af->instantiate(self_af, ckb, ckb_offset, el_tp,
-                                      el_arrmeta, src_tp, src_arrmeta,
-                                      kernel_request_strided, NULL, ectx);
+    ckb_offset = self_af->instantiate(
+        self_af, ckb, ckb_offset, el_tp, el_arrmeta, src_tp, src_arrmeta,
+        kernel_request_strided, nd::array(), ectx);
     self = ckb->get_at<var_dim_ck>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case
@@ -1062,7 +1075,7 @@ static intptr_t instantiate_copy_from_pyobject(
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(
           self_af, ckb, ckb_offset, field_types[i], field_arrmeta, src_tp,
-          src_arrmeta, kernel_request_single, NULL, ectx);
+          src_arrmeta, kernel_request_single, nd::array(), ectx);
     }
     return ckb_offset;
   }
@@ -1086,7 +1099,7 @@ static intptr_t instantiate_copy_from_pyobject(
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(
           self_af, ckb, ckb_offset, field_types[i], field_arrmeta, src_tp,
-          src_arrmeta, kernel_request_single, NULL, ectx);
+          src_arrmeta, kernel_request_single, nd::array(), ectx);
     }
     return ckb_offset;
   }

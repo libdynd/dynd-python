@@ -112,7 +112,7 @@ void extract_fields_from_numpy_struct(PyArray_Descr *d,
  * additional arrmeta to be filled in, this function should be called to populate
  * that arrmeta in a created nd::array.
  *
- * \param dt  The dynd type returned by ndt_type_from_numpy_dtype.
+ * \param tp  The dynd type returned by ndt_type_from_numpy_dtype.
  * \param d  The numpy dtype passed to ndt_type_from_numpy_dtype.
  * \param arrmeta  A pointer to the arrmeta to populate.
  */
@@ -121,7 +121,7 @@ void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type& tp, PyArray_Descr *d, 
 /**
  * Converts a dynd type to a numpy dtype.
  *
- * \param dt  The dynd type to convert.
+ * \param tp  The dynd type to convert.
  */
 PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp);
 
@@ -135,7 +135,7 @@ inline PyObject *numpy_dtype_obj_from_ndt_type(const dynd::ndt::type& tp)
  * Converts a dynd type to a numpy dtype, also supporting types which
  * rely on their arrmeta for field offset information.
  *
- * \param dt  The dynd type to convert.
+ * \param tp  The dynd type to convert.
  * \param arrmeta  The arrmeta for the dynd type.
  */
 PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *arrmeta);

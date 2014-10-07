@@ -9,7 +9,6 @@
 
 #include <dynd/types/expr_type.hpp>
 #include <dynd/types/unary_expr_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/kernels/expr_kernel_generator.hpp>
 #include <dynd/kernels/elwise_expr_kernels.hpp>
@@ -61,17 +60,28 @@ namespace {
                         size_t count)
         {
             WArray **ndo = reinterpret_cast<WArray **>(this + 1);
-            strided_dim_type_arrmeta *md;
+            fixed_dim_type_arrmeta *md;
             // Modify the temporary arrays to point at the data.
             ndo[0]->v.get_ndo()->m_data_pointer = dst;
-            md = reinterpret_cast<strided_dim_type_arrmeta *>(ndo[0]->v.get_arrmeta());
+            md = reinterpret_cast<fixed_dim_type_arrmeta *>(ndo[0]->v.get_arrmeta());
             md->dim_size = count;
             md->stride = dst_stride;
+            ndt::type tp = ndt::make_fixed_dim(
+                count, reinterpret_cast<const base_dim_type *>(
+                           ndo[0]->v.get_ndo()->m_type)->get_element_type());
+            base_type_decref(ndo[0]->v.get_ndo()->m_type);
+            ndo[0]->v.get_ndo()->m_type = tp.release();
             for (size_t i = 0; i != src_count; ++i) {
                 ndo[i+1]->v.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
-                md = reinterpret_cast<strided_dim_type_arrmeta *>(ndo[i+1]->v.get_arrmeta());
+                md = reinterpret_cast<fixed_dim_type_arrmeta *>(ndo[i+1]->v.get_arrmeta());
                 md->dim_size = count;
                 md->stride = src_stride[i];
+                tp = ndt::make_fixed_dim(
+                    count,
+                    reinterpret_cast<const base_dim_type *>(
+                        ndo[i+1]->v.get_ndo()->m_type)->get_element_type());
+                base_type_decref(ndo[i + 1]->v.get_ndo()->m_type);
+                ndo[i + 1]->v.get_ndo()->m_type = tp.release();
             }
 
             // Put all the arrays in a tuple
@@ -230,31 +240,31 @@ public:
         e->callable = m_callable.get();
         Py_INCREF(e->callable);
         // Create shell WArrays which are used to give the kernel data to Python
-        strided_dim_type_arrmeta *md;
-        ndt::type dt = ndt::make_strided_dim(dst_tp);
+        fixed_dim_type_arrmeta *md;
+        ndt::type dt = ndt::make_fixed_dim(1, dst_tp);
         nd::array n(make_array_memory_block(dt.get_arrmeta_size()));
         n.get_ndo()->m_type = dt.release();
         n.get_ndo()->m_flags = nd::write_access_flag;
-        md = reinterpret_cast<strided_dim_type_arrmeta *>(n.get_arrmeta());
+        md = reinterpret_cast<fixed_dim_type_arrmeta *>(n.get_arrmeta());
         md->dim_size = 1;
         md->stride = 0;
         if (dst_tp.get_arrmeta_size() > 0) {
             dst_tp.extended()->arrmeta_copy_construct(
-                            n.get_arrmeta() + sizeof(strided_dim_type_arrmeta),
+                            n.get_arrmeta() + sizeof(fixed_dim_type_arrmeta),
                             dst_arrmeta, NULL);
         }
         ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
         for (size_t i = 0; i != src_count; ++i) {
-            dt = ndt::make_strided_dim(src_tp[i]);
+            dt = ndt::make_fixed_dim(1, src_tp[i]);
             n.set(make_array_memory_block(dt.get_arrmeta_size()));
             n.get_ndo()->m_type = dt.release();
             n.get_ndo()->m_flags = nd::read_access_flag;
-            md = reinterpret_cast<strided_dim_type_arrmeta *>(n.get_arrmeta());
+            md = reinterpret_cast<fixed_dim_type_arrmeta *>(n.get_arrmeta());
             md->dim_size = 1;
             md->stride = 0;
             if (src_tp[i].get_arrmeta_size() > 0) {
                 src_tp[i].extended()->arrmeta_copy_construct(
-                                n.get_arrmeta() + sizeof(strided_dim_type_arrmeta),
+                                n.get_arrmeta() + sizeof(fixed_dim_type_arrmeta),
                                 src_arrmeta[i], NULL);
             }
             ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));

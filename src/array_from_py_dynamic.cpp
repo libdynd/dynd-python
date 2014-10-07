@@ -1233,7 +1233,9 @@ dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj,
     }
     // As a special case, convert the outer dimension from var to strided
     if (arr.get_type().get_type_id() == var_dim_type_id) {
-        arr = arr(irange());
+      arr = arr.view(ndt::make_fixed_dim(
+          arr.get_dim_size(),
+          arr.get_type().tcast<base_dim_type>()->get_element_type()));
     }
     return arr;
 }

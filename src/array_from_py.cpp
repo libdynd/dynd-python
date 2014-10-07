@@ -681,130 +681,121 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
   return result;
 }
 
-static bool ndt_type_requires_shape(const ndt::type& tp)
-{
-  if (tp.get_ndim() > 0) {
-    switch (tp.get_type_id()) {
-    case cfixed_dim_type_id:
-    case fixed_dim_type_id:
-    case var_dim_type_id:
-      return ndt_type_requires_shape(static_cast<const base_dim_type *>(
-                                         tp.extended())->get_element_type());
-    default:
-      return true;
-    }
-  } else {
-    return false;
-  }
-}
-
 dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                                       bool fulltype, uint32_t access_flags,
                                       const dynd::eval::eval_context *ectx)
 {
-    nd::array result;
-    if (!fulltype) {
-        if (PyUnicode_Check(obj)
+  ndt::type tpfull;
+  nd::array result;
+  if (!fulltype) {
+    if (PyUnicode_Check(obj)
 #if PY_VERSION_HEX < 0x03000000
-                        || PyString_Check(obj)
+        || PyString_Check(obj)
 #endif
-                        || PyDict_Check(obj)
-                        ) {
-            // Special case strings and dicts, because they act as sequences too
-            result = nd::empty(tp);
-        } else if (PySequence_Check(obj)) {
-            vector<intptr_t> shape;
-            Py_ssize_t size = PySequence_Size(obj);
-            intptr_t ndim = 0;
-            if (size == -1 && PyErr_Occurred()) {
-				// If it doesn't actually check out as a sequence,
-				// try treating it as a single value of ``tp``
-                PyErr_Clear();
-                result = nd::empty(tp);
-            }
-            else if (size == 0) {
-                // Special case an empty list as the input
-                if (tp.get_ndim() > 0 && tp.get_dim_size(NULL, NULL) <= 0) {
-                    // The leading dimension is fixed size-0, strided,
-                    // or var, so compatible
-                    result = nd::empty(tp);
-                }
-                else {
-                    result = nd::empty(0, tp);
-                }
-            }
-            else {
-                shape.push_back(size);
-                for (Py_ssize_t i = 0; i < size; ++i) {
-                    pyobject_ownref item(PySequence_GetItem(obj, i));
-                    deduce_pyseq_shape_using_dtype(item.get(), tp, shape, true, 1);
-                }
-                ndim = shape.size();
-                // If the dtype is a struct, fix up the ndim to let the struct absorb
-                // some of the sequences
-                if (tp.get_dtype().get_kind() == struct_kind) {
-                    intptr_t ndim_end = shape.size();
-                    for (ndim = 0; ndim != ndim_end; ++ndim) {
-                        if (shape[ndim] == pydynd_shape_deduction_ragged) {
-                            // Match up the number of dimensions which aren't
-                            // ragged in udt with the number of dimensions
-                            // which are nonragged in the input data
-                            intptr_t tp_nonragged = get_nonragged_dim_count(tp);
-                            ndim = std::max(ndim - tp_nonragged, (intptr_t)0);
-                            break;
-                        } else if (shape[ndim] == pydynd_shape_deduction_dict) {
-                            break;
-                        }
-                    }
-                    if (ndim == ndim_end) {
-                        intptr_t tp_nonragged = get_nonragged_dim_count(tp);
-                        ndim = std::max(ndim - tp_nonragged, (intptr_t)0);
-                    }
-                }
-                else {
-                    // subtract off the number of dimensions in the provided type
-                    ndim = std::max(ndim - tp.get_ndim(), (intptr_t)0);
-                }
-
-                if (tp.get_ndim() == ndim) {
-                    result = nd::empty(tp);
-                } else {
-                    ndt::type tpfull = ndt::make_type(ndim, &shape[0], tp);
-                    result = nd::empty(tpfull);
-                }
-            }
-        } else {
-            // If the object is an iterator and the type doesn't already have
-            // a array dimension, prepend a var dim as a special case
-            PyObject *iter = PyObject_GetIter(obj);
-            if (iter != NULL) {
-                result = nd::empty(ndt::make_var_dim(tp));
-            } else {
-                if (PyErr_Occurred()) {
-                    if (PyErr_ExceptionMatches(PyExc_TypeError)) {
-                        // TypeError signals it doesn't support iteration
-                        PyErr_Clear();
-                    } else {
-                        // Propagate errors
-                        throw exception();
-                    }
-                }
-                // If it wasn't a sequence or iterator, just use the type directly
-                result = nd::empty(tp);
-            }
+        || PyDict_Check(obj)) {
+      // Special case strings and dicts, because in Python they advertise
+      // themselves as sequences
+      tpfull = tp;
+    }
+    else if (PySequence_Check(obj)) {
+      vector<intptr_t> shape;
+      Py_ssize_t size = PySequence_Size(obj);
+      intptr_t ndim = 0;
+      if (size == -1 && PyErr_Occurred()) {
+        // If it doesn't actually check out as a sequence,
+        // try treating it as a single value of ``tp``
+        PyErr_Clear();
+        tpfull = tp;
+      }
+      else if (size == 0) {
+        // Special case an empty list as the input
+        if (tp.get_ndim() > 0 && tp.get_dim_size(NULL, NULL) <= 0) {
+          // The leading dimension is fixed size-0, strided,
+          // or var, so compatible
+          tpfull = tp;
         }
-    } else {
-        result = nd::empty(tp);
+        else {
+          tpfull = ndt::make_fixed_dim(0, tp);
+        }
+      }
+      else {
+        shape.push_back(size);
+        for (Py_ssize_t i = 0; i < size; ++i) {
+          pyobject_ownref item(PySequence_GetItem(obj, i));
+          deduce_pyseq_shape_using_dtype(item.get(), tp, shape, true, 1);
+        }
+        ndim = shape.size();
+        // If the dtype is a struct, fix up the ndim to let the struct absorb
+        // some of the sequences
+        if (tp.get_dtype().get_kind() == struct_kind) {
+          intptr_t ndim_end = shape.size();
+          for (ndim = 0; ndim != ndim_end; ++ndim) {
+            if (shape[ndim] == pydynd_shape_deduction_ragged) {
+              // Match up the number of dimensions which aren't
+              // ragged in udt with the number of dimensions
+              // which are nonragged in the input data
+              intptr_t tp_nonragged = get_nonragged_dim_count(tp);
+              ndim = std::max(ndim - tp_nonragged, (intptr_t)0);
+              break;
+            }
+            else if (shape[ndim] == pydynd_shape_deduction_dict) {
+              break;
+            }
+          }
+          if (ndim == ndim_end) {
+            intptr_t tp_nonragged = get_nonragged_dim_count(tp);
+            ndim = std::max(ndim - tp_nonragged, (intptr_t)0);
+          }
+        }
+        else {
+          // subtract off the number of dimensions in the provided type
+          ndim = std::max(ndim - tp.get_ndim(), (intptr_t)0);
+        }
+
+        if (tp.get_ndim() == ndim) {
+          tpfull = tp;
+        }
+        else {
+          tpfull = ndt::make_type(ndim, &shape[0], tp);
+        }
+      }
     }
-
-    array_no_dim_broadcast_assign_from_py(
-        result.get_type(), result.get_arrmeta(),
-        result.get_readwrite_originptr(), obj, ectx);
-
-    // If write access wasn't requested, flag it as immutable
-    if ((access_flags&nd::write_access_flag) == 0) {
-        result.flag_as_immutable();
+    else {
+      // If the object is an iterator and the type doesn't already have
+      // a array dimension, prepend a var dim as a special case
+      PyObject *iter = PyObject_GetIter(obj);
+      if (iter != NULL) {
+        tpfull = ndt::make_var_dim(tp);
+      }
+      else {
+        if (PyErr_Occurred()) {
+          if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+            // TypeError signals it doesn't support iteration
+            PyErr_Clear();
+          }
+          else {
+            // Propagate errors
+            throw exception();
+          }
+        }
+        // If it wasn't a sequence or iterator, just use the type directly
+        tpfull = tp;
+      }
     }
+  }
+  else {
+    tpfull = tp;
+  }
+  result = nd::empty(tpfull);
 
-    return result;
+  array_no_dim_broadcast_assign_from_py(result.get_type(), result.get_arrmeta(),
+                                        result.get_readwrite_originptr(), obj,
+                                        ectx);
+
+  // If write access wasn't requested, flag it as immutable
+  if ((access_flags & nd::write_access_flag) == 0) {
+    result.flag_as_immutable();
+  }
+
+  return result;
 }

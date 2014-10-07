@@ -44,18 +44,18 @@ class TestArrayConstruct(unittest.TestCase):
     def test_empty_array(self):
         # Empty arrays default to int32
         a = nd.array([])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
         self.assertEqual(a.shape, (0,))
         a = nd.array([[], [], []])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 0 * int32'))
         self.assertEqual(a.shape, (3, 0))
 
     def test_empty_array_dtype(self):
         a = nd.array([], dtype=ndt.int64)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * int64'))
         self.assertEqual(a.shape, (0,))
         a = nd.array([], dtype='strided * float64')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * float64'))
         self.assertEqual(a.shape, (0,))
         a = nd.array([], dtype='var * int16')
         self.assertEqual(nd.type_of(a), ndt.type('var * int16'))
@@ -64,7 +64,7 @@ class TestArrayConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('0 * int16'))
         self.assertEqual(len(a), 0)
         a = nd.array([], dtype='3 * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * 3 * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * 3 * int16'))
         self.assertEqual(a.shape, (0, 3))
 
 class TestTypedArrayConstructors(unittest.TestCase):
@@ -93,22 +93,22 @@ class TestTypedArrayConstructors(unittest.TestCase):
         # Constructor from shape as single integer
         a = nd.empty(3, ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_strided_dim(ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
         self.assertEqual(a.shape, (3,))
         # Constructor from shape as tuple
         a = nd.empty((3,4), ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         # Constructor from shape as variadic arguments
         a = nd.empty(3, 4, ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         # Constructor from shape as variadic arguments, access kwarg
         a = nd.empty(3, 4, ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         # Can't create with access as immutable
         self.assertRaises(ValueError, nd.empty, 3, 4, ndt.int32, access='immutable')
@@ -129,26 +129,26 @@ class TestTypedArrayConstructors(unittest.TestCase):
         # Constructor from shape as single integer
         a = cons(3, ndt.int32)
         self.assertEqual(a.access_flags, 'immutable')
-        self.assertEqual(nd.type_of(a), ndt.make_strided_dim(ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), [value]*3)
         # Constructor from shape as tuple
         a = cons((3,4), ndt.int32)
         self.assertEqual(a.access_flags, 'immutable')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor from shape as variadic arguments
         a = cons(3, 4, ndt.int32)
         self.assertEqual(a.access_flags, 'immutable')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor of a cstruct type
         a = cons(3, '{x: int32, y: int32}')
         self.assertEqual(a.access_flags, 'immutable')
         self.assertEqual(nd.type_of(a),
-                    ndt.type('strided * {x: int32, y: int32}'))
+                    ndt.type('3 * {x: int32, y: int32}'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a),
                     [{'x': value, 'y': value}]*3)
@@ -156,7 +156,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']))
         self.assertEqual(a.access_flags, 'immutable')
         self.assertEqual(nd.type_of(a),
-                    ndt.make_strided_dim(
+                    ndt.make_fixed_dim(3,
                         ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a),
@@ -177,26 +177,26 @@ class TestTypedArrayConstructors(unittest.TestCase):
         # Constructor from shape as single integer
         a = cons(3, ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_strided_dim(ndt.int32))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), [value]*3)
         # Constructor from shape as tuple
         a = cons((3,4), ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor from shape as variadic arguments
         a = cons(3, 4, ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor of a cstruct type
         a = cons(3, '{x: int32, y: int32}', access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
-                    ndt.type('strided * {x: int32, y: int32}'))
+                    ndt.type('3 * {x: int32, y: int32}'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a),
                     [{'x': value, 'y': value}]*3)
@@ -204,7 +204,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']), access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
-                    ndt.make_strided_dim(
+                    ndt.make_fixed_dim(3,
                         ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a),
@@ -238,7 +238,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         a = nd.full(3, '{x: int32, y: int32}', value=[1,5], access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
-                    ndt.type('strided * {x: int32, y: int32}'))
+                    ndt.type('3 * {x: int32, y: int32}'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a),
                     [{'x': 1, 'y': 5}]*3)
@@ -247,7 +247,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
                     value={'x' : 3, 'y' : 10}, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
-                    ndt.make_strided_dim(
+                    ndt.make_fixed_dim(3,
                         ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a),
@@ -257,7 +257,7 @@ class TestArrayConstructor(unittest.TestCase):
     # Always constructs a new array
     def test_simple(self):
         a = nd.array([1, 2, 3], access='rw')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
         # Modifying 'a' shouldn't affect 'b', because it's a copy
         b = nd.array(a)
         a[1] = 10
@@ -357,7 +357,7 @@ class TestAsArrayConstructor(unittest.TestCase):
     # Constructs a view if possible, otherwise a copy
     def test_simple(self):
         a = nd.asarray([1, 2, 3], access='rw')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
 
         # Modifying 'a' should affect 'b', because it's a view
         b = nd.asarray(a)
@@ -453,23 +453,23 @@ class TestStringConstruct(unittest.TestCase):
     def test_string_array(self):
         a = nd.array(['this', 'is', 'a', 'test'],
                         dtype=ndt.string)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * string'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * string'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
         a = nd.array(['this', 'is', 'a', 'test'],
                         dtype='string["U16"]')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * string["U16"]'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * string["U16"]'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
     def test_unicode_array(self):
         a = nd.array([u'this', 'is', u'a', 'test'],
                         dtype=ndt.string)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * string'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * string'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
         a = nd.array([u'this', 'is', u'a', 'test'],
                         dtype='string["U16"]')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * string["U16"]'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * string["U16"]'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
     def test_fixedstring_array(self):
@@ -524,33 +524,33 @@ class TestStructConstruct(unittest.TestCase):
 
     def test_single_struct_array(self):
         a = nd.array([(0,0), (3,5), (12,10)], dtype='{x:int32, y:int32}')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * {x:int32, y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * {x:int32, y:int32}'))
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([{'x':0,'y':0}, {'x':3,'y':5}, {'x':12,'y':10}],
                     dtype='{x:int32, y:int32}')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * {x:int32, y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * {x:int32, y:int32}'))
         self.assertEqual(nd.as_py(a.x), [0, 3, 12])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([[(3, 'X')], [(10, 'L'), (12, 'M')]],
                         dtype='{count:int32, size:string[1,"A"]}')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * {count:int32, size:string[1,"A"]}'))
+        self.assertEqual(nd.type_of(a), ndt.type('2 * var * {count:int32, size:string[1,"A"]}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
         a = nd.array([[{'count':3, 'size':'X'}],
                         [{'count':10, 'size':'L'}, {'count':12, 'size':'M'}]],
                         dtype='{count:int32, size:string[1,"A"]}')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * {count:int32, size:string[1,"A"]}'))
+        self.assertEqual(nd.type_of(a), ndt.type('2 * var * {count:int32, size:string[1,"A"]}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
     def test_nested_struct_array(self):
         a = nd.array([((0,1),0), ((2,2),5), ((100,10),10)],
                     dtype='{x:{a:int16, b:int16}, y:int32}')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * {x:{a:int16, b:int16}, y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * {x:{a:int16, b:int16}, y:int32}'))
         self.assertEqual(nd.as_py(a.x.a), [0, 2, 100])
         self.assertEqual(nd.as_py(a.x.b), [1, 2, 10])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
@@ -559,7 +559,7 @@ class TestStructConstruct(unittest.TestCase):
                         {'x':{'a':2,'b':2},'y':5},
                         {'x':{'a':100,'b':10},'y':10}],
                     dtype='{x:{a:int16, b:int16}, y:int32}')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * {x:{a:int16, b:int16}, y:int32}'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * {x:{a:int16, b:int16}, y:int32}'))
         self.assertEqual(nd.as_py(a.x.a), [0, 2, 100])
         self.assertEqual(nd.as_py(a.x.b), [1, 2, 10])
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
@@ -567,7 +567,7 @@ class TestStructConstruct(unittest.TestCase):
         a = nd.array([[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]],
                         dtype='{count:int32, size:{name:string[1,"A"], id: int8}}')
         self.assertEqual(nd.type_of(a),
-                    ndt.type('strided * var * {count:int32, size:{name:string[1,"A"], id: int8}}'))
+                    ndt.type('2 * var * {count:int32, size:{name:string[1,"A"], id: int8}}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])
         self.assertEqual(nd.as_py(a.size.id), [[10], [7, 5]])
@@ -609,7 +609,7 @@ class TestIteratorConstruct(unittest.TestCase):
     def test_dynamic_fromiter_notype(self):
         # When constructing from an empty iterator, defaults to int32
         a = nd.array(x for x in [])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
         self.assertEqual(nd.as_py(a), [])
 
     def test_dynamic_fromiter_onetype(self):
@@ -618,55 +618,55 @@ class TestIteratorConstruct(unittest.TestCase):
         # use generators that have a consistent type
         # bool result
         a = nd.array(iter([True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * bool'))
+        self.assertEqual(nd.type_of(a), ndt.type('2 * bool'))
         self.assertEqual(nd.as_py(a), [True, False])
         # int32 result
         a = nd.array(iter([1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * int32'))
         self.assertEqual(nd.as_py(a), [1, 2, 1, 0])
         # int64 result
         a = nd.array(iter([10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('5 * int64'))
         self.assertEqual(nd.as_py(a), [10000000000, 1, 2, 1, 0])
         # float64 result
         a = nd.array(iter([3.25, 10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('6 * float64'))
         self.assertEqual(nd.as_py(a), [3.25, 10000000000, 1, 2, 1, 0])
         # complex[float64] result
         a = nd.array(iter([3.25j, 3.25, 10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('7 * complex[float64]'))
         self.assertEqual(nd.as_py(a), [3.25j, 3.25, 10000000000, 1, 2, 1, 0])
         # string result
         a = nd.array(str(x) + 'test' for x in range(10))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * string'))
+        self.assertEqual(nd.type_of(a), ndt.type('10 * string'))
         self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
         # string result
         a = nd.array(iter([u'test', 'test2']))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * string'))
+        self.assertEqual(nd.type_of(a), ndt.type('2 * string'))
         self.assertEqual(nd.as_py(a), [u'test', u'test2'])
         # bytes result
         if sys.version_info[0] >= 3:
             a = nd.array(b'x'*x for x in range(10))
-            self.assertEqual(nd.type_of(a), ndt.type('strided * bytes'))
+            self.assertEqual(nd.type_of(a), ndt.type('10 * bytes'))
             self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
 
     def test_dynamic_fromiter_booltypepromo(self):
         # Test iterator construction cases promoting from a boolean
         # int32 result
         a = nd.array(iter([True, False, 3]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
         self.assertEqual(nd.as_py(a), [1, 0, 3])
         # int64 result
         a = nd.array(iter([True, False, -10000000000]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int64'))
         self.assertEqual(nd.as_py(a), [1, 0, -10000000000])
         # float64 result
         a = nd.array(iter([True, False, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
         self.assertEqual(nd.as_py(a), [1, 0, 3.25])
         # complex[float64] result
         a = nd.array(iter([True, False, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
         self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
         # Should raise an error mixing bool and string/bytes
         self.assertRaises(TypeError, nd.array, iter([True, False, "test"]))
@@ -677,15 +677,15 @@ class TestIteratorConstruct(unittest.TestCase):
         # Test iterator construction cases promoting from an int32
         # int64 result
         a = nd.array(iter([1, 2, 10000000000]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * int64'))
         self.assertEqual(nd.as_py(a), [1, 2, 10000000000])
         # float64 result
         a = nd.array(iter([1, 2, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
         self.assertEqual(nd.as_py(a), [1, 2, 3.25])
         # complex[float64] result
         a = nd.array(iter([1, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
         self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
         # Should raise an error mixing int32 and string/bytes
         self.assertRaises(TypeError, nd.array, iter([1, 2, "test"]))
@@ -696,11 +696,11 @@ class TestIteratorConstruct(unittest.TestCase):
         # Test iterator construction cases promoting from an int64
         # float64 result
         a = nd.array(iter([10000000000, 2, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
         self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25])
         # complex[float64] result
         a = nd.array(iter([10000000000, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
         self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
         # Should raise an error mixing int64 and string/bytes
         self.assertRaises(TypeError, nd.array, iter([10000000000, 2, "test"]))
@@ -711,7 +711,7 @@ class TestIteratorConstruct(unittest.TestCase):
         # Test iterator construction cases promoting from an float64
         # complex[float64] result
         a = nd.array(iter([3.25, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
         self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
         # Should raise an error mixing float64 and string/bytes
         self.assertRaises(TypeError, nd.array, iter([3.25, 2, "test"]))
@@ -757,7 +757,7 @@ class TestIteratorConstruct(unittest.TestCase):
         # Strided array of var from list of iterators
         a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
                         [2, 10]], type='strided * var * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
         self.assertEqual(nd.as_py(a),
                         [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
         # Var array of var from iterator of iterators
@@ -776,7 +776,7 @@ class TestIteratorConstruct(unittest.TestCase):
                 [-10000000000],
                 [True, 10, 3.125, 5.5j]]
         a = nd.array(iter(x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * var * complex[float64]'))
         self.assertEqual(nd.as_py(a), vals)
         # 3D nested iterators
         vals = [[[True, True, True],
@@ -789,36 +789,36 @@ class TestIteratorConstruct(unittest.TestCase):
                  [1.5],
                  []]]
         a = nd.array((iter(y) for y in x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * var * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * var * var * float64'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator of lists
         vals = [[True, 2, 3],
                 [4, 5, 6.5],
                 [1, 2, 3]]
         a = nd.array(iter(vals))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 3 * float64'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator starting with list, also including iterator
         vals = [[True, 2, 3],
                 [4, 5, 6.5],
                 [1, 2, 3]]
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * 3 * float64'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator with lists, but ragged
         vals = [[1], [2, 3, 4], [5, 6]]
         a = nd.array(iter(vals))
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator starting with list, first raggedness is a short iterator
         vals = [[1, 2, 3], [4], [5, 6]]
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
         self.assertEqual(nd.as_py(a), vals)
         # Iterator starting with list, first raggedness is a long iterator
         vals = [[1], [2, 3, 4], [5, 6]]
         a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
         self.assertEqual(nd.as_py(a), vals)
 
     def test_ragged_fromlistofiter_typepromo(self):
@@ -828,11 +828,11 @@ class TestIteratorConstruct(unittest.TestCase):
                 [-10000000000],
                 [True, 10, 3.125, 5.5j]]
         a = nd.array([iter(x) for x in vals])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * complex[float64]'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * var * complex[float64]'))
         self.assertEqual(nd.as_py(a), vals)
         # list of list/iterator
         a = nd.array([[1,2,3], (1.5*x for x in range(4)), iter([-1, 1])])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * float64'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * var * float64'))
         self.assertEqual(nd.as_py(a),
                          [[1,2,3], [1.5*x for x in range(4)], [-1,1]])
 
@@ -841,7 +841,7 @@ class TestIteratorConstruct(unittest.TestCase):
         vals = [[],
                 [False, 2, 3]]
         a = nd.array(iter(x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('2 * var * int32'))
         self.assertEqual(nd.as_py(a), vals)
 
     def test_dtype_fromiter(self):
@@ -856,43 +856,43 @@ class TestDeduceDims(unittest.TestCase):
                [[11, 12], [13, 14]], [[15, 16], [17, 18]]]
         # Deduce all the dims
         a = nd.array(val, dtype=ndt.int16)
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * strided * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Specify some dims as strided
         a = nd.array(val, dtype='strided * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * strided * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='strided * strided * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * strided * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='strided * strided * strided * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * strided * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Specify some dims as fixed
         a = nd.array(val, dtype='2 * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * 2 * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='2 * 2 * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * 2 * 2 * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='4 * 2 * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Mix fixed, strided, and var
         a = nd.array(val, dtype='4 * var * strided * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('4 * var * strided * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * var * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='var * 2 * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * 2 * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * var * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='strided * 2 * int16')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * strided * 2 * int16'))
+        self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
 
     def test_empty(self):
         # A fixed dimension of non-zero size gets pushed down
         a = nd.array([], dtype='3 * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * 3 * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * 3 * int32'))
         self.assertEqual(nd.as_py(a), [])
         # A fixed dimension of zero size gets absorbed
         a = nd.array([], dtype='0 * int32')
@@ -900,7 +900,7 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.as_py(a), [])
         # A strided dimension gets absorbed
         a = nd.array([], dtype='strided * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('strided * int32'))
+        self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
         self.assertEqual(nd.as_py(a), [])
         # A var dimension gets absorbed
         a = nd.array([], dtype='var * int32')

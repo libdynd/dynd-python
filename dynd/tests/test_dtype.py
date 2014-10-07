@@ -101,7 +101,7 @@ class TestDType(unittest.TestCase):
         self.assertEqual(3, nd.as_py(a.imag))
 
         a = nd.array([1 + 2j, 3 + 4j, 5 + 6j])
-        self.assertEqual(ndt.type('strided * complex[float64]'), nd.type_of(a))
+        self.assertEqual(ndt.type('3 * complex[float64]'), nd.type_of(a))
         self.assertEqual([1, 3, 5], nd.as_py(a.real))
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 

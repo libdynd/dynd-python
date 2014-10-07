@@ -727,8 +727,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                 if (tp.get_ndim() > 0 && tp.get_dim_size(NULL, NULL) <= 0) {
                     // The leading dimension is fixed size-0, strided,
                     // or var, so compatible
-                    intptr_t zero = 0;
-                    result = nd::typed_empty(1, &zero, tp);
+                    result = nd::empty(tp);
                 }
                 else {
                     result = nd::empty(0, tp);
@@ -768,10 +767,10 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                 }
 
                 if (tp.get_ndim() == ndim) {
-                    result = nd::typed_empty(shape.size(), &shape[0], tp);
+                    result = nd::empty(tp);
                 } else {
                     ndt::type tpfull = ndt::make_type(ndim, &shape[0], tp);
-                    result = nd::typed_empty(shape.size(), &shape[0], tpfull);
+                    result = nd::empty(tpfull);
                 }
             }
         } else {
@@ -794,17 +793,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                 result = nd::empty(tp);
             }
         }
-    } else if (tp.get_ndim() > 0 && ndt_type_requires_shape(tp)) {
-        // The full type is specified, and requires shape deduction.
-        intptr_t ndim = tp.get_ndim();
-        dimvector shape(ndim);
-        for (intptr_t i = 0; i < ndim; ++i) {
-            shape[i] = pydynd_shape_deduction_uninitialized;
-        }
-        deduce_pyseq_shape(obj, ndim, shape.get());
-        result = nd::typed_empty(ndim, shape.get(), tp);
     } else {
-        // The full type is specified, no shape deduction required.
         result = nd::empty(tp);
     }
 

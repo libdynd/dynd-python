@@ -59,7 +59,7 @@ namespace {
         // allocating memory blocks for the blockref types.
         if (d.get_arrmeta_size() > 0) {
           d.extended()->arrmeta_default_construct(
-              result.get_ndo()->get_arrmeta(), 0, NULL, false);
+              result.get_ndo()->get_arrmeta(), false);
         }
         d.swap(result.get_ndo()->m_type);
         result.get_ndo()->m_data_pointer = reinterpret_cast<char *>(ptr_val);

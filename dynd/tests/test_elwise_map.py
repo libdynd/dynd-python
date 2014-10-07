@@ -24,7 +24,8 @@ class TestElwiseMap(unittest.TestCase):
             dst.once = src
             dst.twice = [2 * nd.as_py(x) for x in src]
             dst.thrice = [3 * nd.as_py(x) for x in src]
-        b = nd.elwise_map([a], multiscale, ndt.type('c{once: int32, twice: int32, thrice: int32}'))
+        b = nd.elwise_map([a], multiscale,
+                          ndt.type('c{once: int32, twice: int32, thrice: int32}'))
         self.assertEqual(nd.as_py(b), [{'once':0,'twice':0,'thrice':0},
                         {'once':1,'twice':2,'thrice':3},
                         {'once':2,'twice':4,'thrice':6}])

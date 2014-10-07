@@ -359,9 +359,10 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
     ndt::type result_vdt = dst_tp;
     for (intptr_t j = 0; j < undim; ++j) {
         if (result_shape[undim - j - 1] == -1) {
-            result_vdt = ndt::make_var_dim(result_vdt);
+          result_vdt = ndt::make_var_dim(result_vdt);
         } else {
-            result_vdt = ndt::make_strided_dim(result_vdt);
+          result_vdt =
+              ndt::make_fixed_dim(result_shape[undim - j - 1], result_vdt);
         }
     }
 

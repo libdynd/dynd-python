@@ -576,7 +576,7 @@ class TestStructConstruct(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, nd.array,
                         [0, 1], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
-        self.assertRaises(TypeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         [0, 1], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0, 'z':1}, type='c{x:int32, y:int32, z:int32}')
@@ -588,7 +588,7 @@ class TestStructConstruct(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, nd.array,
                         [0, 1, 2, 3], type='c{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
-        self.assertRaises(TypeError, nd.array,
+        self.assertRaises(nd.BroadcastError, nd.array,
                         [0, 1, 2, 3], dtype='c{x:int32, y:int32, z:int32}')
         self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, type='c{x:int32, y:int32, z:int32}')
@@ -743,7 +743,7 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, nd.array,
                         (2*x + 5 for x in range(10)), type='9 * int32')
         # Produce an error if it's a strided dimension
-        self.assertRaises(RuntimeError, nd.array,
+        self.assertRaises(ValueError, nd.array,
                         (2*x + 5 for x in range(10)), type='strided * int32')
 
     def test_simple_fromiter_medsize(self):

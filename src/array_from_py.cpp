@@ -17,6 +17,7 @@
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/option_type.hpp>
+#include <dynd/types/substitute_shape.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/type_promotion.hpp>
@@ -759,6 +760,11 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
           tpfull = ndt::make_type(ndim, &shape[0], tp);
         }
       }
+      // If the type is symbolic, substitute the shape here
+      // because we already deduced it
+      if (tpfull.is_symbolic() && !shape.empty()) {
+        tpfull = ndt::substitute_shape(tpfull, shape.size(), &shape[0]);
+      }
     }
     else {
       // If the object is an iterator and the type doesn't already have
@@ -785,6 +791,24 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
   }
   else {
     tpfull = tp;
+  }
+  // If the type we got is symbolic, we can substitute shape data
+  // from the input to make it concrete
+  if (tpfull.is_symbolic()) {
+    // Figure out how many dimensions are symbolic, and visit the python object
+    // just enough to resolve those
+    intptr_t ndim_symbolic = 0;
+    ndt::type tpsym = tpfull;
+    while (tpsym.is_symbolic() && tpsym.get_ndim() > 0) {
+      ++ndim_symbolic;
+      tpsym = tpsym.get_type_at_dimension(NULL, 1);
+    }
+    dimvector shape(ndim_symbolic);
+    for (intptr_t i = 0; i < ndim_symbolic; ++i) {
+      shape[i] = pydynd_shape_deduction_uninitialized;
+    }
+    deduce_pyseq_shape(obj, ndim_symbolic, shape.get());
+    tpfull = ndt::substitute_shape(tpfull, ndim_symbolic, shape.get());
   }
   result = nd::empty(tpfull);
 

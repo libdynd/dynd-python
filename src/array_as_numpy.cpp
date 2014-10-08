@@ -692,9 +692,10 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
   }
 
   if (a.get_type().get_type_id() == var_dim_type_id) {
-    // If it's a var_dim, use "[:]" indexing to
-    // strip away this leading part so it's compatible with NumPy.
-    pyobject_ownref n_tmp(wrap_array(a(irange())));
+    // If it's a var_dim, view it as fixed then try again
+    pyobject_ownref n_tmp(wrap_array(a.view(ndt::make_fixed_dim(
+        a.get_dim_size(),
+        a.get_type().tcast<base_dim_type>()->get_element_type()))));
     return array_as_numpy(n_tmp.get(), allow_copy);
   }
   // TODO: Handle pointer type nicely as well

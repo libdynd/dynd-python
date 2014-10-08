@@ -75,7 +75,7 @@ class TestArrFunc(unittest.TestCase):
 
         af_lift = _lowlevel.lift_arrfunc(af)
         a = af_lift([[1], [2, 3], [4, 5, 6]], [[5, 10], [2], [1, 5, 1]])
-        self.assertEqual(nd.type_of(a), ndt.type('strided * var * int'))
+        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int'))
         self.assertEqual(nd.as_py(a), [[6, 11], [4, 5], [5, 10, 7]])
 
     def test_from_numpy_int32_add_nogil(self):

@@ -209,7 +209,7 @@ cdef class w_type:
         instance of this dynd type.
         """
         def __get__(self):
-            return (GET(self.v)).get_default_data_size(0, <intptr_t *>0)
+            return (GET(self.v)).get_default_data_size()
 
     property data_alignment:
         """

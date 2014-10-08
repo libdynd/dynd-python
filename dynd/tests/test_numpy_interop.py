@@ -102,7 +102,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
             self.assertEqual(ndt.type(dt), ndt.string)
         # Should be able to roundtrip dynd -> numpy -> dynd
         x = nd.array(['testing', 'one', 'two'])
-        self.assertEqual(nd.type_of(x), ndt.type('strided * string'))
+        self.assertEqual(nd.type_of(x), ndt.type('3 * string'))
         y = nd.as_numpy(x, allow_copy=True)
         self.assertEqual(y.dtype.kind, 'O')
         if sys.version_info < (3, 0):
@@ -558,7 +558,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
     def test_date_from_numpy(self):
         a = np.array(['2000-12-13', '1995-05-02'], dtype='M8[D]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * date'))
+        self.assertEqual(nd.type_of(b), ndt.type('2 * date'))
         self.assertEqual(nd.as_py(b), [date(2000, 12, 13), date(1995, 5, 2)])
 
     def test_date_as_numpy(self):
@@ -571,35 +571,35 @@ class TestNumpyScalarInterop(unittest.TestCase):
         a = np.array(['2000-12-13T12Z', '1955-05-02T02Z'],
                      dtype='M8[h]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.type_of(b), ndt.type('2 * datetime[tz="UTC"]'))
         self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12),
                                    datetime(1955, 5, 2, 2)])
         # NumPy minutes unit
         a = np.array(['2000-12-13T12:30Z', '1955-05-02T02:23Z'],
                      dtype='M8[m]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.type_of(b), ndt.type('2 * datetime[tz="UTC"]'))
         self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30),
                                    datetime(1955, 5, 2, 2, 23)])
         # NumPy seconds unit
         a = np.array(['2000-12-13T12:30:51Z', '1955-05-02T02:23:29Z'],
                      dtype='M8[s]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.type_of(b), ndt.type('2 * datetime[tz="UTC"]'))
         self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51),
                                    datetime(1955, 5, 2, 2, 23, 29)])
         # NumPy milliseconds unit
         a = np.array(['2000-12-13T12:30:51.123Z', '1955-05-02T02:23:29.456Z'],
                      dtype='M8[ms]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.type_of(b), ndt.type('2 * datetime[tz="UTC"]'))
         self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51, 123000),
                                    datetime(1955, 5, 2, 2, 23, 29, 456000)])
         # NumPy microseconds unit
         a = np.array(['2000-12-13T12:30:51.123456Z', '1955-05-02T02:23:29.456123Z'],
                      dtype='M8[us]')
         b = nd.array(a)
-        self.assertEqual(nd.type_of(b), ndt.type('strided * datetime[tz="UTC"]'))
+        self.assertEqual(nd.type_of(b), ndt.type('2 * datetime[tz="UTC"]'))
         self.assertEqual(nd.as_py(b), [datetime(2000, 12, 13, 12, 30, 51, 123456),
                                    datetime(1955, 5, 2, 2, 23, 29, 456123)])
         # NumPy nanoseconds unit (truncated to 100 nanosecond ticks)
@@ -608,7 +608,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
                      dtype='M8[ns]')
         b = nd.array(a)
         self.assertEqual(nd.type_of(b),
-                         ndt.type('strided * datetime[tz="UTC"]'))
+                         ndt.type('2 * datetime[tz="UTC"]'))
         self.assertEqual([str(x) for x in b], ["2000-12-13T12:30:51.1234569Z",
                                                "1955-05-02T02:23:29.4561237Z"])
 
@@ -619,7 +619,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
                      dtype=[('id', 'int8'), ('ts', 'M8[us]')])
         b = nd.view(a)
         self.assertEqual(nd.type_of(b),
-            ndt.type("strided * c{id : int8, ts: adapt[(unaligned[int64]) -> datetime[tz='UTC'], 'microseconds since 1970']}"))
+            ndt.type("3 * c{id : int8, ts: adapt[(unaligned[int64]) -> datetime[tz='UTC'], 'microseconds since 1970']}"))
         self.assertEqual(nd.as_py(b, tuple=True),
                          [(1, datetime(2000, 12, 25, 0, 0, 1)),
                           (2, datetime(2001, 12, 25, 0, 0, 1)),

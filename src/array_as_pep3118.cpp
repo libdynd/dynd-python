@@ -5,7 +5,6 @@
 
 #include <Python.h>
 
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/fixedstring_type.hpp>
@@ -321,12 +320,12 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         const char *arrmeta = n.get_arrmeta();
         for (int i = 0; i < buffer->ndim; ++i) {
             switch (dt.get_type_id()) {
-                case strided_dim_type_id: {
-                    const strided_dim_type *tdt = dt.tcast<strided_dim_type>();
-                    const strided_dim_type_arrmeta *md = reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
+                case fixed_dim_type_id: {
+                    const fixed_dim_type *tdt = dt.tcast<fixed_dim_type>();
+                    const fixed_dim_type_arrmeta *md = reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
                     buffer->shape[i] = md->dim_size;
                     buffer->strides[i] = md->stride;
-                    arrmeta += sizeof(strided_dim_type_arrmeta);
+                    arrmeta += sizeof(fixed_dim_type_arrmeta);
                     dt = tdt->get_element_type();
                     break;
                 }

@@ -774,11 +774,10 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
   if (always_copy || PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
     // TODO would be nicer without the extra type transformation of the
     // get_canonical_type call
-    nd::array result = nd::typed_empty(
-        PyArray_NDIM(obj), PyArray_SHAPE(obj),
-        ndt::make_strided_dim(pydynd::ndt_type_from_numpy_dtype(
-                                  PyArray_DESCR(obj)).get_canonical_type(),
-                              PyArray_NDIM(obj)));
+    nd::array result =
+        nd::dtyped_empty(PyArray_NDIM(obj), PyArray_SHAPE(obj),
+                         pydynd::ndt_type_from_numpy_dtype(PyArray_DESCR(obj))
+                             .get_canonical_type());
     array_copy_from_numpy(result.get_type(), result.get_arrmeta(),
                           result.get_readwrite_originptr(), obj,
                           &eval::default_eval_context);

@@ -25,7 +25,7 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyObject* pydynd::array_as_py(const dynd::nd::array& a, bool struct_as_pytuple)
+PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
 {
   // Evaluate the nd::array
   unary_ckernel_builder ckb;

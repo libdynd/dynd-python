@@ -8,7 +8,6 @@
 
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
@@ -282,22 +281,24 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
     ndt::type element_tp = tp.at_single(0, &element_arrmeta);
     if (shape[current_axis] >= 0) {
         // Fixed-sized dimension
-        const strided_dim_type_arrmeta *md = reinterpret_cast<const strided_dim_type_arrmeta *>(arrmeta);
-        intptr_t stride = md->stride;
-        if (element_tp.is_scalar()) {
-            for (Py_ssize_t i = 0; i < size; ++i) {
-                PyObject *item = PyList_GET_ITEM(obj, i);
-                ConvertOneFn(element_tp, element_arrmeta, data, item, ectx);
-                data += stride;
-            }
-        } else {
-            for (Py_ssize_t i = 0; i < size; ++i) {
-                fill_array_from_pylist<ConvertOneFn>(
-                    element_tp, element_arrmeta, data, PyList_GET_ITEM(obj, i),
-                    shape, current_axis + 1, ectx);
-                data += stride;
-            }
+      const fixed_dim_type_arrmeta *md =
+          reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
+      intptr_t stride = md->stride;
+      if (element_tp.is_scalar()) {
+        for (Py_ssize_t i = 0; i < size; ++i) {
+          PyObject *item = PyList_GET_ITEM(obj, i);
+          ConvertOneFn(element_tp, element_arrmeta, data, item, ectx);
+          data += stride;
         }
+      }
+      else {
+        for (Py_ssize_t i = 0; i < size; ++i) {
+          fill_array_from_pylist<ConvertOneFn>(element_tp, element_arrmeta,
+                                               data, PyList_GET_ITEM(obj, i),
+                                               shape, current_axis + 1, ectx);
+          data += stride;
+        }
+      }
     } else {
         // Variable-sized dimension
         const var_dim_type_arrmeta *md = reinterpret_cast<const var_dim_type_arrmeta *>(arrmeta);
@@ -673,9 +674,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 
   // If write access wasn't specified, we can flag it as
   // immutable, because it's a newly allocated object.
-  // This also covers the default case (access_flags==0),
-  // which we want to be immutable as well.
-  if ((access_flags & nd::write_access_flag) == 0) {
+  if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     result.flag_as_immutable();
   }
 
@@ -817,7 +816,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                                         ectx);
 
   // If write access wasn't requested, flag it as immutable
-  if ((access_flags & nd::write_access_flag) == 0) {
+  if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     result.flag_as_immutable();
   }
 

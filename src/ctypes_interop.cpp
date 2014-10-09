@@ -9,7 +9,6 @@
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/pointer_type.hpp>
 #include <dynd/types/type_alignment.hpp>
 
@@ -265,7 +264,7 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
             intptr_t array_length = pyobject_as_index(array_length_obj.get());
             return ndt::make_cfixed_dim(array_length, element_tp);
         } else {
-            return ndt::make_strided_dim(element_tp);
+            return ndt::make_fixed_sym_dim(element_tp);
         }
     }
 

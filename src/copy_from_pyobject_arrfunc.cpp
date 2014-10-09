@@ -1007,7 +1007,6 @@ static intptr_t instantiate_copy_from_pyobject(
         ectx);
     return ckb_offset;
   }
-  case strided_dim_type_id:
   case fixed_dim_type_id:
   case cfixed_dim_type_id: {
     intptr_t dim_size, stride;

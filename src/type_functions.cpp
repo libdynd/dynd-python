@@ -364,11 +364,13 @@ dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *
     return ndt::make_cstruct(field_names_vec, field_types_vec);
 }
 
-dynd::ndt::type pydynd::dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp)
+dynd::ndt::type
+pydynd::dynd_make_fixed_dim_type(PyObject *shape,
+                                 const dynd::ndt::type &element_tp)
 {
-    vector<intptr_t> shape_vec;
-    pyobject_as_vector_intp(shape, shape_vec, true);
-    return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
+  vector<intptr_t> shape_vec;
+  pyobject_as_vector_intp(shape, shape_vec, true);
+  return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
 }
 
 dynd::ndt::type pydynd::dynd_make_cfixed_dim_type(PyObject *shape, const ndt::type& element_tp, PyObject *axis_perm)

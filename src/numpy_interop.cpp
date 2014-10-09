@@ -11,7 +11,6 @@
 #include <dynd/types/view_type.hpp>
 #include <dynd/types/type_alignment.hpp>
 #include <dynd/types/fixedstring_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
@@ -108,14 +107,9 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
   if (d->subarray) {
     dt = ndt_type_from_numpy_dtype(d->subarray->base, data_alignment);
     if (dt.get_data_size() == 0) {
-      // If the element size isn't fixed, use the strided array
-      int ndim = 1;
-      if (PyTuple_Check(d->subarray->shape)) {
-        ndim = (int)PyTuple_GET_SIZE(d->subarray->shape);
-      }
-      return ndt::make_strided_dim(dt, ndim);
-    } else {
-      // Otherwise make a fixed dim array
+      return dynd_make_fixed_dim_type(d->subarray->shape, dt);
+    }
+    else {
       return dynd_make_cfixed_dim_type(d->subarray->shape, dt, Py_None);
     }
   }
@@ -353,34 +347,36 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
             }
             break;
         }
-        case strided_dim_type_id: {
-            // The Numpy subarray becomes a series of strided_dim_types, so we
+        case fixed_dim_type_id: {
+            // The Numpy subarray becomes a series of fixed_dim types, so we
             // need to copy the strides into the arrmeta.
             ndt::type el;
             PyArray_ArrayDescr *adescr = d->subarray;
             if (adescr == NULL) {
-                stringstream ss;
-                ss << "Internal error building dynd arrmeta: Numpy dtype has NULL subarray corresponding to strided_dim type";
-                throw dynd::type_error(ss.str());
+              stringstream ss;
+              ss << "Internal error building dynd arrmeta: Numpy dtype has "
+                    "NULL subarray corresponding to strided_dim type";
+              throw dynd::type_error(ss.str());
             }
             if (PyTuple_Check(adescr->shape)) {
                 int ndim = (int)PyTuple_GET_SIZE(adescr->shape);
-                strided_dim_type_arrmeta *md = reinterpret_cast<strided_dim_type_arrmeta *>(arrmeta);
+                fixed_dim_type_arrmeta *md =
+                    reinterpret_cast<fixed_dim_type_arrmeta *>(arrmeta);
                 intptr_t stride = adescr->base->elsize;
                 el = dt;
                 for (int i = ndim-1; i >= 0; --i) {
                     md[i].dim_size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));
                     md[i].stride = stride;
                     stride *= md[i].dim_size;
-                    el = el.tcast<strided_dim_type>()->get_element_type();
+                    el = el.tcast<fixed_dim_type>()->get_element_type();
                 }
-                arrmeta += ndim * sizeof(strided_dim_type_arrmeta);
+                arrmeta += ndim * sizeof(fixed_dim_type_arrmeta);
             } else {
-                strided_dim_type_arrmeta *md = reinterpret_cast<strided_dim_type_arrmeta *>(arrmeta);
-                arrmeta += sizeof(strided_dim_type_arrmeta);
+                fixed_dim_type_arrmeta *md = reinterpret_cast<fixed_dim_type_arrmeta *>(arrmeta);
+                arrmeta += sizeof(fixed_dim_type_arrmeta);
                 md->dim_size = pyobject_as_index(adescr->shape);
                 md->stride = adescr->base->elsize;
-                el = dt.tcast<strided_dim_type>()->get_element_type();
+                el = dt.tcast<fixed_dim_type>()->get_element_type();
             }
             // Fill the arrmeta for the array element, if necessary
             if (!el.is_builtin()) {

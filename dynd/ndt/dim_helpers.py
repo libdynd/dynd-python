@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 from dynd._pydynd import w_type, \
-        make_var_dim, make_strided_dim, make_fixed_dim, make_cfixed_dim
+        make_var_dim, make_fixed_sym_dim, make_fixed_dim, make_cfixed_dim
 
-__all__ = ['var', 'strided', 'fixed', 'cfixed']
+__all__ = ['var', 'fixed', 'cfixed']
 
 
 class _Dim(object):
@@ -18,8 +18,8 @@ class _Dim(object):
             return rhs
         elif isinstance(rhs, (str, type)):
             # Allow:
-            #  ndt.strided * 'int32'
-            #  ndt.strided * int
+            #  ndt.fixed * 'int32'
+            #  ndt.fixed * int
             rhs = w_type(rhs)
             for dim in reversed(self.dims):
                 rhs = dim.create(rhs)
@@ -68,30 +68,6 @@ class _Var(_Dim):
         return 'ndt.var'
 
 
-class _Strided(_Dim):
-    """
-    Creates a strided dimension when combined with other types.
-
-    Examples
-    --------
-    >>> ndt.strided * ndt.int32
-    ndt.type('strided * int32')
-    >>> ndt.fixed[5] * ndt.strided * ndt.float64
-    ndt.type('5 * strided * float64')
-    """
-    __slots__ = []
-
-    @property
-    def dims(self):
-        return (self,)
-
-    def create(self, eltype):
-        return make_strided_dim(eltype)
-
-    def __repr__(self):
-        return 'ndt.strided'
-
-
 class _Fixed(_Dim):
     """
     Creates a fixed dimension when combined with other types.
@@ -110,14 +86,13 @@ class _Fixed(_Dim):
 
     @property
     def dims(self):
-        if self.dim_size is not None:
-            return (self,)
-        else:
-            raise TypeError('Need to specify ndt.fixed[dim_size],' +
-                            ' not just ndt.fixed')
+        return (self,)
 
     def create(self, eltype):
-        return make_fixed_dim(self.dim_size, eltype)
+        if self.dim_size is None:
+            return make_fixed_sym_dim(eltype)
+        else:
+            return make_fixed_dim(self.dim_size, eltype)
 
     def __getitem__(self, dim_size):
         return _Fixed(dim_size)
@@ -167,6 +142,5 @@ class _CFixed(_Dim):
 
 
 var = _Var()
-strided = _Strided()
 fixed = _Fixed()
 cfixed = _CFixed()

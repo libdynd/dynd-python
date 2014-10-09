@@ -43,6 +43,11 @@ namespace {
       try
       {
         ndt::type d = make_ndt_type_from_pyobject(tp);
+        if (d.is_symbolic()) {
+          stringstream ss;
+          ss << "Cannot create a dynd array with symbolic type " << d;
+          throw type_error(ss.str());
+        }
         size_t ptr_val = pyobject_as_size_t(ptr);
         uint32_t access_flags = pyarg_strings_to_int(
             access, "access", nd::read_access_flag, "readwrite",

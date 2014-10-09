@@ -6,39 +6,51 @@ from dynd import nd, ndt
 class TestScalarConstructor(unittest.TestCase):
     def test_access_array(self):
         a = nd.array(1)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.array(1, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.array(1, access='r')
+        self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_array_with_type(self):
         a = nd.array(1, type=ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.array(1, type=ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.array(1, type=ndt.int32, access='r')
+        self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_asarray(self):
         a = nd.asarray(1)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.asarray(1, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.asarray(1, access='r')
+        self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_zeros(self):
         a = nd.zeros(ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.zeros(ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.zeros(ndt.int32, access='r')
+        self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_ones(self):
         a = nd.ones(ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.ones(ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.ones(ndt.int32, access='r')
+        self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_full(self):
         a = nd.full(ndt.int32, value=1)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.full(ndt.int32, value=1, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
+        a = nd.full(ndt.int32, value=1, access='r')
+        self.assertEqual(a.access_flags, 'immutable')
 
 class TestArrayConstruct(unittest.TestCase):
     def test_empty_array(self):
@@ -117,36 +129,36 @@ class TestTypedArrayConstructors(unittest.TestCase):
     def check_constructor(self, cons, value):
         # Constructor from scalar type
         a = cons(ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.int32)
         self.assertEqual(nd.as_py(a), value)
         # Constructor from type with fixed dimension
         a = cons('3 * int32')
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), [value]*3)
         # Constructor from shape as single integer
         a = cons(3, ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), [value]*3)
         # Constructor from shape as tuple
         a = cons((3,4), ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor from shape as variadic arguments
         a = cons(3, 4, ndt.int32)
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor of a cstruct type
         a = cons(3, '{x: int32, y: int32}')
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
                     ndt.type('3 * {x: int32, y: int32}'))
         self.assertEqual(a.shape, (3,))
@@ -154,7 +166,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
                     [{'x': value, 'y': value}]*3)
         # Constructor of a struct type
         a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']))
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
                     ndt.make_fixed_dim(3,
                         ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
@@ -265,7 +277,7 @@ class TestArrayConstructor(unittest.TestCase):
 
     def test_access_from_pyobject(self):
         a = nd.array([1, 2, 3])
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.array([1, 2, 3], access='immutable')
         self.assertEqual(a.access_flags, 'immutable')
         a = nd.array([1, 2, 3], access='readonly')
@@ -324,7 +336,7 @@ class TestViewConstructor(unittest.TestCase):
 
     def test_access_from_immutable_array(self):
         # `a` is an immutable array
-        a = nd.array([1, 2, 3])
+        a = nd.array([1, 2, 3], access='r')
         b = nd.view(a)
         self.assertEqual(b.access_flags, 'immutable')
         b = nd.view(a, access='immutable')
@@ -334,8 +346,8 @@ class TestViewConstructor(unittest.TestCase):
         b = nd.view(a, access='r')
         self.assertEqual(b.access_flags, 'immutable')
         # Can't create a readwrite view from a readonly array
-        self.assertRaises(RuntimeError, nd.view, a, access='readwrite')
-        self.assertRaises(RuntimeError, nd.view, a, access='rw')
+        self.assertRaises(RuntimeError, nd.view, b, access='readwrite')
+        self.assertRaises(RuntimeError, nd.view, b, access='rw')
 
     def test_access_from_readwrite_array(self):
         # `a` is a readwrite array
@@ -393,7 +405,7 @@ class TestAsArrayConstructor(unittest.TestCase):
 
     def test_access_from_pyobject(self):
         a = nd.asarray([1, 2, 3])
-        self.assertEqual(a.access_flags, 'immutable')
+        self.assertEqual(a.access_flags, 'readwrite')
         a = nd.asarray([1, 2, 3], access='immutable')
         self.assertEqual(a.access_flags, 'immutable')
         a = nd.asarray([1, 2, 3], access='readonly')
@@ -407,7 +419,7 @@ class TestAsArrayConstructor(unittest.TestCase):
 
     def test_access_from_immutable_array(self):
         # `a` is an immutable array
-        a = nd.array([1, 2, 3])
+        a = nd.array([1, 2, 3], access='r')
         b = nd.asarray(a)
         self.assertEqual(b.access_flags, 'immutable')
         b = nd.asarray(a, access='immutable')
@@ -743,7 +755,7 @@ class TestIteratorConstruct(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, nd.array,
                         (2*x + 5 for x in range(10)), type='9 * int32')
         # Produce an error if it's a fixed dimension
-        self.assertRaises(ValueError, nd.array,
+        self.assertRaises(TypeError, nd.array,
                         (2*x + 5 for x in range(10)), type='fixed * int32')
 
     def test_simple_fromiter_medsize(self):

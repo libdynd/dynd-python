@@ -8,7 +8,6 @@
 
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
@@ -129,8 +128,8 @@ static nd::array allocate_nd_arr(
             tp = tp.tcast<var_dim_type>()->get_element_type();
         } else {
             // Advance arrmeta_ptr and data_ptr to the child dimension
-            arrmeta_ptr += sizeof(strided_dim_type_arrmeta);
-            tp = tp.tcast<strided_dim_type>()->get_element_type();
+            arrmeta_ptr += sizeof(fixed_dim_type_arrmeta);
+            tp = tp.tcast<fixed_dim_type>()->get_element_type();
         }
         c.data_ptr = data_ptr;
     }
@@ -168,150 +167,163 @@ static void copy_to_promoted_nd_arr(
     bool copy_final_coord,
     bool final_coordinate)
 {
-    if (current_axis == promoted_axis - 1) {
-        // Base case - the final dimension
-        if (shape[current_axis] >= 0) {
-            // strided dimension case
-            const strided_dim_type_arrmeta *dst_md =
-                reinterpret_cast<const strided_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
-            const strided_dim_type_arrmeta *src_md =
-                reinterpret_cast<const strided_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
-            if (!final_coordinate) {
-                // Copy the full dimension
-                ck(dst_data_ptr, dst_md->stride,
-                    src_data_ptr, src_md->stride, shape[current_axis]);
-            } else {
-                // Copy up to, and possibly including, the coordinate
-                ck(dst_data_ptr, dst_md->stride,
-                    src_data_ptr, src_md->stride,
-                    src_coord[current_axis].coord + int(copy_final_coord));
-                dst_coord[current_axis].coord = src_coord[current_axis].coord;
-                dst_coord[current_axis].data_ptr = dst_data_ptr + dst_md->stride * dst_coord[current_axis].coord;
-            }
-        } else {
-            // var dimension case
-            const var_dim_type_arrmeta *dst_md =
-                reinterpret_cast<const var_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
-            const var_dim_type_arrmeta *src_md =
-                reinterpret_cast<const var_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
-            var_dim_type_data *dst_d =
-                reinterpret_cast<var_dim_type_data *>(dst_data_ptr);
-            const var_dim_type_data *src_d =
-                reinterpret_cast<const var_dim_type_data *>(src_data_ptr);
-            if (!final_coordinate) {
-                ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].arrmeta_ptr,
-                            dst_data_ptr, src_d->size);
-                // Copy the full dimension
-                ck(dst_d->begin, dst_md->stride,
-                    src_d->begin, src_md->stride, src_d->size);
-            } else {
-                // Initialize the var element to the same reserved space as the input
-                ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].arrmeta_ptr,
-                            dst_data_ptr, src_coord[current_axis].reserved_size);
-                dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
-                // Copy up to, and possibly including, the coordinate
-                if (ck.get_function() != NULL) {
-                    ck(dst_d->begin, dst_md->stride,
-                        src_d->begin, src_md->stride,
-                        src_coord[current_axis].coord + int(copy_final_coord));
-                }
-                dst_coord[current_axis].coord = src_coord[current_axis].coord;
-                dst_coord[current_axis].data_ptr = dst_d->begin +
-                            dst_md->stride * dst_coord[current_axis].coord;
-            }
-        }
-    } else {
-        // Recursive case
-        if (shape[current_axis] >= 0) {
-            // strided dimension case
-            const strided_dim_type_arrmeta *dst_md =
-                reinterpret_cast<const strided_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
-            const strided_dim_type_arrmeta *src_md =
-                reinterpret_cast<const strided_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
-            if (!final_coordinate) {
-                // Copy the full dimension
-                intptr_t size = shape[current_axis];
-                intptr_t dst_stride = dst_md->stride;
-                intptr_t src_stride = src_md->stride;
-                for (intptr_t i = 0; i < size; ++i,
-                                               dst_data_ptr += dst_stride,
-                                               src_data_ptr += src_stride) {
-                    copy_to_promoted_nd_arr(shape,
-                        dst_data_ptr, dst_coord, dst_elem,
-                        src_data_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, copy_final_coord, false);
-                }
-            } else {
-                // Copy up to, and including, the coordinate
-                intptr_t size = src_coord[current_axis].coord;
-                intptr_t dst_stride = dst_md->stride;
-                intptr_t src_stride = src_md->stride;
-                dst_coord[current_axis].coord = size;
-                dst_coord[current_axis].data_ptr = dst_data_ptr + dst_stride * size;
-                for (intptr_t i = 0; i <= size; ++i,
-                                               dst_data_ptr += dst_stride,
-                                               src_data_ptr += src_stride) {
-                    copy_to_promoted_nd_arr(shape,
-                        dst_data_ptr, dst_coord, dst_elem,
-                        src_data_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, copy_final_coord, i == size);
-                }
-            }
-        } else {
-            // var dimension case
-            const var_dim_type_arrmeta *dst_md =
-                reinterpret_cast<const var_dim_type_arrmeta *>(dst_coord[current_axis].arrmeta_ptr);
-            const var_dim_type_arrmeta *src_md =
-                reinterpret_cast<const var_dim_type_arrmeta *>(src_coord[current_axis].arrmeta_ptr);
-            var_dim_type_data *dst_d =
-                reinterpret_cast<var_dim_type_data *>(dst_data_ptr);
-            const var_dim_type_data *src_d =
-                reinterpret_cast<const var_dim_type_data *>(src_data_ptr);
-            if (!final_coordinate) {
-                ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].arrmeta_ptr,
-                            dst_data_ptr, src_d->size);
-                // Copy the full dimension
-                intptr_t size = src_d->size;
-                char *dst_elem_ptr = dst_d->begin;
-                intptr_t dst_stride = dst_md->stride;
-                const char *src_elem_ptr = src_d->begin;
-                intptr_t src_stride = src_md->stride;
-                for (intptr_t i = 0; i < size; ++i,
-                                               dst_elem_ptr += dst_stride,
-                                               src_elem_ptr += src_stride) {
-                    copy_to_promoted_nd_arr(shape,
-                        dst_elem_ptr, dst_coord, dst_elem,
-                        src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, copy_final_coord, false);
-                }
-            } else {
-                // Initialize the var element to the same reserved space as the input
-                ndt::var_dim_element_resize(dst_coord[current_axis].tp,
-                            dst_coord[current_axis].arrmeta_ptr,
-                            dst_data_ptr, src_coord[current_axis].reserved_size);
-                dst_coord[current_axis].reserved_size = src_coord[current_axis].reserved_size;
-                // Copy up to, and including, the size
-                intptr_t size = src_coord[current_axis].coord;
-                char *dst_elem_ptr = dst_d->begin;
-                intptr_t dst_stride = dst_md->stride;
-                const char *src_elem_ptr = src_d->begin;
-                intptr_t src_stride = src_md->stride;
-                dst_coord[current_axis].coord = size;
-                dst_coord[current_axis].data_ptr = dst_elem_ptr + dst_stride * size;
-                for (intptr_t i = 0; i <= size; ++i,
-                                               dst_elem_ptr += dst_stride,
-                                               src_elem_ptr += src_stride) {
-                    copy_to_promoted_nd_arr(shape,
-                        dst_elem_ptr, dst_coord, dst_elem,
-                        src_elem_ptr, src_coord, src_elem,
-                        ck, current_axis + 1, promoted_axis, copy_final_coord, i == size);
-                }
-            }
-        }
+  if (current_axis == promoted_axis - 1) {
+    // Base case - the final dimension
+    if (shape[current_axis] >= 0) {
+      // fixed dimension case
+      const fixed_dim_type_arrmeta *dst_md =
+          reinterpret_cast<const fixed_dim_type_arrmeta *>(
+              dst_coord[current_axis].arrmeta_ptr);
+      const fixed_dim_type_arrmeta *src_md =
+          reinterpret_cast<const fixed_dim_type_arrmeta *>(
+              src_coord[current_axis].arrmeta_ptr);
+      if (!final_coordinate) {
+        // Copy the full dimension
+        ck(dst_data_ptr, dst_md->stride, src_data_ptr, src_md->stride,
+           shape[current_axis]);
+      }
+      else {
+        // Copy up to, and possibly including, the coordinate
+        ck(dst_data_ptr, dst_md->stride, src_data_ptr, src_md->stride,
+           src_coord[current_axis].coord + int(copy_final_coord));
+        dst_coord[current_axis].coord = src_coord[current_axis].coord;
+        dst_coord[current_axis].data_ptr =
+            dst_data_ptr + dst_md->stride * dst_coord[current_axis].coord;
+      }
     }
+    else {
+      // var dimension case
+      const var_dim_type_arrmeta *dst_md =
+          reinterpret_cast<const var_dim_type_arrmeta *>(
+              dst_coord[current_axis].arrmeta_ptr);
+      const var_dim_type_arrmeta *src_md =
+          reinterpret_cast<const var_dim_type_arrmeta *>(
+              src_coord[current_axis].arrmeta_ptr);
+      var_dim_type_data *dst_d =
+          reinterpret_cast<var_dim_type_data *>(dst_data_ptr);
+      const var_dim_type_data *src_d =
+          reinterpret_cast<const var_dim_type_data *>(src_data_ptr);
+      if (!final_coordinate) {
+        ndt::var_dim_element_resize(dst_coord[current_axis].tp,
+                                    dst_coord[current_axis].arrmeta_ptr,
+                                    dst_data_ptr, src_d->size);
+        // Copy the full dimension
+        ck(dst_d->begin, dst_md->stride, src_d->begin, src_md->stride,
+           src_d->size);
+      }
+      else {
+        // Initialize the var element to the same reserved space as the
+        // input
+        ndt::var_dim_element_resize(
+            dst_coord[current_axis].tp, dst_coord[current_axis].arrmeta_ptr,
+            dst_data_ptr, src_coord[current_axis].reserved_size);
+        dst_coord[current_axis].reserved_size =
+            src_coord[current_axis].reserved_size;
+        // Copy up to, and possibly including, the coordinate
+        if (ck.get_function() != NULL) {
+          ck(dst_d->begin, dst_md->stride, src_d->begin, src_md->stride,
+             src_coord[current_axis].coord + int(copy_final_coord));
+        }
+        dst_coord[current_axis].coord = src_coord[current_axis].coord;
+        dst_coord[current_axis].data_ptr =
+            dst_d->begin + dst_md->stride * dst_coord[current_axis].coord;
+      }
+    }
+  }
+  else {
+    // Recursive case
+    if (shape[current_axis] >= 0) {
+      // strided dimension case
+      const fixed_dim_type_arrmeta *dst_md =
+          reinterpret_cast<const fixed_dim_type_arrmeta *>(
+              dst_coord[current_axis].arrmeta_ptr);
+      const fixed_dim_type_arrmeta *src_md =
+          reinterpret_cast<const fixed_dim_type_arrmeta *>(
+              src_coord[current_axis].arrmeta_ptr);
+      if (!final_coordinate) {
+        // Copy the full dimension
+        intptr_t size = shape[current_axis];
+        intptr_t dst_stride = dst_md->stride;
+        intptr_t src_stride = src_md->stride;
+        for (intptr_t i = 0; i < size;
+             ++i, dst_data_ptr += dst_stride, src_data_ptr += src_stride) {
+          copy_to_promoted_nd_arr(shape, dst_data_ptr, dst_coord, dst_elem,
+                                  src_data_ptr, src_coord, src_elem, ck,
+                                  current_axis + 1, promoted_axis,
+                                  copy_final_coord, false);
+        }
+      }
+      else {
+        // Copy up to, and including, the coordinate
+        intptr_t size = src_coord[current_axis].coord;
+        intptr_t dst_stride = dst_md->stride;
+        intptr_t src_stride = src_md->stride;
+        dst_coord[current_axis].coord = size;
+        dst_coord[current_axis].data_ptr = dst_data_ptr + dst_stride * size;
+        for (intptr_t i = 0; i <= size;
+             ++i, dst_data_ptr += dst_stride, src_data_ptr += src_stride) {
+          copy_to_promoted_nd_arr(shape, dst_data_ptr, dst_coord, dst_elem,
+                                  src_data_ptr, src_coord, src_elem, ck,
+                                  current_axis + 1, promoted_axis,
+                                  copy_final_coord, i == size);
+        }
+      }
+    }
+    else {
+      // var dimension case
+      const var_dim_type_arrmeta *dst_md =
+          reinterpret_cast<const var_dim_type_arrmeta *>(
+              dst_coord[current_axis].arrmeta_ptr);
+      const var_dim_type_arrmeta *src_md =
+          reinterpret_cast<const var_dim_type_arrmeta *>(
+              src_coord[current_axis].arrmeta_ptr);
+      var_dim_type_data *dst_d =
+          reinterpret_cast<var_dim_type_data *>(dst_data_ptr);
+      const var_dim_type_data *src_d =
+          reinterpret_cast<const var_dim_type_data *>(src_data_ptr);
+      if (!final_coordinate) {
+        ndt::var_dim_element_resize(dst_coord[current_axis].tp,
+                                    dst_coord[current_axis].arrmeta_ptr,
+                                    dst_data_ptr, src_d->size);
+        // Copy the full dimension
+        intptr_t size = src_d->size;
+        char *dst_elem_ptr = dst_d->begin;
+        intptr_t dst_stride = dst_md->stride;
+        const char *src_elem_ptr = src_d->begin;
+        intptr_t src_stride = src_md->stride;
+        for (intptr_t i = 0; i < size;
+             ++i, dst_elem_ptr += dst_stride, src_elem_ptr += src_stride) {
+          copy_to_promoted_nd_arr(shape, dst_elem_ptr, dst_coord, dst_elem,
+                                  src_elem_ptr, src_coord, src_elem, ck,
+                                  current_axis + 1, promoted_axis,
+                                  copy_final_coord, false);
+        }
+      }
+      else {
+        // Initialize the var element to the same reserved space as the input
+        ndt::var_dim_element_resize(
+            dst_coord[current_axis].tp, dst_coord[current_axis].arrmeta_ptr,
+            dst_data_ptr, src_coord[current_axis].reserved_size);
+        dst_coord[current_axis].reserved_size =
+            src_coord[current_axis].reserved_size;
+        // Copy up to, and including, the size
+        intptr_t size = src_coord[current_axis].coord;
+        char *dst_elem_ptr = dst_d->begin;
+        intptr_t dst_stride = dst_md->stride;
+        const char *src_elem_ptr = src_d->begin;
+        intptr_t src_stride = src_md->stride;
+        dst_coord[current_axis].coord = size;
+        dst_coord[current_axis].data_ptr = dst_elem_ptr + dst_stride * size;
+        for (intptr_t i = 0; i <= size;
+             ++i, dst_elem_ptr += dst_stride, src_elem_ptr += src_stride) {
+          copy_to_promoted_nd_arr(shape, dst_elem_ptr, dst_coord, dst_elem,
+                                  src_elem_ptr, src_coord, src_elem, ck,
+                                  current_axis + 1, promoted_axis,
+                                  copy_final_coord, i == size);
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -664,8 +676,8 @@ static void array_from_py_dynamic_first_alloc(
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
                 // need to get the stride from the arrmeta each time.
-                const strided_dim_type_arrmeta *md =
-                    reinterpret_cast<const strided_dim_type_arrmeta *>(
+                const fixed_dim_type_arrmeta *md =
+                    reinterpret_cast<const fixed_dim_type_arrmeta *>(
                         coord[current_axis].arrmeta_ptr);
                 coord[current_axis].data_ptr += md->stride;
             }
@@ -1008,8 +1020,8 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                     // Advance to the next element. Because the array may be
                     // dynamically reallocated deeper in the recursive call, we
                     // need to get the stride from the arrmeta each time.
-                    const strided_dim_type_arrmeta *md =
-                        reinterpret_cast<const strided_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
+                    const fixed_dim_type_arrmeta *md =
+                        reinterpret_cast<const fixed_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
                     coord[current_axis].data_ptr += md->stride;
                 }
                 return;
@@ -1052,8 +1064,9 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                 // Advance to the next element. Because the array may be
                 // dynamically reallocated deeper in the recursive call, we
                 // need to get the stride from the arrmeta each time.
-                const strided_dim_type_arrmeta *md =
-                    reinterpret_cast<const strided_dim_type_arrmeta *>(coord[current_axis].arrmeta_ptr);
+                const fixed_dim_type_arrmeta *md =
+                    reinterpret_cast<const fixed_dim_type_arrmeta *>(
+                        coord[current_axis].arrmeta_ptr);
                 coord[current_axis].data_ptr += md->stride;
             }
 

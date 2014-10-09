@@ -640,7 +640,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
                                  dtype='O'))
         # Also in a struct
         a = nd.array([(1, "testing", 1.5), (10, "abc", 2)],
-                     type="strided * {x: int, y: string, z: real}")
+                     type="fixed * {x: int, y: string, z: real}")
         b = nd.as_numpy(a, allow_copy=True)
         self.assertEqual(b.dtype, np.dtype([('x', 'int32'),
                                             ('y', 'O'),

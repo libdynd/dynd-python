@@ -105,8 +105,8 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.CFIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
                         _lowlevel.type_id.FIXED_DIM)
-        self.assertEqual(self.type_id_of(ndt.type('strided * int32')),
-                        _lowlevel.type_id.STRIDED_DIM)
+        self.assertEqual(self.type_id_of(ndt.type('fixed * int32')),
+                        _lowlevel.type_id.FIXED_SYM_DIM)
         self.assertEqual(self.type_id_of(ndt.type('var * int32')),
                         _lowlevel.type_id.VAR_DIM)
         # GroupBy
@@ -142,9 +142,10 @@ class TestLowLevel(unittest.TestCase):
         b = _lowlevel.array_from_ptr('3 * int32', ctypes.addressof(a),
                                      a, 'readonly')
         self.assertEqual(nd.as_py(b), [3, 10, 9])
-        # Should get an error if we try strided, because the size is unknown
-        self.assertRaises(RuntimeError,
-                          lambda: _lowlevel.array_from_ptr('strided * int32',
+        # Should get an error if we try symbolic fixed,
+        # because the size is unknown
+        self.assertRaises(TypeError,
+                          lambda: _lowlevel.array_from_ptr('fixed * int32',
                                                            ctypes.addressof(a),
                                                            a, 'readonly'))
 
@@ -168,10 +169,10 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(nd.as_py(b), 1.25)
 
     def test_array_from_ptr_error(self):
-        # Should raise an exception if the type has arrmeta
+        # Should raise an exception if the type is symbolic
         a = (ctypes.c_int32 * 4)()
-        self.assertRaises(RuntimeError, _lowlevel.array_from_ptr,
-                        ndt.type('strided * int32'), ctypes.addressof(a),
+        self.assertRaises(TypeError, _lowlevel.array_from_ptr,
+                        ndt.type('fixed * int32'), ctypes.addressof(a),
                         a, 'readwrite')
 
 if __name__ == '__main__':

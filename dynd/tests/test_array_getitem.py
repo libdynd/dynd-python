@@ -30,7 +30,7 @@ class TestArrayGetItem(unittest.TestCase):
         self.assertEqual(nd.type_of(a[...]), ndt.type('var * int32'))
         self.assertEqual(nd.type_of(a[:]), ndt.type('var * int32'))
         self.assertEqual(nd.type_of(a[0]), ndt.int32)
-        # self.assertEqual(nd.type_of(a[0:1]), ndt.type('strided * int32'))
+        # self.assertEqual(nd.type_of(a[0:1]), ndt.type('fixed * int32'))
         self.assertEqual(nd.as_py(a[0]), b[0])
         self.assertEqual(nd.as_py(a[99]), b[99])
         self.assertEqual(nd.as_py(a[-1]), b[-1])

@@ -20,7 +20,6 @@
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/view.hpp>
 #include <dynd/func/callable.hpp>
@@ -68,20 +67,21 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                         PyObject *window_size_obj,
                                         PyObject *ectx_obj)
 {
-    const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
-    nd::array arr = array_from_py(arr_obj, 0, false, ectx);
-    intptr_t window_size = pyobject_as_index(window_size_obj);
-    nd::arrfunc func;
-    if (WArrFunc_Check(func_obj)) {
-        func = ((WArrFunc *)func_obj)->v;
-    } else {
-        ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
-        ndt::type proto =
-            ndt::make_funcproto(ndt::make_strided_dim(el_tp), el_tp);
+  const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+  nd::array arr = array_from_py(arr_obj, 0, false, ectx);
+  intptr_t window_size = pyobject_as_index(window_size_obj);
+  nd::arrfunc func;
+  if (WArrFunc_Check(func_obj)) {
+    func = ((WArrFunc *)func_obj)->v;
+  }
+  else {
+    ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
+    ndt::type proto =
+        ndt::make_funcproto(ndt::make_fixed_sym_dim(el_tp), el_tp);
 
-        func = arrfunc_from_pyfunc(func_obj, proto);
-    }
-    nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
-    nd::array result = roll.call(1, &arr, ectx);
-    return wrap_array(result);
+    func = arrfunc_from_pyfunc(func_obj, proto);
+  }
+  nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
+  nd::array result = roll.call(1, &arr, ectx);
+  return wrap_array(result);
 }

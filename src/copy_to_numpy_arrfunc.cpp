@@ -26,7 +26,7 @@ using namespace pydynd;
 namespace {
 
 struct strided_of_numpy_arrmeta {
-  strided_dim_type_arrmeta sdt[NPY_MAXDIMS];
+  fixed_dim_type_arrmeta sdt[NPY_MAXDIMS];
   copy_to_numpy_arrmeta am;
 };
 
@@ -74,13 +74,13 @@ static intptr_t instantiate_copy_to_numpy(
     // to the numpy array, with a void type at the end for the numpy
     // specific data.
     for (intptr_t i = 0; i < dst_ndim; ++i) {
-      strided_dim_type_arrmeta &am = dst_am_holder.sdt[NPY_MAXDIMS - dst_ndim + i];
+      fixed_dim_type_arrmeta &am = dst_am_holder.sdt[NPY_MAXDIMS - dst_ndim + i];
       am.stride = PyArray_STRIDE(dst_arr, (int)i);
       dst_alignment |= static_cast<uintptr_t>(am.stride);
       am.dim_size = PyArray_DIM(dst_arr, (int)i);
     }
-    ndt::type dst_am_tp =
-        ndt::make_strided_dim(ndt::make_type<void>(), dst_ndim);
+    ndt::type dst_am_tp = ndt::make_type(dst_ndim, PyArray_SHAPE(dst_arr),
+                                         ndt::make_type<void>());
     dst_am_holder.am.dst_obj =
         reinterpret_cast<PyObject *>(PyArray_DTYPE(dst_arr));
     dst_am_holder.am.dst_alignment = dst_alignment;

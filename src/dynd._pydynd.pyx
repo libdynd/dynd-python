@@ -191,7 +191,7 @@ cdef class w_type:
         of this dynd type.
 
         None is returned if array arrmeta is required to
-        fully specify it. For example, both the strided_dim and
+        fully specify it. For example, both the fixed and
         struct types require such arrmeta.
         """
         def __get__(self):
@@ -401,8 +401,8 @@ def replace_dtype(w_type dt, replacement_dt, size_t replace_ndim=0):
     >>> from dynd import nd, ndt
 
     >>> d = ndt.type('3 * var * int32')
-    >>> ndt.replace_dtype(d, 'strided * float64')
-    ndt.type("3 * var * strided * float64")
+    >>> ndt.replace_dtype(d, 'fixed * float64')
+    ndt.type("3 * var * fixed * float64")
     >>> ndt.replace_dtype(d, '{x: int32, y:int32}', 1)
     ndt.type("3 * {x : int32, y : int32}")
     """
@@ -677,36 +677,36 @@ def make_pointer(target_tp):
     SET(result.v, dynd_make_pointer_type(GET(w_type(target_tp).v)))
     return result
 
-def make_strided_dim(element_tp, ndim=None):
+def make_fixed_sym_dim(element_tp, ndim=None):
     """
-    ndt.make_strided_dim(element_tp, ndim=1)
+    ndt.make_fixed_dim_sym(element_tp, ndim=1)
 
-    Constructs an array dynd type with one or more strided
-    dimensions. A single strided_dim dynd type corresponds
-    to one dimension, so when ndim > 1, multiple strided_dim
+    Constructs an array dynd type with one or more symbolic fixed
+    dimensions. A single fixed_sym_dim dynd type corresponds
+    to one dimension, so when ndim > 1, multiple fixed_sym_dim
     dimensions are created.
 
     Parameters
     ----------
     element_tp : dynd type
-        The type of one element in the strided array.
+        The type of one element in the symbolic array.
     ndim : int
-        The number of strided_dim dimensions to create.
+        The number of fixed_sym_dim dimensions to create.
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_strided_dim(ndt.int32)
-    ndt.type("strided * int32")
-    >>> ndt.make_strided_dim(ndt.int32, 3)
-    ndt.type("strided * strided * strided * int32")
+    >>> ndt.make_fixed_sym_dim(ndt.int32)
+    ndt.type("fixed * int32")
+    >>> ndt.make_fixed_sym_dim(ndt.int32, 3)
+    ndt.type("fixed * fixed * fixed * int32")
     """
     cdef w_type result = w_type()
     if (ndim is None):
-        SET(result.v, dynd_make_strided_dim_type(GET(w_type(element_tp).v)))
+        SET(result.v, dynd_make_fixed_sym_dim_type(GET(w_type(element_tp).v)))
     else:
-        SET(result.v, dynd_make_strided_dim_type(GET(w_type(element_tp).v), int(ndim)))
+        SET(result.v, dynd_make_fixed_sym_dim_type(GET(w_type(element_tp).v), int(ndim)))
     return result
 
 def make_fixed_dim(shape, element_tp):
@@ -1012,12 +1012,15 @@ cdef class w_array:
     >>> from dynd import nd, ndt
 
     >>> nd.array([1, 2, 3, 4, 5])
-    nd.array([1, 2, 3, 4, 5], strided_dim<int32>)
+    nd.array([1, 2, 3, 4, 5],
+             type="5 * int32")
     >>> nd.array([[1, 2], [3, 4, 5.0]])
-    nd.array([[1, 2], [3, 4, 5]], strided_dim<var_dim<float64>>)
+    nd.array([   [1, 2], [3, 4, 5]],
+             type="2 * var * float64")
     >>> from datetime import date
     >>> nd.array([date(2000,2,14), date(2012,1,1)])
-    nd.array([2000-02-14, 2012-01-01], strided_dim<date>)
+    nd.array([2000-02-14, 2012-01-01],
+             type="2 * date")
     """
     # To access the embedded nd::array, use "GET(self.v)",
     # which returns a reference to the dynd array, and
@@ -1083,12 +1086,15 @@ cdef class w_array:
 
         >>> a = nd.array([1.5, 2, 3])
         >>> a
-        nd.array([1.5, 2, 3], strided_dim<float64>)
-        >>> b = a.ucast(ndt.int16, errmode='nocheck')
+        nd.array([1.5,   2,   3],
+                 type="3 * float64")
+        >>> b = a.ucast(ndt.complex_float32)
         >>> b
-        nd.array([1, 2, 3], strided_dim<convert<to=int16, from=float64, errmode=nocheck>>)
+        nd.array([(1.5 + 0j),   (2 + 0j),   (3 + 0j)],
+                 type="3 * convert[to=complex[float32], from=float64]")
         >>> b.eval()
-        nd.array([1, 2, 3], strided_dim<int16>)
+        nd.array([(1.5 + 0j),   (2 + 0j),   (3 + 0j)],
+                 type="3 * complex[float32]")
         """
         cdef w_array result = w_array()
         SET(result.v, array_eval(GET(self.v), ectx))
@@ -1135,11 +1141,13 @@ cdef class w_array:
         --------
         >>> from dynd import nd, ndt
 
-        >>> a = nd.array([1, 2, 3], type=ndt.int16)
+        >>> a = nd.array([1, 2, 3], dtype=ndt.int16)
         >>> a
-        nd.array([1, 2, 3], strided_dim<int16>)
+        nd.array([1, 2, 3],
+                 type="3 * int16")
         >>> a.storage()
-        nd.array([0x0100, 0x0200, 0x0300], strided_dim<fixedbytes<2,2>>)
+        nd.array([0100, 0200, 0300],
+                 type="3 * bytes[2, align=2]")
         """
         cdef w_array result = w_array()
         SET(result.v, GET(self.v).storage())
@@ -1188,9 +1196,9 @@ cdef class w_array:
         >>> from datetime import date
         >>> a = nd.array([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32, year: int32, day: float32}')
         >>> a
-        nd.array([[3, 1929, 13], [3, 1979, 22]], type="strided * convert[to={month : int32, year : int32, day : float32}, from=date]")
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="fixed * convert[to={month : int32, year : int32, day : float32}, from=date]")
         >>> a.eval()
-        nd.array([[3, 1929, 13], [3, 1979, 22]], type="strided * {month : int32, year : int32, day : float32}")
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
         """
         cdef w_array result = w_array()
         SET(result.v, array_ucast(GET(self.v), GET(w_type(dtype).v), replace_ndim))
@@ -1427,9 +1435,7 @@ def adapt(arr, tp, op):
     >>> a = nd.array([1, 3, 10, 31, 365])
     >>> nd.adapt(a, ndt.date, 'days since 2012')
     nd.array([2012-01-02, 2012-01-04, 2012-01-11, 2012-02-01, 2012-12-31],
-             type="strided * adapt[(int32) -> date, 'days since 2012']")
-
-
+             type="5 * adapt[(int32) -> date, 'days since 2012']")
     """
     return array_adapt(arr, tp, op)
 
@@ -1471,9 +1477,9 @@ def type_of(w_array a):
     >>> from dynd import nd, ndt
 
     >>> nd.type_of(nd.array([1,2,3,4]))
-    ndt.type("strided * int32")
+    ndt.type("4 * int32")
     >>> nd.type_of(nd.array([[1,2],[3.0]]))
-    ndt.type("strided * var * float64")
+    ndt.type("2 * var * float64")
     """
     cdef w_type result = w_type()
     SET(result.v, GET(a.v).get_type())
@@ -1531,8 +1537,8 @@ def is_c_contiguous(w_array a):
 
     Returns True if the array is C-contiguous, False
     otherwise. An array is C-contiguous if all its array
-    dimensions are ``fixed`` or ``strided``, the strides
-    are in decreasing order, and the data is tightly packed.
+    dimensions are ``fixed``, the strides are in decreasing
+    order, and the data is tightly packed.
     """
     return array_is_c_contiguous(GET(a.v))
 
@@ -1542,8 +1548,8 @@ def is_f_contiguous(w_array a):
 
     Returns True if the array is F-contiguous, False
     otherwise. An array is F-contiguous if all its array
-    dimensions are ``fixed`` or ``strided``, the strides
-    are in increasing order, and the data is tightly packed.
+    dimensions are ``fixed``, the strides are in increasing
+    order, and the data is tightly packed.
     """
     return array_is_f_contiguous(GET(a.v))
 
@@ -1571,7 +1577,8 @@ def as_py(w_array n, tuple=False):
 
     >>> a = nd.array([1, 2, 3, 4.0])
     >>> a
-    nd.array([1, 2, 3, 4], strided_dim<float64>)
+    nd.array([1, 2, 3, 4],
+             type="4 * float64")
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
@@ -1600,7 +1607,8 @@ def as_numpy(w_array n, allow_copy=False):
     >>> import numpy as np
     >>> a = nd.array([[1, 2, 3], [4, 5, 6]])
     >>> a
-    nd.array([[1, 2, 3], [4, 5, 6]], strided_dim<strided_dim<int32>>)
+    nd.array([[1, 2, 3], [4, 5, 6]],
+             type="2 * 3 * int32")
     >>> nd.as_numpy(a)
     array([[1, 2, 3],
            [4, 5, 6]])
@@ -1610,17 +1618,14 @@ def as_numpy(w_array n, allow_copy=False):
 
 def zeros(*args, **kwargs):
     """
-    nd.zeros(type, *, access=None)
+    nd.zeros(dtype, *, access=None)
     nd.zeros(shape, dtype, *, access=None)
     nd.zeros(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
 
     Creates an array of zeros of the specified
-    type. If just the `type` is specified, it is the
-    full type of the array created. If both a `shape`
-    and `dtype` are provided, dimensions are prepended to
-    the `dtype` to produce the full array type.
-
-    The array created by default is immutable.
+    type. Dimensions may be provided as integer
+    positional parameters, a tuple of integers,
+    or within the dtype itself.
 
     TODO: In the immutable case it should use zero-strides to optimize storage.
 
@@ -1630,16 +1635,13 @@ def zeros(*args, **kwargs):
     Parameters
     ----------
     shape : list of int, optional
-        If provided, specifies the shape for the type dimensions
-        that don't encode a dimension size themselves, such as
-        strided_dim dimensions.
-    type/dtype : dynd type
-        The type of the uninitialized array to create. If `shape`
-        is not provided, this is the full data type, including
-        the multi-dimensional structure.
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
     access : 'readwrite' or 'immutable', optional
         Specifies the access control of the resulting copy. Defaults
-        to immutable.
+        to readwrite.
     """
     # Handle the keyword-only arguments
     access = kwargs.pop('access', None)
@@ -1669,12 +1671,9 @@ def ones(*args, **kwargs):
     nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
 
     Creates an array of ones of the specified
-    type. If just the `type` is specified, it is the
-    full type of the array created. If both a `shape`
-    and `dtype` are provided, dimensions are prepended to
-    the `dtype` to produce the full array type.
-
-    The array created by default is immutable.
+    type. Dimensions may be provided as integer
+    positional parameters, a tuple of integers,
+    or within the dtype itself.
 
     TODO: In the immutable case it should use zero-strides to optimize storage.
 
@@ -1684,16 +1683,13 @@ def ones(*args, **kwargs):
     Parameters
     ----------
     shape : list of int, optional
-        If provided, specifies the shape for the type dimensions
-        that don't encode a dimension size themselves, such as
-        strided_dim dimensions.
-    type/dtype : dynd type
-        The type of the uninitialized array to create. If `shape`
-        is not provided, this is the full data type, including
-        the multi-dimensional structure.
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
     access : 'readwrite' or 'immutable', optional
         Specifies the access control of the resulting copy. Defaults
-        to immutable.
+        to readwrite.
     """
     # Handle the keyword-only arguments
     access = kwargs.pop('access', None)
@@ -1723,12 +1719,9 @@ def full(*args, **kwargs):
     nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, value, access=None)
 
     Creates an array filled with the given value and
-    of the specified type. If just the `type` is specified,
-    it is the full type of the array created. If both a `shape`
-    and `dtype` are provided, dimensions are prepended to
-    the `dtype` to produce the full array type.
-
-    The array created by default is immutable.
+    of the specified type. Dimensions may be provided as
+    integer positional parameters, a tuple of integers,
+    or within the dtype itself.
 
     TODO: In the immutable case it should use zero-strides to optimize storage.
 
@@ -1738,29 +1731,27 @@ def full(*args, **kwargs):
     Parameters
     ----------
     shape : list of int, optional
-        If provided, specifies the shape for the type dimensions
-        that don't encode a dimension size themselves, such as
-        strided_dim dimensions.
-    type/dtype : dynd type
-        The type of the uninitialized array to create. If `shape`
-        is not provided, this is the full data type, including
-        the multi-dimensional structure.
-    value : object
-        A single value to broadcast-fill the array with.
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
     access : 'readwrite' or 'immutable', optional
         Specifies the access control of the resulting copy. Defaults
-        to immutable
+        to readwrite.
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
     >>> nd.full(2, 3, ndt.int32, value=123)
-    nd.array([[123, 123, 123], [123, 123, 123]], strided_dim<strided_dim<int32>>)
+    nd.array([[123, 123, 123], [123, 123, 123]],
+             type="2 * 3 * int32")
     >>> nd.full(2, 2, ndt.int32, value=[1, 5])
-    nd.array([[1, 5], [1, 5]], strided_dim<strided_dim<int32>>)
-    >>> nd.full('3, {x : int32; y : 2, int16}', value=[1, [2, 3]], access='rw')
-    nd.array([[1, [2, 3]], [1, [2, 3]], [1, [2, 3]]], fixed_dim<3, cstruct<int32 x, fixed_dim<2, int16> y>>)
+    nd.array([[1, 5], [1, 5]],
+             type="2 * 2 * int32")
+    >>> nd.full('3 * {x : int32, y : 2 * int16}', value=[1, [2, 3]], access='rw')
+    nd.array([[1, [2, 3]], [1, [2, 3]], [1, [2, 3]]],
+             type="3 * {x : int32, y : 2 * int16}")
     """
     # Handle the keyword-only arguments
     if 'value' not in kwargs:
@@ -1793,11 +1784,9 @@ def empty(*args, **kwargs):
     nd.empty(shape, dtype, access=None)
     nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype, access=None)
 
-    Creates an uninitialized array of the specified
-    type. If just the `type` is provided, it is the full type
-    of the array created. If both a `shape` and `dtype` are
-    provided, dimensions are prepended to the `dtype` to
-    produce the full array type.
+    Creates an uninitialized array of the specified type.
+    Dimensions may be provided as integer positional
+    parameters, a tuple of integers, or within the dtype itself.
 
     TODO: Add order= keyword-only argument. This would accept
     'C', 'F', or a permutation tuple.
@@ -1805,26 +1794,24 @@ def empty(*args, **kwargs):
     Parameters
     ----------
     shape : list of int, optional
-        If provided, specifies the shape for the type dimensions
-        that don't encode a dimension size themselves, such as
-        strided_dim dimensions.
-    type/dtype : dynd type
-        The type of the uninitialized array to create. If `shape`
-        is not provided, this is the full data type, including
-        the multi-dimensional structure.
-    access : 'readwrite', optional
-        Specifies the access control of the resulting empty array
-        Provided for API consistency. Only valid option is
-        "readwrite"
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to readwrite.
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
-    >>> nd.empty('2, 2, int8')
-    nd.array([[0, -24], [0, 4]], fixed_dim<2, fixed_dim<2, int8>>)
+    >>> nd.empty('2 * 2 * int8')
+    nd.array([[0, -14], [0, 0]],
+             type="2 * 2 * int8")
     >>> nd.empty((2, 2), ndt.int16)
-    nd.array([[179, 0], [0, 16816]], strided_dim<strided_dim<int16>>)
+    nd.array([[0, 27], [159, 0]],
+             type="2 * 2 * int16")
     """
     # Handle the keyword-only arguments
     access = kwargs.pop('access', None)
@@ -1868,11 +1855,14 @@ def empty_like(w_array prototype, dtype=None):
 
     >>> a = nd.array([[1, 2], [3, 4]])
     >>> a
-    nd.array([[1, 2], [3, 4]], strided_dim<strided_dim<int32>>)
+    nd.array([[1, 2], [3, 4]],
+             type="2 * 2 * int32")
     >>> nd.empty_like(a)
-    nd.array([[808529973, 741351468], [0, 0]], strided_dim<strided_dim<int32>>)
+    nd.array([[1852383276, 1577728116],       [2695690,       0]],
+             type="2 * 2 * int32")
     >>> nd.empty_like(a, dtype=ndt.float32)
-    nd.array([[1.47949e-041, 0], [0, 0]], strided_dim<strided_dim<float32>>)
+    nd.array([[1.50878e-019, 1.80372e+028], [2.41507e-018, 7.25506e-039]],
+             type="2 * 2 * float32")
     """
     cdef w_array result = w_array()
     if dtype is None:
@@ -1944,15 +1934,18 @@ def groupby(data, by, groups = None):
 
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'])
     >>> a.groups
-    nd.array(["F", "M"], strided_dim<string<ascii>>)
+    nd.array(["F", "M"],
+             type="2 * string")
     >>> a.eval()
-    nd.array([[2, 5, 6], [1, 3, 4]], fixed_dim<2, var_dim<int32>>)
-
+    nd.array([[2, 5, 6], [1, 3, 4]],
+             type="cfixed[2] * var * int32")
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
     >>> a.groups
-    nd.array(["M", "N", "F"], strided_dim<string<ascii>>)
+    nd.array(["M", "N", "F"],
+             type="3 * string")
     >>> a.eval()
-    nd.array([[1, 3, 4], [], [2, 5, 6]], fixed_dim<3, var_dim<int32>>)
+    nd.array([[1, 3, 4],        [], [2, 5, 6]],
+             type="cfixed[3] * var * int32")
     """
     cdef w_array result = w_array()
     if groups is None:
@@ -2063,12 +2056,15 @@ def parse_json(type, json, ectx=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> nd.parse_json('var, int8', '[1, 2, 3, 4, 5]')
-    nd.array([1, 2, 3, 4, 5], var_dim<int8>)
-    >>> nd.parse_json('4, int8', '[1, 2, 3, 4]')
-    nd.array([1, 2, 3, 4], fixed_dim<4, int8>)
-    >>> nd.parse_json('2, {x: int8; y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
-    nd.array([[0, 1], [3, 2]], fixed_dim<2, cstruct<int8 x, int8 y>>)
+    >>> nd.parse_json('var * int8', '[1, 2, 3, 4, 5]')
+    nd.array([1, 2, 3, 4, 5],
+             type="var * int8")
+    >>> nd.parse_json('4 * int8', '[1, 2, 3, 4]')
+    nd.array([1, 2, 3, 4],
+             type="4 * int8")
+    >>> nd.parse_json('2 * {x: int8, y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
+    nd.array([[0, 1], [3, 2]],
+             type="2 * {x : int8, y : int8}")
     """
     cdef w_array result = w_array()
     if builtin_type(type) is w_array:
@@ -2097,9 +2093,11 @@ def format_json(w_array a, bint tuple=False):
 
     >>> a = nd.array([[1, 2, 3], [1, 2]])
     >>> a
-    nd.array([[1, 2, 3], [1, 2]], type="strided * var * int32")
+    nd.array([[1, 2, 3],    [1, 2]],
+             type="2 * var * int32")
     >>> nd.format_json(a)
-    nd.array("[[1,2,3],[1,2]]", string)
+    nd.array("[[1,2,3],[1,2]]",
+             type="string")
     """
     cdef w_array result = w_array()
     SET(result.v, dynd_format_json(GET(a.v), tuple != 0))

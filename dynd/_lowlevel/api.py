@@ -550,7 +550,7 @@ make_builtin_mean1d_arrfunc.__doc__ = """
 
     This function creates a arrfunc which computes a 1D
     mean, using ``minp`` to control NaN behavior. The signature of the
-    ckernel is "(strided * <tp>) -> <tp>".
+    ckernel is "(fixed * <tp>) -> <tp>".
     """
 make_take_arrfunc.__doc__ = """
     _lowlevel.make_take_arrfunc()

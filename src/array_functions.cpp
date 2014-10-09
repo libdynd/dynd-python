@@ -19,7 +19,6 @@
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/strided_dim_type.hpp>
 #include <dynd/view.hpp>
 
 using namespace std;

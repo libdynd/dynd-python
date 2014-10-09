@@ -674,9 +674,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 
   // If write access wasn't specified, we can flag it as
   // immutable, because it's a newly allocated object.
-  // This also covers the default case (access_flags==0),
-  // which we want to be immutable as well.
-  if ((access_flags & nd::write_access_flag) == 0) {
+  if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     result.flag_as_immutable();
   }
 
@@ -818,7 +816,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                                         ectx);
 
   // If write access wasn't requested, flag it as immutable
-  if ((access_flags & nd::write_access_flag) == 0) {
+  if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     result.flag_as_immutable();
   }
 

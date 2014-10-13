@@ -23,6 +23,7 @@
 #include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/view.hpp>
 #include <dynd/func/callable.hpp>
+#include <dynd/func/arrfunc_registry.hpp>
 
 using namespace std;
 using namespace dynd;
@@ -84,4 +85,16 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
   nd::array result = roll.call(1, &arr, ectx);
   return wrap_array(result);
+}
+
+PyObject *pydynd::get_published_arrfuncs()
+{
+  pyobject_ownref res(PyDict_New());
+  const map<nd::string, nd::arrfunc> &reg = func::get_regfunctions();
+  for (map<nd::string, nd::arrfunc>::const_iterator it = reg.begin();
+       it != reg.end(); ++it) {
+    PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),
+                   wrap_array(it->second));
+  }
+  return res.release();
 }

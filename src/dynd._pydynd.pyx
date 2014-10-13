@@ -2123,6 +2123,9 @@ def rolling_apply(af, arr, window_size, ectx=None):
     """
     return arrfunc_rolling_apply(af, arr, window_size, ectx)
 
+def get_published_arrfuncs():
+    return dynd_get_published_arrfuncs()
+
 def elwise_map(n, callable, dst_type, src_type = None):
     """
     nd.elwise_map(n, callable, dst_type, src_type=None)

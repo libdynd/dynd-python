@@ -40,7 +40,7 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
                   kernel_request_single, nd::array(),
                   &eval::default_eval_context);
   pyobject_ownref result;
-  ckb(reinterpret_cast<char *>(result.obj_addr()), a.get_readonly_originptr());
+  ckb(reinterpret_cast<char *>(result.obj_addr()), const_cast<char *>(a.get_readonly_originptr()));
   if (PyErr_Occurred()) {
     throw exception();
   }

@@ -459,7 +459,7 @@ struct option_ck : public kernels::unary_ck<option_ck> {
   ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
     if (src_obj == Py_None) {
@@ -532,7 +532,7 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
   bool m_dim_broadcast;
   // Offset to ckernel which copies from dst to dst, for broadcasting case
   intptr_t m_copy_dst_offset;
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
 
@@ -555,7 +555,7 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
 
     // Get the input as an array of PyObject *
     pyobject_ownref src_fast;
-    const char *child_src;
+    char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
     if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
@@ -565,7 +565,7 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
       src_fast.reset(PySequence_Fast(
           src_obj, "Require a sequence to copy to a dynd dimension"));
       child_src =
-          reinterpret_cast<const char *>(PySequence_Fast_ITEMS(src_fast.get()));
+          reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
     }
 
@@ -604,7 +604,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
   bool m_dim_broadcast;
   // Offset to ckernel which copies from dst to dst, for broadcasting case
   intptr_t m_copy_dst_offset;
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
 
@@ -627,7 +627,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
 
     // Get the input as an array of PyObject *
     pyobject_ownref src_fast;
-    const char *child_src;
+    char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
     if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
@@ -637,7 +637,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
       src_fast.reset(PySequence_Fast(
           src_obj, "Require a sequence to copy to a dynd dimension"));
       child_src =
-          reinterpret_cast<const char *>(PySequence_Fast_ITEMS(src_fast.get()));
+          reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
     }
 
@@ -665,7 +665,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
       ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
       expr_strided_t copy_dst_fn = copy_dst->get_function<expr_strided_t>();
       intptr_t zero = 0;
-      const char *src_to_dup = vdd->begin + m_offset;
+      char *src_to_dup = vdd->begin + m_offset;
       copy_dst_fn(vdd->begin + m_offset + m_stride, m_stride, &src_to_dup,
                   &zero, vdd->size - 1, copy_dst);
     } else {
@@ -690,7 +690,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
   bool m_dim_broadcast;
   vector<intptr_t> m_copy_el_offsets;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
 
@@ -714,7 +714,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
 
     // Get the input as an array of PyObject *
     pyobject_ownref src_fast;
-    const char *child_src;
+    char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
     if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
@@ -724,7 +724,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
       src_fast.reset(PySequence_Fast(
           src_obj, "Require a sequence to copy to a dynd struct"));
       child_src =
-          reinterpret_cast<const char *>(PySequence_Fast_ITEMS(src_fast.get()));
+          reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
     }
 
@@ -741,7 +741,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
       ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
       expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
       char *el_dst = dst + field_offsets[i];
-      const char *el_src = child_src + i * child_stride;
+      char *el_src = child_src + i * child_stride;
       copy_el_fn(el_dst, &el_src, copy_el);
     }
     if (PyErr_Occurred()) {
@@ -764,7 +764,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
   bool m_dim_broadcast;
   vector<intptr_t> m_copy_el_offsets;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src);
 
@@ -803,7 +803,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
           ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
           expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
           char *el_dst = dst + field_offsets[i];
-          const char *el_src = reinterpret_cast<const char *>(&dict_value);
+          char *el_src = reinterpret_cast<char *>(&dict_value);
           copy_el_fn(el_dst, &el_src, copy_el);
           populated_fields[i] = true;
         } else {
@@ -828,7 +828,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
     } else {
       // Get the input as an array of PyObject *
       pyobject_ownref src_fast;
-      const char *child_src;
+      char *child_src;
       intptr_t child_stride = sizeof(PyObject *);
       intptr_t src_dim_size;
       if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
@@ -838,7 +838,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
         src_fast.reset(PySequence_Fast(
             src_obj, "Require a sequence to copy to a dynd struct"));
         child_src =
-            reinterpret_cast<const char *>(PySequence_Fast_ITEMS(src_fast.get()));
+            reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
         src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
       }
 
@@ -855,7 +855,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
         ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
         expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
         char *el_dst = dst + field_offsets[i];
-        const char *el_src = child_src + i * child_stride;
+        char *el_src = child_src + i * child_stride;
         copy_el_fn(el_dst, &el_src, copy_el);
       }
     }

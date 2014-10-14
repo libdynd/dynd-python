@@ -374,7 +374,7 @@ struct type_ck : public kernels::unary_ck<type_ck> {
 struct option_ck : public kernels::unary_ck<option_ck> {
   intptr_t m_copy_value_offset;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
@@ -402,7 +402,7 @@ struct option_ck : public kernels::unary_ck<option_ck> {
 
 struct strided_ck : public kernels::unary_ck<strided_ck> {
   intptr_t m_dim_size, m_stride;
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
@@ -427,7 +427,7 @@ struct strided_ck : public kernels::unary_ck<strided_ck> {
 struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
   intptr_t m_offset, m_stride;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
@@ -437,7 +437,7 @@ struct var_dim_ck : public kernels::unary_ck<var_dim_ck> {
     pyobject_ownref lst(PyList_New(vd->size));
     ckernel_prefix *copy_el = get_child_ckernel();
     expr_strided_t copy_el_fn = copy_el->get_function<expr_strided_t>();
-    const char *el_src = vd->begin + m_offset;
+    char *el_src = vd->begin + m_offset;
     copy_el_fn(reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
                sizeof(PyObject *), &el_src, &m_stride, vd->size, copy_el);
     if (PyErr_Occurred()) {
@@ -459,7 +459,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
   vector<intptr_t> m_copy_el_offsets;
   pyobject_ownref m_field_names;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
@@ -471,7 +471,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
     for (intptr_t i = 0; i < field_count; ++i) {
       ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
       expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
-      const char *el_src = src + field_offsets[i];
+      char *el_src = src + field_offsets[i];
       pyobject_ownref el;
       copy_el_fn(reinterpret_cast<char *>(el.obj_addr()), &el_src, copy_el);
       PyDict_SetItem(dct.get(), PyTuple_GET_ITEM(m_field_names.get(), i),
@@ -497,7 +497,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
   const char *m_src_arrmeta;
   vector<intptr_t> m_copy_el_offsets;
 
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
@@ -509,7 +509,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
     for (intptr_t i = 0; i < field_count; ++i) {
       ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
       expr_single_t copy_el_fn = copy_el->get_function<expr_single_t>();
-      const char *el_src = src + field_offsets[i];
+      char *el_src = src + field_offsets[i];
       char *el_dst =
           reinterpret_cast<char *>(((PyTupleObject *)tup.get())->ob_item + i);
       copy_el_fn(el_dst, &el_src, copy_el);
@@ -529,7 +529,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
 };
 
 struct pointer_ck : public kernels::unary_ck<pointer_ck> {
-  inline void single(char *dst, const char *src)
+  inline void single(char *dst, char *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
@@ -538,7 +538,7 @@ struct pointer_ck : public kernels::unary_ck<pointer_ck> {
     expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
     // The src value is a pointer, and copy_value_fn expects a pointer
     // to that pointer
-    const char *const *src_ptr = reinterpret_cast<const char *const *>(src);
+    char **src_ptr = reinterpret_cast<char **>(src);
     copy_value_fn(dst, src_ptr, copy_value);
   }
 

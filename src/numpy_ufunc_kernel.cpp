@@ -160,7 +160,7 @@ namespace {
     }
 
     static void scalar_ufunc_single_ckernel_acquiregil(
-                    char *dst, const char * const *src,
+                    char *dst, char **src,
                     ckernel_prefix *ckp)
     {
         scalar_ufunc_ckernel_data *data =
@@ -181,7 +181,7 @@ namespace {
     }
 
     static void scalar_ufunc_single_ckernel_nogil(
-                    char *dst, const char * const *src,
+                    char *dst, char **src,
                     ckernel_prefix *ckp)
     {
         scalar_ufunc_ckernel_data *data =
@@ -200,7 +200,7 @@ namespace {
 
     static void scalar_ufunc_strided_ckernel_acquiregil(
                     char *dst, intptr_t dst_stride,
-                    const char * const *src, const intptr_t *src_stride,
+                    char **src, const intptr_t *src_stride,
                     size_t count, ckernel_prefix *ckp)
     {
         scalar_ufunc_ckernel_data *data =
@@ -223,7 +223,7 @@ namespace {
 
     static void scalar_ufunc_strided_ckernel_nogil(
                     char *dst, intptr_t dst_stride,
-                    const char * const *src, const intptr_t *src_stride,
+                    char **src, const intptr_t *src_stride,
                     size_t count, ckernel_prefix *ckp)
     {
         scalar_ufunc_ckernel_data *data =

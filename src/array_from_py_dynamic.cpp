@@ -179,12 +179,12 @@ static void copy_to_promoted_nd_arr(
               src_coord[current_axis].arrmeta_ptr);
       if (!final_coordinate) {
         // Copy the full dimension
-        ck(dst_data_ptr, dst_md->stride, src_data_ptr, src_md->stride,
+        ck(dst_data_ptr, dst_md->stride, const_cast<char *>(src_data_ptr), src_md->stride,
            shape[current_axis]);
       }
       else {
         // Copy up to, and possibly including, the coordinate
-        ck(dst_data_ptr, dst_md->stride, src_data_ptr, src_md->stride,
+        ck(dst_data_ptr, dst_md->stride, const_cast<char *>(src_data_ptr), src_md->stride,
            src_coord[current_axis].coord + int(copy_final_coord));
         dst_coord[current_axis].coord = src_coord[current_axis].coord;
         dst_coord[current_axis].data_ptr =

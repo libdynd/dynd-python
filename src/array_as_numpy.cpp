@@ -745,7 +745,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
                     &src_arrmeta, kernel_request_single, nd::array(),
                     &eval::default_eval_context);
     ckb((char *)PyArray_DATA((PyArrayObject *)result.get()),
-        a.get_readonly_originptr());
+        const_cast<char *>(a.get_readonly_originptr()));
 
     // Return the NumPy array
     return result.release();

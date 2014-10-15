@@ -216,7 +216,7 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   af->instantiate(af, &ckb, 0, dst_tp, dst_arrmeta, &src_tp, &src_arrmeta_ptr,
                   kernel_request_single, nd::array(),
                   &eval::default_eval_context);
-  ckb(dst_data, (const char *)PyArray_DATA(value));
+  ckb(dst_data, (char *)PyArray_DATA(value));
 }
 
 #endif // DYND_NUMPY_INTEROP

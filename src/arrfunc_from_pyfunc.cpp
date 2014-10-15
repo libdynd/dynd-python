@@ -82,7 +82,7 @@ namespace {
             }
         }
 
-        static void single(char *dst, const char *const *src,
+        static void single(char *dst, char **src,
                            ckernel_prefix *rawself)
         {
             self_type *self = get_self(rawself);
@@ -118,7 +118,7 @@ namespace {
         }
 
         static void strided(char *dst, intptr_t dst_stride,
-                            const char *const *src, const intptr_t *src_stride,
+                            char **src, const intptr_t *src_stride,
                             size_t count, ckernel_prefix *rawself)
         {
             self_type *self = get_self(rawself);

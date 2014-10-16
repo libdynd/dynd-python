@@ -677,13 +677,13 @@ def make_pointer(target_tp):
     SET(result.v, dynd_make_pointer_type(GET(w_type(target_tp).v)))
     return result
 
-def make_fixed_sym_dim(element_tp, ndim=None):
+def make_fixed_dimsym(element_tp, ndim=None):
     """
-    ndt.make_fixed_dim_sym(element_tp, ndim=1)
+    ndt.make_fixed_dimsym(element_tp, ndim=1)
 
     Constructs an array dynd type with one or more symbolic fixed
-    dimensions. A single fixed_sym_dim dynd type corresponds
-    to one dimension, so when ndim > 1, multiple fixed_sym_dim
+    dimensions. A single fixed_dimsym dynd type corresponds
+    to one dimension, so when ndim > 1, multiple fixed_dimsym
     dimensions are created.
 
     Parameters
@@ -691,22 +691,50 @@ def make_fixed_sym_dim(element_tp, ndim=None):
     element_tp : dynd type
         The type of one element in the symbolic array.
     ndim : int
-        The number of fixed_sym_dim dimensions to create.
+        The number of fixed_dimsym dimensions to create.
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixed_sym_dim(ndt.int32)
+    >>> ndt.make_fixed_dimsym(ndt.int32)
     ndt.type("fixed * int32")
-    >>> ndt.make_fixed_sym_dim(ndt.int32, 3)
+    >>> ndt.make_fixed_dimsym(ndt.int32, 3)
     ndt.type("fixed * fixed * fixed * int32")
     """
     cdef w_type result = w_type()
     if (ndim is None):
-        SET(result.v, dynd_make_fixed_sym_dim_type(GET(w_type(element_tp).v)))
+        SET(result.v, dynd_make_fixed_dimsym_type(GET(w_type(element_tp).v)))
     else:
-        SET(result.v, dynd_make_fixed_sym_dim_type(GET(w_type(element_tp).v), int(ndim)))
+        SET(result.v, dynd_make_fixed_dimsym_type(GET(w_type(element_tp).v), int(ndim)))
+    return result
+
+def make_pow_dimsym(base_tp, exponent, element_tp):
+    """
+    ndt.make_fixed_dim_sym(base_tp, exponent, element_tp)
+
+    Constructs an array dynd type with a symbolic dimensional
+    power type, where the base type is raised to the power
+    of the exponent.
+
+    Parameters
+    ----------
+    base_tp : dynd type
+        The type of of the base of the dimensional power.
+        This should be of the form ``<dim> * void``.
+    exponent : str
+        The name of the typevar for the exponent.
+    element_tp : dynd type
+        The type of one element after the dimensional power.
+
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+
+    """
+    cdef w_type result = w_type()
+    SET(result.v, dynd_make_pow_dimsym_type(GET(w_type(base_tp).v), exponent,
+                                            GET(w_type(element_tp).v)))
     return result
 
 def make_fixed_dim(shape, element_tp):

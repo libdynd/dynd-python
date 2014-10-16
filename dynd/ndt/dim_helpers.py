@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from dynd._pydynd import w_type, \
-        make_var_dim, make_fixed_sym_dim, make_fixed_dim, make_cfixed_dim
+        make_var_dim, make_fixed_dimsym, make_fixed_dim, make_cfixed_dim
 
 __all__ = ['var', 'fixed', 'cfixed']
 
@@ -90,7 +90,7 @@ class _Fixed(_Dim):
 
     def create(self, eltype):
         if self.dim_size is None:
-            return make_fixed_sym_dim(eltype)
+            return make_fixed_dimsym(eltype)
         else:
             return make_fixed_dim(self.dim_size, eltype)
 

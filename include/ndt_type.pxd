@@ -102,9 +102,12 @@ cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
 cdef extern from "dynd/types/type_alignment.hpp" namespace "dynd":
     ndt_type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (ndt_type&) except +translate_exception
 
-cdef extern from "dynd/types/fixed_sym_dim_type.hpp" namespace "dynd":
-    ndt_type dynd_make_fixed_sym_dim_type "dynd::ndt::make_fixed_sym_dim" (ndt_type&) except +translate_exception
-    ndt_type dynd_make_fixed_sym_dim_type "dynd::ndt::make_fixed_sym_dim" (ndt_type&, intptr_t) except +translate_exception
+cdef extern from "dynd/types/fixed_dimsym_type.hpp" namespace "dynd":
+    ndt_type dynd_make_fixed_dimsym_type "dynd::ndt::make_fixed_dimsym" (ndt_type&) except +translate_exception
+    ndt_type dynd_make_fixed_dimsym_type "dynd::ndt::make_fixed_dimsym" (ndt_type&, intptr_t) except +translate_exception
+
+cdef extern from "dynd/types/pow_dimsym_type.hpp" namespace "dynd":
+    ndt_type dynd_make_pow_dimsym_type "dynd::ndt::make_pow_dimsym" (ndt_type&, string&, ndt_type&) except +translate_exception
 
 cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
     ndt_type dynd_make_var_dim_type "dynd::ndt::make_var_dim" (ndt_type&) except +translate_exception

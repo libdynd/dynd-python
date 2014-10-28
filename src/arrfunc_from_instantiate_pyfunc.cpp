@@ -39,7 +39,7 @@ namespace {
     {
         PyGILState_RAII pgs;
         PyObject *instantiate_pyfunc = *af_self->get_data_as<PyObject *>();
-        intptr_t nsrc = af_self->get_nsrc();
+        intptr_t param_count = af_self->get_narg();
 
         if (!args.is_null() || !kwds.is_null()) {
           throw invalid_argument("unexpected non-NULL aux value to "
@@ -56,12 +56,12 @@ namespace {
             PyLong_FromSize_t(reinterpret_cast<size_t>(dst_arrmeta)));
 
         // Source types/arrmeta
-        pyobject_ownref src_tp_obj(PyTuple_New(nsrc));
-        for (intptr_t i = 0; i < nsrc; ++i) {
+        pyobject_ownref src_tp_obj(PyTuple_New(param_count));
+        for (intptr_t i = 0; i < param_count; ++i) {
             PyTuple_SET_ITEM(src_tp_obj.get(), i, wrap_ndt_type(src_tp[i]));
         }
-        pyobject_ownref src_arrmeta_obj(PyTuple_New(nsrc));
-        for (intptr_t i = 0; i < nsrc; ++i) {
+        pyobject_ownref src_arrmeta_obj(PyTuple_New(param_count));
+        for (intptr_t i = 0; i < param_count; ++i) {
             PyTuple_SET_ITEM(
                 src_arrmeta_obj.get(), i,
                 PyLong_FromSize_t(reinterpret_cast<size_t>(src_arrmeta[i])));

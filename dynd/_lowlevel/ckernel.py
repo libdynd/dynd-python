@@ -160,4 +160,4 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
                     out_ckb, ckb_offset,
                     data_address_of(dst_tp), dst_arrmeta,
                     data_address_of(src_tp), data_address_of(src_arrmeta),
-                    kernreq, None, ectx_ptr)
+                    kernreq, ectx_ptr, None, None)

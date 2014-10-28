@@ -742,8 +742,8 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     const char *src_arrmeta = a.get_arrmeta();
     af->instantiate(af, &ckb, 0, ndt::make_type<void>(),
                     reinterpret_cast<const char *>(&dst_arrmeta), &a.get_type(),
-                    &src_arrmeta, kernel_request_single, nd::array(),
-                    &eval::default_eval_context);
+                    &src_arrmeta, kernel_request_single, &eval::default_eval_context,
+                    nd::array(), nd::array());
     ckb((char *)PyArray_DATA((PyArrayObject *)result.get()),
         const_cast<char *>(a.get_readonly_originptr()));
 

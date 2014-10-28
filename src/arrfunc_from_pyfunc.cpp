@@ -57,9 +57,9 @@ namespace {
 
         inline void verify_postcall_consistency(PyObject *args)
         {
-            intptr_t param_count = PyTuple_GET_SIZE(args);
+            intptr_t nsrc = PyTuple_GET_SIZE(args);
             // Verify that no reference to a temporary array was kept
-            for (intptr_t i = 0; i != param_count; ++i) {
+            for (intptr_t i = 0; i != nsrc; ++i) {
                 PyObject *item = PyTuple_GET_ITEM(args, i);
                 if (Py_REFCNT(item) != 1 ||
                         ((WArray *)item)->v.get_ndo()->m_memblockdata.m_use_count !=
@@ -74,7 +74,7 @@ namespace {
                     ss << "Python wrapper ref count: " << Py_REFCNT(item) << "\n";
                     ((WArray *)item)->v.debug_print(ss);
                     // Set all the args' data pointers to NULL as a precaution
-                    for (i = 0; i != param_count; ++i) {
+                    for (i = 0; i != nsrc; ++i) {
                         ((WArray *)item)->v.get_ndo()->m_data_pointer = NULL;
                     }
                     throw runtime_error(ss.str());
@@ -87,12 +87,12 @@ namespace {
         {
             self_type *self = get_self(rawself);
             const funcproto_type *fpt = self->m_proto.tcast<funcproto_type>();
-            intptr_t param_count = fpt->get_param_count();
+            intptr_t nsrc = fpt->get_nsrc();
             const ndt::type& dst_tp = fpt->get_return_type();
-            const ndt::type *src_tp = fpt->get_param_types_raw();
+            const ndt::type *src_tp = fpt->get_arg_types_raw();
             // First set up the parameters in a tuple
-            pyobject_ownref args(PyTuple_New(param_count));
-            for (intptr_t i = 0; i != param_count; ++i) {
+            pyobject_ownref args(PyTuple_New(nsrc));
+            for (intptr_t i = 0; i != nsrc; ++i) {
                 ndt::type tp = src_tp[i];
                 nd::array n(make_array_memory_block(tp.get_arrmeta_size()));
                 n.get_ndo()->m_type = tp.release();
@@ -123,12 +123,12 @@ namespace {
         {
             self_type *self = get_self(rawself);
             const funcproto_type *fpt = self->m_proto.tcast<funcproto_type>();
-            intptr_t param_count = fpt->get_param_count();
+            intptr_t nsrc = fpt->get_nsrc();
             const ndt::type& dst_tp = fpt->get_return_type();
-            const ndt::type *src_tp = fpt->get_param_types_raw();
+            const ndt::type *src_tp = fpt->get_arg_types_raw();
             // First set up the parameters in a tuple
-            pyobject_ownref args(PyTuple_New(param_count));
-            for (intptr_t i = 0; i != param_count; ++i) {
+            pyobject_ownref args(PyTuple_New(nsrc));
+            for (intptr_t i = 0; i != nsrc; ++i) {
                 ndt::type tp = src_tp[i];
                 nd::array n(make_array_memory_block(tp.get_arrmeta_size()));
                 n.get_ndo()->m_type = tp.release();
@@ -155,7 +155,7 @@ namespace {
                 self->verify_postcall_consistency(args.get());
                 // Increment to the next one
                 dst += dst_stride;
-                for (intptr_t i = 0; i != param_count; ++i) {
+                for (intptr_t i = 0; i != nsrc; ++i) {
                     const nd::array& n = ((WArray *)PyTuple_GET_ITEM(args.get(), i))->v;
                     n.get_ndo()->m_data_pointer += src_stride[i];
                 }
@@ -176,25 +176,25 @@ namespace {
         const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb,
         intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
         const ndt::type *src_tp, const char *const *src_arrmeta,
-        kernel_request_t kernreq, const nd::array &aux,
-        const eval::eval_context *ectx)
+        kernel_request_t kernreq, const eval::eval_context *ectx,
+        const nd::array &args, const nd::array &kwds)
     {
         typedef pyfunc_expr_ck self_type;
         PyGILState_RAII pgs;
-        intptr_t param_count = af_self->get_param_count();
+        intptr_t nsrc = af_self->get_nsrc();
 
-        if (!aux.is_null()) {
+        if (!args.is_null() || !kwds.is_null()) {
           throw invalid_argument("unexpected non-NULL aux value to "
                                  "arrfunc_from_pyfunc instantiation");
         }
 
         self_type *self = self_type::create(ckb, kernreq, ckb_offset);
-        self->m_proto = ndt::make_funcproto(param_count, src_tp, dst_tp);
+        self->m_proto = ndt::make_funcproto(nsrc, src_tp, dst_tp);
         self->m_pyfunc = *af_self->get_data_as<PyObject *>();
         Py_XINCREF(self->m_pyfunc);
         self->m_dst_arrmeta = dst_arrmeta;
-        self->m_src_arrmeta.resize(param_count);
-        copy(src_arrmeta, src_arrmeta + param_count,
+        self->m_src_arrmeta.resize(nsrc);
+        copy(src_arrmeta, src_arrmeta + nsrc,
              self->m_src_arrmeta.begin());
         self->m_ectx = *ectx;
         return ckb_offset;

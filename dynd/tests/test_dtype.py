@@ -214,7 +214,7 @@ class TestDType(unittest.TestCase):
     def test_symbolic_type(self):
         tp = ndt.type('(int, real) -> complex')
         self.assertEqual(tp.type_id, 'funcproto')
-        self.assertEqual(nd.as_py(tp.param_types), [ndt.int32, ndt.float64])
+        self.assertEqual(nd.as_py(tp.arg_types), [ndt.int32, ndt.float64])
         self.assertEqual(tp.return_type, ndt.complex_float64)
         tp = ndt.type('MyType')
         self.assertEqual(tp.type_id, 'typevar')

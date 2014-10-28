@@ -219,7 +219,7 @@ namespace {
             ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
 
             // This is the number of dimensions being reduced
-            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->get_param_type(0).get_ndim();
+            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->get_arg_type(0).get_ndim();
 
             shortvector<bool> reduction_dimflags(reduction_ndim);
             if (axis_obj == Py_None) {

@@ -245,7 +245,7 @@ namespace {
         intptr_t ckb_offset, const ndt::type &dst_tp,
         const char *DYND_UNUSED(dst_arrmeta), const ndt::type *src_tp,
         const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
-        const nd::array &aux, const eval::eval_context *DYND_UNUSED(ectx))
+        const eval::eval_context *DYND_UNUSED(ectx), const nd::array &args, const nd::array &kwds)
     {
       if (dst_tp != af_self->get_return_type()) {
         stringstream ss;
@@ -254,18 +254,18 @@ namespace {
            << af_self->get_return_type();
         throw type_error(ss.str());
       }
-      intptr_t param_count = af_self->get_param_count();
+      intptr_t param_count = af_self->get_nsrc();
       for (intptr_t i = 0; i != param_count; ++i) {
-        if (src_tp[i] != af_self->get_param_type(i)) {
+        if (src_tp[i] != af_self->get_arg_type(i)) {
           stringstream ss;
           ss << "source type requested for parameter " << (i + 1) << ", "
              << src_tp[i] << ", does not match the ufunc's type "
-             << af_self->get_param_type(i);
+             << af_self->get_arg_type(i);
           throw type_error(ss.str());
         }
       }
 
-      if (!aux.is_null()) {
+      if (!args.is_null() || !kwds.is_null()) {
         throw invalid_argument("unexpected non-NULL aux value to "
                                "numpy ufunc/arrfunc adapter instantiation");
       }

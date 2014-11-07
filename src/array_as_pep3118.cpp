@@ -109,7 +109,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
             out_itemsize = 16;
             return;
         case fixedstring_type_id:
-            switch (dt.tcast<fixedstring_type>()->get_encoding()) {
+            switch (dt.extended<fixedstring_type>()->get_encoding()) {
                 case string_encoding_ascii: {
                     intptr_t element_size = dt.get_data_size();
                     o << element_size << "s";
@@ -132,7 +132,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
             ndt::type child_dt = dt;
             o << "(";
             do {
-                const cfixed_dim_type *tdt = child_dt.tcast<cfixed_dim_type>();
+                const cfixed_dim_type *tdt = child_dt.extended<cfixed_dim_type>();
                 intptr_t dim_size = tdt->get_fixed_dim_size();
                 o << dim_size;
                 if (child_dt.get_data_size() != tdt->get_element_type().get_data_size() * dim_size) {
@@ -149,7 +149,7 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
         }
         case cstruct_type_id: {
             o << "T{";
-            const cstruct_type *tdt = dt.tcast<cstruct_type>();
+            const cstruct_type *tdt = dt.extended<cstruct_type>();
             size_t num_fields = tdt->get_field_count();
             const uintptr_t *offsets = tdt->get_data_offsets(arrmeta);
             const uintptr_t *arrmeta_offsets = tdt->get_arrmeta_offsets_raw();
@@ -184,13 +184,13 @@ static void append_pep3118_format(intptr_t& out_itemsize, const ndt::type& dt,
                 uint16_t u;
             } vals;
             vals.u = '>' + ('<' << 8);
-            const byteswap_type *bd = dt.tcast<byteswap_type>();
+            const byteswap_type *bd = dt.extended<byteswap_type>();
             o << vals.s[0];
             append_pep3118_format(out_itemsize, bd->get_value_type(), arrmeta, o);
             return;
         }
         case view_type_id: {
-            const view_type *vd = dt.tcast<view_type>();
+            const view_type *vd = dt.extended<view_type>();
             // If it's a view of bytes, usually to view unaligned data, can ignore it
             // since the buffer format we're creating doesn't use alignment
             if (vd->get_operand_type().get_type_id() == fixedbytes_type_id) {
@@ -321,7 +321,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         for (int i = 0; i < buffer->ndim; ++i) {
             switch (dt.get_type_id()) {
                 case fixed_dim_type_id: {
-                    const fixed_dim_type *tdt = dt.tcast<fixed_dim_type>();
+                    const fixed_dim_type *tdt = dt.extended<fixed_dim_type>();
                     const fixed_dim_type_arrmeta *md = reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
                     buffer->shape[i] = md->dim_size;
                     buffer->strides[i] = md->stride;
@@ -330,7 +330,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
                     break;
                 }
                 case cfixed_dim_type_id: {
-                    const cfixed_dim_type *tdt = dt.tcast<cfixed_dim_type>();
+                    const cfixed_dim_type *tdt = dt.extended<cfixed_dim_type>();
                     buffer->shape[i] = tdt->get_fixed_dim_size();
                     buffer->strides[i] = tdt->get_fixed_stride();
                     dt = tdt->get_element_type();

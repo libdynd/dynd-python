@@ -86,7 +86,7 @@ namespace {
                            ckernel_prefix *rawself)
         {
             self_type *self = get_self(rawself);
-            const funcproto_type *fpt = self->m_proto.tcast<funcproto_type>();
+            const funcproto_type *fpt = self->m_proto.extended<funcproto_type>();
             intptr_t nsrc = fpt->get_nsrc();
             const ndt::type& dst_tp = fpt->get_return_type();
             const ndt::type *src_tp = fpt->get_arg_types_raw();
@@ -122,7 +122,7 @@ namespace {
                             size_t count, ckernel_prefix *rawself)
         {
             self_type *self = get_self(rawself);
-            const funcproto_type *fpt = self->m_proto.tcast<funcproto_type>();
+            const funcproto_type *fpt = self->m_proto.extended<funcproto_type>();
             intptr_t nsrc = fpt->get_nsrc();
             const ndt::type& dst_tp = fpt->get_return_type();
             const ndt::type *src_tp = fpt->get_arg_types_raw();

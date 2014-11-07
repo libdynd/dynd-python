@@ -325,7 +325,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
             // In DyND, the struct offsets are part of the arrmeta instead of the dtype.
             // That's why we have to populate them here.
             PyObject *d_names = d->names;
-            const struct_type *sdt = dt.tcast<struct_type>();
+            const struct_type *sdt = dt.extended<struct_type>();
             const uintptr_t *arrmeta_offsets = sdt->get_arrmeta_offsets_raw();
             size_t field_count = sdt->get_field_count();
             uintptr_t *offsets = reinterpret_cast<size_t *>(arrmeta);
@@ -368,7 +368,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
                     md[i].dim_size = pyobject_as_index(PyTuple_GET_ITEM(adescr->shape, i));
                     md[i].stride = stride;
                     stride *= md[i].dim_size;
-                    el = el.tcast<fixed_dim_type>()->get_element_type();
+                    el = el.extended<fixed_dim_type>()->get_element_type();
                 }
                 arrmeta += ndim * sizeof(fixed_dim_type_arrmeta);
             } else {
@@ -376,7 +376,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
                 arrmeta += sizeof(fixed_dim_type_arrmeta);
                 md->dim_size = pyobject_as_index(adescr->shape);
                 md->stride = adescr->base->elsize;
-                el = dt.tcast<fixed_dim_type>()->get_element_type();
+                el = dt.extended<fixed_dim_type>()->get_element_type();
             }
             // Fill the arrmeta for the array element, if necessary
             if (!el.is_builtin()) {
@@ -420,7 +420,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
         case complex_float64_type_id:
             return PyArray_DescrFromType(NPY_CDOUBLE);
         case fixedstring_type_id: {
-            const fixedstring_type *ftp = tp.tcast<fixedstring_type>();
+            const fixedstring_type *ftp = tp.extended<fixedstring_type>();
             PyArray_Descr *result;
             switch (ftp->get_encoding()) {
                 case string_encoding_ascii:
@@ -438,7 +438,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
         }
         /*
         case tuple_type_id: {
-            const tuple_type *ttp = tp.tcast<tuple_type>();
+            const tuple_type *ttp = tp.extended<tuple_type>();
             const vector<ndt::type>& fields = ttp->get_fields();
             size_t num_fields = fields.size();
             const vector<size_t>& offsets = ttp->get_offsets();
@@ -477,7 +477,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
         }
         */
         case cstruct_type_id: {
-            const cstruct_type *ttp = tp.tcast<cstruct_type>();
+            const cstruct_type *ttp = tp.extended<cstruct_type>();
             const uintptr_t *offsets = ttp->get_data_offsets_raw();
             size_t field_count = ttp->get_field_count();
             size_t max_numpy_alignment = 1;
@@ -534,7 +534,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             ndt::type child_tp = tp;
             vector<intptr_t> shape;
             do {
-                const cfixed_dim_type *ttp = child_tp.tcast<cfixed_dim_type>();
+                const cfixed_dim_type *ttp = child_tp.extended<cfixed_dim_type>();
                 shape.push_back(ttp->get_fixed_dim_size());
                 if (child_tp.get_data_size() != ttp->get_element_type().get_data_size() * shape.back()) {
                     stringstream ss;
@@ -590,7 +590,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
                 ss << "Can only convert dynd type " << tp << " into a numpy dtype with array arrmeta";
                 throw dynd::type_error(ss.str());
             }
-            const struct_type *stp = tp.tcast<struct_type>();
+            const struct_type *stp = tp.extended<struct_type>();
             const uintptr_t *arrmeta_offsets = stp->get_arrmeta_offsets_raw();
             const uintptr_t *offsets = stp->get_data_offsets(arrmeta);
             size_t field_count = stp->get_field_count();
@@ -964,7 +964,7 @@ char pydynd::numpy_kindchar_of(const dynd::ndt::type& d)
         return 'c';
     case string_kind:
         if (d.get_type_id() == fixedstring_type_id) {
-            const base_string_type *esd = d.tcast<base_string_type>();
+            const base_string_type *esd = d.extended<base_string_type>();
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:
                     return 'S';

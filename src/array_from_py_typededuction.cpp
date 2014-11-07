@@ -241,7 +241,7 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
     if (max_count <= 1) {
       return max_count;
     } else {
-      const base_struct_type *bsd = tp.tcast<base_struct_type>();
+      const base_struct_type *bsd = tp.extended<base_struct_type>();
       size_t field_count = bsd->get_field_count();
       for (size_t i = 0; i != field_count; ++i) {
         size_t candidate =
@@ -378,11 +378,11 @@ static intptr_t get_leading_dim_count(const dynd::ndt::type &tp) {
   } else if (tp.get_kind() == expr_kind) {
     return get_leading_dim_count(tp.value_type());
   } else if (tp.get_kind() == tuple_kind || tp.get_kind() == struct_kind) {
-    if (tp.tcast<base_tuple_type>()->get_field_count() == 0) {
+    if (tp.extended<base_tuple_type>()->get_field_count() == 0) {
       return 1;
     } else {
       return 1 + get_leading_dim_count(
-                     tp.tcast<base_tuple_type>()->get_field_type(0));
+                     tp.extended<base_tuple_type>()->get_field_type(0));
     }
   } else {
     return 0;

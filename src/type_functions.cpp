@@ -72,16 +72,16 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
       ss << "ndt.date";
       break;
     case time_type_id:
-      if (d.tcast<time_type>()->get_timezone() == tz_abstract) {
+      if (d.extended<time_type>()->get_timezone() == tz_abstract) {
         ss << "ndt.time";
       } else {
         print_generic_type_repr(ss, d);
       }
       break;
     case datetime_type_id:
-      if (d.tcast<datetime_type>()->get_timezone() == tz_abstract) {
+      if (d.extended<datetime_type>()->get_timezone() == tz_abstract) {
         ss << "ndt.datetime";
-      } else if (d.tcast<datetime_type>()->get_timezone() == tz_utc) {
+      } else if (d.extended<datetime_type>()->get_timezone() == tz_utc) {
         ss << "ndt.datetimeutc";
       } else {
         print_generic_type_repr(ss, d);
@@ -91,14 +91,14 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
       ss << "ndt.json";
       break;
     case bytes_type_id:
-      if (d.tcast<bytes_type>()->get_target_alignment() == 1) {
+      if (d.extended<bytes_type>()->get_target_alignment() == 1) {
         ss << "ndt.bytes";
       } else {
         print_generic_type_repr(ss, d);
       }
       break;
     case string_type_id:
-      if (d.tcast<string_type>()->get_encoding() == string_encoding_utf_8) {
+      if (d.extended<string_type>()->get_encoding() == string_encoding_utf_8) {
         ss << "ndt.string";
       } else {
         print_generic_type_repr(ss, d);

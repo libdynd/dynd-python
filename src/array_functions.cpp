@@ -73,7 +73,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
   }
   nd::array n_str;
   if (n.get_type().get_kind() == string_kind &&
-      n.get_type().tcast<base_string_type>()->get_encoding() ==
+      n.get_type().extended<base_string_type>()->get_encoding() ==
           string_encoding_ascii) {
     // If it's already an ASCII string, pass-through
     n_str = n;
@@ -82,7 +82,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
     n_str = nd::empty(ndt::make_string(string_encoding_ascii));
     n_str.vals() = n;
   }
-  const base_string_type *bsd = n_str.get_type().tcast<base_string_type>();
+  const base_string_type *bsd = n_str.get_type().extended<base_string_type>();
   const char *begin = NULL, *end = NULL;
   bsd->get_string_range(&begin, &end, n_str.get_arrmeta(),
                         n_str.get_readonly_originptr());
@@ -104,7 +104,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array& n)
 {
     nd::array n_str;
     if (n.get_type().get_kind() == string_kind &&
-            n.get_type().tcast<base_string_type>()->get_encoding() ==
+            n.get_type().extended<base_string_type>()->get_encoding() ==
                 DYND_PY_ENCODING) {
         // If it's already a unicode string, pass-through
         n_str = n;
@@ -164,7 +164,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case string_kind: {
             // Follow Python, return True if the string is nonempty, False otherwise
             nd::array n_eval = n.eval();
-            const base_string_type *bsd = n_eval.get_type().tcast<base_string_type>();
+            const base_string_type *bsd = n_eval.get_type().extended<base_string_type>();
             const char *begin = NULL, *end = NULL;
             bsd->get_string_range(&begin, &end, n_eval.get_arrmeta(), n_eval.get_readonly_originptr());
             if (begin != end) {
@@ -178,7 +178,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
         case bytes_kind: {
             // Return True if there is a non-zero byte, False otherwise
             nd::array n_eval = n.eval();
-            const base_bytes_type *bbd = n_eval.get_type().tcast<base_bytes_type>();
+            const base_bytes_type *bbd = n_eval.get_type().extended<base_bytes_type>();
             const char *begin = NULL, *end = NULL;
             bbd->get_bytes_range(&begin, &end, n_eval.get_arrmeta(), n_eval.get_readonly_originptr());
             while (begin != end) {
@@ -599,7 +599,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     const char *arrmeta, *data;
     if (n.get_type().get_kind() == dim_kind) {
         dt = n.get_type();
-        budd = dt.tcast<base_dim_type>();
+        budd = dt.extended<base_dim_type>();
         arrmeta = n.get_arrmeta();
         data = n.get_readonly_originptr();
     } else {
@@ -608,7 +608,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
             throw runtime_error("internal error in array_contains: expected dim kind after eval() call");
         }
         dt = tmp.get_type();
-        budd = dt.tcast<base_dim_type>();
+        budd = dt.extended<base_dim_type>();
         arrmeta = tmp.get_arrmeta();
         data = tmp.get_readonly_originptr();
     }
@@ -818,7 +818,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         ss << fdt;
         throw runtime_error(ss.str());
     }
-    const base_struct_type *bsd = fdt.tcast<base_struct_type>();
+    const base_struct_type *bsd = fdt.extended<base_struct_type>();
 
     if (selected_fields.empty()) {
         throw runtime_error("nd.fields requires at least one field name to be specified");
@@ -840,7 +840,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
     // Create the result udt
     ndt::type rudt = ndt::make_struct(selected_fields, selected_ndt_types);
     ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
-    const base_struct_type *rudt_bsd = rudt.tcast<base_struct_type>();
+    const base_struct_type *rudt_bsd = rudt.extended<base_struct_type>();
 
     // Allocate the new memory block.
     size_t arrmeta_size = result_tp.get_arrmeta_size();
@@ -867,7 +867,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array& n, PyObject *field_list)
         if (tmp_dt.get_kind() != dim_kind) {
             throw runtime_error("nd.fields doesn't support dimensions with pointers yet");
         }
-        const base_dim_type *budd = tmp_dt.tcast<base_dim_type>();
+        const base_dim_type *budd = tmp_dt.extended<base_dim_type>();
         size_t offset = budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta,
                         n.get_memblock().get());
         dst_arrmeta += offset;

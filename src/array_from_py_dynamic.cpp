@@ -125,11 +125,11 @@ static nd::array allocate_nd_arr(
             }
             // Advance arrmeta_ptr and data_ptr to the child dimension
             arrmeta_ptr += sizeof(var_dim_type_arrmeta);
-            tp = tp.tcast<var_dim_type>()->get_element_type();
+            tp = tp.extended<var_dim_type>()->get_element_type();
         } else {
             // Advance arrmeta_ptr and data_ptr to the child dimension
             arrmeta_ptr += sizeof(fixed_dim_type_arrmeta);
-            tp = tp.tcast<fixed_dim_type>()->get_element_type();
+            tp = tp.extended<fixed_dim_type>()->get_element_type();
         }
         c.data_ptr = data_ptr;
     }
@@ -563,7 +563,7 @@ static bool string_assign(const ndt::type &tp, const char *arrmeta, char *data,
             throw exception();
         }
 
-        const string_type *st = tp.tcast<string_type>();
+        const string_type *st = tp.extended<string_type>();
         st->set_from_utf8_string(arrmeta, data, s, s + len, ectx);
         return true;
     }
@@ -575,7 +575,7 @@ static bool string_assign(const ndt::type &tp, const char *arrmeta, char *data,
             throw runtime_error("Error getting string data");
         }
 
-        const string_type *st = tp.tcast<string_type>();
+        const string_type *st = tp.extended<string_type>();
         st->set_from_utf8_string(arrmeta, data, s, s + len, ectx);
         return true;
     }
@@ -607,7 +607,7 @@ static bool bytes_assign(const ndt::type &tp, const char *arrmeta, char *data,
             throw runtime_error("Error getting bytes data");
         }
 
-        const bytes_type *st = tp.tcast<bytes_type>();
+        const bytes_type *st = tp.extended<bytes_type>();
         st->set_bytes_data(arrmeta, data, s, s + len);
         return true;
     }
@@ -1248,7 +1248,7 @@ dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj,
     if (arr.get_type().get_type_id() == var_dim_type_id) {
       arr = arr.view(ndt::make_fixed_dim(
           arr.get_dim_size(),
-          arr.get_type().tcast<base_dim_type>()->get_element_type()));
+          arr.get_type().extended<base_dim_type>()->get_element_type()));
     }
     return arr;
 }

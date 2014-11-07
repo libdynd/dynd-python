@@ -66,7 +66,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
   switch (dt.get_type_id()) {
   case fixedstring_type_id: {
-    const fixedstring_type *fsd = dt.tcast<fixedstring_type>();
+    const fixedstring_type *fsd = dt.extended<fixedstring_type>();
     PyArray_Descr *result;
     switch (fsd->get_encoding()) {
     case string_encoding_ascii:
@@ -140,7 +140,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   case fixed_dim_type_id:
   case cfixed_dim_type_id: {
     if (ndim > 0) {
-      const base_dim_type *bdt = dt.tcast<base_dim_type>();
+      const base_dim_type *bdt = dt.extended<base_dim_type>();
       make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
                                 bdt->get_element_type(),
                                 arrmeta + sizeof(fixed_dim_type_arrmeta));
@@ -155,7 +155,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
         const fixed_dim_type_arrmeta *am =
             reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
         intptr_t dim_size = am->dim_size;
-        element_tp = dt.tcast<base_dim_type>()->get_element_type();
+        element_tp = dt.extended<base_dim_type>()->get_element_type();
         arrmeta += sizeof(fixed_dim_type_arrmeta);
         --ndim;
         if (PyList_Append(shape.get(), PyLong_FromSize_t(dim_size)) < 0) {
@@ -183,7 +183,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   }
   case cstruct_type_id:
   case struct_type_id: {
-    const base_struct_type *bs = dt.tcast<base_struct_type>();
+    const base_struct_type *bs = dt.extended<base_struct_type>();
     size_t field_count = bs->get_field_count();
 
     pyobject_ownref names_obj(PyList_New(field_count));
@@ -275,7 +275,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 
   switch (dt.get_type_id()) {
   case fixedstring_type_id: {
-    const fixedstring_type *fsd = dt.tcast<fixedstring_type>();
+    const fixedstring_type *fsd = dt.extended<fixedstring_type>();
     PyArray_Descr *result;
     switch (fsd->get_encoding()) {
     case string_encoding_ascii:
@@ -320,7 +320,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 #endif
   }
   case property_type_id: {
-    const property_type *pd = dt.tcast<property_type>();
+    const property_type *pd = dt.extended<property_type>();
     // Special-case of 'int64 as date' property type, which is binary
     // compatible with NumPy's "M8[D]"
     if (pd->is_reversed_property() &&
@@ -341,7 +341,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     break;
   }
   case byteswap_type_id: {
-    const base_expr_type *bed = dt.tcast<base_expr_type>();
+    const base_expr_type *bed = dt.extended<base_expr_type>();
     // Analyze the unswapped version
     as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim,
                       bed->get_value_type(), arrmeta);
@@ -352,7 +352,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     return;
   }
   case fixed_dim_type_id: {
-    const base_dim_type *bdt = dt.tcast<base_dim_type>();
+    const base_dim_type *bdt = dt.extended<base_dim_type>();
     if (ndim > 0) {
       // If this is one of the array dimensions, it simply
       // becomes one of the numpy ndarray dimensions
@@ -370,7 +370,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     break;
   }
   case cfixed_dim_type_id: {
-    const cfixed_dim_type *fad = dt.tcast<cfixed_dim_type>();
+    const cfixed_dim_type *fad = dt.extended<cfixed_dim_type>();
     if (ndim > 0) {
       // If this is one of the array dimensions, it simply
       // becomes one of the numpy ndarray dimensions
@@ -387,7 +387,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       while (ndim > 0) {
         size_t dim_size = 0;
         if (dt.get_type_id() == cfixed_dim_type_id) {
-          const cfixed_dim_type *fad = element_tp.tcast<cfixed_dim_type>();
+          const cfixed_dim_type *fad = element_tp.extended<cfixed_dim_type>();
           element_tp = fad->get_element_type();
           if (fad->get_data_size() != element_tp.get_data_size() * dim_size) {
             // If it's not C-order, a copy is required
@@ -440,7 +440,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       *out_requires_copy = true;
       return;
     }
-    const base_struct_type *bs = dt.tcast<base_struct_type>();
+    const base_struct_type *bs = dt.extended<base_struct_type>();
     const uintptr_t *offsets = bs->get_data_offsets(arrmeta);
     size_t field_count = bs->get_field_count();
 
@@ -692,7 +692,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     // If it's a var_dim, view it as fixed then try again
     pyobject_ownref n_tmp(wrap_array(a.view(ndt::make_fixed_dim(
         a.get_dim_size(),
-        a.get_type().tcast<base_dim_type>()->get_element_type()))));
+        a.get_type().extended<base_dim_type>()->get_element_type()))));
     return array_as_numpy(n_tmp.get(), allow_copy);
   }
   // TODO: Handle pointer type nicely as well

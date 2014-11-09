@@ -16,7 +16,7 @@
 
 namespace dynd {
     // Forward declaration
-    struct arrfunc_type_data;
+    struct arrfunc_old_type_data;
 } // namespace dynd
 
 namespace pydynd {
@@ -260,8 +260,8 @@ uint32_t pyarg_access_flags(PyObject* obj);
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
 
-const dynd::arrfunc_type_data *pyarg_arrfunc_ro(PyObject *af, const char *paramname);
-dynd::arrfunc_type_data *pyarg_arrfunc_rw(PyObject *af, const char *paramname);
+const dynd::arrfunc_old_type_data *pyarg_arrfunc_ro(PyObject *af, const char *paramname);
+dynd::arrfunc_old_type_data *pyarg_arrfunc_rw(PyObject *af, const char *paramname);
 
 } // namespace pydynd
 

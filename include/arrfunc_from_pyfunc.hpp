@@ -9,17 +9,17 @@
 #include "type_functions.hpp"
 
 #include <dynd/func/arrfunc.hpp>
-#include <dynd/types/arrfunc_type.hpp>
+#include <dynd/types/arrfunc_old_type.hpp>
 
 namespace pydynd {
 
-void arrfunc_from_pyfunc(dynd::arrfunc_type_data *out_af, PyObject *pyfunc,
+void arrfunc_from_pyfunc(dynd::arrfunc_old_type_data *out_af, PyObject *pyfunc,
                          const dynd::ndt::type &proto);
 
 inline dynd::nd::arrfunc arrfunc_from_pyfunc(PyObject *pyfunc, const dynd::ndt::type &proto)
 {
     dynd::nd::array out_af = dynd::nd::empty(dynd::ndt::make_arrfunc());
-    arrfunc_from_pyfunc(reinterpret_cast<dynd::arrfunc_type_data *>(
+    arrfunc_from_pyfunc(reinterpret_cast<dynd::arrfunc_old_type_data *>(
                             out_af.get_readwrite_originptr()),
                         pyfunc, proto);
     out_af.flag_as_immutable();

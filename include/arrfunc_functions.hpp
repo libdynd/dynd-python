@@ -40,7 +40,7 @@ struct WArrFunc {
   // This is array_placement_wrapper in Cython-land
   dynd::nd::arrfunc v;
 };
-void init_w_arrfunc_typeobject(PyObject *type);
+void init_w_arrfunc_old_typeobject(PyObject *type);
 
 PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj,
                        PyObject *ectx_obj);

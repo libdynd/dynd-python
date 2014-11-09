@@ -15,7 +15,7 @@
 #endif
 
 #include <dynd/kernels/expr_kernels.hpp>
-#include <dynd/types/arrfunc_type.hpp>
+#include <dynd/types/arrfunc_old_type.hpp>
 
 #include "exception_translation.hpp"
 #include "utility_functions.hpp"
@@ -128,7 +128,7 @@ namespace {
         intptr_t param_count;
     };
 
-    static void delete_scalar_ufunc_data(arrfunc_type_data *self_af)
+    static void delete_scalar_ufunc_data(arrfunc_old_type_data *self_af)
     {
         scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
         if (data->ufunc != NULL) {
@@ -241,7 +241,7 @@ namespace {
     }
 
     static intptr_t instantiate_scalar_ufunc_ckernel(
-        const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb,
+        const arrfunc_old_type_data *af_self, dynd::ckernel_builder *ckb,
         intptr_t ckb_offset, const ndt::type &dst_tp,
         const char *DYND_UNUSED(dst_arrmeta), const ndt::type *src_tp,
         const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
@@ -299,7 +299,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
 {
     try {
         nd::array af = nd::empty(ndt::make_arrfunc());
-        arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(af.get_readwrite_originptr());
+        arrfunc_old_type_data *af_ptr = reinterpret_cast<arrfunc_old_type_data *>(af.get_readwrite_originptr());
 
         // NOTE: This function does not raise C++ exceptions,
         //       it behaves as a Python C-API function.

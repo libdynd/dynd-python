@@ -34,7 +34,7 @@ void pydynd::init_w_array_typeobject(PyObject *type)
 
 PyObject *pydynd::wrap_array(const dynd::nd::array &n)
 {
-    if (n.get_type().get_type_id() == arrfunc_type_id) {
+    if (n.get_type().get_type_id() == arrfunc_old_type_id) {
         return wrap_array(nd::arrfunc(n));
     }
     WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);

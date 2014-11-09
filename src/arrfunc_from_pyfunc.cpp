@@ -8,7 +8,7 @@
 #include <vector>
 
 #include <dynd/array.hpp>
-#include <dynd/types/arrfunc_type.hpp>
+#include <dynd/types/arrfunc_old_type.hpp>
 #include <dynd/kernels/expr_kernels.hpp>
 #include <dynd/func/callable.hpp>
 
@@ -86,7 +86,7 @@ namespace {
                            ckernel_prefix *rawself)
         {
             self_type *self = get_self(rawself);
-            const funcproto_type *fpt = self->m_proto.extended<funcproto_type>();
+            const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
             intptr_t nsrc = fpt->get_nsrc();
             const ndt::type& dst_tp = fpt->get_return_type();
             const ndt::type *src_tp = fpt->get_arg_types_raw();
@@ -122,7 +122,7 @@ namespace {
                             size_t count, ckernel_prefix *rawself)
         {
             self_type *self = get_self(rawself);
-            const funcproto_type *fpt = self->m_proto.extended<funcproto_type>();
+            const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
             intptr_t nsrc = fpt->get_nsrc();
             const ndt::type& dst_tp = fpt->get_return_type();
             const ndt::type *src_tp = fpt->get_arg_types_raw();
@@ -163,7 +163,7 @@ namespace {
         }
     };
 
-    static void delete_arrfunc_data(arrfunc_type_data *self_af)
+    static void delete_arrfunc_data(arrfunc_old_type_data *self_af)
     {
         PyObject *pyfunc = *self_af->get_data_as<PyObject *>();
         if (pyfunc) {
@@ -173,7 +173,7 @@ namespace {
     }
 
     static intptr_t instantiate_arrfunc_data(
-        const arrfunc_type_data *af_self, dynd::ckernel_builder *ckb,
+        const arrfunc_old_type_data *af_self, dynd::ckernel_builder *ckb,
         intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
         const ndt::type *src_tp, const char *const *src_arrmeta,
         kernel_request_t kernreq, const eval::eval_context *ectx,
@@ -201,11 +201,11 @@ namespace {
     }
 }
 
-void pydynd::arrfunc_from_pyfunc(arrfunc_type_data *out_af,
+void pydynd::arrfunc_from_pyfunc(arrfunc_old_type_data *out_af,
                                  PyObject *instantiate_pyfunc,
                                  const ndt::type &proto)
 {
-    if (proto.get_type_id() != funcproto_type_id) {
+    if (proto.get_type_id() != arrfunc_type_id) {
         stringstream ss;
         ss << "creating a dynd arrfunc from a python func requires a function "
                 "prototype, was given type " << proto;

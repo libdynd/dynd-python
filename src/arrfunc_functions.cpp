@@ -31,7 +31,7 @@ using namespace pydynd;
 
 PyTypeObject *pydynd::WArrFunc_Type;
 
-void pydynd::init_w_arrfunc_typeobject(PyObject *type)
+void pydynd::init_w_arrfunc_old_typeobject(PyObject *type)
 {
     WArrFunc_Type = (PyTypeObject *)type;
 }

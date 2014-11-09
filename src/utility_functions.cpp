@@ -503,22 +503,22 @@ uint32_t pydynd::pyarg_creation_access_flags(PyObject *access)
                         "immutable", nd::read_access_flag|nd::immutable_access_flag);
 }
 
-const dynd::arrfunc_type_data *pydynd::pyarg_arrfunc_ro(PyObject *af, const char *paramname)
+const dynd::arrfunc_old_type_data *pydynd::pyarg_arrfunc_ro(PyObject *af, const char *paramname)
 {
-    if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+    if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_old_type_id) {
         stringstream ss;
         ss << paramname << " must be an nd.array of type arrfunc";
         throw runtime_error(ss.str());
     }
-    return reinterpret_cast<const arrfunc_type_data *>(((WArray *)af)->v.get_readonly_originptr());
+    return reinterpret_cast<const arrfunc_old_type_data *>(((WArray *)af)->v.get_readonly_originptr());
 }
 
-dynd::arrfunc_type_data *pydynd::pyarg_arrfunc_rw(PyObject *af, const char *paramname)
+dynd::arrfunc_old_type_data *pydynd::pyarg_arrfunc_rw(PyObject *af, const char *paramname)
 {
-    if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+    if (!WArray_Check(af) || ((WArray *)af)->v.get_type().get_type_id() != arrfunc_old_type_id) {
         stringstream ss;
         ss << paramname << " must be an nd.array of type arrfunc";
         throw runtime_error(ss.str());
     }
-    return reinterpret_cast<arrfunc_type_data *>(((WArray *)af)->v.get_readwrite_originptr());
+    return reinterpret_cast<arrfunc_old_type_data *>(((WArray *)af)->v.get_readwrite_originptr());
 }

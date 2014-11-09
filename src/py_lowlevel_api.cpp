@@ -9,7 +9,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/func/lift_arrfunc.hpp>
 #include <dynd/func/lift_reduction_arrfunc.hpp>
-#include <dynd/types/arrfunc_type.hpp>
+#include <dynd/types/arrfunc_old_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
@@ -173,7 +173,7 @@ namespace {
         try {
             // Convert all the input parameters
             if (!WArray_Check(af) ||
-                    ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+                    ((WArray *)af)->v.get_type().get_type_id() != arrfunc_old_type_id) {
                 stringstream ss;
                 ss << "af must be an nd.array of type arrfunc";
                 throw dynd::type_error(ss.str());
@@ -197,18 +197,18 @@ namespace {
         try {
             // Convert all the input parameters
             if (!WArray_Check(elwise_reduction_obj) ||
-                        ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_type_id) {
+                        ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_old_type_id) {
                 stringstream ss;
                 ss << "elwise_reduction must be an nd.array of type arrfunc";
                 throw dynd::type_error(ss.str());
             }
             const nd::array& elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
-            const arrfunc_type_data *elwise_reduction_af =
-                            reinterpret_cast<const arrfunc_type_data *>(elwise_reduction.get_readonly_originptr());
+            const arrfunc_old_type_data *elwise_reduction_af =
+                            reinterpret_cast<const arrfunc_old_type_data *>(elwise_reduction.get_readonly_originptr());
 
             nd::array dst_initialization;
             if (WArray_Check(dst_initialization_obj) &&
-                        ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() == arrfunc_type_id) {
+                        ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() == arrfunc_old_type_id) {
                 dst_initialization = ((WArray *)dst_initialization_obj)->v;;
             } else if (dst_initialization_obj != Py_None) {
                 stringstream ss;

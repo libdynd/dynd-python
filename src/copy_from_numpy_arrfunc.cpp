@@ -35,7 +35,7 @@ struct strided_of_numpy_arrmeta {
 } // anonymous namespace
 
 static intptr_t instantiate_copy_from_numpy(
-    const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
+    const arrfunc_old_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
@@ -94,7 +94,7 @@ static intptr_t instantiate_copy_from_numpy(
       return make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
                                     src_view_tp, NULL, kernreq, ectx);
     } else if (PyDataType_ISOBJECT(dtype)) {
-      const arrfunc_type_data *af = copy_from_pyobject.get();
+      const arrfunc_old_type_data *af = copy_from_pyobject.get();
       return af->instantiate(af, ckb, ckb_offset, dst_tp, dst_arrmeta, src_tp,
                              src_arrmeta, kernreq, ectx, nd::array(), nd::array());
     } else if (PyDataType_HASFIELDS(dtype)) {
@@ -181,8 +181,8 @@ static intptr_t instantiate_copy_from_numpy(
 static nd::arrfunc make_copy_from_numpy_arrfunc()
 {
   nd::array out_af = nd::empty(ndt::make_arrfunc());
-  arrfunc_type_data *af =
-      reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
+  arrfunc_old_type_data *af =
+      reinterpret_cast<arrfunc_old_type_data *>(out_af.get_readwrite_originptr());
   af->func_proto = ndt::type("(void) -> A... * T");
   af->instantiate = &instantiate_copy_from_numpy;
   out_af.flag_as_immutable();
@@ -211,7 +211,7 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   src_arrmeta.src_obj = (PyObject *)value;
   src_arrmeta.src_alignment = 0;
   const char *src_arrmeta_ptr = reinterpret_cast<const char *>(&src_arrmeta);
-  const arrfunc_type_data *af = copy_from_numpy.get();
+  const arrfunc_old_type_data *af = copy_from_numpy.get();
   ndt::type src_tp = ndt::make_type<void>();
   af->instantiate(af, &ckb, 0, dst_tp, dst_arrmeta, &src_tp, &src_arrmeta_ptr,
                   kernel_request_single, &eval::default_eval_context,

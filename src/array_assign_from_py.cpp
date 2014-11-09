@@ -25,7 +25,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                             const eval::eval_context *ectx)
 {
   unary_ckernel_builder ckb;
-  const arrfunc_type_data *af = copy_from_pyobject.get();
+  const arrfunc_old_type_data *af = copy_from_pyobject.get();
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   af->instantiate(af, &ckb, 0, dt, arrmeta, &src_tp, &src_arrmeta,
@@ -47,7 +47,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
     const dynd::eval::eval_context *ectx)
 {
   unary_ckernel_builder ckb;
-  const arrfunc_type_data *af = copy_from_pyobject_no_dim_broadcast.get();
+  const arrfunc_old_type_data *af = copy_from_pyobject_no_dim_broadcast.get();
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   af->instantiate(af, &ckb, 0, dt, arrmeta, &src_tp, &src_arrmeta,

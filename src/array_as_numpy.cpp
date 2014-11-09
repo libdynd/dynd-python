@@ -738,7 +738,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     copy_to_numpy_arrmeta dst_arrmeta;
     dst_arrmeta.dst_obj = result.get();
     dst_arrmeta.dst_alignment = 0;
-    const arrfunc_type_data *af = copy_to_numpy.get();
+    const arrfunc_old_type_data *af = copy_to_numpy.get();
     const char *src_arrmeta = a.get_arrmeta();
     af->instantiate(af, &ckb, 0, ndt::make_type<void>(),
                     reinterpret_cast<const char *>(&dst_arrmeta), &a.get_type(),

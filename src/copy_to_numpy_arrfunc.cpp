@@ -39,7 +39,7 @@ struct strided_of_numpy_arrmeta {
  * being a pointer to the ``PyArrayObject *`` for the destination.
  */
 static intptr_t instantiate_copy_to_numpy(
-    const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
+    const arrfunc_old_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
@@ -98,7 +98,7 @@ static intptr_t instantiate_copy_to_numpy(
       return make_assignment_kernel(ckb, ckb_offset, dst_view_tp, NULL,
                                     src_tp[0], src_arrmeta[0], kernreq, ectx);
     } else if (PyDataType_ISOBJECT(dtype)) {
-      const arrfunc_type_data *af = copy_to_pyobject_tuple.get();
+      const arrfunc_old_type_data *af = copy_to_pyobject_tuple.get();
       return af->instantiate(af, ckb, ckb_offset, ndt::make_type<void>(), NULL,
                              src_tp, src_arrmeta, kernreq, ectx, nd::array(), nd::array());
     } else if (PyDataType_HASFIELDS(dtype)) {
@@ -187,8 +187,8 @@ static intptr_t instantiate_copy_to_numpy(
 static nd::arrfunc make_copy_to_numpy_arrfunc()
 {
   nd::array out_af = nd::empty(ndt::make_arrfunc());
-  arrfunc_type_data *af =
-      reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
+  arrfunc_old_type_data *af =
+      reinterpret_cast<arrfunc_old_type_data *>(out_af.get_readwrite_originptr());
   af->func_proto = ndt::type("(A... * T) -> void");
   af->instantiate = &instantiate_copy_to_numpy;
   out_af.flag_as_immutable();

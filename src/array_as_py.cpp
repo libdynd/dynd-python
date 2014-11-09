@@ -28,7 +28,7 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
 {
   // Evaluate the nd::array
   unary_ckernel_builder ckb;
-  const arrfunc_type_data *af;
+  const arrfunc_old_type_data *af;
   if (struct_as_pytuple) {
     af = copy_to_pyobject_tuple.get();
   } else {

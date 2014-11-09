@@ -551,7 +551,7 @@ struct pointer_ck : public kernels::unary_ck<pointer_ck> {
 } // anonymous namespace
 
 static intptr_t instantiate_copy_to_pyobject(
-    const arrfunc_type_data *self_af, dynd::ckernel_builder *ckb,
+    const arrfunc_old_type_data *self_af, dynd::ckernel_builder *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
@@ -716,7 +716,7 @@ static intptr_t instantiate_copy_to_pyobject(
   case option_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
     option_ck *self = option_ck::create(ckb, kernreq, ckb_offset);
-    const arrfunc_type_data *is_avail_af =
+    const arrfunc_old_type_data *is_avail_af =
         src_tp[0].extended<option_type>()->get_is_avail_arrfunc();
     ckb_offset = is_avail_af->instantiate(
         is_avail_af, ckb, ckb_offset, ndt::make_type<dynd_bool>(), NULL, src_tp,
@@ -840,8 +840,8 @@ static intptr_t instantiate_copy_to_pyobject(
 static nd::arrfunc make_copy_to_pyobject_arrfunc(bool struct_as_pytuple)
 {
   nd::array out_af = nd::empty(ndt::make_arrfunc());
-  arrfunc_type_data *af =
-      reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
+  arrfunc_old_type_data *af =
+      reinterpret_cast<arrfunc_old_type_data *>(out_af.get_readwrite_originptr());
   af->func_proto = ndt::type("(A... * T) -> void");
   af->instantiate = &instantiate_copy_to_pyobject;
   *af->get_data_as<bool>() = struct_as_pytuple;

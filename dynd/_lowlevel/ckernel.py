@@ -7,7 +7,7 @@ __all__ = [
 import ctypes
 from .._pydynd import w_array as nd_array, type_of as nd_type_of, \
                       w_eval_context as nd_eval_context
-from .api import api, py_api
+from .api import api, py_api, get_base_type_ptr
 from .ctypes_types import (CKernelPrefixStruct, NDArrayPreambleStruct,
         CKernelBuilderStruct,
         ArrFuncTypeData)
@@ -149,6 +149,7 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
         raise ValueError("invalid kernel request type %r" % kernreq)
     # Get the data pointer to the arrfunc object
     dp = NDArrayPreambleStruct.from_address(py_api.get_array_ptr(ckd)).data_pointer
+    af_tp = get_base_type_ptr(nd_type_of(ckd))
     ckd_struct = ArrFuncTypeData.from_address(dp)
     if ckd_struct.instantiate_func is None:
         raise ValueError('the provided arrfunc is NULL')
@@ -156,7 +157,7 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
     src_tp = nd_array(src_tp, type="fixed * type")
     src_arrmeta = nd_array(src_arrmeta, type="fixed * uintptr")
     ectx_ptr = ectx._ectx_ptr if isinstance(ectx, nd_eval_context) else ectx
-    ckd_struct.instantiate_func(dp,
+    ckd_struct.instantiate_func(dp, af_tp,
                     out_ckb, ckb_offset,
                     data_address_of(dst_tp), dst_arrmeta,
                     data_address_of(src_tp), data_address_of(src_arrmeta),

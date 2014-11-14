@@ -15,16 +15,15 @@ else:
 
 class TestArrFunc(unittest.TestCase):
     def test_creation(self):
-        af = nd.empty('arrfunc')
+        af = nd.empty('(float32) -> int32')
         self.assertEqual(nd.type_of(af).type_id, 'arrfunc')
         # Test there is a string version of a NULL arrfunc
         self.assertTrue(str(af) != '')
-        self.assertEqual(nd.as_py(af.proto), ndt.type())
         # Test there is a string version of an initialized arrfunc
         af = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64, "nocheck")
         self.assertTrue(str(af) != '')
-        self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
+        self.assertEqual(nd.type_of(af), ndt.type("(int64) -> float32"))
 
     def test_arrfunc_constructor(self):
         af = nd.arrfunc(lambda x, y : [x, y], '(int, int) -> {x:int, y:int}')
@@ -34,7 +33,7 @@ class TestArrFunc(unittest.TestCase):
     def test_assignment_arrfunc(self):
         af = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64, "nocheck")
-        self.assertEqual(nd.as_py(af.proto), ndt.type("(int64) -> float32"))
+        self.assertEqual(nd.type_of(af), ndt.type("(int64) -> float32"))
         a = nd.array(1234, type=ndt.int64)
         b = af(a)
         self.assertEqual(nd.type_of(b), ndt.float32)
@@ -64,7 +63,7 @@ class TestArrFunc(unittest.TestCase):
         af = _lowlevel.arrfunc_from_ufunc(np.add,
                         (np.int32, np.int32, np.int32),
                         requiregil)
-        self.assertEqual(nd.as_py(af.proto),
+        self.assertEqual(nd.type_of(af),
                          ndt.type("(int32, int32) -> int32"))
 
         a = nd.array(10, ndt.int32)
@@ -90,12 +89,12 @@ class TestArrFunc(unittest.TestCase):
         af = _lowlevel.arrfunc_from_ufunc(np.ldexp,
                         (np.float64, np.float64, np.int32),
                         requiregil)
-        self.assertEqual(nd.as_py(af.proto),
+        self.assertEqual(nd.type_of(af),
                          ndt.type("(float64, int32) -> float64"))
 
         # Now lift it
         af_lifted = _lowlevel.lift_arrfunc(af)
-        self.assertEqual(nd.as_py(af_lifted.proto),
+        self.assertEqual(nd.type_of(af_lifted),
                          ndt.type("(Dims... * float64, Dims... * int32) -> Dims... * float64"))
         # Create some compatible arguments
         in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]],
@@ -145,13 +144,13 @@ class TestArrFunc(unittest.TestCase):
                             kernreq, ectx)
         af = _lowlevel.arrfunc_from_instantiate_pyfunc(
                     instantiate_assignment, "(date) -> string")
-        self.assertEqual(nd.as_py(af.proto), ndt.type("(date) -> string"))
+        self.assertEqual(nd.type_of(af), ndt.type("(date) -> string"))
         in0 = nd.array('2012-11-05', ndt.date)
         out = af(in0)
         self.assertEqual(nd.as_py(out), '2012-11-05')
         # Also test it as a lifted kernel
         af_lifted = _lowlevel.lift_arrfunc(af)
-        self.assertEqual(nd.as_py(af_lifted.proto),
+        self.assertEqual(nd.type_of(af_lifted),
                          ndt.type("(Dims... * date) -> Dims... * string"))
         from datetime import date
         in0 = nd.array([['2013-03-11', date(2010, 10, 10)],

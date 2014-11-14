@@ -167,22 +167,22 @@ namespace {
         }
     }
 
-
     PyObject *lift_arrfunc(PyObject *af)
     {
-        try {
-            // Convert all the input parameters
-            if (!WArray_Check(af) ||
-                    ((WArray *)af)->v.get_type().get_type_id() != arrfunc_old_type_id) {
-                stringstream ss;
-                ss << "af must be an nd.array of type arrfunc";
-                throw dynd::type_error(ss.str());
-            }
-            return wrap_array(dynd::lift_arrfunc(((WArray *)af)->v));
-        } catch(...) {
-            translate_exception();
-            return NULL;
+      try {
+        // Convert all the input parameters
+        if (!WArray_Check(af) ||
+            ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+          stringstream ss;
+          ss << "af must be an nd.array of type arrfunc";
+          throw dynd::type_error(ss.str());
         }
+        return wrap_array(dynd::lift_arrfunc(((WArray *)af)->v));
+      }
+      catch (...) {
+        translate_exception();
+        return NULL;
+      }
     }
 
     PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
@@ -194,109 +194,132 @@ namespace {
                                      PyObject *right_associative_obj,
                                      PyObject *reduction_identity_obj)
     {
-        try {
-            // Convert all the input parameters
-            if (!WArray_Check(elwise_reduction_obj) ||
-                        ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() != arrfunc_old_type_id) {
-                stringstream ss;
-                ss << "elwise_reduction must be an nd.array of type arrfunc";
-                throw dynd::type_error(ss.str());
-            }
-            const nd::array& elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
-            const arrfunc_old_type_data *elwise_reduction_af =
-                            reinterpret_cast<const arrfunc_old_type_data *>(elwise_reduction.get_readonly_originptr());
-
-            nd::array dst_initialization;
-            if (WArray_Check(dst_initialization_obj) &&
-                        ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() == arrfunc_old_type_id) {
-                dst_initialization = ((WArray *)dst_initialization_obj)->v;;
-            } else if (dst_initialization_obj != Py_None) {
-                stringstream ss;
-                ss << "dst_initialization must be None or an nd.array of type arrfunc";
-                throw dynd::type_error(ss.str());
-            }
-
-            ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
-
-            // This is the number of dimensions being reduced
-            intptr_t reduction_ndim = lifted_type.get_ndim() - elwise_reduction_af->get_arg_type(0).get_ndim();
-
-            shortvector<bool> reduction_dimflags(reduction_ndim);
-            if (axis_obj == Py_None) {
-                // None means to reduce all axes
-                for (intptr_t i = 0; i < reduction_ndim; ++i) {
-                    reduction_dimflags[i] = true;
-                }
-            } else {
-                memset(reduction_dimflags.get(), 0, reduction_ndim * sizeof(bool));
-                vector<intptr_t> axis_vec;
-                pyobject_as_vector_intp(axis_obj, axis_vec, true);
-                for (size_t i = 0, i_end = axis_vec.size(); i != i_end; ++i) {
-                    intptr_t ax = axis_vec[i];
-                    if (ax < -reduction_ndim || ax >= reduction_ndim) {
-                        throw axis_out_of_bounds(ax, reduction_ndim);
-                    } else if (ax < 0) {
-                        ax += reduction_ndim;
-                    }
-                    reduction_dimflags[ax] = true;
-                }
-            }
-
-            bool keepdims;
-            if (keepdims_obj == Py_True) {
-                keepdims = true;
-            } else if (keepdims_obj == Py_False) {
-                keepdims = false;
-            } else {
-                throw type_error("keepdims must be either True or False");
-            }
-
-            bool associative;
-            if (associative_obj == Py_True) {
-                associative = true;
-            } else if (associative_obj == Py_False) {
-                associative = false;
-            } else {
-                throw type_error("associative must be either True or False");
-            }
-
-            bool commutative;
-            if (commutative_obj == Py_True) {
-                commutative = true;
-            } else if (commutative_obj == Py_False) {
-                commutative = false;
-            } else {
-                throw type_error("commutative must be either True or False");
-            }
-            
-            bool right_associative;
-            if (right_associative_obj == Py_True) {
-                right_associative = true;
-            } else if (right_associative_obj == Py_False) {
-                right_associative = false;
-            } else {
-                throw type_error("right_associative must be either True or False");
-            }
-            
-            nd::array reduction_identity;
-            if (WArray_Check(reduction_identity_obj)) {
-                reduction_identity = ((WArray *)reduction_identity_obj)->v;;
-            } else if (reduction_identity_obj != Py_None) {
-                stringstream ss;
-                ss << "reduction_identity must be None or an nd.array";
-                throw dynd::type_error(ss.str());
-            }
-
-            nd::arrfunc out_af = ::lift_reduction_arrfunc(
-                elwise_reduction, lifted_type, dst_initialization, keepdims,
-                reduction_ndim, reduction_dimflags.get(), associative,
-                commutative, right_associative, reduction_identity);
-
-            return wrap_array(out_af);
-        } catch(...) {
-            translate_exception();
-            return NULL;
+      try {
+        // Convert all the input parameters
+        if (!WArray_Check(elwise_reduction_obj) ||
+            ((WArray *)elwise_reduction_obj)->v.get_type().get_type_id() !=
+                arrfunc_type_id) {
+          stringstream ss;
+          ss << "elwise_reduction must be an nd.array of type arrfunc";
+          throw dynd::type_error(ss.str());
         }
+        const nd::array &elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
+        const arrfunc_type_data *elwise_reduction_af =
+            reinterpret_cast<const arrfunc_type_data *>(
+                elwise_reduction.get_readonly_originptr());
+        const arrfunc_type *elwise_reduction_af_tp =
+            elwise_reduction.get_type().extended<arrfunc_type>();
+
+        nd::array dst_initialization;
+        if (WArray_Check(dst_initialization_obj) &&
+            ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() ==
+                arrfunc_type_id) {
+          dst_initialization = ((WArray *)dst_initialization_obj)->v;
+          ;
+        }
+        else if (dst_initialization_obj != Py_None) {
+          stringstream ss;
+          ss << "dst_initialization must be None or an nd.array of type "
+                "arrfunc";
+          throw dynd::type_error(ss.str());
+        }
+
+        ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
+
+        // This is the number of dimensions being reduced
+        intptr_t reduction_ndim =
+            lifted_type.get_ndim() -
+            elwise_reduction_af_tp->get_arg_type(0).get_ndim();
+
+        shortvector<bool> reduction_dimflags(reduction_ndim);
+        if (axis_obj == Py_None) {
+          // None means to reduce all axes
+          for (intptr_t i = 0; i < reduction_ndim; ++i) {
+            reduction_dimflags[i] = true;
+          }
+        }
+        else {
+          memset(reduction_dimflags.get(), 0, reduction_ndim * sizeof(bool));
+          vector<intptr_t> axis_vec;
+          pyobject_as_vector_intp(axis_obj, axis_vec, true);
+          for (size_t i = 0, i_end = axis_vec.size(); i != i_end; ++i) {
+            intptr_t ax = axis_vec[i];
+            if (ax < -reduction_ndim || ax >= reduction_ndim) {
+              throw axis_out_of_bounds(ax, reduction_ndim);
+            }
+            else if (ax < 0) {
+              ax += reduction_ndim;
+            }
+            reduction_dimflags[ax] = true;
+          }
+        }
+
+        bool keepdims;
+        if (keepdims_obj == Py_True) {
+          keepdims = true;
+        }
+        else if (keepdims_obj == Py_False) {
+          keepdims = false;
+        }
+        else {
+          throw type_error("keepdims must be either True or False");
+        }
+
+        bool associative;
+        if (associative_obj == Py_True) {
+          associative = true;
+        }
+        else if (associative_obj == Py_False) {
+          associative = false;
+        }
+        else {
+          throw type_error("associative must be either True or False");
+        }
+
+        bool commutative;
+        if (commutative_obj == Py_True) {
+          commutative = true;
+        }
+        else if (commutative_obj == Py_False) {
+          commutative = false;
+        }
+        else {
+          throw type_error("commutative must be either True or False");
+        }
+
+        bool right_associative;
+        if (right_associative_obj == Py_True) {
+          right_associative = true;
+        }
+        else if (right_associative_obj == Py_False) {
+          right_associative = false;
+        }
+        else {
+          throw type_error("right_associative must be either True or False");
+        }
+
+        nd::array reduction_identity;
+        if (WArray_Check(reduction_identity_obj)) {
+          reduction_identity = ((WArray *)reduction_identity_obj)->v;
+          ;
+        }
+        else if (reduction_identity_obj != Py_None) {
+          stringstream ss;
+          ss << "reduction_identity must be None or an nd.array";
+          throw dynd::type_error(ss.str());
+        }
+
+        nd::arrfunc out_af = ::lift_reduction_arrfunc(
+            elwise_reduction, lifted_type, dst_initialization, keepdims,
+            reduction_ndim, reduction_dimflags.get(), associative, commutative,
+            right_associative, reduction_identity);
+
+        return wrap_array(out_af);
+      }
+      catch (...) {
+        translate_exception();
+        return NULL;
+      }
     }
 
     PyObject *arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto)

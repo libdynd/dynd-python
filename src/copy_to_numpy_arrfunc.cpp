@@ -39,16 +39,17 @@ struct strided_of_numpy_arrmeta {
  * being a pointer to the ``PyArrayObject *`` for the destination.
  */
 static intptr_t instantiate_copy_to_numpy(
-    const arrfunc_old_type_data *self_af, dynd::ckernel_builder *ckb,
-    intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
-    const ndt::type *src_tp, const char *const *src_arrmeta,
-    kernel_request_t kernreq, const eval::eval_context *ectx,
-    const nd::array &args, const nd::array &kwds)
+    const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+    dynd::ckernel_builder *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+    const char *dst_arrmeta, const ndt::type *src_tp,
+    const char *const *src_arrmeta, kernel_request_t kernreq,
+    const eval::eval_context *ectx, const nd::array &args,
+    const nd::array &kwds)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;
     ss << "Cannot instantiate arrfunc with signature ";
-    ss << self_af->func_proto << " with types (";
+    ss << af_tp << " with types (";
     ss << src_tp[0] << ") -> " << dst_tp;
     throw type_error(ss.str());
   }
@@ -74,7 +75,8 @@ static intptr_t instantiate_copy_to_numpy(
     // to the numpy array, with a void type at the end for the numpy
     // specific data.
     for (intptr_t i = 0; i < dst_ndim; ++i) {
-      fixed_dim_type_arrmeta &am = dst_am_holder.sdt[NPY_MAXDIMS - dst_ndim + i];
+      fixed_dim_type_arrmeta &am =
+          dst_am_holder.sdt[NPY_MAXDIMS - dst_ndim + i];
       am.stride = PyArray_STRIDE(dst_arr, (int)i);
       dst_alignment |= static_cast<uintptr_t>(am.stride);
       am.dim_size = PyArray_DIM(dst_arr, (int)i);
@@ -86,10 +88,11 @@ static intptr_t instantiate_copy_to_numpy(
     dst_am_holder.am.dst_alignment = dst_alignment;
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
-    return make_lifted_expr_ckernel(self_af, ckb, ckb_offset, dst_ndim,
+    return make_lifted_expr_ckernel(self_af, af_tp, ckb, ckb_offset, dst_ndim,
                                     dst_am_tp, dst_am, &src_ndim, src_tp,
                                     src_arrmeta, kernreq, ectx);
-  } else {
+  }
+  else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(dst_obj);
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       // If there is no object type in the numpy type, get the dynd equivalent
@@ -97,11 +100,15 @@ static intptr_t instantiate_copy_to_numpy(
       ndt::type dst_view_tp = ndt_type_from_numpy_dtype(dtype, dst_alignment);
       return make_assignment_kernel(ckb, ckb_offset, dst_view_tp, NULL,
                                     src_tp[0], src_arrmeta[0], kernreq, ectx);
-    } else if (PyDataType_ISOBJECT(dtype)) {
-      const arrfunc_old_type_data *af = copy_to_pyobject_tuple.get();
-      return af->instantiate(af, ckb, ckb_offset, ndt::make_type<void>(), NULL,
-                             src_tp, src_arrmeta, kernreq, ectx, nd::array(), nd::array());
-    } else if (PyDataType_HASFIELDS(dtype)) {
+    }
+    else if (PyDataType_ISOBJECT(dtype)) {
+      const arrfunc_type_data *af = copy_to_pyobject_tuple.get();
+      return af->instantiate(af, copy_to_pyobject_tuple.get_type(), ckb,
+                             ckb_offset, ndt::make_type<void>(), NULL, src_tp,
+                             src_arrmeta, kernreq, ectx, nd::array(),
+                             nd::array());
+    }
+    else if (PyDataType_HASFIELDS(dtype)) {
       if (src_tp[0].get_kind() != struct_kind &&
           src_tp[0].get_kind() != tuple_kind) {
         stringstream ss;
@@ -134,12 +141,14 @@ static intptr_t instantiate_copy_to_numpy(
         field_dtypes.resize(field_count);
         field_offsets.resize(field_count);
         for (intptr_t i = 0; i < field_count; ++i) {
-          intptr_t src_i = src_tp[0].extended<base_struct_type>()->get_field_index(
-              field_names_orig[i]);
+          intptr_t src_i =
+              src_tp[0].extended<base_struct_type>()->get_field_index(
+                  field_names_orig[i]);
           if (src_i >= 0) {
             field_dtypes[src_i] = field_dtypes_orig[i];
             field_offsets[src_i] = field_offsets_orig[i];
-          } else {
+          }
+          else {
             stringstream ss;
             pyobject_ownref dtype_str(PyObject_Str((PyObject *)dtype));
             ss << "Cannot assign from source dynd type " << src_tp[0]
@@ -147,7 +156,8 @@ static intptr_t instantiate_copy_to_numpy(
             throw invalid_argument(ss.str());
           }
         }
-      } else {
+      }
+      else {
         // In the tuple case, use position instead of name
         field_dtypes.swap(field_dtypes_orig);
         field_offsets.swap(field_offsets_orig);
@@ -159,7 +169,8 @@ static intptr_t instantiate_copy_to_numpy(
       for (intptr_t i = 0; i < field_count; ++i) {
         dst_arrmeta_values[i].dst_obj = (PyObject *)field_dtypes[i];
         dst_arrmeta_values[i].dst_alignment = dst_alignment | field_offsets[i];
-        dst_fields_arrmeta[i] = reinterpret_cast<const char *>(&dst_arrmeta_values[i]);
+        dst_fields_arrmeta[i] =
+            reinterpret_cast<const char *>(&dst_arrmeta_values[i]);
       }
 
       const uintptr_t *src_arrmeta_offsets =
@@ -170,12 +181,14 @@ static intptr_t instantiate_copy_to_numpy(
       }
 
       return make_tuple_unary_op_ckernel(
-          self_af, ckb, ckb_offset, field_count, &field_offsets[0],
+          self_af, af_tp, ckb, ckb_offset, field_count, &field_offsets[0],
           &dst_fields_tp[0], &dst_fields_arrmeta[0],
-          src_tp[0].extended<base_tuple_type>()->get_data_offsets(src_arrmeta[0]),
+          src_tp[0].extended<base_tuple_type>()->get_data_offsets(
+              src_arrmeta[0]),
           src_tp[0].extended<base_tuple_type>()->get_field_types_raw(),
           src_fields_arrmeta.get(), kernreq, ectx);
-    } else {
+    }
+    else {
       stringstream ss;
       ss << "TODO: implement assign from source dynd type " << src_tp[0]
          << " to numpy type " << pyobject_repr((PyObject *)dtype);
@@ -186,10 +199,9 @@ static intptr_t instantiate_copy_to_numpy(
 
 static nd::arrfunc make_copy_to_numpy_arrfunc()
 {
-  nd::array out_af = nd::empty(ndt::make_arrfunc());
-  arrfunc_old_type_data *af =
-      reinterpret_cast<arrfunc_old_type_data *>(out_af.get_readwrite_originptr());
-  af->func_proto = ndt::type("(A... * T) -> void");
+  nd::array out_af = nd::empty("(A... * T) -> void");
+  arrfunc_type_data *af =
+      reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
   af->instantiate = &instantiate_copy_to_numpy;
   out_af.flag_as_immutable();
   return out_af;

@@ -34,17 +34,19 @@ void pydynd::init_w_array_typeobject(PyObject *type)
 
 PyObject *pydynd::wrap_array(const dynd::nd::array &n)
 {
-    if (n.get_type().get_type_id() == arrfunc_old_type_id) {
-        return wrap_array(nd::arrfunc(n));
-    }
-    WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-    result->v = n;
-    return (PyObject *)result;
+  if (n.get_type().get_type_id() == arrfunc_type_id) {
+    return wrap_array(nd::arrfunc(n));
+  }
+  WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
+  if (!result) {
+    throw std::runtime_error("");
+  }
+  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
+  // here
+  pydynd::placement_new(
+      reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
+  result->v = n;
+  return (PyObject *)result;
 }
 
 PyObject *pydynd::wrap_array(const dynd::nd::arrfunc &n)

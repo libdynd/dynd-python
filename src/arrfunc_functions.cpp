@@ -33,35 +33,35 @@ PyTypeObject *pydynd::WArrFunc_Type;
 
 void pydynd::init_w_arrfunc_typeobject(PyObject *type)
 {
-    WArrFunc_Type = (PyTypeObject *)type;
+  WArrFunc_Type = (PyTypeObject *)type;
 }
 
 PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
                                PyObject *ectx_obj)
 {
-    if (!WArrFunc_Check(af_obj)) {
-        PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
-        return NULL;
-    }
-    const nd::arrfunc& af = ((WArrFunc *)af_obj)->v;
-    if (af.is_null()) {
-        PyErr_SetString(PyExc_ValueError, "cannot call a null nd.arrfunc");
-        return NULL;
-    }
-    if (!PyTuple_Check(args_obj)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "arrfunc_call requires a tuple of arguments");
-        return NULL;
-    }
-    const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
-    // Convert args into nd::arrays
-    intptr_t args_size = PyTuple_Size(args_obj);
-    std::vector<nd::array> args(args_size);
-    for (intptr_t i = 0; i < args_size; ++i) {
-        args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
-    }
-    nd::array result = af.call(args_size, args_size ? &args[0] : NULL, ectx);
-    return wrap_array(result);
+  if (!WArrFunc_Check(af_obj)) {
+    PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
+    return NULL;
+  }
+  const nd::arrfunc &af = ((WArrFunc *)af_obj)->v;
+  if (af.is_null()) {
+    PyErr_SetString(PyExc_ValueError, "cannot call a null nd.arrfunc");
+    return NULL;
+  }
+  if (!PyTuple_Check(args_obj)) {
+    PyErr_SetString(PyExc_ValueError,
+                    "arrfunc_call requires a tuple of arguments");
+    return NULL;
+  }
+  const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+  // Convert args into nd::arrays
+  intptr_t args_size = PyTuple_Size(args_obj);
+  std::vector<nd::array> args(args_size);
+  for (intptr_t i = 0; i < args_size; ++i) {
+    args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
+  }
+  nd::array result = af.call(args_size, args_size ? &args[0] : NULL, ectx);
+  return wrap_array(result);
 }
 
 PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,

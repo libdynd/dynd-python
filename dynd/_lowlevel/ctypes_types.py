@@ -87,15 +87,14 @@ class CKernelBuilderStruct(ctypes.Structure):
 CKernelBuilderStructPtr = ctypes.POINTER(CKernelBuilderStruct)
 
 # ArrFunc
-InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t,
+InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_void_p,
         ctypes.c_void_p, CKernelBuilderStructPtr, c_ssize_t,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p)
 if ctypes.sizeof(ctypes.c_void_p) == 8:
     class ArrFuncTypeData(ctypes.Structure):
-        _fields_ = [("func_proto", ctypes.c_void_p),
-                    ("data0", ctypes.c_void_p),
+        _fields_ = [("data0", ctypes.c_void_p),
                     ("data1", ctypes.c_void_p),
                     ("data2", ctypes.c_void_p),
                     ("data3", ctypes.c_void_p),
@@ -104,8 +103,7 @@ if ctypes.sizeof(ctypes.c_void_p) == 8:
                     ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
 else:
     class ArrFuncTypeData(ctypes.Structure):
-        _fields_ = [("func_proto", ctypes.c_void_p),
-                    ("data0", ctypes.c_void_p),
+        _fields_ = [("data0", ctypes.c_void_p),
                     ("data1", ctypes.c_void_p),
                     ("data2", ctypes.c_void_p),
                     ("data3", ctypes.c_void_p),

@@ -111,6 +111,7 @@ else:
                     ("data5", ctypes.c_void_p),
                     ("data6", ctypes.c_void_p),
                     ("data7", ctypes.c_void_p),
+                    ("data8", ctypes.c_void_p),
                     ("instantiate_func", InstantiateArrFuncFunction),
                     ("resolve_dst_type", ctypes.c_void_p),
                     ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]

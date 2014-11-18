@@ -1,6 +1,19 @@
 DyND-Python Release Notes
 =========================
 
+Release 0.6.6
+-------------
+
+Commits by author since last release:
+
+    38  Mark Wiebe
+     9  Irwin Zaid
+     1  stonebig
+
+- Interpret 'O' numpy dtype with h5py string metadata as a string type.
+- Updates to track libdynd changes.
+- Update some of the docs and notebooks.
+
 Release 0.6.5
 -------------
 

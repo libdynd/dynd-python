@@ -23,7 +23,7 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck> {
+struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_request_host> {
   // Reference to the python function object
   PyObject *m_pyfunc;
   // The concrete prototype the ckernel is for
@@ -166,7 +166,7 @@ static void delete_arrfunc_data(arrfunc_type_data *self_af)
 
 static intptr_t instantiate_arrfunc_data(
     const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
-    dynd::ckernel_builder *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+    void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
     const eval::eval_context *ectx, const nd::array &args,

@@ -90,7 +90,7 @@ namespace {
                                       PyObject *kernreq_obj, PyObject *ectx_obj)
     {
         try {
-            ckernel_builder *ckb_ptr = reinterpret_cast<ckernel_builder *>(ckb);
+            ckernel_builder<kernel_request_host> *ckb_ptr = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb);
 
             ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
             ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);

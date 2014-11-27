@@ -40,7 +40,7 @@ struct strided_of_numpy_arrmeta {
  */
 static intptr_t instantiate_copy_to_numpy(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
-    dynd::ckernel_builder *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+    void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
     const eval::eval_context *ectx, const nd::array &args,

@@ -552,7 +552,7 @@ struct pointer_ck : public kernels::unary_ck<pointer_ck> {
 
 static intptr_t instantiate_copy_to_pyobject(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
-    dynd::ckernel_builder *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+    void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
     const eval::eval_context *ectx, const nd::array &args,
@@ -725,8 +725,8 @@ static intptr_t instantiate_copy_to_pyobject(
         is_avail_af, is_avail_af_tp, ckb, ckb_offset,
         ndt::make_type<dynd_bool>(), NULL, src_tp, src_arrmeta,
         kernel_request_single, ectx, nd::array(), nd::array());
-    ckb->ensure_capacity(ckb_offset);
-    self = ckb->get_at<option_ck>(root_ckb_offset);
+    reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
+    self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ndt::type src_value_tp = src_tp[0].extended<option_type>()->get_value_type();
     ckb_offset = self_af->instantiate(
@@ -784,8 +784,8 @@ static intptr_t instantiate_copy_to_pyobject(
       }
       self->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
-        ckb->ensure_capacity(ckb_offset);
-        self = ckb->get_at<struct_ck>(root_ckb_offset);
+        reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
+        self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<struct_ck>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
         ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset,
@@ -809,8 +809,8 @@ static intptr_t instantiate_copy_to_pyobject(
         src_tp[0].extended<base_tuple_type>()->get_arrmeta_offsets_raw();
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
-      ckb->ensure_capacity(ckb_offset);
-      self = ckb->get_at<tuple_ck>(root_ckb_offset);
+      reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
+      self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<tuple_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset, dst_tp,

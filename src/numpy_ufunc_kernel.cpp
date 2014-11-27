@@ -242,7 +242,7 @@ static void scalar_ufunc_strided_ckernel_nogil(char *dst, intptr_t dst_stride,
 
 static intptr_t instantiate_scalar_ufunc_ckernel(
     const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
-    dynd::ckernel_builder *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+    void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *DYND_UNUSED(dst_arrmeta), const ndt::type *src_tp,
     const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
     const eval::eval_context *DYND_UNUSED(ectx), const nd::array &args,
@@ -274,7 +274,7 @@ static intptr_t instantiate_scalar_ufunc_ckernel(
   PyGILState_RAII pgs;
   scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
   scalar_ufunc_ckernel_data *af =
-      ckb->alloc_ck_leaf<scalar_ufunc_ckernel_data>(ckb_offset);
+      reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->alloc_ck_leaf<scalar_ufunc_ckernel_data>(ckb_offset);
   af->base.destructor = &delete_scalar_ufunc_ckernel_data;
   if (data->ckernel_acquires_gil) {
     af->base.set_expr_function(kernreq, &scalar_ufunc_single_ckernel_acquiregil,

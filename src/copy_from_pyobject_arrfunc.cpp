@@ -874,7 +874,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
 
 static intptr_t instantiate_copy_from_pyobject(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
-    dynd::ckernel_builder *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+    void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
     const eval::eval_context *ectx, const nd::array &args,
@@ -1001,8 +1001,8 @@ static intptr_t instantiate_copy_from_pyobject(
     ckb_offset = assign_na_af->instantiate(
         assign_na_af, assign_na_af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta,
         NULL, NULL, kernel_request_single, ectx, nd::array(), nd::array());
-    ckb->ensure_capacity(ckb_offset);
-    self = ckb->get_at<option_ck>(root_ckb_offset);
+    reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
+    self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ckb_offset = self_af->instantiate(
         self_af, af_tp, ckb, ckb_offset,
@@ -1028,7 +1028,7 @@ static intptr_t instantiate_copy_from_pyobject(
       ckb_offset = self_af->instantiate(
           self_af, af_tp, ckb, ckb_offset, el_tp, el_arrmeta, src_tp,
           src_arrmeta, kernel_request_strided, ectx, nd::array(), nd::array());
-      self = ckb->get_at<strided_ck>(root_ckb_offset);
+      self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<strided_ck>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
       return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
@@ -1051,7 +1051,7 @@ static intptr_t instantiate_copy_from_pyobject(
     ckb_offset = self_af->instantiate(
         self_af, af_tp, ckb, ckb_offset, el_tp, el_arrmeta, src_tp, src_arrmeta,
         kernel_request_strided, ectx, nd::array(), nd::array());
-    self = ckb->get_at<var_dim_ck>(root_ckb_offset);
+    self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<var_dim_ck>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case
     return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
@@ -1072,8 +1072,8 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_dim_broadcast = dim_broadcast;
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
-      ckb->ensure_capacity(ckb_offset);
-      self = ckb->get_at<tuple_ck>(root_ckb_offset);
+      reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
+      self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<tuple_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset,
@@ -1098,8 +1098,8 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_dim_broadcast = dim_broadcast;
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
-      ckb->ensure_capacity(ckb_offset);
-      self = ckb->get_at<struct_ck>(root_ckb_offset);
+      reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
+      self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<struct_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
       ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset,

@@ -193,7 +193,7 @@ public:
     }
 
     size_t make_expr_kernel(
-                ckernel_builder *ckb, intptr_t ckb_offset,
+                void *ckb, intptr_t ckb_offset,
                 const ndt::type& dst_tp, const char *dst_arrmeta,
                 size_t src_count, const ndt::type *src_tp, const char *const*src_arrmeta,
                 kernel_request_t kernreq, const eval::eval_context *ectx) const
@@ -229,9 +229,9 @@ public:
         kernels::inc_ckb_offset(ckb_offset,
                                 sizeof(pyobject_expr_kernel_extra) +
                                     (src_count + 1) * sizeof(WArray *));
-        ckb->ensure_capacity_leaf(ckb_offset);
+        reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity_leaf(ckb_offset);
         pyobject_expr_kernel_extra *e =
-            ckb->get_at<pyobject_expr_kernel_extra>(root_ckb_offset);
+            reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<pyobject_expr_kernel_extra>(root_ckb_offset);
 
         WArray **ndo = reinterpret_cast<WArray **>(e + 1);
         e->base.set_expr_function<pyobject_expr_kernel_extra>(kernreq);

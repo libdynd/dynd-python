@@ -56,12 +56,12 @@ FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import ctypes;print(8*ctypes.s
 if "%PYTHON_BITS%" == "64" goto :python64
  set MSVC_VCVARS_PLATFORM=x86
  set MSVC_BUILD_PLATFORM=Win32
- if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12"
+ if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12 2013"
 goto :python32
 :python64
  set MSVC_VCVARS_PLATFORM=amd64
  set MSVC_BUILD_PLATFORM=x64
- if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12 Win64"
+ if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12 2013 Win64"
 :python32
 
 REM Configure the appropriate visual studio command line environment

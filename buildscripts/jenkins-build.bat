@@ -57,7 +57,7 @@ if "%PYTHON_BITS%" == "64" goto :python64
  set MSVC_VCVARS_PLATFORM=x86
  set MSVC_BUILD_PLATFORM=Win32
  if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12"
- oto :python32
+goto :python32
 :python64
  set MSVC_VCVARS_PLATFORM=amd64
  set MSVC_BUILD_PLATFORM=x64

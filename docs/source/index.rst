@@ -28,6 +28,7 @@ Contents:
     type
     array
     gfunc
+    numpy-compat
     debugging
     dev
     dev-frompython

@@ -15,8 +15,8 @@ REM     directory as buildscripts/jenkins-build
 REM   - Use a user-defined axis to select python versions with PYTHON_VERSION
 REM
 
-REM If no MSVC version is selected, choose 2010
-if "%MSVC_VERSION%" == "" set MSVC_VERSION=10.0
+REM If no MSVC version is selected, choose 2013
+if "%MSVC_VERSION%" == "" set MSVC_VERSION=12.0
 REM Require a version of Python to be selected
 if "%PYTHON_VERSION%" == "" exit /b 1
 
@@ -56,14 +56,12 @@ FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import ctypes;print(8*ctypes.s
 if "%PYTHON_BITS%" == "64" goto :python64
  set MSVC_VCVARS_PLATFORM=x86
  set MSVC_BUILD_PLATFORM=Win32
- if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10"
- if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11"
-goto :python32
+ if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12"
+ oto :python32
 :python64
  set MSVC_VCVARS_PLATFORM=amd64
  set MSVC_BUILD_PLATFORM=x64
- if "%MSVC_VERSION%" == "10.0" set CMAKE_BUILD_TARGET="Visual Studio 10 Win64"
- if "%MSVC_VERSION%" == "11.0" set CMAKE_BUILD_TARGET="Visual Studio 11 Win64"
+ if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12 Win64"
 :python32
 
 REM Configure the appropriate visual studio command line environment

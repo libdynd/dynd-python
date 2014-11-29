@@ -31,4 +31,4 @@ The ``nd.full`` constructor has an incompatible signature with NumPy.
 Array Attributes
 ----------------
 
-
+DyND arrays expose ``ndim``, ``shape``, ``strides``, and ``dtype``.

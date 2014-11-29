@@ -1284,6 +1284,10 @@ cdef class w_array:
         def __get__(self):
             return array_is_scalar(GET(self.v))
 
+    property ndim:
+        def __get__(self):
+            return GET(self.v).get_type().get_ndim()
+
     property shape:
         def __get__(self):
             return array_get_shape(GET(self.v))
@@ -1291,6 +1295,18 @@ cdef class w_array:
     property strides:
         def __get__(self):
             return array_get_strides(GET(self.v))
+
+    property type:
+        def __get__(self):
+            cdef w_type result = w_type()
+            SET(result.v, GET(self.v).get_type())
+            return result
+
+    property dtype:
+        def __get__(self):
+            cdef w_type result = w_type()
+            SET(result.v, GET(self.v).get_dtype())
+            return result
 
     def __repr__(self):
         return str(<char *>array_repr(GET(self.v)).c_str())

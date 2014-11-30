@@ -54,22 +54,11 @@ REM Select the correct compiler, by first getting whether
 REM the Python is 32-bit or 64-bit.
 FOR /F "delims=" %%i IN ('%PYTHON_EXECUTABLE% -c "import ctypes;print(8*ctypes.sizeof(ctypes.c_void_p))"') DO set PYTHON_BITS=%%i
 if "%PYTHON_BITS%" == "64" goto :python64
- set MSVC_VCVARS_PLATFORM=x86
- set MSVC_BUILD_PLATFORM=Win32
  if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12"
 goto :python32
 :python64
- set MSVC_VCVARS_PLATFORM=amd64
- set MSVC_BUILD_PLATFORM=x64
  if "%MSVC_VERSION%" == "12.0" set CMAKE_BUILD_TARGET="Visual Studio 12 Win64"
 :python32
-
-REM Configure the appropriate visual studio command line environment
-if "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES%\Microsoft Visual Studio %MSVC_VERSION%\VC
-if NOT "%PROGRAMFILES(X86)%" == "" set VCDIR=%PROGRAMFILES(X86)%\Microsoft Visual Studio %MSVC_VERSION%\VC
-call "%VCDIR%\vcvarsall.bat" %MSVC_VCVARS_PLATFORM%
-IF %ERRORLEVEL% NEQ 0 exit /b 1
-echo on
 
 REM Create a fresh visual studio solution with cmake, and do the build/install
 cd build

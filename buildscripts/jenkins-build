@@ -32,7 +32,8 @@ fi
 
 if [ `uname` == Darwin ]; then
   # Use default compiler on OSX
-  echo Using default OSX compiler
+  export CC=cc
+  export CXX=c++
 else
   # Enable devtoolset-2, a newer gcc toolchain
   . /opt/rh/devtoolset-2/enable

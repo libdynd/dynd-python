@@ -41,7 +41,7 @@ else
   . /opt/rh/devtoolset-2/enable
   # Statically link the standard C/C++ library, because
   # we are building on an old centos5 machine.
-  export LDFLAGS=-static-libgcc -static-libstdc++
+  export LDFLAGS="-static-libgcc -static-libstdc++"
  export CC=gcc
  export CXX=g++
 fi

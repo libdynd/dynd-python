@@ -31,11 +31,7 @@ if [ "${PYTHON_VERSION}" == "" ]; then
 fi
 
 if [ `uname` == Darwin ]; then
- # Use gcc instead of clang for now, there was a strange
- # interaction with exception handling/libunwind/cython's
- # exception translation mechanism on clang.
- export CC=gcc
- export CXX=g++
+  # Use default compiler on OSX
 else
   # Enable devtoolset-2, a newer gcc toolchain
   . /opt/rh/devtoolset-2/enable

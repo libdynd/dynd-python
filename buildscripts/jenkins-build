@@ -32,14 +32,15 @@ fi
 
 if [ `uname` == Darwin ]; then
   # Use default compiler on OSX
+  echo Using default OSX compiler
 else
   # Enable devtoolset-2, a newer gcc toolchain
   . /opt/rh/devtoolset-2/enable
   # Statically link the standard C/C++ library, because
   # we are building on an old centos5 machine.
   export LDFLAGS="-static-libgcc -static-libstdc++"
- export CC=gcc
- export CXX=g++
+  export CC=gcc
+  export CXX=g++
 fi
 
 # Remove the build subdirectory from last time

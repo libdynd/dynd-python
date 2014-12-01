@@ -16,6 +16,10 @@
 #   - Call the script from the root workspace
 #     directory as buildscripts/jenkins-build
 #
+#   - This script is currently hacked for centos5,
+#     with http://people.centos.org/tru/devtools-2/
+#     (a newer gcc) installed.
+#
 
 # Set options to echo every command and exit on error
 set -xe
@@ -33,6 +37,11 @@ if [ `uname` == Darwin ]; then
  export CC=gcc
  export CXX=g++
 else
+  # Enable devtoolset-2, a newer gcc toolchain
+  . /opt/rh/devtoolset-2/enable
+  # Statically link the standard C/C++ library, because
+  # we are building on an old centos5 machine.
+  export LDFLAGS=-static-libgcc -static-libstdc++
  export CC=gcc
  export CXX=g++
 fi

@@ -73,7 +73,7 @@ else()
             "The libdynd C++ library must be placed in libraries/libdynd."
             "Remove any temporary CMake"
             "files, then if you're using git, run"
-            "'git clone git@github.com:ContinuumIO/libdynd.git'"
+            "'git clone git@github.com:libdynd/libdynd.git'"
             "from the libraries directory."
             "See BUILD_INSTALL.md for more details.")
     endif()

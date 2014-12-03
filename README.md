@@ -1,19 +1,19 @@
 DyND-Python
 ===========
 
-[![Build Status](https://api.travis-ci.org/ContinuumIO/dynd-python.svg?branch=master)](https://travis-ci.org/ContinuumIO/dynd-python)
+[![Build Status](https://api.travis-ci.org/libdynd/dynd-python.svg?branch=master)](https://travis-ci.org/libdynd/dynd-python)
 
 DyND-Python, a component of [the Blaze project](http://blaze.pydata.org/),
-is the Python exposure of [the DyND dynamic multi-dimensional array library](https://github.com/ContinuumIO/libdynd).
+is the Python exposure of [the DyND dynamic multi-dimensional array library](https://github.com/libdynd/libdynd).
 
 To discuss the development of this library, subscribe to the
 [LibDyND Development List](https://groups.google.com/forum/#!forum/libdynd-dev).
 
 Python versions 2.6, 2.7, 3.3 and 3.4 are supported.
 
-https://github.com/ContinuumIO/libdynd
+https://github.com/libdynd/libdynd
 
-https://github.com/ContinuumIO/dynd-python
+https://github.com/libdynd/dynd-python
 
 Trying Out DyND
 ---------------

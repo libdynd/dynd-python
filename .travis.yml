@@ -23,7 +23,7 @@ install:
   - pip install numpy nose cython
 #  - pip install scipy
   # Install libdynd
-  - git clone --depth=1 https://github.com/ContinuumIO/libdynd.git
+  - git clone --depth=1 https://github.com/libdynd/libdynd.git
   - mkdir libdynd/build
   - pushd libdynd/build
   - cmake -DDYND_BUILD_TESTS=OFF ..

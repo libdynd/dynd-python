@@ -22,9 +22,9 @@ clang 3.3-svn have been tested.
 should work equivalently on Windows and Unix-like operating systems.
 
   ```
-  ~ $ git clone https://github.com/ContinuumIO/libdynd
+  ~ $ git clone https://github.com/libdynd/libdynd
   Cloning into libdynd...
-  ~ $ git clone https://github.com/ContinuumIO/dynd-python
+  ~ $ git clone https://github.com/libdynd/dynd-python
   Cloning into dynd-python...
   ```
 
@@ -72,7 +72,7 @@ of dynd-python, and running cmake with "-DDYND_INSTALL_LIB=OFF".
 For example, to set this up on Windows with MSVC 2013, do:
 
   ```
-  D:\>git clone https://github.com/ContinuumIO/dynd-python
+  D:\>git clone https://github.com/libdynd/dynd-python
   Cloning into 'dynd-python'...
   <...>
 
@@ -82,7 +82,7 @@ For example, to set this up on Windows with MSVC 2013, do:
 
   D:\dynd-python>cd libraries
 
-  D:\dynd-python\libraries>git clone https://github.com/ContinuumIO/libdynd
+  D:\dynd-python\libraries>git clone https://github.com/libdynd/libdynd
   Cloning into 'libdynd'...
   <...>
 

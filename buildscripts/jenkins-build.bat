@@ -43,7 +43,7 @@ REM python version and containing the dependencies.
 SET PYENV_PREFIX=%WORKSPACE%\build\pyenv
 rd /s /q %PYENV_PREFIX%
 REM NOTE: cython is forced to 0.20.2 temporarily because of a bug in anaconda
-REM       https://github.com/ContinuumIO/anaconda-issues/issues/178
+REM       https://github.com/libdynd/anaconda-issues/issues/178
 call C:\Anaconda\Scripts\conda create --yes -p %PYENV_PREFIX% python=%PYTHON_VERSION% cython=0.20.2 scipy nose
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 echo on

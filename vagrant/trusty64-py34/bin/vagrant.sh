@@ -18,7 +18,7 @@ function install_conda()
 
 function install_libdynd()
 {
-    git clone https://github.com/ContinuumIO/libdynd.git && \
+    git clone https://github.com/libdynd/libdynd.git && \
         mkdir libdynd/build && \
         pushd libdynd/build && \
         cmake -DCMAKE_INSTALL_PREFIX=$dynd_env .. && \
@@ -30,7 +30,7 @@ function install_libdynd()
 
 function install_dynd_python()
 {
-    git clone https://github.com/ContinuumIO/dynd-python.git && \
+    git clone https://github.com/libdynd/dynd-python.git && \
         mkdir dynd-python/build && \
         pushd dynd-python/build && \
         cmake -DDYND_ELWISE_MAX=5 \

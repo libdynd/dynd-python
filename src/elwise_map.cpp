@@ -126,7 +126,7 @@ namespace {
             }
         }
 
-        static void single(char *dst, char **src,
+        static void single(char *dst, char *const *src,
                         ckernel_prefix *extra)
         {
             PyGILState_RAII pgs;
@@ -140,7 +140,7 @@ namespace {
         }
 
         static void strided(char *dst, intptr_t dst_stride,
-                    char **src, const intptr_t *src_stride,
+                    char *const *src, const intptr_t *src_stride,
                     size_t count, ckernel_prefix *extra)
         {
             PyGILState_RAII pgs;

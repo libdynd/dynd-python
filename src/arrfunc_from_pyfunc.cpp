@@ -77,7 +77,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
     }
   }
 
-  static void single(char *dst, char **src, ckernel_prefix *rawself)
+  static void single(char *dst, char *const *src, ckernel_prefix *rawself)
   {
     self_type *self = get_self(rawself);
     const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
@@ -110,7 +110,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
     self->verify_postcall_consistency(args.get());
   }
 
-  static void strided(char *dst, intptr_t dst_stride, char **src,
+  static void strided(char *dst, intptr_t dst_stride, char *const *src,
                       const intptr_t *src_stride, size_t count,
                       ckernel_prefix *rawself)
   {
@@ -169,15 +169,14 @@ static intptr_t instantiate_arrfunc_data(
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
-    const eval::eval_context *ectx, const nd::array &args,
-    const nd::array &kwds)
+    const eval::eval_context *ectx, const nd::array &kwds)
 {
   typedef pyfunc_expr_ck self_type;
   PyGILState_RAII pgs;
   intptr_t nsrc = af_tp->get_nsrc();
 
-  if (!args.is_null() || !kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL aux value to "
+  if (!kwds.is_null()) {
+    throw invalid_argument("unexpected non-NULL kwds value to "
                            "arrfunc_from_pyfunc instantiation");
   }
 

@@ -35,15 +35,14 @@ static intptr_t instantiate_pyfunc_arrfunc_data(
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
-    const eval::eval_context *ectx, const nd::array &args,
-    const nd::array &kwds)
+    const eval::eval_context *ectx, const nd::array &kwds)
 {
   PyGILState_RAII pgs;
   PyObject *instantiate_pyfunc = *af_self->get_data_as<PyObject *>();
   intptr_t param_count = af_tp->get_narg();
 
-  if (!args.is_null() || !kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL aux value to "
+  if (!kwds.is_null()) {
+    throw invalid_argument("unexpected non-NULL kwds value to "
                            "instantiate_pyfunc_arrfunc_data");
   }
 

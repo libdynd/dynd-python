@@ -159,7 +159,7 @@ static void delete_scalar_ufunc_ckernel_data(ckernel_prefix *self_data_ptr)
   }
 }
 
-static void scalar_ufunc_single_ckernel_acquiregil(char *dst, char **src,
+static void scalar_ufunc_single_ckernel_acquiregil(char *dst, char *const *src,
                                                    ckernel_prefix *ckp)
 {
   scalar_ufunc_ckernel_data *data =
@@ -179,7 +179,7 @@ static void scalar_ufunc_single_ckernel_acquiregil(char *dst, char **src,
   }
 }
 
-static void scalar_ufunc_single_ckernel_nogil(char *dst, char **src,
+static void scalar_ufunc_single_ckernel_nogil(char *dst, char *const *src,
                                               ckernel_prefix *ckp)
 {
   scalar_ufunc_ckernel_data *data =
@@ -198,7 +198,7 @@ static void scalar_ufunc_single_ckernel_nogil(char *dst, char **src,
 
 static void
 scalar_ufunc_strided_ckernel_acquiregil(char *dst, intptr_t dst_stride,
-                                        char **src, const intptr_t *src_stride,
+                                        char *const *src, const intptr_t *src_stride,
                                         size_t count, ckernel_prefix *ckp)
 {
   scalar_ufunc_ckernel_data *data =
@@ -220,7 +220,7 @@ scalar_ufunc_strided_ckernel_acquiregil(char *dst, intptr_t dst_stride,
 }
 
 static void scalar_ufunc_strided_ckernel_nogil(char *dst, intptr_t dst_stride,
-                                               char **src,
+                                               char *const *src,
                                                const intptr_t *src_stride,
                                                size_t count,
                                                ckernel_prefix *ckp)
@@ -245,8 +245,7 @@ static intptr_t instantiate_scalar_ufunc_ckernel(
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *DYND_UNUSED(dst_arrmeta), const ndt::type *src_tp,
     const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
-    const eval::eval_context *DYND_UNUSED(ectx), const nd::array &args,
-    const nd::array &kwds)
+    const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds)
 {
   if (dst_tp != af_tp->get_return_type()) {
     stringstream ss;
@@ -265,8 +264,8 @@ static intptr_t instantiate_scalar_ufunc_ckernel(
     }
   }
 
-  if (!args.is_null() || !kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL aux value to "
+  if (!kwds.is_null()) {
+    throw invalid_argument("unexpected non-NULL kwds value to "
                            "numpy ufunc/arrfunc adapter instantiation");
   }
 

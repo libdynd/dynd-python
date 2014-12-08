@@ -39,8 +39,7 @@ static intptr_t instantiate_copy_from_numpy(
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
-    const eval::eval_context *ectx, const nd::array &args,
-    const nd::array &kwds)
+    const eval::eval_context *ectx, const nd::array &kwds)
 {
   if (src_tp[0].get_type_id() != void_type_id) {
     stringstream ss;
@@ -50,8 +49,8 @@ static intptr_t instantiate_copy_from_numpy(
     throw type_error(ss.str());
   }
 
-  if (!args.is_null() || !kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL aux value to "
+  if (!kwds.is_null()) {
+    throw invalid_argument("unexpected non-NULL kwds value to "
                            "copy_from_numpy instantiation");
   }
 
@@ -102,7 +101,7 @@ static intptr_t instantiate_copy_from_numpy(
       const arrfunc_type_data *af = copy_from_pyobject.get();
       return af->instantiate(af, copy_from_pyobject.get_type(), ckb, ckb_offset,
                              dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq,
-                             ectx, nd::array(), nd::array());
+                             ectx, nd::array());
     }
     else if (PyDataType_HASFIELDS(dtype)) {
       if (dst_tp.get_kind() != struct_kind && dst_tp.get_kind() != tuple_kind) {
@@ -224,7 +223,7 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   ndt::type src_tp = ndt::make_type<void>();
   af->instantiate(af, copy_from_numpy.get_type(), &ckb, 0, dst_tp, dst_arrmeta,
                   &src_tp, &src_arrmeta_ptr, kernel_request_single,
-                  &eval::default_eval_context, nd::array(), nd::array());
+                  &eval::default_eval_context, nd::array());
   ckb(dst_data, (char *)PyArray_DATA(value));
 }
 

@@ -1030,8 +1030,9 @@ static intptr_t instantiate_copy_from_pyobject(
       self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<strided_ck>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
-      return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
-                                    el_arrmeta, kernel_request_strided, ectx);
+      return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, el_tp,
+                                    el_arrmeta, el_tp, el_arrmeta,
+                                    kernel_request_strided, ectx, nd::array());
     }
     break;
   }
@@ -1050,11 +1051,13 @@ static intptr_t instantiate_copy_from_pyobject(
     ckb_offset = self_af->instantiate(
         self_af, af_tp, ckb, ckb_offset, el_tp, el_arrmeta, src_tp, src_arrmeta,
         kernel_request_strided, ectx, nd::array());
-    self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<var_dim_ck>(root_ckb_offset);
+    self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+               ->get_at<var_dim_ck>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case
-    return make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
-                                  el_arrmeta, kernel_request_strided, ectx);
+    return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, el_tp,
+                                  el_arrmeta, el_tp, el_arrmeta,
+                                  kernel_request_strided, ectx, nd::array());
   }
   case tuple_type_id:
   case ctuple_type_id: {

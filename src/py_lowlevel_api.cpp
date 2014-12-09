@@ -89,48 +89,55 @@ namespace {
                                       const void *src_arrmeta,
                                       PyObject *kernreq_obj, PyObject *ectx_obj)
     {
-        try {
-            ckernel_builder<kernel_request_host> *ckb_ptr = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb);
+      try {
+        ckernel_builder<kernel_request_host> *ckb_ptr =
+            reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb);
 
-            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
-            if (dst_arrmeta == NULL && dst_tp.get_arrmeta_size() != 0) {
-                stringstream ss;
-                ss << "Cannot create an assignment kernel independent of arrmeta with non-empty arrmeta, type: ";
-                ss << dst_tp;
-                throw runtime_error(ss.str());
-            }
-            if (src_arrmeta == NULL && src_tp.get_arrmeta_size() != 0) {
-                stringstream ss;
-                ss << "Cannot create an assignment kernel independent of arrmeta with non-empty arrmeta, type: ";
-                ss << src_tp;
-                throw runtime_error(ss.str());
-            }
-            string kr = pystring_as_string(kernreq_obj);
-            kernel_request_t kernreq;
-            if (kr == "single") {
-                kernreq = kernel_request_single;
-            } else if (kr == "strided") {
-                kernreq = kernel_request_strided;
-            } else {
-                stringstream ss;
-                ss << "Invalid kernel request type ";
-                print_escaped_utf8_string(ss, kr);
-                throw runtime_error(ss.str());
-            }
-
-            const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
-
-            intptr_t kernel_size = make_assignment_kernel(
-                ckb_ptr, ckb_offset, dst_tp,
-                reinterpret_cast<const char *>(dst_arrmeta), src_tp,
-                reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx);
-
-            return PyLong_FromSsize_t(kernel_size);
-        } catch(...) {
-            translate_exception();
-            return NULL;
+        ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+        ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+        if (dst_arrmeta == NULL && dst_tp.get_arrmeta_size() != 0) {
+          stringstream ss;
+          ss << "Cannot create an assignment kernel independent of arrmeta "
+                "with non-empty arrmeta, type: ";
+          ss << dst_tp;
+          throw runtime_error(ss.str());
         }
+        if (src_arrmeta == NULL && src_tp.get_arrmeta_size() != 0) {
+          stringstream ss;
+          ss << "Cannot create an assignment kernel independent of arrmeta "
+                "with non-empty arrmeta, type: ";
+          ss << src_tp;
+          throw runtime_error(ss.str());
+        }
+        string kr = pystring_as_string(kernreq_obj);
+        kernel_request_t kernreq;
+        if (kr == "single") {
+          kernreq = kernel_request_single;
+        }
+        else if (kr == "strided") {
+          kernreq = kernel_request_strided;
+        }
+        else {
+          stringstream ss;
+          ss << "Invalid kernel request type ";
+          print_escaped_utf8_string(ss, kr);
+          throw runtime_error(ss.str());
+        }
+
+        const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+
+        intptr_t kernel_size = make_assignment_kernel(
+            NULL, NULL, ckb_ptr, ckb_offset, dst_tp,
+            reinterpret_cast<const char *>(dst_arrmeta), src_tp,
+            reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx,
+            nd::array());
+
+        return PyLong_FromSsize_t(kernel_size);
+      }
+      catch (...) {
+        translate_exception();
+        return NULL;
+      }
     }
 
     PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj,

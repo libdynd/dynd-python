@@ -331,46 +331,46 @@ static void copy_to_promoted_nd_arr(
  * `tp`, allocates a new one, then copies all the data up to the
  * current index in `coord`. This modifies coord and elem in place.
  */
-static void promote_nd_arr_dtype(
-    const std::vector<intptr_t>& shape,
-    std::vector<afpd_coordentry>& coord,
-    afpd_dtype& elem,
-    nd::array& arr,
-    const ndt::type& tp)
+static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
+                                 std::vector<afpd_coordentry> &coord,
+                                 afpd_dtype &elem, nd::array &arr,
+                                 const ndt::type &tp)
 {
-    intptr_t ndim = shape.size();
-    vector<afpd_coordentry> newcoord;
-    afpd_dtype newelem;
-    if (elem.dtp.get_type_id() == uninitialized_type_id) {
-        // If the `elem` dtype is uninitialized, it means a dummy
-        // array was created to capture dimensional structure until
-        // the first value is encountered
-        newelem.dtp = tp;
-    } else {
-        newelem.dtp = promote_types_arithmetic(elem.dtp, tp);
-    }
-    // Create the new array
-    nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, ndim);
-    // Copy the data up to, but not including, the current `coord`
-    // from the old `arr` to the new one
-    assignment_strided_ckernel_builder k;
-    if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(
-            &k, 0, newelem.dtp, newelem.arrmeta_ptr, elem.dtp, elem.arrmeta_ptr,
-            kernel_request_strided, &eval::default_eval_context);
-    } else {
-        // An assignment kernel which copies one byte - will only
-        // be called with count==0 when dtp is uninitialized
-        make_assignment_kernel(
-            &k, 0, ndt::make_type<char>(), NULL, ndt::make_type<char>(), NULL,
-            kernel_request_strided, &eval::default_eval_context);
-    }
-    copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
-                newcoord, newelem, arr.get_readonly_originptr(),
-                coord, elem, k, 0, ndim, false, true);
-    arr.swap(newarr);
-    coord.swap(newcoord);
-    elem.swap(newelem);
+  intptr_t ndim = shape.size();
+  vector<afpd_coordentry> newcoord;
+  afpd_dtype newelem;
+  if (elem.dtp.get_type_id() == uninitialized_type_id) {
+    // If the `elem` dtype is uninitialized, it means a dummy
+    // array was created to capture dimensional structure until
+    // the first value is encountered
+    newelem.dtp = tp;
+  }
+  else {
+    newelem.dtp = promote_types_arithmetic(elem.dtp, tp);
+  }
+  // Create the new array
+  nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, ndim);
+  // Copy the data up to, but not including, the current `coord`
+  // from the old `arr` to the new one
+  assignment_strided_ckernel_builder k;
+  if (elem.dtp.get_type_id() != uninitialized_type_id) {
+    make_assignment_kernel(NULL, NULL, &k, 0, newelem.dtp, newelem.arrmeta_ptr,
+                           elem.dtp, elem.arrmeta_ptr, kernel_request_strided,
+                           &eval::default_eval_context, nd::array());
+  }
+  else {
+    // An assignment kernel which copies one byte - will only
+    // be called with count==0 when dtp is uninitialized
+    make_assignment_kernel(NULL, NULL, &k, 0, ndt::make_type<char>(), NULL,
+                           ndt::make_type<char>(), NULL, kernel_request_strided,
+                           &eval::default_eval_context, nd::array());
+  }
+  copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
+                          newelem, arr.get_readonly_originptr(), coord, elem, k,
+                          0, ndim, false, true);
+  arr.swap(newarr);
+  coord.swap(newcoord);
+  elem.swap(newelem);
 }
 
 /**
@@ -379,38 +379,35 @@ static void promote_nd_arr_dtype(
  * `elem`, and `arr` to point to a new array, and
  * copies the data over.
  */
-static void promote_nd_arr_dim(
-    std::vector<intptr_t>& shape,
-    std::vector<afpd_coordentry>& coord,
-    afpd_dtype& elem,
-    nd::array& arr,
-    intptr_t axis,
-    bool copy_final_coord)
+static void promote_nd_arr_dim(std::vector<intptr_t> &shape,
+                               std::vector<afpd_coordentry> &coord,
+                               afpd_dtype &elem, nd::array &arr, intptr_t axis,
+                               bool copy_final_coord)
 {
-    vector<afpd_coordentry> newcoord;
-    afpd_dtype newelem;
-    newelem.dtp = elem.dtp;
-    // Convert the axis into a var dim
-    shape[axis] = -1;
-    // Create the new array
-    nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, axis);
-    // Copy the data up to, but not including, the current `coord`
-    // from the old `arr` to the new one. The recursion stops
-    // at `axis`, where all subsequent dimensions are handled by the
-    // created kernel.
-    assignment_strided_ckernel_builder k;
-    if (elem.dtp.get_type_id() != uninitialized_type_id) {
-        make_assignment_kernel(&k, 0, newcoord[axis].tp,
-                               newcoord[axis].arrmeta_ptr, coord[axis].tp,
-                               coord[axis].arrmeta_ptr, kernel_request_strided,
-                               &eval::default_eval_context);
-    }
-    copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(),
-                newcoord, newelem, arr.get_readonly_originptr(),
-                coord, elem, k, 0, axis, copy_final_coord, true);
-    arr.swap(newarr);
-    coord.swap(newcoord);
-    elem.swap(newelem);
+  vector<afpd_coordentry> newcoord;
+  afpd_dtype newelem;
+  newelem.dtp = elem.dtp;
+  // Convert the axis into a var dim
+  shape[axis] = -1;
+  // Create the new array
+  nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, axis);
+  // Copy the data up to, but not including, the current `coord`
+  // from the old `arr` to the new one. The recursion stops
+  // at `axis`, where all subsequent dimensions are handled by the
+  // created kernel.
+  assignment_strided_ckernel_builder k;
+  if (elem.dtp.get_type_id() != uninitialized_type_id) {
+    make_assignment_kernel(NULL, NULL, &k, 0, newcoord[axis].tp,
+                           newcoord[axis].arrmeta_ptr, coord[axis].tp,
+                           coord[axis].arrmeta_ptr, kernel_request_strided,
+                           &eval::default_eval_context, nd::array());
+  }
+  copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
+                          newelem, arr.get_readonly_originptr(), coord, elem, k,
+                          0, axis, copy_final_coord, true);
+  arr.swap(newarr);
+  coord.swap(newcoord);
+  elem.swap(newelem);
 }
 
 static bool bool_assign(char *data, PyObject *obj)

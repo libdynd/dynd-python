@@ -722,7 +722,7 @@ struct tuple_ck : public kernels::unary_ck<tuple_ck> {
       src_dim_size = 1;
     } else {
       src_fast.reset(PySequence_Fast(
-          src_obj, "Require a sequence to copy to a dynd struct"));
+          src_obj, "Require a sequence to copy to a dynd tuple"));
       child_src =
           reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());

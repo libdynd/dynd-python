@@ -15,7 +15,7 @@
 #include "array_from_py_typededuction.hpp"
 
 #include <dynd/kernels/assignment_kernels.hpp>
-#include <dynd/kernels/struct_assignment_kernels.hpp>
+#include <dynd/kernels/tuple_assignment_kernels.hpp>
 #include <dynd/kernels/make_lifted_ckernel.hpp>
 #include <dynd/types/base_struct_type.hpp>
 

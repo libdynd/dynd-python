@@ -202,6 +202,12 @@ class TestDType(unittest.TestCase):
         self.assertEqual(tp.arrmeta_size, 2 * ctypes.sizeof(ctypes.c_void_p))
         self.assertTrue(tp.data_size is None)
 
+    def test_tuple_type(self):
+        tp = ndt.type('(int32, int64)')
+        self.assertTrue(nd.as_py(tp.field_types), [ndt.int32, ndt.int64])
+        self.assertEqual(tp.arrmeta_size, 2 * ctypes.sizeof(ctypes.c_void_p))
+        self.assertTrue(tp.data_size is None)
+
     def test_type_shape(self):
         # The shape attribute of ndt.type
         tp = ndt.type('3 * 4 * int32')

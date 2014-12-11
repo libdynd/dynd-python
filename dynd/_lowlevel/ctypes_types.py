@@ -99,6 +99,7 @@ if ctypes.sizeof(ctypes.c_void_p) == 8:
                     ("data2", ctypes.c_void_p),
                     ("data3", ctypes.c_void_p),
                     ("instantiate_func", InstantiateArrFuncFunction),
+                    ("resolve_option_values", ctypes.c_void_p),
                     ("resolve_dst_type", ctypes.c_void_p),
                     ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
 else:
@@ -111,8 +112,8 @@ else:
                     ("data5", ctypes.c_void_p),
                     ("data6", ctypes.c_void_p),
                     ("data7", ctypes.c_void_p),
-                    ("data8", ctypes.c_void_p),
                     ("instantiate_func", InstantiateArrFuncFunction),
+                    ("resolve_option_values", ctypes.c_void_p),
                     ("resolve_dst_type", ctypes.c_void_p),
                     ("free_func", ctypes.CFUNCTYPE(None, ctypes.c_void_p))]
 

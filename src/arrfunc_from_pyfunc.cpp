@@ -81,7 +81,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
   {
     self_type *self = get_self(rawself);
     const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
-    intptr_t nsrc = fpt->get_nsrc();
+    intptr_t nsrc = fpt->get_npos();
     const ndt::type &dst_tp = fpt->get_return_type();
     const ndt::type *src_tp = fpt->get_arg_types_raw();
     // First set up the parameters in a tuple
@@ -116,7 +116,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
   {
     self_type *self = get_self(rawself);
     const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
-    intptr_t nsrc = fpt->get_nsrc();
+    intptr_t nsrc = fpt->get_npos();
     const ndt::type &dst_tp = fpt->get_return_type();
     const ndt::type *src_tp = fpt->get_arg_types_raw();
     // First set up the parameters in a tuple
@@ -173,7 +173,7 @@ static intptr_t instantiate_arrfunc_data(
 {
   typedef pyfunc_expr_ck self_type;
   PyGILState_RAII pgs;
-  intptr_t nsrc = af_tp->get_nsrc();
+  intptr_t nsrc = af_tp->get_npos();
 
   if (!kwds.is_null()) {
     throw invalid_argument("unexpected non-NULL kwds value to "

@@ -253,7 +253,7 @@ static intptr_t instantiate_scalar_ufunc_ckernel(
        << ", does not match the ufunc's type " << af_tp->get_return_type();
     throw type_error(ss.str());
   }
-  intptr_t param_count = af_tp->get_nsrc();
+  intptr_t param_count = af_tp->get_npos();
   for (intptr_t i = 0; i != param_count; ++i) {
     if (src_tp[i] != af_tp->get_arg_type(i)) {
       stringstream ss;

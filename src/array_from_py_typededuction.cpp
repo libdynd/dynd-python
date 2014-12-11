@@ -238,10 +238,11 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
                                     max_count - 1));
     }
   case struct_kind:
+  case tuple_kind:
     if (max_count <= 1) {
       return max_count;
     } else {
-      const base_struct_type *bsd = tp.extended<base_struct_type>();
+      auto bsd = tp.extended<base_tuple_type>();
       size_t field_count = bsd->get_field_count();
       for (size_t i = 0; i != field_count; ++i) {
         size_t candidate =
@@ -329,7 +330,9 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type& tp,
         if (shape.size() == current_axis) {
             if (initial_pass) {
                 shape.push_back(size);
-            } else if (tp.get_kind() == struct_kind) {
+            }
+            else if (tp.get_kind() == struct_kind ||
+                     tp.get_kind() == tuple_kind) {
                 // Signal that this is a dimension which is sometimes scalar, to allow for
                 // raggedness in the struct type's fields
                 shape.push_back(pydynd_shape_deduction_ragged);
@@ -357,7 +360,7 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type& tp,
                 shape[current_axis] = pydynd_shape_deduction_dict;
             }
         } else if (shape.size() != current_axis) {
-            if (tp.get_kind() == struct_kind) {
+            if (tp.get_kind() == struct_kind || tp.get_kind() == tuple_kind) {
                 shape[current_axis] = pydynd_shape_deduction_ragged;
             } else {
                 throw runtime_error("dynd array doesn't support dimensions"

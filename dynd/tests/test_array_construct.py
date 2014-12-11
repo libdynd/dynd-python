@@ -534,6 +534,12 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y.b), 3.5)
         self.assertEqual(nd.as_py(a.z), [3j])
 
+    def test_single_tuple_array(self):
+        a = nd.array([(0,0), (3,5), (12,10)], dtype='(int32, int32)')
+        self.assertEqual(nd.type_of(a), ndt.type('3 * (int32, int32)'))
+        self.assertEqual(nd.as_py(a[:,0]), [0, 3, 12])
+        self.assertEqual(nd.as_py(a[:,1]), [0, 5, 10])
+
     def test_single_struct_array(self):
         a = nd.array([(0,0), (3,5), (12,10)], dtype='{x:int32, y:int32}')
         self.assertEqual(nd.type_of(a), ndt.type('3 * {x:int32, y:int32}'))
@@ -548,7 +554,8 @@ class TestStructConstruct(unittest.TestCase):
 
         a = nd.array([[(3, 'X')], [(10, 'L'), (12, 'M')]],
                         dtype='{count:int32, size:string[1,"A"]}')
-        self.assertEqual(nd.type_of(a), ndt.type('2 * var * {count:int32, size:string[1,"A"]}'))
+        self.assertEqual(nd.type_of(a),
+                       ndt.type('2 * var * {count:int32, size:string[1,"A"]}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 

@@ -725,9 +725,10 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
           deduce_pyseq_shape_using_dtype(item.get(), tp, shape, true, 1);
         }
         ndim = shape.size();
-        // If the dtype is a struct, fix up the ndim to let the struct absorb
-        // some of the sequences
-        if (tp.get_dtype().get_kind() == struct_kind) {
+        // If the dtype is a tuple/struct, fix up the ndim to let the struct
+        // absorb some of the sequences
+        if (tp.get_dtype().get_kind() == struct_kind ||
+            tp.get_dtype().get_kind() == tuple_kind) {
           intptr_t ndim_end = shape.size();
           for (ndim = 0; ndim != ndim_end; ++ndim) {
             if (shape[ndim] == pydynd_shape_deduction_ragged) {

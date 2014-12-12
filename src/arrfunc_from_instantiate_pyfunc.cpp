@@ -125,7 +125,7 @@ PyObject *pydynd::arrfunc_from_instantiate_pyfunc(PyObject *instantiate_pyfunc,
     arrfunc_type_data *out_af_ptr =
         reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
 
-    out_af_ptr->free_func = &delete_pyfunc_arrfunc_data;
+    out_af_ptr->free = &delete_pyfunc_arrfunc_data;
     *out_af_ptr->get_data_as<PyObject *>() = instantiate_pyfunc;
     Py_INCREF(instantiate_pyfunc);
     out_af_ptr->instantiate = &instantiate_pyfunc_arrfunc_data;

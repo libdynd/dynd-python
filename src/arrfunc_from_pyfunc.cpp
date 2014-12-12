@@ -206,7 +206,7 @@ nd::arrfunc pydynd::arrfunc_from_pyfunc(PyObject *instantiate_pyfunc,
   dynd::nd::array af = dynd::nd::empty(proto);
   arrfunc_type_data *out_af =
       reinterpret_cast<dynd::arrfunc_type_data *>(af.get_readwrite_originptr());
-  out_af->free_func = &delete_arrfunc_data;
+  out_af->free = &delete_arrfunc_data;
   *out_af->get_data_as<PyObject *>() = instantiate_pyfunc;
   Py_INCREF(instantiate_pyfunc);
   out_af->instantiate = &instantiate_arrfunc_data;

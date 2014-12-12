@@ -377,7 +377,7 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
           }
           *af_ptr->get_data_as<void *>() = data_raw;
           memset(data_raw, 0, out_af_size);
-          af_ptr->free_func = &delete_scalar_ufunc_data;
+          af_ptr->free = &delete_scalar_ufunc_data;
           af_ptr->instantiate = &instantiate_scalar_ufunc_ckernel;
           // Fill in the arrfunc instance data
           scalar_ufunc_data *data =

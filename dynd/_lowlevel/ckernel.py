@@ -141,10 +141,10 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
     if (not isinstance(ckd, nd_array) or
                 nd_type_of(ckd).type_id != 'arrfunc'):
         raise TypeError('ckd must be an nd.array with type arrfunc')
-    if kernreq in ["single", 0]:
-        kernreq = 0
-    elif kernreq in ["strided", 1]:
-        kernreq = 1
+    if kernreq in ["single", 8]:
+        kernreq = 8
+    elif kernreq in ["strided", 16]:
+        kernreq = 16
     else:
         raise ValueError("invalid kernel request type %r" % kernreq)
     # Get the data pointer to the arrfunc object

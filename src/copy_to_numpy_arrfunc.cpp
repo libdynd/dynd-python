@@ -11,8 +11,8 @@
 #include <numpy/arrayscalars.h>
 
 #include <dynd/kernels/assignment_kernels.hpp>
+#include <dynd/kernels/elwise.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
-#include <dynd/kernels/make_lifted_ckernel.hpp>
 #include <dynd/types/base_struct_type.hpp>
 
 #include "copy_to_numpy_arrfunc.hpp"
@@ -39,11 +39,11 @@ struct strided_of_numpy_arrmeta {
  * being a pointer to the ``PyArrayObject *`` for the destination.
  */
 static intptr_t instantiate_copy_to_numpy(
-    const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
-    void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
-    const char *dst_arrmeta, const ndt::type *src_tp,
-    const char *const *src_arrmeta, kernel_request_t kernreq,
-    const eval::eval_context *ectx, const nd::array &kwds)
+    const arrfunc_type_data *self_af, const arrfunc_type *af_tp, void *ckb,
+    intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
+    const ndt::type *src_tp, const char *const *src_arrmeta,
+    kernel_request_t kernreq, const eval::eval_context *ectx,
+    const nd::array &kwds)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;
@@ -87,11 +87,10 @@ static intptr_t instantiate_copy_to_numpy(
     dst_am_holder.am.dst_alignment = dst_alignment;
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
-    return make_lifted_expr_ckernel(self_af, af_tp, ckb, ckb_offset, dst_ndim,
-                                    dst_am_tp, dst_am, &src_ndim, src_tp,
-                                    src_arrmeta, kernreq, ectx);
-  }
-  else {
+    return kernels::make_lifted_expr_ckernel(self_af, af_tp, ckb, ckb_offset,
+                                             dst_am_tp, dst_am, src_tp,
+                                             src_arrmeta, kernreq, ectx, nd::array());
+  } else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(dst_obj);
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       // If there is no object type in the numpy type, get the dynd equivalent
@@ -100,14 +99,12 @@ static intptr_t instantiate_copy_to_numpy(
       return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, dst_view_tp,
                                     NULL, src_tp[0], src_arrmeta[0], kernreq,
                                     ectx, nd::array());
-    }
-    else if (PyDataType_ISOBJECT(dtype)) {
+    } else if (PyDataType_ISOBJECT(dtype)) {
       const arrfunc_type_data *af = copy_to_pyobject_tuple.get();
       return af->instantiate(af, copy_to_pyobject_tuple.get_type(), ckb,
                              ckb_offset, ndt::make_type<void>(), NULL, src_tp,
                              src_arrmeta, kernreq, ectx, nd::array());
-    }
-    else if (PyDataType_HASFIELDS(dtype)) {
+    } else if (PyDataType_HASFIELDS(dtype)) {
       if (src_tp[0].get_kind() != struct_kind &&
           src_tp[0].get_kind() != tuple_kind) {
         stringstream ss;
@@ -146,8 +143,7 @@ static intptr_t instantiate_copy_to_numpy(
           if (src_i >= 0) {
             field_dtypes[src_i] = field_dtypes_orig[i];
             field_offsets[src_i] = field_offsets_orig[i];
-          }
-          else {
+          } else {
             stringstream ss;
             pyobject_ownref dtype_str(PyObject_Str((PyObject *)dtype));
             ss << "Cannot assign from source dynd type " << src_tp[0]
@@ -155,8 +151,7 @@ static intptr_t instantiate_copy_to_numpy(
             throw invalid_argument(ss.str());
           }
         }
-      }
-      else {
+      } else {
         // In the tuple case, use position instead of name
         field_dtypes.swap(field_dtypes_orig);
         field_offsets.swap(field_offsets_orig);
@@ -186,8 +181,7 @@ static intptr_t instantiate_copy_to_numpy(
               src_arrmeta[0]),
           src_tp[0].extended<base_tuple_type>()->get_field_types_raw(),
           src_fields_arrmeta.get(), kernreq, ectx);
-    }
-    else {
+    } else {
       stringstream ss;
       ss << "TODO: implement assign from source dynd type " << src_tp[0]
          << " to numpy type " << pyobject_repr((PyObject *)dtype);

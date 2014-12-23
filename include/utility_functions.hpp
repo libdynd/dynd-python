@@ -15,8 +15,8 @@
 #include <dynd/type.hpp>
 
 namespace dynd {
-    // Forward declaration
-    struct arrfunc_type_data;
+// Forward declaration
+class arrfunc_type_data;
 } // namespace dynd
 
 namespace pydynd {

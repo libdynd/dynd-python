@@ -9,7 +9,6 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/func/lift_arrfunc.hpp>
 #include <dynd/func/lift_reduction_arrfunc.hpp>
-#include <dynd/types/arrfunc_old_type.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
@@ -236,7 +235,7 @@ namespace {
         // This is the number of dimensions being reduced
         intptr_t reduction_ndim =
             lifted_type.get_ndim() -
-            elwise_reduction_af_tp->get_arg_type(0).get_ndim();
+            elwise_reduction_af_tp->get_pos_type(0).get_ndim();
 
         shortvector<bool> reduction_dimflags(reduction_ndim);
         if (axis_obj == Py_None) {

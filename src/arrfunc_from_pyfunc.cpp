@@ -83,7 +83,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
     const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
     intptr_t nsrc = fpt->get_npos();
     const ndt::type &dst_tp = fpt->get_return_type();
-    const ndt::type *src_tp = fpt->get_arg_types_raw();
+    const ndt::type *src_tp = fpt->get_pos_types_raw();
     // First set up the parameters in a tuple
     pyobject_ownref args(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
@@ -118,7 +118,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
     const arrfunc_type *fpt = self->m_proto.extended<arrfunc_type>();
     intptr_t nsrc = fpt->get_npos();
     const ndt::type &dst_tp = fpt->get_return_type();
-    const ndt::type *src_tp = fpt->get_arg_types_raw();
+    const ndt::type *src_tp = fpt->get_pos_types_raw();
     // First set up the parameters in a tuple
     pyobject_ownref args(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
@@ -181,7 +181,7 @@ static intptr_t instantiate_arrfunc_data(
   }
 
   self_type *self = self_type::create(ckb, kernreq, ckb_offset);
-  self->m_proto = ndt::make_funcproto(nsrc, src_tp, dst_tp);
+  self->m_proto = ndt::make_arrfunc(nsrc, src_tp, dst_tp);
   self->m_pyfunc = *af_self->get_data_as<PyObject *>();
   Py_XINCREF(self->m_pyfunc);
   self->m_dst_arrmeta = dst_arrmeta;

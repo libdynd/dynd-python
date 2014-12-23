@@ -15,7 +15,6 @@
 #endif
 
 #include <dynd/kernels/expr_kernels.hpp>
-#include <dynd/types/arrfunc_old_type.hpp>
 
 #include "exception_translation.hpp"
 #include "utility_functions.hpp"
@@ -255,11 +254,11 @@ static intptr_t instantiate_scalar_ufunc_ckernel(
   }
   intptr_t param_count = af_tp->get_npos();
   for (intptr_t i = 0; i != param_count; ++i) {
-    if (src_tp[i] != af_tp->get_arg_type(i)) {
+    if (src_tp[i] != af_tp->get_pos_type(i)) {
       stringstream ss;
       ss << "source type requested for parameter " << (i + 1) << ", "
          << src_tp[i] << ", does not match the ufunc's type "
-         << af_tp->get_arg_type(i);
+         << af_tp->get_pos_type(i);
       throw type_error(ss.str());
     }
   }
@@ -364,8 +363,8 @@ PyObject *pydynd::arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
           for (intptr_t j = 0; j < nargs - 1; ++j) {
             param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
           }
-          nd::array af =
-              nd::empty(ndt::make_funcproto(param_types, return_type));
+          nd::array af = nd::empty(
+              ndt::make_arrfunc(ndt::make_tuple(param_types), return_type));
           arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(
               af.get_readwrite_originptr());
 

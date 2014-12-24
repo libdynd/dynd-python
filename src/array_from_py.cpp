@@ -6,6 +6,7 @@
 #include <Python.h>
 #include <datetime.h>
 
+#include <dynd/func/arrfunc.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/cfixed_dim_type.hpp>

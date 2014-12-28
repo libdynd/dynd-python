@@ -83,7 +83,7 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
     func = arrfunc_from_pyfunc(func_obj, proto);
   }
   nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
-  nd::array result = roll.call(1, &arr, ectx);
+  nd::array result = roll(arr, ectx);
   return wrap_array(result);
 }
 

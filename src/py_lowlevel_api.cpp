@@ -7,7 +7,7 @@
 
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/func/lift_arrfunc.hpp>
+#include <dynd/func/elwise.hpp>
 #include <dynd/func/lift_reduction_arrfunc.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/func/rolling_arrfunc.hpp>
@@ -183,7 +183,7 @@ namespace {
           ss << "af must be an nd.array of type arrfunc";
           throw dynd::type_error(ss.str());
         }
-        return wrap_array(dynd::lift_arrfunc(((WArray *)af)->v));
+        return wrap_array(dynd::nd::elwise.bind("func", ((WArray *)af)->v));
       }
       catch (...) {
         translate_exception();

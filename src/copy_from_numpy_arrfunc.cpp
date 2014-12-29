@@ -15,7 +15,7 @@
 #include "array_from_py_typededuction.hpp"
 
 #include <dynd/kernels/assignment_kernels.hpp>
-#include <dynd/kernels/elwise.hpp>
+#include <dynd/func/elwise.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
 #include <dynd/types/base_struct_type.hpp>
 
@@ -83,9 +83,9 @@ static intptr_t instantiate_copy_from_numpy(
     src_am_holder.am.src_alignment = src_alignment;
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
-    return kernels::make_lifted_expr_ckernel(self_af, af_tp, ckb, ckb_offset,
-                                             dst_tp, dst_arrmeta, &src_am_tp,
-                                             &src_am, kernreq, ectx, nd::array());
+    return nd::elwise.instantiate(self_af, af_tp, ckb, ckb_offset, dst_tp,
+                                  dst_arrmeta, &src_am_tp, &src_am, kernreq,
+                                  ectx, nd::array());
   } else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(src_obj);
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {

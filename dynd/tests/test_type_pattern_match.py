@@ -8,8 +8,8 @@ class TestTypePatternMatch(unittest.TestCase):
         self.assertTrue(ndt.int16.matches('T'))
         self.assertTrue(ndt.int16.matches('... * T'))
         self.assertTrue(ndt.int16.matches('A... * T'))
-        self.assertTrue(ndt.type('fixed * var * int').matches('M * A... * N * T'))
-        self.assertFalse(ndt.type('fixed * int').matches('M * A... * N * T'))
+        self.assertTrue(ndt.type('Fixed * var * int').matches('M * A... * N * T'))
+        self.assertFalse(ndt.type('Fixed * int').matches('M * A... * N * T'))
 
     def test_tuple(self):
         pat = ndt.type('(T, ?T, 3 * T, A... * S)')

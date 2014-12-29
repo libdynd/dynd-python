@@ -98,8 +98,8 @@ class TestArrFunc(unittest.TestCase):
                          ndt.type("(Dims... * float64, Dims... * int32) -> Dims... * float64"))
         # Create some compatible arguments
         in0 = nd.array([[1, 2, 3], [4, 5], [6], [7,9,10]],
-                       type='fixed * var * float64')
-        in1 = nd.array([[-1], [10], [100], [-12]], type='fixed * 1 * int32')
+                       type='Fixed * var * float64')
+        in1 = nd.array([[-1], [10], [100], [-12]], type='Fixed * 1 * int32')
         # Instantiate and call the kernel on these arguments
         out = af_lifted(in0, in1)
         # Verify that we got the expected result
@@ -124,9 +124,9 @@ class TestArrFunc(unittest.TestCase):
         # Also test it as a lifted kernel
         af_lifted = _lowlevel.lift_arrfunc(af)
         in0 = nd.array([[0.25, 0.75], [0.5, 1.0, 0.5], [1.0]],
-                       type="fixed * var * real")
+                       type="Fixed * var * real")
         in1 = nd.array([[1, 3], [1, 3, 5], [5]],
-                       type="fixed * var * real")
+                       type="Fixed * var * real")
         out = af_lifted(in0, in1)
         self.assertEqual(nd.as_py(out),
                          [(0.25 + 0.75 * 3),
@@ -169,12 +169,12 @@ class TestLiftReductionArrFunc(unittest.TestCase):
                         False)
         in0 = nd.array([3, 12, -5, 10, 2])
         # Simple lift
-        sum = _lowlevel.lift_reduction_arrfunc(af, 'fixed * int32')
+        sum = _lowlevel.lift_reduction_arrfunc(af, 'Fixed * int32')
         out = nd.empty(ndt.int32)
         sum.execute(out, in0)
         self.assertEqual(nd.as_py(out), 22)
         # Lift with keepdims
-        sum = _lowlevel.lift_reduction_arrfunc(af, 'fixed * int32',
+        sum = _lowlevel.lift_reduction_arrfunc(af, 'Fixed * int32',
                                                         keepdims=True)
         out = nd.empty(1, ndt.int32)
         sum.execute(out, in0)
@@ -188,7 +188,7 @@ class TestLiftReductionArrFunc(unittest.TestCase):
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Simple lift
         sum = _lowlevel.lift_reduction_arrfunc(af,
-                                                 'fixed * fixed * int32',
+                                                 'Fixed * Fixed * int32',
                                                  commutative=True,
                                                  associative=True)
         out = nd.empty(ndt.int32)
@@ -203,7 +203,7 @@ class TestLiftReductionArrFunc(unittest.TestCase):
         in0 = nd.array([[3, 12, -5], [10, 2, 3]])
         # Reduce along axis 0
         sum = _lowlevel.lift_reduction_arrfunc(af,
-                                                 'fixed * fixed * int32',
+                                                 'Fixed * Fixed * int32',
                                                  axis=0,
                                                  commutative=True,
                                                  associative=True)
@@ -218,7 +218,7 @@ class TestLiftReductionArrFunc(unittest.TestCase):
                         False)
         # Reduce along axis 1
         sum = _lowlevel.lift_reduction_arrfunc(af,
-                                                 'fixed * fixed * int32',
+                                                 'Fixed * Fixed * int32',
                                                  axis=1,
                                                  commutative=True,
                                                  associative=True)
@@ -236,7 +236,7 @@ class TestRollingArrFunc(unittest.TestCase):
                         False)
         # Lift it to 1D
         diff_1d = _lowlevel.lift_reduction_arrfunc(af,
-                                                 'fixed * float64',
+                                                 'Fixed * float64',
                                                  axis=0,
                                                  commutative=False,
                                                  associative=False)

@@ -154,8 +154,8 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
     if ckd_struct.instantiate_func is None:
         raise ValueError('the provided arrfunc is NULL')
     dst_tp = nd_array(dst_tp, type="type")
-    src_tp = nd_array(src_tp, type="fixed * type")
-    src_arrmeta = nd_array(src_arrmeta, type="fixed * uintptr")
+    src_tp = nd_array(src_tp, type="Fixed * type")
+    src_arrmeta = nd_array(src_arrmeta, type="Fixed * uintptr")
     ectx_ptr = ectx._ectx_ptr if isinstance(ectx, nd_eval_context) else ectx
     ckd_struct.instantiate_func(dp, af_tp,
                     out_ckb, ckb_offset,

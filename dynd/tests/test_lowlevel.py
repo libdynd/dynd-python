@@ -105,8 +105,8 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.CFIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
                         _lowlevel.type_id.FIXED_DIM)
-        self.assertEqual(self.type_id_of(ndt.type('fixed * int32')),
-                        _lowlevel.type_id.FIXED_SYM_DIM)
+        self.assertEqual(self.type_id_of(ndt.type('Fixed * int32')),
+                        _lowlevel.type_id.FIXED_DIMSYM)
         self.assertEqual(self.type_id_of(ndt.type('var * int32')),
                         _lowlevel.type_id.VAR_DIM)
         # GroupBy
@@ -145,7 +145,7 @@ class TestLowLevel(unittest.TestCase):
         # Should get an error if we try symbolic fixed,
         # because the size is unknown
         self.assertRaises(TypeError,
-                          lambda: _lowlevel.array_from_ptr('fixed * int32',
+                          lambda: _lowlevel.array_from_ptr('Fixed * int32',
                                                            ctypes.addressof(a),
                                                            a, 'readonly'))
 
@@ -172,7 +172,7 @@ class TestLowLevel(unittest.TestCase):
         # Should raise an exception if the type is symbolic
         a = (ctypes.c_int32 * 4)()
         self.assertRaises(TypeError, _lowlevel.array_from_ptr,
-                        ndt.type('fixed * int32'), ctypes.addressof(a),
+                        ndt.type('Fixed * int32'), ctypes.addressof(a),
                         a, 'readwrite')
 
 if __name__ == '__main__':

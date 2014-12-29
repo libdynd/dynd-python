@@ -66,7 +66,7 @@ class TestArrayConstruct(unittest.TestCase):
         a = nd.array([], dtype=ndt.int64)
         self.assertEqual(nd.type_of(a), ndt.type('0 * int64'))
         self.assertEqual(a.shape, (0,))
-        a = nd.array([], dtype='fixed * float64')
+        a = nd.array([], dtype='Fixed * float64')
         self.assertEqual(nd.type_of(a), ndt.type('0 * float64'))
         self.assertEqual(a.shape, (0,))
         a = nd.array([], dtype='var * int16')
@@ -763,7 +763,7 @@ class TestIteratorConstruct(unittest.TestCase):
                         (2*x + 5 for x in range(10)), type='9 * int32')
         # Produce an error if it's a fixed dimension
         self.assertRaises(TypeError, nd.array,
-                        (2*x + 5 for x in range(10)), type='fixed * int32')
+                        (2*x + 5 for x in range(10)), type='Fixed * int32')
 
     def test_simple_fromiter_medsize(self):
         # A bigger input to exercise the dynamic resizing a bit
@@ -775,7 +775,7 @@ class TestIteratorConstruct(unittest.TestCase):
     def test_ragged_fromiter(self):
         # Strided array of var from list of iterators
         a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
-                        [2, 10]], type='fixed * var * int32')
+                        [2, 10]], type='Fixed * var * int32')
         self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
         self.assertEqual(nd.as_py(a),
                         [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
@@ -878,13 +878,13 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Specify some dims as fixed
-        a = nd.array(val, dtype='fixed * int16')
+        a = nd.array(val, dtype='Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='fixed * fixed * int16')
+        a = nd.array(val, dtype='Fixed * Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='fixed * fixed * fixed * int16')
+        a = nd.array(val, dtype='Fixed * Fixed * Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Specify some dims as fixed
@@ -898,13 +898,13 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Mix fixed, symbolic fixed, and var
-        a = nd.array(val, dtype='4 * var * fixed * int16')
+        a = nd.array(val, dtype='4 * var * Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * var * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         a = nd.array(val, dtype='var * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * var * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='fixed * 2 * int16')
+        a = nd.array(val, dtype='Fixed * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
 
@@ -918,7 +918,7 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
         self.assertEqual(nd.as_py(a), [])
         # A symbolic fixed dimension gets absorbed
-        a = nd.array([], dtype='fixed * int32')
+        a = nd.array([], dtype='Fixed * int32')
         self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
         self.assertEqual(nd.as_py(a), [])
         # A var dimension gets absorbed

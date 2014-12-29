@@ -401,8 +401,8 @@ def replace_dtype(w_type dt, replacement_dt, size_t replace_ndim=0):
     >>> from dynd import nd, ndt
 
     >>> d = ndt.type('3 * var * int32')
-    >>> ndt.replace_dtype(d, 'fixed * float64')
-    ndt.type("3 * var * fixed * float64")
+    >>> ndt.replace_dtype(d, 'Fixed * float64')
+    ndt.type("3 * var * Fixed * float64")
     >>> ndt.replace_dtype(d, '{x: int32, y:int32}', 1)
     ndt.type("3 * {x : int32, y : int32}")
     """
@@ -698,9 +698,9 @@ def make_fixed_dimsym(element_tp, ndim=None):
     >>> from dynd import nd, ndt
 
     >>> ndt.make_fixed_dimsym(ndt.int32)
-    ndt.type("fixed * int32")
+    ndt.type("Fixed * int32")
     >>> ndt.make_fixed_dimsym(ndt.int32, 3)
-    ndt.type("fixed * fixed * fixed * int32")
+    ndt.type("Fixed * Fixed * Fixed * int32")
     """
     cdef w_type result = w_type()
     if (ndim is None):
@@ -1224,7 +1224,7 @@ cdef class w_array:
         >>> from datetime import date
         >>> a = nd.array([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32, year: int32, day: float32}')
         >>> a
-        nd.array([[3, 1929, 13], [3, 1979, 22]], type="fixed * convert[to={month : int32, year : int32, day : float32}, from=date]")
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="Fixed * convert[to={month : int32, year : int32, day : float32}, from=date]")
         >>> a.eval()
         nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
         """

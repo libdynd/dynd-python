@@ -60,9 +60,9 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
   for (intptr_t i = 0; i < args_size; ++i) {
     args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
   }
-  throw runtime_error("TODO: working around build error here !!!");
-  //nd::array result = af.call(args_size, args_size ? &args[0] : NULL, ectx);
-  //return wrap_array(result);
+
+  nd::array result = af.call(args_size, args_size ? &args[0] : NULL, ectx);
+  return wrap_array(result);
 }
 
 PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,

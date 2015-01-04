@@ -104,6 +104,10 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         x = nd.array(['testing', 'one', 'two'])
         self.assertEqual(nd.type_of(x), ndt.type('3 * string'))
         y = nd.as_numpy(x, allow_copy=True)
+        self.assertEqual(y.shape, (3,))
+        self.assertEqual(y[0], 'testing')
+        self.assertEqual(y[1], 'one')
+        self.assertEqual(y[2], 'two')
         self.assertEqual(y.dtype.kind, 'O')
         if sys.version_info < (3, 0):
             self.assertEqual(y.dtype.metadata, {'vlen' : unicode})

@@ -192,7 +192,7 @@ static intptr_t instantiate_copy_to_numpy(
 
 static nd::arrfunc make_copy_to_numpy_arrfunc()
 {
-  nd::array out_af = nd::empty("(A... * T) -> void");
+  nd::array out_af = nd::empty("(Any) -> void");
   arrfunc_type_data *af =
       reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
   af->instantiate = &instantiate_copy_to_numpy;

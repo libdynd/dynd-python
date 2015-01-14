@@ -555,7 +555,7 @@ static intptr_t instantiate_copy_to_pyobject(
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
-    const eval::eval_context *ectx, const nd::array &kwds)
+    const eval::eval_context *ectx, const nd::array &kwds, const std::map<nd::string, ndt::type> &tp_vars)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;
@@ -723,14 +723,14 @@ static intptr_t instantiate_copy_to_pyobject(
     ckb_offset = is_avail_af->instantiate(
         is_avail_af, is_avail_af_tp, ckb, ckb_offset,
         ndt::make_type<dynd_bool>(), NULL, src_tp, src_arrmeta,
-        kernel_request_single, ectx, nd::array());
+        kernel_request_single, ectx, nd::array(), tp_vars);
     reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
     self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ndt::type src_value_tp = src_tp[0].extended<option_type>()->get_value_type();
     ckb_offset = self_af->instantiate(
         self_af, af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta, &src_value_tp,
-        src_arrmeta, kernel_request_single, ectx, nd::array());
+        src_arrmeta, kernel_request_single, ectx, nd::array(), tp_vars);
     return ckb_offset;
   }
   case fixed_dim_type_id:
@@ -745,7 +745,7 @@ static intptr_t instantiate_copy_to_pyobject(
       self->m_stride = stride;
       return self_af->instantiate(
           self_af, af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta, &el_tp,
-          &el_arrmeta, kernel_request_strided, ectx, nd::array());
+          &el_arrmeta, kernel_request_strided, ectx, nd::array(), tp_vars);
     }
     break;
   }
@@ -759,7 +759,7 @@ static intptr_t instantiate_copy_to_pyobject(
     const char *el_arrmeta = src_arrmeta[0] + sizeof(var_dim_type_arrmeta);
     return self_af->instantiate(
         self_af, af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta, &el_tp,
-        &el_arrmeta, kernel_request_strided, ectx, nd::array());
+        &el_arrmeta, kernel_request_strided, ectx, nd::array(), tp_vars);
   }
   case cstruct_type_id:
   case struct_type_id:
@@ -790,7 +790,7 @@ static intptr_t instantiate_copy_to_pyobject(
         ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset,
                                           dst_tp, dst_arrmeta, &field_types[i],
                                           &field_arrmeta, kernel_request_single,
-                                          ectx, nd::array());
+                                          ectx, nd::array(), tp_vars);
       }
       return ckb_offset;
     }
@@ -815,7 +815,7 @@ static intptr_t instantiate_copy_to_pyobject(
       ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset, dst_tp,
                                         dst_arrmeta, &field_types[i],
                                         &field_arrmeta, kernel_request_single,
-                                        ectx, nd::array());
+                                        ectx, nd::array(), tp_vars);
     }
     return ckb_offset;
   }
@@ -824,7 +824,7 @@ static intptr_t instantiate_copy_to_pyobject(
     ndt::type src_value_tp = src_tp[0].extended<pointer_type>()->get_target_type();
     return self_af->instantiate(
         self_af, af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta, &src_value_tp,
-        src_arrmeta, kernel_request_single, ectx, nd::array());
+        src_arrmeta, kernel_request_single, ectx, nd::array(), tp_vars);
   }
   default:
     break;

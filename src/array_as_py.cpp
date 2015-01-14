@@ -10,7 +10,6 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "copy_to_pyobject_arrfunc.hpp"
-
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
@@ -41,7 +40,7 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   const char *arrmeta = a.get_arrmeta();
   af->instantiate(af, af_tp, &ckb, 0, ndt::make_type<void>(), NULL, &tp,
                   &arrmeta, kernel_request_single, &eval::default_eval_context,
-                  nd::array());
+                  nd::array(), std::map<nd::string, ndt::type>());
   pyobject_ownref result;
   ckb(reinterpret_cast<char *>(result.obj_addr()),
       const_cast<char *>(a.get_readonly_originptr()));

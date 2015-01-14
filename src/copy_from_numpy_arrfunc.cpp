@@ -39,7 +39,7 @@ static intptr_t instantiate_copy_from_numpy(
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     const ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
-    const nd::array &kwds)
+    const nd::array &kwds, const std::map<nd::string, ndt::type> &tp_vars)
 {
   if (src_tp[0].get_type_id() != void_type_id) {
     stringstream ss;
@@ -85,7 +85,7 @@ static intptr_t instantiate_copy_from_numpy(
     // calling back to this arrfunc when the dtype is reached
     return nd::elwise.instantiate(self_af, af_tp, ckb, ckb_offset, dst_tp,
                                   dst_arrmeta, &src_am_tp, &src_am, kernreq,
-                                  ectx, nd::array());
+                                  ectx, nd::array(), tp_vars);
   } else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(src_obj);
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
@@ -99,7 +99,7 @@ static intptr_t instantiate_copy_from_numpy(
       const arrfunc_type_data *af = copy_from_pyobject.get();
       return af->instantiate(af, copy_from_pyobject.get_type(), ckb, ckb_offset,
                              dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq,
-                             ectx, nd::array());
+                             ectx, nd::array(), tp_vars);
     } else if (PyDataType_HASFIELDS(dtype)) {
       if (dst_tp.get_kind() != struct_kind && dst_tp.get_kind() != tuple_kind) {
         stringstream ss;
@@ -214,7 +214,7 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   ndt::type src_tp = ndt::make_type<void>();
   af->instantiate(af, copy_from_numpy.get_type(), &ckb, 0, dst_tp, dst_arrmeta,
                   &src_tp, &src_arrmeta_ptr, kernel_request_single,
-                  &eval::default_eval_context, nd::array());
+                  &eval::default_eval_context, nd::array(), std::map<nd::string, ndt::type>());
   ckb(dst_data, (char *)PyArray_DATA(value));
 }
 

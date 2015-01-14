@@ -183,7 +183,7 @@ namespace {
           ss << "af must be an nd.array of type arrfunc";
           throw dynd::type_error(ss.str());
         }
-        return wrap_array(dynd::nd::elwise.bind("func", ((WArray *)af)->v));
+        return wrap_array(dynd::nd::functional::elwise(((WArray *)af)->v));
       }
       catch (...) {
         translate_exception();

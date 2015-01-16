@@ -83,9 +83,9 @@ static intptr_t instantiate_copy_from_numpy(
     src_am_holder.am.src_alignment = src_alignment;
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
-    return nd::functional::elwise_instantiate_with_child(self_af, af_tp, ckb, ckb_offset, dst_tp,
-                                  dst_arrmeta, &src_am_tp, &src_am, kernreq,
-                                  ectx, nd::array(), tp_vars);
+    return nd::functional::elwise_instantiate_with_child(
+        self_af, af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta, &src_am_tp,
+        &src_am, kernreq, ectx, nd::array(), tp_vars);
   } else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(src_obj);
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
@@ -214,7 +214,8 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   ndt::type src_tp = ndt::make_type<void>();
   af->instantiate(af, copy_from_numpy.get_type(), &ckb, 0, dst_tp, dst_arrmeta,
                   &src_tp, &src_arrmeta_ptr, kernel_request_single,
-                  &eval::default_eval_context, nd::array(), std::map<nd::string, ndt::type>());
+                  &eval::default_eval_context, nd::array(),
+                  std::map<nd::string, ndt::type>());
   ckb(dst_data, (char *)PyArray_DATA(value));
 }
 

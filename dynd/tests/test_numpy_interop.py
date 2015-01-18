@@ -296,7 +296,8 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a['b'], [2, 4])
         # If the memory of the struct is out of order, PEP 3118 doesn't work
         n = n[:, ::-1]
-        self.assertRaises(BufferError, lambda: memoryview(n))
+        if sys.version_info >= (2, 7):
+            self.assertRaises(BufferError, lambda: memoryview(n))
 
 
     def test_numpy_dynd_fixedstring_interop(self):

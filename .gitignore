@@ -2,6 +2,7 @@
 *.swp
 bld.bat
 build
+build_cuda
 libraries/libdynd
 CMakeCache.txt
 CMakeFiles

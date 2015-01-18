@@ -286,6 +286,20 @@ class TestNumpyViewInterop(unittest.TestCase):
         a[1] = 100
         self.assertEqual(nd.as_py(n[1]), 100)
 
+    def test_numpy_view_of_dynd_struct(self):
+        n = nd.array([(1, 2), (3, 4)], dtype='{a: int32, b: float64}')
+        a = np.asarray(n)
+        self.assertEqual(a.dtype, np.dtype({'names':['a','b'],
+                                            'formats':['i4','f8'],
+                                            'offsets':[0,8], 'itemsize':16}))
+        assert_array_equal(a['a'], [1, 3])
+        assert_array_equal(a['b'], [2, 4])
+        # If the memory of the struct is out of order, PEP 3118 doesn't work
+        n = n[:, ::-1]
+        if sys.version_info >= (2, 7):
+            self.assertRaises(BufferError, lambda: memoryview(n))
+
+
     def test_numpy_dynd_fixedstring_interop(self):
         # Tests converting fixed-size string arrays to/from numpy
         # ASCII Numpy -> dynd

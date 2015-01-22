@@ -155,10 +155,10 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
     dt = ndt::make_type<double>();
     break;
   case NPY_CFLOAT:
-    dt = ndt::make_type<complex<float> >();
+    dt = ndt::make_type<dynd::complex<float> >();
     break;
   case NPY_CDOUBLE:
-    dt = ndt::make_type<complex<double> >();
+    dt = ndt::make_type<dynd::complex<double> >();
     break;
   case NPY_STRING:
     dt = ndt::make_fixedstring(d->elsize, string_encoding_ascii);
@@ -307,9 +307,9 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
     case NPY_DOUBLE:
         return ndt::make_type<double>();
     case NPY_CFLOAT:
-        return ndt::make_type<complex<float> >();
+        return ndt::make_type<dynd::complex<float> >();
     case NPY_CDOUBLE:
-        return ndt::make_type<complex<double> >();
+        return ndt::make_type<dynd::complex<double> >();
     default: {
         stringstream ss;
         ss << "Cannot convert numpy type num " << numpy_type_num << " to a dynd type";
@@ -677,9 +677,9 @@ int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::
     } else if (obj == &PyDoubleArrType_Type) {
         out_d = ndt::make_type<npy_double>();
     } else if (obj == &PyCFloatArrType_Type) {
-        out_d = ndt::make_type<complex<float> >();
+        out_d = ndt::make_type<dynd::complex<float> >();
     } else if (obj == &PyCDoubleArrType_Type) {
-        out_d = ndt::make_type<complex<double> >();
+        out_d = ndt::make_type<dynd::complex<double> >();
     } else {
         return -1;
     }
@@ -716,9 +716,9 @@ ndt::type pydynd::ndt_type_of_numpy_scalar(PyObject* obj)
     } else if (PyArray_IsScalar(obj, Double)) {
         return ndt::make_type<double>();
     } else if (PyArray_IsScalar(obj, CFloat)) {
-        return ndt::make_type<complex<float> >();
+        return ndt::make_type<dynd::complex<float> >();
     } else if (PyArray_IsScalar(obj, CDouble)) {
-        return ndt::make_type<complex<double> >();
+        return ndt::make_type<dynd::complex<double> >();
     }
 
     throw dynd::type_error("could not deduce a pydynd type from the numpy scalar object");
@@ -859,10 +859,10 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
         result = nd::array(((PyDoubleScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, CFloat)) {
         npy_cfloat& val = ((PyCFloatScalarObject *)obj)->obval;
-        result = nd::array(complex<float>(val.real, val.imag));
+        result = nd::array(dynd::complex<float>(val.real, val.imag));
     } else if (PyArray_IsScalar(obj, CDouble)) {
         npy_cdouble& val = ((PyCDoubleScalarObject *)obj)->obval;
-        result = nd::array(complex<double>(val.real, val.imag));
+        result = nd::array(dynd::complex<double>(val.real, val.imag));
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     } else if (PyArray_IsScalar(obj, Datetime)) {
         const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;

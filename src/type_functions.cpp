@@ -164,7 +164,7 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
     } else if (obj == &PyFloat_Type) {
         return ndt::make_type<double>();
     } else if (obj == &PyComplex_Type) {
-        return ndt::make_type<complex<double> >();
+        return ndt::make_type<dynd::complex<double> >();
     } else if (obj == &PyUnicode_Type) {
         return ndt::make_string();
     } else if (obj == &PyByteArray_Type) {

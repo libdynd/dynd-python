@@ -506,9 +506,9 @@ static bool real_assign(char *data, PyObject *obj)
 
 static bool complex_assign(char *data, PyObject *obj)
 {
-    complex<double> *result_ptr = reinterpret_cast<complex<double> *>(data);
+    dynd::complex<double> *result_ptr = reinterpret_cast<dynd::complex<double> *>(data);
     if (PyComplex_Check(obj)) {
-        *result_ptr = complex<double>(PyComplex_RealAsDouble(obj),
+        *result_ptr = dynd::complex<double>(PyComplex_RealAsDouble(obj),
                                 PyComplex_ImagAsDouble(obj));
         return true;
     } else if (PyFloat_Check(obj)) {
@@ -761,10 +761,10 @@ static void array_from_py_dynamic_first_alloc(
     }
 
     if (PyComplex_Check(obj)) {
-        elem.dtp = ndt::make_type<complex<double> >();
+        elem.dtp = ndt::make_type<dynd::complex<double> >();
         arr = allocate_nd_arr(shape, coord, elem, shape.size());
-        complex<double> *result_ptr = reinterpret_cast<complex<double> *>(coord[current_axis-1].data_ptr);
-        *result_ptr = complex<double>(PyComplex_RealAsDouble(obj),
+        dynd::complex<double> *result_ptr = reinterpret_cast<dynd::complex<double> *>(coord[current_axis-1].data_ptr);
+        *result_ptr = dynd::complex<double>(PyComplex_RealAsDouble(obj),
                                 PyComplex_ImagAsDouble(obj));
         return;
     }

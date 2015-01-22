@@ -165,7 +165,7 @@ struct complex_float_ck : public kernels::unary_ck<complex_float_ck<T> > {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
-    const dynd_complex<T> *val = reinterpret_cast<const dynd_complex<T> *>(src);
+    const dynd::complex<T> *val = reinterpret_cast<const dynd::complex<T> *>(src);
     *dst_obj = PyComplex_FromDoubles(val->real(), val->imag());
   }
 };

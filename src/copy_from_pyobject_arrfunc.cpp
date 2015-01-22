@@ -246,9 +246,9 @@ struct complex_float_ck : public kernels::unary_ck<complex_float_ck<T> > {
       reinterpret_cast<T *>(dst)[0] = static_cast<T>(v.real);
       reinterpret_cast<T *>(dst)[1] = static_cast<T>(v.imag);
     } else {
-      *reinterpret_cast<dynd_complex<T> *>(dst) =
+      *reinterpret_cast<dynd::complex<T> *>(dst) =
           array_from_py(src_obj, 0, false, &eval::default_eval_context)
-              .as<dynd_complex<T> >();
+              .as<dynd::complex<T> >();
     }
   }
 };

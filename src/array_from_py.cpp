@@ -117,7 +117,7 @@ convert_one_pyscalar_cdouble(const ndt::type &tp, const char *arrmeta,
     if ((value_real == -1 || value_imag == -1) && PyErr_Occurred()) {
         throw std::exception();
     }
-    *reinterpret_cast<complex<double> *>(out) = complex<double>(value_real, value_imag);
+    *reinterpret_cast<dynd::complex<double> *>(out) = dynd::complex<double>(value_real, value_imag);
 }
 
 struct bytes_string_ptrs {
@@ -513,7 +513,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
   } else if (PyFloat_Check(obj)) {
     result = nd::array_rw(PyFloat_AS_DOUBLE(obj));
   } else if (PyComplex_Check(obj)) {
-    result = nd::array_rw(complex<double>(PyComplex_RealAsDouble(obj),
+    result = nd::array_rw(dynd::complex<double>(PyComplex_RealAsDouble(obj),
                                           PyComplex_ImagAsDouble(obj)));
 #if PY_VERSION_HEX < 0x03000000
   } else if (PyString_Check(obj)) {

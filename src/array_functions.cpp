@@ -254,7 +254,7 @@ PyObject *pydynd::array_complex(const dynd::nd::array& n)
         case uint_kind:
         case real_kind:
         case complex_kind: {
-            complex<double> value = n.as<complex<double> >();
+            dynd::complex<double> value = n.as<dynd::complex<double> >();
             return PyComplex_FromDoubles(value.real(), value.imag());
         }
         default:

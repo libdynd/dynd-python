@@ -89,7 +89,7 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unk
         return ndt::make_type<double>();
     } else if (PyComplex_Check(obj)) {
         // Python complex
-        return ndt::make_type<complex<double> >();
+        return ndt::make_type<dynd::complex<double> >();
 #if PY_VERSION_HEX < 0x03000000
     } else if (PyString_Check(obj)) {
         // Python string

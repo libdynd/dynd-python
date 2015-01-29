@@ -39,6 +39,7 @@ RelWithDebInfo MinSizeRel."
       FORCE)
 endif()
 
+find_package(CUDA 6.5)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)
 find_package(NumPy REQUIRED)
@@ -117,6 +118,10 @@ else()
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=20 -Wdocumentation")
     endif()
+endif()
+
+if (CUDA_FOUND)
+    include_directories(${CUDA_INCLUDE_DIRS})
 endif()
 
 include_directories(

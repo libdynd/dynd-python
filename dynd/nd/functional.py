@@ -10,11 +10,11 @@ def inline(statement, header = ''):
     using namespace std;
     using namespace pydynd;
 
-    {}
+    {0}
 
     static PyObject *make(PyObject *self, PyObject *args)
     {{
-      return wrap_array({});
+      return wrap_array({1});
     }}
 
     static PyMethodDef InlineMethods[] = {{
@@ -22,9 +22,34 @@ def inline(statement, header = ''):
         {{NULL, NULL, 0, NULL}}
     }};
 
-    PyMODINIT_FUNC initinline()
+#if PY_MAJOR_VERSION >= 3
+    #define PY_MODINIT(NAME) PyMODINIT_FUNC PyInit_##NAME()
+#else
+    #define PY_MODINIT(NAME) PyMODINIT_FUNC init##NAME()
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef InlineModule = {{
+      PyModuleDef_HEAD_INIT,
+      "inline",
+      "Wraps a C++ function.",
+      -1,
+      InlineMethods,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+    }};
+#endif
+
+    PY_MODINIT(inline)
     {{
-      Py_InitModule("inline", InlineMethods);
+#if PY_MAJOR_VERSION >= 3
+      return PyModule_Create(&InlineModule);
+#else
+    return Py_InitModule3("inline",
+        module_functions, "Wraps a C++ function.");
+#endif
     }}
   '''
 
@@ -41,4 +66,6 @@ def inline(statement, header = ''):
 
   modfile, moddir, moddescr = imp.find_module(ext.name, [tempdir])
   mod = imp.load_module(ext.name, modfile, moddir, moddescr)
+  modfile.close()
+
   return mod.make()

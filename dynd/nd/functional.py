@@ -1,6 +1,7 @@
 import atexit, distutils, distutils.core, imp, os, os.path, shutil, tempfile
 
 from dynd import include_dirs
+import dynd
 
 def inline(statement, header = ''):
   source = '''
@@ -47,7 +48,7 @@ def inline(statement, header = ''):
 #if PY_MAJOR_VERSION >= 3
       return PyModule_Create(&InlineModule);
 #else
-      return Py_InitModule3("inline", InlineMethods, "Wraps a C++ function.");
+      Py_InitModule3("inline", InlineMethods, "Wraps a C++ function.");
 #endif
     }}
   '''
@@ -60,8 +61,8 @@ def inline(statement, header = ''):
   srcfile.close()
 
   ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
-    include_dirs = include_dirs, language = 'c++', libraries = ['dynd'])
-  distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = ['--quiet',
+    include_dirs = include_dirs, language = 'c++', libraries = ['dynd', '-l{}/_pydynd.so'.format(os.path.dirname(dynd.__file__))], runtime_library_dirs = [os.path.dirname(dynd.__file__)])
+  distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = [ #'--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])
 
   modfile, moddir, moddescr = imp.find_module(ext.name, [tempdir])

@@ -123,43 +123,43 @@ include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
     ${LIBDYND_INCLUDE_DIRS}
-    include
+    include/pydynd
     )
 
 set(pydynd_CPP_SRC
-    include/array_as_numpy.hpp
-    include/array_as_pep3118.hpp
-    include/array_as_py.hpp
-    include/array_assign_from_py.hpp
-    include/array_from_py.hpp
-    include/array_from_py_dynamic.hpp
-    include/array_from_py_typededuction.hpp
-    include/array_functions.hpp
-    include/arrfunc_functions.hpp
-    include/codegen_cache_functions.hpp
-    include/arrfunc_from_instantiate_pyfunc.hpp
-    include/arrfunc_from_pyfunc.hpp
-    include/copy_from_numpy_arrfunc.hpp
-    include/copy_from_pyobject_arrfunc.hpp
-    include/copy_to_numpy_arrfunc.hpp
-    include/copy_to_pyobject_arrfunc.hpp
-    include/ctypes_interop.hpp
-    include/do_import_array.hpp
-    include/elwise_gfunc_functions.hpp
-    include/elwise_map.hpp
-    include/elwise_reduce_gfunc_functions.hpp
-    include/eval_context_functions.hpp
-    include/exception_translation.hpp
-    include/gfunc_callable_functions.hpp
-    include/git_version.hpp
-    include/init.hpp
-    include/numpy_interop.hpp
-    include/numpy_ufunc_kernel.hpp
-    include/placement_wrappers.hpp
-    include/py_lowlevel_api.hpp
-    include/type_functions.hpp
-    include/utility_functions.hpp
-    include/vm_elwise_program_functions.hpp
+    include/pydynd/array_as_numpy.hpp
+    include/pydynd/array_as_pep3118.hpp
+    include/pydynd/array_as_py.hpp
+    include/pydynd/array_assign_from_py.hpp
+    include/pydynd/array_from_py.hpp
+    include/pydynd/array_from_py_dynamic.hpp
+    include/pydynd/array_from_py_typededuction.hpp
+    include/pydynd/array_functions.hpp
+    include/pydynd/arrfunc_functions.hpp
+    include/pydynd/codegen_cache_functions.hpp
+    include/pydynd/arrfunc_from_instantiate_pyfunc.hpp
+    include/pydynd/arrfunc_from_pyfunc.hpp
+    include/pydynd/copy_from_numpy_arrfunc.hpp
+    include/pydynd/copy_from_pyobject_arrfunc.hpp
+    include/pydynd/copy_to_numpy_arrfunc.hpp
+    include/pydynd/copy_to_pyobject_arrfunc.hpp
+    include/pydynd/ctypes_interop.hpp
+    include/pydynd/do_import_array.hpp
+    include/pydynd/elwise_gfunc_functions.hpp
+    include/pydynd/elwise_map.hpp
+    include/pydynd/elwise_reduce_gfunc_functions.hpp
+    include/pydynd/eval_context_functions.hpp
+    include/pydynd/exception_translation.hpp
+    include/pydynd/gfunc_callable_functions.hpp
+    include/pydynd/git_version.hpp
+    include/pydynd/init.hpp
+    include/pydynd/numpy_interop.hpp
+    include/pydynd/numpy_ufunc_kernel.hpp
+    include/pydynd/placement_wrappers.hpp
+    include/pydynd/py_lowlevel_api.hpp
+    include/pydynd/type_functions.hpp
+    include/pydynd/utility_functions.hpp
+    include/pydynd/vm_elwise_program_functions.hpp
     src/array_as_numpy.cpp
     src/array_as_pep3118.cpp
     src/array_as_py.cpp
@@ -195,15 +195,15 @@ set(pydynd_CPP_SRC
     )
 set(pydynd_CYTHON_SRC
     src/dynd._pydynd.pyx
-    include/array.pxd
-    include/codegen_cache.pxd
-    include/dynd.pxd
-    include/elwise_gfunc.pxd
-    include/elwise_reduce_gfunc.pxd
-    include/eval_context.pxd
-    include/gfunc_callable.pxd
-    include/ndt_type.pxd
-    include/vm_elwise_program.pxd
+    include/pydynd/array.pxd
+    include/pydynd/codegen_cache.pxd
+    include/pydynd/dynd.pxd
+    include/pydynd/elwise_gfunc.pxd
+    include/pydynd/elwise_reduce_gfunc.pxd
+    include/pydynd/eval_context.pxd
+    include/pydynd/gfunc_callable.pxd
+    include/pydynd/ndt_type.pxd
+    include/pydynd/vm_elwise_program.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 
@@ -268,7 +268,6 @@ else()
 endif()
 
 
-
 if (DYND_INSTALL_LIB)
     target_link_libraries(dynd._pydynd "${LIBDYND_LIBRARIES}")
 else()
@@ -280,6 +279,7 @@ install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
 install(TARGETS dynd._pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
+install(DIRECTORY "include" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
 # Install the libdynd binary if on unix and libdynd wasn't built separately
 if(NOT DYND_INSTALL_LIB AND NOT WIN32)
     get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)

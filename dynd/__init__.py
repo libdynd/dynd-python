@@ -1,5 +1,9 @@
 from __future__ import absolute_import
 
+import os
+
+include_dirs = [os.path.join(os.path.dirname(__file__), 'include')]
+
 # dynd._lowlevel is not imported by default
 from . import nd, ndt
 

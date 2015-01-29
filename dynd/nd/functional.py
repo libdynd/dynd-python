@@ -1,26 +1,20 @@
-import tempfile
-import os
+import atexit, distutils, distutils.core, imp, os, os.path, shutil, tempfile
 
-from distutils.core import Extension, setup
-
-import imp
-import atexit
-import shutil
+from dynd import include_dirs
 
 def inline(statement, header = ''):
   source = '''
     #include <dynd/func/apply.hpp>
-
-    #include "/Users/irwin/Repositories/dynd-python/include/array_functions.hpp"
+    #include <pydynd/array_functions.hpp>
 
     using namespace std;
-    using namespace dynd;
+    using namespace pydynd;
 
     {}
 
     static PyObject *make(PyObject *self, PyObject *args)
     {{
-      return pydynd::wrap_array({});
+      return wrap_array({});
     }}
 
     static PyMethodDef InlineMethods[] = {{
@@ -41,8 +35,8 @@ def inline(statement, header = ''):
   srcfile.write(source.format(header, statement))
   srcfile.close()
 
-  ext = Extension('inline', [srcfile.name], language = 'c++', extra_compile_args = ['-std=c++11'])
-  setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = ['--quiet',
+  ext = distutils.core.Extension('inline', [srcfile.name], language = 'c++', extra_compile_args = ['-std=c++11'], include_dirs = include_dirs)
+  distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = ['--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])
 
   modfile, moddir, moddescr = imp.find_module(ext.name, [tempdir])

@@ -260,5 +260,14 @@ class TestRollingArrFunc(unittest.TestCase):
         self.assertEqual(result[3:-1], [9.0/4, 14.0/4, 12.0/3])
 
 
+class TestInlineArrfunc(unittest.TestCase):
+    def test_simple(self):
+        af = nd.functional.inline('nd::functional::apply([](int x, int y) { return x + y; })')
+        self.assertTrue(7, nd.as_py(af(3, 4)))
+
+        af = nd.functional.inline('nd::functional::apply([](double x) { return 10.0 * x; })')
+        self.assertTrue(25.0, nd.as_py(af(2.5)))
+
+
 if __name__ == '__main__':
     unittest.main()

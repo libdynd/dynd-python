@@ -1,4 +1,4 @@
-import atexit, distutils, distutils.core, imp, os, os.path, shutil, tempfile
+import atexit, distutils, distutils.core, imp, os, os.path, shutil, sys, tempfile
 
 from dynd import include_dirs
 import dynd
@@ -60,9 +60,14 @@ def inline(statement, header = ''):
   srcfile.write(source.format(header, statement))
   srcfile.close()
 
+  if (sys.platform == 'darwin'):
+    extra_link_args = []
+  else: 
+    extra_link_args = [os.path.join(os.path.dirname(dynd.__file__), '_pydynd.so')]
+
   ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
     include_dirs = include_dirs, language = 'c++', libraries = ['dynd'], 
-    extra_link_args = ['{}/_pydynd.so'.format(os.path.dirname(dynd.__file__))])
+    extra_link_args = extra_link_args)
   distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = [ #'--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])
 

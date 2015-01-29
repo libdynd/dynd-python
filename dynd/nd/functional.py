@@ -47,8 +47,7 @@ def inline(statement, header = ''):
 #if PY_MAJOR_VERSION >= 3
       return PyModule_Create(&InlineModule);
 #else
-    return Py_InitModule3("inline",
-        module_functions, "Wraps a C++ function.");
+      return Py_InitModule3("inline", InlineMethods, "Wraps a C++ function.");
 #endif
     }}
   '''
@@ -60,7 +59,8 @@ def inline(statement, header = ''):
   srcfile.write(source.format(header, statement))
   srcfile.close()
 
-  ext = distutils.core.Extension('inline', [srcfile.name], language = 'c++', extra_compile_args = ['-std=c++11'], include_dirs = include_dirs)
+  ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
+    include_dirs = include_dirs, language = 'c++', libraries = ['dynd'])
   distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = ['--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])
 

@@ -61,7 +61,7 @@ def inline(statement, header = ''):
   srcfile.close()
 
   ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
-    include_dirs = include_dirs, language = 'c++', libraries = ['dynd', '-l{}/_pydynd.so'.format(os.path.dirname(dynd.__file__))], runtime_library_dirs = [os.path.dirname(dynd.__file__)])
+    include_dirs = include_dirs, language = 'c++', libraries = ['dynd', ':_pydynd.so'], library_dirs = [os.path.dirname(dynd.__file__)])
   distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = [ #'--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])
 

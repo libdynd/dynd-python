@@ -356,7 +356,11 @@ cdef class w_type:
 
     def __getitem__(self, x):
         cdef w_type result = w_type()
-        SET(result.v, ndt_type_getitem(GET(self.v), x))
+        try:
+            index = as_py(self.field_names).index(x)
+        except ValueError:
+            index = x
+        SET(result.v, ndt_type_getitem(GET(self.v), index))
         return result
 
     def __str__(self):

@@ -72,7 +72,7 @@ def inline(statement, header = ''):
   ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
     include_dirs = include_dirs, language = 'c++', libraries = ['dynd'], 
     extra_link_args = extra_link_args)
-  distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = [ #'--quiet',
+  distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = ['--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])
 
   modfile, moddir, moddescr = imp.find_module(ext.name, [tempdir])

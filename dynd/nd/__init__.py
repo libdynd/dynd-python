@@ -20,6 +20,7 @@ from .gfunc import *
 
 from .computed_fields import add_computed_fields, make_computed_fields
 from .array_functions import squeeze
+from .functional import inline
 
 from . import vm
 

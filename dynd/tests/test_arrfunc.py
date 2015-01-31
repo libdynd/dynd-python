@@ -261,6 +261,7 @@ class TestRollingArrFunc(unittest.TestCase):
 
 
 class TestInlineArrfunc(unittest.TestCase):
+    @unittest.skipIf(sys.platform == 'win32', "nd.functional.inline does not work on Windows")
     def test_simple(self):
         af = nd.functional.inline('nd::functional::apply([](int x, int y) { return x + y; })')
         self.assertTrue(7, nd.as_py(af(3, 4)))

@@ -80,6 +80,8 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
 
         ndt_type with_replaced_dtype(ndt_type&, size_t) except +translate_exception
 
+        bint matches(ndt_type&) except +translate_exception
+
 cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
         assign_error_nocheck
@@ -118,9 +120,6 @@ cdef extern from "dynd/types/property_type.hpp" namespace "dynd":
 
 cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
-
-cdef extern from "dynd/types/type_pattern_match.hpp" namespace "dynd::ndt":
-    bint pattern_match(ndt_type&, ndt_type&) except +translate_exception
 
 cdef extern from "type_functions.hpp" namespace "pydynd":
     void init_w_type_typeobject(object)

@@ -69,7 +69,7 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                         PyObject *window_size_obj,
                                         PyObject *ectx_obj)
 {
-  const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+  eval::eval_context *ectx = const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
   nd::array arr = array_from_py(arr_obj, 0, false, ectx);
   intptr_t window_size = pyobject_as_index(window_size_obj);
   nd::arrfunc func;
@@ -84,7 +84,7 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
     func = arrfunc_from_pyfunc(func_obj, proto);
   }
   nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
-  nd::array result = roll(arr, ectx);
+  nd::array result = roll(arr, kwds("ectx", ectx));
   return wrap_array(result);
 }
 

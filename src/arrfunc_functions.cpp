@@ -61,7 +61,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
     args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
   }
 
-  nd::array result = af(static_cast<intptr_t>(args_size), static_cast<nd::array *>(args.empty() ? NULL : args.data()));
+  nd::array result = af(static_cast<intptr_t>(args_size), static_cast<nd::array *>(args_size ? &args[0] : NULL));
   return wrap_array(result);
 }
 

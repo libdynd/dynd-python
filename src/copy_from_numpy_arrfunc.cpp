@@ -49,11 +49,6 @@ static intptr_t instantiate_copy_from_numpy(
     throw type_error(ss.str());
   }
 
-  if (!kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL kwds value to "
-                           "copy_from_numpy instantiation");
-  }
-
   PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src_arrmeta[0]);
   uintptr_t src_alignment =
       reinterpret_cast<const uintptr_t *>(src_arrmeta[0])[1];

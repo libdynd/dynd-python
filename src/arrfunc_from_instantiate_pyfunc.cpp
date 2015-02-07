@@ -41,11 +41,6 @@ static intptr_t instantiate_pyfunc_arrfunc_data(
   PyObject *instantiate_pyfunc = *af_self->get_data_as<PyObject *>();
   intptr_t param_count = af_tp->get_narg();
 
-  if (!kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL kwds value to "
-                           "instantiate_pyfunc_arrfunc_data");
-  }
-
   // Turn the ckb pointer into an integer
   pyobject_ownref ckb_obj(PyLong_FromSize_t(reinterpret_cast<size_t>(ckb)));
   pyobject_ownref ckb_offset_obj(PyLong_FromSsize_t(ckb_offset));

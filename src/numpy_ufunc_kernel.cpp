@@ -263,11 +263,6 @@ static intptr_t instantiate_scalar_ufunc_ckernel(
     }
   }
 
-  if (!kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL kwds value to "
-                           "numpy ufunc/arrfunc adapter instantiation");
-  }
-
   // Acquire the GIL for creating the ckernel
   PyGILState_RAII pgs;
   scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();

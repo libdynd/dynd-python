@@ -61,8 +61,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
     args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
   }
 
-  // add in ectx
-  nd::array result = af(static_cast<intptr_t>(args_size), static_cast<nd::array *>(args_size ? &args[0] : NULL));
+  nd::array result = af(static_cast<intptr_t>(args_size), static_cast<nd::array *>(args.empty() ? NULL : args.data()));
   return wrap_array(result);
 }
 
@@ -85,7 +84,7 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
     func = arrfunc_from_pyfunc(func_obj, proto);
   }
   nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
-  nd::array result = roll(arr, kwds("ectx", ectx));
+  nd::array result = roll(arr);
   return wrap_array(result);
 }
 

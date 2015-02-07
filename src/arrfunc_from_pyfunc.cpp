@@ -175,11 +175,6 @@ static intptr_t instantiate_arrfunc_data(
   PyGILState_RAII pgs;
   intptr_t nsrc = af_tp->get_npos();
 
-  if (!kwds.is_null()) {
-    throw invalid_argument("unexpected non-NULL kwds value to "
-                           "arrfunc_from_pyfunc instantiation");
-  }
-
   self_type *self = self_type::create(ckb, kernreq, ckb_offset);
   self->m_proto = ndt::make_arrfunc(nsrc, src_tp, dst_tp);
   self->m_pyfunc = *af_self->get_data_as<PyObject *>();

@@ -42,7 +42,7 @@ struct WArrFunc {
 };
 void init_w_arrfunc_typeobject(PyObject *type);
 
-PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj,
+PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj, PyObject *kwds_obj,
                        PyObject *ectx_obj);
 
 PyObject *arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,

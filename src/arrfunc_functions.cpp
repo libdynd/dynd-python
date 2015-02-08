@@ -37,7 +37,7 @@ void pydynd::init_w_arrfunc_typeobject(PyObject *type)
 }
 
 PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
-                               PyObject *ectx_obj)
+                               PyObject *kwds_obj, PyObject *ectx_obj)
 {
   if (!WArrFunc_Check(af_obj)) {
     PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
@@ -53,15 +53,34 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
                     "arrfunc_call requires a tuple of arguments");
     return NULL;
   }
+  if (!PyDict_Check(kwds_obj)) {
+    PyErr_SetString(PyExc_ValueError,
+                    "arrfunc_call requires a dictionary of keyword arguments");
+    return NULL;
+  }
   const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+
   // Convert args into nd::arrays
-  intptr_t args_size = PyTuple_Size(args_obj);
-  std::vector<nd::array> args(args_size);
-  for (intptr_t i = 0; i < args_size; ++i) {
-    args[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
+  intptr_t narg = PyTuple_Size(args_obj);
+  std::vector<nd::array> arg_values(narg);
+  for (intptr_t i = 0; i < narg; ++i) {
+    arg_values[i] =
+        array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
   }
 
-  nd::array result = af(static_cast<intptr_t>(args_size), static_cast<nd::array *>(args_size ? &args[0] : NULL));
+  // Convert kwds into nd::arrays
+  intptr_t nkwd = PyDict_Size(kwds_obj);
+  std::vector<const char *> kwd_names(nkwd);
+  std::vector<nd::array> kwd_values(nkwd);
+  PyObject *key, *value;
+  for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwds_obj, &i, &key, &value); ++j) {
+    kwd_names[j] = PyBytes_AsString(key);
+    kwd_values[j] = array_from_py(value, 0, false, ectx);
+  }
+
+  nd::array result = af(narg, arg_values.empty() ? NULL : arg_values.data(),
+                        kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
+                             kwd_values.empty() ? NULL : kwd_values.data()));
   return wrap_array(result);
 }
 

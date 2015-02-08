@@ -74,7 +74,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
   std::vector<nd::array> kwd_values(nkwd);
   PyObject *key, *value;
   for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwds_obj, &i, &key, &value); ++j) {
-    kwd_names[j] = PyString_AsString(key);
+    kwd_names[j] = PyBytes_AsString(key);
     kwd_values[j] = array_from_py(value, 0, false, ectx);
   }
 

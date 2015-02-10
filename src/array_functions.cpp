@@ -599,14 +599,14 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     ndt::type dt;
     const base_dim_type *budd;
     const char *arrmeta, *data;
-    if (n.get_type().get_kind() == dim_kind) {
+    if (n.get_type().is_dim()) {
         dt = n.get_type();
         budd = dt.extended<base_dim_type>();
         arrmeta = n.get_arrmeta();
         data = n.get_readonly_originptr();
     } else {
         tmp = n.eval();
-        if (tmp.get_type().get_kind() != dim_kind) {
+        if (!tmp.get_type().is_dim()) {
             throw runtime_error("internal error in array_contains: expected dim kind after eval() call");
         }
         dt = tmp.get_type();

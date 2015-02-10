@@ -229,6 +229,11 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
 size_t pydynd::get_nonragged_dim_count(const ndt::type& tp, size_t max_count)
 {
   switch (tp.get_kind()) {
+  case kind_kind:
+  case pattern_kind:
+    if (!tp.is_dim()) {
+      return 0;
+    }
   case dim_kind:
     if (max_count <= 1) {
       return max_count;

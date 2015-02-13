@@ -1,6 +1,12 @@
+"""
 from distutils.command.build import build
 from distutils.command.install import install
 from distutils.core import setup
+"""
+
+from distutils.command.build import build
+from setuptools.command.install import install
+from setuptools import setup
 
 from os import chdir
 from os.path import abspath, dirname

@@ -199,16 +199,17 @@ set(pydynd_CPP_SRC
     src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
-    src/dynd._pydynd.pyx
-    include/pydynd/array.pxd
-    include/pydynd/codegen_cache.pxd
-    include/pydynd/dynd.pxd
-    include/pydynd/elwise_gfunc.pxd
-    include/pydynd/elwise_reduce_gfunc.pxd
-    include/pydynd/eval_context.pxd
-    include/pydynd/gfunc_callable.pxd
-    include/pydynd/ndt_type.pxd
-    include/pydynd/vm_elwise_program.pxd
+    dynd/dynd._pydynd.pyx
+    dynd/array.pxd
+    dynd/codegen_cache.pxd
+    dynd/dynd.pxd
+    dynd/elwise_gfunc.pxd
+    dynd/elwise_reduce_gfunc.pxd
+    dynd/eval_context.pxd
+    dynd/gfunc_callable.pxd
+    dynd/ndt_type.pxd
+    dynd/translate_except.pxd
+    dynd/vm_elwise_program.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 

@@ -4,10 +4,10 @@ from distutils.command.install import install
 from distutils.core import setup
 """
 
-from distutils.command.build import build
+from distutils.command.build_ext import build_ext
 from distutils import sysconfig
 from setuptools.command.install import install
-from setuptools import setup
+from setuptools import setup, Extension
 
 import os, sys
 from os import chdir, getcwd
@@ -17,8 +17,8 @@ from os.path import abspath, dirname
 import struct
 is_64_bit = struct.calcsize('@P') == 8
 
-class cmake_build(build):
-  description = "build dynd-python with CMake"
+class cmake_build_ext(build_ext):
+  description = "Build the C-extension for dynd-python with CMake"
 
   def get_dyndext_path(self):
     # Get the package directory from build_py
@@ -32,8 +32,8 @@ class cmake_build(build):
     return os.path.join(package_dir, filename)
 
   def run(self):
-    # First call the original build
-    build.run(self)
+    # We don't call the origin build_ext, instead ignore that
+    # default behavior and call cmake for DyND's one C-extension.
 
     # The directory containing this setup.py
     source = dirname(abspath(__file__))
@@ -82,15 +82,23 @@ class cmake_build(build):
     dyndext_path = os.path.join(build_lib, self.get_dyndext_path())
     if os.path.exists(dyndext_path):
         os.remove(dyndext_path)
+    self.mkpath(os.path.dirname(dyndext_path))
     print('Moving built DyND C-extension to build path', dyndext_path)
     shutil.move(dyndext_built, dyndext_path)
     chdir(saved_cwd)
 
   def get_outputs(self):
-    # Add the C-extension to the outputs list
-    outputs = build.get_outputs(self)
-    outputs.append(self.get_dyndext_path())
-    return outputs
+    # Just the C-extension
+    return [self.get_dyndext_path()]
+
+  def initialize_options(self):
+      self.build_base = None
+      build_ext.initialize_options(self)
+
+  def finalize_options(self):
+      self.set_undefined_options('build',
+                                 ('build_base', 'build_base'))
+      build_ext.finalize_options(self)
 
 
 setup(
@@ -108,12 +116,15 @@ setup(
         'dynd._lowlevel',
         'dynd.tests',
     ],
+    # build_ext is overridden to call cmake, the Extension is just
+    # needed so things like bdist_wheel understand what's going on.
+    ext_modules = [Extension('dynd._pydynd', sources=[])],
     install_requires=open('requirements.txt').read().strip().split('\n'),
-    classifires = [
+    classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
     ],
-    cmdclass = {'build': cmake_build},
+    cmdclass = {'build_ext': cmake_build_ext},
 )
 

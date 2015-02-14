@@ -35,9 +35,6 @@ class cmake_build_ext(build_ext):
     # We don't call the origin build_ext, instead ignore that
     # default behavior and call cmake for DyND's one C-extension.
 
-    # First call the original build
-    build.run(self)
-
     # The directory containing this setup.py
     source = dirname(abspath(__file__))
 
@@ -45,7 +42,7 @@ class cmake_build_ext(build_ext):
     build_lib = os.path.join(os.getcwd(), self.build_lib)
 
     # Change to the build directory
-    build_cmake = os.path.join(self.build_base, 'cmake_build')
+    build_cmake = os.path.join(self.build_temp, 'cmake_build')
     self.mkpath(build_cmake)
     saved_cwd = getcwd()
     self.mkpath(self.build_temp)

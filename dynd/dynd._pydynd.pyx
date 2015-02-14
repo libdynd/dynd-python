@@ -5,9 +5,7 @@
 
 # cython: c_string_type=str, c_string_encoding=ascii
 
-cdef extern from "exception_translation.hpp" namespace "pydynd":
-    void translate_exception()
-    void set_broadcast_exception(object)
+from translate_except cimport translate_exception, set_broadcast_exception
 
 # Initialize Numpy
 cdef extern from "do_import_array.hpp":

@@ -3,7 +3,7 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
-from simple cimport translate_exception
+from translate_except cimport translate_exception
 
 from libcpp.string cimport string
 

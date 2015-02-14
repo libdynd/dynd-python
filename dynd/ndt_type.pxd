@@ -6,7 +6,7 @@
 from libc.stdint cimport uintptr_t, intptr_t
 from libcpp.string cimport string
 
-from simple cimport translate_exception
+from translate_except cimport translate_exception
 
 cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
     cdef enum type_kind_t:

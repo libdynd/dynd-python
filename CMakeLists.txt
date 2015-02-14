@@ -208,6 +208,7 @@ set(pydynd_CYTHON_SRC
     dynd/eval_context.pxd
     dynd/gfunc_callable.pxd
     dynd/ndt_type.pxd
+    dynd/translate_except.pxd
     dynd/vm_elwise_program.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)

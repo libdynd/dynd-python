@@ -42,8 +42,6 @@ class cmake_build_ext(build_ext):
     build_lib = os.path.join(os.getcwd(), self.build_lib)
 
     # Change to the build directory
-    build_cmake = os.path.join(self.build_temp, 'cmake_build')
-    self.mkpath(build_cmake)
     saved_cwd = getcwd()
     self.mkpath(self.build_temp)
     chdir(self.build_temp)

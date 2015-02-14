@@ -25,7 +25,10 @@ class cmake_build(build):
     build_py = self.get_finalized_command('build_py')
     package_dir = build_py.get_package_dir('dynd')
     # This is the name of the dynd-python C-extension
-    filename = '_pydynd' + sysconfig.get_config_var('EXT_SUFFIX')
+    suffix = sysconfig.get_config_var('EXT_SUFFIX')
+    if (suffix is None):
+      suffix = sysconfig.get_config_var('SO')
+    filename = '_pydynd' + suffix
     return os.path.join(package_dir, filename)
 
   def run(self):
@@ -56,10 +59,13 @@ class cmake_build(build):
         static_lib_option = '-DDYND_SHARED_LIB=OFF'
 
     if sys.platform != 'win32':
-        self.spawn(['cmake', source, pyexe_option, install_lib_option,
-                    static_lib_option])
+        self.spawn(['cmake', pyexe_option, install_lib_option,
+                    static_lib_option, source])
         self.spawn(['make'])
-        dyndext_built = '_pydynd' + sysconfig.get_config_var('EXT_SUFFIX')
+        suffix = sysconfig.get_config_var('EXT_SUFFIX')
+        if (suffix is None):
+          suffix = sysconfig.get_config_var('SO')
+        dyndext_built = '_pydynd' + suffix
     else:
         import struct
         # Always build with MSVC 2013 (TODO: 2015 support)

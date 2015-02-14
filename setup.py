@@ -1,17 +1,13 @@
-"""
-from distutils.command.build import build
-from distutils.command.install import install
-from distutils.core import setup
-"""
-
 from distutils.command.build_ext import build_ext
 from distutils import sysconfig
-from setuptools.command.install import install
+#from distutils.core import setup
 from setuptools import setup, Extension
 
 import os, sys
 from os import chdir, getcwd
 from os.path import abspath, dirname
+
+import re
 
 # Check if we're running 64-bit Python
 import struct
@@ -39,12 +35,22 @@ class cmake_build_ext(build_ext):
     source = dirname(abspath(__file__))
 
     # The staging directory for the module being built
+    build_temp = os.path.join(os.getcwd(), self.build_temp)
     build_lib = os.path.join(os.getcwd(), self.build_lib)
 
     # Change to the build directory
     saved_cwd = getcwd()
     self.mkpath(self.build_temp)
     chdir(self.build_temp)
+
+    # Detect if we built elsewhere
+    if os.path.isfile('CMakeCache.txt'):
+        cachefile = open('CMakeCache.txt', 'r')
+        cachedir = re.search('CMAKE_CACHEFILE_DIR:INTERNAL=(.*)', cachefile.read()).group(1)
+        cachefile.close()
+
+        if (cachedir != build_temp):
+            return
 
     pyexe_option = '-DPYTHON_EXECUTABLE=%s' % sys.executable
     install_lib_option = '-DDYND_INSTALL_LIB=ON'

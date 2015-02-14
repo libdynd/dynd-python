@@ -199,7 +199,7 @@ set(pydynd_CPP_SRC
     src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
-    src/dynd._pydynd.pyx
+    dynd/dynd._pydynd.pyx
     include/pydynd/array.pxd
     include/pydynd/codegen_cache.pxd
     include/pydynd/dynd.pxd

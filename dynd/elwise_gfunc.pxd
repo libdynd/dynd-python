@@ -3,6 +3,10 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+from simple cimport translate_exception
+
+from libcpp.string cimport string
+
 cdef extern from "<dynd/func/elwise_gfunc.hpp>" namespace "dynd::gfunc":
     cdef cppclass elwise_gfunc:
         string& get_name()

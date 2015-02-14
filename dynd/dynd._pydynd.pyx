@@ -41,6 +41,10 @@ from ndt_type cimport *
 
 from array cimport *
 
+from gfunc_callable cimport *
+
+from vm_elwise_program cimport *
+
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object array_as_numpy_struct_capsule(ndarray&) except +translate_exception
 
@@ -92,8 +96,6 @@ cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
 
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
-include "vm_elwise_program.pxd"
-include "gfunc_callable.pxd"
 
 from eval_context cimport *
 

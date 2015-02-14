@@ -3,6 +3,10 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+from simple cimport translate_exception
+from ndt_type cimport ndt_type
+from array cimport ndarray
+
 cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void add_ndt_type_names_to_dir_dict(ndt_type&, object) except +translate_exception
     object get_ndt_type_dynamic_property(ndt_type&, object) except +translate_exception

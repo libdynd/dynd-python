@@ -3,6 +3,10 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+from simple cimport translate_exception
+
+from libcpp.string cimport string
+
 cdef extern from "dynd/vm/elwise_program.hpp" namespace "dynd::vm":
     cdef cppclass elwise_program:
         pass

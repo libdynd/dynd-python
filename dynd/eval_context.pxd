@@ -3,6 +3,8 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+from simple cimport translate_exception
+
 cdef extern from "dynd/types/date_util.hpp" namespace "dynd":
     cdef enum date_parse_order_t:
         date_parse_no_ambig

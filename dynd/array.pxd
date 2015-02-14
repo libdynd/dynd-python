@@ -3,6 +3,24 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+from simple cimport translate_exception
+
+cdef extern from "<complex>" namespace "std":
+    cdef cppclass complex[T]:
+        T real()
+        T imag()
+
+from ndt_type cimport ndt_type
+
+from libc.stdint cimport intptr_t, uintptr_t
+from libcpp.string cimport string
+
+cdef extern from "<iostream>" namespace "std":
+    cdef cppclass ostream:
+        pass
+
+    extern ostream cout
+
 cdef extern from "dynd/array.hpp" namespace "dynd":
     cdef cppclass ndarray "dynd::nd::array":
         ndarray() except +translate_exception

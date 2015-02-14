@@ -3,6 +3,11 @@
 # BSD 2-Clause License, see LICENSE.txt
 #
 
+from libc.stdint cimport uintptr_t, intptr_t
+from libcpp.string cimport string
+
+from simple cimport translate_exception
+
 cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
     cdef enum type_kind_t:
         bool_kind
@@ -89,6 +94,8 @@ cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
         assign_error_fractional
         assign_error_inexact
         assign_error_default
+
+from array cimport ndarray
 
 cdef extern from "dynd/types/fixedbytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_fixedbytes_type "dynd::ndt::make_fixedbytes" (intptr_t, intptr_t) except +translate_exception

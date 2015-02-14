@@ -13,7 +13,6 @@ cdef extern from "exception_translation.hpp" namespace "pydynd":
 cdef extern from "do_import_array.hpp":
     pass
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    object array_as_numpy_struct_capsule(ndarray&) except +translate_exception
     void import_numpy()
 import_numpy()
 
@@ -37,14 +36,66 @@ init_w_array_callable_typeobject(w_array_callable)
 init_w_ndt_type_callable_typeobject(w_type_callable)
 init_w_eval_context_typeobject(w_eval_context)
 
-include "dynd.pxd"
-include "ndt_type.pxd"
-include "array.pxd"
+from dynd cimport *
+from ndt_type cimport *
+
+from array cimport *
+
+cdef extern from "numpy_interop.hpp" namespace "pydynd":
+    object array_as_numpy_struct_capsule(ndarray&) except +translate_exception
+
+cdef extern from "<dynd/types/datashape_formatter.hpp>" namespace "dynd":
+    string dynd_format_datashape "dynd::format_datashape" (ndarray&) except +translate_exception
+    string dynd_format_datashape "dynd::format_datashape" (ndt_type&) except +translate_exception
+
+
+cdef extern from "placement_wrappers.hpp" namespace "pydynd":
+    cdef struct ndt_type_placement_wrapper:
+        pass
+    void placement_new(ndt_type_placement_wrapper&) except +translate_exception
+    void placement_delete(ndt_type_placement_wrapper&)
+    # type placement cast
+    ndt_type& GET(ndt_type_placement_wrapper&)
+    # type placement assignment
+    void SET(ndt_type_placement_wrapper&, ndt_type&)
+
+    cdef struct array_placement_wrapper:
+        pass
+    void placement_new(array_placement_wrapper&) except +translate_exception
+    void placement_delete(array_placement_wrapper&)
+    # nd::array placement cast
+    ndarray& GET(array_placement_wrapper&)
+    # nd::array placement assignment
+    void SET(array_placement_wrapper&, ndarray&)
+
+    # the arrfunc wrapper is a subtype of the array wrapper
+    ndarrfunc& GET_arrfunc(array_placement_wrapper&)
+    void SET(array_placement_wrapper&, ndarrfunc&)
+
+#    cdef struct codegen_cache_placement_wrapper:
+#        pass
+#    void placement_new(codegen_cache_placement_wrapper&) except +translate_exception
+#    void placement_delete(codegen_cache_placement_wrapper&)
+#    # placement cast
+#    codegen_cache& GET(codegen_cache_placement_wrapper&)
+
+    cdef struct vm_elwise_program_placement_wrapper:
+        pass
+    void placement_new(vm_elwise_program_placement_wrapper&) except +translate_exception
+    void placement_delete(vm_elwise_program_placement_wrapper&)
+    # placement cast
+    elwise_program& GET(vm_elwise_program_placement_wrapper&)
+    void SET(vm_elwise_program_placement_wrapper&, elwise_program&)
+
+cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
+    ndarray dynd_format_json "dynd::format_json" (ndarray&, bint) except +translate_exception
+
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
 include "vm_elwise_program.pxd"
 include "gfunc_callable.pxd"
-include "eval_context.pxd"
+
+from eval_context cimport *
 
 # Issue a performance warning if any of the diagnostics macros are enabled
 cdef extern from "<dynd/diagnostics.hpp>" namespace "dynd":

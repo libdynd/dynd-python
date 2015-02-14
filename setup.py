@@ -42,10 +42,9 @@ class cmake_build_ext(build_ext):
     build_lib = os.path.join(os.getcwd(), self.build_lib)
 
     # Change to the build directory
-    build_cmake = os.path.join(self.build_base, 'cmake_build')
-    self.mkpath(build_cmake)
     saved_cwd = getcwd()
-    chdir(build_cmake)
+    self.mkpath(self.build_temp)
+    chdir(self.build_temp)
 
     pyexe_option = '-DPYTHON_EXECUTABLE=%s' % sys.executable
     install_lib_option = '-DDYND_INSTALL_LIB=ON'
@@ -90,15 +89,6 @@ class cmake_build_ext(build_ext):
   def get_outputs(self):
     # Just the C-extension
     return [self.get_dyndext_path()]
-
-  def initialize_options(self):
-      self.build_base = None
-      build_ext.initialize_options(self)
-
-  def finalize_options(self):
-      self.set_undefined_options('build',
-                                 ('build_base', 'build_base'))
-      build_ext.finalize_options(self)
 
 
 setup(

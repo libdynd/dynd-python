@@ -9,7 +9,8 @@ The subclass should define a method run() that executes the code
 to be timed and returns the elapsed time in seconds (as a float),
 or None if the benchmark should be skipped.
 
-This file was taken from https://code.google.com/p/benchrun/ under the MIT License.
+This file was originally taken from https://code.google.com/p/benchrun/ under the MIT License,
+but has been modified since.
 """
 
 import sys
@@ -30,6 +31,17 @@ def combinations(*seqin):
             yield comb
     return rloop(seqin,[])
 
+def mean(n):
+    def wrap(func):
+        def wrapper(*args, **kwds):
+            value = 0.0
+            for i in range(n):
+                value += func(*args, **kwds)
+            return value / n
+
+        return wrapper
+
+    return wrap
 
 class Benchmark:
     sort_by = []
@@ -117,3 +129,21 @@ class Benchmark:
             row = [str(val).ljust(colwidth) for val in vals]
             print "  ", "   ".join(row)
         print
+
+    def plot_result(self, loglog = False):
+        import matplotlib
+        import matplotlib.pyplot
+
+        self.time_all()
+        self.sort_results()
+
+        if loglog:
+            from matplotlib.pyplot import loglog as plot
+        else:
+            from matplotlib.pyplot import plot
+
+        plot(*zip(*self.results), label = self.__class__.__name__, marker = "o", linestyle = '--', linewidth = 2)
+        matplotlib.pyplot.xlabel(self.pnames[0])
+        matplotlib.pyplot.ylabel("seconds")
+
+        matplotlib.pyplot.legend(loc = 2, markerscale = 0)

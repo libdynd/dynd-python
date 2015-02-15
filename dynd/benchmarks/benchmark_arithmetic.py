@@ -2,12 +2,16 @@ import numpy as np
 
 from dynd import nd, ndt
 
-from benchrun import Benchmark, clock
+from benchrun import Benchmark, clock, mean
 
-class ArithemticBenchmark(Benchmark):
+n = 100
+size = [10, 100, 1000, 10000, 100000]
+
+class ArithmeticBenchmark(Benchmark):
   parameters = ('size',)
-  size = [100000, 10000000]
+  size = size
 
+  @mean(n)
   def run(self, size):
     a = nd.uniform(dst_tp = ndt.type('{} * float64'.format(size)))
     b = nd.uniform(dst_tp = ndt.type('{} * float64'.format(size)))
@@ -18,10 +22,11 @@ class ArithemticBenchmark(Benchmark):
 
     return stop - start
 
-class NumPyArithemticBenchmark(Benchmark):
+class NumPyArithmeticBenchmark(Benchmark):
   parameters = ('size',)
-  size = [100000, 10000000]
+  size = size
 
+  @mean(n)
   def run(self, size):
     a = np.random.uniform(size = size)
     b = np.random.uniform(size = size)
@@ -33,8 +38,13 @@ class NumPyArithemticBenchmark(Benchmark):
     return stop - start
 
 if __name__ == '__main__':
-  benchmark = ArithemticBenchmark()
-  benchmark.print_result()
+  import matplotlib
+  import matplotlib.pyplot
 
-  benchmark = NumPyArithemticBenchmark()
-  benchmark.print_result()
+  benchmark = ArithmeticBenchmark()
+  benchmark.plot_result(loglog = True)
+
+  benchmark = NumPyArithmeticBenchmark()
+  benchmark.plot_result(loglog = True)
+
+  matplotlib.pyplot.show()

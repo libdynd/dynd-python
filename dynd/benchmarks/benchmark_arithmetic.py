@@ -14,10 +14,11 @@ from dynd import nd, ndt
 import matplotlib
 import matplotlib.pyplot
 
-from benchrun import Benchmark, clock, mean
+from benchrun import Benchmark, clock, mean, median
 
 n = 10
-size = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
+#size = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
+size = [10, 100, 1000, 10000, 100000]
 
 class ArithmeticBenchmark(Benchmark):
   parameters = ('size',)
@@ -28,7 +29,7 @@ class ArithmeticBenchmark(Benchmark):
     self.op = op
     self.cuda = cuda
 
-  @mean(n)
+  @median(n)
   def run(self, size):
     if self.cuda:
       dst_tp = ndt.type('cuda_device[{} * float64]'.format(size))
@@ -53,7 +54,7 @@ class NumPyArithmeticBenchmark(Benchmark):
     Benchmark.__init__(self)
     self.op = op
 
-  @mean(n)
+  @median(n)
   def run(self, size):
     a = np.random.uniform(size = size)
     b = np.random.uniform(size = size)
@@ -86,13 +87,17 @@ class PyCUDAArithmeticBenchmark(Benchmark):
     return stop - start
 
 if __name__ == '__main__':
-  benchmark = ArithmeticBenchmark(add)
+  cuda = True
+
+  benchmark = ArithmeticBenchmark(add, cuda = cuda)
   benchmark.plot_result(loglog = True)
 
-  benchmark = NumPyArithmeticBenchmark(add)
-  benchmark.plot_result(loglog = True)
+  if (not cuda):
+    benchmark = NumPyArithmeticBenchmark(add)
+    benchmark.plot_result(loglog = True)
 
-#  benchmark = PyCUDAArithmeticBenchmark(add)
-#  benchmark.plot_result(loglog = True)
+  if cuda:
+    benchmark = PyCUDAArithmeticBenchmark(add)
+    benchmark.plot_result(loglog = True)
 
   matplotlib.pyplot.show()

@@ -13,6 +13,8 @@ This file was originally taken from https://code.google.com/p/benchrun/ under th
 but has been modified since.
 """
 
+import math
+
 import sys
 if sys.platform=='win32':
     from time import clock
@@ -34,13 +36,20 @@ def combinations(*seqin):
 def mean(n):
     def wrap(func):
         def wrapper(*args, **kwds):
-            value = 0.0
-            for i in range(n):
-                value += func(*args, **kwds)
-            return value / n
-
+            results = [func(*args, **kwds) for i in range(n)]
+            return math.fsum(results) / n
         return wrapper
+    return wrap
 
+def median(n):
+    def wrap(func):
+        def wrapper(*args, **kwds):
+            results = sorted(func(*args, **kwds) for i in range(n))
+            i = n // 2
+            if n % 2 == 1:
+                return results[i]
+            return (results[i - 1] + results[i]) / 2.0    
+        return wrapper
     return wrap
 
 class Benchmark:

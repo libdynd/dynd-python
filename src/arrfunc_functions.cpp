@@ -70,11 +70,13 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
 
   // Convert kwds into nd::arrays
   intptr_t nkwd = PyDict_Size(kwds_obj);
+  vector<string> kwd_names_strings(nkwd);
   std::vector<const char *> kwd_names(nkwd);
   std::vector<nd::array> kwd_values(nkwd);
   PyObject *key, *value;
   for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwds_obj, &i, &key, &value); ++j) {
-    kwd_names[j] = PyBytes_AsString(key);
+    kwd_names_strings[j] = pystring_as_string(key);
+    kwd_names[j] = kwd_names_strings[j].c_str();
     kwd_values[j] = array_from_py(value, 0, false, ectx);
   }
 

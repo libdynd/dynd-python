@@ -1405,29 +1405,29 @@ cdef class w_array:
         array_releasebuffer_pep3118(self, buffer)
 
     def __add__(lhs, rhs):
-        cdef w_array result = w_array()
-        SET(result.v, array_add(GET(w_array(lhs).v), GET(w_array(rhs).v)))
-        return result
+        cdef w_array res = w_array()
+        SET(res.v, array_add(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        return res
 
     def __sub__(lhs, rhs):
-        cdef w_array result = w_array()
-        SET(result.v, array_subtract(GET(w_array(lhs).v), GET(w_array(rhs).v)))
-        return result
+        cdef w_array res = w_array()
+        SET(res.v, array_subtract(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        return res
 
     def __mul__(lhs, rhs):
-        cdef w_array result = w_array()
-        SET(result.v, array_multiply(GET(w_array(lhs).v), GET(w_array(rhs).v)))
-        return result
+        cdef w_array res = w_array()
+        SET(res.v, array_multiply(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        return res
 
     def __div__(lhs, rhs):
-        cdef w_array result = w_array()
-        SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
-        return result
+        cdef w_array res = w_array()
+        SET(res.v, array_divide(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        return res
 
     def __truediv__(lhs, rhs):
-        cdef w_array result = w_array()
-        SET(result.v, array_divide(GET(w_array(lhs).v), GET(w_array(rhs).v)))
-        return result
+        cdef w_array res = w_array()
+        SET(res.v, array_divide(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        return res
 
 cdef class w_arrfunc(w_array):
     """
@@ -1534,7 +1534,7 @@ def adapt(arr, tp, op):
     """
     return array_adapt(arr, tp, op)
 
-def asarray(obj, access=None):
+cpdef w_array asarray(obj, access=None):
     """
     nd.asarray(obj, access=None)
 
@@ -1551,6 +1551,7 @@ def asarray(obj, access=None):
         satisfy. When a view can be taken, but these access flags
         cannot, a copy is made.
     """
+
     cdef w_array result = w_array()
     SET(result.v, array_asarray(obj, access))
     return result

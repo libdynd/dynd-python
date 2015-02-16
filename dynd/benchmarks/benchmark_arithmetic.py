@@ -4,9 +4,9 @@ from dynd import nd, ndt
 
 from benchrun import Benchmark, clock
 
-class ArithemticBenchmark(Benchmark):
+class ArithmeticBenchmark(Benchmark):
   parameters = ('size',)
-  size = [100000, 10000000]
+  size = [100000, 10000000, 100000000]
 
   def run(self, size):
     a = nd.uniform(dst_tp = ndt.type('{} * float64'.format(size)))
@@ -18,9 +18,9 @@ class ArithemticBenchmark(Benchmark):
 
     return stop - start
 
-class NumPyArithemticBenchmark(Benchmark):
+class NumPyArithmeticBenchmark(Benchmark):
   parameters = ('size',)
-  size = [100000, 10000000]
+  size = [100000, 10000000, 100000000]
 
   def run(self, size):
     a = np.random.uniform(size = size)
@@ -33,8 +33,8 @@ class NumPyArithemticBenchmark(Benchmark):
     return stop - start
 
 if __name__ == '__main__':
-  benchmark = ArithemticBenchmark()
+  benchmark = ArithmeticBenchmark()
   benchmark.print_result()
 
-  benchmark = NumPyArithemticBenchmark()
+  benchmark = NumPyArithmeticBenchmark()
   benchmark.print_result()

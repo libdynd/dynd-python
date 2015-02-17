@@ -120,7 +120,7 @@ else()
     endif()
 endif()
 
-if (CUDA_FOUND)
+if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif()
 
@@ -199,9 +199,11 @@ set(pydynd_CPP_SRC
     src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
+    dynd/cuda.pyx
     dynd/dynd._pydynd.pyx
     dynd/array.pxd
     dynd/codegen_cache.pxd
+    dynd/cuda.pxd
     dynd/dynd.pxd
     dynd/elwise_gfunc.pxd
     dynd/elwise_reduce_gfunc.pxd
@@ -217,7 +219,6 @@ source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
 cython_add_module(dynd._pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
-
 set_target_properties(
     dynd._pydynd
     PROPERTIES
@@ -271,6 +272,15 @@ else()
             "$ORIGIN/../../.."
             )
     endif()
+endif()
+
+if(CUDA_FOUND)
+cython_add_module(cuda dynd/cuda.pyx)
+    set_target_properties(
+        cuda PROPERTIES
+        COMPILE_FLAGS
+        "-Wno-unused-parameter -Wno-unused-function -Wno-error"
+        )
 endif()
 
 

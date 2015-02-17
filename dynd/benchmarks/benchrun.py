@@ -16,6 +16,7 @@ but has been modified since.
 from __future__ import print_function
 import math
 
+import sys
 if sys.platform=='win32':
     from time import clock
 else:
@@ -33,7 +34,7 @@ def combinations(*seqin):
             yield comb
     return rloop(seqin,[])
 
-def mean(n):
+def _mean(n = 10):
     def wrap(func):
         def wrapper(*args, **kwds):
             results = [func(*args, **kwds) for i in range(n)]
@@ -41,7 +42,13 @@ def mean(n):
         return wrapper
     return wrap
 
-def median(n):
+def mean(callable_or_value):
+    if callable(callable_or_value):
+        return _mean()(callable_or_value)
+
+    return _mean(callable_or_value)
+
+def _median(n = 10):
     def wrap(func):
         def wrapper(*args, **kwds):
             results = sorted(func(*args, **kwds) for i in range(n))
@@ -50,7 +57,14 @@ def median(n):
                 return results[i]
             return (results[i - 1] + results[i]) / 2.0    
         return wrapper
+
     return wrap
+
+def median(callable_or_value):
+    if callable(callable_or_value):
+        return _median()(callable_or_value)
+
+    return _median(callable_or_value)
 
 class Benchmark:
     sort_by = []

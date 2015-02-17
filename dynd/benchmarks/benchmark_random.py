@@ -1,16 +1,13 @@
 from operator import add
 
-import numpy as np
-
 from dynd import nd, ndt
 
 import matplotlib
 import matplotlib.pyplot
 
 from benchrun import Benchmark, median
-from benchtime import Clock, NumPyClock, PyCUDAClock
+from benchtime import Timer, CUDATimer
 
-n = 10
 #size = [10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
 size = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
 
@@ -22,7 +19,7 @@ class UniformBenchmark(Benchmark):
     Benchmark.__init__(self)
     self.cuda = cuda
 
-  @median(n)
+  @median
   def run(self, size):
     if self.cuda:
       dst_tp = ndt.type('cuda_device[{} * float64]'.format(size))
@@ -30,23 +27,23 @@ class UniformBenchmark(Benchmark):
       dst_tp = ndt.type('{} * float64'.format(size))
     dst = nd.empty(dst_tp)
 
-    with Clock(self.cuda) as clock:
+    with CUDATimer() if self.cuda else Timer() as timer:
       nd.uniform(dst_tp = dst_tp)
 
-    return clock.elapsed()
+    return timer.elapsed_time()
 
 class NumPyUniformBenchmark(Benchmark):
   parameters = ('size',)
   size = size
 
-  @median(n)
+  @median
   def run(self, size):
     import numpy as np
 
-    with NumPyClock() as clock:
+    with Timer() as timer:
       np.random.uniform(size = size)
 
-    return clock.elapsed()
+    return timer.elapsed_time()
 
 class PyCUDAUniformBenchmark(Benchmark):
   parameters = ('size',)
@@ -56,12 +53,14 @@ class PyCUDAUniformBenchmark(Benchmark):
     Benchmark.__init__(self)
     self.gen = gen
 
-  @median(n)
+  @median
   def run(self, size):
-    with PyCUDAClock() as clock:
+    import numpy as np
+
+    with CUDATimer() as timer:
       self.gen.gen_uniform(size, np.float64)
 
-    return clock.elapsed()
+    return timer.elapsed_time()
 
 if __name__ == '__main__':
   cuda = True

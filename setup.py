@@ -16,7 +16,7 @@ is_64_bit = struct.calcsize('@P') == 8
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"
 
-  def get_dyndext_path(self):
+  def get_ext_path(self, name):
     # Get the package directory from build_py
     build_py = self.get_finalized_command('build_py')
     package_dir = build_py.get_package_dir('dynd')
@@ -24,8 +24,17 @@ class cmake_build_ext(build_ext):
     suffix = sysconfig.get_config_var('EXT_SUFFIX')
     if (suffix is None):
       suffix = sysconfig.get_config_var('SO')
-    filename = '_pydynd' + suffix
-    return os.path.join(package_dir, filename)
+    filename = name + suffix
+    return os.path.join(package_dir, filename)    
+
+  def get_ext_built(self, name):
+    if sys.platform != 'win32':
+        suffix = sysconfig.get_config_var('EXT_SUFFIX')
+        if (suffix is None):
+            suffix = sysconfig.get_config_var('SO')
+        return name + suffix
+
+    return os.path.join('Release', name + '.pyd')
 
   def run(self):
     # We don't call the origin build_ext, instead ignore that
@@ -67,10 +76,6 @@ class cmake_build_ext(build_ext):
         self.spawn(['cmake', pyexe_option, install_lib_option,
                     static_lib_option, source])
         self.spawn(['make'])
-        suffix = sysconfig.get_config_var('EXT_SUFFIX')
-        if (suffix is None):
-          suffix = sysconfig.get_config_var('SO')
-        dyndext_built = '_pydynd' + suffix
     else:
         import struct
         # Always build with MSVC 2013 (TODO: 2015 support)
@@ -81,21 +86,25 @@ class cmake_build_ext(build_ext):
                     static_lib_option, '-G', cmake_generator])
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
-        dyndext_built = 'Release/_pydynd.pyd'
+
     # Move the built C-extension to the place expected by the Python build
     import shutil
-    dyndext_path = os.path.join(build_lib, self.get_dyndext_path())
-    if os.path.exists(dyndext_path):
-        os.remove(dyndext_path)
-    self.mkpath(os.path.dirname(dyndext_path))
-    print('Moving built DyND C-extension to build path', dyndext_path)
-    shutil.move(dyndext_built, dyndext_path)
+    for name in self.get_names():
+        ext_path = os.path.join(build_lib, self.get_ext_path(name))
+        if os.path.exists(ext_path):
+            os.remove(ext_path)
+        self.mkpath(os.path.dirname(ext_path))
+        print('Moving built DyND C-extension to build path', ext_path)
+        shutil.move(self.get_ext_built(name), ext_path)
+
     chdir(saved_cwd)
 
-  def get_outputs(self):
-    # Just the C-extension
-    return [self.get_dyndext_path()]
+  def get_names(self):
+    return ['_pydynd', 'cuda']
 
+  def get_outputs(self):
+    # Just the C extensions
+    return [self.get_ext_path(name) for name in self.get_names()]
 
 setup(
     name = 'dynd',

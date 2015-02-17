@@ -18,7 +18,7 @@ from benchrun import Benchmark, clock, mean, median
 
 n = 10
 #size = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
-size = [10, 100, 1000, 10000, 100000]
+size = [10, 100, 1000, 10000, 100000, 1000000]
 
 class ArithmeticBenchmark(Benchmark):
   parameters = ('size',)

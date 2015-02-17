@@ -13,6 +13,7 @@ This file was originally taken from https://code.google.com/p/benchrun/ under th
 but has been modified since.
 """
 
+from __future__ import print_function
 import sys
 if sys.platform=='win32':
     from time import clock
@@ -100,10 +101,10 @@ class Benchmark:
         self.time_all()
         self.sort_results()
 
-        print "=" * 78
-        print
-        print self.__class__.__name__
-        print self.__doc__, "\n"
+        print("=" * 78)
+        print()
+        print(self.__class__.__name__)
+        print(self.__doc__, "\n")
 
         colwidth = 15
         reftimes = {}
@@ -111,8 +112,8 @@ class Benchmark:
         ts = "seconds"
         if self.reference:
             ts += " (x faster than " + (str(self.reference_value)) + ")"
-        print "  ", "   ".join([str(r).ljust(colwidth) for r in self.pnames + [ts]])
-        print "-"*79
+        print("  ", "   ".join([str(r).ljust(colwidth) for r in self.pnames + [ts]]))
+        print("-"*79)
 
         rows = []
         for vals in self.results:
@@ -127,8 +128,8 @@ class Benchmark:
                     stime += ("  (%.2f)" % factor)
             vals = pvalues + (stime,)
             row = [str(val).ljust(colwidth) for val in vals]
-            print "  ", "   ".join(row)
-        print
+            print("  ", "   ".join(row))
+        print()
 
     def plot_result(self, loglog = False):
         import matplotlib

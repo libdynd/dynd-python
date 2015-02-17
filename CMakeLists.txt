@@ -120,7 +120,7 @@ else()
     endif()
 endif()
 
-if (CUDA_FOUND)
+if(CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif()
 
@@ -274,15 +274,14 @@ else()
     endif()
 endif()
 
+if(CUDA_FOUND)
 cython_add_module(cuda dynd/cuda.pyx)
     set_target_properties(
         cuda PROPERTIES
-        #SOVERSION ${DYND_PYTHON_VERSION}
-        #VERSION ${DYND_PYTHON_VERSION}
         COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-unused-function -Wno-error"
         )
-
+endif()
 
 
 if (DYND_INSTALL_LIB)

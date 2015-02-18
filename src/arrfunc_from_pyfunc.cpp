@@ -96,7 +96,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
         src_tp[i].extended()->arrmeta_copy_construct(
             n.get_arrmeta(), self->m_src_arrmeta[i], NULL);
       }
-      PyTuple_SET_ITEM(args.get(), i, wrap_array(DYND_MOVE(n)));
+      PyTuple_SET_ITEM(args.get(), i, wrap_array(std::move(n)));
     }
     // Now call the function
     pyobject_ownref res(PyObject_Call(self->m_pyfunc, args.get(), NULL));
@@ -131,7 +131,7 @@ struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_reques
         src_tp[i].extended()->arrmeta_copy_construct(
             n.get_arrmeta(), self->m_src_arrmeta[i], NULL);
       }
-      PyTuple_SET_ITEM(args.get(), i, wrap_array(DYND_MOVE(n)));
+      PyTuple_SET_ITEM(args.get(), i, wrap_array(std::move(n)));
     }
     // Do the loop, reusing the args we created
     for (size_t j = 0; j != count; ++j) {

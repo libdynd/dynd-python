@@ -366,7 +366,7 @@ struct type_ck : public kernels::unary_ck<type_ck> {
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
     ndt::type tp(reinterpret_cast<const type_type_data *>(src)->tp, true);
-    *dst_obj = wrap_ndt_type(DYND_MOVE(tp));
+    *dst_obj = wrap_ndt_type(std::move(tp));
   }
 };
 

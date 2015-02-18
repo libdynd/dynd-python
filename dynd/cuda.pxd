@@ -14,5 +14,8 @@ cdef extern from "cuda_runtime_api.h":
 cdef extern from "dynd/exceptions.hpp" namespace "dynd":
   void throw_if_not_cuda_success(cudaError_t error)
 
+cdef extern from "dynd/config.hpp":
+    cdef int DYND_CUDA
+
 cdef class event(object):
     cdef cudaEvent_t _event

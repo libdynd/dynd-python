@@ -66,7 +66,7 @@ class PyCUDAArithmeticBenchmark(Benchmark):
   @median
   def run(self, size):
     import numpy as np
-    from pycuda import autoinit, curandom
+    from pycuda import curandom
 
     a = curandom.rand(size, dtype = np.float64)
     b = curandom.rand(size, dtype = np.float64)
@@ -85,8 +85,8 @@ if __name__ == '__main__':
   benchmark = NumPyArithmeticBenchmark(add)
   benchmark.plot_result(loglog = True)
 
-  if cuda:
-    benchmark = PyCUDAArithmeticBenchmark(add)
-    benchmark.plot_result(loglog = True)
+#  if cuda:
+ #   benchmark = PyCUDAArithmeticBenchmark(add)
+  #  benchmark.plot_result(loglog = True)
 
   matplotlib.pyplot.show()

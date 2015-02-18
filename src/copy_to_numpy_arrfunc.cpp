@@ -41,7 +41,7 @@ struct strided_of_numpy_arrmeta {
 static intptr_t instantiate_copy_to_numpy(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp, void *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
-    const ndt::type *src_tp, const char *const *src_arrmeta,
+    intptr_t nsrc, const ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
     const nd::array &kwds, const std::map<nd::string, ndt::type> &tp_vars)
 {
@@ -83,7 +83,7 @@ static intptr_t instantiate_copy_to_numpy(
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
     return nd::functional::elwise_instantiate_with_child<0>(self_af, af_tp, ckb, ckb_offset, dst_am_tp,
-                                  dst_am, src_tp, src_arrmeta, kernreq, ectx,
+                                  dst_am, nsrc, src_tp, src_arrmeta, kernreq, ectx,
                                   nd::array(), tp_vars);
   } else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(dst_obj);
@@ -97,7 +97,7 @@ static intptr_t instantiate_copy_to_numpy(
     } else if (PyDataType_ISOBJECT(dtype)) {
       const arrfunc_type_data *af = copy_to_pyobject_tuple.get();
       return af->instantiate(af, copy_to_pyobject_tuple.get_type(), ckb,
-                             ckb_offset, ndt::make_type<void>(), NULL, src_tp,
+                             ckb_offset, ndt::make_type<void>(), NULL, nsrc, src_tp,
                              src_arrmeta, kernreq, ectx, nd::array(), tp_vars);
     } else if (PyDataType_HASFIELDS(dtype)) {
       if (src_tp[0].get_kind() != struct_kind &&

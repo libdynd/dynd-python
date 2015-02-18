@@ -29,7 +29,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   af->instantiate(af, copy_from_pyobject.get_type(), &ckb, 0, dt, arrmeta,
-                  &src_tp, &src_arrmeta, kernel_request_single, ectx,
+                  1, &src_tp, &src_arrmeta, kernel_request_single, ectx,
                   nd::array(), std::map<nd::string, ndt::type>());
   ckb(data, reinterpret_cast<char *>(&value));
   return;
@@ -52,7 +52,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   af->instantiate(af, copy_from_pyobject_no_dim_broadcast.get_type(), &ckb, 0,
-                  dt, arrmeta, &src_tp, &src_arrmeta, kernel_request_single,
+                  dt, arrmeta, 1, &src_tp, &src_arrmeta, kernel_request_single,
                   ectx, nd::array(), std::map<nd::string, ndt::type>());
   ckb(data, reinterpret_cast<char *>(&value));
   return;

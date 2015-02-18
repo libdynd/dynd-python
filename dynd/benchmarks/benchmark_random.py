@@ -72,7 +72,7 @@ if __name__ == '__main__':
   benchmark.plot_result(loglog = True)
 
   if cuda:
-    from pycuda import autoinit, curandom
+    from pycuda import curandom
 
     benchmark = PyCUDAUniformBenchmark(curandom.XORWOWRandomNumberGenerator())
     benchmark.plot_result(loglog = True)

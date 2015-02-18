@@ -242,7 +242,7 @@ static void scalar_ufunc_strided_ckernel_nogil(char *dst, intptr_t dst_stride,
 static intptr_t instantiate_scalar_ufunc_ckernel(
     const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
-    const char *DYND_UNUSED(dst_arrmeta), const ndt::type *src_tp,
+    const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
     const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
     const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds, const std::map<nd::string, ndt::type> &tp_vars)
 {

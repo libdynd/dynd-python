@@ -159,6 +159,6 @@ def arrfunc_instantiate(ckd, out_ckb, ckb_offset, dst_tp, dst_arrmeta,
     ectx_ptr = ectx._ectx_ptr if isinstance(ectx, nd_eval_context) else ectx
     ckd_struct.instantiate_func(dp, af_tp,
                     out_ckb, ckb_offset,
-                    data_address_of(dst_tp), dst_arrmeta,
+                    data_address_of(dst_tp), dst_arrmeta, -1,
                     data_address_of(src_tp), data_address_of(src_arrmeta),
                     kernreq, ectx_ptr, None, None)

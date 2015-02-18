@@ -89,7 +89,7 @@ CKernelBuilderStructPtr = ctypes.POINTER(CKernelBuilderStruct)
 # ArrFunc
 InstantiateArrFuncFunction = ctypes.CFUNCTYPE(c_ssize_t, ctypes.c_void_p,
         ctypes.c_void_p, CKernelBuilderStructPtr, c_ssize_t,
-        ctypes.c_void_p, ctypes.c_void_p,
+        ctypes.c_void_p, ctypes.c_void_p, ctypes.c_ssize_t,
         ctypes.c_void_p, ctypes.c_void_p,
         ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p)
 if ctypes.sizeof(ctypes.c_void_p) == 8:

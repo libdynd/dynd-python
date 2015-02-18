@@ -253,7 +253,7 @@ public:
                             n.get_arrmeta() + sizeof(fixed_dim_type_arrmeta),
                             dst_arrmeta, NULL);
         }
-        ndo[0] = (WArray *)wrap_array(DYND_MOVE(n));
+        ndo[0] = (WArray *)wrap_array(std::move(n));
         for (size_t i = 0; i != src_count; ++i) {
             dt = ndt::make_fixed_dim(1, src_tp[i]);
             n.set(make_array_memory_block(dt.get_arrmeta_size()));
@@ -267,7 +267,7 @@ public:
                                 n.get_arrmeta() + sizeof(fixed_dim_type_arrmeta),
                                 src_arrmeta[i], NULL);
             }
-            ndo[i+1] = (WArray *)wrap_array(DYND_MOVE(n));
+            ndo[i+1] = (WArray *)wrap_array(std::move(n));
         }
 
         return ckb_offset;
@@ -385,7 +385,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
                     result.get_type(),
                     new pyobject_elwise_expr_kernel_generator(callable, dst_tp, src_tp));
     edt.swap(result.get_ndo()->m_type);
-    return wrap_array(DYND_MOVE(result));
+    return wrap_array(std::move(result));
 }
 
 PyObject *pydynd::elwise_map(PyObject *n_obj, PyObject *callable,

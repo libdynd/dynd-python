@@ -72,7 +72,7 @@ namespace {
         Py_INCREF(owner);
         result.get_ndo()->m_data_reference = owner_memblock.release();
         result.get_ndo()->m_flags = access_flags;
-        return wrap_array(DYND_MOVE(result));
+        return wrap_array(std::move(result));
       }
       catch (...)
       {

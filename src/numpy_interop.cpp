@@ -814,7 +814,7 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
         d, PyArray_NDIM(obj), PyArray_DIMS(obj), PyArray_STRIDES(obj),
         nd::read_access_flag |
             (PyArray_ISWRITEABLE(obj) ? nd::write_access_flag : 0),
-        PyArray_BYTES(obj), DYND_MOVE(memblock), &arrmeta);
+        PyArray_BYTES(obj), std::move(memblock), &arrmeta);
     if (d.get_type_id() == struct_type_id) {
       // If it's a struct, there's additional arrmeta that needs to be populated
       pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);

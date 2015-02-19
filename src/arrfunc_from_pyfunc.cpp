@@ -23,7 +23,7 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-struct pyfunc_expr_ck : public kernels::general_ck<pyfunc_expr_ck, kernel_request_host> {
+struct pyfunc_expr_ck : public general_ck<pyfunc_expr_ck, kernel_request_host> {
   // Reference to the python function object
   PyObject *m_pyfunc;
   // The concrete prototype the ckernel is for

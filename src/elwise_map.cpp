@@ -226,7 +226,7 @@ public:
                             this);
         }
 
-        kernels::inc_ckb_offset(ckb_offset,
+        inc_ckb_offset(ckb_offset,
                                 sizeof(pyobject_expr_kernel_extra) +
                                     (src_count + 1) * sizeof(WArray *));
         reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity_leaf(ckb_offset);

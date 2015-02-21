@@ -104,7 +104,7 @@ class cmake_build_ext(build_ext):
     chdir(saved_cwd)
 
   def get_names(self):
-    return ['_pydynd', 'cuda']
+    return ['_pydynd'] #, 'cuda']
 
   def get_outputs(self):
     # Just the C extensions

@@ -274,7 +274,7 @@ else()
     endif()
 endif()
 
-if(CUDA_FOUND)
+if(CUDA_FOUND AND NOT WIN32)
 cython_add_module(cuda dynd/cuda.pyx)
     set_target_properties(
         cuda PROPERTIES

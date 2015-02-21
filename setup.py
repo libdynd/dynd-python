@@ -151,7 +151,9 @@ setup(
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
     ext_modules = [Extension('dynd._pydynd', sources=[])],
-    install_requires=open('requirements.txt').read().strip().split('\n'),
+    # This includes both build and install requirements. Setuptools' setup_requires
+    # option does not actually install things, so isn't actually helpful...
+    install_requires=open('dev-requirements.txt').read().strip().split('\n'),
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

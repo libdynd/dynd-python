@@ -64,6 +64,7 @@ class cmake_build_ext(build_ext):
     pyexe_option = '-DPYTHON_EXECUTABLE=%s' % sys.executable
     install_lib_option = '-DDYND_INSTALL_LIB=ON'
     static_lib_option = ''
+    build_tests_option = ''
     # If libdynd is checked out into the libraries subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
@@ -71,6 +72,7 @@ class cmake_build_ext(build_ext):
                           'libraries/libdynd/include/dynd/array.hpp')):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         static_lib_option = '-DDYND_SHARED_LIB=OFF'
+        build_tests_option = '-DDYND_BUILD_TESTS=OFF'
 
     if sys.platform != 'win32':
         self.spawn(['cmake', pyexe_option, install_lib_option,
@@ -83,7 +85,8 @@ class cmake_build_ext(build_ext):
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
         self.spawn(['cmake', source, pyexe_option, install_lib_option,
-                    static_lib_option, '-G', cmake_generator])
+                    static_lib_option, build_tests_option,
+                    '-G', cmake_generator])
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 
@@ -106,10 +109,28 @@ class cmake_build_ext(build_ext):
     # Just the C extensions
     return [self.get_ext_path(name) for name in self.get_names()]
 
+# Get the version number to use from git
+import subprocess
+ver = subprocess.check_output(['git', 'describe', '--dirty',
+                               '--always', '--match', 'v*']).decode('ascii')
+# Same processing as in __init__.py
+if '.' in ver:
+    vlst = ver.lstrip('v').split('.')
+    vlst = vlst[:-1] + vlst[-1].split('-')
+
+    if len(vlst) > 3:
+        # The 4th one may not be, so trap it
+        try:
+            # Zero pad the post version #, so it sorts lexicographically
+            vlst[3] = 'post%03d' % int(vlst[3])
+        except ValueError:
+            pass
+    ver = '.'.join(vlst)
+
 setup(
     name = 'dynd',
     description = 'Python exposure of DyND',
-    version = '0.6.6',
+    version = ver,
     author = 'DyND Developers',
     author_email = 'libdynd-dev@googlegroups.com',
     license = 'BSD',

@@ -49,7 +49,8 @@ class cmake_build_ext(build_ext):
 
     # Change to the build directory
     saved_cwd = getcwd()
-    self.mkpath(self.build_temp)
+    if not os.path.isdir(self.build_temp):
+        self.mkpath(self.build_temp)
     chdir(self.build_temp)
 
     # Detect if we built elsewhere
@@ -112,7 +113,7 @@ class cmake_build_ext(build_ext):
 # Get the version number to use from git
 import subprocess
 ver = subprocess.check_output(['git', 'describe', '--dirty',
-                               '--always', '--match', 'v*']).decode('ascii')
+                               '--always', '--match', 'v*']).decode('ascii').strip('\n')
 # Same processing as in __init__.py
 if '.' in ver:
     vlst = ver.lstrip('v').split('.')
@@ -125,7 +126,9 @@ if '.' in ver:
             vlst[3] = 'post%03d' % int(vlst[3])
         except ValueError:
             pass
-    ver = '.'.join(vlst)
+        ver = '.'.join(vlst[:4]) + '+' + '.'.join(vlst[4:])
+    else:
+        ver = '.'.join(vlst)
 
 setup(
     name = 'dynd',

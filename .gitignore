@@ -2,6 +2,8 @@
 *.swp
 bld.bat
 build
+dist
+dynd.egg-info
 build_cuda
 libraries/libdynd
 CMakeCache.txt

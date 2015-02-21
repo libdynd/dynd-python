@@ -122,8 +122,11 @@ if '.' in ver:
     if len(vlst) > 3:
         # The 4th one may not be, so trap it
         try:
-            # Zero pad the post version #, so it sorts lexicographically
-            vlst[3] = 'post%03d' % int(vlst[3])
+            # Zero pad the dev version #, so it sorts lexicographically
+            vlst[3] = 'dev%03d' % int(vlst[3])
+            # increment the third version number, so
+            # the '.dev##' versioning convention works
+            vlst[2] = str(int(vlst[2]) + 1)
         except ValueError:
             pass
         ver = '.'.join(vlst[:4]) + '+' + '.'.join(vlst[4:])

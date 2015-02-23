@@ -91,8 +91,8 @@ static intptr_t instantiate_copy_from_numpy(
                                     dst_arrmeta, src_view_tp, NULL, kernreq,
                                     ectx, nd::array());
     } else if (PyDataType_ISOBJECT(dtype)) {
-      const arrfunc_type_data *af = copy_from_pyobject.get();
-      return af->instantiate(af, copy_from_pyobject.get_type(), ckb, ckb_offset,
+      const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get();
+      return af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get_type(), ckb, ckb_offset,
                              dst_tp, dst_arrmeta, 1, src_tp, src_arrmeta, kernreq,
                              ectx, nd::array(), tp_vars);
     } else if (PyDataType_HASFIELDS(dtype)) {
@@ -186,14 +186,11 @@ static nd::arrfunc make_copy_from_numpy_arrfunc()
   return out_af;
 }
 
-dynd::nd::pod_arrfunc pydynd::copy_from_numpy;
-
-void pydynd::init_copy_from_numpy()
-{
-  pydynd::copy_from_numpy.init(make_copy_from_numpy_arrfunc());
+dynd::nd::arrfunc pydynd::decl::copy_from_numpy::as_arrfunc() {
+  return make_copy_from_numpy_arrfunc();
 }
 
-void pydynd::cleanup_copy_from_numpy() { pydynd::copy_from_numpy.cleanup(); }
+pydynd::decl::copy_from_numpy pydynd::copy_from_numpy;
 
 void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
                                    const char *dst_arrmeta, char *dst_data,
@@ -205,9 +202,9 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   src_arrmeta.src_obj = (PyObject *)value;
   src_arrmeta.src_alignment = 0;
   const char *src_arrmeta_ptr = reinterpret_cast<const char *>(&src_arrmeta);
-  const arrfunc_type_data *af = copy_from_numpy.get();
+  const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_numpy).get();
   ndt::type src_tp = ndt::make_type<void>();
-  af->instantiate(af, copy_from_numpy.get_type(), &ckb, 0, dst_tp, dst_arrmeta,
+  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_numpy).get_type(), &ckb, 0, dst_tp, dst_arrmeta,
                   1, &src_tp, &src_arrmeta_ptr, kernel_request_single,
                   &eval::default_eval_context, nd::array(),
                   std::map<nd::string, ndt::type>());

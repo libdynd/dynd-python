@@ -25,10 +25,10 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                             const eval::eval_context *ectx)
 {
   unary_ckernel_builder ckb;
-  const arrfunc_type_data *af = copy_from_pyobject.get();
+  const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get();
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
-  af->instantiate(af, copy_from_pyobject.get_type(), &ckb, 0, dt, arrmeta,
+  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get_type(), &ckb, 0, dt, arrmeta,
                   1, &src_tp, &src_arrmeta, kernel_request_single, ectx,
                   nd::array(), std::map<nd::string, ndt::type>());
   ckb(data, reinterpret_cast<char *>(&value));
@@ -48,10 +48,10 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
     const dynd::eval::eval_context *ectx)
 {
   unary_ckernel_builder ckb;
-  const arrfunc_type_data *af = copy_from_pyobject_no_dim_broadcast.get();
+  const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_pyobject_no_dim_broadcast).get();
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
-  af->instantiate(af, copy_from_pyobject_no_dim_broadcast.get_type(), &ckb, 0,
+  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject_no_dim_broadcast).get_type(), &ckb, 0,
                   dt, arrmeta, 1, &src_tp, &src_arrmeta, kernel_request_single,
                   ectx, nd::array(), std::map<nd::string, ndt::type>());
   ckb(data, reinterpret_cast<char *>(&value));

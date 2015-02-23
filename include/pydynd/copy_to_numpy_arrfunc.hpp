@@ -26,10 +26,15 @@ struct copy_to_numpy_arrmeta {
   uintptr_t dst_alignment;
 };
 
-extern dynd::nd::pod_arrfunc copy_to_numpy;
+namespace decl {
 
-void init_copy_to_numpy();
-void cleanup_copy_to_numpy();
+  struct copy_to_numpy : dynd::nd::decl::arrfunc<copy_to_numpy> {
+    static dynd::nd::arrfunc as_arrfunc();
+  };
+
+} // namespace pydynd::decl
+
+extern decl::copy_to_numpy copy_to_numpy;
 
 } // namespace pydynd
 

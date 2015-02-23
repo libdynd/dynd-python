@@ -854,18 +854,15 @@ static nd::arrfunc make_copy_to_pyobject_arrfunc(bool struct_as_pytuple)
   return out_af;
 }
 
-dynd::nd::pod_arrfunc pydynd::copy_to_pyobject_dict;
-dynd::nd::pod_arrfunc pydynd::copy_to_pyobject_tuple;
-
-void pydynd::init_copy_to_pyobject()
-{
+dynd::nd::arrfunc pydynd::decl::copy_to_pyobject_dict::as_arrfunc() {
   PyDateTime_IMPORT;
-  pydynd::copy_to_pyobject_dict.init(make_copy_to_pyobject_arrfunc(false));
-  pydynd::copy_to_pyobject_tuple.init(make_copy_to_pyobject_arrfunc(true));
+  return make_copy_to_pyobject_arrfunc(false);
 }
 
-void pydynd::cleanup_copy_to_pyobject()
-{
-  pydynd::copy_to_pyobject_dict.cleanup();
-  pydynd::copy_to_pyobject_tuple.cleanup();
+dynd::nd::arrfunc pydynd::decl::copy_to_pyobject_tuple::as_arrfunc() {
+  PyDateTime_IMPORT;
+  return make_copy_to_pyobject_arrfunc(true);
 }
+
+pydynd::decl::copy_to_pyobject_dict pydynd::copy_to_pyobject_dict;
+pydynd::decl::copy_to_pyobject_tuple pydynd::copy_to_pyobject_tuple;

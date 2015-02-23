@@ -18,10 +18,6 @@
 
 static void pydynd_cleanup()
 {
-  pydynd::cleanup_copy_from_pyobject();
-  pydynd::cleanup_copy_to_pyobject();
-  pydynd::cleanup_copy_from_numpy();
-  pydynd::cleanup_copy_to_numpy();
   dynd::libdynd_cleanup();
 }
 
@@ -34,8 +30,4 @@ void pydynd::pydynd_init()
   pydynd::init_array_from_py_dynamic();
   pydynd::init_array_from_py();
   pydynd::init_ctypes_interop();
-  pydynd::init_copy_to_numpy();
-  pydynd::init_copy_from_numpy();
-  pydynd::init_copy_to_pyobject();
-  pydynd::init_copy_from_pyobject();
 }

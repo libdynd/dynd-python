@@ -95,8 +95,8 @@ static intptr_t instantiate_copy_to_numpy(
                                     NULL, src_tp[0], src_arrmeta[0], kernreq,
                                     ectx, nd::array());
     } else if (PyDataType_ISOBJECT(dtype)) {
-      const arrfunc_type_data *af = copy_to_pyobject_tuple.get();
-      return af->instantiate(af, copy_to_pyobject_tuple.get_type(), ckb,
+      const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_to_pyobject_tuple).get();
+      return af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_to_pyobject_tuple).get_type(), ckb,
                              ckb_offset, ndt::make_type<void>(), NULL, nsrc, src_tp,
                              src_arrmeta, kernreq, ectx, nd::array(), tp_vars);
     } else if (PyDataType_HASFIELDS(dtype)) {
@@ -195,13 +195,11 @@ static nd::arrfunc make_copy_to_numpy_arrfunc()
   return out_af;
 }
 
-nd::pod_arrfunc pydynd::copy_to_numpy;
-
-void pydynd::init_copy_to_numpy()
-{
-  pydynd::copy_to_numpy.init(make_copy_to_numpy_arrfunc());
+dynd::nd::arrfunc pydynd::decl::copy_to_numpy::as_arrfunc() {
+  return make_copy_to_numpy_arrfunc();
 }
 
-void pydynd::cleanup_copy_to_numpy() { pydynd::copy_to_numpy.cleanup(); }
+pydynd::decl::copy_to_numpy pydynd::copy_to_numpy;
+
 
 #endif // DYND_NUMPY_INTEROP

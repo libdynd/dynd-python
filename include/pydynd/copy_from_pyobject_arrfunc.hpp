@@ -13,21 +13,13 @@
 
 namespace pydynd {
 
-namespace decl {
+  extern struct copy_from_pyobject : dynd::nd::declfunc<copy_from_pyobject> {
+    static dynd::nd::arrfunc make();
+  } copy_from_pyobject;
 
-  struct copy_from_pyobject : dynd::nd::decl::arrfunc<copy_from_pyobject> {
-    static dynd::nd::arrfunc as_arrfunc();
-  };
-
-  struct copy_from_pyobject_no_dim_broadcast : dynd::nd::decl::arrfunc<copy_from_pyobject_no_dim_broadcast> {
-    static dynd::nd::arrfunc as_arrfunc();
-  };
-
-} // namespace pydynd::decl
-
-extern decl::copy_from_pyobject copy_from_pyobject;
-
-extern decl::copy_from_pyobject_no_dim_broadcast copy_from_pyobject_no_dim_broadcast;
+  extern struct copy_from_pyobject_no_dim_broadcast : dynd::nd::declfunc<copy_from_pyobject_no_dim_broadcast> {
+    static dynd::nd::arrfunc make();
+  } copy_from_pyobject_no_dim_broadcast;
 
 } // namespace pydynd
 

@@ -1138,15 +1138,15 @@ static nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast)
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::decl::copy_from_pyobject::as_arrfunc() {
+dynd::nd::arrfunc pydynd::copy_from_pyobject::make() {
   PyDateTime_IMPORT;
   return make_copy_from_pyobject_arrfunc(true);
 }
 
-dynd::nd::arrfunc pydynd::decl::copy_from_pyobject_no_dim_broadcast::as_arrfunc() {
+dynd::nd::arrfunc pydynd::copy_from_pyobject_no_dim_broadcast::make() {
   PyDateTime_IMPORT;
   return make_copy_from_pyobject_arrfunc(false);
 }
 
-pydynd::decl::copy_from_pyobject pydynd::copy_from_pyobject;
-pydynd::decl::copy_from_pyobject_no_dim_broadcast pydynd::copy_from_pyobject_no_dim_broadcast;
+struct pydynd::copy_from_pyobject pydynd::copy_from_pyobject;
+struct pydynd::copy_from_pyobject_no_dim_broadcast pydynd::copy_from_pyobject_no_dim_broadcast;

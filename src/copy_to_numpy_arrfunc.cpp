@@ -195,11 +195,11 @@ static nd::arrfunc make_copy_to_numpy_arrfunc()
   return out_af;
 }
 
-dynd::nd::arrfunc pydynd::decl::copy_to_numpy::as_arrfunc() {
+dynd::nd::arrfunc pydynd::copy_to_numpy::make() {
   return make_copy_to_numpy_arrfunc();
 }
 
-pydynd::decl::copy_to_numpy pydynd::copy_to_numpy;
+struct pydynd::copy_to_numpy pydynd::copy_to_numpy;
 
 
 #endif // DYND_NUMPY_INTEROP

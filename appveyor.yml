@@ -43,10 +43,11 @@ build_script:
   - python setup.py bdist_wheel
 
 test_script:
-  - pip install dist/*.whl
-  - pushd C:\
+  - cd dist
+  - FOR /F "delims=" %%i IN ('dir /b *.whl') DO set WHL=%%i
+  - pip install %WHL%
   - python -c "import dynd;dynd.test(exit=True)"
-  - popd
+  - cd ..
 
 artifacts:
   - path: dist\*

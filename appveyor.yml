@@ -43,7 +43,7 @@ build_script:
   - python setup.py bdist_wheel
 
 test_script:
-  - pip install dist\*.whl
+  - pip install dist/*.whl
   - pushd C:\
   - python -c "import dynd;dynd.test(exit=True)"
   - popd

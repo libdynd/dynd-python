@@ -27,6 +27,10 @@ environment:
       PYTHON_ARCH: "64"
 
 install:
+  - md libraries
+  - cd libraries
+  - git clone https://github.com/libdynd/libdynd.git
+  - cd ..
   - dir C:\
   - dir "C:\Program Files\Microsoft SDKs\Windows"
   - ps: ./appveyor/install.ps1

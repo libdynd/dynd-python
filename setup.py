@@ -49,7 +49,8 @@ class cmake_build_ext(build_ext):
 
     # Change to the build directory
     saved_cwd = getcwd()
-    self.mkpath(self.build_temp)
+    if not os.path.isdir(self.build_temp):
+        self.mkpath(self.build_temp)
     chdir(self.build_temp)
 
     # Detect if we built elsewhere
@@ -64,6 +65,7 @@ class cmake_build_ext(build_ext):
     pyexe_option = '-DPYTHON_EXECUTABLE=%s' % sys.executable
     install_lib_option = '-DDYND_INSTALL_LIB=ON'
     static_lib_option = ''
+    build_tests_option = ''
     # If libdynd is checked out into the libraries subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
@@ -71,6 +73,7 @@ class cmake_build_ext(build_ext):
                           'libraries/libdynd/include/dynd/array.hpp')):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         static_lib_option = '-DDYND_SHARED_LIB=OFF'
+        build_tests_option = '-DDYND_BUILD_TESTS=OFF'
 
     if sys.platform != 'win32':
         self.spawn(['cmake', pyexe_option, install_lib_option,
@@ -83,33 +86,68 @@ class cmake_build_ext(build_ext):
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
         self.spawn(['cmake', source, pyexe_option, install_lib_option,
-                    static_lib_option, '-G', cmake_generator])
+                    static_lib_option, build_tests_option,
+                    '-G', cmake_generator])
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 
     # Move the built C-extension to the place expected by the Python build
     import shutil
-    for name in self.get_names():
-        ext_path = os.path.join(build_lib, self.get_ext_path(name))
-        if os.path.exists(ext_path):
-            os.remove(ext_path)
-        self.mkpath(os.path.dirname(ext_path))
-        print('Moving built DyND C-extension to build path', ext_path)
-        shutil.move(self.get_ext_built(name), ext_path)
+    self._found_names = []
+    for name in self.get_expected_names():
+        built_path = self.get_ext_built(name)
+        if os.path.exists(built_path):
+            ext_path = os.path.join(build_lib, self.get_ext_path(name))
+            if os.path.exists(ext_path):
+                os.remove(ext_path)
+            self.mkpath(os.path.dirname(ext_path))
+            print('Moving built DyND C-extension to build path', ext_path)
+            shutil.move(self.get_ext_built(name), ext_path)
+            self._found_names.append(name)
+        else:
+            print('DyND C-extension skipped:', built_path)
 
     chdir(saved_cwd)
 
-  def get_names(self):
+  def get_expected_names(self):
     return ['_pydynd', 'cuda']
+
+  def get_names(self):
+    return self._found_names
 
   def get_outputs(self):
     # Just the C extensions
     return [self.get_ext_path(name) for name in self.get_names()]
 
+# Get the version number to use from git
+import subprocess
+ver = subprocess.check_output(['git', 'describe', '--dirty',
+                               '--always', '--match', 'v*']).decode('ascii').strip('\n')
+# Same processing as in __init__.py
+if '.' in ver:
+    vlst = ver.lstrip('v').split('.')
+    vlst = vlst[:-1] + vlst[-1].split('-')
+
+    if len(vlst) > 3:
+        # The 4th one may not be, so trap it
+        try:
+            # Zero pad the dev version #, so it sorts lexicographically
+            vlst[3] = 'dev%03d' % int(vlst[3])
+            # increment the third version number, so
+            # the '.dev##' versioning convention works
+            vlst[2] = str(int(vlst[2]) + 1)
+        except ValueError:
+            pass
+        ver = '.'.join(vlst[:4])
+        # Can't use the local version on PyPI, so just exclude this part
+        # + '+' + '.'.join(vlst[4:])
+    else:
+        ver = '.'.join(vlst)
+
 setup(
     name = 'dynd',
     description = 'Python exposure of DyND',
-    version = '0.6.6',
+    version = ver,
     author = 'DyND Developers',
     author_email = 'libdynd-dev@googlegroups.com',
     license = 'BSD',
@@ -124,7 +162,9 @@ setup(
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
     ext_modules = [Extension('dynd._pydynd', sources=[])],
-    install_requires=open('requirements.txt').read().strip().split('\n'),
+    # This includes both build and install requirements. Setuptools' setup_requires
+    # option does not actually install things, so isn't actually helpful...
+    install_requires=open('dev-requirements.txt').read().strip().split('\n'),
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

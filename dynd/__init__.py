@@ -18,6 +18,7 @@ def fix_version(v):
         vlst = vlst[:-1] + vlst[-1].split('-')
 
         if len(vlst) <= 3:
+            v = '.'.join('vlst')
             vtup = tuple(int(x) for x in vlst)
         else:
             # The first 3 numbers are always integer
@@ -25,11 +26,15 @@ def fix_version(v):
             # The 4th one may not be, so trap it
             try:
                 vtup = vtup + (int(vlst[3]),)
-                # Zero pad the post version #, so it sorts lexicographically
-                vlst[3] = 'post%03d' % int(vlst[3])
+                # Zero pad the dev version #, so it sorts lexicographically
+                vlst[3] = 'dev%03d' % int(vlst[3])
+                # increment the third version number, so
+                # the '.dev##' versioning convention works
+                vlst[2] = str(int(vlst[2]) + 1)
             except ValueError:
                 pass
-        return '.'.join(vlst), vtup
+            ver = '.'.join(vlst[:4]) + '+' + '.'.join(vlst[4:])
+        return v, vtup
     else:
         # When a "git checkout --depth=1 ..." has been done,
         # it will look like "96da079" or "96da079-dirty"

@@ -1,0 +1,55 @@
+# TODO: How to automatically use the version string
+#       produced by the build?
+version: 0.6.6.{build}
+
+# branches to build
+branches:
+  only:
+    - master
+clone_depth: 1
+
+# Do not build on tags (GitHub only)
+skip_tags: true
+
+environment:
+  # Operating system (build VM template)
+  os: Windows Server 2012
+
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
+
+  matrix:
+    - PYTHON: "C:/Python34-x64"
+      PYTHON_VERSION: "3.4.1"
+      PYTHON_ARCH: "64"
+
+install:
+  - md libraries
+  - cd libraries
+  - git clone https://github.com/libdynd/libdynd.git
+  - cd ..
+  - dir C:\
+  - dir "C:\Program Files\Microsoft SDKs\Windows"
+  - ps: ./appveyor/install.ps1
+  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+  - python --version
+  - python -c "import struct; print(struct.calcsize('P') * 8)"
+  - "%CMD_IN_ENV% pip install -r appveyor/requirements.txt"
+
+build_script:
+  - python setup.py bdist_wheel
+
+test_script:
+  - cd dist
+  - FOR /F "delims=" %%i IN ('dir /b *.whl') DO set WHL=%%i
+  - pip install %WHL%
+  - python -c "import dynd;dynd.test(exit=True)"
+  - cd ..
+
+artifacts:
+  - path: dist\*
+
+

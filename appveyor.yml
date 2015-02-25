@@ -34,7 +34,7 @@ install:
   - python --version
   - python -c "import struct; print(struct.calcsize('P') * 8)"
   - pip install setuptools
-  - "%CMD_IN_ENV% pip install -r dev-requirements.txt"
+  - "%CMD_IN_ENV% pip install -r appveyor/requirements.txt"
 
 build_script:
   - python setup.py bdist_wheel

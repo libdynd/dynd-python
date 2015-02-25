@@ -225,13 +225,11 @@ set_target_properties(
     OUTPUT_NAME _pydynd
     LINKER_LANGUAGE CXX)
 if(WIN32)
-    if(MSVC12)
     set_target_properties(
         dynd._pydynd PROPERTIES
         COMPILE_FLAGS
         "-DHAVE_ROUND"
         )
-    endif()
 elseif(APPLE)
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.
@@ -274,13 +272,22 @@ else()
     endif()
 endif()
 
-if(CUDA_FOUND AND NOT WIN32)
-cython_add_module(cuda dynd/cuda.pyx)
-    set_target_properties(
-        cuda PROPERTIES
-        COMPILE_FLAGS
-        "-Wno-unused-parameter -Wno-unused-function -Wno-error"
-        )
+if(CUDA_FOUND)
+    cython_add_module(cuda dynd/cuda.pyx)
+
+    if (WIN32)
+        set_target_properties(
+            cuda PROPERTIES
+            COMPILE_FLAGS
+            "-DHAVE_ROUND"
+            )
+    else()
+        set_target_properties(
+            cuda PROPERTIES
+            COMPILE_FLAGS
+            "-Wno-unused-parameter -Wno-unused-function -Wno-error"
+            )
+    endif()
 endif()
 
 

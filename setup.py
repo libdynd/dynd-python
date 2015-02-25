@@ -93,18 +93,27 @@ class cmake_build_ext(build_ext):
 
     # Move the built C-extension to the place expected by the Python build
     import shutil
-    for name in self.get_names():
-        ext_path = os.path.join(build_lib, self.get_ext_path(name))
-        if os.path.exists(ext_path):
-            os.remove(ext_path)
-        self.mkpath(os.path.dirname(ext_path))
-        print('Moving built DyND C-extension to build path', ext_path)
-        shutil.move(self.get_ext_built(name), ext_path)
+    self._found_names = []
+    for name in self.get_expected_names():
+        built_path = self.get_ext_built(name)
+        if os.path.exists(built_path):
+            ext_path = os.path.join(build_lib, self.get_ext_path(name))
+            if os.path.exists(ext_path):
+                os.remove(ext_path)
+            self.mkpath(os.path.dirname(ext_path))
+            print('Moving built DyND C-extension to build path', ext_path)
+            shutil.move(self.get_ext_built(name), ext_path)
+            self._found_names.append(name)
+        else:
+            print('DyND C-extension skipped:', built_path)
 
     chdir(saved_cwd)
 
+  def get_expected_names(self):
+    return ['_pydynd', 'cuda']
+
   def get_names(self):
-    return ['_pydynd'] #, 'cuda']
+    return self._found_names
 
   def get_outputs(self):
     # Just the C extensions

@@ -138,7 +138,9 @@ if '.' in ver:
             vlst[2] = str(int(vlst[2]) + 1)
         except ValueError:
             pass
-        ver = '.'.join(vlst[:4]) + '+' + '.'.join(vlst[4:])
+        ver = '.'.join(vlst[:4])
+        # Can't use the local version on PyPI, so just exclude this part
+        # + '+' + '.'.join(vlst[4:])
     else:
         ver = '.'.join(vlst)
 

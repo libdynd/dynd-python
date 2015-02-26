@@ -15,6 +15,10 @@ project(dynd-python)
 option(DYND_INSTALL_LIB
     "Use a libdynd built and installed somewhere."
     ON)
+# -DDYND_CUDA=ON/OFF, use a libdynd which has been built with the CUDA Toolkit.
+    option(DYND_CUDA
+        "Use a libdynd built with CUDA."
+        OFF)
 # -DUSE_RELATIVE_RPATH=ON/OFF, For OSX, to use the @rpath mechanism
 #   for creating a build which is linked with relative paths. The
 #   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
@@ -120,16 +124,25 @@ else()
     endif()
 endif()
 
-if(CUDA_FOUND)
-    include_directories(${CUDA_INCLUDE_DIRS})
-endif()
-
 include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
     ${LIBDYND_INCLUDE_DIRS}
     include/pydynd
+    ${CMAKE_CURRENT_BINARY_DIR}/dynd
     )
+
+if(DYND_CUDA)
+    include_directories(${CUDA_INCLUDE_DIRS})
+    add_definitions(-DDYND_CUDA)
+    set(DYND_CUDA_01 1)
+else()
+    set(DYND_CUDA_01 0)
+endif()
+
+# Configure cmake defines
+configure_file("dynd/config.pxi.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/dynd/config.pxi")
 
 set(pydynd_CPP_SRC
     include/pydynd/array_as_numpy.hpp

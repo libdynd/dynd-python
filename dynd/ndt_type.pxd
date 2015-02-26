@@ -85,7 +85,7 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
 
         ndt_type with_replaced_dtype(ndt_type&, size_t) except +translate_exception
 
-        bint matches(ndt_type&) except +translate_exception
+        bint match(ndt_type&) except +translate_exception
 
 cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:

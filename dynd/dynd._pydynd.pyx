@@ -192,27 +192,27 @@ cdef class w_type:
     def __getattr__(self, name):
         return get_ndt_type_dynamic_property(GET(self.v), name)
 
-    def matches(self, rhs):
+    def match(self, rhs):
         """
-        tp.matches(pattern)
+        tp.match(candidate)
 
-        Returns True if the concrete type ``tp`` matches the possibly symbolic
-        type ``pattern``, False otherwise.
+        Returns True if the candidate type ``candidate`` matches the possibly
+        symbolic pattern type ``tp``, False otherwise.
 
         Examples
         --------
         >>> from dynd import nd, ndt
 
-        >>> ndt.int32.matches("T")
+        >>> ndt.type("T").match(ndt.int32)
         True
-        >>> ndt.int32.matches("Dim * T")
+        >>> ndt.type("Dim * T").match(ndt.int32)
         False
-        >>> ndt.type("10 * {x : ?int32, y : int32}").matches("M * {x: ?T, y: T}")
+        >>> ndt.type("M * {x: ?T, y: T}").match("10 * {x : ?int32, y : int32}")
         True
-        >>> ndt.type("10 * {x : ?int32, y : ?int32}").matches("M * {x: ?T, y: T}")
+        >>> ndt.type("M * {x: ?T, y: T}").match("10 * {x : ?int32, y : ?int32}")
         False
         """
-        return GET(self.v).matches(GET(w_type(rhs).v))
+        return GET(self.v).match(GET(w_type(rhs).v))
 
     property shape:
         """

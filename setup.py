@@ -66,6 +66,7 @@ class cmake_build_ext(build_ext):
     install_lib_option = '-DDYND_INSTALL_LIB=ON'
     static_lib_option = ''
     build_tests_option = ''
+    cuda_option = ''
     # If libdynd is checked out into the libraries subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
@@ -74,10 +75,14 @@ class cmake_build_ext(build_ext):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         static_lib_option = '-DDYND_SHARED_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
+    else:
+        built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
+        if built_with_cuda:
+            cuda_option = '-DDYND_CUDA=ON'
 
     if sys.platform != 'win32':
         self.spawn(['cmake', pyexe_option, install_lib_option,
-                    static_lib_option, source])
+                    static_lib_option, cuda_option, source])
         self.spawn(['make'])
     else:
         import struct
@@ -119,10 +124,12 @@ class cmake_build_ext(build_ext):
     # Just the C extensions
     return [self.get_ext_path(name) for name in self.get_names()]
 
+from subprocess import check_output
+
 # Get the version number to use from git
-import subprocess
-ver = subprocess.check_output(['git', 'describe', '--dirty',
+ver = check_output(['git', 'describe', '--dirty',
                                '--always', '--match', 'v*']).decode('ascii').strip('\n')
+
 # Same processing as in __init__.py
 if '.' in ver:
     vlst = ver.lstrip('v').split('.')

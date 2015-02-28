@@ -166,6 +166,7 @@ setup(
         'dynd._lowlevel',
         'dynd.tests',
     ],
+    package_data = {'dynd': ['*.pxd', 'include/*.hpp']},
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
     ext_modules = [Extension('dynd._pydynd', sources=[])],

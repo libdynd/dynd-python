@@ -128,7 +128,7 @@ include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
     ${LIBDYND_INCLUDE_DIRS}
-    include/pydynd
+    dynd/include
     ${CMAKE_CURRENT_BINARY_DIR}/dynd
     )
 
@@ -145,39 +145,39 @@ configure_file("dynd/config.pxi.in"
                "${CMAKE_CURRENT_BINARY_DIR}/dynd/config.pxi")
 
 set(pydynd_CPP_SRC
-    include/pydynd/array_as_numpy.hpp
-    include/pydynd/array_as_pep3118.hpp
-    include/pydynd/array_as_py.hpp
-    include/pydynd/array_assign_from_py.hpp
-    include/pydynd/array_from_py.hpp
-    include/pydynd/array_from_py_dynamic.hpp
-    include/pydynd/array_from_py_typededuction.hpp
-    include/pydynd/array_functions.hpp
-    include/pydynd/arrfunc_functions.hpp
-    include/pydynd/codegen_cache_functions.hpp
-    include/pydynd/arrfunc_from_instantiate_pyfunc.hpp
-    include/pydynd/arrfunc_from_pyfunc.hpp
-    include/pydynd/copy_from_numpy_arrfunc.hpp
-    include/pydynd/copy_from_pyobject_arrfunc.hpp
-    include/pydynd/copy_to_numpy_arrfunc.hpp
-    include/pydynd/copy_to_pyobject_arrfunc.hpp
-    include/pydynd/ctypes_interop.hpp
-    include/pydynd/do_import_array.hpp
-    include/pydynd/elwise_gfunc_functions.hpp
-    include/pydynd/elwise_map.hpp
-    include/pydynd/elwise_reduce_gfunc_functions.hpp
-    include/pydynd/eval_context_functions.hpp
-    include/pydynd/exception_translation.hpp
-    include/pydynd/gfunc_callable_functions.hpp
-    include/pydynd/git_version.hpp
-    include/pydynd/init.hpp
-    include/pydynd/numpy_interop.hpp
-    include/pydynd/numpy_ufunc_kernel.hpp
-    include/pydynd/placement_wrappers.hpp
-    include/pydynd/py_lowlevel_api.hpp
-    include/pydynd/type_functions.hpp
-    include/pydynd/utility_functions.hpp
-    include/pydynd/vm_elwise_program_functions.hpp
+    dynd/include/array_as_numpy.hpp
+    dynd/include/array_as_pep3118.hpp
+    dynd/include/array_as_py.hpp
+    dynd/include/array_assign_from_py.hpp
+    dynd/include/array_from_py.hpp
+    dynd/include/array_from_py_dynamic.hpp
+    dynd/include/array_from_py_typededuction.hpp
+    dynd/include/array_functions.hpp
+    dynd/include/arrfunc_functions.hpp
+    dynd/include/codegen_cache_functions.hpp
+    dynd/include/arrfunc_from_instantiate_pyfunc.hpp
+    dynd/include/arrfunc_from_pyfunc.hpp
+    dynd/include/copy_from_numpy_arrfunc.hpp
+    dynd/include/copy_from_pyobject_arrfunc.hpp
+    dynd/include/copy_to_numpy_arrfunc.hpp
+    dynd/include/copy_to_pyobject_arrfunc.hpp
+    dynd/include/ctypes_interop.hpp
+    dynd/include/do_import_array.hpp
+    dynd/include/elwise_gfunc_functions.hpp
+    dynd/include/elwise_map.hpp
+    dynd/include/elwise_reduce_gfunc_functions.hpp
+    dynd/include/eval_context_functions.hpp
+    dynd/include/exception_translation.hpp
+    dynd/include/gfunc_callable_functions.hpp
+    dynd/include/git_version.hpp
+    dynd/include/init.hpp
+    dynd/include/numpy_interop.hpp
+    dynd/include/numpy_ufunc_kernel.hpp
+    dynd/include/placement_wrappers.hpp
+    dynd/include/py_lowlevel_api.hpp
+    dynd/include/type_functions.hpp
+    dynd/include/utility_functions.hpp
+    dynd/include/vm_elwise_program_functions.hpp
     src/array_as_numpy.cpp
     src/array_as_pep3118.cpp
     src/array_as_py.cpp
@@ -315,7 +315,7 @@ install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
 install(TARGETS dynd._pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
-install(DIRECTORY "include" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
+install(DIRECTORY "dynd/include" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/include")
 # Install the libdynd binary if on unix and libdynd wasn't built separately
 if(NOT DYND_INSTALL_LIB AND NOT WIN32)
     get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)

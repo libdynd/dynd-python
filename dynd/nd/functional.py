@@ -1,6 +1,6 @@
 import atexit, distutils, distutils.core, imp, os, os.path, shutil, sys, tempfile
 
-from dynd import include_dirs
+from dynd import get_include
 import dynd
 
 def inline(statement, header = ''):
@@ -70,7 +70,7 @@ def inline(statement, header = ''):
       extra_link_args = [os.path.join(os.path.dirname(dynd.__file__), '_pydynd.so')]
 
   ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
-    include_dirs = include_dirs, language = 'c++', libraries = ['dynd'], 
+    include_dirs = get_include(), language = 'c++', libraries = ['dynd'], 
     extra_link_args = extra_link_args)
   distutils.core.setup(name = ext.name, ext_modules = [ext], script_name = 'functional.py', script_args = ['--quiet',
     'build_ext', '--build-temp', os.path.join(tempdir, 'build'), '--build-lib', tempdir])

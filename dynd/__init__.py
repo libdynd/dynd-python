@@ -2,7 +2,9 @@ from __future__ import absolute_import
 
 import os
 
-include_dirs = [os.path.join(os.path.dirname(__file__), 'include')]
+def get_include():
+    import numpy as np
+    return [os.path.join(os.path.dirname(__file__), 'include'), np.get_include()]
 
 # dynd._lowlevel is not imported by default
 from . import nd, ndt

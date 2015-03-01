@@ -139,3 +139,5 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
 
     ndarray dynd_parse_json_type(ndt_type&, ndarray&, object) except +translate_exception
     void dynd_parse_json_array(ndarray&, ndarray&, object) except +translate_exception
+
+    object wrap_array(const ndarray &af)

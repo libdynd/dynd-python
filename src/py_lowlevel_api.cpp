@@ -12,7 +12,7 @@
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/func/rolling_arrfunc.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
-#include <dynd/func/take_arrfunc.hpp>
+#include <dynd/func/take.hpp>
 
 #include "py_lowlevel_api.hpp"
 #include "numpy_ufunc_kernel.hpp"
@@ -372,8 +372,7 @@ namespace {
     PyObject *make_take_arrfunc()
     {
         try {
-            return wrap_array(
-                kernels::make_take_arrfunc());
+          return wrap_array(nd::take::make());
         } catch(...) {
             translate_exception();
             return NULL;

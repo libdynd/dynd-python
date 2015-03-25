@@ -76,8 +76,8 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj, dynd::vm::elwise_program& 
         }
         program.push_back(opcode);
         // The registers (this is validated later, just copy them here)
-        for (Py_ssize_t i = 1; i < instr_size; ++i) {
-            int reg = pyobject_as_int_index(PyTuple_GET_ITEM(instr.get(), i));
+        for (Py_ssize_t j = 1; j < instr_size; ++j) {
+            int reg = pyobject_as_int_index(PyTuple_GET_ITEM(instr.get(), j));
             program.push_back(reg);
         }
     }

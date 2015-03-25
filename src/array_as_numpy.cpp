@@ -387,9 +387,9 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       while (ndim > 0) {
         size_t dim_size = 0;
         if (dt.get_type_id() == cfixed_dim_type_id) {
-          const cfixed_dim_type *fad = element_tp.extended<cfixed_dim_type>();
-          element_tp = fad->get_element_type();
-          if (fad->get_data_size() != element_tp.get_data_size() * dim_size) {
+          const cfixed_dim_type *cfd = element_tp.extended<cfixed_dim_type>();
+          element_tp = cfd->get_element_type();
+          if (cfd->get_data_size() != element_tp.get_data_size() * dim_size) {
             // If it's not C-order, a copy is required
             out_numpy_dtype->clear();
             *out_requires_copy = true;

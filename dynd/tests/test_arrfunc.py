@@ -30,6 +30,7 @@ class TestArrFunc(unittest.TestCase):
         a = af(1, 10)
         self.assertEqual(nd.as_py(a), {'x': 1, 'y': 10})
 
+    """
     def test_assignment_arrfunc(self):
         af = _lowlevel.make_arrfunc_from_assignment(
                     ndt.float32, ndt.int64, "nocheck")
@@ -57,6 +58,7 @@ class TestArrFunc(unittest.TestCase):
                         ctypes.addressof(pi64), ctypes.pointer(i64_stride),
                         3)
             self.assertEqual([f32[i] for i in range(3)], [3,7,21])
+    """
 
     def check_from_numpy_int32_add(self, requiregil):
         # Get int32 add as an arrfunc

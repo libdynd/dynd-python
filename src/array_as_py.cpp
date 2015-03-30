@@ -38,7 +38,7 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   }
   ndt::type tp = a.get_type();
   const char *arrmeta = a.get_arrmeta();
-  af->instantiate(af, af_tp, &ckb, 0, ndt::make_type<void>(), NULL, 1, &tp,
+  af->instantiate(af, af_tp, NULL, &ckb, 0, ndt::make_type<void>(), NULL, 1, &tp,
                   &arrmeta, kernel_request_single, &eval::default_eval_context,
                   nd::array(), std::map<nd::string, ndt::type>());
   pyobject_ownref result;

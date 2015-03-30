@@ -35,7 +35,7 @@ struct strided_of_numpy_arrmeta {
 } // anonymous namespace
 
 static intptr_t instantiate_copy_from_numpy(
-    const arrfunc_type_data *self_af, const arrfunc_type *af_tp, void *ckb,
+    const arrfunc_type_data *self_af, const arrfunc_type *af_tp, char *DYND_UNUSED(data), void *ckb,
     intptr_t ckb_offset, const ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
@@ -79,7 +79,7 @@ static intptr_t instantiate_copy_from_numpy(
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
     return nd::functional::elwise_instantiate_with_child<-1>(
-        self_af, af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta, 1, &src_am_tp,
+        self_af, af_tp, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta, 1, &src_am_tp,
         &src_am, kernreq, ectx, nd::array(), tp_vars);
   } else {
     PyArray_Descr *dtype = reinterpret_cast<PyArray_Descr *>(src_obj);
@@ -92,7 +92,7 @@ static intptr_t instantiate_copy_from_numpy(
                                     ectx, nd::array());
     } else if (PyDataType_ISOBJECT(dtype)) {
       const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get();
-      return af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get_type(), ckb, ckb_offset,
+      return af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get_type(), NULL, ckb, ckb_offset,
                              dst_tp, dst_arrmeta, 1, src_tp, src_arrmeta, kernreq,
                              ectx, nd::array(), tp_vars);
     } else if (PyDataType_HASFIELDS(dtype)) {
@@ -204,7 +204,7 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   const char *src_arrmeta_ptr = reinterpret_cast<const char *>(&src_arrmeta);
   const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_numpy).get();
   ndt::type src_tp = ndt::make_type<void>();
-  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_numpy).get_type(), &ckb, 0, dst_tp, dst_arrmeta,
+  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_numpy).get_type(), NULL, &ckb, 0, dst_tp, dst_arrmeta,
                   1, &src_tp, &src_arrmeta_ptr, kernel_request_single,
                   &eval::default_eval_context, nd::array(),
                   std::map<nd::string, ndt::type>());

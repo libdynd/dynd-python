@@ -873,7 +873,7 @@ struct struct_ck : public kernels::unary_ck<struct_ck> {
 };
 
 static intptr_t instantiate_copy_from_pyobject(
-    const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+    const arrfunc_type_data *self_af, const arrfunc_type *af_tp, char *DYND_UNUSED(data),
     void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
     const char *dst_arrmeta, intptr_t nsrc, const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
@@ -998,13 +998,13 @@ static intptr_t instantiate_copy_from_pyobject(
     const arrfunc_type *assign_na_af_tp =
         dst_tp.extended<option_type>()->get_assign_na_arrfunc_type();
     ckb_offset = assign_na_af->instantiate(
-        assign_na_af, assign_na_af_tp, ckb, ckb_offset, dst_tp, dst_arrmeta,
+        assign_na_af, assign_na_af_tp, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
         nsrc, NULL, NULL, kernel_request_single, ectx, nd::array(), tp_vars);
     reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->ensure_capacity(ckb_offset);
     self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
     ckb_offset = self_af->instantiate(
-        self_af, af_tp, ckb, ckb_offset,
+        self_af, af_tp, NULL, ckb, ckb_offset,
         dst_tp.extended<option_type>()->get_value_type(), dst_arrmeta, nsrc, src_tp,
         src_arrmeta, kernel_request_single, ectx, nd::array(), tp_vars);
     return ckb_offset;
@@ -1025,7 +1025,7 @@ static intptr_t instantiate_copy_from_pyobject(
       self->m_dim_broadcast = dim_broadcast;
       // from pyobject ckernel
       ckb_offset = self_af->instantiate(
-          self_af, af_tp, ckb, ckb_offset, el_tp, el_arrmeta, nsrc, src_tp,
+          self_af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta, nsrc, src_tp,
           src_arrmeta, kernel_request_strided, ectx, nd::array(), tp_vars);
       self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<strided_ck>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
@@ -1049,7 +1049,7 @@ static intptr_t instantiate_copy_from_pyobject(
     ndt::type el_tp = dst_tp.extended<var_dim_type>()->get_element_type();
     const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
     ckb_offset = self_af->instantiate(
-        self_af, af_tp, ckb, ckb_offset, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
+        self_af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
         kernel_request_strided, ectx, nd::array(), tp_vars);
     self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                ->get_at<var_dim_ck>(root_ckb_offset);
@@ -1078,7 +1078,7 @@ static intptr_t instantiate_copy_from_pyobject(
       self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<tuple_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-      ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset,
+      ckb_offset = self_af->instantiate(self_af, af_tp, NULL, ckb, ckb_offset,
                                         field_types[i], field_arrmeta, nsrc, src_tp,
                                         src_arrmeta, kernel_request_single,
                                         ectx, nd::array(), tp_vars);
@@ -1104,7 +1104,7 @@ static intptr_t instantiate_copy_from_pyobject(
       self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<struct_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-      ckb_offset = self_af->instantiate(self_af, af_tp, ckb, ckb_offset,
+      ckb_offset = self_af->instantiate(self_af, af_tp, NULL, ckb, ckb_offset,
                                         field_types[i], field_arrmeta, nsrc, src_tp,
                                         src_arrmeta, kernel_request_single,
                                         ectx, nd::array(), tp_vars);

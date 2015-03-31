@@ -2,7 +2,7 @@ DyND-Python
 ===========
 
 TravisCI: [![Build Status](https://api.travis-ci.org/libdynd/dynd-python.svg?branch=master)](https://travis-ci.org/libdynd/dynd-python)
-AppVeyor: [![Build Status](https://ci.appveyor.com/api/projects/status/0gonnl4ac5h7j1cf/branch/master?svg=true)](https://ci.appveyor.com/project/mwiebe/dynd-python/branch/master)
+AppVeyor: [![Build Status](https://ci.appveyor.com/api/projects/status/cv2bnq3oghe4nqnj/branch/master?svg=true)](https://ci.appveyor.com/project/libdynd/dynd-python/branch/master)
 
 DyND-Python, a component of [the Blaze project](http://blaze.pydata.org/),
 is the Python exposure of [the DyND dynamic multi-dimensional array library](https://github.com/libdynd/libdynd).

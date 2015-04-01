@@ -82,7 +82,7 @@ static intptr_t instantiate_copy_to_numpy(
     dst_am_holder.am.dst_alignment = dst_alignment;
     // Use the lifting ckernel mechanism to deal with all the dimensions,
     // calling back to this arrfunc when the dtype is reached
-    return nd::functional::elwise_instantiate_with_child<-1>(self_af, af_tp, NULL, ckb, ckb_offset, dst_am_tp,
+    return nd::functional::elwise_virtual_ck::instantiate_with_child<-1>(self_af, af_tp, NULL, ckb, ckb_offset, dst_am_tp,
                                   dst_am, nsrc, src_tp, src_arrmeta, kernreq, ectx,
                                   nd::array(), tp_vars);
   } else {

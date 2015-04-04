@@ -24,7 +24,7 @@
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/pointer_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
-#include <dynd/func/copy_arrfunc.hpp>
+#include <dynd/func/copy.hpp>
 #include <dynd/kernels/chain.hpp>
 
 using namespace std;
@@ -832,7 +832,7 @@ static intptr_t instantiate_copy_to_pyobject(
 
   if (src_tp[0].get_kind() == expr_kind) {
     return nd::functional::make_chain_buf_tp_ckernel(
-        make_copy_arrfunc().get(), make_copy_arrfunc().get_type(), self_af,
+        nd::copy.get(), nd::copy.get_type(), self_af,
         af_tp, src_tp[0].value_type(), ckb, ckb_offset, dst_tp, dst_arrmeta,
         src_tp, src_arrmeta, kernreq, ectx);
   }

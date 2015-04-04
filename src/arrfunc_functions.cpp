@@ -20,7 +20,7 @@
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/func/rolling_arrfunc.hpp>
+#include <dynd/func/rolling.hpp>
 #include <dynd/view.hpp>
 #include <dynd/func/callable.hpp>
 #include <dynd/func/arrfunc_registry.hpp>
@@ -104,7 +104,7 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
 
     func = arrfunc_from_pyfunc(func_obj, proto);
   }
-  nd::arrfunc roll = make_rolling_arrfunc(func, window_size);
+  nd::arrfunc roll = nd::functional::rolling(func, window_size);
   nd::array result = roll(arr);
   return wrap_array(result);
 }

@@ -28,7 +28,7 @@
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/copy_arrfunc.hpp>
-#include <dynd/func/chain_arrfunc.hpp>
+#include <dynd/kernels/chain.hpp>
 #include <dynd/parser_util.hpp>
 
 using namespace std;
@@ -963,7 +963,7 @@ static intptr_t instantiate_copy_from_pyobject(
         dst_tp.extended<categorical_type>()->get_category_type();
     nd::arrfunc copy_af =
         make_arrfunc_from_assignment(dst_tp, buf_tp, assign_error_default);
-    return make_chain_buf_tp_ckernel(
+    return nd::functional::make_chain_buf_tp_ckernel(
         self_af, af_tp, copy_af.get(), copy_af.get_type(), buf_tp, ckb,
         ckb_offset, dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq, ectx);
   }
@@ -1116,7 +1116,7 @@ static intptr_t instantiate_copy_from_pyobject(
   }
 
   if (dst_tp.get_kind() == expr_kind) {
-    return make_chain_buf_tp_ckernel(
+    return nd::functional::make_chain_buf_tp_ckernel(
         self_af, af_tp, make_copy_arrfunc().get(),
         make_copy_arrfunc().get_type(), dst_tp.value_type(), ckb, ckb_offset,
         dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq, ectx);

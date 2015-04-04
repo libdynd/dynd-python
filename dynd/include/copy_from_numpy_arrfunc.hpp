@@ -3,8 +3,7 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef PYDYND_COPY_FROM_NUMPY_ARRFUNC_HPP
-#define PYDYND_COPY_FROM_NUMPY_ARRFUNC_HPP
+#pragma once
 
 #include "numpy_interop.hpp"
 
@@ -16,15 +15,13 @@ namespace pydynd {
 
 #ifdef DYND_NUMPY_INTEROP
 
-
 /**
  * This is the arrmeta to provide for the source
  * void type when instantiating the copy_from_numpy arrfunc.
  */
 struct copy_from_numpy_arrmeta {
-  // This is either the source PyArrayObject *,
-  // or the source PyArray_Descr *.
-  PyObject *src_obj;
+  // This is the source PyArray_Descr *.
+  PyArray_Descr *src_dtype;
   // This is the | together of the root data
   // pointer and all the strides/offsets, and
   // can be used to determine the minimum data alignment.
@@ -37,11 +34,9 @@ extern struct copy_from_numpy : dynd::nd::declfunc<copy_from_numpy> {
 
 void array_copy_from_numpy(const dynd::ndt::type &dst_tp,
                            const char *dst_arrmeta, char *dst_data,
-                           PyArrayObject *value,
+                           PyArrayObject *src_arr,
                            const dynd::eval::eval_context *ectx);
 
 #endif
 
 } // namespace pydynd
-
-#endif // PYDYND_COPY_FROM_NUMPY_ARRFUNC_HPP

@@ -10,7 +10,7 @@
 #include <dynd/func/elwise.hpp>
 #include <dynd/func/lift_reduction_arrfunc.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
-#include <dynd/func/rolling_arrfunc.hpp>
+#include <dynd/func/rolling.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
 #include <dynd/func/take.hpp>
 
@@ -349,7 +349,7 @@ namespace {
             }
             const nd::arrfunc& window_op = ((WArrFunc *)window_op_obj)->v;
             intptr_t window_size = pyobject_as_index(window_size_obj);
-            return wrap_array(::make_rolling_arrfunc(window_op, window_size));
+            return wrap_array(nd::functional::rolling(window_op, window_size));
         } catch(...) {
             translate_exception();
             return NULL;

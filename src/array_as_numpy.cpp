@@ -734,19 +734,9 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     pyobject_ownref result(PyArray_NewFromDescr(
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
         shape.get(), strides.get(), NULL, 0, NULL));
-    unary_ckernel_builder ckb;
-    copy_to_numpy_arrmeta dst_arrmeta;
-    dst_arrmeta.dst_obj = result.get();
-    dst_arrmeta.dst_alignment = 0;
-    const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_to_numpy).get();
-    const char *src_arrmeta = a.get_arrmeta();
-    af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_to_numpy).get_type(), NULL, &ckb, 0,
-                    ndt::make_type<void>(),
-                    reinterpret_cast<const char *>(&dst_arrmeta), 1, &a.get_type(),
-                    &src_arrmeta, kernel_request_single,
-                    &eval::default_eval_context, nd::array(), std::map<nd::string, ndt::type>());
-    ckb((char *)PyArray_DATA((PyArrayObject *)result.get()),
-        const_cast<char *>(a.get_readonly_originptr()));
+    array_copy_to_numpy((PyArrayObject *)result.get(), a.get_type(),
+                        a.get_arrmeta(), a.get_readonly_originptr(),
+                        &eval::default_eval_context);
 
     // Return the NumPy array
     return result.release();

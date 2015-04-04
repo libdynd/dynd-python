@@ -27,7 +27,7 @@
 #include <dynd/types/base_tuple_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
-#include <dynd/func/copy_arrfunc.hpp>
+#include <dynd/func/copy.hpp>
 #include <dynd/kernels/chain.hpp>
 #include <dynd/parser_util.hpp>
 
@@ -1117,8 +1117,8 @@ static intptr_t instantiate_copy_from_pyobject(
 
   if (dst_tp.get_kind() == expr_kind) {
     return nd::functional::make_chain_buf_tp_ckernel(
-        self_af, af_tp, make_copy_arrfunc().get(),
-        make_copy_arrfunc().get_type(), dst_tp.value_type(), ckb, ckb_offset,
+        self_af, af_tp, nd::copy.get(),
+        nd::copy.get_type(), dst_tp.value_type(), ckb, ckb_offset,
         dst_tp, dst_arrmeta, src_tp, src_arrmeta, kernreq, ectx);
   }
 

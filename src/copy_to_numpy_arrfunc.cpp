@@ -38,7 +38,7 @@ struct strided_of_numpy_arrmeta {
  * represented by dst_tp being ``void`` and the dst_arrmeta
  * being a pointer to the ``PyArray_Descr *`` of the type for the destination.
  */
-static intptr_t instantiate_copy_to_numpy(
+intptr_t copy_to_numpy_ck::instantiate(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
     char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
     const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
@@ -163,12 +163,7 @@ static intptr_t instantiate_copy_to_numpy(
 
 static nd::arrfunc make_copy_to_numpy_arrfunc()
 {
-  nd::array out_af = nd::empty("(Any) -> void");
-  arrfunc_type_data *af =
-      reinterpret_cast<arrfunc_type_data *>(out_af.get_readwrite_originptr());
-  af->instantiate = &instantiate_copy_to_numpy;
-  out_af.flag_as_immutable();
-  return out_af;
+  return dynd::nd::as_arrfunc<copy_to_numpy_ck>(ndt::type("(Any) -> void"), 0);
 }
 
 dynd::nd::arrfunc pydynd::copy_to_numpy::make() {

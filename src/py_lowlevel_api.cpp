@@ -20,7 +20,6 @@
 #include "exception_translation.hpp"
 #include "arrfunc_functions.hpp"
 #include "arrfunc_from_pyfunc.hpp"
-#include "arrfunc_from_instantiate_pyfunc.hpp"
 
 using namespace std;
 using namespace pydynd;
@@ -366,13 +365,20 @@ PyObject *make_take_arrfunc()
 const py_lowlevel_api_t py_lowlevel_api = {
     0, // version, should increment this every time the struct changes at a
        // release
-    &get_array_ptr, &get_base_type_ptr, &array_from_ptr,
-    &make_assignment_ckernel, &make_arrfunc_from_assignment,
-    &make_arrfunc_from_property, &pydynd::numpy_typetuples_from_ufunc,
-    &pydynd::nd::functional::arrfunc_from_ufunc, &lift_arrfunc,
-    &lift_reduction_arrfunc, &arrfunc_from_pyfunc,
-    &pydynd::arrfunc_from_instantiate_pyfunc, &make_rolling_arrfunc,
-    &make_builtin_mean1d_arrfunc, &make_take_arrfunc};
+    &get_array_ptr,
+    &get_base_type_ptr,
+    &array_from_ptr,
+    &make_assignment_ckernel,
+    &make_arrfunc_from_assignment,
+    &make_arrfunc_from_property,
+    &pydynd::numpy_typetuples_from_ufunc,
+    &pydynd::nd::functional::arrfunc_from_ufunc,
+    &lift_arrfunc,
+    &lift_reduction_arrfunc,
+    &arrfunc_from_pyfunc,
+    &make_rolling_arrfunc,
+    &make_builtin_mean1d_arrfunc,
+    &make_take_arrfunc};
 } // anonymous namespace
 
 extern "C" const void *dynd_get_py_lowlevel_api()

@@ -115,9 +115,6 @@ class _PyLowLevelAPI(ctypes.Structure):
                 ('arrfunc_from_pyfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
-                ('arrfunc_from_instantiate_pyfunc',
-                 ctypes.PYFUNCTYPE(ctypes.py_object,
-                        ctypes.py_object, ctypes.py_object)),
                 ('make_rolling_arrfunc',
                  ctypes.PYFUNCTYPE(ctypes.py_object,
                         ctypes.py_object, ctypes.py_object)),
@@ -533,12 +530,6 @@ arrfunc_from_pyfunc.__doc__ = """
 
     Creates a dynd arrfunc from a python function that follows
     ``proto`` as its calling convention.
-    """
-arrfunc_from_instantiate_pyfunc.__doc__ = """
-    _lowlevel.arrfunc_from_instantiate_pyfunc(instantiate_pyfunc, proto)
-
-    Creates a dynd arrfunc from a python function that implements
-    the ``instantiate`` mechanism.
     """
 make_rolling_arrfunc.__doc__ = """
     _lowlevel.make_rolling_arrfunc(window_op, window_size)

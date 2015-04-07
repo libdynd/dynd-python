@@ -135,34 +135,6 @@ class TestArrFunc(unittest.TestCase):
                           (0.5 + 3.0 + 2.5) / 2.0,
                           5.0])
 
-    def test_arrfunc_from_instantiate_pyfunc(self):
-        # Test wrapping make_assignment_ckernel as an arrfunc
-        def instantiate_assignment(out_ckb, ckb_offset, dst_tp, dst_arrmeta,
-                                   src_tp, src_arrmeta, kernreq, ectx):
-            out_ckb = _lowlevel.CKernelBuilderStruct.from_address(out_ckb)
-            return _lowlevel.make_assignment_ckernel(out_ckb, ckb_offset,
-                            dst_tp, dst_arrmeta,
-                            src_tp[0], src_arrmeta[0],
-                            kernreq, ectx)
-        af = _lowlevel.arrfunc_from_instantiate_pyfunc(
-                    instantiate_assignment, "(date) -> string")
-        self.assertEqual(nd.type_of(af), ndt.type("(date) -> string"))
-        in0 = nd.array('2012-11-05', ndt.date)
-        out = af(in0)
-        self.assertEqual(nd.as_py(out), '2012-11-05')
-        # Also test it as a lifted kernel
-        af_lifted = _lowlevel.lift_arrfunc(af)
-        self.assertEqual(nd.type_of(af_lifted),
-                         ndt.type("(Dims... * date) -> Dims... * string"))
-        from datetime import date
-        in0 = nd.array([['2013-03-11', date(2010, 10, 10)],
-                        [date(1999, 12, 31)],
-                        []], type='3 * var * date')
-        out = af_lifted(in0)
-        self.assertEqual(nd.as_py(out),
-                        [['2013-03-11', '2010-10-10'],
-                         ['1999-12-31'], []])
-
 class TestLiftReductionArrFunc(unittest.TestCase):
     def test_sum_1d(self):
         # Use the numpy add ufunc for this lifting test

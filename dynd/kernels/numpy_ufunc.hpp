@@ -1,7 +1,7 @@
 #pragma once
 
 #include "config.hpp"
-#include <dynd/kernels/expr_kernels.hpp>
+#include <dynd/kernels/base_kernel.hpp>
 
 namespace pydynd {
 namespace nd {
@@ -28,7 +28,7 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<false>
-        : expr_ck<scalar_ufunc_ck<false>, kernel_request_host, 1> {
+        : base_kernel<scalar_ufunc_ck<false>, kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
@@ -108,7 +108,7 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<true>
-        : expr_ck<scalar_ufunc_ck<true>, kernel_request_host, 1> {
+        : base_kernel<scalar_ufunc_ck<true>, kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;

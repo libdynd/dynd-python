@@ -202,13 +202,6 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           }
           *af_ptr->get_data_as<void *>() = data_raw;
           memset(data_raw, 0, out_af_size);
-          if (ckernel_acquires_gil) {
-            af_ptr->free = &scalar_ufunc_ck<true>::free;
-            af_ptr->instantiate = &scalar_ufunc_ck<true>::instantiate;
-          } else {
-            af_ptr->free = &scalar_ufunc_ck<false>::free;
-            af_ptr->instantiate = &scalar_ufunc_ck<false>::instantiate;
-          }
           // Fill in the arrfunc instance data
           scalar_ufunc_data *data =
               reinterpret_cast<scalar_ufunc_data *>(data_raw);
@@ -217,7 +210,14 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           data->param_count = nargs - 1;
           data->funcptr = uf->functions[i];
           data->ufunc_data = uf->data[i];
-          af.flag_as_immutable();
+          if (ckernel_acquires_gil) {
+            af_ptr->free = &scalar_ufunc_ck<true>::free;
+            af_ptr->instantiate = &scalar_ufunc_ck<true>::instantiate;
+          } else {
+            af_ptr->free = &scalar_ufunc_ck<false>::free;
+            af_ptr->instantiate = &scalar_ufunc_ck<false>::instantiate;
+          }
+//          af.flag_as_immutable();
           return wrap_array(af);
         } else {
           // TODO: support gufunc

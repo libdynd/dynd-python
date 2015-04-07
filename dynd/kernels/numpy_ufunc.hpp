@@ -12,51 +12,40 @@ namespace nd {
       PyUFuncGenericFunction funcptr;
       void *ufunc_data;
       intptr_t param_count;
+
+      ~scalar_ufunc_data()
+      {
+        if (ufunc != NULL) {
+          // Acquire the GIL for the python decref
+          PyGILState_RAII pgs;
+          Py_DECREF(ufunc);
+        }
+      }
     };
 
     template <bool gil>
     struct scalar_ufunc_ck;
 
     template <>
-    struct scalar_ufunc_ck<true>
-        : expr_ck<scalar_ufunc_ck<true>, kernel_request_host, 1> {
+    struct scalar_ufunc_ck<false>
+        : expr_ck<scalar_ufunc_ck<false>, kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
-      PyUFuncGenericFunction funcptr;
-      void *ufunc_data;
-      intptr_t param_count;
-      PyUFuncObject *ufunc;
+      const scalar_ufunc_data *data;
 
-      scalar_ufunc_ck(PyUFuncGenericFunction funcptr, void *ufunc_data,
-                      intptr_t param_count, PyUFuncObject *ufunc)
-          : funcptr(funcptr), ufunc_data(ufunc_data), param_count(param_count),
-            ufunc(ufunc)
-      {
-      }
-
-      ~scalar_ufunc_ck()
-      {
-        if (ufunc != NULL) {
-          // Acquire the GIL for the python decref
-          PyGILState_RAII pgs;
-          Py_DECREF(ufunc);
-        }
-      }
+      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data) {}
 
       void single(char *dst, char *const *src)
       {
         char *args[NPY_MAXARGS];
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], param_count * sizeof(void *));
-        args[param_count] = dst;
+        memcpy(&args[0], &src[0], data->param_count * sizeof(void *));
+        args[data->param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t dimsize = 1;
         intptr_t strides[NPY_MAXARGS];
-        memset(strides, 0, (param_count + 1) * sizeof(void *));
-        {
-          PyGILState_RAII pgs;
-          funcptr(args, &dimsize, strides, ufunc_data);
-        }
+        memset(strides, 0, (data->param_count + 1) * sizeof(intptr_t));
+        data->funcptr(args, &dimsize, strides, data->ufunc_data);
       }
 
       void strided(char *dst, intptr_t dst_stride, char *const *src,
@@ -64,17 +53,15 @@ namespace nd {
       {
         char *args[NPY_MAXARGS];
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], param_count * sizeof(void *));
-        args[param_count] = dst;
+        memcpy(&args[0], &src[0], data->param_count * sizeof(void *));
+        args[data->param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t strides[NPY_MAXARGS];
-        memcpy(&strides[0], &src_stride[0], param_count * sizeof(intptr_t));
-        strides[param_count] = dst_stride;
-        {
-          PyGILState_RAII pgs;
-          funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
-                  ufunc_data);
-        }
+        memcpy(&strides[0], &src_stride[0],
+               data->param_count * sizeof(intptr_t));
+        strides[data->param_count] = dst_stride;
+        data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
+                      data->ufunc_data);
       }
 
       static intptr_t instantiate(
@@ -106,64 +93,42 @@ namespace nd {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
-        self_type::create(ckb, kernreq, ckb_offset, data->funcptr,
-                          data->ufunc_data, data->param_count, data->ufunc);
-        Py_INCREF(data->ufunc);
-
+        self_type::create(ckb, kernreq, ckb_offset,
+                          *af_self->get_data_as<scalar_ufunc_data *>());
         return ckb_offset;
       }
 
       static void free(arrfunc_type_data *self_af)
       {
         scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
-        if (data->ufunc != NULL) {
-          // Acquire the GIL for the python decref
-          PyGILState_RAII pgs;
-          Py_DECREF(data->ufunc);
-        }
         // Call the destructor and free the memory
         delete data;
       }
     };
 
     template <>
-    struct scalar_ufunc_ck<false>
-        : expr_ck<scalar_ufunc_ck<false>, kernel_request_host, 1> {
+    struct scalar_ufunc_ck<true>
+        : expr_ck<scalar_ufunc_ck<true>, kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
-      PyUFuncGenericFunction funcptr;
-      void *ufunc_data;
-      intptr_t param_count;
-      PyUFuncObject *ufunc;
+      const scalar_ufunc_data *data;
 
-      scalar_ufunc_ck(PyUFuncGenericFunction funcptr, void *ufunc_data,
-                      intptr_t param_count, PyUFuncObject *ufunc)
-          : funcptr(funcptr), ufunc_data(ufunc_data), param_count(param_count),
-            ufunc(ufunc)
-      {
-      }
-
-      ~scalar_ufunc_ck()
-      {
-        if (ufunc != NULL) {
-          // Acquire the GIL for the python decref
-          PyGILState_RAII pgs;
-          Py_DECREF(ufunc);
-        }
-      }
+      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data) {}
 
       void single(char *dst, char *const *src)
       {
         char *args[NPY_MAXARGS];
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], param_count * sizeof(void *));
-        args[param_count] = dst;
+        memcpy(&args[0], &src[0], data->param_count * sizeof(void *));
+        args[data->param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t dimsize = 1;
         intptr_t strides[NPY_MAXARGS];
-        memset(strides, 0, (param_count + 1) * sizeof(intptr_t));
-        funcptr(args, &dimsize, strides, ufunc_data);
+        memset(strides, 0, (data->param_count + 1) * sizeof(void *));
+        {
+          PyGILState_RAII pgs;
+          data->funcptr(args, &dimsize, strides, data->ufunc_data);
+        }
       }
 
       void strided(char *dst, intptr_t dst_stride, char *const *src,
@@ -171,14 +136,18 @@ namespace nd {
       {
         char *args[NPY_MAXARGS];
         // Set up the args array the way the numpy ufunc wants it
-        memcpy(&args[0], &src[0], param_count * sizeof(void *));
-        args[param_count] = dst;
+        memcpy(&args[0], &src[0], data->param_count * sizeof(void *));
+        args[data->param_count] = dst;
         // Call the ufunc loop with a dim size of 1
         intptr_t strides[NPY_MAXARGS];
-        memcpy(&strides[0], &src_stride[0], param_count * sizeof(intptr_t));
-        strides[param_count] = dst_stride;
-        funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
-                ufunc_data);
+        memcpy(&strides[0], &src_stride[0],
+               data->param_count * sizeof(intptr_t));
+        strides[data->param_count] = dst_stride;
+        {
+          PyGILState_RAII pgs;
+          data->funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
+                        data->ufunc_data);
+        }
       }
 
       static intptr_t instantiate(
@@ -210,23 +179,14 @@ namespace nd {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
-        self_type::create(ckb, kernreq, ckb_offset, data->funcptr,
-                          data->ufunc_data, data->param_count, data->ufunc);
-        Py_INCREF(data->ufunc);
-
-        //      af->base.destructor = &delete_scalar_ufunc_ckernel_data;
+        self_type::create(ckb, kernreq, ckb_offset,
+                          *af_self->get_data_as<scalar_ufunc_data *>());
         return ckb_offset;
       }
 
       static void free(arrfunc_type_data *self_af)
       {
         scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
-        if (data->ufunc != NULL) {
-          // Acquire the GIL for the python decref
-          PyGILState_RAII pgs;
-          Py_DECREF(data->ufunc);
-        }
         // Call the destructor and free the memory
         delete data;
       }

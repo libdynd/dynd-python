@@ -8,7 +8,7 @@
 #include "numpy_interop.hpp"
 
 #include <dynd/kernels/ckernel_builder.hpp>
-#include <dynd/kernels/virtual.hpp>
+#include <dynd/kernels/base_virtual_kernel.hpp>
 #include <dynd/func/arrfunc.hpp>
 #include <dynd/eval/eval_context.hpp>
 
@@ -29,7 +29,7 @@ struct copy_from_numpy_arrmeta {
   uintptr_t src_alignment;
 };
 
-struct copy_from_numpy_ck : dynd::nd::virtual_ck<copy_from_numpy_ck> {
+struct copy_from_numpy_ck : dynd::nd::base_virtual_kernel<copy_from_numpy_ck> {
   static intptr_t instantiate(
       const dynd::arrfunc_type_data *self_af, const dynd::arrfunc_type *af_tp,
       char *data, void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,

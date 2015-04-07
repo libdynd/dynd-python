@@ -8,7 +8,7 @@
 #include <vector>
 
 #include <dynd/array.hpp>
-#include <dynd/kernels/expr_kernels.hpp>
+#include <dynd/kernels/base_kernel.hpp>
 #include <dynd/func/callable.hpp>
 
 #include <array_functions.hpp>
@@ -23,7 +23,7 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-struct pyfunc_expr_ck : dynd::nd::expr_ck<pyfunc_expr_ck, kernel_request_host, -1> {
+struct pyfunc_expr_ck : dynd::nd::base_kernel<pyfunc_expr_ck, kernel_request_host, -1> {
   // Reference to the python function object
   PyObject *m_pyfunc;
   // The concrete prototype the ckernel is for

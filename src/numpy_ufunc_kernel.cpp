@@ -13,7 +13,7 @@
 #pragma warning(pop)
 #endif
 
-#include <dynd/kernels/expr_kernels.hpp>
+#include <dynd/kernels/base_kernel.hpp>
 
 #include "exception_translation.hpp"
 #include "utility_functions.hpp"

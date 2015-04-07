@@ -189,36 +189,23 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           for (intptr_t j = 0; j < nargs - 1; ++j) {
             param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
           }
-          nd::array af = nd::empty(
-              ndt::make_arrfunc(ndt::make_tuple(param_types), return_type));
-          arrfunc_type_data *af_ptr = reinterpret_cast<arrfunc_type_data *>(
-              af.get_readwrite_originptr());
+          ndt::type self_tp =
+              ndt::make_arrfunc(ndt::make_tuple(param_types), return_type);
 
-          size_t out_af_size =
-              sizeof(scalar_ufunc_data) + (nargs - 1) * sizeof(void *);
-          void *data_raw = malloc(out_af_size);
-          if (data_raw == NULL) {
-            throw std::bad_alloc();
-          }
-          *af_ptr->get_data_as<void *>() = data_raw;
-          memset(data_raw, 0, out_af_size);
           // Fill in the arrfunc instance data
-          scalar_ufunc_data *data =
-              reinterpret_cast<scalar_ufunc_data *>(data_raw);
+          std::shared_ptr<scalar_ufunc_data> data(new scalar_ufunc_data());
           data->ufunc = uf;
           Py_INCREF(uf);
           data->param_count = nargs - 1;
           data->funcptr = uf->functions[i];
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
-            af_ptr->free = &scalar_ufunc_ck<true>::free;
-            af_ptr->instantiate = &scalar_ufunc_ck<true>::instantiate;
+            return wrap_array(
+                as_arrfunc<scalar_ufunc_ck<true>>(self_tp, data, 0));
           } else {
-            af_ptr->free = &scalar_ufunc_ck<false>::free;
-            af_ptr->instantiate = &scalar_ufunc_ck<false>::instantiate;
+            return wrap_array(
+                as_arrfunc<scalar_ufunc_ck<false>>(self_tp, data, 0));
           }
-//          af.flag_as_immutable();
-          return wrap_array(af);
         } else {
           // TODO: support gufunc
           PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");

@@ -1462,7 +1462,7 @@ cdef class w_arrfunc(w_array):
     """
 
     def __init__(self, pyfunc, proto):
-        SET(self.v, arrfunc_from_pyfunc(pyfunc, proto))
+        SET(self.v, apply(pyfunc, proto))
 
     #def __dealloc__(self):
     #    placement_delete(self.v)

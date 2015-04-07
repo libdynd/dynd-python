@@ -156,7 +156,6 @@ set(pydynd_CPP_SRC
     dynd/include/array_functions.hpp
     dynd/include/arrfunc_functions.hpp
     dynd/include/codegen_cache_functions.hpp
-    dynd/include/arrfunc_from_instantiate_pyfunc.hpp
     dynd/include/arrfunc_from_pyfunc.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/copy_from_pyobject_arrfunc.hpp
@@ -187,7 +186,6 @@ set(pydynd_CPP_SRC
     src/array_from_py.cpp
     src/array_from_py_dynamic.cpp
     src/array_from_py_typededuction.cpp
-    src/arrfunc_from_instantiate_pyfunc.cpp
     src/arrfunc_from_pyfunc.cpp
     src/arrfunc_functions.cpp
     src/codegen_cache_functions.cpp

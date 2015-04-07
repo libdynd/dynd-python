@@ -46,8 +46,8 @@ cdef extern from "dynd/func/arrfunc.hpp" namespace "dynd":
     cdef cppclass ndarrfunc "dynd::nd::arrfunc":
         ndarrfunc() except +translate_exception
 
-cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd":
-    ndarrfunc arrfunc_from_pyfunc(object, object) except +translate_exception
+cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd::nd::functional":
+    ndarrfunc apply(object, object) except +translate_exception
 
 cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
     void init_w_arrfunc_typeobject(object)

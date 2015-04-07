@@ -43,7 +43,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
     PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
     return NULL;
   }
-  const nd::arrfunc &af = ((WArrFunc *)af_obj)->v;
+  const dynd::nd::arrfunc &af = ((WArrFunc *)af_obj)->v;
   if (af.is_null()) {
     PyErr_SetString(PyExc_ValueError, "cannot call a null nd.arrfunc");
     return NULL;
@@ -62,7 +62,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
 
   // Convert args into nd::arrays
   intptr_t narg = PyTuple_Size(args_obj);
-  std::vector<nd::array> arg_values(narg);
+  std::vector<dynd::nd::array> arg_values(narg);
   for (intptr_t i = 0; i < narg; ++i) {
     arg_values[i] =
         array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
@@ -72,7 +72,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
   intptr_t nkwd = PyDict_Size(kwds_obj);
   vector<string> kwd_names_strings(nkwd);
   std::vector<const char *> kwd_names(nkwd);
-  std::vector<nd::array> kwd_values(nkwd);
+  std::vector<dynd::nd::array> kwd_values(nkwd);
   PyObject *key, *value;
   for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwds_obj, &i, &key, &value); ++j) {
     kwd_names_strings[j] = pystring_as_string(key);
@@ -80,7 +80,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
     kwd_values[j] = array_from_py(value, 0, false, ectx);
   }
 
-  nd::array result = af(narg, arg_values.empty() ? NULL : arg_values.data(),
+  dynd::nd::array result = af(narg, arg_values.empty() ? NULL : arg_values.data(),
                         kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
                              kwd_values.empty() ? NULL : kwd_values.data()));
   return wrap_array(result);
@@ -91,9 +91,9 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                         PyObject *ectx_obj)
 {
   eval::eval_context *ectx = const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
-  nd::array arr = array_from_py(arr_obj, 0, false, ectx);
+  dynd::nd::array arr = array_from_py(arr_obj, 0, false, ectx);
   intptr_t window_size = pyobject_as_index(window_size_obj);
-  nd::arrfunc func;
+  dynd::nd::arrfunc func;
   if (WArrFunc_Check(func_obj)) {
     func = ((WArrFunc *)func_obj)->v;
   }
@@ -102,18 +102,18 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
     ndt::type proto = ndt::make_arrfunc(
         ndt::make_tuple(ndt::make_fixed_dimsym(el_tp)), el_tp);
 
-    func = arrfunc_from_pyfunc(func_obj, proto);
+    func = pydynd::nd::functional::apply(func_obj, proto);
   }
-  nd::arrfunc roll = nd::functional::rolling(func, window_size);
-  nd::array result = roll(arr);
+  dynd::nd::arrfunc roll = dynd::nd::functional::rolling(func, window_size);
+  dynd::nd::array result = roll(arr);
   return wrap_array(result);
 }
 
 PyObject *pydynd::get_published_arrfuncs()
 {
   pyobject_ownref res(PyDict_New());
-  const map<nd::string, nd::arrfunc> &reg = func::get_regfunctions();
-  for (map<nd::string, nd::arrfunc>::const_iterator it = reg.begin();
+  const map<dynd::nd::string, dynd::nd::arrfunc> &reg = func::get_regfunctions();
+  for (map<dynd::nd::string, dynd::nd::arrfunc>::const_iterator it = reg.begin();
        it != reg.end(); ++it) {
     PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),
                    wrap_array(it->second));

@@ -94,15 +94,8 @@ namespace nd {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         self_type::create(ckb, kernreq, ckb_offset,
-                          *af_self->get_data_as<scalar_ufunc_data *>());
+                          af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
         return ckb_offset;
-      }
-
-      static void free(arrfunc_type_data *self_af)
-      {
-        scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
-        // Call the destructor and free the memory
-        delete data;
       }
     };
 
@@ -180,15 +173,8 @@ namespace nd {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         self_type::create(ckb, kernreq, ckb_offset,
-                          *af_self->get_data_as<scalar_ufunc_data *>());
+                          af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
         return ckb_offset;
-      }
-
-      static void free(arrfunc_type_data *self_af)
-      {
-        scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
-        // Call the destructor and free the memory
-        delete data;
       }
     };
 

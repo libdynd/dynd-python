@@ -11,7 +11,6 @@ namespace nd {
       PyUFuncObject *ufunc;
       PyUFuncGenericFunction funcptr;
       void *ufunc_data;
-      int ckernel_acquires_gil;
       intptr_t param_count;
     };
 
@@ -21,6 +20,8 @@ namespace nd {
     template <>
     struct scalar_ufunc_ck<true>
         : expr_ck<scalar_ufunc_ck<true>, kernel_request_host, 1> {
+      typedef scalar_ufunc_ck self_type;
+
       PyUFuncGenericFunction funcptr;
       void *ufunc_data;
       intptr_t param_count;
@@ -75,11 +76,62 @@ namespace nd {
                   ufunc_data);
         }
       }
+
+      static intptr_t instantiate(
+          const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
+          char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
+          const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
+          intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
+          const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
+          const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds,
+          const std::map<nd::string, ndt::type> &tp_vars)
+      {
+        if (dst_tp != af_tp->get_return_type()) {
+          std::stringstream ss;
+          ss << "destination type requested, " << dst_tp
+             << ", does not match the ufunc's type "
+             << af_tp->get_return_type();
+          throw type_error(ss.str());
+        }
+        intptr_t param_count = af_tp->get_npos();
+        for (intptr_t i = 0; i != param_count; ++i) {
+          if (src_tp[i] != af_tp->get_pos_type(i)) {
+            std::stringstream ss;
+            ss << "source type requested for parameter " << (i + 1) << ", "
+               << src_tp[i] << ", does not match the ufunc's type "
+               << af_tp->get_pos_type(i);
+            throw type_error(ss.str());
+          }
+        }
+
+        // Acquire the GIL for creating the ckernel
+        PyGILState_RAII pgs;
+        scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
+        self_type::create(ckb, kernreq, ckb_offset, data->funcptr,
+                          data->ufunc_data, data->param_count, data->ufunc);
+        Py_INCREF(data->ufunc);
+
+        return ckb_offset;
+      }
+
+      static void free(arrfunc_type_data *self_af)
+      {
+        scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
+        if (data->ufunc != NULL) {
+          // Acquire the GIL for the python decref
+          PyGILState_RAII pgs;
+          Py_DECREF(data->ufunc);
+        }
+        // Call the destructor and free the memory
+        delete data;
+      }
     };
 
     template <>
     struct scalar_ufunc_ck<false>
         : expr_ck<scalar_ufunc_ck<false>, kernel_request_host, 1> {
+      typedef scalar_ufunc_ck self_type;
+
       PyUFuncGenericFunction funcptr;
       void *ufunc_data;
       intptr_t param_count;
@@ -127,6 +179,56 @@ namespace nd {
         strides[param_count] = dst_stride;
         funcptr(args, reinterpret_cast<intptr_t *>(&count), strides,
                 ufunc_data);
+      }
+
+      static intptr_t instantiate(
+          const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
+          char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
+          const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
+          intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
+          const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
+          const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds,
+          const std::map<nd::string, ndt::type> &tp_vars)
+      {
+        if (dst_tp != af_tp->get_return_type()) {
+          std::stringstream ss;
+          ss << "destination type requested, " << dst_tp
+             << ", does not match the ufunc's type "
+             << af_tp->get_return_type();
+          throw type_error(ss.str());
+        }
+        intptr_t param_count = af_tp->get_npos();
+        for (intptr_t i = 0; i != param_count; ++i) {
+          if (src_tp[i] != af_tp->get_pos_type(i)) {
+            std::stringstream ss;
+            ss << "source type requested for parameter " << (i + 1) << ", "
+               << src_tp[i] << ", does not match the ufunc's type "
+               << af_tp->get_pos_type(i);
+            throw type_error(ss.str());
+          }
+        }
+
+        // Acquire the GIL for creating the ckernel
+        PyGILState_RAII pgs;
+        scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
+        self_type::create(ckb, kernreq, ckb_offset, data->funcptr,
+                          data->ufunc_data, data->param_count, data->ufunc);
+        Py_INCREF(data->ufunc);
+
+        //      af->base.destructor = &delete_scalar_ufunc_ckernel_data;
+        return ckb_offset;
+      }
+
+      static void free(arrfunc_type_data *self_af)
+      {
+        scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
+        if (data->ufunc != NULL) {
+          // Acquire the GIL for the python decref
+          PyGILState_RAII pgs;
+          Py_DECREF(data->ufunc);
+        }
+        // Call the destructor and free the memory
+        delete data;
       }
     };
 

@@ -117,82 +117,6 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
   return result;
 }
 
-namespace pydynd {
-namespace nd {
-  namespace functional {
-
-    static void delete_scalar_ufunc_data(arrfunc_type_data *self_af)
-    {
-      scalar_ufunc_data *data = *self_af->get_data_as<scalar_ufunc_data *>();
-      if (data->ufunc != NULL) {
-        // Acquire the GIL for the python decref
-        PyGILState_RAII pgs;
-        Py_DECREF(data->ufunc);
-      }
-      // Call the destructor and free the memory
-      delete data;
-    }
-
-/*
-    static void delete_scalar_ufunc_ckernel_data(ckernel_prefix *self_data_ptr)
-    {
-      scalar_ufunc_ckernel_data *data =
-          reinterpret_cast<scalar_ufunc_ckernel_data *>(self_data_ptr);
-      if (data->ufunc != NULL) {
-        // Acquire the GIL for the python decref
-        PyGILState_RAII pgs;
-        Py_DECREF(data->ufunc);
-      }
-    }
-*/
-
-    static intptr_t instantiate_scalar_ufunc_ckernel(
-        const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
-        char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-        const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
-        intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
-        const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
-        const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds,
-        const std::map<nd::string, ndt::type> &tp_vars)
-    {
-      if (dst_tp != af_tp->get_return_type()) {
-        stringstream ss;
-        ss << "destination type requested, " << dst_tp
-           << ", does not match the ufunc's type " << af_tp->get_return_type();
-        throw type_error(ss.str());
-      }
-      intptr_t param_count = af_tp->get_npos();
-      for (intptr_t i = 0; i != param_count; ++i) {
-        if (src_tp[i] != af_tp->get_pos_type(i)) {
-          stringstream ss;
-          ss << "source type requested for parameter " << (i + 1) << ", "
-             << src_tp[i] << ", does not match the ufunc's type "
-             << af_tp->get_pos_type(i);
-          throw type_error(ss.str());
-        }
-      }
-
-      // Acquire the GIL for creating the ckernel
-      PyGILState_RAII pgs;
-      scalar_ufunc_data *data = *af_self->get_data_as<scalar_ufunc_data *>();
-      if (data->ckernel_acquires_gil) {
-        scalar_ufunc_ck<true>::create(ckb, kernreq, ckb_offset, data->funcptr,
-                                      data->ufunc_data, data->param_count,
-                                      data->ufunc);
-      } else {
-        scalar_ufunc_ck<false>::create(ckb, kernreq, ckb_offset, data->funcptr,
-                                       data->ufunc_data, data->param_count,
-                                       data->ufunc);
-      }
-      Py_INCREF(data->ufunc);
-
-//      af->base.destructor = &delete_scalar_ufunc_ckernel_data;
-      return ckb_offset;
-    }
-  }
-}
-}
-
 PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
                                                      PyObject *type_tuple,
                                                      int ckernel_acquires_gil)
@@ -278,15 +202,19 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           }
           *af_ptr->get_data_as<void *>() = data_raw;
           memset(data_raw, 0, out_af_size);
-          af_ptr->free = &delete_scalar_ufunc_data;
-          af_ptr->instantiate = &instantiate_scalar_ufunc_ckernel;
+          if (ckernel_acquires_gil) {
+            af_ptr->free = &scalar_ufunc_ck<true>::free;
+            af_ptr->instantiate = &scalar_ufunc_ck<true>::instantiate;
+          } else {
+            af_ptr->free = &scalar_ufunc_ck<false>::free;
+            af_ptr->instantiate = &scalar_ufunc_ck<false>::instantiate;
+          }
           // Fill in the arrfunc instance data
           scalar_ufunc_data *data =
               reinterpret_cast<scalar_ufunc_data *>(data_raw);
           data->ufunc = uf;
           Py_INCREF(uf);
           data->param_count = nargs - 1;
-          data->ckernel_acquires_gil = ckernel_acquires_gil;
           data->funcptr = uf->functions[i];
           data->ufunc_data = uf->data[i];
           af.flag_as_immutable();

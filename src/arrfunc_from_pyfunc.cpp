@@ -23,7 +23,7 @@ using namespace dynd;
 using namespace pydynd;
 
 namespace {
-struct pyfunc_expr_ck : public general_ck<pyfunc_expr_ck, kernel_request_host> {
+struct pyfunc_expr_ck : dynd::nd::expr_ck<pyfunc_expr_ck, kernel_request_host, -1> {
   // Reference to the python function object
   PyObject *m_pyfunc;
   // The concrete prototype the ckernel is for
@@ -33,9 +33,9 @@ struct pyfunc_expr_ck : public general_ck<pyfunc_expr_ck, kernel_request_host> {
   vector<const char *> m_src_arrmeta;
   eval::eval_context m_ectx;
 
-  inline pyfunc_expr_ck() : m_pyfunc(NULL) {}
+  pyfunc_expr_ck() : m_pyfunc(NULL) {}
 
-  inline ~pyfunc_expr_ck()
+  ~pyfunc_expr_ck()
   {
     if (m_pyfunc != NULL) {
       PyGILState_RAII pgs;
@@ -46,12 +46,12 @@ struct pyfunc_expr_ck : public general_ck<pyfunc_expr_ck, kernel_request_host> {
   /**
    * Initializes just the base.function member
    */
-  inline void init_kernfunc(kernel_request_t kernreq)
+  void init_kernfunc(kernel_request_t kernreq)
   {
     base.set_expr_function<self_type>(kernreq);
   }
 
-  inline void verify_postcall_consistency(PyObject *args)
+  void verify_postcall_consistency(PyObject *args)
   {
     intptr_t nsrc = PyTuple_GET_SIZE(args);
     // Verify that no reference to a temporary array was kept

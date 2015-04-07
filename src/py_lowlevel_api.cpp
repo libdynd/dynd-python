@@ -23,7 +23,6 @@
 #include "arrfunc_from_instantiate_pyfunc.hpp"
 
 using namespace std;
-using namespace dynd;
 using namespace pydynd;
 
 namespace {
@@ -41,7 +40,7 @@ namespace {
     {
       try
       {
-        ndt::type d = make_ndt_type_from_pyobject(tp);
+        dynd::ndt::type d = make_ndt_type_from_pyobject(tp);
         if (d.is_symbolic()) {
           stringstream ss;
           ss << "Cannot create a dynd array with symbolic type " << d;
@@ -49,11 +48,11 @@ namespace {
         }
         size_t ptr_val = pyobject_as_size_t(ptr);
         uint32_t access_flags = pyarg_strings_to_int(
-            access, "access", nd::read_access_flag, "readwrite",
-            nd::read_access_flag | nd::write_access_flag, "readonly",
-            nd::read_access_flag, "immutable",
-            nd::read_access_flag | nd::immutable_access_flag);
-        nd::array result(make_array_memory_block(d.get_arrmeta_size()));
+            access, "access", dynd::nd::read_access_flag, "readwrite",
+            dynd::nd::read_access_flag | dynd::nd::write_access_flag, "readonly",
+            dynd::nd::read_access_flag, "immutable",
+            dynd::nd::read_access_flag | dynd::nd::immutable_access_flag);
+        dynd::nd::array result(make_array_memory_block(d.get_arrmeta_size()));
         if (d.get_flags() & (type_flag_destructor)) {
           stringstream ss;
           ss << "Cannot view raw memory using dynd type " << d;
@@ -92,8 +91,8 @@ namespace {
         ckernel_builder<kernel_request_host> *ckb_ptr =
             reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb);
 
-        ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-        ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+        dynd::ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+        dynd::ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
         if (dst_arrmeta == NULL && dst_tp.get_arrmeta_size() != 0) {
           stringstream ss;
           ss << "Cannot create an assignment kernel independent of arrmeta "
@@ -108,7 +107,7 @@ namespace {
           ss << src_tp;
           throw runtime_error(ss.str());
         }
-        string kr = pystring_as_string(kernreq_obj);
+        std::string kr = pystring_as_string(kernreq_obj);
         kernel_request_t kernreq;
         if (kr == "single") {
           kernreq = kernel_request_single;
@@ -129,7 +128,7 @@ namespace {
             NULL, NULL, ckb_ptr, ckb_offset, dst_tp,
             reinterpret_cast<const char *>(dst_arrmeta), src_tp,
             reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx,
-            nd::array());
+            dynd::nd::array());
 
         return PyLong_FromSsize_t(kernel_size);
       }
@@ -144,10 +143,10 @@ namespace {
                                            PyObject *errmode_obj)
     {
         try {
-            ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
-            ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
+            dynd::ndt::type dst_tp = make_ndt_type_from_pyobject(dst_tp_obj);
+            dynd::ndt::type src_tp = make_ndt_type_from_pyobject(src_tp_obj);
             assign_error_mode errmode = pyarg_error_mode(errmode_obj);
-            nd::arrfunc af =
+            dynd::nd::arrfunc af =
                 ::make_arrfunc_from_assignment(dst_tp, src_tp, errmode);
 
             return wrap_array(af);
@@ -161,9 +160,9 @@ namespace {
                                          PyObject *propname_obj)
     {
         try {
-            ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
-            string propname = pystring_as_string(propname_obj);
-            nd::arrfunc af =
+            dynd::ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
+            std::string propname = pystring_as_string(propname_obj);
+            dynd::nd::arrfunc af =
                 ::make_arrfunc_from_property(tp, propname);
 
             return wrap_array(af);
@@ -209,14 +208,14 @@ namespace {
           ss << "elwise_reduction must be an nd.array of type arrfunc";
           throw dynd::type_error(ss.str());
         }
-        const nd::array &elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
+        const dynd::nd::array &elwise_reduction = ((WArray *)elwise_reduction_obj)->v;
         const arrfunc_type_data *elwise_reduction_af =
             reinterpret_cast<const arrfunc_type_data *>(
                 elwise_reduction.get_readonly_originptr());
         const arrfunc_type *elwise_reduction_af_tp =
             elwise_reduction.get_type().extended<arrfunc_type>();
 
-        nd::array dst_initialization;
+        dynd::nd::array dst_initialization;
         if (WArray_Check(dst_initialization_obj) &&
             ((WArray *)dst_initialization_obj)->v.get_type().get_type_id() ==
                 arrfunc_type_id) {
@@ -230,7 +229,7 @@ namespace {
           throw dynd::type_error(ss.str());
         }
 
-        ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
+        dynd::ndt::type lifted_type = make_ndt_type_from_pyobject(lifted_type_obj);
 
         // This is the number of dimensions being reduced
         intptr_t reduction_ndim =
@@ -304,7 +303,7 @@ namespace {
           throw type_error("right_associative must be either True or False");
         }
 
-        nd::array reduction_identity;
+        dynd::nd::array reduction_identity;
         if (WArray_Check(reduction_identity_obj)) {
           reduction_identity = ((WArray *)reduction_identity_obj)->v;
           ;
@@ -315,7 +314,7 @@ namespace {
           throw dynd::type_error(ss.str());
         }
 
-        nd::arrfunc out_af = ::lift_reduction_arrfunc(
+        dynd::nd::arrfunc out_af = ::lift_reduction_arrfunc(
             elwise_reduction, lifted_type, dst_initialization, keepdims,
             reduction_ndim, reduction_dimflags.get(), associative, commutative,
             right_associative, reduction_identity);
@@ -347,9 +346,9 @@ namespace {
                 ss << "window_op must be an nd.arrfunc";
                 throw dynd::type_error(ss.str());
             }
-            const nd::arrfunc& window_op = ((WArrFunc *)window_op_obj)->v;
+            const dynd::nd::arrfunc& window_op = ((WArrFunc *)window_op_obj)->v;
             intptr_t window_size = pyobject_as_index(window_size_obj);
-            return wrap_array(nd::functional::rolling(window_op, window_size));
+            return wrap_array(dynd::nd::functional::rolling(window_op, window_size));
         } catch(...) {
             translate_exception();
             return NULL;
@@ -359,7 +358,7 @@ namespace {
     PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj, PyObject *minp_obj)
     {
         try {
-            ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
+            dynd::ndt::type tp = make_ndt_type_from_pyobject(tp_obj);
             intptr_t minp = pyobject_as_index(minp_obj);
             return wrap_array(kernels::make_builtin_mean1d_arrfunc(
                 tp.get_type_id(), minp));
@@ -372,7 +371,7 @@ namespace {
     PyObject *make_take_arrfunc()
     {
         try {
-          return wrap_array(nd::take::make());
+          return wrap_array(dynd::nd::take::make());
         } catch(...) {
             translate_exception();
             return NULL;
@@ -388,7 +387,7 @@ namespace {
         &make_arrfunc_from_assignment,
         &make_arrfunc_from_property,
         &pydynd::numpy_typetuples_from_ufunc,
-        &pydynd::arrfunc_from_ufunc,
+        &pydynd::nd::functional::arrfunc_from_ufunc,
         &lift_arrfunc,
         &lift_reduction_arrfunc,
         &arrfunc_from_pyfunc,

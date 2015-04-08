@@ -3,29 +3,22 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef PYDYND_COPY_TO_PYOBJECT_ARRFUNC_HPP
-#define PYDYND_COPY_TO_PYOBJECT_ARRFUNC_HPP
+#pragma once
 
-#include <Python.h>
-
-#include <dynd/kernels/ckernel_builder.hpp>
 #include <dynd/func/arrfunc.hpp>
 
-namespace pydynd {
+#include "config.hpp"
 
-  extern struct copy_to_pyobject_dict
-      : dynd::nd::declfunc<copy_to_pyobject_dict> {
-    static dynd::nd::arrfunc make();
+namespace pydynd {
+namespace nd {
+
+  extern struct copy_to_pyobject_dict : declfunc<copy_to_pyobject_dict> {
+    static arrfunc make();
   } copy_to_pyobject_dict;
 
-  extern struct copy_to_pyobject_tuple
-      : dynd::nd::declfunc<copy_to_pyobject_tuple> {
-    static dynd::nd::arrfunc make();
+  extern struct copy_to_pyobject_tuple : declfunc<copy_to_pyobject_tuple> {
+    static arrfunc make();
   } copy_to_pyobject_tuple;
 
-void init_copy_to_pyobject();
-void cleanup_copy_to_pyobject();
-
+} // namespace pydynd::nd
 } // namespace pydynd
-
-#endif // PYDYND_COPY_TO_PYOBJECT_ARRFUNC_HPP

@@ -41,10 +41,10 @@ struct strided_of_numpy_arrmeta {
 intptr_t copy_to_numpy_ck::instantiate(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
     char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-    const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-    const ndt::type *src_tp, const char *const *src_arrmeta,
+    const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+    const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
-    const nd::array &kwds, const std::map<nd::string, ndt::type> &tp_vars)
+    const dynd::nd::array &kwds, const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;
@@ -64,14 +64,14 @@ intptr_t copy_to_numpy_ck::instantiate(
     ndt::type dst_view_tp = ndt_type_from_numpy_dtype(dtype, dst_alignment);
     return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, dst_view_tp,
                                   NULL, src_tp[0], src_arrmeta[0], kernreq,
-                                  ectx, nd::array());
+                                  ectx, dynd::nd::array());
   } else if (PyDataType_ISOBJECT(dtype)) {
     const arrfunc_type_data *af =
-        static_cast<dynd::nd::arrfunc>(copy_to_pyobject_tuple).get();
+        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject_tuple).get();
     return af->instantiate(
-        af, static_cast<dynd::nd::arrfunc>(copy_to_pyobject_tuple).get_type(),
+        af, static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject_tuple).get_type(),
         NULL, ckb, ckb_offset, ndt::make_type<void>(), NULL, nsrc, src_tp,
-        src_arrmeta, kernreq, ectx, nd::array(), tp_vars);
+        src_arrmeta, kernreq, ectx, dynd::nd::array(), tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {
     if (src_tp[0].get_kind() != struct_kind &&
         src_tp[0].get_kind() != tuple_kind) {
@@ -158,7 +158,7 @@ intptr_t copy_to_numpy_ck::instantiate(
 
 dynd::nd::arrfunc pydynd::copy_to_numpy::make()
 {
-  return nd::functional::elwise(
+  return dynd::nd::functional::elwise(
       dynd::nd::as_arrfunc<copy_to_numpy_ck>(ndt::type("(Any) -> void"), 0));
 }
 
@@ -194,7 +194,7 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
   unary_ckernel_builder ckb;
   af->instantiate(af, copy_to_numpy.get_type(), NULL, &ckb, 0, dst_tp, dst_am,
                   1, &src_tp, &src_arrmeta, kernel_request_single, ectx,
-                  nd::array(), std::map<nd::string, ndt::type>());
+                  dynd::nd::array(), std::map<dynd::nd::string, ndt::type>());
   ckb((char *)PyArray_DATA(dst_arr), const_cast<char *>(src_data));
 }
 

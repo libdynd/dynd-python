@@ -321,7 +321,7 @@ namespace nd {
             self, self_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
             src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
       default:
-        break;
+        throw std::runtime_error("no string_copy_kernel");
       }
     }
   };
@@ -484,7 +484,7 @@ namespace nd {
             self, self_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
             src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
       default:
-        break;
+        throw std::runtime_error("no fixed_string_copy_kernel");
       }
     }
   };

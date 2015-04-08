@@ -178,7 +178,7 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const complex<T> *val = reinterpret_cast<const complex<T> *>(src[0]);
+      const dynd::complex<T> *val = reinterpret_cast<const dynd::complex<T> *>(src[0]);
       *dst_obj = PyComplex_FromDoubles(val->real(), val->imag());
     }
   };

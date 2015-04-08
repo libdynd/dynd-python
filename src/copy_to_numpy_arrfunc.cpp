@@ -41,10 +41,10 @@ struct strided_of_numpy_arrmeta {
 intptr_t copy_to_numpy_ck::instantiate(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
     char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-    const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-    const ndt::type *src_tp, const char *const *src_arrmeta,
+    const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+    const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
     kernel_request_t kernreq, const eval::eval_context *ectx,
-    const dynd::nd::array &kwds, const std::map<dynd::nd::string, ndt::type> &tp_vars)
+    const dynd::nd::array &kwds, const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
 {
   if (dst_tp.get_type_id() != void_type_id) {
     stringstream ss;

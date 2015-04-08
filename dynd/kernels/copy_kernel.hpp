@@ -178,7 +178,8 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::complex<T> *val = reinterpret_cast<const dynd::complex<T> *>(src[0]);
+      const dynd::complex<T> *val =
+          reinterpret_cast<const dynd::complex<T> *>(src[0]);
       *dst_obj = PyComplex_FromDoubles(val->real(), val->imag());
     }
   };
@@ -666,16 +667,16 @@ namespace nd {
           dynd::ndt::make_type<dynd_bool>(), NULL, nsrc, src_tp, src_arrmeta,
           kernel_request_single, ectx, dynd::nd::array(), tp_vars);
       reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-          ->ensure_capacity(ckb_offset);
+          ->reserve(ckb_offset);
       self_ck = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-                 ->get_at<pydynd::nd::option_ck>(root_ckb_offset);
+                    ->get_at<pydynd::nd::option_ck>(root_ckb_offset);
       self_ck->m_copy_value_offset = ckb_offset - root_ckb_offset;
       dynd::ndt::type src_value_tp =
           src_tp[0].extended<option_type>()->get_value_type();
-      ckb_offset = self->instantiate(
-          self, self_tp, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
-          &src_value_tp, src_arrmeta, kernel_request_single, ectx,
-          dynd::nd::array(), tp_vars);
+      ckb_offset = self->instantiate(self, self_tp, NULL, ckb, ckb_offset,
+                                     dst_tp, dst_arrmeta, nsrc, &src_value_tp,
+                                     src_arrmeta, kernel_request_single, ectx,
+                                     dynd::nd::array(), tp_vars);
       return ckb_offset;
     }
   };
@@ -857,7 +858,7 @@ namespace nd {
       self_ck->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-            ->ensure_capacity(ckb_offset);
+            ->reserve(ckb_offset);
         self_ck = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                       ->get_at<pydynd::nd::struct_copy_kernel>(root_ckb_offset);
         self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
@@ -935,7 +936,7 @@ namespace nd {
       self_ck->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-            ->ensure_capacity(ckb_offset);
+            ->reserve(ckb_offset);
         self_ck = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                       ->get_at<tuple_copy_kernel>(root_ckb_offset);
         self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;

@@ -93,8 +93,9 @@ namespace nd {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        self_type::create(ckb, kernreq, ckb_offset,
-                          af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
+        self_type::make(
+            ckb, kernreq, ckb_offset,
+            af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
         return ckb_offset;
       }
     };
@@ -172,8 +173,9 @@ namespace nd {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        self_type::create(ckb, kernreq, ckb_offset,
-                          af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
+        self_type::make(
+            ckb, kernreq, ckb_offset,
+            af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
         return ckb_offset;
       }
     };

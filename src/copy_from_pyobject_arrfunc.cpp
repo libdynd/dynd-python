@@ -907,63 +907,63 @@ static intptr_t instantiate_copy_from_pyobject(
 
   switch (dst_tp.get_type_id()) {
   case bool_type_id:
-    bool_ck::create_leaf(ckb, kernreq, ckb_offset);
+    bool_ck::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case int8_type_id:
-    int_ck<int8_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<int8_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case int16_type_id:
-    int_ck<int16_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<int16_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case int32_type_id:
-    int_ck<int32_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<int32_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case int64_type_id:
-    int_ck<int64_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<int64_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case int128_type_id:
-    int_ck<dynd_int128>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<dynd_int128>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case uint8_type_id:
-    int_ck<uint8_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<uint8_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case uint16_type_id:
-    int_ck<uint16_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<uint16_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case uint32_type_id:
-    int_ck<uint32_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<uint32_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case uint64_type_id:
-    int_ck<uint64_t>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<uint64_t>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case uint128_type_id:
-    int_ck<dynd_uint128>::create_leaf(ckb, kernreq, ckb_offset);
+    int_ck<dynd_uint128>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case float16_type_id:
-    float_ck<dynd_float16>::create_leaf(ckb, kernreq, ckb_offset);
+    float_ck<dynd_float16>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case float32_type_id:
-    float_ck<float>::create_leaf(ckb, kernreq, ckb_offset);
+    float_ck<float>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case float64_type_id:
-    float_ck<double>::create_leaf(ckb, kernreq, ckb_offset);
+    float_ck<double>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case complex_float32_type_id:
-    complex_float_ck<float>::create_leaf(ckb, kernreq, ckb_offset);
+    complex_float_ck<float>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case complex_float64_type_id:
-    complex_float_ck<double>::create_leaf(ckb, kernreq, ckb_offset);
+    complex_float_ck<double>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case bytes_type_id:
   case fixedbytes_type_id: {
-    any_bytes_ck *self = any_bytes_ck::create_leaf(ckb, kernreq, ckb_offset);
+    any_bytes_ck *self = any_bytes_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
   }
   case string_type_id:
   case fixedstring_type_id: {
-    any_string_ck *self = any_string_ck::create_leaf(ckb, kernreq, ckb_offset);
+    any_string_ck *self = any_string_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
@@ -982,29 +982,29 @@ static intptr_t instantiate_copy_from_pyobject(
   }
 
   case date_type_id: {
-    date_ck *self = date_ck::create_leaf(ckb, kernreq, ckb_offset);
+    date_ck *self = date_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
   }
   case time_type_id: {
-    time_ck *self = time_ck::create_leaf(ckb, kernreq, ckb_offset);
+    time_ck *self = time_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
   }
   case datetime_type_id: {
-    datetime_ck *self = datetime_ck::create_leaf(ckb, kernreq, ckb_offset);
+    datetime_ck *self = datetime_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
   }
   case type_type_id:
-    type_ck::create_leaf(ckb, kernreq, ckb_offset);
+    type_ck::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case option_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
-    option_ck *self = option_ck::create(ckb, kernreq, ckb_offset);
+    option_ck *self = option_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     const arrfunc_type_data *assign_na_af =
@@ -1034,7 +1034,7 @@ static intptr_t instantiate_copy_from_pyobject(
     if (dst_tp.get_as_strided(dst_arrmeta, &dim_size, &stride, &el_tp,
                               &el_arrmeta)) {
       intptr_t root_ckb_offset = ckb_offset;
-      strided_ck *self = strided_ck::create(ckb, kernreq, ckb_offset);
+      strided_ck *self = strided_ck::make(ckb, kernreq, ckb_offset);
       self->m_dim_size = dim_size;
       self->m_stride = stride;
       self->m_dst_tp = dst_tp;
@@ -1057,7 +1057,7 @@ static intptr_t instantiate_copy_from_pyobject(
   }
   case var_dim_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
-    var_dim_ck *self = var_dim_ck::create(ckb, kernreq, ckb_offset);
+    var_dim_ck *self = var_dim_ck::make(ckb, kernreq, ckb_offset);
     self->m_offset =
         reinterpret_cast<const var_dim_type_arrmeta *>(dst_arrmeta)->offset;
     self->m_stride =
@@ -1081,7 +1081,7 @@ static intptr_t instantiate_copy_from_pyobject(
   case tuple_type_id:
   case ctuple_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
-    tuple_ck *self = tuple_ck::create(ckb, kernreq, ckb_offset);
+    tuple_ck *self = tuple_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     intptr_t field_count =
@@ -1109,7 +1109,7 @@ static intptr_t instantiate_copy_from_pyobject(
   case struct_type_id:
   case cstruct_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
-    struct_ck *self = struct_ck::create(ckb, kernreq, ckb_offset);
+    struct_ck *self = struct_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     intptr_t field_count =

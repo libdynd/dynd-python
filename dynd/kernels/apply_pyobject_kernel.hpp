@@ -141,7 +141,7 @@ namespace nd {
       {
         PyGILState_RAII pgs;
 
-        self_type *self = self_type::create(ckb, kernreq, ckb_offset);
+        self_type *self = self_type::make(ckb, kernreq, ckb_offset);
         self->m_proto = ndt::make_arrfunc(nsrc, src_tp, dst_tp);
         self->m_pyfunc = *af_self->get_data_as<PyObject *>();
         Py_XINCREF(self->m_pyfunc);

@@ -221,7 +221,7 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      fixed_bytes_copy_kernel::create(
+      fixed_bytes_copy_kernel::make(
           ckb, kernreq, ckb_offset,
           src_tp[0].extended<fixedbytes_type>()->get_data_size());
       return ckb_offset;
@@ -352,8 +352,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      fixed_string_ascii_copy_kernel::create(ckb, kernreq, ckb_offset,
-                                             src_tp[0].get_data_size());
+      fixed_string_ascii_copy_kernel::make(ckb, kernreq, ckb_offset,
+                                           src_tp[0].get_data_size());
       return ckb_offset;
     }
   };
@@ -383,8 +383,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      fixed_string_utf8_copy_kernel::create(ckb, kernreq, ckb_offset,
-                                            src_tp[0].get_data_size());
+      fixed_string_utf8_copy_kernel::make(ckb, kernreq, ckb_offset,
+                                          src_tp[0].get_data_size());
       return ckb_offset;
     }
   };
@@ -416,8 +416,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      fixed_string_utf16_copy_kernel::create(ckb, kernreq, ckb_offset,
-                                             src_tp[0].get_data_size());
+      fixed_string_utf16_copy_kernel::make(ckb, kernreq, ckb_offset,
+                                           src_tp[0].get_data_size());
       return ckb_offset;
     }
   };
@@ -449,8 +449,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      fixed_string_utf32_copy_kernel::create(ckb, kernreq, ckb_offset,
-                                             src_tp[0].get_data_size());
+      fixed_string_utf32_copy_kernel::make(ckb, kernreq, ckb_offset,
+                                           src_tp[0].get_data_size());
       return ckb_offset;
     }
   };
@@ -520,8 +520,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      date_copy_kernel::create(ckb, kernreq, ckb_offset, src_tp[0],
-                               src_arrmeta[0]);
+      date_copy_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
+                             src_arrmeta[0]);
       return ckb_offset;
     }
   };
@@ -557,8 +557,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      time_copy_kernel::create(ckb, kernreq, ckb_offset, src_tp[0],
-                               src_arrmeta[0]);
+      time_copy_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
+                             src_arrmeta[0]);
       return ckb_offset;
     }
   };
@@ -597,8 +597,8 @@ namespace nd {
         const nd::array &DYND_UNUSED(kwds),
         const std::map<nd::string, ndt::type> &DYND_UNUSED(tp_vars))
     {
-      datetime_copy_kernel::create(ckb, kernreq, ckb_offset, src_tp[0],
-                                   src_arrmeta[0]);
+      datetime_copy_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
+                                 src_arrmeta[0]);
       return ckb_offset;
     }
   };
@@ -657,7 +657,7 @@ namespace nd {
     {
       intptr_t root_ckb_offset = ckb_offset;
       pydynd::nd::option_ck *self_ck =
-          pydynd::nd::option_ck::create(ckb, kernreq, ckb_offset);
+          pydynd::nd::option_ck::make(ckb, kernreq, ckb_offset);
       const arrfunc_type_data *is_avail_af =
           src_tp[0].extended<option_type>()->get_is_avail_arrfunc();
       const arrfunc_type *is_avail_af_tp =
@@ -722,8 +722,7 @@ namespace nd {
       const char *el_arrmeta;
       if (src_tp[0].get_as_strided(src_arrmeta[0], &dim_size, &stride, &el_tp,
                                    &el_arrmeta)) {
-        fixed_dim_copy_kernel::create(ckb, kernreq, ckb_offset, dim_size,
-                                      stride);
+        fixed_dim_copy_kernel::make(ckb, kernreq, ckb_offset, dim_size, stride);
         return copy_to_kernel::instantiate(
             self, self_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
             &el_tp, &el_arrmeta, kernel_request_strided, ectx, kwds, tp_vars);
@@ -772,12 +771,11 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      var_dim_copy_kernel::create(
-          ckb, kernreq, ckb_offset,
-          reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta[0])
-              ->offset,
-          reinterpret_cast<const var_dim_type_arrmeta *>(src_arrmeta[0])
-              ->stride);
+      var_dim_copy_kernel::make(ckb, kernreq, ckb_offset,
+                                reinterpret_cast<const var_dim_type_arrmeta *>(
+                                    src_arrmeta[0])->offset,
+                                reinterpret_cast<const var_dim_type_arrmeta *>(
+                                    src_arrmeta[0])->stride);
       ndt::type el_tp = src_tp[0].extended<var_dim_type>()->get_element_type();
       const char *el_arrmeta = src_arrmeta[0] + sizeof(var_dim_type_arrmeta);
       return self->instantiate(self, self_tp, data, ckb, ckb_offset, dst_tp,
@@ -838,7 +836,7 @@ namespace nd {
     {
       intptr_t root_ckb_offset = ckb_offset;
       pydynd::nd::struct_copy_kernel *self_ck =
-          pydynd::nd::struct_copy_kernel::create(ckb, kernreq, ckb_offset);
+          pydynd::nd::struct_copy_kernel::make(ckb, kernreq, ckb_offset);
       self_ck->m_src_tp = src_tp[0];
       self_ck->m_src_arrmeta = src_arrmeta[0];
       intptr_t field_count =
@@ -925,7 +923,7 @@ namespace nd {
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
       intptr_t root_ckb_offset = ckb_offset;
-      tuple_copy_kernel *self_ck = tuple_copy_kernel::create(
+      tuple_copy_kernel *self_ck = tuple_copy_kernel::make(
           ckb, kernreq, ckb_offset, src_tp[0], src_arrmeta[0]);
       intptr_t field_count =
           src_tp[0].extended<base_tuple_type>()->get_field_count();
@@ -976,7 +974,7 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      pydynd::nd::pointer_copy_kernel::create(ckb, kernreq, ckb_offset);
+      pydynd::nd::pointer_copy_kernel::make(ckb, kernreq, ckb_offset);
       dynd::ndt::type src_value_tp =
           src_tp[0].extended<pointer_type>()->get_target_type();
       return self->instantiate(self, self_tp, NULL, ckb, ckb_offset, dst_tp,

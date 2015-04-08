@@ -974,7 +974,8 @@ static intptr_t instantiate_copy_from_pyobject(
         dst_tp.extended<categorical_type>()->get_category_type();
     nd::arrfunc copy_af =
         make_arrfunc_from_assignment(dst_tp, buf_tp, assign_error_default);
-    nd::arrfunc af = nd::functional::chain(make_copy_from_pyobject_arrfunc(dim_broadcast), copy_af, buf_tp);
+    nd::arrfunc af = nd::functional::chain(
+        make_copy_from_pyobject_arrfunc(dim_broadcast), copy_af, buf_tp);
     return af.get()->instantiate(af.get(), af.get_type(), NULL, ckb, ckb_offset,
                                  dst_tp, dst_arrmeta, nsrc, src_tp, src_arrmeta,
                                  kernreq, ectx, kwds, tp_vars);
@@ -1015,7 +1016,7 @@ static intptr_t instantiate_copy_from_pyobject(
         dst_arrmeta, nsrc, NULL, NULL, kernel_request_single, ectx, nd::array(),
         tp_vars);
     reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-        ->ensure_capacity(ckb_offset);
+        ->reserve(ckb_offset);
     self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                ->get_at<option_ck>(root_ckb_offset);
     self->m_copy_value_offset = ckb_offset - root_ckb_offset;
@@ -1093,7 +1094,7 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
       reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-          ->ensure_capacity(ckb_offset);
+          ->reserve(ckb_offset);
       self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                  ->get_at<tuple_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
@@ -1121,7 +1122,7 @@ static intptr_t instantiate_copy_from_pyobject(
     self->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
       reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
-          ->ensure_capacity(ckb_offset);
+          ->reserve(ckb_offset);
       self = reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                  ->get_at<struct_ck>(root_ckb_offset);
       self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
@@ -1138,8 +1139,9 @@ static intptr_t instantiate_copy_from_pyobject(
   }
 
   if (dst_tp.get_kind() == expr_kind) {
-    nd::arrfunc af = nd::functional::chain(make_copy_from_pyobject_arrfunc(dim_broadcast), nd::copy,
-                                           dst_tp.value_type());
+    nd::arrfunc af =
+        nd::functional::chain(make_copy_from_pyobject_arrfunc(dim_broadcast),
+                              nd::copy, dst_tp.value_type());
     return af.get()->instantiate(af.get(), af.get_type(), NULL, ckb, ckb_offset,
                                  dst_tp, dst_arrmeta, nsrc, src_tp, src_arrmeta,
                                  kernreq, ectx, kwds, tp_vars);

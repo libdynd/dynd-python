@@ -229,7 +229,7 @@ public:
         inc_ckb_offset(ckb_offset,
                                 sizeof(pyobject_expr_kernel_extra) +
                                     (src_count + 1) * sizeof(WArray *));
-        reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->reserve_leaf(ckb_offset);
+        reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->reserve(ckb_offset);
         pyobject_expr_kernel_extra *e =
             reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)->get_at<pyobject_expr_kernel_extra>(root_ckb_offset);
 

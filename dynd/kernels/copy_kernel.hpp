@@ -143,6 +143,14 @@ namespace nd {
       *dst_obj = NULL;
       *dst_obj = pyint_from_int(*reinterpret_cast<const T *>(src[0]));
     }
+
+    static ndt::type make_type()
+    {
+      std::map<nd::string, ndt::type> tp_vars;
+      tp_vars["A0"] = ndt::make_type<T>();
+
+      return ndt::substitute(ndt::type("(A0) -> void"), tp_vars, true);
+    }
   };
 
   template <>
@@ -197,6 +205,14 @@ namespace nd {
       *dst_obj = NULL;
       *dst_obj = PyFloat_FromDouble(*reinterpret_cast<const T *>(src[0]));
     }
+
+    static ndt::type make_type()
+    {
+      std::map<nd::string, ndt::type> tp_vars;
+      tp_vars["A0"] = ndt::make_type<T>();
+
+      return ndt::substitute(ndt::type("(A0) -> void"), tp_vars, true);
+    }
   };
 
   template <>
@@ -224,6 +240,14 @@ namespace nd {
           reinterpret_cast<const dynd::complex<T> *>(src[0]);
       *dst_obj = PyComplex_FromDoubles(val->real(), val->imag());
     }
+
+    static ndt::type make_type()
+    {
+      std::map<nd::string, ndt::type> tp_vars;
+      tp_vars["A0"] = ndt::make_type<dynd::complex<T>>();
+
+      return ndt::substitute(ndt::type("(A0) -> void"), tp_vars, true);
+    }
   };
 
   template <>
@@ -249,6 +273,8 @@ namespace nd {
           reinterpret_cast<const bytes_type_data *>(src[0]);
       *dst_obj = PyBytes_FromStringAndSize(bd->begin, bd->end - bd->begin);
     }
+
+    static ndt::type make_type() { return ndt::type("(bytes) -> void"); }
   };
 
   template <>
@@ -282,6 +308,9 @@ namespace nd {
           src_tp[0].extended<fixedbytes_type>()->get_data_size());
       return ckb_offset;
     }
+
+    // TODO: Fix this
+    static ndt::type make_type() { return ndt::type("(Any) -> void"); }
   };
 
   template <>
@@ -295,6 +324,8 @@ namespace nd {
       *dst_obj = NULL;
       *dst_obj = PyUnicode_DecodeUTF32(src[0], 4, NULL, NULL);
     }
+
+    static ndt::type make_type() { return ndt::type("(char) -> void"); }
   };
 
   struct string_ascii_copy_kernel
@@ -385,6 +416,8 @@ namespace nd {
         throw std::runtime_error("no string_copy_kernel");
       }
     }
+
+    static ndt::type make_type() { return ndt::type("(string) -> void"); }
   };
 
   struct fixed_string_ascii_copy_kernel
@@ -549,7 +582,43 @@ namespace nd {
         throw std::runtime_error("no fixed_string_copy_kernel");
       }
     }
+
+    // TODO: Fix this
+    static ndt::type make_type() { return ndt::type("(Any) -> void"); }
   };
+
+  /*
+    template <>
+    struct copy_to_pyobject_kernel<categorical_type_id>
+        : base_virtual_kernel<copy_to_pyobject_kernel<categorical_type_id>> {
+      static intptr_t instantiate(
+          const arrfunc_type_data *DYND_UNUSED(self),
+          const arrfunc_type *DYND_UNUSED(self_tp), char *DYND_UNUSED(data),
+          void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
+          const char *dst_arrmeta, intptr_t nsrc,
+          const ndt::type *src_tp, const char *const *src_arrmeta,
+          kernel_request_t kernreq, const eval::eval_context *ectx,
+          const nd::array &kwds,
+          const std::map<nd::string, ndt::type> &tp_vars)
+      {
+        bool struct_as_pytuple = false;
+
+        // Assign via an intermediate category_type buffer
+        const dynd::ndt::type &buf_tp =
+            src_tp[0].extended<categorical_type>()->get_category_type();
+        dynd::nd::arrfunc copy_af =
+            make_arrfunc_from_assignment(buf_tp, src_tp[0],
+    assign_error_default);
+        dynd::nd::arrfunc af = dynd::nd::functional::chain(
+            copy_af,
+    pydynd::nd::make_copy_to_pyobject_arrfunc(struct_as_pytuple),
+            buf_tp);
+        return af.get()->instantiate(
+            af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
+            nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
+      }
+    };
+  */
 
   template <>
   struct copy_to_pyobject_kernel<date_type_id>
@@ -587,6 +656,8 @@ namespace nd {
                                     src_arrmeta[0]);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(date) -> void"); }
   };
 
   template <>
@@ -626,6 +697,8 @@ namespace nd {
                                     src_arrmeta[0]);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(time) -> void"); }
   };
 
   template <>
@@ -668,6 +741,8 @@ namespace nd {
                                     src_arrmeta[0]);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(datetime) -> void"); }
   };
 
   template <>
@@ -682,6 +757,8 @@ namespace nd {
       ndt::type tp(reinterpret_cast<const type_type_data *>(src[0])->tp, true);
       *dst_obj = wrap_ndt_type(std::move(tp));
     }
+
+    static ndt::type make_type() { return ndt::type("(type) -> void"); }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -751,6 +828,8 @@ namespace nd {
                                      dynd::nd::array(), tp_vars);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(?Any) -> void"); }
   };
 
   template <>
@@ -805,6 +884,8 @@ namespace nd {
 
       throw std::runtime_error("cannot process as strided");
     }
+
+    static ndt::type make_type() { return ndt::type("(Fixed * Any) -> void"); }
   };
 
   template <>
@@ -860,6 +941,8 @@ namespace nd {
                                dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
                                kernel_request_strided, ectx, kwds, tp_vars);
     }
+
+    static ndt::type make_type() { return ndt::type("(var * Any) -> void"); }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -948,6 +1031,8 @@ namespace nd {
       }
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("({...}) -> void"); }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -1028,6 +1113,8 @@ namespace nd {
       }
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("((...)) -> void"); }
   };
 
   template <>
@@ -1066,6 +1153,8 @@ namespace nd {
                                kernel_request_single, ectx, dynd::nd::array(),
                                tp_vars);
     }
+
+    static ndt::type make_type() { return ndt::type("(pointer[Any]) -> void"); }
   };
 
 } // namespace pydynd::nd

@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 from dynd._pydynd import w_type, \
-        make_var_dim, make_fixed_dim_kind, make_fixed_dim, make_cfixed_dim
+        make_var_dim, make_fixed_dim_kind, make_fixed_dim
 
-__all__ = ['var', 'fixed', 'cfixed']
+__all__ = ['var', 'fixed']
 
 
 class _Dim(object):
@@ -104,43 +104,5 @@ class _Fixed(_Dim):
             return 'ndt.fixed'
 
 
-class _CFixed(_Dim):
-    """
-    Creates a cfixed dimension when combined with other types.
-
-    Examples
-    --------
-    >>> ndt.cfixed[3] * ndt.int32
-    ndt.type('cfixed[3] * int32')
-    >>> ndt.fixed[5] * ndt.cfixed[2] * ndt.float64
-    ndt.type('5 * cfixed[2] * float64')
-    """
-    __slots__ = ['dim_size']
-
-    def __init__(self, dim_size = None):
-        self.dim_size = dim_size
-
-    @property
-    def dims(self):
-        if self.dim_size is not None:
-            return (self,)
-        else:
-            raise TypeError('Need to specify ndt.cfixed[dim_size],' +
-                            ' not just ndt.cfixed')
-
-    def create(self, eltype):
-        return make_cfixed_dim(self.dim_size, eltype)
-
-    def __getitem__(self, dim_size):
-        return _CFixed(dim_size)
-
-    def __repr__(self):
-        if self.dim_size is not None:
-            return 'ndt.cfixed[%d]' % self.dim_size
-        else:
-            return 'ndt.cfixed'
-
-
 var = _Var()
 fixed = _Fixed()
-cfixed = _CFixed()

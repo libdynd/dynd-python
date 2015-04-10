@@ -6,8 +6,8 @@ class TestDimHelpers(unittest.TestCase):
         self.assertEqual(ndt.var * ndt.int32, ndt.type('var * int32'))
         self.assertEqual(ndt.fixed * ndt.int32, ndt.type('Fixed * int32'))
         self.assertEqual(ndt.fixed[7] * ndt.int32, ndt.type('7 * int32'))
-        self.assertEqual(ndt.cfixed[6] * ndt.int32,
-                         ndt.type('cfixed[6] * int32'))
+        self.assertEqual(ndt.fixed[6] * ndt.int32,
+                         ndt.type('fixed[6] * int32'))
         self.assertEqual(ndt.fixed * ndt.fixed * ndt.float64,
                          ndt.type('Fixed * Fixed * float64'))
         self.assertEqual(ndt.fixed ** 3 * ndt.float32,
@@ -30,8 +30,7 @@ class TestDimHelpers(unittest.TestCase):
         self.assertEqual(repr(ndt.fixed), 'ndt.fixed')
         self.assertEqual(repr(ndt.fixed), 'ndt.fixed')
         self.assertEqual(repr(ndt.fixed[5]), 'ndt.fixed[5]')
-        self.assertEqual(repr(ndt.cfixed[12]), 'ndt.cfixed[12]')
         # Dimension fragment
         self.assertEqual(repr(ndt.var * ndt.fixed *
-                              ndt.fixed[2] * ndt.cfixed[3]),
-                         'ndt.var * ndt.fixed * ndt.fixed[2] * ndt.cfixed[3]')
+                              ndt.fixed[2] * ndt.fixed[3]),
+                         'ndt.var * ndt.fixed * ndt.fixed[2] * ndt.fixed[3]')

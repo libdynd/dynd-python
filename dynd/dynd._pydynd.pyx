@@ -814,40 +814,6 @@ def make_fixed_dim(shape, element_tp):
     SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_tp).v)))
     return result
 
-def make_cfixed_dim(shape, element_tp, axis_perm=None):
-    """
-    ndt.make_cfixed_dim(shape, element_tp, axis_perm=None)
-
-    Constructs a cfixed_dim type of the given shape and axis permutation
-    (default C order).
-
-    Parameters
-    ----------
-    shape : tuple of int
-        The multi-dimensional shape of the resulting fixed array type.
-    element_tp : dynd type
-        The type of each element in the resulting array type.
-    axis_perm : tuple of int
-        If not provided, C-order is used. Must be a permutation of
-        the integers 0 through len(shape)-1, ordered so each
-        value increases with the size of the strides. [N-1, ..., 0]
-        gives C-order, and [0, ..., N-1] gives F-order.
-
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-
-    >>> ndt.make_cfixed_dim(5, ndt.int32)
-    ndt.type("cfixed[5] * int32")
-    >>> ndt.make_cfixed_dim((3,5), ndt.int32)
-    ndt.type("cfixed[3] * cfixed[5] * int32")
-    >>> ndt.make_cfixed_dim((3,5), ndt.int32, axis_perm=(0,1))
-    ndt.type("cfixed[3, stride=4] * cfixed[5, stride=12] * int32")
-    """
-    cdef w_type result = w_type()
-    SET(result.v, dynd_make_cfixed_dim_type(shape, GET(w_type(element_tp).v), axis_perm))
-    return result
-
 def make_cstruct(field_types, field_names):
     """
     ndt.make_cstruct(field_types, field_names)
@@ -2034,14 +2000,14 @@ def groupby(data, by, groups = None):
              type="2 * string")
     >>> a.eval()
     nd.array([[2, 5, 6], [1, 3, 4]],
-             type="cfixed[2] * var * int32")
+             type="fixed[2] * var * int32")
     >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
     >>> a.groups
     nd.array(["M", "N", "F"],
              type="3 * string")
     >>> a.eval()
     nd.array([[1, 3, 4],        [], [2, 5, 6]],
-             type="cfixed[3] * var * int32")
+             type="fixed[3] * var * int32")
     """
     cdef w_array result = w_array()
     if groups is None:

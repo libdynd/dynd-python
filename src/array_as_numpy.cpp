@@ -17,7 +17,6 @@
 #include "copy_to_numpy_arrfunc.hpp"
 
 #include <dynd/types/fixed_dim_type.hpp>
-#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -137,8 +136,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
         "NumPy >= 1.6 is required for dynd datetime type interop");
 #endif
   }
-  case fixed_dim_type_id:
-  case cfixed_dim_type_id: {
+  case fixed_dim_type_id: {
     if (ndim > 0) {
       const base_dim_type *bdt = dt.extended<base_dim_type>();
       make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
@@ -369,6 +367,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
+/*
   case cfixed_dim_type_id: {
     const cfixed_dim_type *fad = dt.extended<cfixed_dim_type>();
     if (ndim > 0) {
@@ -432,6 +431,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
+*/
   case cstruct_type_id:
   case struct_type_id: {
     if (dt.get_type_id() == struct_type_id && arrmeta == NULL) {

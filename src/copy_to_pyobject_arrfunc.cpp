@@ -212,10 +212,10 @@ intptr_t pydynd::nd::copy_to_pyobject_virtual_kernel::instantiate(
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
   case groupby_type_id:
   case expr_type_id:
+  case adapt_type_id:
   case convert_type_id:
   case property_type_id:
   case byteswap_type_id:
-  case 44:
   case view_type_id:
   case unary_expr_type_id: {
     dynd::nd::arrfunc af = dynd::nd::functional::chain(

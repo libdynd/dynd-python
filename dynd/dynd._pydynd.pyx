@@ -728,13 +728,13 @@ def make_pointer(target_tp):
     SET(result.v, dynd_make_pointer_type(GET(w_type(target_tp).v)))
     return result
 
-def make_fixed_dimsym(element_tp, ndim=None):
+def make_fixed_dim_kind(element_tp, ndim=None):
     """
-    ndt.make_fixed_dimsym(element_tp, ndim=1)
+    ndt.make_fixed_dim_kind(element_tp, ndim=1)
 
     Constructs an array dynd type with one or more symbolic fixed
-    dimensions. A single fixed_dimsym dynd type corresponds
-    to one dimension, so when ndim > 1, multiple fixed_dimsym
+    dimensions. A single fixed_dim_kind dynd type corresponds
+    to one dimension, so when ndim > 1, multiple fixed_dim_kind
     dimensions are created.
 
     Parameters
@@ -742,22 +742,22 @@ def make_fixed_dimsym(element_tp, ndim=None):
     element_tp : dynd type
         The type of one element in the symbolic array.
     ndim : int
-        The number of fixed_dimsym dimensions to create.
+        The number of fixed_dim_kind dimensions to create.
 
     Examples
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixed_dimsym(ndt.int32)
+    >>> ndt.make_fixed_dim_kind(ndt.int32)
     ndt.type("Fixed * int32")
-    >>> ndt.make_fixed_dimsym(ndt.int32, 3)
+    >>> ndt.make_fixed_dim_kind(ndt.int32, 3)
     ndt.type("Fixed * Fixed * Fixed * int32")
     """
     cdef w_type result = w_type()
     if (ndim is None):
-        SET(result.v, dynd_make_fixed_dimsym_type(GET(w_type(element_tp).v)))
+        SET(result.v, dynd_make_fixed_dim_kind_type(GET(w_type(element_tp).v)))
     else:
-        SET(result.v, dynd_make_fixed_dimsym_type(GET(w_type(element_tp).v), int(ndim)))
+        SET(result.v, dynd_make_fixed_dim_kind_type(GET(w_type(element_tp).v), int(ndim)))
     return result
 
 def make_pow_dimsym(base_tp, exponent, element_tp):

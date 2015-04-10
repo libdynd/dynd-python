@@ -106,7 +106,7 @@ class TestLowLevel(unittest.TestCase):
         self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
                         _lowlevel.type_id.FIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('Fixed * int32')),
-                        _lowlevel.type_id.FIXED_DIMSYM)
+                        _lowlevel.type_id.FIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('var * int32')),
                         _lowlevel.type_id.VAR_DIM)
         # GroupBy

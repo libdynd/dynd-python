@@ -17,7 +17,6 @@
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
-#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -371,26 +370,6 @@ pydynd::dynd_make_fixed_dim_type(PyObject *shape,
   vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
   return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
-}
-
-dynd::ndt::type pydynd::dynd_make_cfixed_dim_type(PyObject *shape, const ndt::type& element_tp, PyObject *axis_perm)
-{
-    vector<intptr_t> shape_vec;
-    pyobject_as_vector_intp(shape, shape_vec, true);
-
-    if (axis_perm != Py_None) {
-        vector<int> axis_perm_vec;
-        pyobject_as_vector_int(axis_perm, axis_perm_vec);
-        if (!is_valid_perm((int)axis_perm_vec.size(), axis_perm_vec.empty() ? NULL : &axis_perm_vec[0])) {
-            throw runtime_error("Provided axis_perm is not a valid permutation");
-        }
-        if (axis_perm_vec.size() != shape_vec.size()) {
-            throw runtime_error("Provided axis_perm is a different size than the provided shape");
-        }
-        return ndt::make_cfixed_dim(shape_vec.size(), &shape_vec[0], element_tp, &axis_perm_vec[0]);
-    } else {
-        return ndt::make_cfixed_dim(shape_vec.size(), &shape_vec[0], element_tp, NULL);
-    }
 }
 
 dynd::ndt::type pydynd::ndt_type_getitem(const dynd::ndt::type& d, PyObject *subscript)

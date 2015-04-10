@@ -91,11 +91,6 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
-        # Constructor from type with cfixed dimension
-        a = nd.empty('cfixed[3] * int32')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_cfixed_dim(3, ndt.int32))
-        self.assertEqual(a.shape, (3,))
         # Constructor from type with fixed dimension, accesskwarg
         a = nd.empty('3 * int32', access='rw')
         self.assertEqual(a.access_flags, 'readwrite')

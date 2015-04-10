@@ -13,7 +13,6 @@
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
-#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -106,12 +105,7 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
 
   if (d->subarray) {
     dt = ndt_type_from_numpy_dtype(d->subarray->base, data_alignment);
-    if (dt.get_data_size() == 0) {
-      return dynd_make_fixed_dim_type(d->subarray->shape, dt);
-    }
-    else {
-      return dynd_make_cfixed_dim_type(d->subarray->shape, dt, Py_None);
-    }
+    return dynd_make_fixed_dim_type(d->subarray->shape, dt);
   }
 
   switch (d->type_num) {
@@ -531,6 +525,8 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             return result;
         }
         case cfixed_dim_type_id: {
+        throw std::runtime_error("cfixed_dim used to be here");
+/*
             ndt::type child_tp = tp;
             vector<intptr_t> shape;
             do {
@@ -554,6 +550,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
                 throw dynd::type_error("failed to convert dynd type into numpy subarray dtype");
             }
             return result;
+*/
         }
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it

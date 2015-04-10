@@ -5,7 +5,6 @@
 
 #include <Python.h>
 
-#include <dynd/types/cfixed_dim_type.hpp>
 #include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/byteswap_type.hpp>
@@ -139,11 +138,11 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     }
     // Pass through to error
     break;
-  case cfixed_dim_type_id: {
+  case fixed_dim_type_id: {
     ndt::type child_tp = tp;
     o << "(";
     do {
-      const cfixed_dim_type *tdt = child_tp.extended<cfixed_dim_type>();
+      const fixed_dim_type *tdt = child_tp.extended<fixed_dim_type>();
       intptr_t dim_size = tdt->get_fixed_dim_size();
       o << dim_size;
       if (child_tp.get_data_size() !=
@@ -155,7 +154,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
       }
       o << ")";
       child_tp = tdt->get_element_type();
-    } while (child_tp.get_type_id() == cfixed_dim_type_id && (o << ","));
+    } while (child_tp.get_type_id() == fixed_dim_type_id && (o << ","));
     append_pep3118_format(out_itemsize, child_tp, arrmeta, o);
     out_itemsize = tp.get_data_size();
     return;
@@ -360,13 +359,6 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         buffer->shape[i] = md->dim_size;
         buffer->strides[i] = md->stride;
         arrmeta += sizeof(fixed_dim_type_arrmeta);
-        tp = tdt->get_element_type();
-        break;
-      }
-      case cfixed_dim_type_id: {
-        const cfixed_dim_type *tdt = tp.extended<cfixed_dim_type>();
-        buffer->shape[i] = tdt->get_fixed_dim_size();
-        buffer->strides[i] = tdt->get_fixed_stride();
         tp = tdt->get_element_type();
         break;
       }

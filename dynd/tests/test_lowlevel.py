@@ -101,8 +101,6 @@ class TestLowLevel(unittest.TestCase):
             self.assertEqual(self.type_id_of(ndt.type('cuda_host[int32]')),
                              _lowlevel.type_id.CUDA_HOST)
         # Uniform arrays
-        self.assertEqual(self.type_id_of(ndt.type('cfixed[3] * int32')),
-                        _lowlevel.type_id.CFIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
                         _lowlevel.type_id.FIXED_DIM)
         self.assertEqual(self.type_id_of(ndt.type('Fixed * int32')),
@@ -118,21 +116,20 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.TYPE)
 
     def test_array_from_ptr(self):
-        # cfixed_dim arrmeta is redundant so this is ok
         a = (ctypes.c_int32 * 3)()
         a[0] = 3
         a[1] = 6
         a[2] = 9
-        # Readwrite version using cfixed
-        b = _lowlevel.array_from_ptr('cfixed[3] * int32',
+        # Readwrite version using fixed
+        b = _lowlevel.array_from_ptr('3 * int32',
                                      ctypes.addressof(a), a, 'readwrite')
         self.assertEqual(_lowlevel.data_address_of(b), ctypes.addressof(a))
         self.assertEqual(nd.dshape_of(b), '3 * int32')
         self.assertEqual(nd.as_py(b), [3, 6, 9])
         b[1] = 10
         self.assertEqual(a[1], 10)
-        # Readonly version using cfixed
-        b = _lowlevel.array_from_ptr('cfixed[3] * int32',
+        # Readonly version using fixed
+        b = _lowlevel.array_from_ptr('3 * int32',
                                      ctypes.addressof(a), a, 'readonly')
         self.assertEqual(nd.as_py(b), [3, 10, 9])
         def assign_to(b):

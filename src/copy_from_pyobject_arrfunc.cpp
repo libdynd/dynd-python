@@ -1026,8 +1026,7 @@ static intptr_t instantiate_copy_from_pyobject(
         src_tp, src_arrmeta, kernel_request_single, ectx, nd::array(), tp_vars);
     return ckb_offset;
   }
-  case fixed_dim_type_id:
-  case cfixed_dim_type_id: {
+  case fixed_dim_type_id: {
     intptr_t dim_size, stride;
     ndt::type el_tp;
     const char *el_arrmeta;
@@ -1078,8 +1077,7 @@ static intptr_t instantiate_copy_from_pyobject(
                                   el_arrmeta, el_tp, el_arrmeta,
                                   kernel_request_strided, ectx, nd::array());
   }
-  case tuple_type_id:
-  case ctuple_type_id: {
+  case tuple_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
     tuple_ck *self = tuple_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
@@ -1106,8 +1104,7 @@ static intptr_t instantiate_copy_from_pyobject(
     }
     return ckb_offset;
   }
-  case struct_type_id:
-  case cstruct_type_id: {
+  case struct_type_id: {
     intptr_t root_ckb_offset = ckb_offset;
     struct_ck *self = struct_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;

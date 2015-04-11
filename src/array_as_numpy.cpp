@@ -179,7 +179,6 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
-  case cstruct_type_id:
   case struct_type_id: {
     const base_struct_type *bs = dt.extended<base_struct_type>();
     size_t field_count = bs->get_field_count();
@@ -432,7 +431,6 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     break;
   }
 */
-  case cstruct_type_id:
   case struct_type_id: {
     if (dt.get_type_id() == struct_type_id && arrmeta == NULL) {
       // If it's a struct type with no arrmeta, a copy is required

@@ -185,7 +185,6 @@ intptr_t pydynd::nd::copy_to_pyobject_virtual_kernel::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
   case fixed_dim_type_id:
-  case cfixed_dim_type_id:
     return copy_to_pyobject_kernel<fixed_dim_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
@@ -193,7 +192,6 @@ intptr_t pydynd::nd::copy_to_pyobject_virtual_kernel::instantiate(
     return copy_to_pyobject_kernel<var_dim_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
-  case cstruct_type_id:
   case struct_type_id:
     if (!struct_as_pytuple) {
       return copy_to_pyobject_kernel<struct_type_id>::instantiate(
@@ -201,7 +199,6 @@ intptr_t pydynd::nd::copy_to_pyobject_virtual_kernel::instantiate(
           src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
     }
   // Otherwise fall through to the tuple case
-  case ctuple_type_id:
   case tuple_type_id:
     return copy_to_pyobject_kernel<tuple_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,

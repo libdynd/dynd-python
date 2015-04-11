@@ -15,7 +15,6 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/pointer_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/cstruct_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
@@ -345,22 +344,6 @@ dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types, PyObject *f
         throw invalid_argument(ss.str());
     }
     return ndt::make_struct(field_names_vec, field_types_vec);
-}
-
-dynd::ndt::type pydynd::dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names)
-{
-    vector<ndt::type> field_types_vec;
-    vector<string> field_names_vec;
-    pyobject_as_vector_ndt_type(field_types, field_types_vec);
-    pyobject_as_vector_string(field_names, field_names_vec);
-    if (field_types_vec.size() != field_names_vec.size()) {
-        stringstream ss;
-        ss << "creating a cstruct type requires that the number of types ";
-        ss << field_types_vec.size() << " must equal the number of names ";
-        ss << field_names_vec.size();
-        throw invalid_argument(ss.str());
-    }
-    return ndt::make_cstruct(field_names_vec, field_types_vec);
 }
 
 dynd::ndt::type

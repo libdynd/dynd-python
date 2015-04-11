@@ -152,7 +152,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
-        # Constructor of a cstruct type
+        # Constructor of a struct type
         a = cons(3, '{x: int32, y: int32}')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
@@ -200,7 +200,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
-        # Constructor of a cstruct type
+        # Constructor of a struct type
         a = cons(3, '{x: int32, y: int32}', access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
@@ -242,7 +242,7 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertRaises(TypeError, nd.full, 2, 3, ndt.float32, 1.5)
 
     def test_full_of_struct(self):
-        # Constructor of a cstruct type
+        # Constructor of a struct type
         a = nd.full(3, '{x: int32, y: int32}', value=[1,5], access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a),
@@ -589,27 +589,27 @@ class TestStructConstruct(unittest.TestCase):
 
     def test_missing_field(self):
         self.assertRaises(nd.BroadcastError, nd.array,
-                        [0, 1], type='c{x:int32, y:int32, z:int32}')
+                        [0, 1], type='{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(nd.BroadcastError, nd.array,
-                        [0, 1], dtype='c{x:int32, y:int32, z:int32}')
+                        [0, 1], dtype='{x:int32, y:int32, z:int32}')
         self.assertRaises(nd.BroadcastError, nd.array,
-                        {'x':0, 'z':1}, type='c{x:int32, y:int32, z:int32}')
+                        {'x':0, 'z':1}, type='{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(nd.BroadcastError, nd.array,
-                        {'x':0, 'z':1}, dtype='c{x:int32, y:int32, z:int32}')
+                        {'x':0, 'z':1}, dtype='{x:int32, y:int32, z:int32}')
 
     def test_extra_field(self):
         self.assertRaises(nd.BroadcastError, nd.array,
-                        [0, 1, 2, 3], type='c{x:int32, y:int32, z:int32}')
+                        [0, 1, 2, 3], type='{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(nd.BroadcastError, nd.array,
-                        [0, 1, 2, 3], dtype='c{x:int32, y:int32, z:int32}')
+                        [0, 1, 2, 3], dtype='{x:int32, y:int32, z:int32}')
         self.assertRaises(nd.BroadcastError, nd.array,
-                        {'x':0,'y':1,'z':2,'w':3}, type='c{x:int32, y:int32, z:int32}')
+                        {'x':0,'y':1,'z':2,'w':3}, type='{x:int32, y:int32, z:int32}')
         # With dtype= parameter instead of type=
         self.assertRaises(nd.BroadcastError, nd.array,
-                        {'x':0,'y':1,'z':2,'w':3}, dtype='c{x:int32, y:int32, z:int32}')
+                        {'x':0,'y':1,'z':2,'w':3}, dtype='{x:int32, y:int32, z:int32}')
 
 class TestIteratorConstruct(unittest.TestCase):
     # Test dynd construction from iterators

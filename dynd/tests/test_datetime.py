@@ -26,7 +26,7 @@ class TestDate(unittest.TestCase):
     def test_struct_casting(self):
         a = nd.array([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
-        s = a.ucast(ndt.make_cstruct([ndt.int64, ndt.int16, ndt.int8],
+        s = a.ucast(ndt.make_struct([ndt.int64, ndt.int16, ndt.int8],
                                         ['year', 'month', 'day']))
         s = s.eval()
         self.assertEqual(nd.as_py(s.year), [1912, 2002])
@@ -41,7 +41,7 @@ class TestDate(unittest.TestCase):
         a = nd.array(date(1955,3,13))
         s = a.to_struct().eval()
         self.assertEqual(nd.dtype_of(s),
-                        ndt.make_cstruct(
+                        ndt.make_struct(
                             [ndt.int16, ndt.int8, ndt.int8],
                             ['year', 'month', 'day']))
         self.assertEqual(nd.as_py(s.year), 1955)
@@ -138,7 +138,7 @@ class TestTime(unittest.TestCase):
     def test_struct_casting(self):
         a = nd.array([time(13, 25, 8, 765432), time(23, 52)])
         # cast from time to struct
-        s = a.ucast(ndt.make_cstruct([ndt.int64, ndt.int16, ndt.int8, ndt.int32],
+        s = a.ucast(ndt.make_struct([ndt.int64, ndt.int16, ndt.int8, ndt.int32],
                                         ['hour', 'minute', 'second', 'tick']))
         s = s.eval()
         self.assertEqual(nd.as_py(s.hour), [13, 23])
@@ -154,7 +154,7 @@ class TestTime(unittest.TestCase):
         a = nd.array(time(13, 25, 8, 765432))
         s = a.to_struct().eval()
         self.assertEqual(nd.dtype_of(s),
-                        ndt.make_cstruct(
+                        ndt.make_struct(
                             [ndt.int8, ndt.int8, ndt.int8, ndt.int32],
                             ['hour', 'minute', 'second', 'tick']))
         self.assertEqual(nd.as_py(s.hour), 13)

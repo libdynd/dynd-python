@@ -814,36 +814,6 @@ def make_fixed_dim(shape, element_tp):
     SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_tp).v)))
     return result
 
-def make_cstruct(field_types, field_names):
-    """
-    ndt.make_cstruct(field_types, field_names)
-
-    Constructs a fixed_struct dynd type, which has fields with
-    a fixed layout.
-
-    The fields are laid out in memory in the order they
-    are specified, each field aligned as required
-    by its type, and the total data size padded so that adjacent
-    instances of the type are properly aligned.
-
-    Parameters
-    ----------
-    field_types : list of dynd types
-        A list of types, one for each field.
-    field_names : list of strings
-        A list of names, one for each field, corresponding to 'field_types'.
-
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-
-    >>> ndt.make_cstruct([ndt.int32, ndt.float64], ['x', 'y'])
-    ndt.type("c{x : int32, y : float64}")
-    """
-    cdef w_type result = w_type()
-    SET(result.v, dynd_make_cstruct_type(field_types, field_names))
-    return result
-
 def make_struct(field_types, field_names):
     """
     ndt.make_struct(field_types, field_names)

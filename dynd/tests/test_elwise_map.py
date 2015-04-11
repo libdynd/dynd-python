@@ -25,7 +25,7 @@ class TestElwiseMap(unittest.TestCase):
             dst.twice = [2 * nd.as_py(x) for x in src]
             dst.thrice = [3 * nd.as_py(x) for x in src]
         b = nd.elwise_map([a], multiscale,
-                          ndt.type('c{once: int32, twice: int32, thrice: int32}'))
+                          ndt.type('{once: int32, twice: int32, thrice: int32}'))
         self.assertEqual(nd.as_py(b), [{'once':0,'twice':0,'thrice':0},
                         {'once':1,'twice':2,'thrice':3},
                         {'once':2,'twice':4,'thrice':6}])
@@ -62,11 +62,11 @@ class TestElwiseMap(unittest.TestCase):
                 d.firstname = s.firstname
                 d.lastname = s.lastname
                 d.country = s.country
-        a = nd.parse_json('2 * c{firstname: string, lastname: string, country: string}',
+        a = nd.parse_json('2 * {firstname: string, lastname: string, country: string}',
                         """[{"firstname":"Mike", "lastname":"Myers", "country":"Canada"},
                         {"firstname":"Seth", "lastname":"Green", "country":"USA"}]""")
         b = nd.elwise_map([a], computed_col, ndt.type(
-                        'c{fullname: string, firstname: string, lastname: string, country: string}'))
+                        '{fullname: string, firstname: string, lastname: string, country: string}'))
         self.assertEqual(nd.as_py(b.fullname), ['Mike Myers', 'Seth Green'])
         self.assertEqual(nd.as_py(b.firstname), ['Mike', 'Seth'])
         self.assertEqual(nd.as_py(b.lastname), ['Myers', 'Green'])

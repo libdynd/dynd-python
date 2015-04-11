@@ -64,7 +64,7 @@ def build_arrmeta_struct(tp):
         result = PointerMetadata
     elif tid in ['bytes', 'string', 'json']:
         result = BytesMetadata
-    elif tid in ['struct', 'cstruct']:
+    elif tid in ['struct']:
         field_types = tp.field_types
         fields = []
         if tid == 'struct':

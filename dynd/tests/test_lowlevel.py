@@ -72,13 +72,9 @@ class TestLowLevel(unittest.TestCase):
                         _lowlevel.type_id.STRUCT)
         self.assertEqual(self.type_id_of(ndt.type('{x : int32, y : int32}')),
                         _lowlevel.type_id.STRUCT)
-        self.assertEqual(self.type_id_of(ndt.type('c{x : int32, y : int32}')),
-                        _lowlevel.type_id.CSTRUCT)
         # Tuple
         self.assertEqual(self.type_id_of(ndt.type('(int32, int32)')),
                         _lowlevel.type_id.TUPLE)
-        self.assertEqual(self.type_id_of(ndt.type('c(int32, int32)')),
-                        _lowlevel.type_id.CTUPLE)
         # NDArrayArg
         self.assertEqual(self.type_id_of(ndt.type('ndarrayarg')),
                          _lowlevel.type_id.NDARRAYARG)

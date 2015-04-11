@@ -5,7 +5,7 @@
 
 #include <Python.h>
 
-#include <dynd/types/cstruct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/byteswap_type.hpp>
 #include <dynd/types/view_type.hpp>
@@ -159,8 +159,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     out_itemsize = tp.get_data_size();
     return;
   }
-  case struct_type_id:
-  case cstruct_type_id: {
+  case struct_type_id: {
     o << "T{";
     const base_struct_type *tdt = tp.extended<base_struct_type>();
     size_t num_fields = tdt->get_field_count();

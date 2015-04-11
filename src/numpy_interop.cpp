@@ -12,7 +12,6 @@
 #include <dynd/types/type_alignment.hpp>
 #include <dynd/types/fixedstring_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/cstruct_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -90,12 +89,7 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
   }
 
   // Make a cstruct if possible, struct otherwise
-  if (is_cstruct_compatible_offsets(field_types.size(), &field_types[0],
-                                    &field_offsets[0], d->elsize)) {
-    return ndt::make_cstruct(field_names, field_types);
-  } else {
-    return ndt::make_struct(field_names, field_types);
-  }
+  return ndt::make_struct(field_names, field_types);
 }
 
 ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
@@ -469,12 +463,13 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             }
             return result;
         }
-        */
-        case cstruct_type_id: {
-            const cstruct_type *ttp = tp.extended<cstruct_type>();
-            const uintptr_t *offsets = ttp->get_data_offsets_raw();
+        case struct_type_id: {
+            const struct_type *ttp = tp.extended<struct_type>();
             size_t field_count = ttp->get_field_count();
             size_t max_numpy_alignment = 1;
+
+            std::vector<uintptr_t> offsets(field_count);
+            struct_type::fill_default_data_offsets(field_count, ttp->get_field_types_raw(), offsets.data());
 
             pyobject_ownref names_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
@@ -501,7 +496,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
                 PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
             }
 
-            pyobject_ownref itemsize_obj(PyLong_FromSize_t(tp.get_data_size()));
+            pyobject_ownref itemsize_obj(PyLong_FromSize_t(tp.get_default_data_size()));
 
             pyobject_ownref dict_obj(PyDict_New());
             PyDict_SetItemString(dict_obj, "names", names_obj);
@@ -524,9 +519,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             }
             return result;
         }
-        case cfixed_dim_type_id: {
-        throw std::runtime_error("cfixed_dim used to be here");
-/*
+        case fixed_dim_type_id: {
             ndt::type child_tp = tp;
             vector<intptr_t> shape;
             do {
@@ -550,8 +543,8 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
                 throw dynd::type_error("failed to convert dynd type into numpy subarray dtype");
             }
             return result;
-*/
         }
+*/
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it
             // away because Numpy works differently
@@ -582,6 +575,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
 {
     switch (tp.get_type_id()) {
         case struct_type_id: {
+            throw std::runtime_error("converting");
             if (arrmeta == NULL) {
                 stringstream ss;
                 ss << "Can only convert dynd type " << tp << " into a numpy dtype with array arrmeta";

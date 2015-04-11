@@ -1,7 +1,7 @@
 __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_type, \
-                w_array as array, make_cstruct, \
+                w_array as array, make_struct, \
                 elwise_map, extract_dtype, type_of, \
                 dtype_of, ndim_of
 
@@ -87,12 +87,12 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     ...         rm_fields=['x', 'y'],
     ...         fnname='topolar')
     >>> y.dtype
-    ndt.type('strided_dim<expr<cstruct<float64 r, float64 theta>, op0=cstruct<float64 x, float64 y>, expr=topolar(op0)>>')
+    ndt.type('strided_dim<expr<struct<float64 r, float64 theta>, op0=struct<float64 x, float64 y>, expr=topolar(op0)>>')
     >>> y.eval()
-    nd.array([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<cstruct<float64 r, float64 theta>>)
+    nd.array([[2, 0], [2, -1.5708], [5.83095, 1.03038], [5.65685, 0.785398]], strided_dim<struct<float64 r, float64 theta>>)
     >>> x[0] = (-100, 0)
     >>> y[0].eval()
-    nd.array([100, 3.14159], cstruct<float64 r, float64 theta>)
+    nd.array([100, 3.14159], struct<float64 r, float64 theta>)
     """
     n = array(n)
     udt = dtype_of(n).value_type
@@ -121,7 +121,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
         new_field_types.append(ft)
         new_field_expr.append(fe)
 
-    result_udt = make_cstruct(new_field_types, new_field_names)
+    result_udt = make_struct(new_field_types, new_field_names)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 
     return elwise_map([n], fieldexpr, result_udt)
@@ -197,7 +197,7 @@ def make_computed_fields(n, replace_ndim, fields, fnname=None):
         new_field_types.append(ft)
         new_field_expr.append(fe)
 
-    result_udt = make_cstruct(new_field_types, new_field_names)
+    result_udt = make_struct(new_field_types, new_field_names)
     src_udt = extract_dtype(type_of(n), replace_ndim)
     fieldexpr = FieldExpr(new_field_expr, field_names, fnname)
 

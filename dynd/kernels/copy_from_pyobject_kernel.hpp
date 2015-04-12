@@ -1,19 +1,37 @@
 #pragma once
 
+#include <dynd/parser_util.hpp>
+#include <dynd/func/chain.hpp>
+#include <dynd/func/copy.hpp>
 #include <dynd/kernels/base_kernel.hpp>
 #include <dynd/kernels/base_virtual_kernel.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
-#include <dynd/parser_util.hpp>
 #include <dynd/types/bytes_type.hpp>
+#include <dynd/types/categorical_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
+#include <dynd/types/option_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
 #include "config.hpp"
 
+static dynd::nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast);
+
 namespace pydynd {
 namespace nd {
+
+  struct copy_from_pyobject_virtual_kernel
+      : base_virtual_kernel<copy_from_pyobject_virtual_kernel> {
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars);
+  };
 
   template <type_id_t src_type_id>
   struct copy_from_pyobject_kernel;
@@ -194,8 +212,8 @@ namespace nd {
   }
 
   template <typename T>
-  struct int_copy_from_pyobject_kernel
-      : base_kernel<int_copy_from_pyobject_kernel<T>, kernel_request_host, 1> {
+  struct copy_int_from_pyobject_kernel
+      : base_kernel<copy_int_from_pyobject_kernel<T>, kernel_request_host, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -211,6 +229,56 @@ namespace nd {
                 .as<T>();
       }
     }
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<int8_type_id>
+      : copy_int_from_pyobject_kernel<int8_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<int16_type_id>
+      : copy_int_from_pyobject_kernel<int16_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<int32_type_id>
+      : copy_int_from_pyobject_kernel<int32_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<int64_type_id>
+      : copy_int_from_pyobject_kernel<int64_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<int128_type_id>
+      : copy_int_from_pyobject_kernel<dynd_int128> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<uint8_type_id>
+      : copy_int_from_pyobject_kernel<uint8_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<uint16_type_id>
+      : copy_int_from_pyobject_kernel<uint16_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<uint32_type_id>
+      : copy_int_from_pyobject_kernel<uint32_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<uint64_type_id>
+      : copy_int_from_pyobject_kernel<uint64_t> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<uint128_type_id>
+      : copy_int_from_pyobject_kernel<dynd_uint128> {
   };
 
   template <typename T>
@@ -232,6 +300,21 @@ namespace nd {
                 .as<T>();
       }
     }
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<float16_type_id>
+      : float_copy_from_pyobject_kernel<dynd_float16> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<float32_type_id>
+      : float_copy_from_pyobject_kernel<float> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<float64_type_id>
+      : float_copy_from_pyobject_kernel<double> {
   };
 
   template <typename T>
@@ -256,15 +339,26 @@ namespace nd {
     }
   };
 
+  template <>
+  struct copy_from_pyobject_kernel<complex_float32_type_id>
+      : complex_float_copy_from_pyobject_kernel<float> {
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<complex_float64_type_id>
+      : complex_float_copy_from_pyobject_kernel<double> {
+  };
+
   // TODO: This is not very efficient, could be made better
   //       with specialized bytes/fixed_bytes versions
-  struct bytes_copy_from_pyobject_kernel
-      : base_kernel<bytes_copy_from_pyobject_kernel, kernel_request_host, 1> {
+  template <>
+  struct copy_from_pyobject_kernel<bytes_type_id>
+      : base_kernel<copy_from_pyobject_kernel<bytes_type_id>,
+                    kernel_request_host, 1> {
     ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    bytes_copy_from_pyobject_kernel(const ndt::type &dst_tp,
-                                    const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const ndt::type &dst_tp, const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -299,17 +393,36 @@ namespace nd {
                         reinterpret_cast<const char *>(&bytes_md),
                         reinterpret_cast<const char *>(&bytes_d));
     }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+      return ckb_offset;
+    }
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<fixed_bytes_type_id>
+      : copy_from_pyobject_kernel<bytes_type_id> {
   };
 
   // TODO: This is not very efficient, could be made better
   //       with specialized versions
-  struct string_copy_from_pyobject_kernel
-      : base_kernel<string_copy_from_pyobject_kernel, kernel_request_host, 1> {
+  template <>
+  struct copy_from_pyobject_kernel<string_type_id>
+      : base_kernel<copy_from_pyobject_kernel<string_type_id>,
+                    kernel_request_host, 1> {
     ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    string_copy_from_pyobject_kernel(const ndt::type &dst_tp,
-                                     const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const ndt::type &dst_tp, const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -368,6 +481,24 @@ namespace nd {
         throw std::invalid_argument(ss.str());
       }
     }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+      return ckb_offset;
+    }
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<fixed_string_type_id>
+      : copy_from_pyobject_kernel<string_type_id> {
   };
 
   template <>
@@ -418,6 +549,19 @@ namespace nd {
             array_from_py(src_obj, 0, false, &eval::default_eval_context));
       }
     }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+      return ckb_offset;
+    }
   };
 
   template <>
@@ -451,6 +595,19 @@ namespace nd {
             dst_tp, dst_arrmeta, dst,
             array_from_py(src_obj, 0, false, &eval::default_eval_context));
       }
+    }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+      return ckb_offset;
     }
   };
 
@@ -492,6 +649,19 @@ namespace nd {
             array_from_py(src_obj, 0, false, &eval::default_eval_context));
       }
     }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+      return ckb_offset;
+    }
   };
 
   template <>
@@ -511,9 +681,14 @@ namespace nd {
   struct copy_from_pyobject_kernel<option_type_id>
       : base_kernel<copy_from_pyobject_kernel<option_type_id>,
                     kernel_request_host, 1> {
-    intptr_t m_copy_value_offset;
-    dynd::ndt::type m_dst_tp;
-    const char *m_dst_arrmeta;
+    dynd::ndt::type dst_tp;
+    const char *dst_arrmeta;
+    intptr_t copy_value_offset;
+
+    copy_from_pyobject_kernel(const ndt::type &dst_tp, const char *dst_arrmeta)
+        : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
+    {
+    }
 
     void single(char *dst, char *const *src)
     {
@@ -523,9 +698,8 @@ namespace nd {
         expr_single_t assign_na_fn = assign_na->get_function<expr_single_t>();
         assign_na_fn(dst, NULL, assign_na);
       } else if (WArray_Check(src_obj)) {
-        typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((WArray *)src_obj)->v);
-      } else if (m_dst_tp.get_kind() != string_kind &&
-                 PyUnicode_Check(src_obj)) {
+        typed_data_assign(dst_tp, dst_arrmeta, dst, ((WArray *)src_obj)->v);
+      } else if (dst_tp.get_kind() != string_kind && PyUnicode_Check(src_obj)) {
         // Copy from the string
         pyobject_ownref utf8(PyUnicode_AsUTF8String(src_obj));
         char *s = NULL;
@@ -542,12 +716,11 @@ namespace nd {
         const char *src_str = reinterpret_cast<const char *>(&str_d);
         str_md.blockref = NULL;
 
-        typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, str_tp,
+        typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
                           reinterpret_cast<const char *>(&str_md),
                           reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
-      } else if (m_dst_tp.get_kind() != string_kind &&
-                 PyString_Check(src_obj)) {
+      } else if (dst_tp.get_kind() != string_kind && PyString_Check(src_obj)) {
         // Copy from the string
         char *s = NULL;
         Py_ssize_t len = 0;
@@ -563,12 +736,12 @@ namespace nd {
         const char *src_str = reinterpret_cast<const char *>(&str_d);
         str_md.blockref = NULL;
 
-        typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, str_tp,
+        typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
                           reinterpret_cast<const char *>(&str_md),
                           reinterpret_cast<const char *>(&str_d));
 #endif
       } else {
-        ckernel_prefix *copy_value = get_child_ckernel(m_copy_value_offset);
+        ckernel_prefix *copy_value = get_child_ckernel(copy_value_offset);
         expr_single_t copy_value_fn = copy_value->get_function<expr_single_t>();
         copy_value_fn(dst, src, copy_value);
       }
@@ -577,7 +750,66 @@ namespace nd {
     void destruct_children()
     {
       get_child_ckernel()->destroy();
-      base.destroy_child_ckernel(m_copy_value_offset);
+      base.destroy_child_ckernel(copy_value_offset);
+    }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+
+      intptr_t root_ckb_offset = ckb_offset;
+      make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+      const arrfunc_type_data *assign_na_af =
+          dst_tp.extended<option_type>()->get_assign_na_arrfunc();
+      const arrfunc_type *assign_na_af_tp =
+          dst_tp.extended<option_type>()->get_assign_na_arrfunc_type();
+      ckb_offset = assign_na_af->instantiate(
+          assign_na_af, assign_na_af_tp, NULL, ckb, ckb_offset, dst_tp,
+          dst_arrmeta, nsrc, NULL, NULL, kernel_request_single, ectx,
+          dynd::nd::array(), tp_vars);
+      copy_from_pyobject_kernel *self = get_self(
+          reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb),
+          root_ckb_offset);
+      self->copy_value_offset = ckb_offset - root_ckb_offset;
+      ckb_offset = af->instantiate(
+          af, af_tp, NULL, ckb, ckb_offset,
+          dst_tp.extended<option_type>()->get_value_type(), dst_arrmeta, nsrc,
+          src_tp, src_arrmeta, kernel_request_single, ectx, dynd::nd::array(),
+          tp_vars);
+      return ckb_offset;
+    }
+  };
+
+  template <>
+  struct copy_from_pyobject_kernel<categorical_type_id>
+      : base_virtual_kernel<copy_from_pyobject_kernel<categorical_type_id>> {
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      bool dim_broadcast = *af->get_data_as<bool>();
+
+      // Assign via an intermediate category_type buffer
+      const dynd::ndt::type &buf_tp =
+          dst_tp.extended<categorical_type>()->get_category_type();
+      dynd::nd::arrfunc copy_af =
+          make_arrfunc_from_assignment(dst_tp, buf_tp, assign_error_default);
+      dynd::nd::arrfunc child = dynd::nd::functional::chain(
+          make_copy_from_pyobject_arrfunc(dim_broadcast), copy_af, buf_tp);
+      return child.get()->instantiate(
+          child.get(), child.get_type(), NULL, ckb, ckb_offset, dst_tp,
+          dst_arrmeta, nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
     }
   };
 
@@ -655,6 +887,49 @@ namespace nd {
     }
 
     inline void destruct_children() { get_child_ckernel()->destroy(); }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      bool dim_broadcast = *af->get_data_as<bool>();
+
+      intptr_t dim_size, stride;
+      dynd::ndt::type el_tp;
+      const char *el_arrmeta;
+      if (dst_tp.get_as_strided(dst_arrmeta, &dim_size, &stride, &el_tp,
+                                &el_arrmeta)) {
+        intptr_t root_ckb_offset = ckb_offset;
+        pydynd::nd::copy_from_pyobject_kernel<fixed_dim_type_id> *self =
+            pydynd::nd::copy_from_pyobject_kernel<fixed_dim_type_id>::make(
+                ckb, kernreq, ckb_offset);
+        self->m_dim_size = dim_size;
+        self->m_stride = stride;
+        self->m_dst_tp = dst_tp;
+        self->m_dst_arrmeta = dst_arrmeta;
+        self->m_dim_broadcast = dim_broadcast;
+        // from pyobject ckernel
+        ckb_offset =
+            af->instantiate(af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta,
+                            nsrc, src_tp, src_arrmeta, kernel_request_strided,
+                            ectx, dynd::nd::array(), tp_vars);
+        self =
+            reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+                ->get_at<
+                    pydynd::nd::copy_from_pyobject_kernel<fixed_dim_type_id>>(
+                    root_ckb_offset);
+        self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
+        // dst to dst ckernel, for broadcasting case
+        return make_assignment_kernel(
+            NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
+            kernel_request_strided, ectx, dynd::nd::array());
+      }
+    }
   };
 
   template <>
@@ -743,6 +1018,46 @@ namespace nd {
     }
 
     void destruct_children() { get_child_ckernel()->destroy(); }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      bool dim_broadcast = *af->get_data_as<bool>();
+
+      intptr_t root_ckb_offset = ckb_offset;
+      pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id> *self =
+          pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id>::make(
+              ckb, kernreq, ckb_offset);
+      self->m_offset =
+          reinterpret_cast<const var_dim_type_arrmeta *>(dst_arrmeta)->offset;
+      self->m_stride =
+          reinterpret_cast<const var_dim_type_arrmeta *>(dst_arrmeta)->stride;
+      self->m_dst_tp = dst_tp;
+      self->m_dst_arrmeta = dst_arrmeta;
+      self->m_dim_broadcast = dim_broadcast;
+      dynd::ndt::type el_tp =
+          dst_tp.extended<var_dim_type>()->get_element_type();
+      const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
+      ckb_offset =
+          af->instantiate(af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta,
+                          nsrc, src_tp, src_arrmeta, kernel_request_strided,
+                          ectx, dynd::nd::array(), tp_vars);
+      self =
+          reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+              ->get_at<pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id>>(
+                  root_ckb_offset);
+      self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
+      // dst to dst ckernel, for broadcasting case
+      return make_assignment_kernel(
+          NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
+          kernel_request_strided, ectx, dynd::nd::array());
+    }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -821,12 +1136,55 @@ namespace nd {
         base.destroy_child_ckernel(m_copy_el_offsets[i]);
       }
     }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      bool dim_broadcast = *af->get_data_as<bool>();
+
+      intptr_t root_ckb_offset = ckb_offset;
+      pydynd::nd::copy_from_pyobject_kernel<tuple_type_id> *self =
+          pydynd::nd::copy_from_pyobject_kernel<tuple_type_id>::make(
+              ckb, kernreq, ckb_offset);
+      self->m_dst_tp = dst_tp;
+      self->m_dst_arrmeta = dst_arrmeta;
+      intptr_t field_count =
+          dst_tp.extended<base_tuple_type>()->get_field_count();
+      const dynd::ndt::type *field_types =
+          dst_tp.extended<base_tuple_type>()->get_field_types_raw();
+      const uintptr_t *arrmeta_offsets =
+          dst_tp.extended<base_tuple_type>()->get_arrmeta_offsets_raw();
+      self->m_dim_broadcast = dim_broadcast;
+      self->m_copy_el_offsets.resize(field_count);
+      for (intptr_t i = 0; i < field_count; ++i) {
+        reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+            ->reserve(ckb_offset);
+        self =
+            reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+                ->get_at<pydynd::nd::copy_from_pyobject_kernel<tuple_type_id>>(
+                    root_ckb_offset);
+        self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+        const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
+        ckb_offset = af->instantiate(af, af_tp, NULL, ckb, ckb_offset,
+                                     field_types[i], field_arrmeta, nsrc,
+                                     src_tp, src_arrmeta, kernel_request_single,
+                                     ectx, dynd::nd::array(), tp_vars);
+      }
+      return ckb_offset;
+    }
   };
 
   // TODO: Should make a more efficient strided kernel function
   template <>
   struct copy_from_pyobject_kernel<struct_type_id>
-      : base_kernel<copy_from_pyobject_kernel<struct_type_id>, kernel_request_host, 1> {
+      : base_kernel<copy_from_pyobject_kernel<struct_type_id>,
+                    kernel_request_host, 1> {
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;
@@ -939,6 +1297,72 @@ namespace nd {
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
         base.destroy_child_ckernel(m_copy_el_offsets[i]);
+      }
+    }
+
+    static intptr_t
+    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                const ndt::type *src_tp, const char *const *src_arrmeta,
+                kernel_request_t kernreq, const eval::eval_context *ectx,
+                const nd::array &kwds,
+                const std::map<nd::string, ndt::type> &tp_vars)
+    {
+      bool dim_broadcast = *af->get_data_as<bool>();
+
+      intptr_t root_ckb_offset = ckb_offset;
+      pydynd::nd::copy_from_pyobject_kernel<struct_type_id> *self =
+          pydynd::nd::copy_from_pyobject_kernel<struct_type_id>::make(
+              ckb, kernreq, ckb_offset);
+      self->m_dst_tp = dst_tp;
+      self->m_dst_arrmeta = dst_arrmeta;
+      intptr_t field_count =
+          dst_tp.extended<base_struct_type>()->get_field_count();
+      const dynd::ndt::type *field_types =
+          dst_tp.extended<base_struct_type>()->get_field_types_raw();
+      const uintptr_t *arrmeta_offsets =
+          dst_tp.extended<base_struct_type>()->get_arrmeta_offsets_raw();
+      self->m_dim_broadcast = dim_broadcast;
+      self->m_copy_el_offsets.resize(field_count);
+      for (intptr_t i = 0; i < field_count; ++i) {
+        reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+            ->reserve(ckb_offset);
+        self =
+            reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
+                ->get_at<pydynd::nd::copy_from_pyobject_kernel<struct_type_id>>(
+                    root_ckb_offset);
+        self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+        const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
+        ckb_offset = af->instantiate(af, af_tp, NULL, ckb, ckb_offset,
+                                     field_types[i], field_arrmeta, nsrc,
+                                     src_tp, src_arrmeta, kernel_request_single,
+                                     ectx, dynd::nd::array(), tp_vars);
+      }
+      return ckb_offset;
+    }
+  };
+
+  struct default_copy_from_pyobject_kernel
+      : base_virtual_kernel<default_copy_from_pyobject_kernel> {
+    static intptr_t
+    instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+                intptr_t nsrc, const dynd::ndt::type *src_tp,
+                const char *const *src_arrmeta, kernel_request_t kernreq,
+                const eval::eval_context *ectx, const dynd::nd::array &kwds,
+                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    {
+      bool dim_broadcast = *self_af->get_data_as<bool>();
+
+      if (dst_tp.get_kind() == expr_kind) {
+        dynd::nd::arrfunc af = dynd::nd::functional::chain(
+            make_copy_from_pyobject_arrfunc(dim_broadcast), dynd::nd::copy,
+            dst_tp.value_type());
+        return af.get()->instantiate(
+            af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
+            nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
       }
     }
   };

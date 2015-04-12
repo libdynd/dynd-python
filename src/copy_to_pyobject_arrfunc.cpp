@@ -29,7 +29,7 @@
 #include <dynd/kernels/chain_kernel.hpp>
 #include <dynd/func/chain.hpp>
 
-#include "kernels/copy_kernel.hpp"
+#include "kernels/copy_to_pyobject_kernel.hpp"
 
 using namespace std;
 using namespace pydynd;

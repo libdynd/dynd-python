@@ -30,7 +30,7 @@ class TestDType(unittest.TestCase):
     def test_factor_fixedstring(self):
         adata = [('M', 13), ('F', 17), ('F', 34), ('M', 19),
                  ('M', 13), ('F', 34), ('F', 22)]
-        a = nd.array(adata, dtype='{gender: string[1], age: int32}')
+        a = nd.array(adata, dtype='{gender: fixed_string[1], age: int32}')
         catdt = ndt.factor_categorical(a)
         b = a.ucast(catdt)
         x = repr(b)

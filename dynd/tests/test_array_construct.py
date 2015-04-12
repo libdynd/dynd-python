@@ -482,7 +482,7 @@ class TestStringConstruct(unittest.TestCase):
 
     def test_fixed_string_array(self):
         a = nd.array(['a', 'b', 'c'],
-                        dtype='string[1,"A"]')
+                        dtype='fixed_string[1,"A"]')
         self.assertEqual(nd.type_of(a[0]).type_id, 'fixed_string')
         self.assertEqual(nd.type_of(a[0]).data_size, 1)
         self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
@@ -549,16 +549,16 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([[(3, 'X')], [(10, 'L'), (12, 'M')]],
-                        dtype='{count:int32, size:string[1,"A"]}')
+                        dtype='{count:int32, size:fixed_string[1,"A"]}')
         self.assertEqual(nd.type_of(a),
-                       ndt.type('2 * var * {count:int32, size:string[1,"A"]}'))
+                       ndt.type('2 * var * {count:int32, size:fixed_string[1,"A"]}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
         a = nd.array([[{'count':3, 'size':'X'}],
                         [{'count':10, 'size':'L'}, {'count':12, 'size':'M'}]],
-                        dtype='{count:int32, size:string[1,"A"]}')
-        self.assertEqual(nd.type_of(a), ndt.type('2 * var * {count:int32, size:string[1,"A"]}'))
+                        dtype='{count:int32, size:fixed_string[1,"A"]}')
+        self.assertEqual(nd.type_of(a), ndt.type('2 * var * {count:int32, size:fixed_string[1,"A"]}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
 
@@ -580,9 +580,9 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y), [0, 5, 10])
 
         a = nd.array([[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]],
-                        dtype='{count:int32, size:{name:string[1,"A"], id: int8}}')
+                        dtype='{count:int32, size:{name:fixed_string[1,"A"], id: int8}}')
         self.assertEqual(nd.type_of(a),
-                    ndt.type('2 * var * {count:int32, size:{name:string[1,"A"], id: int8}}'))
+                    ndt.type('2 * var * {count:int32, size:{name:fixed_string[1,"A"], id: int8}}'))
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])
         self.assertEqual(nd.as_py(a.size.id), [[10], [7, 5]])

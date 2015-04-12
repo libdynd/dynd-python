@@ -632,10 +632,10 @@ class TestNumpyScalarInterop(unittest.TestCase):
         b = nd.view(a)
         self.assertEqual(nd.type_of(b),
             ndt.type("3 * {id : int8, ts: adapt[(unaligned[int64]) -> datetime[tz='UTC'], 'microseconds since 1970']}"))
-        self.assertEqual(nd.as_py(b, tuple=True),
-                         [(1, datetime(2000, 12, 25, 0, 0, 1)),
-                          (2, datetime(2001, 12, 25, 0, 0, 1)),
-                          (3, datetime(2002, 12, 25, 0, 0, 1))])
+        self.assertEqual(nd.as_py(b),
+                         [{'id': 1, 'ts': datetime(2000, 12, 25, 0, 0, 1)},
+                          {'id': 2, 'ts': datetime(2001, 12, 25, 0, 0, 1)},
+                          {'id': 3, 'ts': datetime(2002, 12, 25, 0, 0, 1)}])
 
     def test_datetime_as_numpy(self):
         a = nd.array(['2000-12-13T12:30',

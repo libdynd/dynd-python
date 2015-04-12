@@ -153,7 +153,7 @@ class TestLowLevel(unittest.TestCase):
         a.z = 3.75
         b = _lowlevel.array_from_ptr('{x: int8, y: int32, z: float64}',
                                      ctypes.addressof(a), a, 'readonly')
-        self.assertEqual(nd.as_py(b, tuple=True), (1, 2, 3.75))
+        self.assertEqual(nd.as_py(b), {'x': 1, 'y': 2, 'z': 3.75})
 
     def test_array_from_ptr_blockref(self):
         a = ctypes.pointer(ctypes.c_double(1.25))

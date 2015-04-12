@@ -8,18 +8,6 @@
 namespace pydynd {
 namespace nd {
 
-  struct copy_to_pyobject_virtual_kernel
-      : base_virtual_kernel<copy_to_pyobject_virtual_kernel> {
-    static intptr_t
-    instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-                intptr_t nsrc, const dynd::ndt::type *src_tp,
-                const char *const *src_arrmeta, kernel_request_t kernreq,
-                const eval::eval_context *ectx, const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars);
-  };
-
   template <type_id_t src_type_id>
   struct copy_to_pyobject_kernel;
 
@@ -309,8 +297,7 @@ namespace nd {
       return ckb_offset;
     }
 
-    // TODO: Fix this
-    static ndt::type make_type() { return ndt::type("(Any) -> void"); }
+    static ndt::type make_type() { return ndt::type("(FixedBytes) -> void"); }
   };
 
   template <>
@@ -583,42 +570,8 @@ namespace nd {
       }
     }
 
-    // TODO: Fix this
-    static ndt::type make_type() { return ndt::type("(Any) -> void"); }
+    static ndt::type make_type() { return ndt::type("(FixedString) -> void"); }
   };
-
-  /*
-    template <>
-    struct copy_to_pyobject_kernel<categorical_type_id>
-        : base_virtual_kernel<copy_to_pyobject_kernel<categorical_type_id>> {
-      static intptr_t instantiate(
-          const arrfunc_type_data *DYND_UNUSED(self),
-          const arrfunc_type *DYND_UNUSED(self_tp), char *DYND_UNUSED(data),
-          void *ckb, intptr_t ckb_offset, const ndt::type &dst_tp,
-          const char *dst_arrmeta, intptr_t nsrc,
-          const ndt::type *src_tp, const char *const *src_arrmeta,
-          kernel_request_t kernreq, const eval::eval_context *ectx,
-          const nd::array &kwds,
-          const std::map<nd::string, ndt::type> &tp_vars)
-      {
-        bool struct_as_pytuple = false;
-
-        // Assign via an intermediate category_type buffer
-        const dynd::ndt::type &buf_tp =
-            src_tp[0].extended<categorical_type>()->get_category_type();
-        dynd::nd::arrfunc copy_af =
-            make_arrfunc_from_assignment(buf_tp, src_tp[0],
-    assign_error_default);
-        dynd::nd::arrfunc af = dynd::nd::functional::chain(
-            copy_af,
-    pydynd::nd::make_copy_to_pyobject_arrfunc(struct_as_pytuple),
-            buf_tp);
-        return af.get()->instantiate(
-            af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
-            nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
-      }
-    };
-  */
 
   template <>
   struct copy_to_pyobject_kernel<date_type_id>
@@ -877,9 +830,10 @@ namespace nd {
                                    &el_arrmeta)) {
         copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, dim_size,
                                       stride);
-        return copy_to_pyobject_virtual_kernel::instantiate(
-            self, self_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
-            &el_tp, &el_arrmeta, kernel_request_strided, ectx, kwds, tp_vars);
+        return copy_to_pyobject.get()->instantiate(
+            copy_to_pyobject.get(), copy_to_pyobject.get_type(), data, ckb,
+            ckb_offset, dst_tp, dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
+            kernel_request_strided, ectx, kwds, tp_vars);
       }
 
       throw std::runtime_error("cannot process as strided");
@@ -1156,6 +1110,59 @@ namespace nd {
 
     static ndt::type make_type() { return ndt::type("(pointer[Any]) -> void"); }
   };
+
+  template <>
+  struct copy_to_pyobject_kernel<categorical_type_id>
+      : base_virtual_kernel<copy_to_pyobject_kernel<categorical_type_id>> {
+    static intptr_t
+    instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+                intptr_t nsrc, const dynd::ndt::type *src_tp,
+                const char *const *src_arrmeta, kernel_request_t kernreq,
+                const eval::eval_context *ectx, const dynd::nd::array &kwds,
+                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    {
+      // Assign via an intermediate category_type buffer
+      const ndt::type &buffer_tp =
+          src_tp[0].extended<categorical_type>()->get_category_type();
+      arrfunc child =
+          functional::chain(make_arrfunc_from_assignment(buffer_tp, src_tp[0],
+                                                         assign_error_default),
+                            copy_to_pyobject, buffer_tp);
+      return child.get()->instantiate(
+          child.get(), child.get_type(), NULL, ckb, ckb_offset, dst_tp,
+          dst_arrmeta, nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
+    }
+
+    static ndt::type make_type() { return ndt::type("(Categorical) -> void"); }
+  };
+
+  struct default_copy_to_pyobject_kernel
+      : base_virtual_kernel<default_copy_to_pyobject_kernel> {
+    static intptr_t
+    instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+                char *data, void *ckb, intptr_t ckb_offset,
+                const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+                intptr_t nsrc, const dynd::ndt::type *src_tp,
+                const char *const *src_arrmeta, kernel_request_t kernreq,
+                const eval::eval_context *ectx, const dynd::nd::array &kwds,
+                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    {
+      arrfunc af =
+          functional::chain(copy, copy_to_pyobject, src_tp[0].value_type());
+      return af.get()->instantiate(
+          af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
+          nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
+    }
+  };
+
+  /*
+    stringstream ss;
+    ss << "Unable to copy dynd value with type " << src_tp[0]
+       << " to a Python object";
+    throw invalid_argument(ss.str());
+  */
 
 } // namespace pydynd::nd
 } // namespace pydynd

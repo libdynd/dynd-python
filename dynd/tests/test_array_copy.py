@@ -116,7 +116,7 @@ class TestStructCopy(unittest.TestCase):
         self.assertEqual(nd.as_py(a.x), [1, 4, 14])
         self.assertEqual(nd.as_py(a.y), [2, 7, 190])
 
-        a = nd.empty('2 * var * {count:int32, size:string[1,"A"]}')
+        a = nd.empty('2 * var * {count:int32, size:fixed_string[1,"A"]}')
         a[...] = [[(3, 'X')], [(10, 'L'), (12, 'M')]]
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size), [['X'], ['L', 'M']])
@@ -148,7 +148,7 @@ class TestStructCopy(unittest.TestCase):
         self.assertEqual(nd.as_py(a.x.b), [2, 6, 110])
         self.assertEqual(nd.as_py(a.y), [5, 7, 110])
 
-        a = nd.empty('2 * var * {count:int32, size:{name:string[1,"A"], id: int8}}')
+        a = nd.empty('2 * var * {count:int32, size:{name:fixed_string[1,"A"], id: int8}}')
         a[...] = [[(3, ('X', 10))], [(10, ('L', 7)), (12, ('M', 5))]]
         self.assertEqual(nd.as_py(a.count), [[3], [10, 12]])
         self.assertEqual(nd.as_py(a.size.name), [['X'], ['L', 'M']])
@@ -231,7 +231,7 @@ class TestIteratorAssign(unittest.TestCase):
 
 class TestStringCopy(unittest.TestCase):
     def test_string_assign_to_slice(self):
-        a = nd.array(['a', 'b', 'c', 'd', 'e'], 'string[8]', access='rw')
+        a = nd.array(['a', 'b', 'c', 'd', 'e'], 'fixed_string[8]', access='rw')
         a[:3] = 'test'
         self.assertEqual(nd.as_py(a), ['test', 'test', 'test', 'd', 'e'])
 

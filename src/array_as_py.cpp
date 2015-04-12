@@ -28,13 +28,8 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   ckernel_builder<kernel_request_host> ckb;
   const arrfunc_type_data *af;
   const arrfunc_type *af_tp;
-  if (struct_as_pytuple) {
-    af = nd::copy_to_pyobject_tuple.get();
-    af_tp = nd::copy_to_pyobject_tuple.get_type();
-  } else {
-    af = nd::copy_to_pyobject_dict.get();
-    af_tp = nd::copy_to_pyobject_dict.get_type();
-  }
+  af = nd::copy_to_pyobject.get();
+  af_tp = nd::copy_to_pyobject.get_type();
   ndt::type tp = a.get_type();
   const char *arrmeta = a.get_arrmeta();
   af->instantiate(af, af_tp, NULL, &ckb, 0, ndt::make_type<void>(), NULL, 1,

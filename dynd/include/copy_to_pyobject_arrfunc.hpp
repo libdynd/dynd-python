@@ -9,16 +9,16 @@
 
 #include "config.hpp"
 
+#define DYND_TYPE_ID_MAX 99
+
 namespace pydynd {
 namespace nd {
 
-  extern struct copy_to_pyobject_dict : declfunc<copy_to_pyobject_dict> {
-    static arrfunc make();
-  } copy_to_pyobject_dict;
+  extern struct copy_to_pyobject : declfunc<copy_to_pyobject> {
+    static arrfunc children[DYND_TYPE_ID_MAX + 1];
 
-  extern struct copy_to_pyobject_tuple : declfunc<copy_to_pyobject_tuple> {
     static arrfunc make();
-  } copy_to_pyobject_tuple;
+  } copy_to_pyobject;
 
 } // namespace pydynd::nd
 } // namespace pydynd

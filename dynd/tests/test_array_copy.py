@@ -62,20 +62,20 @@ class TestCopyFromNumPy(unittest.TestCase):
         a = nd.empty('3 * {x: int, y: string}')
         a[...] = np.array([(1, 'test'), (2, u'one'), (3.0, 'two')],
                           dtype=[('x', np.int64), ('y', object)])
-        self.assertEqual(nd.as_py(a, tuple=True),
-                         [(1, 'test'), (2, 'one'), (3, 'two')])
+        self.assertEqual(nd.as_py(a),
+                         [{'x': 1, 'y': 'test'}, {'x': 2, 'y': 'one'}, {'x': 3, 'y': 'two'}])
 
         a = nd.empty('3 * {x: int, y: string}')
         a[...] = np.array([('opposite', 4)],
                           dtype=[('y', object), ('x', np.int64)])
         self.assertEqual(nd.as_py(a, tuple=True),
-                         [(4, 'opposite')] * 3)
+                         [{'x': 4, 'y': 'opposite'}] * 3)
 
         a = nd.empty('var * {x: int, y: string}')
         a[...] = np.array([(1, 'test'), (2, u'one'), (3.0, 'two')],
                           dtype=[('x', object), ('y', object)])
         self.assertEqual(nd.as_py(a, tuple=True),
-                         [(1, 'test'), (2, 'one'), (3, 'two')])
+                         [{'x': 1, 'y': 'test'}, {'x': 2, 'y': 'one'}, {'x': 3, 'y': 'two'}])
 
 class TestStructCopy(unittest.TestCase):
     def test_single_struct(self):

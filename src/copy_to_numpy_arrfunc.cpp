@@ -67,9 +67,9 @@ intptr_t copy_to_numpy_ck::instantiate(
                                   ectx, dynd::nd::array());
   } else if (PyDataType_ISOBJECT(dtype)) {
     const arrfunc_type_data *af =
-        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject_tuple).get();
+        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get();
     return af->instantiate(
-        af, static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject_tuple).get_type(),
+        af, static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get_type(),
         NULL, ckb, ckb_offset, ndt::make_type<void>(), NULL, nsrc, src_tp,
         src_arrmeta, kernreq, ectx, dynd::nd::array(), tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {

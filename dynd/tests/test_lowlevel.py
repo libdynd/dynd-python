@@ -45,12 +45,12 @@ class TestLowLevel(unittest.TestCase):
         # String/bytes
         self.assertEqual(self.type_id_of(ndt.string),
                         _lowlevel.type_id.STRING)
-        self.assertEqual(self.type_id_of(ndt.make_fixedstring(16)),
-                        _lowlevel.type_id.FIXEDSTRING)
+        self.assertEqual(self.type_id_of(ndt.make_fixed_string(16)),
+                        _lowlevel.type_id.FIXED_STRING)
         self.assertEqual(self.type_id_of(ndt.bytes),
                         _lowlevel.type_id.BYTES)
-        self.assertEqual(self.type_id_of(ndt.make_fixedbytes(16)),
-                        _lowlevel.type_id.FIXEDBYTES)
+        self.assertEqual(self.type_id_of(ndt.make_fixed_bytes(16)),
+                        _lowlevel.type_id.FIXED_BYTES)
         self.assertEqual(self.type_id_of(ndt.json),
                         _lowlevel.type_id.JSON)
         # Date

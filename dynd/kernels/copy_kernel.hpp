@@ -278,8 +278,8 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<fixedbytes_type_id>
-      : base_kernel<copy_to_pyobject_kernel<fixedbytes_type_id>,
+  struct copy_to_pyobject_kernel<fixed_bytes_type_id>
+      : base_kernel<copy_to_pyobject_kernel<fixed_bytes_type_id>,
                     kernel_request_host, 1> {
     intptr_t data_size;
 
@@ -305,7 +305,7 @@ namespace nd {
     {
       copy_to_pyobject_kernel::make(
           ckb, kernreq, ckb_offset,
-          src_tp[0].extended<fixedbytes_type>()->get_data_size());
+          src_tp[0].extended<fixed_bytes_type>()->get_data_size());
       return ckb_offset;
     }
 
@@ -549,8 +549,8 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<fixedstring_type_id>
-      : base_virtual_kernel<copy_to_pyobject_kernel<fixedstring_type_id>> {
+  struct copy_to_pyobject_kernel<fixed_string_type_id>
+      : base_virtual_kernel<copy_to_pyobject_kernel<fixed_string_type_id>> {
     static intptr_t
     instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,

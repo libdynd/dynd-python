@@ -6,7 +6,7 @@
 #include <Python.h>
 
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/fixed_string_type.hpp>
 #include <dynd/types/byteswap_type.hpp>
 #include <dynd/types/view_type.hpp>
 #include <dynd/shape_tools.hpp>
@@ -118,8 +118,8 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     o << "Zd";
     out_itemsize = 16;
     return;
-  case fixedstring_type_id:
-    switch (tp.extended<fixedstring_type>()->get_encoding()) {
+  case fixed_string_type_id:
+    switch (tp.extended<fixed_string_type>()->get_encoding()) {
     case string_encoding_ascii: {
       intptr_t element_size = tp.get_data_size();
       o << element_size << "s";
@@ -207,7 +207,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     const view_type *vd = tp.extended<view_type>();
     // If it's a view of bytes, usually to view unaligned data, can ignore it
     // since the buffer format we're creating doesn't use alignment
-    if (vd->get_operand_type().get_type_id() == fixedbytes_type_id) {
+    if (vd->get_operand_type().get_type_id() == fixed_bytes_type_id) {
       append_pep3118_format(out_itemsize, vd->get_value_type(), arrmeta, o);
       return;
     }
@@ -300,7 +300,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     buffer->buf = preamble->m_data_pointer;
 
     if (tp.get_type_id() == bytes_type_id ||
-        tp.get_type_id() == fixedbytes_type_id) {
+        tp.get_type_id() == fixed_bytes_type_id) {
       array_getbuffer_pep3118_bytes(tp, n.get_arrmeta(),
                                     n.get_ndo()->m_data_pointer, buffer, flags);
       return 0;

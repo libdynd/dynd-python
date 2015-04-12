@@ -45,9 +45,9 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.float64, ndt.type(np.dtype(np.float64)))
         self.assertEqual(ndt.complex_float32, ndt.type(np.dtype(np.complex64)))
         self.assertEqual(ndt.complex_float64, ndt.type(np.dtype(np.complex128)))
-        self.assertEqual(ndt.make_fixedstring(10, 'ascii'),
+        self.assertEqual(ndt.make_fixed_string(10, 'ascii'),
                     ndt.type(np.dtype('S10')))
-        self.assertEqual(ndt.make_fixedstring(10, 'utf_32'),
+        self.assertEqual(ndt.make_fixed_string(10, 'utf_32'),
                     ndt.type(np.dtype('U10')))
 
         # non-native byte order
@@ -306,15 +306,15 @@ class TestNumpyViewInterop(unittest.TestCase):
             self.assertRaises(BufferError, lambda: memoryview(n))
 
 
-    def test_numpy_dynd_fixedstring_interop(self):
+    def test_numpy_dynd_fixed_string_interop(self):
         # Tests converting fixed-size string arrays to/from numpy
         # ASCII Numpy -> dynd
         a = np.array(['abc', 'testing', 'array'])
         b = nd.view(a)
         if sys.version_info >= (3, 0):
-            self.assertEqual(ndt.make_fixedstring(7, 'utf_32'), nd.dtype_of(b))
+            self.assertEqual(ndt.make_fixed_string(7, 'utf_32'), nd.dtype_of(b))
         else:
-            self.assertEqual(ndt.make_fixedstring(7, 'ascii'), nd.dtype_of(b))
+            self.assertEqual(ndt.make_fixed_string(7, 'ascii'), nd.dtype_of(b))
         self.assertEqual(nd.dtype_of(b), ndt.type(a.dtype))
 
         # Make sure it's ascii
@@ -330,16 +330,16 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a, c)
 
         # ASCII dynd -> UTF32 dynd
-        b_u = b.ucast(ndt.make_fixedstring(7, 'utf_32'))
+        b_u = b.ucast(ndt.make_fixed_string(7, 'utf_32'))
         self.assertEqual(
                 ndt.make_convert(
-                    ndt.make_fixedstring(7, 'utf_32'),
-                    ndt.make_fixedstring(7, 'ascii')),
+                    ndt.make_fixed_string(7, 'utf_32'),
+                    ndt.make_fixed_string(7, 'ascii')),
                 nd.dtype_of(b_u))
         # Evaluate to its value array
         b_u = b_u.eval()
         self.assertEqual(
-                ndt.make_fixedstring(7, 'utf_32'),
+                ndt.make_fixed_string(7, 'utf_32'),
                 nd.dtype_of(b_u))
 
         # UTF32 dynd -> Numpy

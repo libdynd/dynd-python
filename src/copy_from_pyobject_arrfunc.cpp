@@ -16,7 +16,7 @@
 
 #include <dynd/array.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/fixedbytes_type.hpp>
+#include <dynd/types/fixed_bytes_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/categorical_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -267,7 +267,7 @@ struct complex_float_ck : public kernels::unary_ck<complex_float_ck<T>> {
 };
 
 // TODO: This is not very efficient, could be made better
-//       with specialized bytes/fixedbytes versions
+//       with specialized bytes/fixed_bytes versions
 struct any_bytes_ck : public kernels::unary_ck<any_bytes_ck> {
   ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
@@ -955,14 +955,14 @@ static intptr_t instantiate_copy_from_pyobject(
     complex_float_ck<double>::make(ckb, kernreq, ckb_offset);
     return ckb_offset;
   case bytes_type_id:
-  case fixedbytes_type_id: {
+  case fixed_bytes_type_id: {
     any_bytes_ck *self = any_bytes_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     return ckb_offset;
   }
   case string_type_id:
-  case fixedstring_type_id: {
+  case fixed_string_type_id: {
     any_string_ck *self = any_string_ck::make(ckb, kernreq, ckb_offset);
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;

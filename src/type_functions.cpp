@@ -10,7 +10,7 @@
 #include "utility_functions.hpp"
 
 #include <dynd/types/convert_type.hpp>
-#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/fixed_string_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/pointer_type.hpp>
@@ -310,12 +310,12 @@ dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type& value_type, c
     return ndt::make_view(value_type, operand_type);
 }
 
-dynd::ndt::type pydynd::dynd_make_fixedstring_type(intptr_t size,
+dynd::ndt::type pydynd::dynd_make_fixed_string_type(intptr_t size,
                 PyObject *encoding_obj)
 {
     string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-    return ndt::make_fixedstring(size, encoding);
+    return ndt::make_fixed_string(size, encoding);
 }
 
 dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)

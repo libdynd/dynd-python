@@ -105,32 +105,32 @@ class TestDType(unittest.TestCase):
         self.assertEqual([1, 3, 5], nd.as_py(a.real))
         self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 
-    def test_fixedstring_type_properties(self):
-        d = ndt.make_fixedstring(10, 'ascii')
+    def test_fixed_string_type_properties(self):
+        d = ndt.make_fixed_string(10, 'ascii')
         self.assertEqual(str(d), "string[10,'ascii']")
         self.assertEqual(d.data_size, 10)
         self.assertEqual(d.data_alignment, 1)
         self.assertEqual(d.encoding, 'ascii')
 
-        d = ndt.make_fixedstring(10, 'ucs2')
+        d = ndt.make_fixed_string(10, 'ucs2')
         self.assertEqual(str(d), "string[10,'ucs2']")
         self.assertEqual(d.data_size, 20)
         self.assertEqual(d.data_alignment, 2)
         self.assertEqual(d.encoding, 'ucs2')
 
-        d = ndt.make_fixedstring(10, 'utf8')
+        d = ndt.make_fixed_string(10, 'utf8')
         self.assertEqual(str(d), 'string[10]')
         self.assertEqual(d.data_size, 10)
         self.assertEqual(d.data_alignment, 1)
         self.assertEqual(d.encoding, 'utf8')
 
-        d = ndt.make_fixedstring(10, 'utf16')
+        d = ndt.make_fixed_string(10, 'utf16')
         self.assertEqual(str(d), "string[10,'utf16']")
         self.assertEqual(d.data_size, 20)
         self.assertEqual(d.data_alignment, 2)
         self.assertEqual(d.encoding, 'utf16')
 
-        d = ndt.make_fixedstring(10, 'utf32')
+        d = ndt.make_fixed_string(10, 'utf32')
         self.assertEqual(str(d), "string[10,'utf32']")
         self.assertEqual(d.data_size, 40)
         self.assertEqual(d.data_alignment, 4)
@@ -160,23 +160,23 @@ class TestDType(unittest.TestCase):
         self.assertEqual(str(ndt.datetime), "datetime")
         self.assertEqual(repr(ndt.datetime), "ndt.datetime")
 
-    def test_fixedbytes_type(self):
-        d = ndt.make_fixedbytes(4, 4)
+    def test_fixed_bytes_type(self):
+        d = ndt.make_fixed_bytes(4, 4)
         self.assertEqual(str(d), 'bytes[4, align=4]')
         self.assertEqual(d.data_size, 4)
         self.assertEqual(d.data_alignment, 4)
 
-        d = ndt.make_fixedbytes(9, 1)
+        d = ndt.make_fixed_bytes(9, 1)
         self.assertEqual(str(d), 'bytes[9]')
         self.assertEqual(d.data_size, 9)
         self.assertEqual(d.data_alignment, 1)
 
         # Alignment must not be greater than data_size
-        self.assertRaises(RuntimeError, ndt.make_fixedbytes, 1, 2)
+        self.assertRaises(RuntimeError, ndt.make_fixed_bytes, 1, 2)
         # Alignment must be a power of 2
-        self.assertRaises(RuntimeError, ndt.make_fixedbytes, 6, 3)
+        self.assertRaises(RuntimeError, ndt.make_fixed_bytes, 6, 3)
         # Alignment must divide into the data_size
-        self.assertRaises(RuntimeError, ndt.make_fixedbytes, 6, 4)
+        self.assertRaises(RuntimeError, ndt.make_fixed_bytes, 6, 4)
 
     def test_type_type(self):
         d = ndt.type('type')

@@ -480,10 +480,10 @@ class TestStringConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('4 * string["U16"]'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
-    def test_fixedstring_array(self):
+    def test_fixed_string_array(self):
         a = nd.array(['a', 'b', 'c'],
                         dtype='string[1,"A"]')
-        self.assertEqual(nd.type_of(a[0]).type_id, 'fixedstring')
+        self.assertEqual(nd.type_of(a[0]).type_id, 'fixed_string')
         self.assertEqual(nd.type_of(a[0]).data_size, 1)
         self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
 

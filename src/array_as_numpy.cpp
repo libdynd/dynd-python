@@ -17,7 +17,7 @@
 #include "copy_to_numpy_arrfunc.hpp"
 
 #include <dynd/types/fixed_dim_type.hpp>
-#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/fixed_string_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
@@ -64,8 +64,8 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   }
 
   switch (dt.get_type_id()) {
-  case fixedstring_type_id: {
-    const fixedstring_type *fsd = dt.extended<fixedstring_type>();
+  case fixed_string_type_id: {
+    const fixed_string_type *fsd = dt.extended<fixed_string_type>();
     PyArray_Descr *result;
     switch (fsd->get_encoding()) {
     case string_encoding_ascii:
@@ -263,7 +263,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
         dynd_to_numpy_type_id[dt.get_type_id()]));
     return;
   } else if (dt.get_type_id() == view_type_id &&
-             dt.operand_type().get_type_id() == fixedbytes_type_id) {
+             dt.operand_type().get_type_id() == fixed_bytes_type_id) {
     // View operation for alignment
     as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim, dt.value_type(),
                       NULL);
@@ -271,8 +271,8 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   }
 
   switch (dt.get_type_id()) {
-  case fixedstring_type_id: {
-    const fixedstring_type *fsd = dt.extended<fixedstring_type>();
+  case fixed_string_type_id: {
+    const fixed_string_type *fsd = dt.extended<fixed_string_type>();
     PyArray_Descr *result;
     switch (fsd->get_encoding()) {
     case string_encoding_ascii:

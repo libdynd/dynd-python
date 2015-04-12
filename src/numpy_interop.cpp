@@ -10,7 +10,7 @@
 #include <dynd/types/byteswap_type.hpp>
 #include <dynd/types/view_type.hpp>
 #include <dynd/types/type_alignment.hpp>
-#include <dynd/types/fixedstring_type.hpp>
+#include <dynd/types/fixed_string_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
@@ -149,10 +149,10 @@ ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
     dt = ndt::make_type<dynd::complex<double> >();
     break;
   case NPY_STRING:
-    dt = ndt::make_fixedstring(d->elsize, string_encoding_ascii);
+    dt = ndt::make_fixed_string(d->elsize, string_encoding_ascii);
     break;
   case NPY_UNICODE:
-    dt = ndt::make_fixedstring(d->elsize / 4, string_encoding_utf_32);
+    dt = ndt::make_fixed_string(d->elsize / 4, string_encoding_utf_32);
     break;
   case NPY_VOID:
     dt = make_struct_type_from_numpy_struct(d, data_alignment);
@@ -407,8 +407,8 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
             return PyArray_DescrFromType(NPY_CFLOAT);
         case complex_float64_type_id:
             return PyArray_DescrFromType(NPY_CDOUBLE);
-        case fixedstring_type_id: {
-            const fixedstring_type *ftp = tp.extended<fixedstring_type>();
+        case fixed_string_type_id: {
+            const fixed_string_type *ftp = tp.extended<fixed_string_type>();
             PyArray_Descr *result;
             switch (ftp->get_encoding()) {
                 case string_encoding_ascii:
@@ -548,14 +548,14 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp)
         case view_type_id: {
             // If there's a view which is for alignment purposes, throw it
             // away because Numpy works differently
-            if (tp.operand_type().get_type_id() == fixedbytes_type_id) {
+            if (tp.operand_type().get_type_id() == fixed_bytes_type_id) {
                 return numpy_dtype_from_ndt_type(tp.value_type());
             }
             break;
         }
         case byteswap_type_id: {
             // If it's a simple byteswap from bytes, that can be converted
-            if (tp.operand_type().get_type_id() == fixedbytes_type_id) {
+            if (tp.operand_type().get_type_id() == fixed_bytes_type_id) {
                 PyArray_Descr *unswapped = numpy_dtype_from_ndt_type(tp.value_type());
                 PyArray_Descr *result = PyArray_DescrNewByteorder(unswapped, NPY_SWAP);
                 Py_DECREF(unswapped);
@@ -954,7 +954,7 @@ char pydynd::numpy_kindchar_of(const dynd::ndt::type& d)
     case complex_kind:
         return 'c';
     case string_kind:
-        if (d.get_type_id() == fixedstring_type_id) {
+        if (d.get_type_id() == fixed_string_type_id) {
             const base_string_type *esd = d.extended<base_string_type>();
             switch (esd->get_encoding()) {
                 case string_encoding_ascii:

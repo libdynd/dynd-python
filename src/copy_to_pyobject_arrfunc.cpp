@@ -12,7 +12,7 @@
 
 #include <dynd/array.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/fixedbytes_type.hpp>
+#include <dynd/types/fixed_bytes_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/categorical_type.hpp>
 #include <dynd/types/date_type.hpp>
@@ -133,8 +133,8 @@ intptr_t pydynd::nd::copy_to_pyobject_virtual_kernel::instantiate(
     return copy_to_pyobject_kernel<bytes_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
-  case fixedbytes_type_id:
-    return copy_to_pyobject_kernel<fixedbytes_type_id>::instantiate(
+  case fixed_bytes_type_id:
+    return copy_to_pyobject_kernel<fixed_bytes_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
   case char_type_id:
@@ -145,8 +145,8 @@ intptr_t pydynd::nd::copy_to_pyobject_virtual_kernel::instantiate(
     return copy_to_pyobject_kernel<string_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
-  case fixedstring_type_id:
-    return copy_to_pyobject_kernel<fixedstring_type_id>::instantiate(
+  case fixed_string_type_id:
+    return copy_to_pyobject_kernel<fixed_string_type_id>::instantiate(
         self_af, af_tp, data, ckb, ckb_offset, dst_tp, dst_arrmeta, nsrc,
         src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
   case categorical_type_id: {
@@ -242,8 +242,8 @@ namespace nd {
       int64_type_id, int128_type_id, uint8_type_id, uint16_type_id,
       uint32_type_id, uint64_type_id, uint128_type_id, float16_type_id,
       float32_type_id, float64_type_id, complex_float32_type_id,
-      complex_float64_type_id, bytes_type_id, fixedbytes_type_id, char_type_id,
-      string_type_id, fixedstring_type_id, date_type_id, time_type_id,
+      complex_float64_type_id, bytes_type_id, fixed_bytes_type_id, char_type_id,
+      string_type_id, fixed_string_type_id, date_type_id, time_type_id,
       datetime_type_id, type_type_id, option_type_id, fixed_dim_type_id,
       var_dim_type_id, struct_type_id, tuple_type_id, pointer_type_id> copy_to_pyobject_type_ids;
 */

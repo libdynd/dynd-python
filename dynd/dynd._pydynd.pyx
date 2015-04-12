@@ -522,9 +522,9 @@ def make_byteswap(builtin_type, operand_type=None):
         SET(result.v, dynd_make_byteswap_type(GET(w_type(builtin_type).v), GET(w_type(operand_type).v)))
     return result
 
-def make_fixedbytes(int data_size, int data_alignment=1):
+def make_fixed_bytes(int data_size, int data_alignment=1):
     """
-    ndt.make_fixedbytes(data_size, data_alignment=1)
+    ndt.make_fixed_bytes(data_size, data_alignment=1)
 
     Constructs a bytes type with the specified data size and alignment.
 
@@ -540,13 +540,13 @@ def make_fixedbytes(int data_size, int data_alignment=1):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedbytes(4)
+    >>> ndt.make_fixed_bytes(4)
     ndt.type("bytes[4]")
-    >>> ndt.make_fixedbytes(6, 2)
+    >>> ndt.make_fixed_bytes(6, 2)
     ndt.type("bytes[6, align=2]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixedbytes_type(data_size, data_alignment))
+    SET(result.v, dynd_make_fixed_bytes_type(data_size, data_alignment))
     return result
 
 def make_convert(to_tp, from_tp):
@@ -629,9 +629,9 @@ def make_unaligned(aligned_tp):
     SET(result.v, dynd_make_unaligned_type(GET(w_type(aligned_tp).v)))
     return result
 
-def make_fixedstring(int size, encoding=None):
+def make_fixed_string(int size, encoding=None):
     """
-    ndt.make_fixedstring(size, encoding='utf_8')
+    ndt.make_fixed_string(size, encoding='utf_8')
 
     Constructs a fixed-size string type with a specified encoding,
     whose size is the specified number of base units for the encoding.
@@ -651,13 +651,13 @@ def make_fixedstring(int size, encoding=None):
     --------
     >>> from dynd import nd, ndt
 
-    >>> ndt.make_fixedstring(10)
+    >>> ndt.make_fixed_string(10)
     ndt.type("string[10]")
-    >>> ndt.make_fixedstring(10, 'utf_32')
+    >>> ndt.make_fixed_string(10, 'utf_32')
     ndt.type("string[10,'utf32']")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixedstring_type(size, encoding))
+    SET(result.v, dynd_make_fixed_string_type(size, encoding))
     return result
 
 def make_string(encoding=None):

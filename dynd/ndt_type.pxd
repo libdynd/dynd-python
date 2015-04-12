@@ -97,8 +97,8 @@ cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
 
 from array cimport ndarray
 
-cdef extern from "dynd/types/fixedbytes_type.hpp" namespace "dynd":
-    ndt_type dynd_make_fixedbytes_type "dynd::ndt::make_fixedbytes" (intptr_t, intptr_t) except +translate_exception
+cdef extern from "dynd/types/fixed_bytes_type.hpp" namespace "dynd":
+    ndt_type dynd_make_fixed_bytes_type "dynd::ndt::make_fixed_bytes" (intptr_t, intptr_t) except +translate_exception
 
 cdef extern from "dynd/types/byteswap_type.hpp" namespace "dynd":
     ndt_type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (ndt_type&) except +translate_exception
@@ -143,7 +143,7 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
 
     ndt_type dynd_make_convert_type(ndt_type&, ndt_type&) except +translate_exception
     ndt_type dynd_make_view_type(ndt_type&, ndt_type&) except +translate_exception
-    ndt_type dynd_make_fixedstring_type(int, object) except +translate_exception
+    ndt_type dynd_make_fixed_string_type(int, object) except +translate_exception
     ndt_type dynd_make_string_type(object) except +translate_exception
     ndt_type dynd_make_pointer_type(ndt_type&) except +translate_exception
     ndt_type dynd_make_struct_type(object, object) except +translate_exception

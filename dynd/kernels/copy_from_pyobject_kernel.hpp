@@ -929,6 +929,8 @@ namespace nd {
             NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
             kernel_request_strided, ectx, dynd::nd::array());
       }
+
+      throw std::runtime_error("could not process as strided");
     }
   };
 
@@ -1364,6 +1366,8 @@ namespace nd {
             af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
             nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
       }
+
+      throw std::runtime_error("unexpected dst_tp");
     }
   };
 

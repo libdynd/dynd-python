@@ -49,12 +49,15 @@ dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
 {
   PyDateTime_IMPORT;
 
-  std::vector<arrfunc> children =
-      as_arrfuncs<copy_to_pyobject_kernel, type_ids>();
-  arrfunc default_child = as_arrfunc<default_copy_to_pyobject_kernel>(
-      ndt::type("(Any) -> void"), 0);
+  arrfunc::make_all<copy_to_pyobject_kernel, type_ids>(children);
+  arrfunc::make<default_copy_to_pyobject_kernel>(default_child, 0);
+
   return functional::multidispatch_by_type_id(ndt::type("(Any) -> void"),
-                                              children, default_child);
+                                              DYND_TYPE_ID_MAX + 1, children,
+                                              default_child, false);
 }
 
 struct pydynd::nd::copy_to_pyobject pydynd::nd::copy_to_pyobject;
+
+dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::children[DYND_TYPE_ID_MAX + 1];
+dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::default_child;

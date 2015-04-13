@@ -161,7 +161,7 @@ intptr_t copy_to_numpy_ck::instantiate(
 dynd::nd::arrfunc pydynd::copy_to_numpy::make()
 {
   return dynd::nd::functional::elwise(
-      dynd::nd::as_arrfunc<copy_to_numpy_ck>(ndt::type("(Any) -> void"), 0));
+      dynd::nd::arrfunc::make<copy_to_numpy_ck>(ndt::type("(Any) -> void"), 0));
 }
 
 struct pydynd::copy_to_numpy pydynd::copy_to_numpy;

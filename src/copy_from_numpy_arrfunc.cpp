@@ -19,8 +19,9 @@
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
 #include <dynd/types/base_struct_type.hpp>
 
+#include "kernels/copy_from_numpy_kernel.hpp"
+
 using namespace std;
-using namespace dynd;
 using namespace pydynd;
 
 #ifdef DYND_NUMPY_INTEROP
@@ -29,19 +30,19 @@ namespace {
 
 struct strided_of_numpy_arrmeta {
   fixed_dim_type_arrmeta sdt[NPY_MAXDIMS];
-  copy_from_numpy_arrmeta am;
+  pydynd::nd::copy_from_numpy_arrmeta am;
 };
 
 } // anonymous namespace
 
-intptr_t copy_from_numpy_ck::instantiate(
+intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
     char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
     const ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
     const char *const *src_arrmeta, kernel_request_t kernreq,
-    const eval::eval_context *ectx, const nd::array &kwds,
-    const std::map<nd::string, ndt::type> &tp_vars)
+    const eval::eval_context *ectx, const dynd::nd::array &kwds,
+    const std::map<dynd::nd::string, ndt::type> &tp_vars)
 {
   if (src_tp[0].get_type_id() != void_type_id) {
     stringstream ss;
@@ -62,14 +63,12 @@ intptr_t copy_from_numpy_ck::instantiate(
     ndt::type src_view_tp = ndt_type_from_numpy_dtype(dtype, src_alignment);
     return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, dst_tp,
                                   dst_arrmeta, src_view_tp, NULL, kernreq, ectx,
-                                  nd::array());
+                                  dynd::nd::array());
   } else if (PyDataType_ISOBJECT(dtype)) {
-    const arrfunc_type_data *af =
-        static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get();
-    return af->instantiate(
-        af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get_type(), NULL,
-        ckb, ckb_offset, dst_tp, dst_arrmeta, 1, src_tp, src_arrmeta, kernreq,
-        ectx, nd::array(), tp_vars);
+    const arrfunc_type_data *af = copy_from_pyobject.get();
+    return af->instantiate(af, copy_from_pyobject.get_type(), NULL, ckb,
+                           ckb_offset, dst_tp, dst_arrmeta, 1, src_tp,
+                           src_arrmeta, kernreq, ectx, kwds, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {
     if (dst_tp.get_kind() != struct_kind && dst_tp.get_kind() != tuple_kind) {
       stringstream ss;
@@ -80,7 +79,7 @@ intptr_t copy_from_numpy_ck::instantiate(
 
     // Get the fields out of the numpy dtype
     vector<PyArray_Descr *> field_dtypes_orig;
-    vector<string> field_names_orig;
+    vector<std::string> field_names_orig;
     vector<size_t> field_offsets_orig;
     extract_fields_from_numpy_struct(dtype, field_dtypes_orig, field_names_orig,
                                      field_offsets_orig);
@@ -148,23 +147,18 @@ intptr_t copy_from_numpy_ck::instantiate(
   }
 }
 
-static nd::arrfunc make_copy_from_numpy_arrfunc()
+dynd::nd::arrfunc pydynd::nd::copy_from_numpy::make()
 {
-  return dynd::nd::as_arrfunc<copy_from_numpy_ck>(ndt::type("(void) -> T"), 0);
+  return functional::elwise(arrfunc::make<copy_from_numpy_kernel>(
+      ndt::type("(void, broadcast: bool) -> T"), 0));
 }
 
-dynd::nd::arrfunc pydynd::copy_from_numpy::make()
-{
-  return nd::functional::elwise(
-      dynd::nd::as_arrfunc<copy_from_numpy_ck>(ndt::type("(void) -> T"), 0));
-}
+struct pydynd::nd::copy_from_numpy pydynd::nd::copy_from_numpy;
 
-struct pydynd::copy_from_numpy pydynd::copy_from_numpy;
-
-void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
-                                   const char *dst_arrmeta, char *dst_data,
-                                   PyArrayObject *src_arr,
-                                   const dynd::eval::eval_context *ectx)
+void pydynd::nd::array_copy_from_numpy(const ndt::type &dst_tp,
+                                       const char *dst_arrmeta, char *dst_data,
+                                       PyArrayObject *src_arr,
+                                       const dynd::eval::eval_context *ectx)
 {
   intptr_t src_ndim = PyArray_NDIM(src_arr);
 
@@ -196,7 +190,8 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   }
   tmp_dst.get_ndo()->m_data_pointer = dst_data;
   char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));
-  copy_from_numpy(1, &src_tp, &src_am, &src_data, kwds("dst", tmp_dst));
+  pydynd::nd::copy_from_numpy(1, &src_tp, &src_am, &src_data,
+                              kwds("dst", tmp_dst, "broadcast", true));
 }
 
 #endif // DYND_NUMPY_INTEROP

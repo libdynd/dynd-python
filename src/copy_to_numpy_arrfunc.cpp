@@ -15,6 +15,8 @@
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
 #include <dynd/types/base_struct_type.hpp>
 
+#include <dynd/memblock/array_memory_block.hpp>
+
 #include "copy_to_numpy_arrfunc.hpp"
 #include "copy_to_pyobject_arrfunc.hpp"
 #include "utility_functions.hpp"
@@ -190,12 +192,19 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
   dst_am_holder.am.dst_dtype = PyArray_DTYPE(dst_arr);
   dst_am_holder.am.dst_alignment = dst_alignment;
 
-  const arrfunc_type_data *af = copy_to_numpy.get();
-  unary_ckernel_builder ckb;
-  af->instantiate(af, copy_to_numpy.get_type(), NULL, &ckb, 0, dst_tp, dst_am,
-                  1, &src_tp, &src_arrmeta, kernel_request_single, ectx,
-                  dynd::nd::array(), std::map<dynd::nd::string, ndt::type>());
-  ckb((char *)PyArray_DATA(dst_arr), const_cast<char *>(src_data));
+  // TODO: This is a hack, need a proper way to pass this dst param
+  intptr_t tmp_dst_arrmeta_size =
+      dst_ndim * sizeof(fixed_dim_type_arrmeta) + sizeof(copy_to_numpy_arrmeta);
+  nd::array tmp_dst(dynd::make_array_memory_block(tmp_dst_arrmeta_size));
+  tmp_dst.get_ndo()->m_type = ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->m_flags = nd::read_access_flag | nd::write_access_flag;
+  if (dst_tp.get_arrmeta_size() > 0) {
+    memcpy(tmp_dst.get_arrmeta(), dst_am, tmp_dst_arrmeta_size);
+  }
+  tmp_dst.get_ndo()->m_data_pointer = (char *)PyArray_DATA(dst_arr);
+  char *src_data_nonconst = const_cast<char *>(src_data);
+  copy_to_numpy(1, &src_tp, &src_arrmeta, &src_data_nonconst,
+                kwds("dst", tmp_dst));
 }
 
 #endif // DYND_NUMPY_INTEROP

@@ -24,22 +24,19 @@ using namespace pydynd;
 
 PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
 {
-  // Evaluate the nd::array
-  ckernel_builder<kernel_request_host> ckb;
-  const arrfunc_type_data *af;
-  const arrfunc_type *af_tp;
-  af = nd::copy_to_pyobject.get();
-  af_tp = nd::copy_to_pyobject.get_type();
-  ndt::type tp = a.get_type();
-  const char *arrmeta = a.get_arrmeta();
-  af->instantiate(af, af_tp, NULL, &ckb, 0, ndt::make_type<void>(), NULL, 1,
-                  &tp, &arrmeta, kernel_request_single,
-                  &eval::default_eval_context, dynd::nd::array(),
-                  std::map<dynd::nd::string, ndt::type>());
   pyobject_ownref result;
-  expr_single_t fn = ckb.get()->get_function<expr_single_t>();
-  char *src = const_cast<char *>(a.get_readonly_originptr());
-  fn(reinterpret_cast<char *>(result.obj_addr()), &src, ckb.get());
+
+  // TODO: This is a hack, need a proper way to pass this dst param
+  ndt::type dst_tp = ndt::make_type<void>();
+  nd::array tmp_dst(dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
+  tmp_dst.get_ndo()->m_type = ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->m_flags = nd::read_access_flag | nd::write_access_flag;
+  tmp_dst.get_ndo()->m_data_pointer =
+      reinterpret_cast<char *>(result.obj_addr());
+  const char *src_arrmeta = a.get_arrmeta();
+  char *src_data_nonconst = const_cast<char *>(a.get_readonly_originptr());
+  nd::copy_to_pyobject(1, &a.get_type(), &src_arrmeta, &src_data_nonconst,
+                       kwds("dst", tmp_dst));
   if (PyErr_Occurred()) {
     throw exception();
   }

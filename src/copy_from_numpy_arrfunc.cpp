@@ -186,12 +186,17 @@ void pydynd::array_copy_from_numpy(const ndt::type &dst_tp,
   src_am_holder.am.src_dtype = PyArray_DTYPE(src_arr);
   src_am_holder.am.src_alignment = src_alignment;
 
-  const arrfunc_type_data *af = copy_from_numpy.get();
-  unary_ckernel_builder ckb;
-  af->instantiate(af, copy_from_numpy.get_type(), NULL, &ckb, 0, dst_tp,
-                  dst_arrmeta, 1, &src_tp, &src_am, kernel_request_single, ectx,
-                  nd::array(), std::map<nd::string, ndt::type>());
-  ckb(dst_data, (char *)PyArray_DATA(src_arr));
+  // TODO: This is a hack, need a proper way to pass this dst param
+  nd::array tmp_dst(dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
+  tmp_dst.get_ndo()->m_type = ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->m_flags = nd::read_access_flag | nd::write_access_flag;
+  if (dst_tp.get_arrmeta_size() > 0) {
+    dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
+                                              dst_arrmeta, NULL);
+  }
+  tmp_dst.get_ndo()->m_data_pointer = dst_data;
+  char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));
+  copy_from_numpy(1, &src_tp, &src_am, &src_data, kwds("dst", tmp_dst));
 }
 
 #endif // DYND_NUMPY_INTEROP

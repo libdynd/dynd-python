@@ -19,20 +19,24 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dt,
-                                            const char *arrmeta, char *data,
-                                            PyObject *value,
+void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dst_tp,
+                                            const char *dst_arrmeta,
+                                            char *dst_data, PyObject *value,
                                             const eval::eval_context *ectx)
 {
-  unary_ckernel_builder ckb;
-  const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get();
+  // TODO: This is a hack, need a proper way to pass this dst param
+  nd::array tmp_dst(dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
+  tmp_dst.get_ndo()->m_type = ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->m_flags = nd::read_access_flag | nd::write_access_flag;
+  if (dst_tp.get_arrmeta_size() > 0) {
+    dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
+                                              dst_arrmeta, NULL);
+  }
+  tmp_dst.get_ndo()->m_data_pointer = dst_data;
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
-  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject).get_type(), NULL, &ckb, 0, dt, arrmeta,
-                  1, &src_tp, &src_arrmeta, kernel_request_single, ectx,
-                  nd::array(), std::map<nd::string, ndt::type>());
-  ckb(data, reinterpret_cast<char *>(&value));
-  return;
+  char *src_data = reinterpret_cast<char *>(&value);
+  copy_from_pyobject(1, &src_tp, &src_arrmeta, &src_data, kwds("dst", tmp_dst));
 }
 
 void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
@@ -44,16 +48,21 @@ void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
 }
 
 void pydynd::array_no_dim_broadcast_assign_from_py(
-    const dynd::ndt::type &dt, const char *arrmeta, char *data, PyObject *value,
-    const dynd::eval::eval_context *ectx)
+    const dynd::ndt::type &dst_tp, const char *dst_arrmeta, char *dst_data,
+    PyObject *value, const dynd::eval::eval_context *ectx)
 {
-  unary_ckernel_builder ckb;
-  const arrfunc_type_data *af = static_cast<dynd::nd::arrfunc>(copy_from_pyobject_no_dim_broadcast).get();
+  // TODO: This is a hack, need a proper way to pass this dst param
+  nd::array tmp_dst(dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
+  tmp_dst.get_ndo()->m_type = ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->m_flags = nd::read_access_flag | nd::write_access_flag;
+  if (dst_tp.get_arrmeta_size() > 0) {
+    dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
+                                              dst_arrmeta, NULL);
+  }
+  tmp_dst.get_ndo()->m_data_pointer = dst_data;
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
-  af->instantiate(af, static_cast<dynd::nd::arrfunc>(copy_from_pyobject_no_dim_broadcast).get_type(), NULL, &ckb, 0,
-                  dt, arrmeta, 1, &src_tp, &src_arrmeta, kernel_request_single,
-                  ectx, nd::array(), std::map<nd::string, ndt::type>());
-  ckb(data, reinterpret_cast<char *>(&value));
-  return;
+  char *src_data = reinterpret_cast<char *>(&value);
+  copy_from_pyobject_no_dim_broadcast(1, &src_tp, &src_arrmeta, &src_data,
+                                      kwds("dst", tmp_dst));
 }

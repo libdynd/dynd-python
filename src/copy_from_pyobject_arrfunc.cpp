@@ -21,9 +21,6 @@
 using namespace std;
 using namespace pydynd;
 
-template <type_id_t... I>
-using type_id_sequence = integer_sequence<type_id_t, I...>;
-
 dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::make()
 {
   typedef type_id_sequence<

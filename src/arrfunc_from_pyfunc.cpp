@@ -33,5 +33,5 @@ dynd::nd::arrfunc pydynd::nd::functional::apply(PyObject *instantiate_pyfunc,
   }
 
   Py_INCREF(instantiate_pyfunc);
-  return as_arrfunc<apply_pyobject_kernel>(proto, instantiate_pyfunc, 0);
+  return arrfunc::make<apply_pyobject_kernel>(proto, instantiate_pyfunc, 0);
 }

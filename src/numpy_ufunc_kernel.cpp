@@ -201,10 +201,10 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
             return wrap_array(
-                as_arrfunc<scalar_ufunc_ck<true>>(self_tp, data, 0));
+                arrfunc::make<scalar_ufunc_ck<true>>(self_tp, data, 0));
           } else {
             return wrap_array(
-                as_arrfunc<scalar_ufunc_ck<false>>(self_tp, data, 0));
+                arrfunc::make<scalar_ufunc_ck<false>>(self_tp, data, 0));
           }
         } else {
           // TODO: support gufunc

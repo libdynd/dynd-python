@@ -16,22 +16,8 @@
 
 #include "config.hpp"
 
-static dynd::nd::arrfunc make_copy_from_pyobject_arrfunc(bool dim_broadcast);
-
 namespace pydynd {
 namespace nd {
-
-  struct copy_from_pyobject_virtual_kernel
-      : base_virtual_kernel<copy_from_pyobject_virtual_kernel> {
-    static intptr_t
-    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const ndt::type *src_tp, const char *const *src_arrmeta,
-                kernel_request_t kernreq, const eval::eval_context *ectx,
-                const nd::array &kwds,
-                const std::map<nd::string, ndt::type> &tp_vars);
-  };
 
   template <type_id_t src_type_id>
   struct copy_from_pyobject_kernel;
@@ -52,6 +38,8 @@ namespace nd {
                    .as<dynd_bool>();
       }
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> bool"); }
   };
 
   void pyint_to_int(int8_t *out, PyObject *obj)
@@ -229,6 +217,14 @@ namespace nd {
                 .as<T>();
       }
     }
+
+    static ndt::type make_type()
+    {
+      std::map<nd::string, ndt::type> tp_vars;
+      tp_vars["R"] = ndt::make_type<T>();
+
+      return ndt::substitute(ndt::type("(void) -> R"), tp_vars, true);
+    }
   };
 
   template <>
@@ -300,6 +296,14 @@ namespace nd {
                 .as<T>();
       }
     }
+
+    static ndt::type make_type()
+    {
+      std::map<nd::string, ndt::type> tp_vars;
+      tp_vars["R"] = ndt::make_type<T>();
+
+      return ndt::substitute(ndt::type("(void) -> R"), tp_vars, true);
+    }
   };
 
   template <>
@@ -336,6 +340,14 @@ namespace nd {
             array_from_py(src_obj, 0, false, &eval::default_eval_context)
                 .as<dynd::complex<T>>();
       }
+    }
+
+    static ndt::type make_type()
+    {
+      std::map<nd::string, ndt::type> tp_vars;
+      tp_vars["R"] = ndt::make_type<dynd::complex<T>>();
+
+      return ndt::substitute(ndt::type("(void) -> R"), tp_vars, true);
     }
   };
 
@@ -406,11 +418,15 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> bytes"); }
   };
 
   template <>
   struct copy_from_pyobject_kernel<fixed_bytes_type_id>
       : copy_from_pyobject_kernel<bytes_type_id> {
+
+    static ndt::type make_type() { return ndt::type("(void) -> FixedBytes"); }
   };
 
   // TODO: This is not very efficient, could be made better
@@ -494,11 +510,14 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> string"); }
   };
 
   template <>
   struct copy_from_pyobject_kernel<fixed_string_type_id>
       : copy_from_pyobject_kernel<string_type_id> {
+    static ndt::type make_type() { return ndt::type("(void) -> FixedString"); }
   };
 
   template <>
@@ -562,6 +581,8 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> date"); }
   };
 
   template <>
@@ -609,6 +630,8 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> time"); }
   };
 
   template <>
@@ -662,6 +685,8 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> datetime"); }
   };
 
   template <>
@@ -674,6 +699,8 @@ namespace nd {
       *reinterpret_cast<dynd::ndt::type *>(dst) =
           make_ndt_type_from_pyobject(src_obj);
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> type"); }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -771,8 +798,8 @@ namespace nd {
           dst_tp.extended<option_type>()->get_assign_na_arrfunc_type();
       ckb_offset = assign_na_af->instantiate(
           assign_na_af, assign_na_af_tp, NULL, ckb, ckb_offset, dst_tp,
-          dst_arrmeta, nsrc, NULL, NULL, kernel_request_single, ectx,
-          dynd::nd::array(), tp_vars);
+          dst_arrmeta, nsrc, NULL, NULL, kernel_request_single, ectx, kwds,
+          tp_vars);
       copy_from_pyobject_kernel *self = get_self(
           reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb),
           root_ckb_offset);
@@ -780,10 +807,11 @@ namespace nd {
       ckb_offset = af->instantiate(
           af, af_tp, NULL, ckb, ckb_offset,
           dst_tp.extended<option_type>()->get_value_type(), dst_arrmeta, nsrc,
-          src_tp, src_arrmeta, kernel_request_single, ectx, dynd::nd::array(),
-          tp_vars);
+          src_tp, src_arrmeta, kernel_request_single, ectx, kwds, tp_vars);
       return ckb_offset;
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> ?Any"); }
   };
 
   template <>
@@ -798,19 +826,20 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      bool dim_broadcast = *af->get_data_as<bool>();
-
       // Assign via an intermediate category_type buffer
       const dynd::ndt::type &buf_tp =
           dst_tp.extended<categorical_type>()->get_category_type();
       dynd::nd::arrfunc copy_af =
           make_arrfunc_from_assignment(dst_tp, buf_tp, assign_error_default);
-      dynd::nd::arrfunc child = dynd::nd::functional::chain(
-          make_copy_from_pyobject_arrfunc(dim_broadcast), copy_af, buf_tp);
-      return child.get()->instantiate(
-          child.get(), child.get_type(), NULL, ckb, ckb_offset, dst_tp,
-          dst_arrmeta, nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
+      dynd::nd::arrfunc child =
+          dynd::nd::functional::chain(copy_from_pyobject, copy_af, buf_tp);
+      return child.get()->instantiate(child.get(), child.get_type(), NULL, ckb,
+                                      ckb_offset, dst_tp, dst_arrmeta, nsrc,
+                                      src_tp, src_arrmeta, kernreq, ectx,
+                                      nd::array(), tp_vars);
     }
+
+    static ndt::type make_type() { return ndt::type("(void) -> Categorical"); }
   };
 
   // TODO: Could instantiate the dst_tp -> dst_tp assignment
@@ -897,7 +926,7 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      bool dim_broadcast = *af->get_data_as<bool>();
+      bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
       intptr_t dim_size, stride;
       dynd::ndt::type el_tp;
@@ -914,10 +943,9 @@ namespace nd {
         self->m_dst_arrmeta = dst_arrmeta;
         self->m_dim_broadcast = dim_broadcast;
         // from pyobject ckernel
-        ckb_offset =
-            af->instantiate(af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta,
-                            nsrc, src_tp, src_arrmeta, kernel_request_strided,
-                            ectx, dynd::nd::array(), tp_vars);
+        ckb_offset = af->instantiate(
+            af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta, nsrc, src_tp,
+            src_arrmeta, kernel_request_strided, ectx, kwds, tp_vars);
         self =
             reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
                 ->get_at<
@@ -925,12 +953,17 @@ namespace nd {
                     root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
-        return make_assignment_kernel(
-            NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
-            kernel_request_strided, ectx, dynd::nd::array());
+        return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, el_tp,
+                                      el_arrmeta, el_tp, el_arrmeta,
+                                      kernel_request_strided, ectx, kwds);
       }
 
       throw std::runtime_error("could not process as strided");
+    }
+
+    static ndt::type make_type()
+    {
+      return ndt::type("(void, broadcast: bool) -> Fixed * Any");
     }
   };
 
@@ -1030,7 +1063,7 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      bool dim_broadcast = *af->get_data_as<bool>();
+      bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
       intptr_t root_ckb_offset = ckb_offset;
       pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id> *self =
@@ -1046,19 +1079,23 @@ namespace nd {
       dynd::ndt::type el_tp =
           dst_tp.extended<var_dim_type>()->get_element_type();
       const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
-      ckb_offset =
-          af->instantiate(af, af_tp, NULL, ckb, ckb_offset, el_tp, el_arrmeta,
-                          nsrc, src_tp, src_arrmeta, kernel_request_strided,
-                          ectx, dynd::nd::array(), tp_vars);
+      ckb_offset = af->instantiate(af, af_tp, NULL, ckb, ckb_offset, el_tp,
+                                   el_arrmeta, nsrc, src_tp, src_arrmeta,
+                                   kernel_request_strided, ectx, kwds, tp_vars);
       self =
           reinterpret_cast<ckernel_builder<kernel_request_host> *>(ckb)
               ->get_at<pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id>>(
                   root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
-      return make_assignment_kernel(
-          NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
-          kernel_request_strided, ectx, dynd::nd::array());
+      return make_assignment_kernel(NULL, NULL, ckb, ckb_offset, el_tp,
+                                    el_arrmeta, el_tp, el_arrmeta,
+                                    kernel_request_strided, ectx, kwds);
+    }
+
+    static ndt::type make_type()
+    {
+      return ndt::type("(void, broadcast: bool) -> var * Any");
     }
   };
 
@@ -1148,7 +1185,7 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      bool dim_broadcast = *af->get_data_as<bool>();
+      bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
       intptr_t root_ckb_offset = ckb_offset;
       pydynd::nd::copy_from_pyobject_kernel<tuple_type_id> *self =
@@ -1173,12 +1210,17 @@ namespace nd {
                     root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-        ckb_offset = af->instantiate(af, af_tp, NULL, ckb, ckb_offset,
-                                     field_types[i], field_arrmeta, nsrc,
-                                     src_tp, src_arrmeta, kernel_request_single,
-                                     ectx, dynd::nd::array(), tp_vars);
+        ckb_offset =
+            af->instantiate(af, af_tp, NULL, ckb, ckb_offset, field_types[i],
+                            field_arrmeta, nsrc, src_tp, src_arrmeta,
+                            kernel_request_single, ectx, kwds, tp_vars);
       }
       return ckb_offset;
+    }
+
+    static ndt::type make_type()
+    {
+      return ndt::type("(void, broadcast: bool) -> (...)");
     }
   };
 
@@ -1311,7 +1353,7 @@ namespace nd {
                 const nd::array &kwds,
                 const std::map<nd::string, ndt::type> &tp_vars)
     {
-      bool dim_broadcast = *af->get_data_as<bool>();
+      bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
       intptr_t root_ckb_offset = ckb_offset;
       pydynd::nd::copy_from_pyobject_kernel<struct_type_id> *self =
@@ -1336,12 +1378,17 @@ namespace nd {
                     root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-        ckb_offset = af->instantiate(af, af_tp, NULL, ckb, ckb_offset,
-                                     field_types[i], field_arrmeta, nsrc,
-                                     src_tp, src_arrmeta, kernel_request_single,
-                                     ectx, dynd::nd::array(), tp_vars);
+        ckb_offset =
+            af->instantiate(af, af_tp, NULL, ckb, ckb_offset, field_types[i],
+                            field_arrmeta, nsrc, src_tp, src_arrmeta,
+                            kernel_request_single, ectx, kwds, tp_vars);
       }
       return ckb_offset;
+    }
+
+    static ndt::type make_type()
+    {
+      return ndt::type("(void, broadcast: bool) -> {...}");
     }
   };
 
@@ -1356,18 +1403,22 @@ namespace nd {
                 const eval::eval_context *ectx, const dynd::nd::array &kwds,
                 const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
-      bool dim_broadcast = *self_af->get_data_as<bool>();
-
       if (dst_tp.get_kind() == expr_kind) {
         dynd::nd::arrfunc af = dynd::nd::functional::chain(
-            make_copy_from_pyobject_arrfunc(dim_broadcast), dynd::nd::copy,
-            dst_tp.value_type());
+            copy_from_pyobject, dynd::nd::copy, dst_tp.value_type());
         return af.get()->instantiate(
             af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
             nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
       }
 
-      throw std::runtime_error("unexpected dst_tp");
+      std::stringstream ss;
+      ss << "Unable to copy a Python object to dynd value with type " << dst_tp;
+      throw std::invalid_argument(ss.str());
+    }
+
+    static ndt::type make_type()
+    {
+      return ndt::type("(void, broadcast: bool) -> Any");
     }
   };
 

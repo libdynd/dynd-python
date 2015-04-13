@@ -36,7 +36,9 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dst_tp,
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
-  copy_from_pyobject(1, &src_tp, &src_arrmeta, &src_data, kwds("dst", tmp_dst));
+  std::cout << "calling copy_from_pyobject from array_broadcast_assign_from_py" << std::endl;
+  pydynd::nd::copy_from_pyobject(1, &src_tp, &src_arrmeta, &src_data,
+                     kwds("dst", tmp_dst, "broadcast", true));
 }
 
 void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
@@ -63,6 +65,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   ndt::type src_tp = ndt::make_type<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
-  copy_from_pyobject_no_dim_broadcast(1, &src_tp, &src_arrmeta, &src_data,
-                                      kwds("dst", tmp_dst));
+  std::cout << "calling copy_from_pyobject from array_no_dim_broadcast_assign_from_py" << std::endl;
+  pydynd::nd::copy_from_pyobject(1, &src_tp, &src_arrmeta, &src_data,
+                     kwds("dst", tmp_dst, "broadcast", false));
 }

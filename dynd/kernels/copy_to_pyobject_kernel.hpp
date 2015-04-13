@@ -1140,6 +1140,17 @@ namespace nd {
 
   struct default_copy_to_pyobject_kernel
       : base_virtual_kernel<default_copy_to_pyobject_kernel> {
+    static void resolve_dst_type(const arrfunc_type_data *,
+                                 const arrfunc_type *DYND_UNUSED(self_tp),
+                                 char *DYND_UNUSED(data), ndt::type &, intptr_t,
+                                 const ndt::type *src_tp,
+                                 const dynd::nd::array &,
+                                 const std::map<dynd::nd::string, ndt::type> &)
+    {
+      std::cout << "default_copy_to_pyobject_kernel::resolve_dst_type"
+                << std::endl;
+    }
+
     static intptr_t
     instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
@@ -1155,6 +1166,8 @@ namespace nd {
           af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
           nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
     }
+
+    static ndt::type make_type() { return ndt::type("(Any) -> void"); }
   };
 
   /*

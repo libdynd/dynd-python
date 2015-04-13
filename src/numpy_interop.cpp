@@ -56,7 +56,7 @@ void pydynd::extract_fields_from_numpy_struct(
   }
 }
 
-ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
+dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
                                              size_t data_alignment)
 {
   vector<PyArray_Descr *> field_dtypes;
@@ -65,7 +65,7 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
 
   extract_fields_from_numpy_struct(d, field_dtypes, field_names, field_offsets);
 
-  vector<ndt::type> field_types;
+  vector<dynd::ndt::type> field_types;
 
   if (data_alignment == 0) {
     data_alignment = (size_t)d->alignment;
@@ -89,13 +89,13 @@ ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
   }
 
   // Make a cstruct if possible, struct otherwise
-  return ndt::make_struct(field_names, field_types);
+  return dynd::ndt::make_struct(field_names, field_types);
 }
 
-ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
+dynd::ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
                                             size_t data_alignment)
 {
-  ndt::type dt;
+  dynd::ndt::type dt;
 
   if (d->subarray) {
     dt = ndt_type_from_numpy_dtype(d->subarray->base, data_alignment);
@@ -306,7 +306,7 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
     }
 }
 
-void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d, char *arrmeta)
+void pydynd::fill_arrmeta_from_numpy_dtype(const dynd::ndt::type& dt, PyArray_Descr *d, char *arrmeta)
 {
     switch (dt.get_type_id()) {
         case struct_type_id: {
@@ -328,7 +328,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
                 // Set the field offset in the output arrmeta
                 offsets[i] = offset;
                 // Fill the arrmeta for the field, if necessary
-                const ndt::type& ft = sdt->get_field_type(i);
+                const dynd::ndt::type& ft = sdt->get_field_type(i);
                 if (!ft.is_builtin()) {
                     fill_arrmeta_from_numpy_dtype(ft, fld_dtype, arrmeta + arrmeta_offsets[i]);
                 }
@@ -338,7 +338,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const ndt::type& dt, PyArray_Descr *d
         case fixed_dim_type_id: {
             // The Numpy subarray becomes a series of fixed_dim types, so we
             // need to copy the strides into the arrmeta.
-            ndt::type el;
+            dynd::ndt::type el;
             PyArray_ArrayDescr *adescr = d->subarray;
             if (adescr == NULL) {
               stringstream ss;
@@ -642,35 +642,35 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, cons
 int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::type& out_d)
 {
     if (obj == &PyBoolArrType_Type) {
-        out_d = ndt::make_type<dynd_bool>();
+        out_d = dynd::ndt::make_type<dynd_bool>();
     } else if (obj == &PyByteArrType_Type) {
-        out_d = ndt::make_type<npy_byte>();
+        out_d = dynd::ndt::make_type<npy_byte>();
     } else if (obj == &PyUByteArrType_Type) {
-        out_d = ndt::make_type<npy_ubyte>();
+        out_d = dynd::ndt::make_type<npy_ubyte>();
     } else if (obj == &PyShortArrType_Type) {
-        out_d = ndt::make_type<npy_short>();
+        out_d = dynd::ndt::make_type<npy_short>();
     } else if (obj == &PyUShortArrType_Type) {
-        out_d = ndt::make_type<npy_ushort>();
+        out_d = dynd::ndt::make_type<npy_ushort>();
     } else if (obj == &PyIntArrType_Type) {
-        out_d = ndt::make_type<npy_int>();
+        out_d = dynd::ndt::make_type<npy_int>();
     } else if (obj == &PyUIntArrType_Type) {
-        out_d = ndt::make_type<npy_uint>();
+        out_d = dynd::ndt::make_type<npy_uint>();
     } else if (obj == &PyLongArrType_Type) {
-        out_d = ndt::make_type<npy_long>();
+        out_d = dynd::ndt::make_type<npy_long>();
     } else if (obj == &PyULongArrType_Type) {
-        out_d = ndt::make_type<npy_ulong>();
+        out_d = dynd::ndt::make_type<npy_ulong>();
     } else if (obj == &PyLongLongArrType_Type) {
-        out_d = ndt::make_type<npy_longlong>();
+        out_d = dynd::ndt::make_type<npy_longlong>();
     } else if (obj == &PyULongLongArrType_Type) {
-        out_d = ndt::make_type<npy_ulonglong>();
+        out_d = dynd::ndt::make_type<npy_ulonglong>();
     } else if (obj == &PyFloatArrType_Type) {
-        out_d = ndt::make_type<npy_float>();
+        out_d = dynd::ndt::make_type<npy_float>();
     } else if (obj == &PyDoubleArrType_Type) {
-        out_d = ndt::make_type<npy_double>();
+        out_d = dynd::ndt::make_type<npy_double>();
     } else if (obj == &PyCFloatArrType_Type) {
-        out_d = ndt::make_type<dynd::complex<float> >();
+        out_d = dynd::ndt::make_type<dynd::complex<float> >();
     } else if (obj == &PyCDoubleArrType_Type) {
-        out_d = ndt::make_type<dynd::complex<double> >();
+        out_d = dynd::ndt::make_type<dynd::complex<double> >();
     } else {
         return -1;
     }
@@ -678,38 +678,38 @@ int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::
     return 0;
 }
 
-ndt::type pydynd::ndt_type_of_numpy_scalar(PyObject* obj)
+dynd::ndt::type pydynd::ndt_type_of_numpy_scalar(PyObject* obj)
 {
     if (PyArray_IsScalar(obj, Bool)) {
-        return ndt::make_type<dynd_bool>();
+        return dynd::ndt::make_type<dynd_bool>();
     } else if (PyArray_IsScalar(obj, Byte)) {
-        return ndt::make_type<npy_byte>();
+        return dynd::ndt::make_type<npy_byte>();
     } else if (PyArray_IsScalar(obj, UByte)) {
-        return ndt::make_type<npy_ubyte>();
+        return dynd::ndt::make_type<npy_ubyte>();
     } else if (PyArray_IsScalar(obj, Short)) {
-        return ndt::make_type<npy_short>();
+        return dynd::ndt::make_type<npy_short>();
     } else if (PyArray_IsScalar(obj, UShort)) {
-        return ndt::make_type<npy_ushort>();
+        return dynd::ndt::make_type<npy_ushort>();
     } else if (PyArray_IsScalar(obj, Int)) {
-        return ndt::make_type<npy_int>();
+        return dynd::ndt::make_type<npy_int>();
     } else if (PyArray_IsScalar(obj, UInt)) {
-        return ndt::make_type<npy_uint>();
+        return dynd::ndt::make_type<npy_uint>();
     } else if (PyArray_IsScalar(obj, Long)) {
-        return ndt::make_type<npy_long>();
+        return dynd::ndt::make_type<npy_long>();
     } else if (PyArray_IsScalar(obj, ULong)) {
-        return ndt::make_type<npy_ulong>();
+        return dynd::ndt::make_type<npy_ulong>();
     } else if (PyArray_IsScalar(obj, LongLong)) {
-        return ndt::make_type<npy_longlong>();
+        return dynd::ndt::make_type<npy_longlong>();
     } else if (PyArray_IsScalar(obj, ULongLong)) {
-        return ndt::make_type<npy_ulonglong>();
+        return dynd::ndt::make_type<npy_ulonglong>();
     } else if (PyArray_IsScalar(obj, Float)) {
-        return ndt::make_type<float>();
+        return dynd::ndt::make_type<float>();
     } else if (PyArray_IsScalar(obj, Double)) {
-        return ndt::make_type<double>();
+        return dynd::ndt::make_type<double>();
     } else if (PyArray_IsScalar(obj, CFloat)) {
-        return ndt::make_type<dynd::complex<float> >();
+        return dynd::ndt::make_type<dynd::complex<float> >();
     } else if (PyArray_IsScalar(obj, CDouble)) {
-        return ndt::make_type<dynd::complex<double> >();
+        return dynd::ndt::make_type<dynd::complex<double> >();
     }
 
     throw dynd::type_error("could not deduce a pydynd type from the numpy scalar object");
@@ -742,16 +742,16 @@ inline size_t get_alignment_of(PyArrayObject* obj)
     return get_alignment_of(align_bits);
 }
 
-nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
+dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
                                          uint32_t access_flags,
                                          bool always_copy)
 {
   // If a copy isn't requested, make sure the access flags are ok
   if (!always_copy) {
-    if ((access_flags & nd::write_access_flag) && !PyArray_ISWRITEABLE(obj)) {
+    if ((access_flags & dynd::nd::write_access_flag) && !PyArray_ISWRITEABLE(obj)) {
       throw runtime_error("cannot view a readonly numpy array as readwrite");
     }
-    if (access_flags & nd::immutable_access_flag) {
+    if (access_flags & dynd::nd::immutable_access_flag) {
       throw runtime_error("cannot view a numpy array as immutable");
     }
   }
@@ -761,23 +761,23 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
   if (always_copy || PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
     // TODO would be nicer without the extra type transformation of the
     // get_canonical_type call
-    nd::array result =
-        nd::dtyped_empty(PyArray_NDIM(obj), PyArray_SHAPE(obj),
+    dynd::nd::array result =
+        dynd::nd::dtyped_empty(PyArray_NDIM(obj), PyArray_SHAPE(obj),
                          pydynd::ndt_type_from_numpy_dtype(PyArray_DESCR(obj))
                              .get_canonical_type());
-    array_copy_from_numpy(result.get_type(), result.get_arrmeta(),
+    pydynd::nd::array_copy_from_numpy(result.get_type(), result.get_arrmeta(),
                           result.get_readwrite_originptr(), obj,
                           &eval::default_eval_context);
     if (access_flags != 0) {
       // Use the requested access flags
       result.get_ndo()->m_flags = access_flags;
     } else {
-      result.get_ndo()->m_flags = nd::default_access_flags;
+      result.get_ndo()->m_flags = dynd::nd::default_access_flags;
     }
     return result;
   } else {
     // Get the dtype of the array
-    ndt::type d = pydynd::ndt_type_from_numpy_dtype(PyArray_DESCR(obj),
+    dynd::ndt::type d = pydynd::ndt_type_from_numpy_dtype(PyArray_DESCR(obj),
                                                     get_alignment_of(obj));
 
     // Get a shared pointer that tracks buffer ownership
@@ -801,10 +801,10 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
 
     // Create the result nd::array
     char *arrmeta = NULL;
-    nd::array result = nd::make_strided_array_from_data(
+    dynd::nd::array result = dynd::nd::make_strided_array_from_data(
         d, PyArray_NDIM(obj), PyArray_DIMS(obj), PyArray_STRIDES(obj),
-        nd::read_access_flag |
-            (PyArray_ISWRITEABLE(obj) ? nd::write_access_flag : 0),
+        dynd::nd::read_access_flag |
+            (PyArray_ISWRITEABLE(obj) ? dynd::nd::write_access_flag : 0),
         PyArray_BYTES(obj), std::move(memblock), &arrmeta);
     if (d.get_type_id() == struct_type_id) {
       // If it's a struct, there's additional arrmeta that needs to be populated
@@ -821,45 +821,45 @@ nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
 
 dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_flags)
 {
-    nd::array result;
+    dynd::nd::array result;
     if (PyArray_IsScalar(obj, Bool)) {
-        result = nd::array((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
+        result = dynd::nd::array((dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
     } else if (PyArray_IsScalar(obj, Byte)) {
-        result = nd::array(((PyByteScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UByte)) {
-        result = nd::array(((PyUByteScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyUByteScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Short)) {
-        result = nd::array(((PyShortScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyShortScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UShort)) {
-        result = nd::array(((PyUShortScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyUShortScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Int)) {
-        result = nd::array(((PyIntScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyIntScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, UInt)) {
-        result = nd::array(((PyUIntScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyUIntScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Long)) {
-        result = nd::array(((PyLongScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, ULong)) {
-        result = nd::array(((PyULongScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyULongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, LongLong)) {
-        result = nd::array(((PyLongLongScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyLongLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, ULongLong)) {
-        result = nd::array(((PyULongLongScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyULongLongScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Float)) {
-        result = nd::array(((PyFloatScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyFloatScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, Double)) {
-        result = nd::array(((PyDoubleScalarObject *)obj)->obval);
+        result = dynd::nd::array(((PyDoubleScalarObject *)obj)->obval);
     } else if (PyArray_IsScalar(obj, CFloat)) {
         npy_cfloat& val = ((PyCFloatScalarObject *)obj)->obval;
-        result = nd::array(dynd::complex<float>(val.real, val.imag));
+        result = dynd::nd::array(dynd::complex<float>(val.real, val.imag));
     } else if (PyArray_IsScalar(obj, CDouble)) {
         npy_cdouble& val = ((PyCDoubleScalarObject *)obj)->obval;
-        result = nd::array(dynd::complex<double>(val.real, val.imag));
+        result = dynd::nd::array(dynd::complex<double>(val.real, val.imag));
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     } else if (PyArray_IsScalar(obj, Datetime)) {
         const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
         int64_t val = scalar->obval;
         if (scalar->obmeta.base <= NPY_FR_D) {
-            result = nd::empty(ndt::make_date());
+            result = dynd::nd::empty(dynd::ndt::make_date());
             int32_t result_val;
             if (val == NPY_DATETIME_NAT) {
                 result_val = DYND_DATE_NA;
@@ -892,7 +892,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
             *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
                 result_val;
         } else {
-            result = nd::empty(ndt::make_datetime(tz_utc));
+            result = dynd::nd::empty(dynd::ndt::make_datetime(tz_utc));
             int64_t result_val;
             switch (scalar->obmeta.base) {
             case NPY_FR_h:
@@ -935,7 +935,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject* obj, uint32_t access_f
         throw dynd::type_error(ss.str());
     }
 
-    result.get_ndo()->m_flags = access_flags ? access_flags : nd::default_access_flags;
+    result.get_ndo()->m_flags = access_flags ? access_flags : dynd::nd::default_access_flags;
 
     return result;
 }

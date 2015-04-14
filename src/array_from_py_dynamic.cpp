@@ -11,6 +11,7 @@
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
+#include <dynd/types/arrfunc_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/type_promotion.hpp>
@@ -160,7 +161,7 @@ static void copy_to_promoted_nd_arr(
     const char *src_data_ptr,
     std::vector<afpd_coordentry>& src_coord,
     afpd_dtype& src_elem,
-    const assignment_strided_ckernel_builder& ck,
+    const ckernel_builder<kernel_request_host>& ck,
     intptr_t current_axis,
     intptr_t promoted_axis,
     bool copy_final_coord,
@@ -177,14 +178,18 @@ static void copy_to_promoted_nd_arr(
           reinterpret_cast<const fixed_dim_type_arrmeta *>(
               src_coord[current_axis].arrmeta_ptr);
       if (!final_coordinate) {
+        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy the full dimension
-        ck(dst_data_ptr, dst_md->stride, const_cast<char *>(src_data_ptr), src_md->stride,
-           shape[current_axis]);
+        char *src = const_cast<char *>(src_data_ptr);
+        fn(dst_data_ptr, dst_md->stride, &src, &src_md->stride,
+           shape[current_axis], ck.get());
       }
       else {
+        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy up to, and possibly including, the coordinate
-        ck(dst_data_ptr, dst_md->stride, const_cast<char *>(src_data_ptr), src_md->stride,
-           src_coord[current_axis].coord + int(copy_final_coord));
+        char *src = const_cast<char *>(src_data_ptr);
+        fn(dst_data_ptr, dst_md->stride, &src, &src_md->stride,
+           src_coord[current_axis].coord + int(copy_final_coord), ck.get());
         dst_coord[current_axis].coord = src_coord[current_axis].coord;
         dst_coord[current_axis].data_ptr =
             dst_data_ptr + dst_md->stride * dst_coord[current_axis].coord;
@@ -206,9 +211,11 @@ static void copy_to_promoted_nd_arr(
         ndt::var_dim_element_resize(dst_coord[current_axis].tp,
                                     dst_coord[current_axis].arrmeta_ptr,
                                     dst_data_ptr, src_d->size);
+        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy the full dimension
-        ck(dst_d->begin, dst_md->stride, src_d->begin, src_md->stride,
-           src_d->size);
+        char *src = src_d->begin;
+        fn(dst_d->begin, dst_md->stride, &src, &src_md->stride,
+           src_d->size, ck.get());
       }
       else {
         // Initialize the var element to the same reserved space as the
@@ -219,9 +226,11 @@ static void copy_to_promoted_nd_arr(
         dst_coord[current_axis].reserved_size =
             src_coord[current_axis].reserved_size;
         // Copy up to, and possibly including, the coordinate
-        if (ck.get_function() != NULL) {
-          ck(dst_d->begin, dst_md->stride, src_d->begin, src_md->stride,
-             src_coord[current_axis].coord + int(copy_final_coord));
+        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
+        if (fn != NULL) {
+          char *src = src_d->begin;
+          fn(dst_d->begin, dst_md->stride, &src, &src_md->stride,
+             src_coord[current_axis].coord + int(copy_final_coord), ck.get());
         }
         dst_coord[current_axis].coord = src_coord[current_axis].coord;
         dst_coord[current_axis].data_ptr =
@@ -351,7 +360,7 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
   nd::array newarr = allocate_nd_arr(shape, newcoord, newelem, ndim);
   // Copy the data up to, but not including, the current `coord`
   // from the old `arr` to the new one
-  assignment_strided_ckernel_builder k;
+  ckernel_builder<kernel_request_host> k;
   if (elem.dtp.get_type_id() != uninitialized_type_id) {
     make_assignment_kernel(NULL, NULL, &k, 0, newelem.dtp, newelem.arrmeta_ptr,
                            elem.dtp, elem.arrmeta_ptr, kernel_request_strided,
@@ -394,7 +403,7 @@ static void promote_nd_arr_dim(std::vector<intptr_t> &shape,
   // from the old `arr` to the new one. The recursion stops
   // at `axis`, where all subsequent dimensions are handled by the
   // created kernel.
-  assignment_strided_ckernel_builder k;
+  ckernel_builder<kernel_request_host> k;
   if (elem.dtp.get_type_id() != uninitialized_type_id) {
     make_assignment_kernel(NULL, NULL, &k, 0, newcoord[axis].tp,
                            newcoord[axis].arrmeta_ptr, coord[axis].tp,

@@ -745,7 +745,7 @@ namespace nd {
     void destruct_children()
     {
       get_child_ckernel()->destroy();
-      base.destroy_child_ckernel(m_copy_value_offset);
+      destroy_child_ckernel(m_copy_value_offset);
     }
 
     static intptr_t
@@ -938,7 +938,7 @@ namespace nd {
     void destruct_children()
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        base.destroy_child_ckernel(m_copy_el_offsets[i]);
+        destroy_child_ckernel(m_copy_el_offsets[i]);
       }
     }
 
@@ -1030,7 +1030,7 @@ namespace nd {
     void destruct_children()
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        base.destroy_child_ckernel(m_copy_el_offsets[i]);
+        destroy_child_ckernel(m_copy_el_offsets[i]);
       }
     }
 

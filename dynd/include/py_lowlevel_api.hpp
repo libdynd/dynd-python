@@ -26,7 +26,7 @@ struct py_lowlevel_api_t {
     // Extracts the dynd object pointers from their Python wrappers.
     // These functions do not check the type of the arguments.
     dynd::array_preamble *(*get_array_ptr)(WArray *obj);
-    const dynd::base_type *(*get_base_type_ptr)(WType *obj);
+    const dynd::ndt::base_type *(*get_base_type_ptr)(WType *obj);
     PyObject *(*array_from_ptr)(PyObject *dt, PyObject *ptr, PyObject *owner,
                                 PyObject *access);
     PyObject *(*make_assignment_ckernel)(void *ckb, intptr_t ckb_offset,

@@ -67,7 +67,7 @@ namespace {
             md->dim_size = count;
             md->stride = dst_stride;
             ndt::type tp = ndt::make_fixed_dim(
-                count, reinterpret_cast<const base_dim_type *>(
+                count, reinterpret_cast<const ndt::base_dim_type *>(
                            ndo[0]->v.get_ndo()->m_type)->get_element_type());
             base_type_decref(ndo[0]->v.get_ndo()->m_type);
             ndo[0]->v.get_ndo()->m_type = tp.release();
@@ -78,7 +78,7 @@ namespace {
                 md->stride = src_stride[i];
                 tp = ndt::make_fixed_dim(
                     count,
-                    reinterpret_cast<const base_dim_type *>(
+                    reinterpret_cast<const ndt::base_dim_type *>(
                         ndo[i+1]->v.get_ndo()->m_type)->get_element_type());
                 base_type_decref(ndo[i + 1]->v.get_ndo()->m_type);
                 ndo[i + 1]->v.get_ndo()->m_type = tp.release();

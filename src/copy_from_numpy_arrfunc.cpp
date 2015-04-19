@@ -84,7 +84,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     extract_fields_from_numpy_struct(dtype, field_dtypes_orig, field_names_orig,
                                      field_offsets_orig);
     intptr_t field_count = field_dtypes_orig.size();
-    if (field_count != dst_tp.extended<base_tuple_type>()->get_field_count()) {
+    if (field_count != dst_tp.extended<ndt::base_tuple_type>()->get_field_count()) {
       stringstream ss;
       ss << "Cannot assign from numpy type " << pyobject_repr((PyObject *)dtype)
          << " to dynd type " << dst_tp;
@@ -98,7 +98,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
       field_dtypes.resize(field_count);
       field_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
-        intptr_t src_i = dst_tp.extended<base_struct_type>()->get_field_index(
+        intptr_t src_i = dst_tp.extended<ndt::base_struct_type>()->get_field_index(
             field_names_orig[i]);
         if (src_i >= 0) {
           field_dtypes[src_i] = field_dtypes_orig[i];
@@ -127,7 +127,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     }
 
     const uintptr_t *dst_arrmeta_offsets =
-        dst_tp.extended<base_tuple_type>()->get_arrmeta_offsets_raw();
+        dst_tp.extended<ndt::base_tuple_type>()->get_arrmeta_offsets_raw();
     shortvector<const char *> dst_fields_arrmeta(field_count);
     for (intptr_t i = 0; i != field_count; ++i) {
       dst_fields_arrmeta[i] = dst_arrmeta + dst_arrmeta_offsets[i];
@@ -135,8 +135,8 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
 
     return make_tuple_unary_op_ckernel(
         self_af, af_tp, ckb, ckb_offset, field_count,
-        dst_tp.extended<base_tuple_type>()->get_data_offsets(dst_arrmeta),
-        dst_tp.extended<base_tuple_type>()->get_field_types_raw(),
+        dst_tp.extended<ndt::base_tuple_type>()->get_data_offsets(dst_arrmeta),
+        dst_tp.extended<ndt::base_tuple_type>()->get_field_types_raw(),
         dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0],
         &src_fields_arrmeta[0], kernreq, ectx);
   } else {

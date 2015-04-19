@@ -536,7 +536,7 @@ namespace nd {
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (PyDate_Check(src_obj)) {
-        const date_type *dd = dst_tp.extended<date_type>();
+        const ndt::date_type *dd = dst_tp.extended<ndt::date_type>();
         dd->set_ymd(dst_arrmeta, dst, assign_error_fractional,
                     PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                     PyDateTime_GET_DAY(src_obj));
@@ -556,7 +556,7 @@ namespace nd {
              << pyobject_repr(src_obj) << " to a datetime date";
           throw std::invalid_argument(ss.str());
         }
-        const date_type *dd = dst_tp.extended<date_type>();
+        const ndt::date_type *dd = dst_tp.extended<ndt::date_type>();
         dd->set_ymd(dst_arrmeta, dst, assign_error_fractional,
                     PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                     PyDateTime_GET_DAY(src_obj));
@@ -602,7 +602,7 @@ namespace nd {
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (PyTime_Check(src_obj)) {
-        const time_type *tt = dst_tp.extended<time_type>();
+        const ndt::time_type *tt = dst_tp.extended<ndt::time_type>();
         tt->set_time(dst_arrmeta, dst, assign_error_fractional,
                      PyDateTime_TIME_GET_HOUR(src_obj),
                      PyDateTime_TIME_GET_MINUTE(src_obj),
@@ -656,7 +656,7 @@ namespace nd {
               "Converting datetimes with a timezone to dynd "
               "arrays is not yet supported");
         }
-        const datetime_type *dd = dst_tp.extended<datetime_type>();
+        const ndt::datetime_type *dd = dst_tp.extended<ndt::datetime_type>();
         dd->set_cal(dst_arrmeta, dst, assign_error_fractional,
                     PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                     PyDateTime_GET_DAY(src_obj),
@@ -793,9 +793,9 @@ namespace nd {
       intptr_t root_ckb_offset = ckb_offset;
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       const arrfunc_type_data *assign_na_af =
-          dst_tp.extended<option_type>()->get_assign_na_arrfunc();
+          dst_tp.extended<ndt::option_type>()->get_assign_na_arrfunc();
       const arrfunc_type *assign_na_af_tp =
-          dst_tp.extended<option_type>()->get_assign_na_arrfunc_type();
+          dst_tp.extended<ndt::option_type>()->get_assign_na_arrfunc_type();
       ckb_offset = assign_na_af->instantiate(
           assign_na_af, assign_na_af_tp, NULL, ckb, ckb_offset, dst_tp,
           dst_arrmeta, nsrc, NULL, NULL, kernel_request_single, ectx, kwds,
@@ -806,7 +806,7 @@ namespace nd {
       self->copy_value_offset = ckb_offset - root_ckb_offset;
       ckb_offset = af->instantiate(
           af, af_tp, NULL, ckb, ckb_offset,
-          dst_tp.extended<option_type>()->get_value_type(), dst_arrmeta, nsrc,
+          dst_tp.extended<ndt::option_type>()->get_value_type(), dst_arrmeta, nsrc,
           src_tp, src_arrmeta, kernel_request_single, ectx, kwds, tp_vars);
       return ckb_offset;
     }
@@ -828,7 +828,7 @@ namespace nd {
     {
       // Assign via an intermediate category_type buffer
       const dynd::ndt::type &buf_tp =
-          dst_tp.extended<categorical_type>()->get_category_type();
+          dst_tp.extended<ndt::categorical_type>()->get_category_type();
       dynd::nd::arrfunc copy_af =
           make_arrfunc_from_assignment(dst_tp, buf_tp, assign_error_default);
       dynd::nd::arrfunc child =
@@ -1077,7 +1077,7 @@ namespace nd {
       self->m_dst_arrmeta = dst_arrmeta;
       self->m_dim_broadcast = dim_broadcast;
       dynd::ndt::type el_tp =
-          dst_tp.extended<var_dim_type>()->get_element_type();
+          dst_tp.extended<ndt::var_dim_type>()->get_element_type();
       const char *el_arrmeta = dst_arrmeta + sizeof(var_dim_type_arrmeta);
       ckb_offset = af->instantiate(af, af_tp, NULL, ckb, ckb_offset, el_tp,
                                    el_arrmeta, nsrc, src_tp, src_arrmeta,
@@ -1128,9 +1128,9 @@ namespace nd {
       // TODO: PEP 3118 support here
 
       intptr_t field_count =
-          m_dst_tp.extended<base_tuple_type>()->get_field_count();
+          m_dst_tp.extended<ndt::base_tuple_type>()->get_field_count();
       const uintptr_t *field_offsets =
-          m_dst_tp.extended<base_tuple_type>()->get_data_offsets(m_dst_arrmeta);
+          m_dst_tp.extended<ndt::base_tuple_type>()->get_data_offsets(m_dst_arrmeta);
 
       // Get the input as an array of PyObject *
       pyobject_ownref src_fast;
@@ -1194,11 +1194,11 @@ namespace nd {
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
       intptr_t field_count =
-          dst_tp.extended<base_tuple_type>()->get_field_count();
+          dst_tp.extended<ndt::base_tuple_type>()->get_field_count();
       const dynd::ndt::type *field_types =
-          dst_tp.extended<base_tuple_type>()->get_field_types_raw();
+          dst_tp.extended<ndt::base_tuple_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          dst_tp.extended<base_tuple_type>()->get_arrmeta_offsets_raw();
+          dst_tp.extended<ndt::base_tuple_type>()->get_arrmeta_offsets_raw();
       self->m_dim_broadcast = dim_broadcast;
       self->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
@@ -1253,9 +1253,9 @@ namespace nd {
       // TODO: PEP 3118 support here
 
       intptr_t field_count =
-          m_dst_tp.extended<base_tuple_type>()->get_field_count();
+          m_dst_tp.extended<ndt::base_tuple_type>()->get_field_count();
       const uintptr_t *field_offsets =
-          m_dst_tp.extended<base_tuple_type>()->get_data_offsets(m_dst_arrmeta);
+          m_dst_tp.extended<ndt::base_tuple_type>()->get_data_offsets(m_dst_arrmeta);
 
       if (PyDict_Check(src_obj)) {
         // Keep track of which fields we've seen
@@ -1268,7 +1268,7 @@ namespace nd {
         while (PyDict_Next(src_obj, &dict_pos, &dict_key, &dict_value)) {
           std::string name = pystring_as_string(dict_key);
           intptr_t i =
-              m_dst_tp.extended<base_struct_type>()->get_field_index(name);
+              m_dst_tp.extended<ndt::base_struct_type>()->get_field_index(name);
           // TODO: Add an error policy of whether to throw an error
           //       or not. For now, just raise an error
           if (i >= 0) {
@@ -1293,7 +1293,7 @@ namespace nd {
             std::stringstream ss;
             ss << "python dict does not contain the field ";
             print_escaped_utf8_string(
-                ss, m_dst_tp.extended<base_struct_type>()->get_field_name(i));
+                ss, m_dst_tp.extended<ndt::base_struct_type>()->get_field_name(i));
             ss << " as required by the data type " << m_dst_tp;
             throw broadcast_error(ss.str());
           }
@@ -1362,11 +1362,11 @@ namespace nd {
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
       intptr_t field_count =
-          dst_tp.extended<base_struct_type>()->get_field_count();
+          dst_tp.extended<ndt::base_struct_type>()->get_field_count();
       const dynd::ndt::type *field_types =
-          dst_tp.extended<base_struct_type>()->get_field_types_raw();
+          dst_tp.extended<ndt::base_struct_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          dst_tp.extended<base_struct_type>()->get_arrmeta_offsets_raw();
+          dst_tp.extended<ndt::base_struct_type>()->get_arrmeta_offsets_raw();
       self->m_dim_broadcast = dim_broadcast;
       self->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {

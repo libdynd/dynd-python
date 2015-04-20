@@ -10,7 +10,7 @@ namespace nd {
 
   struct copy_from_numpy_kernel : base_virtual_kernel<copy_from_numpy_kernel> {
     static intptr_t
-    instantiate(const arrfunc_type_data *af, const arrfunc_type *af_tp,
+    instantiate(const arrfunc_type_data *af, const ndt::arrfunc_type *af_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,

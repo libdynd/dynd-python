@@ -58,7 +58,7 @@ namespace nd {
 
       void single(char *dst, char *const *src)
       {
-        const arrfunc_type *fpt = m_proto.extended<arrfunc_type>();
+        const ndt::arrfunc_type *fpt = m_proto.extended<ndt::arrfunc_type>();
         intptr_t nsrc = fpt->get_npos();
         const ndt::type &dst_tp = fpt->get_return_type();
         const ndt::type *src_tp = fpt->get_pos_types_raw();
@@ -91,7 +91,7 @@ namespace nd {
       void strided(char *dst, intptr_t dst_stride, char *const *src,
                    const intptr_t *src_stride, size_t count)
       {
-        const arrfunc_type *fpt = m_proto.extended<arrfunc_type>();
+        const ndt::arrfunc_type *fpt = m_proto.extended<ndt::arrfunc_type>();
         intptr_t nsrc = fpt->get_npos();
         const ndt::type &dst_tp = fpt->get_return_type();
         const ndt::type *src_tp = fpt->get_pos_types_raw();
@@ -131,7 +131,7 @@ namespace nd {
       }
 
       static intptr_t
-      instantiate(const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
+      instantiate(const arrfunc_type_data *af_self, const ndt::arrfunc_type *af_tp,
                   char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
                   const ndt::type &dst_tp, const char *dst_arrmeta,
                   intptr_t nsrc, const ndt::type *src_tp,

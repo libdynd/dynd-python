@@ -568,7 +568,7 @@ dynd::nd::array pydynd::array_memmap(
 namespace {
     struct contains_data {
         const char *x_data;
-        comparison_ckernel_builder *k;
+        ckernel_builder<kernel_request_host> *k;
         bool found;
     };
 
@@ -577,7 +577,9 @@ namespace {
                            void *callback_data)
     {
         contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
-        if (!cd->found && (*cd->k)(cd->x_data, data)) {
+        dynd::expr_predicate_t fn = cd->k->get()->get_function<dynd::expr_predicate_t>();
+        const char *const src[2] = {cd->x_data, data};
+        if (!cd->found && (fn(src, cd->k->get()) != 0)) {
             cd->found = true;
         }
     }
@@ -622,7 +624,7 @@ bool pydynd::array_contains(const dynd::nd::array& n, PyObject *x)
     const char *x_data = x_ndo.get_readonly_originptr();
     const ndt::type& child_dt = budd->get_element_type();
     const char *child_arrmeta = arrmeta + budd->get_element_arrmeta_offset();
-    comparison_ckernel_builder k;
+    ckernel_builder<kernel_request_host> k;
     try {
         make_comparison_kernel(&k, 0,
                     x_dt, x_arrmeta, child_dt, child_arrmeta,

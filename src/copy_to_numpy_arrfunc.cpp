@@ -41,7 +41,7 @@ struct strided_of_numpy_arrmeta {
  * being a pointer to the ``PyArray_Descr *`` of the type for the destination.
  */
 intptr_t copy_to_numpy_ck::instantiate(
-    const arrfunc_type_data *self_af, const ndt::arrfunc_type *af_tp,
+    const arrfunc_type_data *self_af, const dynd::ndt::arrfunc_type *af_tp,
     char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
     const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
     const dynd::ndt::type *src_tp, const char *const *src_arrmeta,

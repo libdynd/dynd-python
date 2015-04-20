@@ -27,7 +27,7 @@ using namespace pydynd;
 namespace {
 dynd::array_preamble *get_array_ptr(WArray *obj) { return obj->v.get_ndo(); }
 
-const dynd::base_type *get_base_type_ptr(WType *obj)
+const dynd::ndt::base_type *get_base_type_ptr(WType *obj)
 {
   return obj->v.extended();
 }

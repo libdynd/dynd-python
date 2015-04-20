@@ -92,7 +92,7 @@ intptr_t copy_to_numpy_ck::instantiate(
                                      field_offsets_orig);
     intptr_t field_count = field_dtypes_orig.size();
     if (field_count !=
-        src_tp[0].extended<base_tuple_type>()->get_field_count()) {
+        src_tp[0].extended<ndt::base_tuple_type>()->get_field_count()) {
       stringstream ss;
       pyobject_ownref dtype_str(PyObject_Str((PyObject *)dtype));
       ss << "Cannot assign from source dynd type " << src_tp[0]
@@ -108,7 +108,7 @@ intptr_t copy_to_numpy_ck::instantiate(
       field_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         intptr_t src_i =
-            src_tp[0].extended<base_struct_type>()->get_field_index(
+            src_tp[0].extended<ndt::base_struct_type>()->get_field_index(
                 field_names_orig[i]);
         if (src_i >= 0) {
           field_dtypes[src_i] = field_dtypes_orig[i];
@@ -138,7 +138,7 @@ intptr_t copy_to_numpy_ck::instantiate(
     }
 
     const uintptr_t *src_arrmeta_offsets =
-        src_tp[0].extended<base_tuple_type>()->get_arrmeta_offsets_raw();
+        src_tp[0].extended<ndt::base_tuple_type>()->get_arrmeta_offsets_raw();
     shortvector<const char *> src_fields_arrmeta(field_count);
     for (intptr_t i = 0; i != field_count; ++i) {
       src_fields_arrmeta[i] = src_arrmeta[0] + src_arrmeta_offsets[i];
@@ -147,8 +147,8 @@ intptr_t copy_to_numpy_ck::instantiate(
     return make_tuple_unary_op_ckernel(
         self_af, af_tp, ckb, ckb_offset, field_count, &field_offsets[0],
         &dst_fields_tp[0], &dst_fields_arrmeta[0],
-        src_tp[0].extended<base_tuple_type>()->get_data_offsets(src_arrmeta[0]),
-        src_tp[0].extended<base_tuple_type>()->get_field_types_raw(),
+        src_tp[0].extended<ndt::base_tuple_type>()->get_data_offsets(src_arrmeta[0]),
+        src_tp[0].extended<ndt::base_tuple_type>()->get_field_types_raw(),
         src_fields_arrmeta.get(), kernreq, ectx);
   } else {
     stringstream ss;

@@ -204,8 +204,8 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
     const arrfunc_type_data *elwise_reduction_af =
         reinterpret_cast<const arrfunc_type_data *>(
             elwise_reduction.get_readonly_originptr());
-    const arrfunc_type *elwise_reduction_af_tp =
-        elwise_reduction.get_type().extended<arrfunc_type>();
+    const dynd::ndt::arrfunc_type *elwise_reduction_af_tp =
+        elwise_reduction.get_type().extended<dynd::ndt::arrfunc_type>();
 
     dynd::nd::array dst_initialization;
     if (WArray_Check(dst_initialization_obj) &&

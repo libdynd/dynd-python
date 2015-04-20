@@ -65,7 +65,7 @@ namespace nd {
       }
 
       static intptr_t instantiate(
-          const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
+          const arrfunc_type_data *af_self, const ndt::arrfunc_type *af_tp,
           char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
           const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
           intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
@@ -145,7 +145,7 @@ namespace nd {
       }
 
       static intptr_t instantiate(
-          const arrfunc_type_data *af_self, const arrfunc_type *af_tp,
+          const arrfunc_type_data *af_self, const ndt::arrfunc_type *af_tp,
           char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
           const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
           intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,

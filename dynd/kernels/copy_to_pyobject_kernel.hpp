@@ -283,7 +283,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
@@ -373,7 +373,7 @@ namespace nd {
   struct copy_to_pyobject_kernel<string_type_id>
       : base_virtual_kernel<copy_to_pyobject_kernel<string_type_id>> {
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -424,7 +424,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
@@ -455,7 +455,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
@@ -488,7 +488,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
@@ -521,7 +521,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *DYND_UNUSED(src_arrmeta),
@@ -539,7 +539,7 @@ namespace nd {
   struct copy_to_pyobject_kernel<fixed_string_type_id>
       : base_virtual_kernel<copy_to_pyobject_kernel<fixed_string_type_id>> {
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -597,7 +597,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -638,7 +638,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -682,7 +682,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const arrfunc_type_data *DYND_UNUSED(self),
-        const arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
+        const ndt::arrfunc_type *DYND_UNUSED(af_tp), char *DYND_UNUSED(data),
         void *ckb, intptr_t ckb_offset, const ndt::type &DYND_UNUSED(dst_tp),
         const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
         const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -749,7 +749,7 @@ namespace nd {
     }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -762,7 +762,7 @@ namespace nd {
           copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
       const arrfunc_type_data *is_avail_af =
           src_tp[0].extended<ndt::option_type>()->get_is_avail_arrfunc();
-      const arrfunc_type *is_avail_af_tp =
+      const ndt::arrfunc_type *is_avail_af_tp =
           src_tp[0].extended<ndt::option_type>()->get_is_avail_arrfunc_type();
       ckb_offset = is_avail_af->instantiate(
           is_avail_af, is_avail_af_tp, NULL, ckb, ckb_offset,
@@ -815,7 +815,7 @@ namespace nd {
     void destruct_children() { get_child_ckernel()->destroy(); }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -875,7 +875,7 @@ namespace nd {
     void destruct_children() { get_child_ckernel()->destroy(); }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -943,7 +943,7 @@ namespace nd {
     }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -1035,7 +1035,7 @@ namespace nd {
     }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -1091,7 +1091,7 @@ namespace nd {
     void destruct_children() { get_child_ckernel()->destroy(); }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self, const arrfunc_type *self_tp,
+    instantiate(const arrfunc_type_data *self, const ndt::arrfunc_type *self_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                 const ndt::type *src_tp, const char *const *src_arrmeta,
@@ -1115,7 +1115,7 @@ namespace nd {
   struct copy_to_pyobject_kernel<categorical_type_id>
       : base_virtual_kernel<copy_to_pyobject_kernel<categorical_type_id>> {
     static intptr_t
-    instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+    instantiate(const arrfunc_type_data *self_af, const ndt::arrfunc_type *af_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
                 intptr_t nsrc, const dynd::ndt::type *src_tp,
@@ -1141,7 +1141,7 @@ namespace nd {
   struct default_copy_to_pyobject_kernel
       : base_virtual_kernel<default_copy_to_pyobject_kernel> {
     static void resolve_dst_type(const arrfunc_type_data *,
-                                 const arrfunc_type *DYND_UNUSED(self_tp),
+                                 const ndt::arrfunc_type *DYND_UNUSED(self_tp),
                                  char *DYND_UNUSED(data), ndt::type &, intptr_t,
                                  const ndt::type *src_tp,
                                  const dynd::nd::array &,
@@ -1152,7 +1152,7 @@ namespace nd {
     }
 
     static intptr_t
-    instantiate(const arrfunc_type_data *self_af, const arrfunc_type *af_tp,
+    instantiate(const arrfunc_type_data *self_af, const ndt::arrfunc_type *af_tp,
                 char *data, void *ckb, intptr_t ckb_offset,
                 const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
                 intptr_t nsrc, const dynd::ndt::type *src_tp,

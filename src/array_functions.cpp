@@ -135,8 +135,7 @@ PyObject *pydynd::array_index(const dynd::nd::array& n)
 {
     // Implements the nb_index slot
     switch (n.get_type().get_kind()) {
-        case int_kind:
-        case uint_kind:
+        case sint_kind:
             return array_as_py(n, false);
         default:
             PyErr_SetString(PyExc_TypeError,
@@ -151,8 +150,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
     // Implements the nonzero/conversion to boolean slot
     switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
-        case int_kind:
-        case uint_kind:
+        case sint_kind:
         case real_kind:
         case complex_kind:
             // Follow Python in not raising errors here
@@ -212,28 +210,31 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
 
 PyObject *pydynd::array_int(const dynd::nd::array& n)
 {
-    switch (n.get_type().value_type().get_kind()) {
-        case bool_kind:
-        case int_kind:
-            return PyLong_FromLongLong(n.as<int64_t>());
-        case uint_kind:
-            return PyLong_FromUnsignedLongLong(n.as<uint64_t>());
-        default:
-            break;
+  const ndt::type &vt = n.get_type().value_type();
+  switch (vt.get_kind()) {
+  case bool_kind:
+  case sint_kind:
+    if (vt.get_type_id() != uint64_type_id) {
+      return PyLong_FromLongLong(n.as<int64_t>());
     }
-    stringstream ss;
-    ss << "cannot convert dynd array of type " << n.get_type();
-    ss << " to an int";
-    PyErr_SetString(PyExc_ValueError, ss.str().c_str());
-    throw exception();
+    else {
+      return PyLong_FromUnsignedLongLong(n.as<uint64_t>());
+    }
+  default:
+    break;
+  }
+  stringstream ss;
+  ss << "cannot convert dynd array of type " << n.get_type();
+  ss << " to an int";
+  PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+  throw exception();
 }
 
 PyObject *pydynd::array_float(const dynd::nd::array& n)
 {
     switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
-        case int_kind:
-        case uint_kind:
+        case sint_kind:
         case real_kind:
             return PyFloat_FromDouble(n.as<double>());
         default:
@@ -250,8 +251,7 @@ PyObject *pydynd::array_complex(const dynd::nd::array& n)
 {
     switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
-        case int_kind:
-        case uint_kind:
+        case sint_kind:
         case real_kind:
         case complex_kind: {
             dynd::complex<double> value = n.as<dynd::complex<double> >();

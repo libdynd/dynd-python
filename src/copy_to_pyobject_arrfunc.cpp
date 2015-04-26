@@ -34,7 +34,7 @@
 using namespace std;
 using namespace pydynd;
 
-typedef integer_sequence<
+typedef dynd::integer_sequence<
     type_id_t, bool_type_id, int8_type_id, int16_type_id, int32_type_id,
     int64_type_id, int128_type_id, uint8_type_id, uint16_type_id,
     uint32_type_id, uint64_type_id, uint128_type_id, float16_type_id,

@@ -945,7 +945,7 @@ char pydynd::numpy_kindchar_of(const dynd::ndt::type& d)
     switch (d.get_kind()) {
     case bool_kind:
         return 'b';
-    case int_kind:
+    case sint_kind:
         return 'i';
     case uint_kind:
         return 'u';

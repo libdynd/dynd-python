@@ -918,7 +918,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                         coord[current_axis - 1].data_ptr, obj, ectx);
                 }
                 return;
-            case int_kind:
+            case sint_kind:
                 if (!int_assign(elem.dtp, coord[current_axis-1].data_ptr, obj)) {
                     promote_nd_arr_dtype(shape, coord, elem, arr,
                                         deduce_ndt_type_from_pyobject(obj));

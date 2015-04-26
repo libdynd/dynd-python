@@ -11,6 +11,7 @@ from translate_except cimport translate_exception
 cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
     cdef enum type_kind_t:
         bool_kind
+        uint_kind
         sint_kind
         real_kind
         complex_kind

@@ -96,7 +96,7 @@ def add_computed_fields(n, fields, rm_fields=[], fnname=None):
     """
     n = array(n)
     udt = dtype_of(n).value_type
-    if udt.kind != 'struct':
+    if udt.kind != 'Struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
     # The field names and types of the input struct
@@ -181,7 +181,7 @@ def make_computed_fields(n, replace_ndim, fields, fnname=None):
     """
     n = array(n)
     udt = dtype_of(n).value_type
-    if udt.kind != 'struct':
+    if udt.kind != 'Struct':
         raise ValueError("parameter 'n' must have kind 'struct'")
 
     # The field names and types of the input struct

@@ -135,6 +135,7 @@ PyObject *pydynd::array_index(const dynd::nd::array& n)
 {
     // Implements the nb_index slot
     switch (n.get_type().get_kind()) {
+        case uint_kind:
         case sint_kind:
             return array_as_py(n, false);
         default:
@@ -150,6 +151,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array& n)
     // Implements the nonzero/conversion to boolean slot
     switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
+        case uint_kind:
         case sint_kind:
         case real_kind:
         case complex_kind:
@@ -213,6 +215,7 @@ PyObject *pydynd::array_int(const dynd::nd::array& n)
   const ndt::type &vt = n.get_type().value_type();
   switch (vt.get_kind()) {
   case bool_kind:
+  case uint_kind:
   case sint_kind:
     if (vt.get_type_id() != uint64_type_id) {
       return PyLong_FromLongLong(n.as<int64_t>());
@@ -234,6 +237,7 @@ PyObject *pydynd::array_float(const dynd::nd::array& n)
 {
     switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
+        case uint_kind:
         case sint_kind:
         case real_kind:
             return PyFloat_FromDouble(n.as<double>());
@@ -251,6 +255,7 @@ PyObject *pydynd::array_complex(const dynd::nd::array& n)
 {
     switch (n.get_type().value_type().get_kind()) {
         case bool_kind:
+        case uint_kind:
         case sint_kind:
         case real_kind:
         case complex_kind: {

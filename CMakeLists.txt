@@ -65,7 +65,7 @@ if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
 else()
     # Set some options used by the libdynd CMakeLists.txt
-    if(WIN32)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         set(DYND_SHARED_LIB OFF)
     else()
         set(DYND_SHARED_LIB ON)
@@ -104,16 +104,28 @@ string(REPLACE "v" "" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
 string(REPLACE "-" ";" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION}")
 list(GET DYND_PYTHON_VERSION 0 "${DYND_PYTHON_VERSION}")
 
-if(WIN32)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     # Treat warnings as errors (-WX does this)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX -EHsc")
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 18)
-            message(FATAL_ERROR "Only MSVC 2013 (Version 18.0) and later are supported by LibDyND. Found version ${CMAKE_CXX_COMPILER_VERSION}.")
-        endif ()
-    endif()
+    if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 18)
+        message(FATAL_ERROR "Only MSVC 2013 (Version 18.0) and later are supported by LibDyND. Found version ${CMAKE_CXX_COMPILER_VERSION}.")
+    endif ()
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -fomit-frame-pointer -fstrict-aliasing -fPIC -Wall -Wextra -Werror -Wno-missing-field-initializers")
+    if(WIN32)
+        # Don't use the -fPIC flag since it is the default on MinGW.
+        # Doing so results in a warning that is then raised as an error.
+        # Define _hypot=hypot to avoid the conflict between the macro
+        # used in the Python headers and the name used in the standard library.
+        if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+            # Define MS_WIN64 so that npy_intp has the correct size and
+            # the proper module import functions are called on 64 bit Windows.
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot -std=c++11 -DMS_WIN64 -g -fomit-frame-pointer -fstrict-aliasing -Wall -Wextra -Werror -Wno-missing-field-initializers")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot -std=c++11 -g -fomit-frame-pointer -fstrict-aliasing -Wall -Wextra -Werror -Wno-missing-field-initializers")
+        endif()
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -fomit-frame-pointer -fstrict-aliasing -fPIC -Wall -Wextra -Werror -Wno-missing-field-initializers")
+    endif()
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         if ("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 4.7)
             message(FATAL_ERROR "Only GCC 4.7 and later are supported by LibDyND. Found version ${CMAKE_CXX_COMPILER_VERSION}.")
@@ -236,7 +248,7 @@ set_target_properties(
     PROPERTIES
     OUTPUT_NAME _pydynd
     LINKER_LANGUAGE CXX)
-if(WIN32)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set_target_properties(
         dynd._pydynd PROPERTIES
         COMPILE_FLAGS

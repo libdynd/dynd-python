@@ -146,8 +146,12 @@ if(PYTHON_IS_DEBUG)
 endif()
 
 if(CMAKE_HOST_WIN32)
-    set(PYTHON_LIBRARY
-        "${PYTHON_PREFIX}/libs/Python${PYTHON_LIBRARY_SUFFIX}.lib")
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        set(PYTHON_LIBRARY
+            "${PYTHON_PREFIX}/libs/Python${PYTHON_LIBRARY_SUFFIX}.lib")
+    else()
+        set(PYTHON_LIBRARY "${PYTHON_PREFIX}/libs/libpython${PYTHON_LIBRARY_SUFFIX}.a")
+    endif()
 elseif(APPLE)
      # Seems to require "-undefined dynamic_lookup" instead of linking
      # against the .dylib, otherwise it crashes. This flag is added

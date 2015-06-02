@@ -53,41 +53,75 @@ if("${_LIBDYND_CONFIG}" STREQUAL "")
     set(LIBDYND_FOUND FALSE)
     return()
 endif()
+MESSAGE(${_LIBDYND_CONFIG})
 
+if(WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Get the version
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-version"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_VERSION
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR
+            "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    endif()
 
-# Get the version
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-version"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_VERSION
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    # Get the library to link against
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libpath"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_LIBRARIES
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR
+            "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    # Get the include directory
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-includedir"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_INCLUDE_DIRS
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR
+            "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    endif()
+elseif(UNIX)
+    # Get the version
+    execute_process(COMMAND "sh" "${_LIBDYND_CONFIG}" "-version"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_VERSION
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR
+            "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    # Get the library to link against
+    execute_process(COMMAND "sh" "${_LIBDYND_CONFIG}" "-libpath"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_LIBRARIES
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR
+            "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    # Get the include directory
+    execute_process(COMMAND "sh" "${_LIBDYND_CONFIG}" "-includedir"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_INCLUDE_DIRS
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR
+            "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+    endif()
 endif()
-
-# Get the library to link against
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libpath"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_LIBRARIES
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
-endif()
-
-# Get the include directory
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-includedir"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_INCLUDE_DIRS
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
-endif()
-
 
 find_package_message(LIBDYND
     "Found LibDyND: version \"${LIBDYND_VERSION}\",  ${LIBDYND_LIBRARIES}"

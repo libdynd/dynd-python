@@ -20,16 +20,16 @@ namespace pydynd {
  * Struct with data about the _ctypes module.
  */
 struct ctypes_info {
-    // The _ctypes module (for C-implementation details)
-    PyObject *_ctypes;
-    // These match the corresponding names within _ctypes.c
-    PyObject *PyCData_Type;
-    PyObject *PyCStructType_Type;
-    PyObject *UnionType_Type;
-    PyObject *PyCPointerType_Type;
-    PyObject *PyCArrayType_Type;
-    PyObject *PyCSimpleType_Type;
-    PyObject *PyCFuncPtrType_Type;
+  // The _ctypes module (for C-implementation details)
+  PyObject *_ctypes;
+  // These match the corresponding names within _ctypes.c
+  PyObject *PyCData_Type;
+  PyObject *PyCStructType_Type;
+  PyObject *UnionType_Type;
+  PyObject *PyCPointerType_Type;
+  PyObject *PyCArrayType_Type;
+  PyObject *PyCSimpleType_Type;
+  PyObject *PyCFuncPtrType_Type;
 };
 
 extern ctypes_info ctypes;
@@ -53,62 +53,60 @@ dynd::ndt::type ndt_type_from_ctypes_cdatatype(PyObject *d);
 //       tweak it for variations.
 
 union ctypes_value {
-    char c[16];
-    short s;
-    int i;
-    long l;
-    float f;
-    double d;
+  char c[16];
+  short s;
+  int i;
+  long l;
+  float f;
+  double d;
 #ifdef HAVE_LONG_LONG
-    PY_LONG_LONG ll;
+  PY_LONG_LONG ll;
 #endif
-    long double D;
+  long double D;
 };
 
 struct CDataObject {
-    PyObject_HEAD
-    char *b_ptr;                /* pointer to memory block */
-    int  b_needsfree;           /* need _we_ free the memory? */
-    CDataObject *b_base;        /* pointer to base object or NULL */
-    Py_ssize_t b_size;          /* size of memory block in bytes */
-    Py_ssize_t b_length;        /* number of references we need */
-    Py_ssize_t b_index;         /* index of this object into base's b_object list */
-    PyObject *b_objects;        /* dictionary of references we need to keep, or Py_None */
-    ctypes_value b_value;
+  PyObject_HEAD char *b_ptr; /* pointer to memory block */
+  int b_needsfree;           /* need _we_ free the memory? */
+  CDataObject *b_base;       /* pointer to base object or NULL */
+  Py_ssize_t b_size;         /* size of memory block in bytes */
+  Py_ssize_t b_length;       /* number of references we need */
+  Py_ssize_t b_index; /* index of this object into base's b_object list */
+  PyObject *
+      b_objects; /* dictionary of references we need to keep, or Py_None */
+  ctypes_value b_value;
 };
 
 struct PyCFuncPtrObject {
-    // First part identical to CDataObject
-    PyObject_HEAD
-    char *b_ptr;                /* pointer to memory block */
-    int  b_needsfree;           /* need _we_ free the memory? */
-    CDataObject *b_base;        /* pointer to base object or NULL */
-    Py_ssize_t b_size;          /* size of memory block in bytes */
-    Py_ssize_t b_length;        /* number of references we need */
-    Py_ssize_t b_index;         /* index of this object into base's b_object list */
-    PyObject *b_objects;        /* list of references we need to keep */
-    ctypes_value b_value;
-    /* end of CDataObject, additional fields follow */
+  // First part identical to CDataObject
+  PyObject_HEAD char *b_ptr; /* pointer to memory block */
+  int b_needsfree;           /* need _we_ free the memory? */
+  CDataObject *b_base;       /* pointer to base object or NULL */
+  Py_ssize_t b_size;         /* size of memory block in bytes */
+  Py_ssize_t b_length;       /* number of references we need */
+  Py_ssize_t b_index;  /* index of this object into base's b_object list */
+  PyObject *b_objects; /* list of references we need to keep */
+  ctypes_value b_value;
+  /* end of CDataObject, additional fields follow */
 
-    void *thunk;
-    PyObject *callable;
+  void *thunk;
+  PyObject *callable;
 
-    /* These two fields will override the ones in the type's stgdict if
-       they are set */
-    PyObject *converters;
-    PyObject *argtypes;
-    PyObject *restype;
-    PyObject *checker;
-    PyObject *errcheck;
+  /* These two fields will override the ones in the type's stgdict if
+     they are set */
+  PyObject *converters;
+  PyObject *argtypes;
+  PyObject *restype;
+  PyObject *checker;
+  PyObject *errcheck;
 #ifdef _WIN32
-    int index;
-    void *iid;
+  int index;
+  void *iid;
 #endif
-    PyObject *paramflags;
+  PyObject *paramflags;
 };
 
-struct ctypes_ffi_type
-{
+struct ctypes_ffi_type {
   size_t size;
   unsigned short alignment;
   unsigned short type;
@@ -117,17 +115,20 @@ struct ctypes_ffi_type
 
 // These functions correspond to functions or macros in
 // CPython's internal "ctypes.h"
-inline bool CDataObject_CheckExact(PyObject *v) {
-    return v->ob_type == (PyTypeObject *)ctypes.PyCData_Type;
+inline bool CDataObject_CheckExact(PyObject *v)
+{
+  return v->ob_type == (PyTypeObject *)ctypes.PyCData_Type;
 }
-inline bool CDataObject_Check(PyObject *v) {
-    return PyObject_TypeCheck(v, (PyTypeObject *)ctypes.PyCData_Type);
+inline bool CDataObject_Check(PyObject *v)
+{
+  return PyObject_TypeCheck(v, (PyTypeObject *)ctypes.PyCData_Type);
 }
 
 /**
  * Gets the calling convention of the ctypes function pointer object.
  */
-dynd::calling_convention_t get_ctypes_calling_convention(PyCFuncPtrObject* cfunc);
+dynd::calling_convention_t
+get_ctypes_calling_convention(PyCFuncPtrObject *cfunc);
 
 /**
  * Gets the signature of the ctypes function pointer object.
@@ -136,7 +137,9 @@ dynd::calling_convention_t get_ctypes_calling_convention(PyCFuncPtrObject* cfunc
  * @out_returntype  The return type is placed here
  * @out_paramtypes  This is populated with the parameter types
  */
-void get_ctypes_signature(PyCFuncPtrObject* cfunc, dynd::ndt::type& out_returntype, std::vector<dynd::ndt::type>& out_paramtypes);
+void get_ctypes_signature(PyCFuncPtrObject *cfunc,
+                          dynd::ndt::type &out_returntype,
+                          std::vector<dynd::ndt::type> &out_paramtypes);
 
 } // namespace pydynd
 

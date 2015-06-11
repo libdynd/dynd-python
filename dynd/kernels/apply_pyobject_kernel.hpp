@@ -8,7 +8,8 @@ namespace nd {
   namespace functional {
 
     struct apply_pyobject_kernel
-        : dynd::nd::base_kernel<apply_pyobject_kernel, dynd::kernel_request_host, -1> {
+        : dynd::nd::base_kernel<apply_pyobject_kernel,
+                                dynd::kernel_request_host, -1> {
       typedef apply_pyobject_kernel self_type;
 
       // Reference to the python function object
@@ -37,7 +38,9 @@ namespace nd {
         for (intptr_t i = 0; i != nsrc; ++i) {
           PyObject *item = PyTuple_GET_ITEM(args, i);
           if (Py_REFCNT(item) != 1 ||
-              ((pydynd::WArray *)item)->v.get_ndo()->m_memblockdata.m_use_count != 1) {
+              ((pydynd::WArray *)item)
+                      ->v.get_ndo()
+                      ->m_memblockdata.m_use_count != 1) {
             std::stringstream ss;
             ss << "Python callback function ";
             pyobject_ownref pyfunc_repr(PyObject_Repr(m_pyfunc));
@@ -58,7 +61,8 @@ namespace nd {
 
       void single(char *dst, char *const *src)
       {
-        const dynd::ndt::arrfunc_type *fpt = m_proto.extended<dynd::ndt::arrfunc_type>();
+        const dynd::ndt::arrfunc_type *fpt =
+            m_proto.extended<dynd::ndt::arrfunc_type>();
         intptr_t nsrc = fpt->get_npos();
         const dynd::ndt::type &dst_tp = fpt->get_return_type();
         const dynd::ndt::type *src_tp = fpt->get_pos_types_raw();
@@ -66,7 +70,8 @@ namespace nd {
         pyobject_ownref args(PyTuple_New(nsrc));
         for (intptr_t i = 0; i != nsrc; ++i) {
           dynd::ndt::type tp = src_tp[i];
-          dynd::nd::array n(dynd::make_array_memory_block(tp.get_arrmeta_size()));
+          dynd::nd::array n(
+              dynd::make_array_memory_block(tp.get_arrmeta_size()));
           n.get_ndo()->m_type = tp.release();
           n.get_ndo()->m_flags = dynd::nd::read_access_flag;
           n.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
@@ -91,7 +96,8 @@ namespace nd {
       void strided(char *dst, intptr_t dst_stride, char *const *src,
                    const intptr_t *src_stride, size_t count)
       {
-        const dynd::ndt::arrfunc_type *fpt = m_proto.extended<dynd::ndt::arrfunc_type>();
+        const dynd::ndt::arrfunc_type *fpt =
+            m_proto.extended<dynd::ndt::arrfunc_type>();
         intptr_t nsrc = fpt->get_npos();
         const dynd::ndt::type &dst_tp = fpt->get_return_type();
         const dynd::ndt::type *src_tp = fpt->get_pos_types_raw();
@@ -99,7 +105,8 @@ namespace nd {
         pyobject_ownref args(PyTuple_New(nsrc));
         for (intptr_t i = 0; i != nsrc; ++i) {
           dynd::ndt::type tp = src_tp[i];
-          dynd::nd::array n(dynd::make_array_memory_block(tp.get_arrmeta_size()));
+          dynd::nd::array n(
+              dynd::make_array_memory_block(tp.get_arrmeta_size()));
           n.get_ndo()->m_type = tp.release();
           n.get_ndo()->m_flags = dynd::nd::read_access_flag;
           n.get_ndo()->m_data_pointer = const_cast<char *>(src[i]);
@@ -124,20 +131,21 @@ namespace nd {
           // Increment to the next one
           dst += dst_stride;
           for (intptr_t i = 0; i != nsrc; ++i) {
-            const dynd::nd::array &n = ((pydynd::WArray *)PyTuple_GET_ITEM(args.get(), i))->v;
+            const dynd::nd::array &n =
+                ((pydynd::WArray *)PyTuple_GET_ITEM(args.get(), i))->v;
             n.get_ndo()->m_data_pointer += src_stride[i];
           }
         }
       }
 
-      static intptr_t
-      instantiate(const dynd::arrfunc_type_data *af_self, const dynd::ndt::arrfunc_type *af_tp,
-                  char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-                  const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-                  intptr_t nsrc, const dynd::ndt::type *src_tp,
-                  const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-                  const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-                  const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+      static intptr_t instantiate(
+          const dynd::arrfunc_type_data *af_self,
+          const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(data),
+          void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+          const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
+          const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+          const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
+          const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
         PyGILState_RAII pgs;
 

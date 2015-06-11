@@ -36,8 +36,9 @@ namespace nd {
     static dynd::nd::arrfunc make();
   } copy_from_numpy;
 
-  void array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-                             char *dst_data, PyArrayObject *src_arr,
+  void array_copy_from_numpy(const dynd::ndt::type &dst_tp,
+                             const char *dst_arrmeta, char *dst_data,
+                             PyArrayObject *src_arr,
                              const dynd::eval::eval_context *ectx);
 
 #endif

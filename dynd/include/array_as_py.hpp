@@ -20,12 +20,12 @@ namespace pydynd {
  * \param struct_as_pytuple  If true, converts structs into tuples, otherwise
  *                           converts them into dicts.
  */
-PyObject *array_as_py(const dynd::nd::array& n, bool struct_as_pytuple);
+PyObject *array_as_py(const dynd::nd::array &n, bool struct_as_pytuple);
 
 /** Converts a uint128 into a PyLong */
-PyObject *pylong_from_uint128(const dynd::dynd_uint128& val);
+PyObject *pylong_from_uint128(const dynd::dynd_uint128 &val);
 /** Converts an int128 into a PyLong */
-PyObject *pylong_from_int128(const dynd::dynd_int128& val);
+PyObject *pylong_from_int128(const dynd::dynd_int128 &val);
 
 } // namespace pydynd
 

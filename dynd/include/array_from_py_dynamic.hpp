@@ -35,4 +35,3 @@ void init_array_from_py_dynamic();
 } // namespace pydynd
 
 #endif // _DYND__ARRAY_FROM_PY_DYNAMIC_HPP_
-

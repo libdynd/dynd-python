@@ -23,11 +23,13 @@ namespace pydynd {
  * This is the typeobject and struct of w_type from Cython.
  */
 extern PyTypeObject *WType_Type;
-inline bool WType_CheckExact(PyObject *obj) {
-    return Py_TYPE(obj) == WType_Type;
+inline bool WType_CheckExact(PyObject *obj)
+{
+  return Py_TYPE(obj) == WType_Type;
 }
-inline bool WType_Check(PyObject *obj) {
-    return PyObject_TypeCheck(obj, WType_Type);
+inline bool WType_Check(PyObject *obj)
+{
+  return PyObject_TypeCheck(obj, WType_Type);
 }
 struct WType {
   PyObject_HEAD;
@@ -36,71 +38,80 @@ struct WType {
 };
 void init_w_type_typeobject(PyObject *type);
 
-inline PyObject *wrap_ndt_type(const dynd::ndt::type& d) {
-    WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::ndt_type_placement_wrapper &>(result->v));
-    result->v = d;
-    return (PyObject *)result;
+inline PyObject *wrap_ndt_type(const dynd::ndt::type &d)
+{
+  WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
+  if (!result) {
+    throw std::runtime_error("");
+  }
+  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
+  // here
+  pydynd::placement_new(
+      reinterpret_cast<pydynd::ndt_type_placement_wrapper &>(result->v));
+  result->v = d;
+  return (PyObject *)result;
 }
 #ifdef DYND_RVALUE_REFS
-inline PyObject *wrap_ndt_type(dynd::ndt::type&& d) {
-    WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
-    if (!result) {
-        throw std::runtime_error("");
-    }
-    // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new here
-    pydynd::placement_new(reinterpret_cast<pydynd::ndt_type_placement_wrapper &>(result->v));
-    result->v = DYND_MOVE(d);
-    return (PyObject *)result;
+inline PyObject *wrap_ndt_type(dynd::ndt::type &&d)
+{
+  WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
+  if (!result) {
+    throw std::runtime_error("");
+  }
+  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
+  // here
+  pydynd::placement_new(
+      reinterpret_cast<pydynd::ndt_type_placement_wrapper &>(result->v));
+  result->v = DYND_MOVE(d);
+  return (PyObject *)result;
 }
 #endif
 
-inline std::string ndt_type_str(const dynd::ndt::type& d)
+inline std::string ndt_type_str(const dynd::ndt::type &d)
 {
-    std::stringstream ss;
-    ss << d;
-    return ss.str();
+  std::stringstream ss;
+  ss << d;
+  return ss.str();
 }
 
-std::string ndt_type_repr(const dynd::ndt::type& d);
+std::string ndt_type_repr(const dynd::ndt::type &d);
 
-PyObject *ndt_type_get_shape(const dynd::ndt::type& d);
+PyObject *ndt_type_get_shape(const dynd::ndt::type &d);
 
 /**
  * Returns the kind of the ndt::type, as a Python string.
  */
-PyObject *ndt_type_get_kind(const dynd::ndt::type& d);
+PyObject *ndt_type_get_kind(const dynd::ndt::type &d);
 
 /**
  * Returns the type id of the ndt::type, as a Python string.
  */
-PyObject *ndt_type_get_type_id(const dynd::ndt::type& d);
+PyObject *ndt_type_get_type_id(const dynd::ndt::type &d);
 
 /**
  * Converts a Python type, numpy dtype, or string
  * into an ndt::type. This raises an error if given an object
  * which contains values, it is for type-like things only.
  */
-dynd::ndt::type make_ndt_type_from_pyobject(PyObject* obj);
+dynd::ndt::type make_ndt_type_from_pyobject(PyObject *obj);
 
 /**
  * Creates a convert type.
  */
-dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp);
+dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
+                                       const dynd::ndt::type &from_tp);
 
 /**
  * Creates a view type.
  */
-dynd::ndt::type dynd_make_view_type(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type);
+dynd::ndt::type dynd_make_view_type(const dynd::ndt::type &value_type,
+                                    const dynd::ndt::type &operand_type);
 
 /**
  * Creates a fixed-sized string type.
  */
-dynd::ndt::type dynd_make_fixed_string_type(intptr_t size, PyObject *encoding_obj);
+dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
+                                            PyObject *encoding_obj);
 
 /**
  * Creates a blockref string type.
@@ -110,19 +121,24 @@ dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj);
 /**
  * Creates a blockref pointer type.
  */
-dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type& target_tp);
+dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type &target_tp);
 
-dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names);
-dynd::ndt::type dynd_make_cstruct_type(PyObject *field_types, PyObject *field_names);
-dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp);
-dynd::ndt::type dynd_make_cfixed_dim_type(PyObject *shape, const dynd::ndt::type& element_tp, PyObject *axis_perm);
+dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
+                                      PyObject *field_names);
+dynd::ndt::type dynd_make_cstruct_type(PyObject *field_types,
+                                       PyObject *field_names);
+dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape,
+                                         const dynd::ndt::type &element_tp);
+dynd::ndt::type dynd_make_cfixed_dim_type(PyObject *shape,
+                                          const dynd::ndt::type &element_tp,
+                                          PyObject *axis_perm);
 
 /**
  * Implementation of __getitem__ for the wrapped dynd type object.
  */
-dynd::ndt::type ndt_type_getitem(const dynd::ndt::type& d, PyObject *subscript);
+dynd::ndt::type ndt_type_getitem(const dynd::ndt::type &d, PyObject *subscript);
 
-PyObject *ndt_type_array_property_names(const dynd::ndt::type& d);
+PyObject *ndt_type_array_property_names(const dynd::ndt::type &d);
 
 void init_type_functions();
 

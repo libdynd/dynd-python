@@ -28,7 +28,8 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<false>
-        : dynd::nd::base_kernel<scalar_ufunc_ck<false>, dynd::kernel_request_host, 1> {
+        : dynd::nd::base_kernel<scalar_ufunc_ck<false>,
+                                dynd::kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
@@ -64,14 +65,17 @@ namespace nd {
                       data->ufunc_data);
       }
 
-      static intptr_t instantiate(
-          const dynd::arrfunc_type_data *af_self, const dynd::ndt::arrfunc_type *af_tp,
-          char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-          const dynd::ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
-          intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
-          const char *const *DYND_UNUSED(src_arrmeta), dynd::kernel_request_t kernreq,
-          const dynd::eval::eval_context *DYND_UNUSED(ectx), const dynd::nd::array &kwds,
-          const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+      static intptr_t
+      instantiate(const dynd::arrfunc_type_data *af_self,
+                  const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(data),
+                  void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+                  const char *DYND_UNUSED(dst_arrmeta),
+                  intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
+                  const char *const *DYND_UNUSED(src_arrmeta),
+                  dynd::kernel_request_t kernreq,
+                  const dynd::eval::eval_context *DYND_UNUSED(ectx),
+                  const dynd::nd::array &kwds,
+                  const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
         if (dst_tp != af_tp->get_return_type()) {
           std::stringstream ss;
@@ -102,7 +106,8 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<true>
-        : dynd::nd::base_kernel<scalar_ufunc_ck<true>, dynd::kernel_request_host, 1> {
+        : dynd::nd::base_kernel<scalar_ufunc_ck<true>,
+                                dynd::kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
@@ -144,14 +149,17 @@ namespace nd {
         }
       }
 
-      static intptr_t instantiate(
-          const dynd::arrfunc_type_data *af_self, const dynd::ndt::arrfunc_type *af_tp,
-          char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-          const dynd::ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
-          intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
-          const char *const *DYND_UNUSED(src_arrmeta), dynd::kernel_request_t kernreq,
-          const dynd::eval::eval_context *DYND_UNUSED(ectx), const dynd::nd::array &kwds,
-          const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+      static intptr_t
+      instantiate(const dynd::arrfunc_type_data *af_self,
+                  const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(data),
+                  void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+                  const char *DYND_UNUSED(dst_arrmeta),
+                  intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
+                  const char *const *DYND_UNUSED(src_arrmeta),
+                  dynd::kernel_request_t kernreq,
+                  const dynd::eval::eval_context *DYND_UNUSED(ectx),
+                  const dynd::nd::array &kwds,
+                  const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
         if (dst_tp != af_tp->get_return_type()) {
           std::stringstream ss;

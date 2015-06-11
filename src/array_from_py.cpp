@@ -60,14 +60,14 @@ convert_one_pyscalar_int32(const ndt::type &tp, const char *arrmeta, char *out,
                            const eval::eval_context *DYND_UNUSED(ectx))
 {
 #if PY_VERSION_HEX >= 0x03000000
-    int32_t value = static_cast<int32_t>(PyLong_AsLong(obj));
+  int32_t value = static_cast<int32_t>(PyLong_AsLong(obj));
 #else
-    int32_t value = static_cast<int32_t>(PyInt_AsLong(obj));
+  int32_t value = static_cast<int32_t>(PyInt_AsLong(obj));
 #endif
-    if (value == -1 && PyErr_Occurred()) {
-        throw std::exception();
-    }
-    *reinterpret_cast<int32_t *>(out) = value;
+  if (value == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  *reinterpret_cast<int32_t *>(out) = value;
 }
 
 inline void
@@ -75,11 +75,11 @@ convert_one_pyscalar_int64(const ndt::type &tp, const char *arrmeta, char *out,
                            PyObject *obj,
                            const eval::eval_context *DYND_UNUSED(ectx))
 {
-    int64_t value = PyLong_AsLongLong(obj);
-    if (value == -1 && PyErr_Occurred()) {
-        throw std::exception();
-    }
-    *reinterpret_cast<int64_t *>(out) = value;
+  int64_t value = PyLong_AsLongLong(obj);
+  if (value == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  *reinterpret_cast<int64_t *>(out) = value;
 }
 
 inline void
@@ -87,11 +87,11 @@ convert_one_pyscalar_float32(const ndt::type &tp, const char *arrmeta,
                              char *out, PyObject *obj,
                              const eval::eval_context *DYND_UNUSED(ectx))
 {
-    double value = PyFloat_AsDouble(obj);
-    if (value == -1 && PyErr_Occurred()) {
-        throw std::exception();
-    }
-    *reinterpret_cast<float *>(out) = static_cast<float>(value);
+  double value = PyFloat_AsDouble(obj);
+  if (value == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  *reinterpret_cast<float *>(out) = static_cast<float>(value);
 }
 
 inline void
@@ -99,11 +99,11 @@ convert_one_pyscalar_float64(const ndt::type &tp, const char *arrmeta,
                              char *out, PyObject *obj,
                              const eval::eval_context *DYND_UNUSED(ectx))
 {
-    double value = PyFloat_AsDouble(obj);
-    if (value == -1 && PyErr_Occurred()) {
-        throw std::exception();
-    }
-    *reinterpret_cast<double *>(out) = value;
+  double value = PyFloat_AsDouble(obj);
+  if (value == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  *reinterpret_cast<double *>(out) = value;
 }
 
 inline void
@@ -111,16 +111,17 @@ convert_one_pyscalar_cdouble(const ndt::type &tp, const char *arrmeta,
                              char *out, PyObject *obj,
                              const eval::eval_context *DYND_UNUSED(ectx))
 {
-    double value_real = PyComplex_RealAsDouble(obj);
-    double value_imag = PyComplex_ImagAsDouble(obj);
-    if ((value_real == -1 || value_imag == -1) && PyErr_Occurred()) {
-        throw std::exception();
-    }
-    *reinterpret_cast<dynd::complex<double> *>(out) = dynd::complex<double>(value_real, value_imag);
+  double value_real = PyComplex_RealAsDouble(obj);
+  double value_imag = PyComplex_ImagAsDouble(obj);
+  if ((value_real == -1 || value_imag == -1) && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  *reinterpret_cast<dynd::complex<double> *>(out) =
+      dynd::complex<double>(value_real, value_imag);
 }
 
 struct bytes_string_ptrs {
-    char *begin, *end;
+  char *begin, *end;
 };
 
 inline void
@@ -128,30 +129,34 @@ convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta, char *out,
                            PyObject *obj,
                            const eval::eval_context *DYND_UNUSED(ectx))
 {
-    bytes_string_ptrs *out_asp = reinterpret_cast<bytes_string_ptrs *>(out);
-    const string_type_arrmeta *md = reinterpret_cast<const string_type_arrmeta *>(arrmeta);
-    char *data = NULL;
-    intptr_t len = 0;
+  bytes_string_ptrs *out_asp = reinterpret_cast<bytes_string_ptrs *>(out);
+  const string_type_arrmeta *md =
+      reinterpret_cast<const string_type_arrmeta *>(arrmeta);
+  char *data = NULL;
+  intptr_t len = 0;
 #if PY_VERSION_HEX >= 0x03000000
-    if (PyBytes_Check(obj)) {
-        if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
+  if (PyBytes_Check(obj)) {
+    if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
 #else
-    if (PyString_Check(obj)) {
-        if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
+  if (PyString_Check(obj)) {
+    if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
 #endif
-            throw runtime_error("Error getting byte string data");
-        }
-
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len, 1, &out_asp->begin, &out_asp->end);
-        memcpy(out_asp->begin, data, len);
-    } else {
-        throw dynd::type_error("wrong kind of string provided (require byte string for dynd bytes type)");
+      throw runtime_error("Error getting byte string data");
     }
+
+    memory_block_pod_allocator_api *allocator =
+        get_memory_block_pod_allocator_api(md->blockref);
+    allocator->allocate(md->blockref, len, 1, &out_asp->begin, &out_asp->end);
+    memcpy(out_asp->begin, data, len);
+  }
+  else {
+    throw dynd::type_error("wrong kind of string provided (require byte string "
+                           "for dynd bytes type)");
+  }
 }
 
 struct pyunicode_string_ptrs {
-    char *begin, *end;
+  char *begin, *end;
 };
 
 inline void
@@ -159,42 +164,47 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
                              char *out, PyObject *obj,
                              const eval::eval_context *DYND_UNUSED(ectx))
 {
-    pyunicode_string_ptrs *out_usp = reinterpret_cast<pyunicode_string_ptrs *>(out);
-    const string_type_arrmeta *md = reinterpret_cast<const string_type_arrmeta *>(arrmeta);
-    if (PyUnicode_Check(obj)) {
-        // Get it as UTF8
-        pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
-        char *s = NULL;
-        Py_ssize_t len = 0;
-        if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
-            throw exception();
-        }
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len,
-                        1, &out_usp->begin, &out_usp->end);
-        memcpy(out_usp->begin, s, len);
-#if PY_VERSION_HEX < 0x03000000
-    } else if (PyString_Check(obj)) {
-        char *data = NULL;
-        Py_ssize_t len = 0;
-        if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
-            throw runtime_error("Error getting string data");
-        }
-
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, len,
-                        1, &out_usp->begin, &out_usp->end);
-        for (Py_ssize_t i = 0; i < len; ++i) {
-            // Only let valid ascii get through
-            if ((unsigned char)data[i] >= 128) {
-                throw string_decode_error(data+i, data+i+1, string_encoding_ascii);
-            }
-            out_usp->begin[i] = data[i];
-        }
-#endif
-    } else {
-        throw dynd::type_error("wrong kind of string provided");
+  pyunicode_string_ptrs *out_usp =
+      reinterpret_cast<pyunicode_string_ptrs *>(out);
+  const string_type_arrmeta *md =
+      reinterpret_cast<const string_type_arrmeta *>(arrmeta);
+  if (PyUnicode_Check(obj)) {
+    // Get it as UTF8
+    pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
+    char *s = NULL;
+    Py_ssize_t len = 0;
+    if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
+      throw exception();
     }
+    memory_block_pod_allocator_api *allocator =
+        get_memory_block_pod_allocator_api(md->blockref);
+    allocator->allocate(md->blockref, len, 1, &out_usp->begin, &out_usp->end);
+    memcpy(out_usp->begin, s, len);
+#if PY_VERSION_HEX < 0x03000000
+  }
+  else if (PyString_Check(obj)) {
+    char *data = NULL;
+    Py_ssize_t len = 0;
+    if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
+      throw runtime_error("Error getting string data");
+    }
+
+    memory_block_pod_allocator_api *allocator =
+        get_memory_block_pod_allocator_api(md->blockref);
+    allocator->allocate(md->blockref, len, 1, &out_usp->begin, &out_usp->end);
+    for (Py_ssize_t i = 0; i < len; ++i) {
+      // Only let valid ascii get through
+      if ((unsigned char)data[i] >= 128) {
+        throw string_decode_error(data + i, data + i + 1,
+                                  string_encoding_ascii);
+      }
+      out_usp->begin[i] = data[i];
+    }
+#endif
+  }
+  else {
+    throw dynd::type_error("wrong kind of string provided");
+  }
 }
 
 inline void
@@ -202,12 +212,12 @@ convert_one_pyscalar_date(const ndt::type &tp, const char *arrmeta, char *out,
                           PyObject *obj,
                           const eval::eval_context *DYND_UNUSED(ectx))
 {
-    if (!PyDate_Check(obj)) {
-        throw dynd::type_error("input object is not a date as expected");
-    }
-    const ndt::date_type *dd = tp.extended<ndt::date_type>();
-    dd->set_ymd(arrmeta, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
-                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+  if (!PyDate_Check(obj)) {
+    throw dynd::type_error("input object is not a date as expected");
+  }
+  const ndt::date_type *dd = tp.extended<ndt::date_type>();
+  dd->set_ymd(arrmeta, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
+              PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
 }
 
 inline void
@@ -215,14 +225,14 @@ convert_one_pyscalar_time(const ndt::type &tp, const char *arrmeta, char *out,
                           PyObject *obj,
                           const eval::eval_context *DYND_UNUSED(ectx))
 {
-    if (!PyTime_Check(obj)) {
-        throw dynd::type_error("input object is not a time as expected");
-    }
-    const ndt::time_type *tt = tp.extended<ndt::time_type>();
-    tt->set_time(
-        arrmeta, out, assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
-        PyDateTime_TIME_GET_MINUTE(obj), PyDateTime_TIME_GET_SECOND(obj),
-        PyDateTime_TIME_GET_MICROSECOND(obj) * DYND_TICKS_PER_MICROSECOND);
+  if (!PyTime_Check(obj)) {
+    throw dynd::type_error("input object is not a time as expected");
+  }
+  const ndt::time_type *tt = tp.extended<ndt::time_type>();
+  tt->set_time(
+      arrmeta, out, assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
+      PyDateTime_TIME_GET_MINUTE(obj), PyDateTime_TIME_GET_SECOND(obj),
+      PyDateTime_TIME_GET_MICROSECOND(obj) * DYND_TICKS_PER_MICROSECOND);
 }
 
 inline void
@@ -230,27 +240,28 @@ convert_one_pyscalar_datetime(const ndt::type &tp, const char *arrmeta,
                               char *out, PyObject *obj,
                               const eval::eval_context *DYND_UNUSED(ectx))
 {
-    if (!PyDateTime_Check(obj)) {
-        throw dynd::type_error("input object is not a datetime as expected");
-    }
-    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
-                    ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-        throw runtime_error("Converting datetimes with a timezone to dynd arrays is not yet supported");
-    }
-    const ndt::datetime_type *dd = tp.extended<ndt::datetime_type>();
-    dd->set_cal(arrmeta, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
-                    PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
-                    PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
-                    PyDateTime_DATE_GET_SECOND(obj), PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
+  if (!PyDateTime_Check(obj)) {
+    throw dynd::type_error("input object is not a datetime as expected");
+  }
+  if (((PyDateTime_DateTime *)obj)->hastzinfo &&
+      ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
+    throw runtime_error("Converting datetimes with a timezone to dynd arrays "
+                        "is not yet supported");
+  }
+  const ndt::datetime_type *dd = tp.extended<ndt::datetime_type>();
+  dd->set_cal(arrmeta, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
+              PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
+              PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
+              PyDateTime_DATE_GET_SECOND(obj),
+              PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
 }
 
-inline void convert_one_pyscalar_ndt_type(const ndt::type &DYND_UNUSED(tp),
-                                          const char *DYND_UNUSED(arrmeta),
-                                          char *out, PyObject *obj,
-                                          const eval::eval_context *DYND_UNUSED(ectx))
+inline void convert_one_pyscalar_ndt_type(
+    const ndt::type &DYND_UNUSED(tp), const char *DYND_UNUSED(arrmeta),
+    char *out, PyObject *obj, const eval::eval_context *DYND_UNUSED(ectx))
 {
-    ndt::type obj_as_tp = make_ndt_type_from_pyobject(obj);
-    obj_as_tp.swap(reinterpret_cast<type_type_data *>(out)->tp);
+  ndt::type obj_as_tp = make_ndt_type_from_pyobject(obj);
+  obj_as_tp.swap(reinterpret_cast<type_type_data *>(out)->tp);
 }
 
 inline void convert_one_pyscalar_option(const ndt::type &tp,
@@ -258,12 +269,13 @@ inline void convert_one_pyscalar_option(const ndt::type &tp,
                                         PyObject *obj,
                                         const eval::eval_context *ectx)
 {
-    if (obj == Py_None) {
-        tp.extended<ndt::option_type>()->assign_na(arrmeta, out,
-                                           &eval::default_eval_context);
-    } else {
-        array_no_dim_broadcast_assign_from_py(tp, arrmeta, out, obj, ectx);
-    }
+  if (obj == Py_None) {
+    tp.extended<ndt::option_type>()->assign_na(arrmeta, out,
+                                               &eval::default_eval_context);
+  }
+  else {
+    array_no_dim_broadcast_assign_from_py(tp, arrmeta, out, obj, ectx);
+  }
 }
 
 template <convert_one_pyscalar_function_t ConvertOneFn>
@@ -272,176 +284,181 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
                                    const intptr_t *shape, size_t current_axis,
                                    const eval::eval_context *ectx)
 {
-    if (shape[current_axis] == 0) {
-        return;
+  if (shape[current_axis] == 0) {
+    return;
+  }
+
+  Py_ssize_t size = PyList_GET_SIZE(obj);
+  const char *element_arrmeta = arrmeta;
+  ndt::type element_tp = tp.at_single(0, &element_arrmeta);
+  if (shape[current_axis] >= 0) {
+    // Fixed-sized dimension
+    const fixed_dim_type_arrmeta *md =
+        reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
+    intptr_t stride = md->stride;
+    if (element_tp.is_scalar()) {
+      for (Py_ssize_t i = 0; i < size; ++i) {
+        PyObject *item = PyList_GET_ITEM(obj, i);
+        ConvertOneFn(element_tp, element_arrmeta, data, item, ectx);
+        data += stride;
+      }
     }
-
-    Py_ssize_t size = PyList_GET_SIZE(obj);
-    const char *element_arrmeta = arrmeta;
-    ndt::type element_tp = tp.at_single(0, &element_arrmeta);
-    if (shape[current_axis] >= 0) {
-        // Fixed-sized dimension
-      const fixed_dim_type_arrmeta *md =
-          reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
-      intptr_t stride = md->stride;
-      if (element_tp.is_scalar()) {
-        for (Py_ssize_t i = 0; i < size; ++i) {
-          PyObject *item = PyList_GET_ITEM(obj, i);
-          ConvertOneFn(element_tp, element_arrmeta, data, item, ectx);
-          data += stride;
-        }
+    else {
+      for (Py_ssize_t i = 0; i < size; ++i) {
+        fill_array_from_pylist<ConvertOneFn>(element_tp, element_arrmeta, data,
+                                             PyList_GET_ITEM(obj, i), shape,
+                                             current_axis + 1, ectx);
+        data += stride;
       }
-      else {
-        for (Py_ssize_t i = 0; i < size; ++i) {
-          fill_array_from_pylist<ConvertOneFn>(element_tp, element_arrmeta,
-                                               data, PyList_GET_ITEM(obj, i),
-                                               shape, current_axis + 1, ectx);
-          data += stride;
-        }
-      }
-    } else {
-        // Variable-sized dimension
-        const var_dim_type_arrmeta *md = reinterpret_cast<const var_dim_type_arrmeta *>(arrmeta);
-        intptr_t stride = md->stride;
-        var_dim_type_data *out = reinterpret_cast<var_dim_type_data *>(data);
-        char *out_end = NULL;
+    }
+  }
+  else {
+    // Variable-sized dimension
+    const var_dim_type_arrmeta *md =
+        reinterpret_cast<const var_dim_type_arrmeta *>(arrmeta);
+    intptr_t stride = md->stride;
+    var_dim_type_data *out = reinterpret_cast<var_dim_type_data *>(data);
+    char *out_end = NULL;
 
-        memory_block_pod_allocator_api *allocator = get_memory_block_pod_allocator_api(md->blockref);
-        allocator->allocate(md->blockref, size * stride,
+    memory_block_pod_allocator_api *allocator =
+        get_memory_block_pod_allocator_api(md->blockref);
+    allocator->allocate(md->blockref, size * stride,
                         element_tp.get_data_alignment(), &out->begin, &out_end);
-        out->size = size;
-        char *element_data = out->begin;
-        if (element_tp.is_scalar()) {
-            for (Py_ssize_t i = 0; i < size; ++i) {
-                PyObject *item = PyList_GET_ITEM(obj, i);
-                ConvertOneFn(element_tp, element_arrmeta, element_data, item,
-                             ectx);
-                element_data += stride;
-            }
-        } else {
-            for (Py_ssize_t i = 0; i < size; ++i) {
-                fill_array_from_pylist<ConvertOneFn>(
-                    element_tp, element_arrmeta, element_data,
-                    PyList_GET_ITEM(obj, i), shape, current_axis + 1, ectx);
-                element_data += stride;
-            }
-        }
+    out->size = size;
+    char *element_data = out->begin;
+    if (element_tp.is_scalar()) {
+      for (Py_ssize_t i = 0; i < size; ++i) {
+        PyObject *item = PyList_GET_ITEM(obj, i);
+        ConvertOneFn(element_tp, element_arrmeta, element_data, item, ectx);
+        element_data += stride;
+      }
     }
+    else {
+      for (Py_ssize_t i = 0; i < size; ++i) {
+        fill_array_from_pylist<ConvertOneFn>(
+            element_tp, element_arrmeta, element_data, PyList_GET_ITEM(obj, i),
+            shape, current_axis + 1, ectx);
+        element_data += stride;
+      }
+    }
+  }
 }
 
 static dynd::nd::array array_from_pylist(PyObject *obj,
                                          const eval::eval_context *ectx)
 {
-    // TODO: Add ability to specify access flags (e.g. immutable)
-    // Do a pass through all the data to deduce its type and shape
-    vector<intptr_t> shape;
-    ndt::type tp(void_type_id);
-    Py_ssize_t size = PyList_GET_SIZE(obj);
-    shape.push_back(size);
-    for (Py_ssize_t i = 0; i < size; ++i) {
-        deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
-    }
-    // If no type was deduced, return with no result. This will fall
-    // through to the array_from_py_dynamic code.
-    if (tp.get_type_id() == uninitialized_type_id ||
-                    tp.get_type_id() == void_type_id) {
-        return nd::array();
-    }
+  // TODO: Add ability to specify access flags (e.g. immutable)
+  // Do a pass through all the data to deduce its type and shape
+  vector<intptr_t> shape;
+  ndt::type tp(void_type_id);
+  Py_ssize_t size = PyList_GET_SIZE(obj);
+  shape.push_back(size);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
+  }
+  // If no type was deduced, return with no result. This will fall
+  // through to the array_from_py_dynamic code.
+  if (tp.get_type_id() == uninitialized_type_id ||
+      tp.get_type_id() == void_type_id) {
+    return nd::array();
+  }
 
-    // Create the array
-    nd::array result = nd::make_strided_array(
-        tp, (int)shape.size(), &shape[0],
-        nd::read_access_flag | nd::write_access_flag, NULL);
+  // Create the array
+  nd::array result = nd::make_strided_array(
+      tp, (int)shape.size(), &shape[0],
+      nd::read_access_flag | nd::write_access_flag, NULL);
 
-    // Populate the array with data
-    switch (tp.get_type_id()) {
-        case bool_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_bool>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case int32_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_int32>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case int64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_int64>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case float32_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_float32>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_float64>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case complex_float64_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_cdouble>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case bytes_type_id:
-            fill_array_from_pylist<convert_one_pyscalar_bytes>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        case string_type_id: {
-            const ndt::base_string_type *ext = tp.extended<ndt::base_string_type>();
-            if (ext->get_encoding() == string_encoding_utf_8) {
-                fill_array_from_pylist<convert_one_pyscalar_ustring>(
-                    result.get_type(), result.get_arrmeta(),
-                    result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            } else {
-                stringstream ss;
-                ss << "Internal error: deduced type from Python list, " << tp
-                   << ", doesn't have a dynd array conversion";
-                throw runtime_error(ss.str());
-            }
-            break;
-        }
-        case date_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_date>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        }
-        case time_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_time>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        }
-        case datetime_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_datetime>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        }
-        case type_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_ndt_type>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        }
-        case option_type_id: {
-            fill_array_from_pylist<convert_one_pyscalar_option>(
-                result.get_type(), result.get_arrmeta(),
-                result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
-            break;
-        }
-        default: {
-            stringstream ss;
-            ss << "Deduced type from Python list, " << tp << ", doesn't have a dynd array conversion function yet";
-            throw runtime_error(ss.str());
-        }
+  // Populate the array with data
+  switch (tp.get_type_id()) {
+  case bool_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_bool>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case int32_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_int32>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case int64_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_int64>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case float32_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_float32>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case float64_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_float64>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case complex_float64_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_cdouble>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case bytes_type_id:
+    fill_array_from_pylist<convert_one_pyscalar_bytes>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  case string_type_id: {
+    const ndt::base_string_type *ext = tp.extended<ndt::base_string_type>();
+    if (ext->get_encoding() == string_encoding_utf_8) {
+      fill_array_from_pylist<convert_one_pyscalar_ustring>(
+          result.get_type(), result.get_arrmeta(),
+          result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
     }
-    result.get_type().extended()->arrmeta_finalize_buffers(result.get_arrmeta());
-    return result;
+    else {
+      stringstream ss;
+      ss << "Internal error: deduced type from Python list, " << tp
+         << ", doesn't have a dynd array conversion";
+      throw runtime_error(ss.str());
+    }
+    break;
+  }
+  case date_type_id: {
+    fill_array_from_pylist<convert_one_pyscalar_date>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  }
+  case time_type_id: {
+    fill_array_from_pylist<convert_one_pyscalar_time>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  }
+  case datetime_type_id: {
+    fill_array_from_pylist<convert_one_pyscalar_datetime>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  }
+  case type_type_id: {
+    fill_array_from_pylist<convert_one_pyscalar_ndt_type>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  }
+  case option_type_id: {
+    fill_array_from_pylist<convert_one_pyscalar_option>(
+        result.get_type(), result.get_arrmeta(),
+        result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
+    break;
+  }
+  default: {
+    stringstream ss;
+    ss << "Deduced type from Python list, " << tp
+       << ", doesn't have a dynd array conversion function yet";
+    throw runtime_error(ss.str());
+  }
+  }
+  result.get_type().extended()->arrmeta_finalize_buffers(result.get_arrmeta());
+  return result;
 }
 
 dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
@@ -453,7 +470,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     const nd::array &result = ((WArray *)obj)->v;
     if (always_copy) {
       return result.eval_copy(access_flags);
-    } else {
+    }
+    else {
       if (access_flags != 0) {
         uint32_t raf = result.get_access_flags();
         if ((access_flags & nd::immutable_access_flag) &&
@@ -474,7 +492,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
   if (PyArray_Check(obj)) {
     return array_from_numpy_array((PyArrayObject *)obj, access_flags,
                                   always_copy);
-  } else if (PyArray_IsScalar(obj, Generic)) {
+  }
+  else if (PyArray_IsScalar(obj, Generic)) {
     return array_from_numpy_scalar(obj, access_flags);
   }
 #endif // DYND_NUMPY_INTEROP
@@ -484,20 +503,23 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
   if (PyBool_Check(obj)) {
     result = nd::array_rw(obj == Py_True);
 #if PY_VERSION_HEX < 0x03000000
-  } else if (PyInt_Check(obj)) {
+  }
+  else if (PyInt_Check(obj)) {
     long value = PyInt_AS_LONG(obj);
-# if SIZEOF_LONG > SIZEOF_INT
+#if SIZEOF_LONG > SIZEOF_INT
     // Use a 32-bit int if it fits.
     if (value >= INT_MIN && value <= INT_MAX) {
       result = nd::array_rw(static_cast<int>(value));
-    } else {
+    }
+    else {
       result = nd::array_rw(value);
     }
 #else
     result = nd::array_rw(value);
 #endif
 #endif // PY_VERSION_HEX < 0x03000000
-  } else if (PyLong_Check(obj)) {
+  }
+  else if (PyLong_Check(obj)) {
     PY_LONG_LONG value = PyLong_AsLongLong(obj);
     if (value == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");
@@ -506,16 +528,20 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     // Use a 32-bit int if it fits.
     if (value >= INT_MIN && value <= INT_MAX) {
       result = nd::array_rw(static_cast<int>(value));
-    } else {
+    }
+    else {
       result = nd::array_rw(value);
     }
-  } else if (PyFloat_Check(obj)) {
+  }
+  else if (PyFloat_Check(obj)) {
     result = nd::array_rw(PyFloat_AS_DOUBLE(obj));
-  } else if (PyComplex_Check(obj)) {
+  }
+  else if (PyComplex_Check(obj)) {
     result = nd::array_rw(dynd::complex<double>(PyComplex_RealAsDouble(obj),
-                                          PyComplex_ImagAsDouble(obj)));
+                                                PyComplex_ImagAsDouble(obj)));
 #if PY_VERSION_HEX < 0x03000000
-  } else if (PyString_Check(obj)) {
+  }
+  else if (PyString_Check(obj)) {
     char *data = NULL;
     Py_ssize_t len = 0;
     if (PyString_AsStringAndSize(obj, &data, &len) < 0) {
@@ -534,7 +560,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                                    nd::readwrite_access_flags);
 
 #else
-  } else if (PyBytes_Check(obj)) {
+  }
+  else if (PyBytes_Check(obj)) {
     // Cannot provide write access unless a copy is being made
     if ((access_flags & nd::write_access_flag) != 0) {
       if (always_copy) {
@@ -549,7 +576,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
         result = nd::make_bytes_array(data, len);
         result.get_ndo()->m_flags = access_flags;
         return result;
-      } else {
+      }
+      else {
         throw runtime_error(
             "cannot create a writable view of a python bytes object");
       }
@@ -587,7 +615,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     // processing
     return result;
 #endif
-  } else if (PyUnicode_Check(obj)) {
+  }
+  else if (PyUnicode_Check(obj)) {
     pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
     char *s = NULL;
     Py_ssize_t len = 0;
@@ -596,7 +625,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     }
     result = nd::make_string_array(s, len, string_encoding_utf_8,
                                    nd::readwrite_access_flags);
-  } else if (PyDateTime_Check(obj)) {
+  }
+  else if (PyDateTime_Check(obj)) {
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&
         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
       throw runtime_error("Converting datetimes with a timezone to dynd "
@@ -611,14 +641,16 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                 PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
                 PyDateTime_DATE_GET_SECOND(obj),
                 PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
-  } else if (PyDate_Check(obj)) {
+  }
+  else if (PyDate_Check(obj)) {
     ndt::type d = ndt::make_date();
     const ndt::date_type *dd = d.extended<ndt::date_type>();
     result = nd::empty(d);
     dd->set_ymd(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
                 assign_error_fractional, PyDateTime_GET_YEAR(obj),
                 PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-  } else if (PyTime_Check(obj)) {
+  }
+  else if (PyTime_Check(obj)) {
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&
         ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
       throw runtime_error("Converting times with a timezone to dynd "
@@ -632,14 +664,18 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                  PyDateTime_TIME_GET_MINUTE(obj),
                  PyDateTime_TIME_GET_SECOND(obj),
                  PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
-  } else if (WType_Check(obj)) {
+  }
+  else if (WType_Check(obj)) {
     result = nd::array_rw(((WType *)obj)->v);
-  } else if (PyList_Check(obj)) {
+  }
+  else if (PyList_Check(obj)) {
     result = array_from_pylist(obj, ectx);
-  } else if (PyType_Check(obj)) {
+  }
+  else if (PyType_Check(obj)) {
     result = nd::array_rw(make_ndt_type_from_pyobject(obj));
 #if DYND_NUMPY_INTEROP
-  } else if (PyArray_DescrCheck(obj)) {
+  }
+  else if (PyArray_DescrCheck(obj)) {
     result = nd::array_rw(make_ndt_type_from_pyobject(obj));
 #endif // DYND_NUMPY_INTEROP
   }
@@ -651,12 +687,14 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     if (iter != NULL) {
       Py_DECREF(iter);
       return array_from_py_dynamic(obj, ectx);
-    } else {
+    }
+    else {
       if (PyErr_ExceptionMatches(PyExc_TypeError)) {
         // A TypeError indicates that the object doesn't support
         // the iterator protocol
         PyErr_Clear();
-      } else {
+      }
+      else {
         // Propagate the error
         throw exception();
       }

@@ -29,11 +29,13 @@ namespace pydynd {
  * This is the typeobject and struct of w_arrfunc from Cython.
  */
 extern PyTypeObject *WArrFunc_Type;
-inline bool WArrFunc_CheckExact(PyObject *obj) {
-    return Py_TYPE(obj) == WArrFunc_Type;
+inline bool WArrFunc_CheckExact(PyObject *obj)
+{
+  return Py_TYPE(obj) == WArrFunc_Type;
 }
-inline bool WArrFunc_Check(PyObject *obj) {
-    return PyObject_TypeCheck(obj, WArrFunc_Type);
+inline bool WArrFunc_Check(PyObject *obj)
+{
+  return PyObject_TypeCheck(obj, WArrFunc_Type);
 }
 struct WArrFunc {
   PyObject_HEAD;

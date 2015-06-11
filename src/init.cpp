@@ -16,10 +16,7 @@
 #include "array_from_py_typededuction.hpp"
 #include "type_functions.hpp"
 
-static void pydynd_cleanup()
-{
-  dynd::libdynd_cleanup();
-}
+static void pydynd_cleanup() { dynd::libdynd_cleanup(); }
 
 void pydynd::pydynd_init()
 {

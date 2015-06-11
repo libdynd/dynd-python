@@ -7,13 +7,12 @@
 
 namespace pydynd {
 
-
 namespace nd {
 
-  } // namespace pydynd::nd
+} // namespace pydynd::nd
 
 namespace ndt {
 
-  } // namespace pydynd::ndt
+} // namespace pydynd::ndt
 
 } // namespace pydynd

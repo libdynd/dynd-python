@@ -15,13 +15,12 @@
 
 namespace pydynd {
 
-inline std::string codegen_cache_debug_print(const dynd::codegen_cache& cgcache)
+inline std::string codegen_cache_debug_print(const dynd::codegen_cache &cgcache)
 {
-    std::stringstream ss;
-    cgcache.debug_print(ss);
-    return ss.str();
+  std::stringstream ss;
+  cgcache.debug_print(ss);
+  return ss.str();
 }
-
 
 } // namespace pydynd
 

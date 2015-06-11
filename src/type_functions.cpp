@@ -43,7 +43,7 @@ void pydynd::init_w_type_typeobject(PyObject *type)
   pydynd::WType_Type = (PyTypeObject *)type;
 }
 
-inline void print_generic_type_repr(ostream& o, const ndt::type& d)
+inline void print_generic_type_repr(ostream &o, const ndt::type &d)
 {
   stringstream sstmp;
   sstmp << d;
@@ -52,13 +52,14 @@ inline void print_generic_type_repr(ostream& o, const ndt::type& d)
   o << ")";
 }
 
-std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
+std::string pydynd::ndt_type_repr(const dynd::ndt::type &d)
 {
   std::stringstream ss;
   if (d.is_builtin() && d.get_type_id() != dynd::complex_float32_type_id &&
       d.get_type_id() != dynd::complex_float64_type_id) {
     ss << "ndt." << d;
-  } else {
+  }
+  else {
     switch (d.get_type_id()) {
     case complex_float32_type_id:
       ss << "ndt.complex_float32";
@@ -72,16 +73,19 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
     case time_type_id:
       if (d.extended<ndt::time_type>()->get_timezone() == tz_abstract) {
         ss << "ndt.time";
-      } else {
+      }
+      else {
         print_generic_type_repr(ss, d);
       }
       break;
     case datetime_type_id:
       if (d.extended<ndt::datetime_type>()->get_timezone() == tz_abstract) {
         ss << "ndt.datetime";
-      } else if (d.extended<ndt::datetime_type>()->get_timezone() == tz_utc) {
+      }
+      else if (d.extended<ndt::datetime_type>()->get_timezone() == tz_utc) {
         ss << "ndt.datetimeutc";
-      } else {
+      }
+      else {
         print_generic_type_repr(ss, d);
       }
       break;
@@ -91,14 +95,17 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
     case bytes_type_id:
       if (d.extended<ndt::bytes_type>()->get_target_alignment() == 1) {
         ss << "ndt.bytes";
-      } else {
+      }
+      else {
         print_generic_type_repr(ss, d);
       }
       break;
     case string_type_id:
-      if (d.extended<ndt::string_type>()->get_encoding() == string_encoding_utf_8) {
+      if (d.extended<ndt::string_type>()->get_encoding() ==
+          string_encoding_utf_8) {
         ss << "ndt.string";
-      } else {
+      }
+      else {
         print_generic_type_repr(ss, d);
       }
       break;
@@ -110,240 +117,263 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type& d)
   return ss.str();
 }
 
-PyObject *pydynd::ndt_type_get_shape(const dynd::ndt::type& d)
+PyObject *pydynd::ndt_type_get_shape(const dynd::ndt::type &d)
 {
   size_t ndim = d.get_ndim();
   if (ndim > 0) {
     dimvector shape(ndim);
     d.extended()->get_shape(ndim, 0, shape.get(), NULL, NULL);
     return intptr_array_as_tuple(ndim, shape.get());
-  } else {
+  }
+  else {
     return PyTuple_New(0);
   }
 }
 
-PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type& d)
+PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type &d)
 {
-    stringstream ss;
-    ss << d.get_kind();
-    string s = ss.str();
+  stringstream ss;
+  ss << d.get_kind();
+  string s = ss.str();
 #if PY_VERSION_HEX >= 0x03000000
-    return PyUnicode_FromStringAndSize(s.data(), s.size());
+  return PyUnicode_FromStringAndSize(s.data(), s.size());
 #else
-    return PyString_FromStringAndSize(s.data(), s.size());
+  return PyString_FromStringAndSize(s.data(), s.size());
 #endif
 }
 
-PyObject *pydynd::ndt_type_get_type_id(const dynd::ndt::type& d)
+PyObject *pydynd::ndt_type_get_type_id(const dynd::ndt::type &d)
 {
-    stringstream ss;
-    ss << d.get_type_id();
-    string s = ss.str();
+  stringstream ss;
+  ss << d.get_type_id();
+  string s = ss.str();
 #if PY_VERSION_HEX >= 0x03000000
-    return PyUnicode_FromStringAndSize(s.data(), s.size());
+  return PyUnicode_FromStringAndSize(s.data(), s.size());
 #else
-    return PyString_FromStringAndSize(s.data(), s.size());
+  return PyString_FromStringAndSize(s.data(), s.size());
 #endif
 }
 
 /**
  * Creates a dynd type out of typical Python typeobjects.
  */
-static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject* obj)
+static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject *obj)
 {
-    if (obj == &PyBool_Type) {
-        return ndt::make_type<dynd_bool>();
+  if (obj == &PyBool_Type) {
+    return ndt::make_type<dynd_bool>();
 #if PY_VERSION_HEX < 0x03000000
-    } else if (obj == &PyInt_Type) {
-        return ndt::make_type<int32_t>();
+  }
+  else if (obj == &PyInt_Type) {
+    return ndt::make_type<int32_t>();
 #endif
-    } else if (obj == &PyLong_Type) {
-        return ndt::make_type<int32_t>();
-    } else if (obj == &PyFloat_Type) {
-        return ndt::make_type<double>();
-    } else if (obj == &PyComplex_Type) {
-        return ndt::make_type<dynd::complex<double> >();
-    } else if (obj == &PyUnicode_Type) {
-        return ndt::make_string();
-    } else if (obj == &PyByteArray_Type) {
-        return ndt::make_bytes(1);
+  }
+  else if (obj == &PyLong_Type) {
+    return ndt::make_type<int32_t>();
+  }
+  else if (obj == &PyFloat_Type) {
+    return ndt::make_type<double>();
+  }
+  else if (obj == &PyComplex_Type) {
+    return ndt::make_type<dynd::complex<double>>();
+  }
+  else if (obj == &PyUnicode_Type) {
+    return ndt::make_string();
+  }
+  else if (obj == &PyByteArray_Type) {
+    return ndt::make_bytes(1);
 #if PY_VERSION_HEX >= 0x03000000
-    } else if (obj == &PyBytes_Type) {
-        return ndt::make_bytes(1);
+  }
+  else if (obj == &PyBytes_Type) {
+    return ndt::make_bytes(1);
 #else
-    } else if (obj == &PyString_Type) {
-        return ndt::make_string();
+  }
+  else if (obj == &PyString_Type) {
+    return ndt::make_string();
 #endif
-    } else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
-        // CTypes type object
-        return ndt_type_from_ctypes_cdatatype((PyObject *)obj);
-    } else if (obj == PyDateTimeAPI->DateType) {
-        return ndt::make_date();
-    } else if (obj == PyDateTimeAPI->TimeType) {
-        return ndt::make_time();
-    } else if (obj == PyDateTimeAPI->DateTimeType) {
-        return ndt::make_datetime();
-    }
+  }
+  else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
+    // CTypes type object
+    return ndt_type_from_ctypes_cdatatype((PyObject *)obj);
+  }
+  else if (obj == PyDateTimeAPI->DateType) {
+    return ndt::make_date();
+  }
+  else if (obj == PyDateTimeAPI->TimeType) {
+    return ndt::make_time();
+  }
+  else if (obj == PyDateTimeAPI->DateTimeType) {
+    return ndt::make_datetime();
+  }
 
-    stringstream ss;
-    ss << "could not convert the Python TypeObject ";
-    pyobject_ownref obj_repr(PyObject_Repr((PyObject *)obj));
-    ss << pystring_as_string(obj_repr.get());
-    ss << " into a dynd type";
-    throw dynd::type_error(ss.str());
+  stringstream ss;
+  ss << "could not convert the Python TypeObject ";
+  pyobject_ownref obj_repr(PyObject_Repr((PyObject *)obj));
+  ss << pystring_as_string(obj_repr.get());
+  ss << " into a dynd type";
+  throw dynd::type_error(ss.str());
 }
 
-dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject* obj)
+dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject *obj)
 {
-    if (WType_Check(obj)) {
-        return ((WType *)obj)->v;
+  if (WType_Check(obj)) {
+    return ((WType *)obj)->v;
 #if PY_VERSION_HEX < 0x03000000
-    } else if (PyString_Check(obj)) {
-        return ndt::type(pystring_as_string(obj));
+  }
+  else if (PyString_Check(obj)) {
+    return ndt::type(pystring_as_string(obj));
 #endif
-    } else if (PyUnicode_Check(obj)) {
-        return ndt::type(pystring_as_string(obj));
-    } else if (WArray_Check(obj)) {
-        return ((WArray *)obj)->v.as<ndt::type>();
-    } else if (PyType_Check(obj)) {
+  }
+  else if (PyUnicode_Check(obj)) {
+    return ndt::type(pystring_as_string(obj));
+  }
+  else if (WArray_Check(obj)) {
+    return ((WArray *)obj)->v.as<ndt::type>();
+  }
+  else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP
-        ndt::type result;
-        if (ndt_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
-            return result;
-        }
-#endif // DYND_NUMPY_INTEROP
-        return make_ndt_type_from_pytypeobject((PyTypeObject *)obj);
-    }
-
-
-#if DYND_NUMPY_INTEROP
-    if (PyArray_DescrCheck(obj)) {
-        return ndt_type_from_numpy_dtype((PyArray_Descr *)obj);
+    ndt::type result;
+    if (ndt_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) ==
+        0) {
+      return result;
     }
 #endif // DYND_NUMPY_INTEROP
+    return make_ndt_type_from_pytypeobject((PyTypeObject *)obj);
+  }
 
-    stringstream ss;
-    ss << "could not convert the object ";
-    pyobject_ownref repr(PyObject_Repr(obj));
-    ss << pystring_as_string(repr.get());
-    ss << " into a dynd type";
-    throw dynd::type_error(ss.str());
+#if DYND_NUMPY_INTEROP
+  if (PyArray_DescrCheck(obj)) {
+    return ndt_type_from_numpy_dtype((PyArray_Descr *)obj);
+  }
+#endif // DYND_NUMPY_INTEROP
+
+  stringstream ss;
+  ss << "could not convert the object ";
+  pyobject_ownref repr(PyObject_Repr(obj));
+  ss << pystring_as_string(repr.get());
+  ss << " into a dynd type";
+  throw dynd::type_error(ss.str());
 }
 
 static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
 {
-    // Default is utf-8
-    if (encoding_obj == Py_None) {
-        return string_encoding_utf_8;
-    }
+  // Default is utf-8
+  if (encoding_obj == Py_None) {
+    return string_encoding_utf_8;
+  }
 
-    string_encoding_t encoding = string_encoding_invalid;
-    string encoding_str = pystring_as_string(encoding_obj);
-    switch (encoding_str.size()) {
-        case 4:
-            switch (encoding_str[3]) {
-                case '2':
-                    if (encoding_str == "ucs2") {
-                        encoding = string_encoding_ucs_2;
-                    }
-                    break;
-                case '8':
-                    if (encoding_str == "utf8") {
-                        encoding = string_encoding_utf_8;
-                    }
-                    break;
-            }
-        case 5:
-            switch (encoding_str[1]) {
-            case 'c':
-                if (encoding_str == "ucs_2" || encoding_str == "ucs-2") {
-                    encoding = string_encoding_ucs_2;
-                }
-                break;
-            case 's':
-                if (encoding_str == "ascii") {
-                    encoding = string_encoding_ascii;
-                }
-                break;
-            case 't':
-                if (encoding_str == "utf16") {
-                    encoding = string_encoding_utf_16;
-                } else if (encoding_str == "utf32") {
-                    encoding = string_encoding_utf_32;
-                } else if (encoding_str == "utf_8" || encoding_str == "utf-8") {
-                    encoding = string_encoding_utf_8;
-                }
-                break;
-            }
-            break;
-        case 6:
-            switch (encoding_str[4]) {
-            case '1':
-                if (encoding_str == "utf_16" || encoding_str == "utf-16") {
-                    encoding = string_encoding_utf_16;
-                }
-                break;
-            case '3':
-                if (encoding_str == "utf_32" || encoding_str == "utf-32") {
-                    encoding = string_encoding_utf_32;
-                }
-                break;
-        }
+  string_encoding_t encoding = string_encoding_invalid;
+  string encoding_str = pystring_as_string(encoding_obj);
+  switch (encoding_str.size()) {
+  case 4:
+    switch (encoding_str[3]) {
+    case '2':
+      if (encoding_str == "ucs2") {
+        encoding = string_encoding_ucs_2;
+      }
+      break;
+    case '8':
+      if (encoding_str == "utf8") {
+        encoding = string_encoding_utf_8;
+      }
+      break;
     }
+  case 5:
+    switch (encoding_str[1]) {
+    case 'c':
+      if (encoding_str == "ucs_2" || encoding_str == "ucs-2") {
+        encoding = string_encoding_ucs_2;
+      }
+      break;
+    case 's':
+      if (encoding_str == "ascii") {
+        encoding = string_encoding_ascii;
+      }
+      break;
+    case 't':
+      if (encoding_str == "utf16") {
+        encoding = string_encoding_utf_16;
+      }
+      else if (encoding_str == "utf32") {
+        encoding = string_encoding_utf_32;
+      }
+      else if (encoding_str == "utf_8" || encoding_str == "utf-8") {
+        encoding = string_encoding_utf_8;
+      }
+      break;
+    }
+    break;
+  case 6:
+    switch (encoding_str[4]) {
+    case '1':
+      if (encoding_str == "utf_16" || encoding_str == "utf-16") {
+        encoding = string_encoding_utf_16;
+      }
+      break;
+    case '3':
+      if (encoding_str == "utf_32" || encoding_str == "utf-32") {
+        encoding = string_encoding_utf_32;
+      }
+      break;
+    }
+  }
 
-    if (encoding != string_encoding_invalid) {
-        return encoding;
-    } else {
-        stringstream ss;
-        ss << "invalid input \"" << encoding_str << "\" for string encoding";
-        throw std::runtime_error(ss.str());
-    }
+  if (encoding != string_encoding_invalid) {
+    return encoding;
+  }
+  else {
+    stringstream ss;
+    ss << "invalid input \"" << encoding_str << "\" for string encoding";
+    throw std::runtime_error(ss.str());
+  }
 }
 
-dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type& to_tp, const dynd::ndt::type& from_tp)
+dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type &to_tp,
+                                               const dynd::ndt::type &from_tp)
 {
-    return ndt::make_convert(to_tp, from_tp);
+  return ndt::make_convert(to_tp, from_tp);
 }
 
-dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type& value_type, const dynd::ndt::type& operand_type)
+dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type &value_type,
+                                            const dynd::ndt::type &operand_type)
 {
-    return ndt::make_view(value_type, operand_type);
+  return ndt::make_view(value_type, operand_type);
 }
 
 dynd::ndt::type pydynd::dynd_make_fixed_string_type(intptr_t size,
-                PyObject *encoding_obj)
+                                                    PyObject *encoding_obj)
 {
-    string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
+  string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-    return ndt::make_fixed_string(size, encoding);
+  return ndt::make_fixed_string(size, encoding);
 }
 
 dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
 {
-    string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
+  string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-    return ndt::make_string(encoding);
+  return ndt::make_string(encoding);
 }
 
-dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type& target_tp)
+dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type &target_tp)
 {
-    return ndt::make_pointer(target_tp);
+  return ndt::make_pointer(target_tp);
 }
 
-dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types, PyObject *field_names)
+dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types,
+                                              PyObject *field_names)
 {
-    vector<ndt::type> field_types_vec;
-    vector<string> field_names_vec;
-    pyobject_as_vector_ndt_type(field_types, field_types_vec);
-    pyobject_as_vector_string(field_names, field_names_vec);
-    if (field_types_vec.size() != field_names_vec.size()) {
-        stringstream ss;
-        ss << "creating a struct type requires that the number of types ";
-        ss << field_types_vec.size() << " must equal the number of names ";
-        ss << field_names_vec.size();
-        throw invalid_argument(ss.str());
-    }
-    return ndt::make_struct(field_names_vec, field_types_vec);
+  vector<ndt::type> field_types_vec;
+  vector<string> field_names_vec;
+  pyobject_as_vector_ndt_type(field_types, field_types_vec);
+  pyobject_as_vector_string(field_names, field_names_vec);
+  if (field_types_vec.size() != field_names_vec.size()) {
+    stringstream ss;
+    ss << "creating a struct type requires that the number of types ";
+    ss << field_types_vec.size() << " must equal the number of names ";
+    ss << field_names_vec.size();
+    throw invalid_argument(ss.str());
+  }
+  return ndt::make_struct(field_names_vec, field_types_vec);
 }
 
 dynd::ndt::type
@@ -355,47 +385,51 @@ pydynd::dynd_make_fixed_dim_type(PyObject *shape,
   return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
 }
 
-dynd::ndt::type pydynd::ndt_type_getitem(const dynd::ndt::type& d, PyObject *subscript)
+dynd::ndt::type pydynd::ndt_type_getitem(const dynd::ndt::type &d,
+                                         PyObject *subscript)
 {
-    // Convert the pyobject into an array of iranges
-    intptr_t size;
-    shortvector<irange> indices;
-    if (!PyTuple_Check(subscript)) {
-        // A single subscript
-        size = 1;
-        indices.init(1);
-        indices[0] = pyobject_as_irange(subscript);
-    } else {
-        size = PyTuple_GET_SIZE(subscript);
-        // Tuple of subscripts
-        indices.init(size);
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
-        }
+  // Convert the pyobject into an array of iranges
+  intptr_t size;
+  shortvector<irange> indices;
+  if (!PyTuple_Check(subscript)) {
+    // A single subscript
+    size = 1;
+    indices.init(1);
+    indices[0] = pyobject_as_irange(subscript);
+  }
+  else {
+    size = PyTuple_GET_SIZE(subscript);
+    // Tuple of subscripts
+    indices.init(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+      indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
     }
+  }
 
-    // Do an indexing operation
-    return d.at_array((int)size, indices.get());
+  // Do an indexing operation
+  return d.at_array((int)size, indices.get());
 }
 
-PyObject *pydynd::ndt_type_array_property_names(const ndt::type& d)
+PyObject *pydynd::ndt_type_array_property_names(const ndt::type &d)
 {
-    const std::pair<std::string, gfunc::callable> *properties;
-    size_t count;
-    if (!d.is_builtin()) {
-        d.extended()->get_dynamic_array_properties(&properties, &count);
-    } else {
-        get_builtin_type_dynamic_array_properties(d.get_type_id(), &properties, &count);
-    }
-    pyobject_ownref result(PyList_New(count));
-    for (size_t i = 0; i != count; ++i) {
-        const string& s = properties[i].first;
+  const std::pair<std::string, gfunc::callable> *properties;
+  size_t count;
+  if (!d.is_builtin()) {
+    d.extended()->get_dynamic_array_properties(&properties, &count);
+  }
+  else {
+    get_builtin_type_dynamic_array_properties(d.get_type_id(), &properties,
+                                              &count);
+  }
+  pyobject_ownref result(PyList_New(count));
+  for (size_t i = 0; i != count; ++i) {
+    const string &s = properties[i].first;
 #if PY_VERSION_HEX >= 0x03000000
-        pyobject_ownref str_obj(PyUnicode_FromStringAndSize(s.data(), s.size()));
+    pyobject_ownref str_obj(PyUnicode_FromStringAndSize(s.data(), s.size()));
 #else
-        pyobject_ownref str_obj(PyString_FromStringAndSize(s.data(), s.size()));
+    pyobject_ownref str_obj(PyString_FromStringAndSize(s.data(), s.size()));
 #endif
-        PyList_SET_ITEM(result.get(), i, str_obj.release());
-    }
-    return result.release();
+    PyList_SET_ITEM(result.get(), i, str_obj.release());
+  }
+  return result.release();
 }

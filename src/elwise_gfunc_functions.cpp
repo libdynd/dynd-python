@@ -18,9 +18,12 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static void create_elwise_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache, PyCFuncPtrObject *cfunc, dynd::gfunc::elwise_kernel& out_kernel)
+static void
+create_elwise_gfunc_kernel_from_ctypes(dynd::codegen_cache &cgcache,
+                                       PyCFuncPtrObject *cfunc,
+                                       dynd::gfunc::elwise_kernel &out_kernel)
 {
-#if 0 // TODO reenable
+#if 0  // TODO reenable
     ndt::type& returntype = out_kernel.m_returntype;
     vector<ndt::type> &paramtypes = out_kernel.m_paramtypes;
     get_ctypes_signature(cfunc, returntype, paramtypes);
@@ -47,9 +50,11 @@ static void create_elwise_gfunc_kernel_from_ctypes(dynd::codegen_cache& cgcache,
 #endif // TODO reenable
 }
 
-void pydynd::elwise_gfunc_add_kernel(dynd::gfunc::elwise& gf, dynd::codegen_cache& cgcache, PyObject *kernel)
+void pydynd::elwise_gfunc_add_kernel(dynd::gfunc::elwise &gf,
+                                     dynd::codegen_cache &cgcache,
+                                     PyObject *kernel)
 {
-#if 0 // TODO reenable
+#if 0  // TODO reenable
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
         gfunc::elwise_kernel egk;
 
@@ -63,9 +68,10 @@ void pydynd::elwise_gfunc_add_kernel(dynd::gfunc::elwise& gf, dynd::codegen_cach
 #endif // TODO reenable
 }
 
-PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyObject *kwargs)
+PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise &gf, PyObject *args,
+                                    PyObject *kwargs)
 {
-#if 0 // TODO reenable
+#if 0  // TODO reenable
     Py_ssize_t nargs = PySequence_Size(args);
 
     // Convert the args into nd::arrays, and get the value types
@@ -114,6 +120,6 @@ PyObject *pydynd::elwise_gfunc_call(dynd::gfunc::elwise& gf, PyObject *args, PyO
     }
     */
 #endif // TODO reenable
-        PyErr_SetString(PyExc_TypeError, "Elementwise gfuncs disabled presently");
-        return NULL;
+  PyErr_SetString(PyExc_TypeError, "Elementwise gfuncs disabled presently");
+  return NULL;
 }

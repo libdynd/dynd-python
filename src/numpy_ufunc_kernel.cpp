@@ -183,13 +183,14 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
       // If we found a full match, return the kernel
       if (matched) {
         if (!uf->core_enabled) {
-          dynd::ndt::type return_type = ndt_type_from_numpy_type_num(argtypes[0]);
+          dynd::ndt::type return_type =
+              ndt_type_from_numpy_type_num(argtypes[0]);
           std::vector<dynd::ndt::type> param_types(nargs - 1);
           for (intptr_t j = 0; j < nargs - 1; ++j) {
             param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
           }
-          dynd::ndt::type self_tp =
-              dynd::ndt::make_arrfunc(dynd::ndt::make_tuple(param_types), return_type);
+          dynd::ndt::type self_tp = dynd::ndt::make_arrfunc(
+              dynd::ndt::make_tuple(param_types), return_type);
 
           // Fill in the dynd::nd::arrfunc instance data
           std::shared_ptr<scalar_ufunc_data> data(new scalar_ufunc_data());
@@ -200,12 +201,16 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
             return pydynd::wrap_array(
-                dynd::nd::arrfunc::make<scalar_ufunc_ck<true>>(self_tp, data, 0));
-          } else {
-            return pydynd::wrap_array(
-                dynd::nd::arrfunc::make<scalar_ufunc_ck<false>>(self_tp, data, 0));
+                dynd::nd::arrfunc::make<scalar_ufunc_ck<true>>(self_tp, data,
+                                                               0));
           }
-        } else {
+          else {
+            return pydynd::wrap_array(
+                dynd::nd::arrfunc::make<scalar_ufunc_ck<false>>(self_tp, data,
+                                                                0));
+          }
+        }
+        else {
           // TODO: support gufunc
           PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");
           return NULL;

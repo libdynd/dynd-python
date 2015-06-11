@@ -25,21 +25,27 @@ namespace nd {
   template <>
   struct copy_from_pyobject_kernel<dynd::bool_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::bool_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (src_obj == Py_True) {
         *dst = 1;
-      } else if (src_obj == Py_False) {
+      }
+      else if (src_obj == Py_False) {
         *dst = 0;
-      } else {
-        *dst = array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
-                   .as<dynd::dynd_bool>();
+      }
+      else {
+        *dst =
+            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
+                .as<dynd::dynd_bool>();
       }
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> bool"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> bool");
+    }
   };
 
   void pyint_to_int(int8_t *out, PyObject *obj)
@@ -201,7 +207,8 @@ namespace nd {
 
   template <typename T>
   struct copy_int_from_pyobject_kernel
-      : dynd::nd::base_kernel<copy_int_from_pyobject_kernel<T>, dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<copy_int_from_pyobject_kernel<T>,
+                              dynd::kernel_request_host, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -209,9 +216,10 @@ namespace nd {
 #if PY_VERSION_HEX < 0x03000000
           || PyInt_Check(src_obj)
 #endif
-          ) {
+              ) {
         pyint_to_int(reinterpret_cast<T *>(dst), src_obj);
-      } else {
+      }
+      else {
         *reinterpret_cast<T *>(dst) =
             array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
                 .as<T>();
@@ -223,7 +231,8 @@ namespace nd {
       std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
       tp_vars["R"] = dynd::ndt::make_type<T>();
 
-      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars, true);
+      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars,
+                                   true);
     }
   };
 
@@ -279,8 +288,8 @@ namespace nd {
 
   template <typename T>
   struct float_copy_from_pyobject_kernel
-      : dynd::nd::base_kernel<float_copy_from_pyobject_kernel<T>, dynd::kernel_request_host,
-                    1> {
+      : dynd::nd::base_kernel<float_copy_from_pyobject_kernel<T>,
+                              dynd::kernel_request_host, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -290,7 +299,8 @@ namespace nd {
           throw std::exception();
         }
         *reinterpret_cast<T *>(dst) = static_cast<T>(v);
-      } else {
+      }
+      else {
         *reinterpret_cast<T *>(dst) =
             array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
                 .as<T>();
@@ -302,7 +312,8 @@ namespace nd {
       std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
       tp_vars["R"] = dynd::ndt::make_type<T>();
 
-      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars, true);
+      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars,
+                                   true);
     }
   };
 
@@ -324,7 +335,7 @@ namespace nd {
   template <typename T>
   struct complex_float_copy_from_pyobject_kernel
       : dynd::nd::base_kernel<complex_float_copy_from_pyobject_kernel<T>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -335,7 +346,8 @@ namespace nd {
         }
         reinterpret_cast<T *>(dst)[0] = static_cast<T>(v.real);
         reinterpret_cast<T *>(dst)[1] = static_cast<T>(v.imag);
-      } else {
+      }
+      else {
         *reinterpret_cast<dynd::complex<T> *>(dst) =
             array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
                 .as<dynd::complex<T>>();
@@ -347,7 +359,8 @@ namespace nd {
       std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
       tp_vars["R"] = dynd::ndt::make_type<dynd::complex<T>>();
 
-      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars, true);
+      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars,
+                                   true);
     }
   };
 
@@ -366,11 +379,12 @@ namespace nd {
   template <>
   struct copy_from_pyobject_kernel<dynd::bytes_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::bytes_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp, const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
+                              const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -384,10 +398,13 @@ namespace nd {
         if (PyBytes_AsStringAndSize(src_obj, &pybytes_data, &pybytes_len) < 0) {
           throw std::runtime_error("Error getting byte string data");
         }
-      } else if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
+      }
+      else if (pydynd::WArray_Check(src_obj)) {
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
         return;
-      } else {
+      }
+      else {
         std::stringstream ss;
         ss << "Cannot assign object " << pyobject_repr(src_obj)
            << " to a dynd bytes value";
@@ -402,31 +419,37 @@ namespace nd {
       bytes_md.blockref = NULL;
 
       dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp,
-                        reinterpret_cast<const char *>(&bytes_md),
-                        reinterpret_cast<const char *>(&bytes_d));
+                              reinterpret_cast<const char *>(&bytes_md),
+                              reinterpret_cast<const char *>(&bytes_d));
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> bytes"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> bytes");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::fixed_bytes_type_id>
       : copy_from_pyobject_kernel<dynd::bytes_type_id> {
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> FixedBytes"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> FixedBytes");
+    }
   };
 
   // TODO: This is not very efficient, could be made better
@@ -434,11 +457,12 @@ namespace nd {
   template <>
   struct copy_from_pyobject_kernel<dynd::string_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::string_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp, const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
+                              const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -466,17 +490,19 @@ namespace nd {
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
-                          reinterpret_cast<const char *>(&str_md),
-                          reinterpret_cast<const char *>(&str_d));
+                                reinterpret_cast<const char *>(&str_md),
+                                reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
-      } else if (PyString_Check(src_obj)) {
+      }
+      else if (PyString_Check(src_obj)) {
         char *pystr_data = NULL;
         intptr_t pystr_len = 0;
         if (PyString_AsStringAndSize(src_obj, &pystr_data, &pystr_len) < 0) {
           throw std::runtime_error("Error getting string data");
         }
 
-        dynd::ndt::type str_dt = dynd::ndt::make_string(dynd::string_encoding_ascii);
+        dynd::ndt::type str_dt =
+            dynd::ndt::make_string(dynd::string_encoding_ascii);
         dynd::string_type_data str_d;
         dynd::string_type_arrmeta str_md;
         str_d.begin = pystr_data;
@@ -484,13 +510,16 @@ namespace nd {
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt,
-                          reinterpret_cast<const char *>(&str_md),
-                          reinterpret_cast<const char *>(&str_d));
+                                reinterpret_cast<const char *>(&str_md),
+                                reinterpret_cast<const char *>(&str_d));
 #endif
-      } else if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
+      }
+      else if (pydynd::WArray_Check(src_obj)) {
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
         return;
-      } else {
+      }
+      else {
         std::stringstream ss;
         ss << "Cannot assign object " << pyobject_repr(src_obj)
            << " to a dynd bytes value";
@@ -498,36 +527,43 @@ namespace nd {
       }
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> string"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> string");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::fixed_string_type_id>
       : copy_from_pyobject_kernel<dynd::string_type_id> {
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> FixedString"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> FixedString");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::date_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::date_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp, const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
+                              const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -536,11 +572,13 @@ namespace nd {
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (PyDate_Check(src_obj)) {
-        const dynd::ndt::date_type *dd = dst_tp.extended<dynd::ndt::date_type>();
+        const dynd::ndt::date_type *dd =
+            dst_tp.extended<dynd::ndt::date_type>();
         dd->set_ymd(dst_arrmeta, dst, dynd::assign_error_fractional,
                     PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                     PyDateTime_GET_DAY(src_obj));
-      } else if (PyDateTime_Check(src_obj)) {
+      }
+      else if (PyDateTime_Check(src_obj)) {
         PyDateTime_DateTime *src_dt = (PyDateTime_DateTime *)src_obj;
         if (src_dt->hastzinfo && src_dt->tzinfo != NULL) {
           throw std::runtime_error(
@@ -556,44 +594,53 @@ namespace nd {
              << pyobject_repr(src_obj) << " to a datetime date";
           throw std::invalid_argument(ss.str());
         }
-        const dynd::ndt::date_type *dd = dst_tp.extended<dynd::ndt::date_type>();
+        const dynd::ndt::date_type *dd =
+            dst_tp.extended<dynd::ndt::date_type>();
         dd->set_ymd(dst_arrmeta, dst, dynd::assign_error_fractional,
                     PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                     PyDateTime_GET_DAY(src_obj));
-      } else if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
-      } else {
+      }
+      else if (pydynd::WArray_Check(src_obj)) {
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
+      }
+      else {
         dynd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context));
+            array_from_py(src_obj, 0, false,
+                          &dynd::eval::default_eval_context));
       }
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> date"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> date");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::time_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::time_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
 
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp, const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
+                              const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -602,46 +649,55 @@ namespace nd {
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (PyTime_Check(src_obj)) {
-        const dynd::ndt::time_type *tt = dst_tp.extended<dynd::ndt::time_type>();
+        const dynd::ndt::time_type *tt =
+            dst_tp.extended<dynd::ndt::time_type>();
         tt->set_time(dst_arrmeta, dst, dynd::assign_error_fractional,
                      PyDateTime_TIME_GET_HOUR(src_obj),
                      PyDateTime_TIME_GET_MINUTE(src_obj),
                      PyDateTime_TIME_GET_SECOND(src_obj),
                      PyDateTime_TIME_GET_MICROSECOND(src_obj) *
                          DYND_TICKS_PER_MICROSECOND);
-      } else if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
-      } else {
+      }
+      else if (pydynd::WArray_Check(src_obj)) {
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
+      }
+      else {
         dynd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context));
+            array_from_py(src_obj, 0, false,
+                          &dynd::eval::default_eval_context));
       }
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> time"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> time");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::datetime_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::datetime_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
-    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp, const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
+                              const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -656,7 +712,8 @@ namespace nd {
               "Converting datetimes with a timezone to dynd "
               "arrays is not yet supported");
         }
-        const dynd::ndt::datetime_type *dd = dst_tp.extended<dynd::ndt::datetime_type>();
+        const dynd::ndt::datetime_type *dd =
+            dst_tp.extended<dynd::ndt::datetime_type>();
         dd->set_cal(dst_arrmeta, dst, dynd::assign_error_fractional,
                     PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                     PyDateTime_GET_DAY(src_obj),
@@ -664,35 +721,42 @@ namespace nd {
                     PyDateTime_DATE_GET_MINUTE(src_obj),
                     PyDateTime_DATE_GET_SECOND(src_obj),
                     PyDateTime_DATE_GET_MICROSECOND(src_obj) * 10);
-      } else if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
-      } else {
+      }
+      else if (pydynd::WArray_Check(src_obj)) {
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
+      }
+      else {
         dynd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context));
+            array_from_py(src_obj, 0, false,
+                          &dynd::eval::default_eval_context));
       }
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> datetime"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> datetime");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::type_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::type_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -700,19 +764,23 @@ namespace nd {
           pydynd::make_ndt_type_from_pyobject(src_obj);
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> type"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> type");
+    }
   };
 
   // TODO: Should make a more efficient strided kernel function
   template <>
   struct copy_from_pyobject_kernel<dynd::option_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::option_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
     intptr_t copy_value_offset;
 
-    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp, const char *dst_arrmeta)
+    copy_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
+                              const char *dst_arrmeta)
         : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
     {
     }
@@ -722,11 +790,16 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (src_obj == Py_None) {
         ckernel_prefix *assign_na = get_child_ckernel();
-        dynd::expr_single_t assign_na_fn = assign_na->get_function<dynd::expr_single_t>();
+        dynd::expr_single_t assign_na_fn =
+            assign_na->get_function<dynd::expr_single_t>();
         assign_na_fn(dst, NULL, assign_na);
-      } else if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
-      } else if (dst_tp.get_kind() != dynd::string_kind && PyUnicode_Check(src_obj)) {
+      }
+      else if (pydynd::WArray_Check(src_obj)) {
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
+      }
+      else if (dst_tp.get_kind() != dynd::string_kind &&
+               PyUnicode_Check(src_obj)) {
         // Copy from the string
         pyobject_ownref utf8(PyUnicode_AsUTF8String(src_obj));
         char *s = NULL;
@@ -744,10 +817,12 @@ namespace nd {
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
-                          reinterpret_cast<const char *>(&str_md),
-                          reinterpret_cast<const char *>(&str_d));
+                                reinterpret_cast<const char *>(&str_md),
+                                reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
-      } else if (dst_tp.get_kind() != dynd::string_kind && PyString_Check(src_obj)) {
+      }
+      else if (dst_tp.get_kind() != dynd::string_kind &&
+               PyString_Check(src_obj)) {
         // Copy from the string
         char *s = NULL;
         Py_ssize_t len = 0;
@@ -764,12 +839,14 @@ namespace nd {
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
-                          reinterpret_cast<const char *>(&str_md),
-                          reinterpret_cast<const char *>(&str_d));
+                                reinterpret_cast<const char *>(&str_md),
+                                reinterpret_cast<const char *>(&str_d));
 #endif
-      } else {
+      }
+      else {
         ckernel_prefix *copy_value = get_child_ckernel(copy_value_offset);
-        dynd::expr_single_t copy_value_fn = copy_value->get_function<dynd::expr_single_t>();
+        dynd::expr_single_t copy_value_fn =
+            copy_value->get_function<dynd::expr_single_t>();
         copy_value_fn(dst, src, copy_value);
       }
     }
@@ -780,14 +857,14 @@ namespace nd {
       destroy_child_ckernel(copy_value_offset);
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
 
       intptr_t root_ckb_offset = ckb_offset;
@@ -795,43 +872,50 @@ namespace nd {
       const dynd::arrfunc_type_data *assign_na_af =
           dst_tp.extended<dynd::ndt::option_type>()->get_assign_na_arrfunc();
       const dynd::ndt::arrfunc_type *assign_na_af_tp =
-          dst_tp.extended<dynd::ndt::option_type>()->get_assign_na_arrfunc_type();
+          dst_tp.extended<dynd::ndt::option_type>()
+              ->get_assign_na_arrfunc_type();
       ckb_offset = assign_na_af->instantiate(
           assign_na_af, assign_na_af_tp, NULL, ckb, ckb_offset, dst_tp,
-          dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single, ectx, kwds,
-          tp_vars);
+          dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single, ectx,
+          kwds, tp_vars);
       copy_from_pyobject_kernel *self = get_self(
-          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb),
+          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
+              ckb),
           root_ckb_offset);
       self->copy_value_offset = ckb_offset - root_ckb_offset;
       ckb_offset = copy_from_pyobject.get()->instantiate(
           copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
-          ckb_offset, dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
-          dst_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single, ectx,
-          kwds, tp_vars);
+          ckb_offset,
+          dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
+          dst_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single,
+          ectx, kwds, tp_vars);
       return ckb_offset;
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> ?Any"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> ?Any");
+    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::categorical_type_id>
-      : dynd::nd::base_virtual_kernel<copy_from_pyobject_kernel<dynd::categorical_type_id>> {
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+      : dynd::nd::base_virtual_kernel<
+            copy_from_pyobject_kernel<dynd::categorical_type_id>> {
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       // Assign via an intermediate category_type buffer
       const dynd::ndt::type &buf_tp =
           dst_tp.extended<dynd::ndt::categorical_type>()->get_category_type();
-      dynd::nd::arrfunc copy_af =
-          make_arrfunc_from_assignment(dst_tp, buf_tp, dynd::assign_error_default);
+      dynd::nd::arrfunc copy_af = make_arrfunc_from_assignment(
+          dst_tp, buf_tp, dynd::assign_error_default);
       dynd::nd::arrfunc child =
           dynd::nd::functional::chain(copy_from_pyobject, copy_af, buf_tp);
       return child.get()->instantiate(child.get(), child.get_type(), NULL, ckb,
@@ -840,15 +924,19 @@ namespace nd {
                                       dynd::nd::array(), tp_vars);
     }
 
-    static dynd::ndt::type make_type() { return dynd::ndt::type("(void) -> Categorical"); }
+    static dynd::ndt::type make_type()
+    {
+      return dynd::ndt::type("(void) -> Categorical");
+    }
   };
 
   // TODO: Could instantiate the dst_tp -> dst_tp assignment
   //       as part of the ckernel instead of dynamically
   template <>
   struct copy_from_pyobject_kernel<dynd::fixed_dim_type_id>
-      : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::fixed_dim_type_id>,
-                    dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<
+            copy_from_pyobject_kernel<dynd::fixed_dim_type_id>,
+            dynd::kernel_request_host, 1> {
     intptr_t m_dim_size, m_stride;
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
@@ -861,7 +949,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
+        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -875,7 +964,8 @@ namespace nd {
       // TODO: PEP 3118 support here
 
       ckernel_prefix *copy_el = get_child_ckernel();
-      dynd::expr_strided_t copy_el_fn = copy_el->get_function<dynd::expr_strided_t>();
+      dynd::expr_strided_t copy_el_fn =
+          copy_el->get_function<dynd::expr_strided_t>();
 
       // Get the input as an array of PyObject *
       pyobject_ownref src_fast;
@@ -885,7 +975,8 @@ namespace nd {
       if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
         child_src = src[0];
         src_dim_size = 1;
-      } else {
+      }
+      else {
         src_fast.reset(PySequence_Fast(
             src_obj, "Require a sequence to copy to a dynd dimension"));
         child_src =
@@ -903,11 +994,13 @@ namespace nd {
         // Copy once from Python, then duplicate that element
         copy_el_fn(dst, 0, &child_src, &child_stride, 1, copy_el);
         ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
-        dynd::expr_strided_t copy_dst_fn = copy_dst->get_function<dynd::expr_strided_t>();
+        dynd::expr_strided_t copy_dst_fn =
+            copy_dst->get_function<dynd::expr_strided_t>();
         intptr_t zero = 0;
         copy_dst_fn(dst + m_stride, m_stride, &dst, &zero, m_dim_size - 1,
                     copy_dst);
-      } else {
+      }
+      else {
         copy_el_fn(dst, m_stride, &child_src, &child_stride, m_dim_size,
                    copy_el);
       }
@@ -918,14 +1011,14 @@ namespace nd {
 
     inline void destruct_children() { get_child_ckernel()->destroy(); }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -936,8 +1029,8 @@ namespace nd {
                                 &el_arrmeta)) {
         intptr_t root_ckb_offset = ckb_offset;
         pydynd::nd::copy_from_pyobject_kernel<dynd::fixed_dim_type_id> *self =
-            pydynd::nd::copy_from_pyobject_kernel<dynd::fixed_dim_type_id>::make(
-                ckb, kernreq, ckb_offset);
+            pydynd::nd::copy_from_pyobject_kernel<
+                dynd::fixed_dim_type_id>::make(ckb, kernreq, ckb_offset);
         self->m_dim_size = dim_size;
         self->m_stride = stride;
         self->m_dst_tp = dst_tp;
@@ -948,16 +1041,15 @@ namespace nd {
             copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
             ckb_offset, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
             dynd::kernel_request_strided, ectx, kwds, tp_vars);
-        self =
-            reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-                ->get_at<
-                    pydynd::nd::copy_from_pyobject_kernel<dynd::fixed_dim_type_id>>(
-                    root_ckb_offset);
+        self = reinterpret_cast<
+                   dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+                   ->get_at<pydynd::nd::copy_from_pyobject_kernel<
+                       dynd::fixed_dim_type_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
-        return dynd::make_assignment_kernel(NULL, NULL, ckb, ckb_offset, el_tp,
-                                      el_arrmeta, el_tp, el_arrmeta,
-                                      dynd::kernel_request_strided, ectx, kwds);
+        return dynd::make_assignment_kernel(
+            NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
+            dynd::kernel_request_strided, ectx, kwds);
       }
 
       throw std::runtime_error("could not process as strided");
@@ -972,7 +1064,7 @@ namespace nd {
   template <>
   struct copy_from_pyobject_kernel<dynd::var_dim_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::var_dim_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     intptr_t m_offset, m_stride;
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
@@ -985,7 +1077,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
+        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -999,7 +1092,8 @@ namespace nd {
       // TODO: PEP 3118 support here
 
       ckernel_prefix *copy_el = get_child_ckernel();
-      dynd::expr_strided_t copy_el_fn = copy_el->get_function<dynd::expr_strided_t>();
+      dynd::expr_strided_t copy_el_fn =
+          copy_el->get_function<dynd::expr_strided_t>();
 
       // Get the input as an array of PyObject *
       pyobject_ownref src_fast;
@@ -1009,7 +1103,8 @@ namespace nd {
       if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
         child_src = src[0];
         src_dim_size = 1;
-      } else {
+      }
+      else {
         src_fast.reset(PySequence_Fast(
             src_obj, "Require a sequence to copy to a dynd dimension"));
         child_src =
@@ -1018,7 +1113,8 @@ namespace nd {
       }
 
       // If the var dim element hasn't been allocated, initialize it
-      dynd::var_dim_type_data *vdd = reinterpret_cast<dynd::var_dim_type_data *>(dst);
+      dynd::var_dim_type_data *vdd =
+          reinterpret_cast<dynd::var_dim_type_data *>(dst);
       if (vdd->begin == NULL) {
         if (m_offset != 0) {
           throw std::runtime_error(
@@ -1040,12 +1136,14 @@ namespace nd {
         copy_el_fn(vdd->begin + m_offset, 0, &child_src, &child_stride, 1,
                    copy_el);
         ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
-        dynd::expr_strided_t copy_dst_fn = copy_dst->get_function<dynd::expr_strided_t>();
+        dynd::expr_strided_t copy_dst_fn =
+            copy_dst->get_function<dynd::expr_strided_t>();
         intptr_t zero = 0;
         char *src_to_dup = vdd->begin + m_offset;
         copy_dst_fn(vdd->begin + m_offset + m_stride, m_stride, &src_to_dup,
                     &zero, vdd->size - 1, copy_dst);
-      } else {
+      }
+      else {
         copy_el_fn(vdd->begin + m_offset, m_stride, &child_src, &child_stride,
                    vdd->size, copy_el);
       }
@@ -1056,14 +1154,14 @@ namespace nd {
 
     void destruct_children() { get_child_ckernel()->destroy(); }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1071,10 +1169,10 @@ namespace nd {
       pydynd::nd::copy_from_pyobject_kernel<dynd::var_dim_type_id> *self =
           pydynd::nd::copy_from_pyobject_kernel<dynd::var_dim_type_id>::make(
               ckb, kernreq, ckb_offset);
-      self->m_offset =
-          reinterpret_cast<const dynd::var_dim_type_arrmeta *>(dst_arrmeta)->offset;
-      self->m_stride =
-          reinterpret_cast<const dynd::var_dim_type_arrmeta *>(dst_arrmeta)->stride;
+      self->m_offset = reinterpret_cast<const dynd::var_dim_type_arrmeta *>(
+                           dst_arrmeta)->offset;
+      self->m_stride = reinterpret_cast<const dynd::var_dim_type_arrmeta *>(
+                           dst_arrmeta)->stride;
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
       self->m_dim_broadcast = dim_broadcast;
@@ -1086,14 +1184,16 @@ namespace nd {
           ckb_offset, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_strided, ectx, kwds, tp_vars);
       self =
-          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-              ->get_at<pydynd::nd::copy_from_pyobject_kernel<dynd::var_dim_type_id>>(
+          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
+              ckb)
+              ->get_at<
+                  pydynd::nd::copy_from_pyobject_kernel<dynd::var_dim_type_id>>(
                   root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
-      return dynd::make_assignment_kernel(NULL, NULL, ckb, ckb_offset, el_tp,
-                                    el_arrmeta, el_tp, el_arrmeta,
-                                    dynd::kernel_request_strided, ectx, kwds);
+      return dynd::make_assignment_kernel(
+          NULL, NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
+          dynd::kernel_request_strided, ectx, kwds);
     }
 
     static dynd::ndt::type make_type()
@@ -1106,7 +1206,7 @@ namespace nd {
   template <>
   struct copy_from_pyobject_kernel<dynd::tuple_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::tuple_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;
@@ -1117,7 +1217,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
+        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1144,7 +1245,8 @@ namespace nd {
       if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
         child_src = src[0];
         src_dim_size = 1;
-      } else {
+      }
+      else {
         src_fast.reset(PySequence_Fast(
             src_obj, "Require a sequence to copy to a dynd tuple"));
         child_src =
@@ -1163,7 +1265,8 @@ namespace nd {
       }
       for (intptr_t i = 0; i < field_count; ++i) {
         ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
-        dynd::expr_single_t copy_el_fn = copy_el->get_function<dynd::expr_single_t>();
+        dynd::expr_single_t copy_el_fn =
+            copy_el->get_function<dynd::expr_single_t>();
         char *el_dst = dst + field_offsets[i];
         char *el_src = child_src + i * child_stride;
         copy_el_fn(el_dst, &el_src, copy_el);
@@ -1180,14 +1283,14 @@ namespace nd {
       }
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1202,15 +1305,18 @@ namespace nd {
       const dynd::ndt::type *field_types =
           dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          dst_tp.extended<dynd::ndt::base_tuple_type>()->get_arrmeta_offsets_raw();
+          dst_tp.extended<dynd::ndt::base_tuple_type>()
+              ->get_arrmeta_offsets_raw();
       self->m_dim_broadcast = dim_broadcast;
       self->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
-        reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-            ->reserve(ckb_offset);
+        reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
+            ckb)->reserve(ckb_offset);
         self =
-            reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-                ->get_at<pydynd::nd::copy_from_pyobject_kernel<dynd::tuple_type_id>>(
+            reinterpret_cast<
+                dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+                ->get_at<
+                    pydynd::nd::copy_from_pyobject_kernel<dynd::tuple_type_id>>(
                     root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
@@ -1232,7 +1338,7 @@ namespace nd {
   template <>
   struct copy_from_pyobject_kernel<dynd::struct_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::struct_type_id>,
-                    dynd::kernel_request_host, 1> {
+                              dynd::kernel_request_host, 1> {
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;
@@ -1243,7 +1349,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (pydynd::WArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst, ((pydynd::WArray *)src_obj)->v);
+        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                ((pydynd::WArray *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1273,17 +1380,20 @@ namespace nd {
         while (PyDict_Next(src_obj, &dict_pos, &dict_key, &dict_value)) {
           std::string name = pydynd::pystring_as_string(dict_key);
           intptr_t i =
-              m_dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_index(name);
+              m_dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_index(
+                  name);
           // TODO: Add an error policy of whether to throw an error
           //       or not. For now, just raise an error
           if (i >= 0) {
             ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
-            dynd::expr_single_t copy_el_fn = copy_el->get_function<dynd::expr_single_t>();
+            dynd::expr_single_t copy_el_fn =
+                copy_el->get_function<dynd::expr_single_t>();
             char *el_dst = dst + field_offsets[i];
             char *el_src = reinterpret_cast<char *>(&dict_value);
             copy_el_fn(el_dst, &el_src, copy_el);
             populated_fields[i] = true;
-          } else {
+          }
+          else {
             std::stringstream ss;
             ss << "Input python dict has key ";
             dynd::print_escaped_utf8_string(ss, name);
@@ -1298,13 +1408,14 @@ namespace nd {
             std::stringstream ss;
             ss << "python dict does not contain the field ";
             dynd::print_escaped_utf8_string(
-                ss,
-                m_dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_name(i));
+                ss, m_dst_tp.extended<dynd::ndt::base_struct_type>()
+                        ->get_field_name(i));
             ss << " as required by the data type " << m_dst_tp;
             throw dynd::broadcast_error(ss.str());
           }
         }
-      } else {
+      }
+      else {
         // Get the input as an array of PyObject *
         pyobject_ownref src_fast;
         char *child_src;
@@ -1313,7 +1424,8 @@ namespace nd {
         if (m_dim_broadcast && broadcast_as_scalar(m_dst_tp, src_obj)) {
           child_src = src[0];
           src_dim_size = 1;
-        } else {
+        }
+        else {
           src_fast.reset(PySequence_Fast(
               src_obj, "Require a sequence to copy to a dynd struct"));
           child_src =
@@ -1332,7 +1444,8 @@ namespace nd {
         }
         for (intptr_t i = 0; i < field_count; ++i) {
           ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
-          dynd::expr_single_t copy_el_fn = copy_el->get_function<dynd::expr_single_t>();
+          dynd::expr_single_t copy_el_fn =
+              copy_el->get_function<dynd::expr_single_t>();
           char *el_dst = dst + field_offsets[i];
           char *el_src = child_src + i * child_stride;
           copy_el_fn(el_dst, &el_src, copy_el);
@@ -1350,14 +1463,14 @@ namespace nd {
       }
     }
 
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-                char *data, void *ckb, intptr_t ckb_offset,
-                const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
+        char *data, void *ckb, intptr_t ckb_offset,
+        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
+        const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1372,16 +1485,17 @@ namespace nd {
       const dynd::ndt::type *field_types =
           dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          dst_tp.extended<dynd::ndt::base_struct_type>()->get_arrmeta_offsets_raw();
+          dst_tp.extended<dynd::ndt::base_struct_type>()
+              ->get_arrmeta_offsets_raw();
       self->m_dim_broadcast = dim_broadcast;
       self->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
-        reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-            ->reserve(ckb_offset);
-        self =
-            reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-                ->get_at<pydynd::nd::copy_from_pyobject_kernel<dynd::struct_type_id>>(
-                    root_ckb_offset);
+        reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
+            ckb)->reserve(ckb_offset);
+        self = reinterpret_cast<
+                   dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+                   ->get_at<pydynd::nd::copy_from_pyobject_kernel<
+                       dynd::struct_type_id>>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
         ckb_offset = copy_from_pyobject.get()->instantiate(
@@ -1400,15 +1514,14 @@ namespace nd {
 
   struct default_copy_from_pyobject_kernel
       : dynd::nd::base_virtual_kernel<default_copy_from_pyobject_kernel> {
-    static intptr_t
-    instantiate(const dynd::arrfunc_type_data *self_af,
-                const dynd::ndt::arrfunc_type *af_tp, char *data, void *ckb,
-                intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
-                const char *dst_arrmeta, intptr_t nsrc,
-                const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-                const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    static intptr_t instantiate(
+        const dynd::arrfunc_type_data *self_af,
+        const dynd::ndt::arrfunc_type *af_tp, char *data, void *ckb,
+        intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+        const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
+        const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+        const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
+        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       if (dst_tp.get_kind() == dynd::expr_kind) {
         dynd::nd::arrfunc af = dynd::nd::functional::chain(

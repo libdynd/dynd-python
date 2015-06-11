@@ -22,39 +22,38 @@ namespace pydynd {
  * after initialization.
  */
 struct py_lowlevel_api_t {
-    uintptr_t version;
-    // Extracts the dynd object pointers from their Python wrappers.
-    // These functions do not check the type of the arguments.
-    dynd::array_preamble *(*get_array_ptr)(WArray *obj);
-    const dynd::ndt::base_type *(*get_base_type_ptr)(WType *obj);
-    PyObject *(*array_from_ptr)(PyObject *dt, PyObject *ptr, PyObject *owner,
-                                PyObject *access);
-    PyObject *(*make_assignment_ckernel)(void *ckb, intptr_t ckb_offset,
-                                         PyObject *dst_tp_obj,
-                                         const void *dst_arrmeta,
-                                         PyObject *src_tp_obj,
-                                         const void *src_arrmeta,
-                                         PyObject *kernreq, PyObject *ectx);
-    PyObject *(*make_arrfunc_from_assignment)(PyObject *dst_tp_obj,
-                                              PyObject *src_tp_obj,
-                                              PyObject *errmode);
-    PyObject *(*make_arrfunc_from_property)(PyObject *tp_obj,
-                                            PyObject *propname);
-    PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
-    PyObject *(*arrfunc_from_ufunc)(PyObject *ufunc, PyObject *type_tuple,
-                                    int ckernel_acquires_gil);
-    PyObject *(*lift_arrfunc)(PyObject *af);
-    PyObject *(*lift_reduction_arrfunc)(
-        PyObject *elwise_reduction, PyObject *lifted_type,
-        PyObject *dst_initialization, PyObject *axis, PyObject *keepdims,
-        PyObject *associative, PyObject *commutative,
-        PyObject *right_associative, PyObject *reduction_identity);
-    PyObject *(*arrfunc_from_pyfunc)(PyObject *pyfunc, PyObject *proto_obj);
-    PyObject *(*make_rolling_arrfunc)(PyObject *window_op_obj,
-                                      PyObject *window_size_obj);
-    PyObject *(*make_builtin_mean1d_arrfunc)(PyObject *tp_obj,
-                                             PyObject *minp_obj);
-    PyObject *(*make_take_arrfunc)();
+  uintptr_t version;
+  // Extracts the dynd object pointers from their Python wrappers.
+  // These functions do not check the type of the arguments.
+  dynd::array_preamble *(*get_array_ptr)(WArray *obj);
+  const dynd::ndt::base_type *(*get_base_type_ptr)(WType *obj);
+  PyObject *(*array_from_ptr)(PyObject *dt, PyObject *ptr, PyObject *owner,
+                              PyObject *access);
+  PyObject *(*make_assignment_ckernel)(void *ckb, intptr_t ckb_offset,
+                                       PyObject *dst_tp_obj,
+                                       const void *dst_arrmeta,
+                                       PyObject *src_tp_obj,
+                                       const void *src_arrmeta,
+                                       PyObject *kernreq, PyObject *ectx);
+  PyObject *(*make_arrfunc_from_assignment)(PyObject *dst_tp_obj,
+                                            PyObject *src_tp_obj,
+                                            PyObject *errmode);
+  PyObject *(*make_arrfunc_from_property)(PyObject *tp_obj, PyObject *propname);
+  PyObject *(*numpy_typetuples_from_ufunc)(PyObject *ufunc);
+  PyObject *(*arrfunc_from_ufunc)(PyObject *ufunc, PyObject *type_tuple,
+                                  int ckernel_acquires_gil);
+  PyObject *(*lift_arrfunc)(PyObject *af);
+  PyObject *(*lift_reduction_arrfunc)(
+      PyObject *elwise_reduction, PyObject *lifted_type,
+      PyObject *dst_initialization, PyObject *axis, PyObject *keepdims,
+      PyObject *associative, PyObject *commutative, PyObject *right_associative,
+      PyObject *reduction_identity);
+  PyObject *(*arrfunc_from_pyfunc)(PyObject *pyfunc, PyObject *proto_obj);
+  PyObject *(*make_rolling_arrfunc)(PyObject *window_op_obj,
+                                    PyObject *window_size_obj);
+  PyObject *(*make_builtin_mean1d_arrfunc)(PyObject *tp_obj,
+                                           PyObject *minp_obj);
+  PyObject *(*make_take_arrfunc)();
 };
 
 } // namespace pydynd

@@ -15,11 +15,11 @@
 namespace pydynd {
 namespace nd {
 
-  extern struct copy_from_pyobject : declfunc<copy_from_pyobject> {
-    static arrfunc children[DYND_TYPE_ID_MAX + 1];
-    static arrfunc default_child;
+  extern struct copy_from_pyobject : dynd::nd::declfunc<copy_from_pyobject> {
+    static dynd::nd::arrfunc children[DYND_TYPE_ID_MAX + 1];
+    static dynd::nd::arrfunc default_child;
 
-    static arrfunc make();
+    static dynd::nd::arrfunc make();
   } copy_from_pyobject;
 
 } // namespace pydynd::nd

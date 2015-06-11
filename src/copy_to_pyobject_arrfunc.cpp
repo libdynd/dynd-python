@@ -32,27 +32,26 @@
 #include "kernels/copy_to_pyobject_kernel.hpp"
 
 using namespace std;
-using namespace pydynd;
 
 typedef dynd::integer_sequence<
-    type_id_t, bool_type_id, int8_type_id, int16_type_id, int32_type_id,
-    int64_type_id, int128_type_id, uint8_type_id, uint16_type_id,
-    uint32_type_id, uint64_type_id, uint128_type_id, float16_type_id,
-    float32_type_id, float64_type_id, complex_float32_type_id,
-    complex_float64_type_id, bytes_type_id, fixed_bytes_type_id, char_type_id,
-    string_type_id, fixed_string_type_id, date_type_id, time_type_id,
-    datetime_type_id, type_type_id, option_type_id, fixed_dim_type_id,
-    var_dim_type_id, struct_type_id, tuple_type_id, pointer_type_id,
-    categorical_type_id> type_ids;
+    dynd::type_id_t, dynd::bool_type_id, dynd::int8_type_id, dynd::int16_type_id, dynd::int32_type_id,
+    dynd::int64_type_id, dynd::int128_type_id, dynd::uint8_type_id, dynd::uint16_type_id,
+    dynd::uint32_type_id, dynd::uint64_type_id, dynd::uint128_type_id, dynd::float16_type_id,
+    dynd::float32_type_id, dynd::float64_type_id, dynd::complex_float32_type_id,
+    dynd::complex_float64_type_id, dynd::bytes_type_id, dynd::fixed_bytes_type_id, dynd::char_type_id,
+    dynd::string_type_id, dynd::fixed_string_type_id, dynd::date_type_id, dynd::time_type_id,
+    dynd::datetime_type_id, dynd::type_type_id, dynd::option_type_id, dynd::fixed_dim_type_id,
+    dynd::var_dim_type_id, dynd::struct_type_id, dynd::tuple_type_id, dynd::pointer_type_id,
+    dynd::categorical_type_id> type_ids;
 
 dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
 {
   PyDateTime_IMPORT;
 
-  arrfunc::make_all<copy_to_pyobject_kernel, type_ids>(children);
-  arrfunc::make<default_copy_to_pyobject_kernel>(default_child, 0);
+  dynd::nd::arrfunc::make_all<copy_to_pyobject_kernel, type_ids>(children);
+  dynd::nd::arrfunc::make<default_copy_to_pyobject_kernel>(default_child, 0);
 
-  return functional::multidispatch_by_type_id(ndt::type("(Any) -> void"),
+  return dynd::nd::functional::multidispatch_by_type_id(dynd::ndt::type("(Any) -> void"),
                                               DYND_TYPE_ID_MAX + 1, children,
                                               default_child, false);
 }

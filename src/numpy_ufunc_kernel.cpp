@@ -23,7 +23,6 @@
 #if DYND_NUMPY_INTEROP
 
 using namespace std;
-using namespace pydynd;
 
 PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
 {
@@ -33,7 +32,7 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
     stringstream ss;
     ss << "a numpy ufunc object is required to retrieve type tuples, ";
     pyobject_ownref repr_obj(PyObject_Repr(ufunc));
-    ss << "got " << pystring_as_string(repr_obj.get());
+    ss << "got " << pydynd::pystring_as_string(repr_obj.get());
     PyErr_SetString(PyExc_TypeError, ss.str().c_str());
     return NULL;
   }
@@ -129,7 +128,7 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
       ss << "a numpy ufunc object is required by this function to create a "
             "arrfunc, ";
       pyobject_ownref repr_obj(PyObject_Repr(ufunc));
-      ss << "got " << pystring_as_string(repr_obj.get());
+      ss << "got " << pydynd::pystring_as_string(repr_obj.get());
       PyErr_SetString(PyExc_TypeError, ss.str().c_str());
       return NULL;
     }
@@ -184,15 +183,15 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
       // If we found a full match, return the kernel
       if (matched) {
         if (!uf->core_enabled) {
-          ndt::type return_type = ndt_type_from_numpy_type_num(argtypes[0]);
-          std::vector<ndt::type> param_types(nargs - 1);
+          dynd::ndt::type return_type = ndt_type_from_numpy_type_num(argtypes[0]);
+          std::vector<dynd::ndt::type> param_types(nargs - 1);
           for (intptr_t j = 0; j < nargs - 1; ++j) {
             param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
           }
-          ndt::type self_tp =
-              ndt::make_arrfunc(ndt::make_tuple(param_types), return_type);
+          dynd::ndt::type self_tp =
+              dynd::ndt::make_arrfunc(dynd::ndt::make_tuple(param_types), return_type);
 
-          // Fill in the arrfunc instance data
+          // Fill in the dynd::nd::arrfunc instance data
           std::shared_ptr<scalar_ufunc_data> data(new scalar_ufunc_data());
           data->ufunc = uf;
           Py_INCREF(uf);
@@ -200,11 +199,11 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           data->funcptr = uf->functions[i];
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
-            return wrap_array(
-                arrfunc::make<scalar_ufunc_ck<true>>(self_tp, data, 0));
+            return pydynd::wrap_array(
+                dynd::nd::arrfunc::make<scalar_ufunc_ck<true>>(self_tp, data, 0));
           } else {
-            return wrap_array(
-                arrfunc::make<scalar_ufunc_ck<false>>(self_tp, data, 0));
+            return pydynd::wrap_array(
+                dynd::nd::arrfunc::make<scalar_ufunc_ck<false>>(self_tp, data, 0));
           }
         } else {
           // TODO: support gufunc
@@ -219,7 +218,7 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
     return NULL;
   }
   catch (...) {
-    translate_exception();
+    pydynd::translate_exception();
     return NULL;
   }
 }

@@ -32,13 +32,13 @@ namespace nd {
     uintptr_t src_alignment;
   };
 
-  extern struct copy_from_numpy : declfunc<copy_from_numpy> {
-    static arrfunc make();
+  extern struct copy_from_numpy : dynd::nd::declfunc<copy_from_numpy> {
+    static dynd::nd::arrfunc make();
   } copy_from_numpy;
 
-  void array_copy_from_numpy(const ndt::type &dst_tp, const char *dst_arrmeta,
+  void array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
                              char *dst_data, PyArrayObject *src_arr,
-                             const eval::eval_context *ectx);
+                             const dynd::eval::eval_context *ectx);
 
 #endif
 

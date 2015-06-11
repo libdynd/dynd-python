@@ -28,7 +28,7 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<false>
-        : base_kernel<scalar_ufunc_ck<false>, kernel_request_host, 1> {
+        : dynd::nd::base_kernel<scalar_ufunc_ck<false>, dynd::kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
@@ -65,20 +65,20 @@ namespace nd {
       }
 
       static intptr_t instantiate(
-          const arrfunc_type_data *af_self, const ndt::arrfunc_type *af_tp,
+          const dynd::arrfunc_type_data *af_self, const dynd::ndt::arrfunc_type *af_tp,
           char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-          const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
-          intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
-          const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
-          const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds,
-          const std::map<nd::string, ndt::type> &tp_vars)
+          const dynd::ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
+          intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
+          const char *const *DYND_UNUSED(src_arrmeta), dynd::kernel_request_t kernreq,
+          const dynd::eval::eval_context *DYND_UNUSED(ectx), const dynd::nd::array &kwds,
+          const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
         if (dst_tp != af_tp->get_return_type()) {
           std::stringstream ss;
           ss << "destination type requested, " << dst_tp
              << ", does not match the ufunc's type "
              << af_tp->get_return_type();
-          throw type_error(ss.str());
+          throw dynd::type_error(ss.str());
         }
         intptr_t param_count = af_tp->get_npos();
         for (intptr_t i = 0; i != param_count; ++i) {
@@ -87,7 +87,7 @@ namespace nd {
             ss << "source type requested for parameter " << (i + 1) << ", "
                << src_tp[i] << ", does not match the ufunc's type "
                << af_tp->get_pos_type(i);
-            throw type_error(ss.str());
+            throw dynd::type_error(ss.str());
           }
         }
 
@@ -102,7 +102,7 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<true>
-        : base_kernel<scalar_ufunc_ck<true>, kernel_request_host, 1> {
+        : dynd::nd::base_kernel<scalar_ufunc_ck<true>, dynd::kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
@@ -145,20 +145,20 @@ namespace nd {
       }
 
       static intptr_t instantiate(
-          const arrfunc_type_data *af_self, const ndt::arrfunc_type *af_tp,
+          const dynd::arrfunc_type_data *af_self, const dynd::ndt::arrfunc_type *af_tp,
           char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-          const ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
-          intptr_t DYND_UNUSED(nsrc), const ndt::type *src_tp,
-          const char *const *DYND_UNUSED(src_arrmeta), kernel_request_t kernreq,
-          const eval::eval_context *DYND_UNUSED(ectx), const nd::array &kwds,
-          const std::map<nd::string, ndt::type> &tp_vars)
+          const dynd::ndt::type &dst_tp, const char *DYND_UNUSED(dst_arrmeta),
+          intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
+          const char *const *DYND_UNUSED(src_arrmeta), dynd::kernel_request_t kernreq,
+          const dynd::eval::eval_context *DYND_UNUSED(ectx), const dynd::nd::array &kwds,
+          const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
         if (dst_tp != af_tp->get_return_type()) {
           std::stringstream ss;
           ss << "destination type requested, " << dst_tp
              << ", does not match the ufunc's type "
              << af_tp->get_return_type();
-          throw type_error(ss.str());
+          throw dynd::type_error(ss.str());
         }
         intptr_t param_count = af_tp->get_npos();
         for (intptr_t i = 0; i != param_count; ++i) {
@@ -167,7 +167,7 @@ namespace nd {
             ss << "source type requested for parameter " << (i + 1) << ", "
                << src_tp[i] << ", does not match the ufunc's type "
                << af_tp->get_pos_type(i);
-            throw type_error(ss.str());
+            throw dynd::type_error(ss.str());
           }
         }
 

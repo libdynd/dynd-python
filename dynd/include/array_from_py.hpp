@@ -41,11 +41,12 @@ dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
  * \param tp  The dynd type to use. Additional array dimensions
  *            may be prepended to this type if ``fulltype`` is not specified.
  * \param fulltype  If True, then ``tp`` contains the full type of the
- *					resulting array. If False, then ``tp`` is a dtype
- *                  which should be the trailing type of the result,
- *                  and the function analyzes the object to deduce any
- *                  additional leading dimensions.
- * \param access_flags The access flags for the result, or 0 for the default immutable.
+ *                  resulting array. If False, then
+ *                  ``tp`` is a dtype which should be the trailing type of
+ *                  the result, and the function analyzes the object
+ *                  to deduce any additional leading dimensions.
+ * \param access_flags The access flags for the result, or 0 for the default
+ *                     immutable.
  */
 dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type &tp,
                               bool fulltype, uint32_t access_flags,
@@ -56,4 +57,3 @@ void init_array_from_py();
 } // namespace pydynd
 
 #endif // _DYND__ARRAY_FROM_PY_HPP_
-

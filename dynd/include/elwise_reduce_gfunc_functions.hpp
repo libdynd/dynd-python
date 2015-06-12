@@ -19,39 +19,46 @@
 
 namespace pydynd {
 
-void elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce& gf, dynd::codegen_cache& cgcache, PyObject *kernel,
-                            bool associative, bool commutative, const dynd::nd::array& identity);
+void elwise_reduce_gfunc_add_kernel(dynd::gfunc::elwise_reduce &gf,
+                                    dynd::codegen_cache &cgcache,
+                                    PyObject *kernel, bool associative,
+                                    bool commutative,
+                                    const dynd::nd::array &identity);
 
-PyObject *elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce& gf, PyObject *args, PyObject *kwargs);
+PyObject *elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce &gf,
+                                   PyObject *args, PyObject *kwargs);
 
-inline std::string elwise_reduce_gfunc_debug_print(dynd::gfunc::elwise_reduce& gf)
+inline std::string
+elwise_reduce_gfunc_debug_print(dynd::gfunc::elwise_reduce &gf)
 {
-    std::stringstream ss;
-    //gf.debug_print(ss); TODO reenable
-    ss << "temporarily disabled\n";
-    return ss.str();
+  std::stringstream ss;
+  // gf.debug_print(ss); TODO reenable
+  ss << "temporarily disabled\n";
+  return ss.str();
 }
 
 struct elwise_reduce_gfunc_placement_wrapper {
-    intptr_t dummy[(sizeof(dynd::gfunc::elwise_reduce) + sizeof(intptr_t) - 1)/sizeof(intptr_t)];
+  intptr_t dummy[(sizeof(dynd::gfunc::elwise_reduce) + sizeof(intptr_t) - 1) /
+                 sizeof(intptr_t)];
 };
 
-inline void placement_new(elwise_reduce_gfunc_placement_wrapper& v, const char *name)
+inline void placement_new(elwise_reduce_gfunc_placement_wrapper &v,
+                          const char *name)
 {
-    // Call placement new
-    new (&v) dynd::gfunc::elwise_reduce(name);
+  // Call placement new
+  new (&v) dynd::gfunc::elwise_reduce(name);
 }
 
-inline void placement_delete(elwise_reduce_gfunc_placement_wrapper& v)
+inline void placement_delete(elwise_reduce_gfunc_placement_wrapper &v)
 {
-    // Call the destructor
-    ((dynd::gfunc::elwise_reduce *)(&v))->~elwise_reduce();
+  // Call the destructor
+  ((dynd::gfunc::elwise_reduce *)(&v))->~elwise_reduce();
 }
 
 // placement cast
-inline dynd::gfunc::elwise_reduce& GET(elwise_reduce_gfunc_placement_wrapper& v)
+inline dynd::gfunc::elwise_reduce &GET(elwise_reduce_gfunc_placement_wrapper &v)
 {
-    return *(dynd::gfunc::elwise_reduce *)&v;
+  return *(dynd::gfunc::elwise_reduce *)&v;
 }
 
 } // namespace pydynd

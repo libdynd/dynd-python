@@ -22,20 +22,20 @@
 
 // Don't use the deprecated Numpy functions
 #ifdef NPY_1_7_API_VERSION
-# define NPY_NO_DEPRECATED_API 8 // NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API 8 // NPY_1_7_API_VERSION
 #else
-# define NPY_ARRAY_NOTSWAPPED   NPY_NOTSWAPPED
-# define NPY_ARRAY_ALIGNED      NPY_ALIGNED
-# define NPY_ARRAY_WRITEABLE    NPY_WRITEABLE
-# define NPY_ARRAY_UPDATEIFCOPY NPY_UPDATEIFCOPY
+#define NPY_ARRAY_NOTSWAPPED NPY_NOTSWAPPED
+#define NPY_ARRAY_ALIGNED NPY_ALIGNED
+#define NPY_ARRAY_WRITEABLE NPY_WRITEABLE
+#define NPY_ARRAY_UPDATEIFCOPY NPY_UPDATEIFCOPY
 #endif
 
 #define PY_ARRAY_UNIQUE_SYMBOL pydynd_ARRAY_API
 #define PY_UFUNC_UNIQUE_SYMBOL pydynd_UFUNC_API
 // Invert the importing signal to match how numpy wants it
 #ifndef NUMPY_IMPORT_ARRAY
-# define NO_IMPORT_ARRAY
-# define NO_IMPORT_UFUNC
+#define NO_IMPORT_ARRAY
+#define NO_IMPORT_UFUNC
 #endif
 
 #include <sstream>
@@ -61,11 +61,11 @@ namespace pydynd {
 inline int import_numpy()
 {
 #ifdef NUMPY_IMPORT_ARRAY
-    import_array1(-1);
-    import_umath1(-1);
+  import_array1(-1);
+  import_umath1(-1);
 #endif
 
-    return 0;
+  return 0;
 }
 
 /**
@@ -80,7 +80,8 @@ inline int import_numpy()
  *
  * \returns  The dynd equivalent of the numpy dtype.
  */
-dynd::ndt::type ndt_type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
+dynd::ndt::type ndt_type_from_numpy_dtype(PyArray_Descr *d,
+                                          size_t data_alignment = 0);
 
 /**
  * Converts a numpy type number to a dynd type. This produces an
@@ -102,33 +103,34 @@ dynd::ndt::type ndt_type_from_numpy_type_num(int numpy_type_num);
  * \param out_field_names  This is filled with the field names.
  * \param out_field_offsets  This is filled with the field offsets.
  */
-void extract_fields_from_numpy_struct(PyArray_Descr *d,
-                                      std::vector<PyArray_Descr *> &out_field_dtypes,
-                                      std::vector<std::string> &out_field_names,
-                                      std::vector<size_t> &out_field_offsets);
+void extract_fields_from_numpy_struct(
+    PyArray_Descr *d, std::vector<PyArray_Descr *> &out_field_dtypes,
+    std::vector<std::string> &out_field_names,
+    std::vector<size_t> &out_field_offsets);
 
 /**
  * When the function ndt_type_from_numpy_dtype returns a type which requires
- * additional arrmeta to be filled in, this function should be called to populate
- * that arrmeta in a created nd::array.
+ * additional arrmeta to be filled in, this function should be called to
+ * populate that arrmeta in a created nd::array.
  *
  * \param tp  The dynd type returned by ndt_type_from_numpy_dtype.
  * \param d  The numpy dtype passed to ndt_type_from_numpy_dtype.
  * \param arrmeta  A pointer to the arrmeta to populate.
  */
-void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type& tp, PyArray_Descr *d, char *arrmeta);
+void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &tp, PyArray_Descr *d,
+                                   char *arrmeta);
 
 /**
  * Converts a dynd type to a numpy dtype.
  *
  * \param tp  The dynd type to convert.
  */
-PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp);
+PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type &tp);
 
 /** Small helper for cython parameter */
-inline PyObject *numpy_dtype_obj_from_ndt_type(const dynd::ndt::type& tp)
+inline PyObject *numpy_dtype_obj_from_ndt_type(const dynd::ndt::type &tp)
 {
-    return (PyObject *)numpy_dtype_from_ndt_type(tp);
+  return (PyObject *)numpy_dtype_from_ndt_type(tp);
 }
 
 /**
@@ -138,7 +140,8 @@ inline PyObject *numpy_dtype_obj_from_ndt_type(const dynd::ndt::type& tp)
  * \param tp  The dynd type to convert.
  * \param arrmeta  The arrmeta for the dynd type.
  */
-PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *arrmeta);
+PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type &tp,
+                                         const char *arrmeta);
 
 /**
  * Converts a pytypeobject for a n`umpy scalar
@@ -146,12 +149,13 @@ PyArray_Descr *numpy_dtype_from_ndt_type(const dynd::ndt::type& tp, const char *
  *
  * Returns 0 on success, -1 if it didn't match.
  */
-int ndt_type_from_numpy_scalar_typeobject(PyTypeObject* obj, dynd::ndt::type& out_tp);
+int ndt_type_from_numpy_scalar_typeobject(PyTypeObject *obj,
+                                          dynd::ndt::type &out_tp);
 
 /**
  * Gets the dynd type of a numpy scalar object
  */
-dynd::ndt::type ndt_type_of_numpy_scalar(PyObject* obj);
+dynd::ndt::type ndt_type_of_numpy_scalar(PyObject *obj);
 
 /**
  * Views or copies a numpy PyArrayObject as an nd::array.
@@ -160,7 +164,8 @@ dynd::ndt::type ndt_type_of_numpy_scalar(PyObject* obj);
  * \param access_flags  The requested access flags (0 for default).
  * \param always_copy  If true, produce a copy instead of a view.
  */
-dynd::nd::array array_from_numpy_array(PyArrayObject* obj, uint32_t access_flags, bool always_copy);
+dynd::nd::array array_from_numpy_array(PyArrayObject *obj,
+                                       uint32_t access_flags, bool always_copy);
 
 /**
  * Creates a dynd::nd::array from a numpy scalar. This always produces
@@ -169,12 +174,12 @@ dynd::nd::array array_from_numpy_array(PyArrayObject* obj, uint32_t access_flags
  * \param obj  The numpy scalar object.
  * \param access_flags  The requested access flags (0 for default).
  */
-dynd::nd::array array_from_numpy_scalar(PyObject* obj, uint32_t access_flags);
+dynd::nd::array array_from_numpy_scalar(PyObject *obj, uint32_t access_flags);
 
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
-char numpy_kindchar_of(const dynd::ndt::type& tp);
+char numpy_kindchar_of(const dynd::ndt::type &tp);
 
 } // namespace pydynd
 
@@ -185,50 +190,36 @@ char numpy_kindchar_of(const dynd::ndt::type& tp);
 #if !DYND_NUMPY_INTEROP
 namespace pydynd {
 
-inline int import_numpy()
-{
-    return 0;
-}
+inline int import_numpy() { return 0; }
 
 // If we're not building against Numpy, define our
 // own version of this struct to use.
 typedef struct {
-    int two;              /*
-                           * contains the integer 2 as a sanity
-                           * check
-                           */
+  int two; /* contains the integer 2 as a sanity check */
 
-    int nd;               /* number of dimensions */
+  int nd; /* number of dimensions */
 
-    char typekind;        /*
-                           * kind in array --- character code of
-                           * typestr
-                           */
+  char typekind; /* kind in array --- character code of typestr */
 
-    int element_size;         /* size of each element */
+  int element_size; /* size of each element */
 
-    int flags;            /*
-                           * how should be data interpreted. Valid
-                           * flags are CONTIGUOUS (1), F_CONTIGUOUS (2),
-                           * ALIGNED (0x100), NOTSWAPPED (0x200), and
-                           * WRITEABLE (0x400).  ARR_HAS_DESCR (0x800)
-                           * states that arrdescr field is present in
-                           * structure
-                           */
+  int flags; /* how should be data interpreted. Valid
+              * flags are CONTIGUOUS (1), F_CONTIGUOUS (2),
+              * ALIGNED (0x100), NOTSWAPPED (0x200), and
+              * WRITEABLE (0x400).  ARR_HAS_DESCR (0x800)
+              * states that arrdescr field is present in
+              * structure
+              */
 
-    npy_intp *shape;       /*
-                            * A length-nd array of shape
-                            * information
-                            */
+  npy_intp *shape; /* A length-nd array of shape information */
 
-    npy_intp *strides;    /* A length-nd array of stride information */
+  npy_intp *strides; /* A length-nd array of stride information */
 
-    void *data;           /* A pointer to the first element of the array */
+  void *data; /* A pointer to the first element of the array */
 
-    PyObject *descr;      /*
-                           * A list of fields or NULL (ignored if flags
-                           * does not have ARR_HAS_DESCR flag set)
-                           */
+  PyObject *descr; /* A list of fields or NULL (ignored if flags
+                    * does not have ARR_HAS_DESCR flag set)
+                    */
 } PyArrayInterface;
 
 } // namespace pydynd

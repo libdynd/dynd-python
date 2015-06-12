@@ -40,14 +40,10 @@ namespace nd {
      * \param ufunc  The numpy ufunc.
      * \param type_tuple  The tuple of types defining the kernel signature.
      * \param ckernel_acquires_gil  A flag which controls whether the ckernel
-     *should
-     *                              acquire the GIL before calling the ufunc's
-     *kernel.
-     *                              Since numpy doesn't have a nice, rigorous
-     *way
-     *of
-     *                              specifying the need for this, we make it a
-     *parameter.
+     *                              should acquire the GIL before calling the
+     *                              ufunc's kernel. Since numpy doesn't have a
+     *                              nice, rigorous way of specifying the need
+     *                              for this, we make it a parameter.
      *
      * \returns An arrfunc inside an nd::array.
      */

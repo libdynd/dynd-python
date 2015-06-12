@@ -30,7 +30,8 @@ namespace pydynd {
  * \param dst_type  A dynd type for the destination elements.
  * \param src_type  A dynd type for the source elements.
  */
-PyObject *elwise_map(PyObject *n_obj, PyObject *callable, PyObject *dst_type, PyObject *src_type);
+PyObject *elwise_map(PyObject *n_obj, PyObject *callable, PyObject *dst_type,
+                     PyObject *src_type);
 
 } // namespace pydynd
 

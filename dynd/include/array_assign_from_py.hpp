@@ -23,8 +23,8 @@ void array_broadcast_assign_from_py(const dynd::nd::array &a, PyObject *value,
                                     const dynd::eval::eval_context *ectx);
 
 /**
- * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array, broadcasting
- * the input.
+ * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array,
+ * broadcasting the input.
  *
  * \param dt  The dynd type of the destination.
  * \param arrmeta  The arrmeta of the destination.
@@ -37,8 +37,9 @@ void array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                     const dynd::eval::eval_context *ectx);
 
 /**
- * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array, broadcasting
- * the individual input dimensions, but not broadcasting by skipping dimensions.
+ * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array,
+ * broadcasting the individual input dimensions, but not broadcasting
+ * by skipping dimensions.
  *
  * \param dt  The dynd type of the destination.
  * \param arrmeta  The arrmeta of the destination.
@@ -52,4 +53,3 @@ void array_no_dim_broadcast_assign_from_py(
 } // namespace pydynd
 
 #endif // PYDYND_ARRAY_ASSIGN_FROM_PY_HPP
-

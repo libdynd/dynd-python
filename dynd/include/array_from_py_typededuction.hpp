@@ -28,9 +28,8 @@ namespace pydynd {
  * \return A type for the object, or an uninitialized type if
  *         `throw_on_unknown` is false, and nothing could be deduced.
  */
-dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unknown=true);
-
-
+dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject *obj,
+                                              bool throw_on_unknown = true);
 
 /**
  * An enumeration for describing information known about a particular
@@ -39,10 +38,10 @@ dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject* obj, bool throw_on_unkno
  * values for fixed dimensions, or a value from this enum.
  */
 enum shape_deduction_t {
-    pydynd_shape_deduction_var = -1,
-    pydynd_shape_deduction_ragged = -2,
-    pydynd_shape_deduction_dict = -3,
-    pydynd_shape_deduction_uninitialized = -4
+  pydynd_shape_deduction_var = -1,
+  pydynd_shape_deduction_ragged = -2,
+  pydynd_shape_deduction_dict = -3,
+  pydynd_shape_deduction_uninitialized = -4
 };
 
 /**
@@ -61,9 +60,8 @@ enum shape_deduction_t {
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.
  */
-void deduce_pylist_shape_and_dtype(PyObject *obj,
-                std::vector<intptr_t>& shape, dynd::ndt::type& tp,
-                size_t current_axis);
+void deduce_pylist_shape_and_dtype(PyObject *obj, std::vector<intptr_t> &shape,
+                                   dynd::ndt::type &tp, size_t current_axis);
 
 /**
  * This function iterates over the elements of the provided
@@ -92,13 +90,14 @@ void deduce_pyseq_shape(PyObject *obj, size_t ndim, intptr_t *shape);
  * \param obj  The Python object to analyze.
  * \param tp  The data type providing context for the type deduction.
  * \param shape  The shape being built up. It should start as an empty vector.
- * \param initial_pass  A flag indicating whether this is the first time visiting
- *                      the current_axis.
+ * \param initial_pass  A flag indicating whether this is the first time
+ *                      visiting the current_axis.
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.
  */
-void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type& tp,
-                std::vector<intptr_t>& shape, bool initial_pass, size_t current_axis);
+void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type &tp,
+                                    std::vector<intptr_t> &shape,
+                                    bool initial_pass, size_t current_axis);
 
 /**
  * Returns the number of dimensions without raggedness, treating
@@ -110,18 +109,19 @@ void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type& tp,
  *    "3 * {x: {a: int32}, y: int32}" -> 2
  *    "3 * {x: {a: int32}, y: {a: int32, b: int32}}" -> 3
  */
-size_t get_nonragged_dim_count(const dynd::ndt::type& tp, size_t max_count=std::numeric_limits<size_t>::max());
+size_t
+get_nonragged_dim_count(const dynd::ndt::type &tp,
+                        size_t max_count = std::numeric_limits<size_t>::max());
 
 /**
  * Analyzes the Python object against the dynd type to heuristically
  * determine whether copying should broadcast it as a scalar or consume
  * a dimension of the object.
  */
-bool broadcast_as_scalar(const dynd::ndt::type& tp, PyObject *obj);
+bool broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj);
 
 void init_array_from_py_typededuction();
 
 } // namespace pydynd
 
 #endif // _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_
-

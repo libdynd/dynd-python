@@ -25,7 +25,7 @@ namespace pydynd {
  * Function which casts the parameter to
  * a PyObject pointer and calls Py_XDECREF on it.
  */
-void py_decref_function(void* obj);
+void py_decref_function(void *obj);
 
 /**
  * A container class for managing the local lifetime of
@@ -35,106 +35,88 @@ void py_decref_function(void* obj);
  * is NULL.
  */
 class pyobject_ownref {
-    PyObject *m_obj;
+  PyObject *m_obj;
 
-    // Non-copyable
-    pyobject_ownref(const pyobject_ownref&);
-    pyobject_ownref& operator=(const pyobject_ownref&);
+  // Non-copyable
+  pyobject_ownref(const pyobject_ownref &);
+  pyobject_ownref &operator=(const pyobject_ownref &);
+
 public:
-    inline pyobject_ownref()
-        : m_obj(NULL)
-    {
+  inline pyobject_ownref() : m_obj(NULL) {}
+  inline explicit pyobject_ownref(PyObject *obj) : m_obj(obj)
+  {
+    if (obj == NULL) {
+      throw std::runtime_error("propagating a Python exception...");
     }
-    inline explicit pyobject_ownref(PyObject* obj)
-        : m_obj(obj)
-    {
-        if (obj == NULL) {
-            throw std::runtime_error("propagating a Python exception...");
-        }
-    }
+  }
 
-    inline pyobject_ownref(PyObject* obj, bool inc_ref)
-        : m_obj(obj)
-    {
-        if (obj == NULL) {
-            throw std::runtime_error("propagating a Python exception...");
-        }
-        if (inc_ref) {
-            Py_INCREF(m_obj);
-        }
+  inline pyobject_ownref(PyObject *obj, bool inc_ref) : m_obj(obj)
+  {
+    if (obj == NULL) {
+      throw std::runtime_error("propagating a Python exception...");
     }
+    if (inc_ref) {
+      Py_INCREF(m_obj);
+    }
+  }
 
-    inline ~pyobject_ownref()
-    {
-        Py_XDECREF(m_obj);
-    }
+  inline ~pyobject_ownref() { Py_XDECREF(m_obj); }
 
-    inline PyObject **obj_addr() {
-      return &m_obj;
-    }
+  inline PyObject **obj_addr() { return &m_obj; }
 
-    /**
-     * Resets the reference owned by this object to the one provided.
-     * This steals a reference to the input parameter, 'obj'.
-     *
-     * \param obj  The reference to replace the current one in this object.
-     */
-    inline void reset(PyObject* obj)
-    {
-        if (obj == NULL) {
-            throw std::runtime_error("propagating a Python exception...");
-        }
-        Py_XDECREF(m_obj);
-        m_obj = obj;
+  /**
+   * Resets the reference owned by this object to the one provided.
+   * This steals a reference to the input parameter, 'obj'.
+   *
+   * \param obj  The reference to replace the current one in this object.
+   */
+  inline void reset(PyObject *obj)
+  {
+    if (obj == NULL) {
+      throw std::runtime_error("propagating a Python exception...");
     }
+    Py_XDECREF(m_obj);
+    m_obj = obj;
+  }
 
-    /**
-     * Clears the owned reference to NULL.
-     */
-    inline void clear()
-    {
-        Py_XDECREF(m_obj);
-        m_obj = NULL;
-    }
+  /**
+   * Clears the owned reference to NULL.
+   */
+  inline void clear()
+  {
+    Py_XDECREF(m_obj);
+    m_obj = NULL;
+  }
 
-    /** Returns a borrowed reference. */
-    inline PyObject *get() const
-    {
-        return m_obj;
-    }
+  /** Returns a borrowed reference. */
+  inline PyObject *get() const { return m_obj; }
 
-    /** Returns a borrowed reference. */
-    inline operator PyObject *()
-    {
-        return m_obj;
-    }
+  /** Returns a borrowed reference. */
+  inline operator PyObject *() { return m_obj; }
 
-    /**
-     * Returns the reference owned by this object,
-     * use it like "return obj.release()". After the
-     * call, this object contains NULL.
-     */
-    inline PyObject *release()
-    {
-        PyObject *result = m_obj;
-        m_obj = NULL;
-        return result;
-    }
+  /**
+   * Returns the reference owned by this object,
+   * use it like "return obj.release()". After the
+   * call, this object contains NULL.
+   */
+  inline PyObject *release()
+  {
+    PyObject *result = m_obj;
+    m_obj = NULL;
+    return result;
+  }
 };
 
 class PyGILState_RAII {
-    PyGILState_STATE m_gstate;
+  PyGILState_STATE m_gstate;
 
-    PyGILState_RAII(const PyGILState_RAII&);
-    PyGILState_RAII& operator=(const PyGILState_RAII&);
+  PyGILState_RAII(const PyGILState_RAII &);
+  PyGILState_RAII &operator=(const PyGILState_RAII &);
+
 public:
-    inline PyGILState_RAII() {
-        m_gstate = PyGILState_Ensure();
-    }
+  inline PyGILState_RAII() { m_gstate = PyGILState_Ensure(); }
 
-    inline ~PyGILState_RAII() {
-        PyGILState_Release(m_gstate);
-    }
+  inline ~PyGILState_RAII() { PyGILState_Release(m_gstate); }
 };
 
 size_t pyobject_as_size_t(PyObject *obj);
@@ -164,11 +146,14 @@ inline std::string pyobject_repr(PyObject *obj)
   return pystring_as_string(src_repr.get());
 }
 
-void pyobject_as_vector_ndt_type(PyObject *list_dtype, std::vector<dynd::ndt::type>& vector_dtype);
-void pyobject_as_vector_string(PyObject *list_string, std::vector<std::string>& vector_string);
-void pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t>& vector_intp,
-                bool allow_int);
-void pyobject_as_vector_int(PyObject *list_int, std::vector<int>& vector_int);
+void pyobject_as_vector_ndt_type(PyObject *list_dtype,
+                                 std::vector<dynd::ndt::type> &vector_dtype);
+void pyobject_as_vector_string(PyObject *list_string,
+                               std::vector<std::string> &vector_string);
+void pyobject_as_vector_intp(PyObject *list_index,
+                             std::vector<intptr_t> &vector_intp,
+                             bool allow_int);
+void pyobject_as_vector_int(PyObject *list_int, std::vector<int> &vector_int);
 
 /**
  * Same as PySequence_Size, but throws a C++
@@ -176,11 +161,11 @@ void pyobject_as_vector_int(PyObject *list_int, std::vector<int>& vector_int);
  */
 inline Py_ssize_t pysequence_size(PyObject *seq)
 {
-    Py_ssize_t s = PySequence_Size(seq);
-    if (s == -1 && PyErr_Occurred()) {
-        throw std::exception();
-    }
-    return s;
+  Py_ssize_t s = PySequence_Size(seq);
+  if (s == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  return s;
 }
 
 /**
@@ -189,14 +174,14 @@ inline Py_ssize_t pysequence_size(PyObject *seq)
  */
 inline PyObject *pydict_getitemstring(PyObject *dp, const char *key)
 {
-    PyObject *result = PyDict_GetItemString(dp, key);
-    if (result == NULL) {
-        throw std::exception();
-    }
-    return result;
+  PyObject *result = PyDict_GetItemString(dp, key);
+  if (result == NULL) {
+    throw std::exception();
+  }
+  return result;
 }
 
-PyObject* intptr_array_as_tuple(size_t size, const intptr_t *array);
+PyObject *intptr_array_as_tuple(size_t size, const intptr_t *array);
 
 /**
  * Parses the axis argument, which may be either a single index
@@ -221,46 +206,44 @@ PyObject *pyarg_error_mode_to_pystring(dynd::assign_error_mode errmode);
  * strings, returning the corresponding integer.
  */
 int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                const char *string0, int value0);
+                         const char *string0, int value0);
 
 /**
  * Matches the input object against one of several
  * strings, returning the corresponding integer.
  */
 int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                const char *string0, int value0,
-                const char *string1, int value1);
+                         const char *string0, int value0, const char *string1,
+                         int value1);
 
 int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                const char *string0, int value0,
-                const char *string1, int value1,
-                const char *string2, int value2);
+                         const char *string0, int value0, const char *string1,
+                         int value1, const char *string2, int value2);
 
 int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                const char *string0, int value0,
-                const char *string1, int value1,
-                const char *string2, int value2,
-                const char *string3, int value3);
+                         const char *string0, int value0, const char *string1,
+                         int value1, const char *string2, int value2,
+                         const char *string3, int value3);
 
 int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                const char *string0, int value0,
-                const char *string1, int value1,
-                const char *string2, int value2,
-                const char *string3, int value3,
-                const char *string4, int value4);
+                         const char *string0, int value0, const char *string1,
+                         int value1, const char *string2, int value2,
+                         const char *string3, int value3, const char *string4,
+                         int value4);
 
 bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
 
 /**
  * Accepts "readwrite", "readonly", and "immutable".
  */
-uint32_t pyarg_access_flags(PyObject* obj);
+uint32_t pyarg_access_flags(PyObject *obj);
 /**
  * Accepts "readwrite" and "immutable".
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
 
-const dynd::arrfunc_type_data *pyarg_arrfunc_ro(PyObject *af, const char *paramname);
+const dynd::arrfunc_type_data *pyarg_arrfunc_ro(PyObject *af,
+                                                const char *paramname);
 dynd::arrfunc_type_data *pyarg_arrfunc_rw(PyObject *af, const char *paramname);
 
 } // namespace pydynd

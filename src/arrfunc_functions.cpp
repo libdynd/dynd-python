@@ -80,9 +80,10 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
     kwd_values[j] = array_from_py(value, 0, false, ectx);
   }
 
-  dynd::nd::array result = af(narg, arg_values.empty() ? NULL : arg_values.data(),
-                        kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
-                             kwd_values.empty() ? NULL : kwd_values.data()));
+  dynd::nd::array result =
+      af(narg, arg_values.empty() ? NULL : arg_values.data(),
+         kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
+              kwd_values.empty() ? NULL : kwd_values.data()));
   return wrap_array(result);
 }
 
@@ -90,7 +91,8 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                         PyObject *window_size_obj,
                                         PyObject *ectx_obj)
 {
-  eval::eval_context *ectx = const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
+  eval::eval_context *ectx =
+      const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
   dynd::nd::array arr = array_from_py(arr_obj, 0, false, ectx);
   intptr_t window_size = pyobject_as_index(window_size_obj);
   dynd::nd::arrfunc func;
@@ -112,8 +114,10 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
 PyObject *pydynd::get_published_arrfuncs()
 {
   pyobject_ownref res(PyDict_New());
-  const map<dynd::nd::string, dynd::nd::arrfunc> &reg = func::get_regfunctions();
-  for (map<dynd::nd::string, dynd::nd::arrfunc>::const_iterator it = reg.begin();
+  const map<dynd::nd::string, dynd::nd::arrfunc> &reg =
+      func::get_regfunctions();
+  for (map<dynd::nd::string, dynd::nd::arrfunc>::const_iterator it =
+           reg.begin();
        it != reg.end(); ++it) {
     PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),
                    wrap_array(it->second));

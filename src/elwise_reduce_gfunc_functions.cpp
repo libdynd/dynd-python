@@ -25,7 +25,7 @@ static void create_elwise_reduce_gfunc_kernel_from_ctypes(
     bool DYND_UNUSED(commutative), const nd::array &DYND_UNUSED(identity),
     dynd::gfunc::elwise_reduce_kernel &DYND_UNUSED(out_kernel))
 {
-#if 0 // TODO reenable
+#if 0  // TODO reenable
     ndt::type& returntype = out_kernel.m_returntype;
     vector<ndt::type> &paramtypes = out_kernel.m_paramtypes;
     get_ctypes_signature(cfunc, returntype, paramtypes);
@@ -85,7 +85,7 @@ void pydynd::elwise_reduce_gfunc_add_kernel(
     bool DYND_UNUSED(associative), bool DYND_UNUSED(commutative),
     const dynd::nd::array &DYND_UNUSED(identity))
 {
-#if 0 // TODO reenable
+#if 0  // TODO reenable
     if (PyObject_IsSubclass((PyObject *)Py_TYPE(kernel), ctypes.PyCFuncPtrType_Type)) {
         gfunc::elwise_reduce_kernel ergk;
 
@@ -104,7 +104,7 @@ pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce &DYND_UNUSED(gf),
                                  PyObject *DYND_UNUSED(args),
                                  PyObject *DYND_UNUSED(kwargs))
 {
-#if 0 // TODO reenable
+#if 0  // TODO reenable
     Py_ssize_t nargs = PySequence_Size(args);
     if (nargs == 1) {
         pyobject_ownref arg0_obj(PySequence_GetItem(args, 0));
@@ -154,7 +154,7 @@ pydynd::elwise_reduce_gfunc_call(dynd::gfunc::elwise_reduce &DYND_UNUSED(gf),
         return NULL;
     }
 #endif // TODO reenable
-        PyErr_SetString(PyExc_TypeError, "Elementwise reduction gfuncs disabled presently");
-        return NULL;
+  PyErr_SetString(PyExc_TypeError,
+                  "Elementwise reduction gfuncs disabled presently");
+  return NULL;
 }
-

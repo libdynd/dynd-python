@@ -20,18 +20,19 @@
 #include <kernels/apply_pyobject_kernel.hpp>
 
 using namespace std;
-using namespace pydynd;
 
 dynd::nd::arrfunc pydynd::nd::functional::apply(PyObject *instantiate_pyfunc,
-                                                const ndt::type &proto)
+                                                const dynd::ndt::type &proto)
 {
-  if (proto.get_type_id() != arrfunc_type_id) {
+  if (proto.get_type_id() != dynd::arrfunc_type_id) {
     stringstream ss;
-    ss << "creating a dynd arrfunc from a python func requires a function "
+    ss << "creating a dynd dynd::nd::arrfunc from a python func requires a "
+          "function "
           "prototype, was given type " << proto;
-    throw type_error(ss.str());
+    throw dynd::type_error(ss.str());
   }
 
   Py_INCREF(instantiate_pyfunc);
-  return arrfunc::make<apply_pyobject_kernel>(proto, instantiate_pyfunc, 0);
+  return dynd::nd::arrfunc::make<apply_pyobject_kernel>(proto,
+                                                        instantiate_pyfunc, 0);
 }

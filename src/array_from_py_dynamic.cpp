@@ -714,7 +714,7 @@ static void array_from_py_dynamic_first_alloc(
   }
 
   if (PyBool_Check(obj)) {
-    elem.dtp = ndt::make_type<dynd_bool>();
+    elem.dtp = ndt::make_type<dynd::bool1>();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     *coord[current_axis - 1].data_ptr = (obj == Py_True);
     return;

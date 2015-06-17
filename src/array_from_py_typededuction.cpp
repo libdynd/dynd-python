@@ -53,7 +53,7 @@ ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject *obj,
 
   if (PyBool_Check(obj)) {
     // Python bool
-    return ndt::make_type<dynd_bool>();
+    return ndt::make_type<dynd::bool1>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyInt_Check(obj)) {

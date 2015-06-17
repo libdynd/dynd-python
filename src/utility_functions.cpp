@@ -254,7 +254,7 @@ PyObject *pydynd::intptr_array_as_tuple(size_t size, const intptr_t *values)
   return result;
 }
 
-static void mark_axis(PyObject *int_axis, int ndim, dynd_bool *reduce_axes)
+static void mark_axis(PyObject *int_axis, int ndim, bool1 *reduce_axes)
 {
   pyobject_ownref value_obj(PyNumber_Index(int_axis));
   long value = PyLong_AsLong(value_obj);
@@ -280,7 +280,7 @@ static void mark_axis(PyObject *int_axis, int ndim, dynd_bool *reduce_axes)
 }
 
 int pydynd::pyarg_axis_argument(PyObject *axis, int ndim,
-                                dynd_bool *reduce_axes)
+                                bool1 *reduce_axes)
 {
   int axis_count = 0;
 

@@ -96,7 +96,7 @@ namespace nd {
   }
 #endif
 
-  PyObject *pyint_from_int(const dynd::dynd_uint128 &val)
+  PyObject *pyint_from_int(const dynd::uint128 &val)
   {
     if (val.m_hi == 0ULL) {
       return PyLong_FromUnsignedLongLong(val.m_lo);
@@ -109,7 +109,7 @@ namespace nd {
     return PyNumber_Or(hi_shifted.get(), lo.get());
   }
 
-  PyObject *pyint_from_int(const dynd::dynd_int128 &val)
+  PyObject *pyint_from_int(const dynd::int128 &val)
   {
     if (val.is_negative()) {
       if (val.m_hi == 0xffffffffffffffffULL &&
@@ -117,11 +117,11 @@ namespace nd {
         return PyLong_FromLongLong(static_cast<int64_t>(val.m_lo));
       }
       pyobject_ownref absval(
-          pyint_from_int(static_cast<dynd::dynd_uint128>(-val)));
+          pyint_from_int(static_cast<dynd::uint128>(-val)));
       return PyNumber_Negative(absval.get());
     }
     else {
-      return pyint_from_int(static_cast<dynd::dynd_uint128>(val));
+      return pyint_from_int(static_cast<dynd::uint128>(val));
     }
   }
 
@@ -167,7 +167,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::int128_type_id>
-      : copy_int_kernel<dynd::dynd_int128> {
+      : copy_int_kernel<dynd::int128> {
   };
 
   template <>
@@ -192,7 +192,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::uint128_type_id>
-      : copy_int_kernel<dynd::dynd_uint128> {
+      : copy_int_kernel<dynd::uint128> {
   };
 
   template <typename T>
@@ -219,7 +219,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::float16_type_id>
-      : float_copy_kernel<dynd::dynd_float16> {
+      : float_copy_kernel<dynd::float16> {
   };
 
   template <>
@@ -850,7 +850,7 @@ namespace nd {
               ->get_is_avail_arrfunc_type();
       ckb_offset = is_avail_af->instantiate(
           is_avail_af, is_avail_af_tp, NULL, ckb, ckb_offset,
-          dynd::ndt::make_type<dynd::dynd_bool>(), NULL, nsrc, src_tp,
+          dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp,
           src_arrmeta, dynd::kernel_request_single, ectx, dynd::nd::array(),
           tp_vars);
       reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)

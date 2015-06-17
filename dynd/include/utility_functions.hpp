@@ -190,7 +190,7 @@ PyObject *intptr_array_as_tuple(size_t size, const intptr_t *array);
  *
  * Returns the number of axes which were set.
  */
-int pyarg_axis_argument(PyObject *axis, int ndim, dynd::dynd_bool *reduce_axes);
+int pyarg_axis_argument(PyObject *axis, int ndim, dynd::bool1 *reduce_axes);
 
 /**
  * Parses the error_mode argument. If it is None, returns

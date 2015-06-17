@@ -615,10 +615,12 @@ void contains_callback(const ndt::type &DYND_UNUSED(dt),
                        void *callback_data)
 {
   contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
-  dynd::expr_predicate_t fn =
-      cd->k->get()->get_function<dynd::expr_predicate_t>();
-  const char *const src[2] = {cd->x_data, data};
-  if (!cd->found && (fn(src, cd->k->get()) != 0)) {
+  dynd::expr_single_t fn =
+      cd->k->get()->get_function<dynd::expr_single_t>();
+  int dst;
+  char *src[2] = {const_cast<char *>(cd->x_data), data};
+  fn(reinterpret_cast<char *>(&dst), src, cd->k->get());
+  if (!cd->found && (dst != 0)) {
     cd->found = true;
   }
 }

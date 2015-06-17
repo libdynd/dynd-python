@@ -160,7 +160,7 @@ PyObject *pydynd::ndt_type_get_type_id(const dynd::ndt::type &d)
 static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject *obj)
 {
   if (obj == &PyBool_Type) {
-    return ndt::make_type<dynd_bool>();
+    return ndt::make_type<bool1>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (obj == &PyInt_Type) {

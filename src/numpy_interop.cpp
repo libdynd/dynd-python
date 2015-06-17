@@ -104,7 +104,7 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
 
   switch (d->type_num) {
   case NPY_BOOL:
-    dt = dynd::ndt::make_type<dynd::dynd_bool>();
+    dt = dynd::ndt::make_type<dynd::bool1>();
     break;
   case NPY_BYTE:
     dt = dynd::ndt::make_type<npy_byte>();
@@ -276,7 +276,7 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
 {
   switch (numpy_type_num) {
   case NPY_BOOL:
-    return dynd::ndt::make_type<dynd::dynd_bool>();
+    return dynd::ndt::make_type<dynd::bool1>();
   case NPY_BYTE:
     return dynd::ndt::make_type<npy_byte>();
   case NPY_UBYTE:
@@ -299,7 +299,7 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
     return dynd::ndt::make_type<npy_ulonglong>();
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
   case NPY_HALF:
-    return dynd::ndt::make_type<dynd::dynd_float16>();
+    return dynd::ndt::make_type<dynd::float16>();
 #endif
   case NPY_FLOAT:
     return dynd::ndt::make_type<float>();
@@ -650,7 +650,7 @@ int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject *obj,
                                                   dynd::ndt::type &out_d)
 {
   if (obj == &PyBoolArrType_Type) {
-    out_d = dynd::ndt::make_type<dynd::dynd_bool>();
+    out_d = dynd::ndt::make_type<dynd::bool1>();
   }
   else if (obj == &PyByteArrType_Type) {
     out_d = dynd::ndt::make_type<npy_byte>();
@@ -704,7 +704,7 @@ int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject *obj,
 dynd::ndt::type pydynd::ndt_type_of_numpy_scalar(PyObject *obj)
 {
   if (PyArray_IsScalar(obj, Bool)) {
-    return dynd::ndt::make_type<dynd::dynd_bool>();
+    return dynd::ndt::make_type<dynd::bool1>();
   }
   else if (PyArray_IsScalar(obj, Byte)) {
     return dynd::ndt::make_type<npy_byte>();
@@ -867,7 +867,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
   dynd::nd::array result;
   if (PyArray_IsScalar(obj, Bool)) {
     result = dynd::nd::array(
-        (dynd::dynd_bool)(((PyBoolScalarObject *)obj)->obval != 0));
+        (dynd::bool1)(((PyBoolScalarObject *)obj)->obval != 0));
   }
   else if (PyArray_IsScalar(obj, Byte)) {
     result = dynd::nd::array(((PyByteScalarObject *)obj)->obval);

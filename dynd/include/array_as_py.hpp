@@ -23,9 +23,9 @@ namespace pydynd {
 PyObject *array_as_py(const dynd::nd::array &n, bool struct_as_pytuple);
 
 /** Converts a uint128 into a PyLong */
-PyObject *pylong_from_uint128(const dynd::dynd_uint128 &val);
+PyObject *pylong_from_uint128(const dynd::uint128 &val);
 /** Converts an int128 into a PyLong */
-PyObject *pylong_from_int128(const dynd::dynd_int128 &val);
+PyObject *pylong_from_int128(const dynd::int128 &val);
 
 } // namespace pydynd
 

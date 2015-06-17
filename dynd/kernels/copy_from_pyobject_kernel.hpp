@@ -38,7 +38,7 @@ namespace nd {
       else {
         *dst =
             array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
-                .as<dynd::dynd_bool>();
+                .as<dynd::bool1>();
       }
     }
 
@@ -93,7 +93,7 @@ namespace nd {
     *out = static_cast<int64_t>(v);
   }
 
-  void pyint_to_int(dynd::dynd_int128 *out, PyObject *obj)
+  void pyint_to_int(dynd::int128 *out, PyObject *obj)
   {
 #if PY_VERSION_HEX < 0x03000000
     if (PyInt_Check(obj)) {
@@ -106,7 +106,7 @@ namespace nd {
     pyobject_ownref sixtyfour(PyLong_FromLong(64));
     pyobject_ownref value_shr1(PyNumber_Rshift(obj, sixtyfour.get()));
     uint64_t hi = PyLong_AsUnsignedLongLongMask(value_shr1.get());
-    dynd::dynd_int128 result(hi, lo);
+    dynd::int128 result(hi, lo);
 
     // Shift right another 64 bits, and check that nothing is remaining
     pyobject_ownref value_shr2(
@@ -176,7 +176,7 @@ namespace nd {
     *out = v;
   }
 
-  void pyint_to_int(dynd::dynd_uint128 *out, PyObject *obj)
+  void pyint_to_int(dynd::uint128 *out, PyObject *obj)
   {
 #if PY_VERSION_HEX < 0x03000000
     if (PyInt_Check(obj)) {
@@ -192,7 +192,7 @@ namespace nd {
     pyobject_ownref sixtyfour(PyLong_FromLong(64));
     pyobject_ownref value_shr1(PyNumber_Rshift(obj, sixtyfour.get()));
     uint64_t hi = PyLong_AsUnsignedLongLongMask(value_shr1.get());
-    dynd::dynd_uint128 result(hi, lo);
+    dynd::uint128 result(hi, lo);
 
     // Shift right another 64 bits, and check that nothing is remaining
     pyobject_ownref value_shr2(
@@ -258,7 +258,7 @@ namespace nd {
 
   template <>
   struct copy_from_pyobject_kernel<dynd::int128_type_id>
-      : copy_int_from_pyobject_kernel<dynd::dynd_int128> {
+      : copy_int_from_pyobject_kernel<dynd::int128> {
   };
 
   template <>
@@ -283,7 +283,7 @@ namespace nd {
 
   template <>
   struct copy_from_pyobject_kernel<dynd::uint128_type_id>
-      : copy_int_from_pyobject_kernel<dynd::dynd_uint128> {
+      : copy_int_from_pyobject_kernel<dynd::uint128> {
   };
 
   template <typename T>
@@ -319,7 +319,7 @@ namespace nd {
 
   template <>
   struct copy_from_pyobject_kernel<dynd::float16_type_id>
-      : float_copy_from_pyobject_kernel<dynd::dynd_float16> {
+      : float_copy_from_pyobject_kernel<dynd::float16> {
   };
 
   template <>

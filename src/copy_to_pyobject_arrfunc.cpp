@@ -51,8 +51,13 @@ dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
 {
   PyDateTime_IMPORT;
 
-  dynd::nd::arrfunc::make_all<copy_to_pyobject_kernel, type_ids>(children);
-  dynd::nd::arrfunc::make<default_copy_to_pyobject_kernel>(default_child, 0);
+  std::map<dynd::type_id_t, dynd::nd::arrfunc> arrfuncs =
+      dynd::nd::arrfunc::make_all<copy_to_pyobject_kernel, type_ids>();
+  for (std::pair<dynd::type_id_t, dynd::nd::arrfunc> pair : arrfuncs) {
+    children[pair.first] = pair.second;
+  }
+
+  default_child = dynd::nd::arrfunc::make<default_copy_to_pyobject_kernel>(0);
 
   return dynd::nd::functional::multidispatch_by_type_id(
       dynd::ndt::type("(Any) -> void"), DYND_TYPE_ID_MAX + 1, children,

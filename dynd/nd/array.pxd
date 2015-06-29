@@ -10,7 +10,7 @@ cdef extern from "<complex>" namespace "std":
         T real()
         T imag()
 
-from type cimport ndt_type
+from ndt.type cimport ndt_type
 
 from libc.stdint cimport intptr_t, uintptr_t
 from libcpp.string cimport string

@@ -228,14 +228,14 @@ set(pydynd_CYTHON_SRC
     dynd/codegen_cache.pxd
     dynd/cuda.pxd
     dynd/dynd.pxd
-    dynd/elwise_gfunc.pxd
-    dynd/elwise_reduce_gfunc.pxd
     dynd/eval_context.pxd
-    dynd/gfunc_callable.pxd
-    dynd/type.pxd
     dynd/translate_except.pxd
-    dynd/vm_elwise_program.pxd
     dynd/nd/array.pxd
+    dynd/nd/elwise_gfunc.pxd
+    dynd/nd/elwise_reduce_gfunc.pxd
+    dynd/nd/gfunc_callable.pxd
+    dynd/nd/vm_elwise_program.pxd
+    dynd/ndt/type.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 

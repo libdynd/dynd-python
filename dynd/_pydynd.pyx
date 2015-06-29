@@ -35,13 +35,11 @@ init_w_ndt_type_callable_typeobject(w_type_callable)
 init_w_eval_context_typeobject(w_eval_context)
 
 from dynd cimport *
-from type cimport *
+from ndt.type cimport *
 
 from nd.array cimport *
-
-from gfunc_callable cimport *
-
-from vm_elwise_program cimport *
+from nd.gfunc_callable cimport *
+from nd.vm_elwise_program cimport *
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object array_as_numpy_struct_capsule(_array&) except +translate_exception
@@ -92,8 +90,8 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
     _array dynd_format_json "dynd::format_json" (_array&, bint) except +translate_exception
 
-include "elwise_gfunc.pxd"
-include "elwise_reduce_gfunc.pxd"
+include "nd/elwise_gfunc.pxd"
+include "nd/elwise_reduce_gfunc.pxd"
 
 from eval_context cimport *
 

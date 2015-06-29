@@ -225,7 +225,6 @@ set(pydynd_CPP_SRC
 set(pydynd_CYTHON_SRC
     dynd/cuda.pyx
     dynd/_pydynd.pyx
-    dynd/array.pxd
     dynd/codegen_cache.pxd
     dynd/cuda.pxd
     dynd/dynd.pxd
@@ -236,6 +235,7 @@ set(pydynd_CYTHON_SRC
     dynd/type.pxd
     dynd/translate_except.pxd
     dynd/vm_elwise_program.pxd
+    dynd/nd/array.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 

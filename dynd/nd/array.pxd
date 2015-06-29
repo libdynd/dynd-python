@@ -21,8 +21,8 @@ cdef extern from "<iostream>" namespace "std":
 
     extern ostream cout
 
-cdef extern from "dynd/array.hpp" namespace "dynd":
-    cdef cppclass _array "dynd::nd::array":
+cdef extern from 'dynd/array.hpp' namespace 'dynd':
+    cdef cppclass _array 'dynd::nd::array':
         _array() except +translate_exception
         _array(signed char value)
         _array(short value)

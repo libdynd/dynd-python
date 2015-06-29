@@ -5,7 +5,7 @@
 
 from translate_except cimport translate_exception
 from type cimport ndt_type
-from array cimport _array
+from nd.array cimport _array
 
 cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void add_ndt_type_names_to_dir_dict(ndt_type&, object) except +translate_exception

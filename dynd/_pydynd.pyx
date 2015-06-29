@@ -37,7 +37,7 @@ init_w_eval_context_typeobject(w_eval_context)
 from dynd cimport *
 from type cimport *
 
-from array cimport *
+from nd.array cimport *
 
 from gfunc_callable cimport *
 

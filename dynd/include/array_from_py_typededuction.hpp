@@ -28,7 +28,7 @@ namespace pydynd {
  * \return A type for the object, or an uninitialized type if
  *         `throw_on_unknown` is false, and nothing could be deduced.
  */
-dynd::ndt::type deduce_ndt_type_from_pyobject(PyObject *obj,
+dynd::ndt::type deduce__type_from_pyobject(PyObject *obj,
                                               bool throw_on_unknown = true);
 
 /**

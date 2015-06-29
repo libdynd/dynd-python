@@ -146,7 +146,7 @@ inline std::string pyobject_repr(PyObject *obj)
   return pystring_as_string(src_repr.get());
 }
 
-void pyobject_as_vector_ndt_type(PyObject *list_dtype,
+void pyobject_as_vector__type(PyObject *list_dtype,
                                  std::vector<dynd::ndt::type> &vector_dtype);
 void pyobject_as_vector_string(PyObject *list_string,
                                std::vector<std::string> &vector_string);

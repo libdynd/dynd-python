@@ -10,7 +10,7 @@ cdef extern from "<complex>" namespace "std":
         T real()
         T imag()
 
-from ndt.type cimport ndt_type
+from ndt.type cimport _type
 
 from libc.stdint cimport intptr_t, uintptr_t
 from libcpp.string cimport string
@@ -38,8 +38,8 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
         _array(double value)
         _array(complex[float] value)
         _array(complex[double] value)
-        _array(ndt_type&)
-        _array(ndt_type, int, intptr_t *, int *)
+        _array(_type&)
+        _array(_type, int, intptr_t *, int *)
 
         # Cython bug: operator overloading doesn't obey "except +"
         # TODO: Report this bug
@@ -48,9 +48,9 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
         #_array operator*(_array&) except +translate_exception
         #_array operator/(_array&) except +translate_exception
 
-        ndt_type get_type()
-        ndt_type get_dtype()
-        ndt_type get_dtype(size_t)
+        _type get_type()
+        _type get_dtype()
+        _type get_dtype(size_t)
         intptr_t get_ndim()
         bint is_scalar()
         intptr_t get_dim_size() except +translate_exception
@@ -65,14 +65,14 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
 
         _array storage() except +translate_exception
 
-        _array view_scalars(ndt_type&) except +translate_exception
-        _array ucast(ndt_type&, size_t) except +translate_exception
+        _array view_scalars(_type&) except +translate_exception
+        _array ucast(_type&, size_t) except +translate_exception
 
         void flag_as_immutable() except +translate_exception
 
         void debug_print(ostream&)
 
-    _array dynd_groupby "dynd::nd::groupby"(_array&, _array&, ndt_type) except +translate_exception
+    _array dynd_groupby "dynd::nd::groupby"(_array&, _array&, _type) except +translate_exception
     _array dynd_groupby "dynd::nd::groupby"(_array&, _array&) except +translate_exception
 
 cdef extern from "array_functions.hpp" namespace "pydynd":
@@ -95,16 +95,16 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     _array array_asarray(object, object) except +translate_exception
     _array array_eval(_array&, object) except +translate_exception
     _array array_eval_copy(_array&, object, object) except +translate_exception
-    _array array_zeros(ndt_type&, object) except +translate_exception
-    _array array_zeros(object, ndt_type&, object) except +translate_exception
-    _array array_ones(ndt_type&, object) except +translate_exception
-    _array array_ones(object, ndt_type&, object) except +translate_exception
-    _array array_full(ndt_type&, object, object) except +translate_exception
-    _array array_full(object, ndt_type&, object, object) except +translate_exception
-    _array array_empty(ndt_type&, object) except +translate_exception
-    _array array_empty(object, ndt_type&, object) except +translate_exception
+    _array array_zeros(_type&, object) except +translate_exception
+    _array array_zeros(object, _type&, object) except +translate_exception
+    _array array_ones(_type&, object) except +translate_exception
+    _array array_ones(object, _type&, object) except +translate_exception
+    _array array_full(_type&, object, object) except +translate_exception
+    _array array_full(object, _type&, object, object) except +translate_exception
+    _array array_empty(_type&, object) except +translate_exception
+    _array array_empty(object, _type&, object) except +translate_exception
     _array array_empty_like(_array&) except +translate_exception
-    _array array_empty_like(_array&, ndt_type&) except +translate_exception
+    _array array_empty_like(_array&, _type&) except +translate_exception
     _array array_memmap(object, object, object, object) except +translate_exception
 
     _array array_add(_array&, _array&) except +translate_exception
@@ -125,8 +125,8 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
     _array array_linspace(object, object, object, object) except +translate_exception
     _array nd_fields(_array&, object) except +translate_exception
 
-    _array array_cast(_array&, ndt_type&) except +translate_exception
-    _array array_ucast(_array&, ndt_type&, size_t) except +translate_exception
+    _array array_cast(_array&, _type&) except +translate_exception
+    _array array_ucast(_array&, _type&, size_t) except +translate_exception
     object array_adapt(object, object, object) except +translate_exception
     object array_as_py(_array&, bint) except +translate_exception
     object array_as_numpy(object, bint) except +translate_exception
@@ -137,7 +137,7 @@ cdef extern from "array_functions.hpp" namespace "pydynd":
 
     const char *array_access_flags_string(_array&) except +translate_exception
 
-    _array dynd_parse_json_type(ndt_type&, _array&, object) except +translate_exception
+    _array dynd_parse_json_type(_type&, _array&, object) except +translate_exception
     void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
 
     object wrap_array(const _array &af)

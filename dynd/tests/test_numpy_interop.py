@@ -12,7 +12,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         else:
             self.nonnative = '<'
 
-    def test_ndt_type_from_numpy_scalar_types(self):
+    def test__type_from_numpy_scalar_types(self):
         # Tests converting numpy scalar types to dynd types
         self.assertEqual(ndt.bool, ndt.type(np.bool))
         self.assertEqual(ndt.bool, ndt.type(np.bool_))
@@ -29,7 +29,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.complex_float32, ndt.type(np.complex64))
         self.assertEqual(ndt.complex_float64, ndt.type(np.complex128))
 
-    def test_ndt_type_from_numpy_dtype(self):
+    def test__type_from_numpy_dtype(self):
         # Tests converting numpy dtypes to dynd types
         # native byte order
         self.assertEqual(ndt.bool, ndt.type(np.dtype(np.bool)))
@@ -74,7 +74,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(ndt.make_byteswap(ndt.complex_float64),
                 ndt.type(np.dtype(nonnative + 'c16')))
 
-    def test_ndt_type_from_numpy_dtype_struct(self):
+    def test__type_from_numpy_dtype_struct(self):
         # aligned struct
         tp0 = ndt.type(np.dtype([('x', np.int32), ('y', np.int64)],
                             align=True))
@@ -87,7 +87,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                         ['x', 'y'])
         self.assertEqual(tp0, tp1)
 
-    def test_ndt_type_from_h5py_special(self):
+    def test__type_from_h5py_special(self):
         # h5py 2.3 style "special dtype"
         dt = np.dtype(object, metadata={'vlen' : str})
         self.assertEqual(ndt.type(dt), ndt.string)
@@ -117,7 +117,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         self.assertEqual(nd.type_of(z), nd.type_of(x))
         self.assertEqual(nd.as_py(z), nd.as_py(x))
 
-    def test_ndt_type_as_numpy(self):
+    def test__type_as_numpy(self):
         self.assertEqual(ndt.bool.as_numpy(), np.dtype('bool'))
         self.assertEqual(ndt.int8.as_numpy(), np.dtype('int8'))
         self.assertEqual(ndt.int16.as_numpy(), np.dtype('int16'))

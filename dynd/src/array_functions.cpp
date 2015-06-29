@@ -296,7 +296,7 @@ void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
         nd::read_access_flag, "r", nd::read_access_flag, "immutable",
         nd::read_access_flag | nd::immutable_access_flag);
   }
-  n = array_from_py(obj, make_ndt_type_from_pyobject(dt), fulltype,
+  n = array_from_py(obj, make__type_from_pyobject(dt), fulltype,
                     access_flags, &eval::default_eval_context);
 }
 
@@ -355,7 +355,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
       return obj_dynd;
     }
     else {
-      ndt::type tp = make_ndt_type_from_pyobject(type);
+      ndt::type tp = make__type_from_pyobject(type);
       return nd::view(obj_dynd, tp);
     }
   }
@@ -368,7 +368,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
       return result;
     }
     else {
-      ndt::type tp = make_ndt_type_from_pyobject(type);
+      ndt::type tp = make__type_from_pyobject(type);
       return nd::view(result, tp);
     }
   }
@@ -700,7 +700,7 @@ dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
 PyObject *pydynd::array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op)
 {
   return wrap_array(array_from_py(a, 0, false, &eval::default_eval_context)
-                        .adapt(make_ndt_type_from_pyobject(tp_obj),
+                        .adapt(make__type_from_pyobject(tp_obj),
                                pystring_as_string(adapt_op)));
 }
 
@@ -837,7 +837,7 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step,
   }
 
   if (dt != Py_None) {
-    dt_nd = make_ndt_type_from_pyobject(dt);
+    dt_nd = make__type_from_pyobject(dt);
   }
   else {
     dt_nd = promote_types_arithmetic(
@@ -871,7 +871,7 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
   }
   else {
     return nd::linspace(start_nd, stop_nd, count_val,
-                        make_ndt_type_from_pyobject(dt));
+                        make__type_from_pyobject(dt));
   }
 }
 
@@ -896,7 +896,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   }
   // Construct the field mapping and output field types
   vector<intptr_t> selected_index(selected_fields.size());
-  vector<ndt::type> selected_ndt_types(selected_fields.size());
+  vector<ndt::type> selected__types(selected_fields.size());
   for (size_t i = 0; i != selected_fields.size(); ++i) {
     selected_index[i] = bsd->get_field_index(selected_fields[i]);
     if (selected_index[i] < 0) {
@@ -906,10 +906,10 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
       ss << " does not exist in dynd type " << fdt;
       throw runtime_error(ss.str());
     }
-    selected_ndt_types[i] = bsd->get_field_type(selected_index[i]);
+    selected__types[i] = bsd->get_field_type(selected_index[i]);
   }
   // Create the result udt
-  ndt::type rudt = ndt::make_struct(selected_fields, selected_ndt_types);
+  ndt::type rudt = ndt::make_struct(selected_fields, selected__types);
   ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
   const ndt::base_struct_type *rudt_bsd =
       rudt.extended<ndt::base_struct_type>();
@@ -953,7 +953,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   const size_t *data_offsets = bsd->get_data_offsets(src_arrmeta);
   size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_arrmeta);
   for (size_t i = 0; i != selected_fields.size(); ++i) {
-    const ndt::type &dt = selected_ndt_types[i];
+    const ndt::type &dt = selected__types[i];
     // Copy the data offset
     result_data_offsets[i] = data_offsets[selected_index[i]];
     // Copy the arrmeta for this field

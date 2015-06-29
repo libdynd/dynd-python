@@ -52,7 +52,7 @@ inline void print_generic_type_repr(ostream &o, const ndt::type &d)
   o << ")";
 }
 
-std::string pydynd::ndt_type_repr(const dynd::ndt::type &d)
+std::string pydynd::_type_repr(const dynd::ndt::type &d)
 {
   std::stringstream ss;
   if (d.is_builtin() && d.get_type_id() != dynd::complex_float32_type_id &&
@@ -117,7 +117,7 @@ std::string pydynd::ndt_type_repr(const dynd::ndt::type &d)
   return ss.str();
 }
 
-PyObject *pydynd::ndt_type_get_shape(const dynd::ndt::type &d)
+PyObject *pydynd::_type_get_shape(const dynd::ndt::type &d)
 {
   size_t ndim = d.get_ndim();
   if (ndim > 0) {
@@ -130,7 +130,7 @@ PyObject *pydynd::ndt_type_get_shape(const dynd::ndt::type &d)
   }
 }
 
-PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type &d)
+PyObject *pydynd::_type_get_kind(const dynd::ndt::type &d)
 {
   stringstream ss;
   ss << d.get_kind();
@@ -142,7 +142,7 @@ PyObject *pydynd::ndt_type_get_kind(const dynd::ndt::type &d)
 #endif
 }
 
-PyObject *pydynd::ndt_type_get_type_id(const dynd::ndt::type &d)
+PyObject *pydynd::_type_get_type_id(const dynd::ndt::type &d)
 {
   stringstream ss;
   ss << d.get_type_id();
@@ -157,7 +157,7 @@ PyObject *pydynd::ndt_type_get_type_id(const dynd::ndt::type &d)
 /**
  * Creates a dynd type out of typical Python typeobjects.
  */
-static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject *obj)
+static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 {
   if (obj == &PyBool_Type) {
     return ndt::make_type<bool1>();
@@ -193,7 +193,7 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject *obj)
   }
   else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
     // CTypes type object
-    return ndt_type_from_ctypes_cdatatype((PyObject *)obj);
+    return _type_from_ctypes_cdatatype((PyObject *)obj);
   }
   else if (obj == PyDateTimeAPI->DateType) {
     return ndt::make_date();
@@ -213,7 +213,7 @@ static dynd::ndt::type make_ndt_type_from_pytypeobject(PyTypeObject *obj)
   throw dynd::type_error(ss.str());
 }
 
-dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject *obj)
+dynd::ndt::type pydynd::make__type_from_pyobject(PyObject *obj)
 {
   if (WType_Check(obj)) {
     return ((WType *)obj)->v;
@@ -232,17 +232,17 @@ dynd::ndt::type pydynd::make_ndt_type_from_pyobject(PyObject *obj)
   else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP
     ndt::type result;
-    if (ndt_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) ==
+    if (_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) ==
         0) {
       return result;
     }
 #endif // DYND_NUMPY_INTEROP
-    return make_ndt_type_from_pytypeobject((PyTypeObject *)obj);
+    return make__type_from_pytypeobject((PyTypeObject *)obj);
   }
 
 #if DYND_NUMPY_INTEROP
   if (PyArray_DescrCheck(obj)) {
-    return ndt_type_from_numpy_dtype((PyArray_Descr *)obj);
+    return _type_from_numpy_dtype((PyArray_Descr *)obj);
   }
 #endif // DYND_NUMPY_INTEROP
 
@@ -364,7 +364,7 @@ dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types,
 {
   vector<ndt::type> field_types_vec;
   vector<string> field_names_vec;
-  pyobject_as_vector_ndt_type(field_types, field_types_vec);
+  pyobject_as_vector__type(field_types, field_types_vec);
   pyobject_as_vector_string(field_names, field_names_vec);
   if (field_types_vec.size() != field_names_vec.size()) {
     stringstream ss;
@@ -385,7 +385,7 @@ pydynd::dynd_make_fixed_dim_type(PyObject *shape,
   return ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
 }
 
-dynd::ndt::type pydynd::ndt_type_getitem(const dynd::ndt::type &d,
+dynd::ndt::type pydynd::_type_getitem(const dynd::ndt::type &d,
                                          PyObject *subscript)
 {
   // Convert the pyobject into an array of iranges
@@ -410,7 +410,7 @@ dynd::ndt::type pydynd::ndt_type_getitem(const dynd::ndt::type &d,
   return d.at_array((int)size, indices.get());
 }
 
-PyObject *pydynd::ndt_type_array_property_names(const ndt::type &d)
+PyObject *pydynd::_type_array_property_names(const ndt::type &d)
 {
   const std::pair<std::string, gfunc::callable> *properties;
   size_t count;

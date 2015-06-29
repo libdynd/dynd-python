@@ -27,12 +27,12 @@ void pydynd::init_w_array_callable_typeobject(PyObject *type)
 
 PyTypeObject *pydynd::WTypeCallable_Type;
 
-void pydynd::init_w_ndt_type_callable_typeobject(PyObject *type)
+void pydynd::init_w__type_callable_typeobject(PyObject *type)
 {
   WTypeCallable_Type = (PyTypeObject *)type;
 }
 
-void pydynd::add_ndt_type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
+void pydynd::add__type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
 {
   if (!dt.is_builtin()) {
     const std::pair<std::string, gfunc::callable> *properties;
@@ -56,7 +56,7 @@ void pydynd::add_ndt_type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
   }
 }
 
-PyObject *pydynd::get_ndt_type_dynamic_property(const dynd::ndt::type &dt,
+PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
                                                 PyObject *name)
 {
   if (!dt.is_builtin()) {
@@ -80,7 +80,7 @@ PyObject *pydynd::get_ndt_type_dynamic_property(const dynd::ndt::type &dt,
       string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == nstr) {
-          return wrap_ndt_type_callable(nstr, properties[i].second, dt);
+          return wrap__type_callable(nstr, properties[i].second, dt);
         }
       }
     }
@@ -499,7 +499,7 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper &ncw,
   return wrap_array(ncw.c.call_generic(params));
 }
 
-PyObject *pydynd::wrap_ndt_type_callable(const std::string &funcname,
+PyObject *pydynd::wrap__type_callable(const std::string &funcname,
                                          const dynd::gfunc::callable &c,
                                          const dynd::ndt::type &d)
 {
@@ -510,7 +510,7 @@ PyObject *pydynd::wrap_ndt_type_callable(const std::string &funcname,
   }
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  placement_new(reinterpret_cast<pydynd::ndt_type_callable_placement_wrapper &>(
+  placement_new(reinterpret_cast<pydynd::_type_callable_placement_wrapper &>(
       result->v));
   result->v.d = d;
   result->v.c = c;
@@ -518,7 +518,7 @@ PyObject *pydynd::wrap_ndt_type_callable(const std::string &funcname,
   return (PyObject *)result;
 }
 
-static PyObject *ndt_type_callable_call(const std::string &funcname,
+static PyObject *_type_callable_call(const std::string &funcname,
                                         const gfunc::callable &c,
                                         const ndt::type &d, PyObject *args,
                                         PyObject *kwargs)
@@ -540,13 +540,13 @@ static PyObject *ndt_type_callable_call(const std::string &funcname,
   return wrap_array(c.call_generic(params));
 }
 
-PyObject *pydynd::ndt_type_callable_call(const ndt_type_callable_wrapper &dcw,
+PyObject *pydynd::_type_callable_call(const _type_callable_wrapper &dcw,
                                          PyObject *args, PyObject *kwargs)
 {
-  return ndt_type_callable_call(dcw.funcname, dcw.c, dcw.d, args, kwargs);
+  return _type_callable_call(dcw.funcname, dcw.c, dcw.d, args, kwargs);
 }
 
-PyObject *pydynd::call_ndt_type_constructor_function(const dynd::ndt::type &dt,
+PyObject *pydynd::call__type_constructor_function(const dynd::ndt::type &dt,
                                                      PyObject *args,
                                                      PyObject *kwargs)
 {
@@ -559,7 +559,7 @@ PyObject *pydynd::call_ndt_type_constructor_function(const dynd::ndt::type &dt,
     if (count > 0) {
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == "__construct__") {
-          return ndt_type_callable_call("__construct__", properties[i].second,
+          return _type_callable_call("__construct__", properties[i].second,
                                         dt, args, kwargs);
         }
       }

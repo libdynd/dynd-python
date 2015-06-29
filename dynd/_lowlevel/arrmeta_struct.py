@@ -5,7 +5,7 @@ __all__ = ['build_arrmeta_struct']
 import ctypes
 
 from .ctypes_types import MemoryBlockData
-from .._pydynd import w_type as ndt_type
+from .._pydynd import w_type as _type
 
 # Metadata ctypes for types that don't have child arrmeta
 class EmptyMetadata(ctypes.Structure):
@@ -25,7 +25,7 @@ def build_arrmeta_struct(tp):
     tp : dynd type
         The dynd type for which the arrmeta is constructed.
     """
-    if not isinstance(tp, ndt_type):
+    if not isinstance(tp, _type):
         raise TypeError('tp must be a dynd type, not %r' % type(tp))
     # If there's no arrmeta, just return an empty struct
     if tp.arrmeta_size == 0:
@@ -73,7 +73,7 @@ def build_arrmeta_struct(tp):
                             ctypes.c_size_t * len(field_types)))
         # Each field arrmeta is stored in order
         for i, ft in enumerate(field_types):
-            field_struct = build_arrmeta_struct(ndt_type(ft))
+            field_struct = build_arrmeta_struct(_type(ft))
             fields.append(('field_%d' % i, field_struct))
         class StructMetadata(ctypes.Structure):
             _fields_ = fields

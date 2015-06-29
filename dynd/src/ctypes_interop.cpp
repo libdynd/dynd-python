@@ -141,7 +141,7 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject *cfunc,
     out_returntype = ndt::make_type<void>();
   }
   else {
-    out_returntype = ndt_type_from_ctypes_cdatatype(restype);
+    out_returntype = _type_from_ctypes_cdatatype(restype);
   }
 
   Py_ssize_t argcount = PySequence_Size(argtypes);
@@ -156,11 +156,11 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject *cfunc,
   // Get the argument types
   for (intptr_t i = 0; i < argcount; ++i) {
     pyobject_ownref element(PySequence_GetItem(argtypes, i));
-    out_paramtypes[i] = ndt_type_from_ctypes_cdatatype(element);
+    out_paramtypes[i] = _type_from_ctypes_cdatatype(element);
   }
 }
 
-dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
+dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
 {
   if (!PyObject_IsSubclass(d, ctypes.PyCData_Type)) {
     throw runtime_error("internal error: requested a dynd type from a ctypes c "
@@ -176,7 +176,7 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
   }
   else {
     pyobject_ownref dynd_type(dynd_type_obj);
-    return make_ndt_type_from_pyobject(dynd_type);
+    return make__type_from_pyobject(dynd_type);
   }
 
   // The simple C data types
@@ -226,7 +226,7 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
   else if (PyObject_IsSubclass(d, ctypes.PyCPointerType_Type)) {
     // Translate into a blockref pointer type
     pyobject_ownref target_tp_obj(PyObject_GetAttrString(d, "_type_"));
-    ndt::type target_tp = ndt_type_from_ctypes_cdatatype(target_tp_obj);
+    ndt::type target_tp = _type_from_ctypes_cdatatype(target_tp_obj);
     return ndt::make_pointer(target_tp);
   }
   else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
@@ -249,7 +249,7 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
         throw runtime_error(ss.str());
       }
       field_types.push_back(
-          ndt_type_from_ctypes_cdatatype(PyTuple_GET_ITEM(item, 1)));
+          _type_from_ctypes_cdatatype(PyTuple_GET_ITEM(item, 1)));
       PyObject *key = PyTuple_GET_ITEM(item, 0);
       field_names.push_back(pystring_as_string(key));
       pyobject_ownref field_data_obj(PyObject_GetAttr(d, key));
@@ -274,7 +274,7 @@ dynd::ndt::type pydynd::ndt_type_from_ctypes_cdatatype(PyObject *d)
     pyobject_ownref array_length_obj(PyObject_GetAttrString(d, "_length_"));
     intptr_t array_length = pyobject_as_index(array_length_obj.get());
     pyobject_ownref element_tp_obj(PyObject_GetAttrString(d, "_type_"));
-    ndt::type element_tp = ndt_type_from_ctypes_cdatatype(element_tp_obj);
+    ndt::type element_tp = _type_from_ctypes_cdatatype(element_tp_obj);
     return ndt::make_fixed_dim(array_length, element_tp);
   }
 

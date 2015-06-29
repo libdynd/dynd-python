@@ -8,7 +8,7 @@ from libcpp.string cimport string
 
 from translate_except cimport translate_exception
 
-cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
+cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
     cdef enum type_kind_t:
         bool_kind
         uint_kind
@@ -56,21 +56,21 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         type_kind_t get_kind()
         uintptr_t get_data_size()
         uintptr_t get_data_alignment()
-        ndt_type& value_type(ndt_type&)
-        ndt_type& operand_type(ndt_type&)
+        _type& value_type(_type&)
+        _type& operand_type(_type&)
 
-    cdef cppclass ndt_type "dynd::ndt::type":
-        ndt_type()
-        ndt_type(type_id_t) except +translate_exception
-        ndt_type(type_id_t, uintptr_t) except +translate_exception
-        ndt_type(string&) except +translate_exception
-        bint operator==(ndt_type&)
-        bint operator!=(ndt_type&)
+    cdef cppclass _type 'dynd::ndt::type':
+        _type()
+        _type(type_id_t) except +translate_exception
+        _type(type_id_t, uintptr_t) except +translate_exception
+        _type(string&) except +translate_exception
+        bint operator==(_type&)
+        bint operator!=(_type&)
 
-        ndt_type& value_type()
-        ndt_type& operand_type()
-        ndt_type& storage_type()
-        ndt_type get_canonical_type()
+        _type& value_type()
+        _type& operand_type()
+        _type& storage_type()
+        _type get_canonical_type()
         type_id_t type_id()
         type_kind_t get_kind()
         size_t get_data_size()
@@ -80,12 +80,12 @@ cdef extern from "dynd/type.hpp" namespace "dynd::ndt":
         base_type* extended()
         string_encoding_t string_encoding() except +translate_exception
         intptr_t get_ndim()
-        ndt_type get_dtype() except +translate_exception
-        ndt_type get_dtype(size_t) except +translate_exception
+        _type get_dtype() except +translate_exception
+        _type get_dtype(size_t) except +translate_exception
 
-        ndt_type with_replaced_dtype(ndt_type&, size_t) except +translate_exception
+        _type with_replaced_dtype(_type&, size_t) except +translate_exception
 
-        bint match(ndt_type&) except +translate_exception
+        bint match(_type&) except +translate_exception
 
 cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
     cdef enum assign_error_mode:
@@ -98,58 +98,58 @@ cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
 from nd.array cimport _array
 
 cdef extern from "dynd/types/fixed_bytes_type.hpp" namespace "dynd":
-    ndt_type dynd_make_fixed_bytes_type "dynd::ndt::make_fixed_bytes" (intptr_t, intptr_t) except +translate_exception
+    _type dynd_make_fixed_bytes_type "dynd::ndt::make_fixed_bytes" (intptr_t, intptr_t) except +translate_exception
 
 cdef extern from "dynd/types/byteswap_type.hpp" namespace "dynd":
-    ndt_type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (ndt_type&) except +translate_exception
-    ndt_type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (ndt_type&, ndt_type&) except +translate_exception
+    _type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (_type&) except +translate_exception
+    _type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (_type&, _type&) except +translate_exception
 
 cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
-    ndt_type dynd_make_categorical_type "dynd::ndt::make_categorical" (_array&) except +translate_exception
-    ndt_type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
+    _type dynd_make_categorical_type "dynd::ndt::make_categorical" (_array&) except +translate_exception
+    _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
 cdef extern from "dynd/types/type_alignment.hpp" namespace "dynd":
-    ndt_type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (ndt_type&) except +translate_exception
+    _type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (_type&) except +translate_exception
 
 cdef extern from "dynd/types/fixed_dim_kind_type.hpp" namespace "dynd":
-    ndt_type dynd_make_fixed_dim_kind_type "dynd::ndt::make_fixed_dim_kind" (ndt_type&) except +translate_exception
-    ndt_type dynd_make_fixed_dim_kind_type "dynd::ndt::make_fixed_dim_kind" (ndt_type&, intptr_t) except +translate_exception
+    _type dynd_make_fixed_dim_kind_type "dynd::ndt::make_fixed_dim_kind" (_type&) except +translate_exception
+    _type dynd_make_fixed_dim_kind_type "dynd::ndt::make_fixed_dim_kind" (_type&, intptr_t) except +translate_exception
 
 cdef extern from "dynd/types/pow_dimsym_type.hpp" namespace "dynd":
-    ndt_type dynd_make_pow_dimsym_type "dynd::ndt::make_pow_dimsym" (ndt_type&, string&, ndt_type&) except +translate_exception
+    _type dynd_make_pow_dimsym_type "dynd::ndt::make_pow_dimsym" (_type&, string&, _type&) except +translate_exception
 
 cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
-    ndt_type dynd_make_var_dim_type "dynd::ndt::make_var_dim" (ndt_type&) except +translate_exception
+    _type dynd_make_var_dim_type "dynd::ndt::make_var_dim" (_type&) except +translate_exception
 
 cdef extern from "dynd/types/property_type.hpp" namespace "dynd":
-    ndt_type dynd_make_property_type "dynd::ndt::make_property" (ndt_type&, string) except +translate_exception
-    ndt_type dynd_make_reversed_property_type "dynd::ndt::make_reversed_property" (ndt_type&, ndt_type&, string&) except +translate_exception
+    _type dynd_make_property_type "dynd::ndt::make_property" (_type&, string) except +translate_exception
+    _type dynd_make_reversed_property_type "dynd::ndt::make_reversed_property" (_type&, _type&, string&) except +translate_exception
 
 cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
-    ndt_type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
+    _type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
 
 cdef extern from "type_functions.hpp" namespace "pydynd":
     void init_w_type_typeobject(object)
 
-    string ndt_type_str(ndt_type&)
-    string ndt_type_repr(ndt_type&)
-    ndt_type make_ndt_type_from_pyobject(object) except +translate_exception
+    string _type_str(_type&)
+    string _type_repr(_type&)
+    _type make__type_from_pyobject(object) except +translate_exception
 
-    object ndt_type_get_shape(ndt_type&) except +translate_exception
-    object ndt_type_get_kind(ndt_type&) except +translate_exception
-    object ndt_type_get_type_id(ndt_type&) except +translate_exception
-    ndt_type ndt_type_getitem(ndt_type&, object) except +translate_exception
-    object ndt_type_array_property_names(ndt_type&) except +translate_exception
+    object _type_get_shape(_type&) except +translate_exception
+    object _type_get_kind(_type&) except +translate_exception
+    object _type_get_type_id(_type&) except +translate_exception
+    _type _type_getitem(_type&, object) except +translate_exception
+    object _type_array_property_names(_type&) except +translate_exception
 
-    ndt_type dynd_make_convert_type(ndt_type&, ndt_type&) except +translate_exception
-    ndt_type dynd_make_view_type(ndt_type&, ndt_type&) except +translate_exception
-    ndt_type dynd_make_fixed_string_type(int, object) except +translate_exception
-    ndt_type dynd_make_string_type(object) except +translate_exception
-    ndt_type dynd_make_pointer_type(ndt_type&) except +translate_exception
-    ndt_type dynd_make_struct_type(object, object) except +translate_exception
-    ndt_type dynd_make_cstruct_type(object, object) except +translate_exception
-    ndt_type dynd_make_fixed_dim_type(object, ndt_type&) except +translate_exception
-    ndt_type dynd_make_cfixed_dim_type(object, ndt_type&, object) except +translate_exception
+    _type dynd_make_convert_type(_type&, _type&) except +translate_exception
+    _type dynd_make_view_type(_type&, _type&) except +translate_exception
+    _type dynd_make_fixed_string_type(int, object) except +translate_exception
+    _type dynd_make_string_type(object) except +translate_exception
+    _type dynd_make_pointer_type(_type&) except +translate_exception
+    _type dynd_make_struct_type(object, object) except +translate_exception
+    _type dynd_make_cstruct_type(object, object) except +translate_exception
+    _type dynd_make_fixed_dim_type(object, _type&) except +translate_exception
+    _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    object numpy_dtype_obj_from_ndt_type(ndt_type&) except +translate_exception
+    object numpy_dtype_obj_from__type(_type&) except +translate_exception

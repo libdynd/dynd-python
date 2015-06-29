@@ -786,7 +786,7 @@ namespace nd {
       *dst_obj = NULL;
       dynd::ndt::type tp(
           reinterpret_cast<const dynd::type_type_data *>(src[0])->tp, true);
-      *dst_obj = wrap_ndt_type(std::move(tp));
+      *dst_obj = wrap__type(std::move(tp));
     }
 
     static dynd::ndt::type make_type()

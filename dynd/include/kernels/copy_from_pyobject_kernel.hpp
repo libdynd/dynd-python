@@ -761,7 +761,7 @@ namespace nd {
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       *reinterpret_cast<dynd::ndt::type *>(dst) =
-          pydynd::make_ndt_type_from_pyobject(src_obj);
+          pydynd::make__type_from_pyobject(src_obj);
     }
 
     static dynd::ndt::type make_type()

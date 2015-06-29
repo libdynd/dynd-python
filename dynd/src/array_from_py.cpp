@@ -256,11 +256,11 @@ convert_one_pyscalar_datetime(const ndt::type &tp, const char *arrmeta,
               PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
 }
 
-inline void convert_one_pyscalar_ndt_type(
+inline void convert_one_pyscalar__type(
     const ndt::type &DYND_UNUSED(tp), const char *DYND_UNUSED(arrmeta),
     char *out, PyObject *obj, const eval::eval_context *DYND_UNUSED(ectx))
 {
-  ndt::type obj_as_tp = make_ndt_type_from_pyobject(obj);
+  ndt::type obj_as_tp = make__type_from_pyobject(obj);
   obj_as_tp.swap(reinterpret_cast<type_type_data *>(out)->tp);
 }
 
@@ -439,7 +439,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj,
     break;
   }
   case type_type_id: {
-    fill_array_from_pylist<convert_one_pyscalar_ndt_type>(
+    fill_array_from_pylist<convert_one_pyscalar__type>(
         result.get_type(), result.get_arrmeta(),
         result.get_readwrite_originptr(), obj, &shape[0], 0, ectx);
     break;
@@ -672,11 +672,11 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     result = array_from_pylist(obj, ectx);
   }
   else if (PyType_Check(obj)) {
-    result = nd::array_rw(make_ndt_type_from_pyobject(obj));
+    result = nd::array_rw(make__type_from_pyobject(obj));
 #if DYND_NUMPY_INTEROP
   }
   else if (PyArray_DescrCheck(obj)) {
-    result = nd::array_rw(make_ndt_type_from_pyobject(obj));
+    result = nd::array_rw(make__type_from_pyobject(obj));
 #endif // DYND_NUMPY_INTEROP
   }
 

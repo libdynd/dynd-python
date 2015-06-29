@@ -36,18 +36,18 @@ void pydynd::init_array_from_py_typededuction()
   PyDateTime_IMPORT;
 }
 
-ndt::type pydynd::deduce_ndt_type_from_pyobject(PyObject *obj,
+ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
                                                 bool throw_on_unknown)
 {
 #if DYND_NUMPY_INTEROP
   if (PyArray_Check(obj)) {
     // Numpy array
     PyArray_Descr *d = PyArray_DESCR((PyArrayObject *)obj);
-    return ndt_type_from_numpy_dtype(d);
+    return _type_from_numpy_dtype(d);
   }
   else if (PyArray_IsScalar(obj, Generic)) {
     // Numpy scalar
-    return ndt_type_of_numpy_scalar(obj);
+    return _type_of_numpy_scalar(obj);
   }
 #endif // DYND_NUMPY_INTEROP
 
@@ -229,7 +229,7 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
       obj_tp = ndt::make_string(string_encoding_utf_8);
     }
     else {
-      obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj, false);
+      obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
       // Propagate uninitialized_type_id as a signal an
       // undeducable object was encountered
       if (obj_tp.get_type_id() == uninitialized_type_id) {
@@ -238,7 +238,7 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
       }
     }
 #else
-    obj_tp = pydynd::deduce_ndt_type_from_pyobject(obj, false);
+    obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
     // Propagate uninitialized_type_id as a signal an
     // undeducable object was encountered
     if (obj_tp.get_type_id() == uninitialized_type_id) {

@@ -184,10 +184,10 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
       if (matched) {
         if (!uf->core_enabled) {
           dynd::ndt::type return_type =
-              ndt_type_from_numpy_type_num(argtypes[0]);
+              _type_from_numpy_type_num(argtypes[0]);
           std::vector<dynd::ndt::type> param_types(nargs - 1);
           for (intptr_t j = 0; j < nargs - 1; ++j) {
-            param_types[j] = ndt_type_from_numpy_type_num(argtypes[j + 1]);
+            param_types[j] = _type_from_numpy_type_num(argtypes[j + 1]);
           }
           dynd::ndt::type self_tp = dynd::ndt::make_arrfunc(
               dynd::ndt::make_tuple(param_types), return_type);

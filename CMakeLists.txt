@@ -233,7 +233,7 @@ set(pydynd_CYTHON_SRC
     dynd/elwise_reduce_gfunc.pxd
     dynd/eval_context.pxd
     dynd/gfunc_callable.pxd
-    dynd/ndt_type.pxd
+    dynd/type.pxd
     dynd/translate_except.pxd
     dynd/vm_elwise_program.pxd
     )

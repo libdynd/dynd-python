@@ -35,7 +35,7 @@ init_w_ndt_type_callable_typeobject(w_type_callable)
 init_w_eval_context_typeobject(w_eval_context)
 
 from dynd cimport *
-from ndt_type cimport *
+from type cimport *
 
 from array cimport *
 

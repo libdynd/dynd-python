@@ -96,8 +96,8 @@ get_git_head_revision("${CMAKE_CURRENT_SOURCE_DIR}" GIT_REFSPEC DYND_PYTHON_GIT_
 git_describe("${CMAKE_CURRENT_SOURCE_DIR}" DYND_PYTHON_VERSION_STRING --dirty --always --match "v*")
 message(STATUS "DyND-Python version: ${DYND_PYTHON_VERSION_STRING}")
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/git_version.cpp.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp" @ONLY)
+    "${CMAKE_CURRENT_SOURCE_DIR}/dynd/src/git_version.cpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp" @ONLY)
 
 # Extract the version number from the version string
 string(REPLACE "v" "" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
@@ -190,37 +190,37 @@ set(pydynd_CPP_SRC
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/vm_elwise_program_functions.hpp
-    src/array_as_numpy.cpp
-    src/array_as_pep3118.cpp
-    src/array_as_py.cpp
-    src/array_assign_from_py.cpp
-    src/array_functions.cpp
-    src/array_from_py.cpp
-    src/array_from_py_dynamic.cpp
-    src/array_from_py_typededuction.cpp
-    src/arrfunc_from_pyfunc.cpp
-    src/arrfunc_functions.cpp
-    src/codegen_cache_functions.cpp
-    src/copy_from_numpy_arrfunc.cpp
-    src/copy_from_pyobject_arrfunc.cpp
-    src/copy_to_numpy_arrfunc.cpp
-    src/copy_to_pyobject_arrfunc.cpp
-    src/ctypes_interop.cpp
-    src/elwise_map.cpp
-    src/elwise_gfunc_functions.cpp
-    src/elwise_reduce_gfunc_functions.cpp
-    src/eval_context_functions.cpp
-    src/exception_translation.cpp
-    src/gfunc_callable_functions.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/src/git_version.cpp
-    src/git_version.cpp.in
-    src/init.cpp
-    src/numpy_interop.cpp
-    src/numpy_ufunc_kernel.cpp
-    src/py_lowlevel_api.cpp
-    src/type_functions.cpp
-    src/utility_functions.cpp
-    src/vm_elwise_program_functions.cpp
+    dynd/src/array_as_numpy.cpp
+    dynd/src/array_as_pep3118.cpp
+    dynd/src/array_as_py.cpp
+    dynd/src/array_assign_from_py.cpp
+    dynd/src/array_functions.cpp
+    dynd/src/array_from_py.cpp
+    dynd/src/array_from_py_dynamic.cpp
+    dynd/src/array_from_py_typededuction.cpp
+    dynd/src/arrfunc_from_pyfunc.cpp
+    dynd/src/arrfunc_functions.cpp
+    dynd/src/codegen_cache_functions.cpp
+    dynd/src/copy_from_numpy_arrfunc.cpp
+    dynd/src/copy_from_pyobject_arrfunc.cpp
+    dynd/src/copy_to_numpy_arrfunc.cpp
+    dynd/src/copy_to_pyobject_arrfunc.cpp
+    dynd/src/ctypes_interop.cpp
+    dynd/src/elwise_map.cpp
+    dynd/src/elwise_gfunc_functions.cpp
+    dynd/src/elwise_reduce_gfunc_functions.cpp
+    dynd/src/eval_context_functions.cpp
+    dynd/src/exception_translation.cpp
+    dynd/src/gfunc_callable_functions.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
+    dynd/src/git_version.cpp.in
+    dynd/src/init.cpp
+    dynd/src/numpy_interop.cpp
+    dynd/src/numpy_ufunc_kernel.cpp
+    dynd/src/py_lowlevel_api.cpp
+    dynd/src/type_functions.cpp
+    dynd/src/utility_functions.cpp
+    dynd/src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
     dynd/cuda.pyx

@@ -32,7 +32,7 @@ void pydynd::vm_elwise_program_from_py(PyObject *obj,
   regtypes.resize(regtypes_size);
   for (Py_ssize_t i = 0; i < regtypes_size; ++i) {
     pyobject_ownref item(PySequence_GetItem(regtypes_object, i));
-    regtypes[i] = make_ndt_type_from_pyobject(item.get());
+    regtypes[i] = make__type_from_pyobject(item.get());
   }
 
   // The program (list of instructions)
@@ -96,7 +96,7 @@ PyObject *pydynd::vm_elwise_program_as_py(dynd::vm::elwise_program &ep)
   // Set the list of register types
   for (size_t i = 0; i < ep.get_register_types().size(); ++i) {
     PyList_SET_ITEM(regtypes_obj.get(), i,
-                    wrap_ndt_type(ep.get_register_types()[i]));
+                    wrap__type(ep.get_register_types()[i]));
   }
 
   // Set the list of instructions

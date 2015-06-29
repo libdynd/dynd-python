@@ -4,30 +4,30 @@
 #
 
 from translate_except cimport translate_exception
-from ndt_type cimport ndt_type
-from array cimport ndarray
+from ndt.type cimport _type
+from nd.array cimport _array
 
 cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
-    void add_ndt_type_names_to_dir_dict(ndt_type&, object) except +translate_exception
-    object get_ndt_type_dynamic_property(ndt_type&, object) except +translate_exception
+    void add__type_names_to_dir_dict(_type&, object) except +translate_exception
+    object get__type_dynamic_property(_type&, object) except +translate_exception
 
-    void add_array_names_to_dir_dict(ndarray&, object) except +translate_exception
-    object get_array_dynamic_property(ndarray&, object) except +translate_exception
-    void set_array_dynamic_property(ndarray&, object, object) except +translate_exception
+    void add_array_names_to_dir_dict(_array&, object) except +translate_exception
+    object get_array_dynamic_property(_array&, object) except +translate_exception
+    void set_array_dynamic_property(_array&, object, object) except +translate_exception
 
     # Function properties
-    cdef cppclass ndt_type_callable_wrapper:
+    cdef cppclass _type_callable_wrapper:
         pass
-    object ndt_type_callable_call(ndt_type_callable_wrapper&, object, object) except +translate_exception
-    object call_ndt_type_constructor_function(ndt_type&, object, object) except +translate_exception
+    object _type_callable_call(_type_callable_wrapper&, object, object) except +translate_exception
+    object call__type_constructor_function(_type&, object, object) except +translate_exception
 
-    void init_w_ndt_type_callable_typeobject(object)
-    cdef struct ndt_type_callable_placement_wrapper:
+    void init_w__type_callable_typeobject(object)
+    cdef struct _type_callable_placement_wrapper:
         pass
-    void placement_new(ndt_type_callable_placement_wrapper&)
-    void placement_delete(ndt_type_callable_placement_wrapper&)
-    # ndarray placement cast
-    ndt_type_callable_wrapper& GET(ndt_type_callable_placement_wrapper&)
+    void placement_new(_type_callable_placement_wrapper&)
+    void placement_delete(_type_callable_placement_wrapper&)
+    # _array placement cast
+    _type_callable_wrapper& GET(_type_callable_placement_wrapper&)
 
     # Function property of nd::array
     cdef cppclass array_callable_wrapper:
@@ -39,7 +39,7 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
         pass
     void placement_new(array_callable_placement_wrapper&)
     void placement_delete(array_callable_placement_wrapper&)
-    # ndarray placement cast
+    # _array placement cast
     array_callable_wrapper& GET(array_callable_placement_wrapper&)
 
 cdef extern from "dynd/func/arrfunc.hpp" namespace "dynd":

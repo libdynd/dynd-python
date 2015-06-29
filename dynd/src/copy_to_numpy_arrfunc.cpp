@@ -63,7 +63,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     // If there is no object type in the numpy type, get the dynd equivalent
     // type and use it to do the copying
     dynd::ndt::type dst_view_tp =
-        ndt_type_from_numpy_dtype(dtype, dst_alignment);
+        _type_from_numpy_dtype(dtype, dst_alignment);
     return dynd::make_assignment_kernel(
         NULL, NULL, ckb, ckb_offset, dst_view_tp, NULL, src_tp[0],
         src_arrmeta[0], kernreq, ectx, dynd::nd::array());

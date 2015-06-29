@@ -47,7 +47,7 @@
 namespace pydynd {
 
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::ndt::type, type,
-                              ndt_type_placement_wrapper);
+                              _type_placement_wrapper);
 DYND_DEFINE_PLACEMENT_WRAPPER(dynd::nd::array, array, array_placement_wrapper);
 // DYND_DEFINE_PLACEMENT_WRAPPER(dynd::codegen_cache, codegen_cache,
 // codegen_cache_placement_wrapper);
@@ -56,9 +56,9 @@ DYND_DEFINE_PLACEMENT_WRAPPER(dynd::vm::elwise_program, elwise_program,
 DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::array_callable_wrapper,
                               array_callable_wrapper,
                               array_callable_placement_wrapper);
-DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::ndt_type_callable_wrapper,
-                              ndt_type_callable_wrapper,
-                              ndt_type_callable_placement_wrapper);
+DYND_DEFINE_PLACEMENT_WRAPPER(pydynd::_type_callable_wrapper,
+                              _type_callable_wrapper,
+                              _type_callable_placement_wrapper);
 
 /* placement cast of arrfunc (wrapper is subclass of array) */
 inline dynd::nd::arrfunc &GET_arrfunc(array_placement_wrapper &v)

@@ -80,7 +80,7 @@ dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
     PyArray_Descr *fld_dtype = field_dtypes[i];
     size_t offset = field_offsets[i];
     field_types.push_back(
-        pydynd::ndt_type_from_numpy_dtype(fld_dtype, data_alignment));
+        pydynd::_type_from_numpy_dtype(fld_dtype, data_alignment));
     // If the field isn't aligned enough, turn it into an unaligned type
     if (!dynd::offset_is_aligned(offset | data_alignment,
                                  field_types.back().get_data_alignment())) {
@@ -92,13 +92,13 @@ dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
   return dynd::ndt::make_struct(field_names, field_types);
 }
 
-dynd::ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
+dynd::ndt::type pydynd::_type_from_numpy_dtype(PyArray_Descr *d,
                                                   size_t data_alignment)
 {
   dynd::ndt::type dt;
 
   if (d->subarray) {
-    dt = ndt_type_from_numpy_dtype(d->subarray->base, data_alignment);
+    dt = _type_from_numpy_dtype(d->subarray->base, data_alignment);
     return dynd_make_fixed_dim_type(d->subarray->shape, dt);
   }
 
@@ -272,7 +272,7 @@ dynd::ndt::type pydynd::ndt_type_from_numpy_dtype(PyArray_Descr *d,
   return dt;
 }
 
-dynd::ndt::type pydynd::ndt_type_from_numpy_type_num(int numpy_type_num)
+dynd::ndt::type pydynd::_type_from_numpy_type_num(int numpy_type_num)
 {
   switch (numpy_type_num) {
   case NPY_BOOL:
@@ -394,7 +394,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &dt,
   }
 }
 
-PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp)
+PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp)
 {
   switch (tp.get_type_id()) {
   case dynd::bool_type_id:
@@ -456,7 +456,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp)
             }
             pyobject_ownref formats_obj(PyList_New(num_fields));
             for (size_t i = 0; i < num_fields; ++i) {
-                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)numpy_dtype_from_ndt_type(fields[i]));
+                PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)numpy_dtype_from__type(fields[i]));
             }
             pyobject_ownref offsets_obj(PyList_New(num_fields));
             for (size_t i = 0; i < num_fields; ++i) {
@@ -494,7 +494,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp)
             }
             pyobject_ownref formats_obj(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
-                PyArray_Descr *npdt = numpy_dtype_from_ndt_type(ttp->get_field_type(i));
+                PyArray_Descr *npdt = numpy_dtype_from__type(ttp->get_field_type(i));
                 max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
                 PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
             }
@@ -536,7 +536,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp)
                 }
                 child_tp = ttp->get_element_type();
             } while (child_tp.get_type_id() == cfixed_dim_type_id);
-            pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from_ndt_type(child_tp));
+            pyobject_ownref dtype_obj((PyObject *)numpy_dtype_from__type(child_tp));
             pyobject_ownref shape_obj(intptr_array_as_tuple((int)shape.size(), &shape[0]));
             pyobject_ownref tuple_obj(PyTuple_New(2));
             PyTuple_SET_ITEM(tuple_obj.get(), 0, dtype_obj.release());
@@ -552,14 +552,14 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp)
     // If there's a view which is for alignment purposes, throw it
     // away because Numpy works differently
     if (tp.operand_type().get_type_id() == dynd::fixed_bytes_type_id) {
-      return numpy_dtype_from_ndt_type(tp.value_type());
+      return numpy_dtype_from__type(tp.value_type());
     }
     break;
   }
   case dynd::byteswap_type_id: {
     // If it's a simple byteswap from bytes, that can be converted
     if (tp.operand_type().get_type_id() == dynd::fixed_bytes_type_id) {
-      PyArray_Descr *unswapped = numpy_dtype_from_ndt_type(tp.value_type());
+      PyArray_Descr *unswapped = numpy_dtype_from__type(tp.value_type());
       PyArray_Descr *result = PyArray_DescrNewByteorder(unswapped, NPY_SWAP);
       Py_DECREF(unswapped);
       return result;
@@ -574,7 +574,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp)
   throw dynd::type_error(ss.str());
 }
 
-PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp,
+PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp,
                                                  const char *arrmeta)
 {
   switch (tp.get_type_id()) {
@@ -607,7 +607,7 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp,
 
     pyobject_ownref formats_obj(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      PyArray_Descr *npdt = numpy_dtype_from_ndt_type(
+      PyArray_Descr *npdt = numpy_dtype_from__type(
           stp->get_field_type(i), arrmeta + arrmeta_offsets[i]);
       max_numpy_alignment = max(max_numpy_alignment, (size_t)npdt->alignment);
       PyList_SET_ITEM((PyObject *)formats_obj, i, (PyObject *)npdt);
@@ -642,11 +642,11 @@ PyArray_Descr *pydynd::numpy_dtype_from_ndt_type(const dynd::ndt::type &tp,
     return result;
   }
   default:
-    return numpy_dtype_from_ndt_type(tp);
+    return numpy_dtype_from__type(tp);
   }
 }
 
-int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject *obj,
+int pydynd::_type_from_numpy_scalar_typeobject(PyTypeObject *obj,
                                                   dynd::ndt::type &out_d)
 {
   if (obj == &PyBoolArrType_Type) {
@@ -701,7 +701,7 @@ int pydynd::ndt_type_from_numpy_scalar_typeobject(PyTypeObject *obj,
   return 0;
 }
 
-dynd::ndt::type pydynd::ndt_type_of_numpy_scalar(PyObject *obj)
+dynd::ndt::type pydynd::_type_of_numpy_scalar(PyObject *obj)
 {
   if (PyArray_IsScalar(obj, Bool)) {
     return dynd::ndt::make_type<dynd::bool1>();
@@ -803,7 +803,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
     // get_canonical_type call
     dynd::nd::array result =
         dynd::nd::dtyped_empty(PyArray_NDIM(obj), PyArray_SHAPE(obj),
-                               pydynd::ndt_type_from_numpy_dtype(
+                               pydynd::_type_from_numpy_dtype(
                                    PyArray_DESCR(obj)).get_canonical_type());
     pydynd::nd::array_copy_from_numpy(result.get_type(), result.get_arrmeta(),
                                       result.get_readwrite_originptr(), obj,
@@ -819,7 +819,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
   }
   else {
     // Get the dtype of the array
-    dynd::ndt::type d = pydynd::ndt_type_from_numpy_dtype(
+    dynd::ndt::type d = pydynd::_type_from_numpy_dtype(
         PyArray_DESCR(obj), get_alignment_of(obj));
 
     // Get a shared pointer that tracks buffer ownership

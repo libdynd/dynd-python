@@ -31,44 +31,42 @@ init_w_array_typeobject(w_array)
 init_w_arrfunc_typeobject(w_arrfunc)
 init_w_type_typeobject(w_type)
 init_w_array_callable_typeobject(w_array_callable)
-init_w_ndt_type_callable_typeobject(w_type_callable)
+init_w__type_callable_typeobject(w_type_callable)
 init_w_eval_context_typeobject(w_eval_context)
 
 from dynd cimport *
-from ndt_type cimport *
+from ndt.type cimport *
 
-from array cimport *
-
-from gfunc_callable cimport *
-
-from vm_elwise_program cimport *
+from nd.array cimport *
+from nd.gfunc_callable cimport *
+from nd.vm_elwise_program cimport *
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    object array_as_numpy_struct_capsule(ndarray&) except +translate_exception
+    object array_as_numpy_struct_capsule(_array&) except +translate_exception
 
 cdef extern from "<dynd/types/datashape_formatter.hpp>" namespace "dynd":
-    string dynd_format_datashape "dynd::format_datashape" (ndarray&) except +translate_exception
-    string dynd_format_datashape "dynd::format_datashape" (ndt_type&) except +translate_exception
+    string dynd_format_datashape "dynd::format_datashape" (_array&) except +translate_exception
+    string dynd_format_datashape "dynd::format_datashape" (_type&) except +translate_exception
 
 
 cdef extern from "placement_wrappers.hpp" namespace "pydynd":
-    cdef struct ndt_type_placement_wrapper:
+    cdef struct _type_placement_wrapper:
         pass
-    void placement_new(ndt_type_placement_wrapper&) except +translate_exception
-    void placement_delete(ndt_type_placement_wrapper&)
+    void placement_new(_type_placement_wrapper&) except +translate_exception
+    void placement_delete(_type_placement_wrapper&)
     # type placement cast
-    ndt_type& GET(ndt_type_placement_wrapper&)
+    _type& GET(_type_placement_wrapper&)
     # type placement assignment
-    void SET(ndt_type_placement_wrapper&, ndt_type&)
+    void SET(_type_placement_wrapper&, _type&)
 
     cdef struct array_placement_wrapper:
         pass
     void placement_new(array_placement_wrapper&) except +translate_exception
     void placement_delete(array_placement_wrapper&)
     # nd::array placement cast
-    ndarray& GET(array_placement_wrapper&)
+    _array& GET(array_placement_wrapper&)
     # nd::array placement assignment
-    void SET(array_placement_wrapper&, ndarray&)
+    void SET(array_placement_wrapper&, _array&)
 
     # the arrfunc wrapper is a subtype of the array wrapper
     ndarrfunc& GET_arrfunc(array_placement_wrapper&)
@@ -90,10 +88,10 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     void SET(vm_elwise_program_placement_wrapper&, elwise_program&)
 
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
-    ndarray dynd_format_json "dynd::format_json" (ndarray&, bint) except +translate_exception
+    _array dynd_format_json "dynd::format_json" (_array&, bint) except +translate_exception
 
-include "elwise_gfunc.pxd"
-include "elwise_reduce_gfunc.pxd"
+include "nd/elwise_gfunc.pxd"
+include "nd/elwise_reduce_gfunc.pxd"
 
 from eval_context cimport *
 
@@ -169,12 +167,12 @@ cdef class w_type:
     # which returns a reference to the ndt::type, and
     # SET(self.v, <ndt::type value>), which sets the embedded
     # ndt::type's value.
-    cdef ndt_type_placement_wrapper v
+    cdef _type_placement_wrapper v
 
     def __cinit__(self, rep=None):
         placement_new(self.v)
         if rep is not None:
-            SET(self.v, make_ndt_type_from_pyobject(rep))
+            SET(self.v, make__type_from_pyobject(rep))
     def __dealloc__(self):
         placement_delete(self.v)
 
@@ -183,14 +181,14 @@ cdef class w_type:
         # will show up in IPython tab-complete, for example.
         result = dict(w_type.__dict__)
         result.update(object.__dict__)
-        add_ndt_type_names_to_dir_dict(GET(self.v), result)
+        add__type_names_to_dir_dict(GET(self.v), result)
         return result.keys()
 
     def __call__(self, *args, **kwargs):
-        return call_ndt_type_constructor_function(GET(self.v), args, kwargs)
+        return call__type_constructor_function(GET(self.v), args, kwargs)
 
     def __getattr__(self, name):
-        return get_ndt_type_dynamic_property(GET(self.v), name)
+        return get__type_dynamic_property(GET(self.v), name)
 
     def match(self, rhs):
         """
@@ -223,7 +221,7 @@ cdef class w_type:
         array arrmeta or array data, a -1 is returned.
         """
         def __get__(self):
-            return ndt_type_get_shape(GET(self.v))
+            return _type_get_shape(GET(self.v))
 
     property dshape:
         """
@@ -297,7 +295,7 @@ cdef class w_type:
         'expression'.
         """
         def __get__(self):
-            return ndt_type_get_kind(GET(self.v))
+            return _type_get_kind(GET(self.v))
 
     property type_id:
         """
@@ -309,7 +307,7 @@ cdef class w_type:
         'float64', 'complex_float32', 'string', 'byteswap'.
         """
         def __get__(self):
-            return ndt_type_get_type_id(GET(self.v))
+            return _type_get_type_id(GET(self.v))
 
     property ndim:
         """
@@ -318,7 +316,7 @@ cdef class w_type:
         The number of array dimensions in this dynd type.
 
         This property is like NumPy
-        ndarray's 'ndim'. Indexing with [] can in many cases
+        _array's 'ndim'. Indexing with [] can in many cases
         go deeper than just the array dimensions, for
         example structs can be indexed this way.
         """
@@ -333,7 +331,7 @@ cdef class w_type:
         array dimensions are indexed away.
 
         This property is roughly equivalent to NumPy
-        ndarray's 'dtype'.
+        _array's 'dtype'.
         """
         def __get__(self):
             cdef w_type result = w_type()
@@ -387,7 +385,7 @@ cdef class w_type:
         of this type.
         """
         def __get__(self):
-            return ndt_type_array_property_names(GET(self.v))
+            return _type_array_property_names(GET(self.v))
 
     def as_numpy(self):
         """
@@ -403,18 +401,18 @@ cdef class w_type:
         >>> ndt.int32.as_numpy()
         dtype('int32')
         """
-        return numpy_dtype_obj_from_ndt_type(GET(self.v))
+        return numpy_dtype_obj_from__type(GET(self.v))
 
     def __getitem__(self, x):
         cdef w_type result = w_type()
-        SET(result.v, ndt_type_getitem(GET(self.v), x))
+        SET(result.v, _type_getitem(GET(self.v), x))
         return result
 
     def __str__(self):
-        return str(<char *>ndt_type_str(GET(self.v)).c_str())
+        return str(<char *>_type_str(GET(self.v)).c_str())
 
     def __repr__(self):
-        return str(<char *>ndt_type_repr(GET(self.v)).c_str())
+        return str(<char *>_type_repr(GET(self.v)).c_str())
 
     def __richcmp__(lhs, rhs, int op):
         if op == Py_EQ:
@@ -986,7 +984,7 @@ cdef class w_array:
 
     The dynd array is the dynamically typed multi-dimensional
     object provided by the dynd library. It is similar to
-    NumPy's ndarray, but has its dimensional structure encoded
+    NumPy's _array, but has its dimensional structure encoded
     in the dynd type, along with the element type.
 
     When given a NumPy array, the resulting dynd array is a view
@@ -2312,7 +2310,7 @@ cdef class w_array_callable:
         return array_callable_call(GET(self.v), args, kwargs)
 
 cdef class w_type_callable:
-    cdef ndt_type_callable_placement_wrapper v
+    cdef _type_callable_placement_wrapper v
 
     def __cinit__(self):
         placement_new(self.v)
@@ -2320,7 +2318,7 @@ cdef class w_type_callable:
         placement_delete(self.v)
 
     def __call__(self, *args, **kwargs):
-        return ndt_type_callable_call(GET(self.v), args, kwargs)
+        return _type_callable_call(GET(self.v), args, kwargs)
 
 cdef class w_eval_context:
     """

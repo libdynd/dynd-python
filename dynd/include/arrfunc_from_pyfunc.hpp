@@ -17,7 +17,7 @@ namespace nd {
 
     inline dynd::nd::arrfunc apply(PyObject *pyfunc, PyObject *proto)
     {
-      return apply(pyfunc, make_ndt_type_from_pyobject(proto));
+      return apply(pyfunc, make__type_from_pyobject(proto));
     }
 
   } // namespace pydynd::nd::functional

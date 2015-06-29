@@ -13,7 +13,7 @@ cdef extern from "<dynd/func/elwise_reduce_gfunc.hpp>" namespace "dynd::gfunc":
 
 cdef extern from "elwise_reduce_gfunc_functions.hpp" namespace "pydynd":
 #    void elwise_reduce_gfunc_add_kernel(elwise_reduce_gfunc&, codegen_cache&, object,
-#                            bint, bint, ndarray&) except +translate_exception
+#                            bint, bint, _array&) except +translate_exception
     object elwise_reduce_gfunc_call(elwise_reduce_gfunc&, object, object) except +translate_exception
     string elwise_reduce_gfunc_repr(elwise_reduce_gfunc&) except +translate_exception
     string elwise_reduce_gfunc_debug_print(elwise_reduce_gfunc&) except +translate_exception

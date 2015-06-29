@@ -311,10 +311,10 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
 
   ndt::type dst_tp, src_tp;
 
-  dst_tp = make_ndt_type_from_pyobject(dst_type);
+  dst_tp = make__type_from_pyobject(dst_type);
   if (src_type != Py_None) {
     // Cast to the source type if requested
-    src_tp = make_ndt_type_from_pyobject(src_type);
+    src_tp = make__type_from_pyobject(src_type);
     // Do the ucast in a way to match up the dimensions
     n = n.ucast(src_tp, src_tp.get_ndim());
   }
@@ -344,12 +344,12 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
   ndt::type dst_tp;
   vector<ndt::type> src_tp(n.size());
 
-  dst_tp = make_ndt_type_from_pyobject(dst_type);
+  dst_tp = make__type_from_pyobject(dst_type);
   if (src_type_list != Py_None) {
     for (size_t i = 0; i != n.size(); ++i) {
       // Cast to the source type if requested
       src_tp[i] =
-          make_ndt_type_from_pyobject(PyList_GET_ITEM(src_type_list, i));
+          make__type_from_pyobject(PyList_GET_ITEM(src_type_list, i));
       n[i] = n[i].ucast(src_tp[i]);
     }
   }

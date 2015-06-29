@@ -939,7 +939,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
     case bool_kind:
       if (!bool_assign(coord[current_axis - 1].data_ptr, obj)) {
         promote_nd_arr_dtype(shape, coord, elem, arr,
-                             deduce_ndt_type_from_pyobject(obj));
+                             deduce__type_from_pyobject(obj));
         array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                        coord[current_axis - 1].data_ptr, obj,
                                        ectx);
@@ -948,7 +948,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
     case sint_kind:
       if (!int_assign(elem.dtp, coord[current_axis - 1].data_ptr, obj)) {
         promote_nd_arr_dtype(shape, coord, elem, arr,
-                             deduce_ndt_type_from_pyobject(obj));
+                             deduce__type_from_pyobject(obj));
         array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                        coord[current_axis - 1].data_ptr, obj,
                                        ectx);
@@ -957,7 +957,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
     case real_kind:
       if (!real_assign(coord[current_axis - 1].data_ptr, obj)) {
         promote_nd_arr_dtype(shape, coord, elem, arr,
-                             deduce_ndt_type_from_pyobject(obj));
+                             deduce__type_from_pyobject(obj));
         array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                        coord[current_axis - 1].data_ptr, obj,
                                        ectx);
@@ -966,7 +966,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
     case complex_kind:
       if (!complex_assign(coord[current_axis - 1].data_ptr, obj)) {
         promote_nd_arr_dtype(shape, coord, elem, arr,
-                             deduce_ndt_type_from_pyobject(obj));
+                             deduce__type_from_pyobject(obj));
         array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                        coord[current_axis - 1].data_ptr, obj,
                                        ectx);
@@ -990,7 +990,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
       // In this case, zero-sized dimension were encountered before
       // an actual element from which to deduce a type.
       promote_nd_arr_dtype(shape, coord, elem, arr,
-                           deduce_ndt_type_from_pyobject(obj));
+                           deduce__type_from_pyobject(obj));
       array_broadcast_assign_from_py(elem.dtp, elem.arrmeta_ptr,
                                      coord[current_axis - 1].data_ptr, obj,
                                      ectx);

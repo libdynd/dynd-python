@@ -38,7 +38,7 @@ PyObject *array_from_ptr(PyObject *tp, PyObject *ptr, PyObject *owner,
                          PyObject *access)
 {
   try {
-    dynd::ndt::type d = pydynd::make_ndt_type_from_pyobject(tp);
+    dynd::ndt::type d = pydynd::make__type_from_pyobject(tp);
     if (d.is_symbolic()) {
       stringstream ss;
       ss << "Cannot create a dynd array with symbolic type " << d;
@@ -87,8 +87,8 @@ PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
         reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
             ckb);
 
-    dynd::ndt::type dst_tp = pydynd::make_ndt_type_from_pyobject(dst_tp_obj);
-    dynd::ndt::type src_tp = pydynd::make_ndt_type_from_pyobject(src_tp_obj);
+    dynd::ndt::type dst_tp = pydynd::make__type_from_pyobject(dst_tp_obj);
+    dynd::ndt::type src_tp = pydynd::make__type_from_pyobject(src_tp_obj);
     if (dst_arrmeta == NULL && dst_tp.get_arrmeta_size() != 0) {
       stringstream ss;
       ss << "Cannot create an assignment kernel independent of arrmeta "
@@ -140,8 +140,8 @@ PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj,
                                        PyObject *errmode_obj)
 {
   try {
-    dynd::ndt::type dst_tp = pydynd::make_ndt_type_from_pyobject(dst_tp_obj);
-    dynd::ndt::type src_tp = pydynd::make_ndt_type_from_pyobject(src_tp_obj);
+    dynd::ndt::type dst_tp = pydynd::make__type_from_pyobject(dst_tp_obj);
+    dynd::ndt::type src_tp = pydynd::make__type_from_pyobject(src_tp_obj);
     dynd::assign_error_mode errmode = pydynd::pyarg_error_mode(errmode_obj);
     dynd::nd::arrfunc af =
         dynd::make_arrfunc_from_assignment(dst_tp, src_tp, errmode);
@@ -157,7 +157,7 @@ PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj,
 PyObject *make_arrfunc_from_property(PyObject *tp_obj, PyObject *propname_obj)
 {
   try {
-    dynd::ndt::type tp = pydynd::make_ndt_type_from_pyobject(tp_obj);
+    dynd::ndt::type tp = pydynd::make__type_from_pyobject(tp_obj);
     std::string propname = pydynd::pystring_as_string(propname_obj);
     dynd::nd::arrfunc af = dynd::make_arrfunc_from_property(tp, propname);
 
@@ -231,7 +231,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
     }
 
     dynd::ndt::type lifted_type =
-        pydynd::make_ndt_type_from_pyobject(lifted_type_obj);
+        pydynd::make__type_from_pyobject(lifted_type_obj);
 
     // This is the number of dimensions being reduced
     intptr_t reduction_ndim =
@@ -363,7 +363,7 @@ static PyObject *make_rolling_arrfunc(PyObject *window_op_obj,
 PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj, PyObject *minp_obj)
 {
   try {
-    dynd::ndt::type tp = pydynd::make_ndt_type_from_pyobject(tp_obj);
+    dynd::ndt::type tp = pydynd::make__type_from_pyobject(tp_obj);
     intptr_t minp = pydynd::pyobject_as_index(minp_obj);
     return pydynd::wrap_array(
         dynd::kernels::make_builtin_mean1d_arrfunc(tp.get_type_id(), minp));

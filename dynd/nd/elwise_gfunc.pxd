@@ -21,7 +21,7 @@ cdef extern from "elwise_gfunc_functions.hpp" namespace "pydynd":
         pass
     void placement_new(elwise_gfunc_placement_wrapper&, char *)
     void placement_delete(elwise_gfunc_placement_wrapper&)
-    # ndarray placement cast
+    # _array placement cast
     elwise_gfunc& GET(elwise_gfunc_placement_wrapper&)
 
 cdef extern from "elwise_map.hpp" namespace "pydynd":

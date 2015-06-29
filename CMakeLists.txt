@@ -242,7 +242,13 @@ set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
-cython_add_module(dynd._pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
+add_library(pydynd SHARED ${pydynd_CPP_SRC})
+set_target_properties(
+    pydynd
+    PROPERTIES
+    LINKER_LANGUAGE CXX)
+
+cython_add_module(dynd._pydynd ${pydynd_CYTHON_SRC})
 set_target_properties(
     dynd._pydynd
     PROPERTIES
@@ -264,6 +270,12 @@ elseif(APPLE)
         COMPILE_FLAGS
         "-Wno-unused-parameter -Wno-unused-function -Wno-error"
         )
+    set_target_properties(
+        pydynd
+        PROPERTIES
+        COMPILE_FLAGS
+        "-Wno-error"
+        )
     if(USE_RELATIVE_RPATH)
         message(STATUS "Adding relative rpath to _pydynd for linking libdynd")
         # TODO: The rpath used is Anaconda-specific, should calculate
@@ -280,6 +292,12 @@ else()
     # disable that specifically for this project.
     set_target_properties(
         dynd._pydynd
+        PROPERTIES
+        COMPILE_FLAGS
+        "-Wno-error"
+        )
+    set_target_properties(
+        pydynd
         PROPERTIES
         COMPILE_FLAGS
         "-Wno-error"
@@ -314,11 +332,12 @@ if(CUDA_FOUND)
     endif()
 endif()
 
-
 if (DYND_INSTALL_LIB)
-    target_link_libraries(dynd._pydynd "${LIBDYND_LIBRARIES}")
+    target_link_libraries(pydynd "${LIBDYND_LIBRARIES}" "${PYTHON_LIBRARIES}")
+    target_link_libraries(dynd._pydynd "${LIBDYND_LIBRARIES}" pydynd)
 else()
-    target_link_libraries(dynd._pydynd libdynd)
+    target_link_libraries(pydynd dynd "${PYTHON_LIBRARIES}")
+    target_link_libraries(dynd._pydynd dynd pydynd)
 endif()
 
 # Install all the Python scripts
@@ -326,7 +345,9 @@ install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
     FILES_MATCHING PATTERN "*.py")
 # Install the module
 install(TARGETS dynd._pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
-install(DIRECTORY "dynd/include" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/include")
+install(DIRECTORY "dynd/include" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
+install(DIRECTORY "dynd" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}" FILES_MATCHING PATTERN "*.pxd")
+install(TARGETS pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/lib")
 # Install the libdynd binary if on unix and libdynd wasn't built separately
 if(NOT DYND_INSTALL_LIB AND NOT WIN32)
     get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)

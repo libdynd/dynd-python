@@ -95,7 +95,7 @@ cdef extern from "dynd/typed_data_assign.hpp" namespace "dynd":
         assign_error_inexact
         assign_error_default
 
-from array cimport ndarray
+from array cimport _array
 
 cdef extern from "dynd/types/fixed_bytes_type.hpp" namespace "dynd":
     ndt_type dynd_make_fixed_bytes_type "dynd::ndt::make_fixed_bytes" (intptr_t, intptr_t) except +translate_exception
@@ -105,8 +105,8 @@ cdef extern from "dynd/types/byteswap_type.hpp" namespace "dynd":
     ndt_type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (ndt_type&, ndt_type&) except +translate_exception
 
 cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
-    ndt_type dynd_make_categorical_type "dynd::ndt::make_categorical" (ndarray&) except +translate_exception
-    ndt_type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (ndarray&) except +translate_exception
+    ndt_type dynd_make_categorical_type "dynd::ndt::make_categorical" (_array&) except +translate_exception
+    ndt_type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
 cdef extern from "dynd/types/type_alignment.hpp" namespace "dynd":
     ndt_type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (ndt_type&) except +translate_exception

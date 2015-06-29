@@ -22,31 +22,31 @@ cdef extern from "<iostream>" namespace "std":
     extern ostream cout
 
 cdef extern from "dynd/array.hpp" namespace "dynd":
-    cdef cppclass ndarray "dynd::nd::array":
-        ndarray() except +translate_exception
-        ndarray(signed char value)
-        ndarray(short value)
-        ndarray(int value)
-        ndarray(long value)
-        ndarray(long long value)
-        ndarray(unsigned char value)
-        ndarray(unsigned short value)
-        ndarray(unsigned int value)
-        ndarray(unsigned long value)
-        ndarray(unsigned long long value)
-        ndarray(float value)
-        ndarray(double value)
-        ndarray(complex[float] value)
-        ndarray(complex[double] value)
-        ndarray(ndt_type&)
-        ndarray(ndt_type, int, intptr_t *, int *)
+    cdef cppclass _array "dynd::nd::array":
+        _array() except +translate_exception
+        _array(signed char value)
+        _array(short value)
+        _array(int value)
+        _array(long value)
+        _array(long long value)
+        _array(unsigned char value)
+        _array(unsigned short value)
+        _array(unsigned int value)
+        _array(unsigned long value)
+        _array(unsigned long long value)
+        _array(float value)
+        _array(double value)
+        _array(complex[float] value)
+        _array(complex[double] value)
+        _array(ndt_type&)
+        _array(ndt_type, int, intptr_t *, int *)
 
         # Cython bug: operator overloading doesn't obey "except +"
         # TODO: Report this bug
-        # ndarray operator+(ndarray&) except +translate_exception
-        #ndarray operator-(ndarray&) except +translate_exception
-        #ndarray operator*(ndarray&) except +translate_exception
-        #ndarray operator/(ndarray&) except +translate_exception
+        # _array operator+(_array&) except +translate_exception
+        #_array operator-(_array&) except +translate_exception
+        #_array operator*(_array&) except +translate_exception
+        #_array operator/(_array&) except +translate_exception
 
         ndt_type get_type()
         ndt_type get_dtype()
@@ -58,86 +58,86 @@ cdef extern from "dynd/array.hpp" namespace "dynd":
         char* get_readwrite_originptr()
         char* get_readonly_originptr()
 
-        ndarray vals() except +translate_exception
+        _array vals() except +translate_exception
 
-        ndarray eval() except +translate_exception
-        ndarray eval_immutable() except +translate_exception
+        _array eval() except +translate_exception
+        _array eval_immutable() except +translate_exception
 
-        ndarray storage() except +translate_exception
+        _array storage() except +translate_exception
 
-        ndarray view_scalars(ndt_type&) except +translate_exception
-        ndarray ucast(ndt_type&, size_t) except +translate_exception
+        _array view_scalars(ndt_type&) except +translate_exception
+        _array ucast(ndt_type&, size_t) except +translate_exception
 
         void flag_as_immutable() except +translate_exception
 
         void debug_print(ostream&)
 
-    ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&, ndt_type) except +translate_exception
-    ndarray dynd_groupby "dynd::nd::groupby" (ndarray&, ndarray&) except +translate_exception
+    _array dynd_groupby "dynd::nd::groupby"(_array&, _array&, ndt_type) except +translate_exception
+    _array dynd_groupby "dynd::nd::groupby"(_array&, _array&) except +translate_exception
 
 cdef extern from "array_functions.hpp" namespace "pydynd":
     void init_w_array_typeobject(object)
 
-    string array_repr(ndarray&) except +translate_exception
-    object array_str(ndarray&) except +translate_exception
-    object array_unicode(ndarray&) except +translate_exception
-    object array_index(ndarray&) except +translate_exception
-    object array_nonzero(ndarray&) except +translate_exception
-    object array_int(ndarray&) except +translate_exception
-    object array_float(ndarray&) except +translate_exception
-    object array_complex(ndarray&) except +translate_exception
-    string array_debug_print(ndarray&) except +translate_exception
-    bint array_contains(ndarray&, object) except +translate_exception
+    string array_repr(_array&) except +translate_exception
+    object array_str(_array&) except +translate_exception
+    object array_unicode(_array&) except +translate_exception
+    object array_index(_array&) except +translate_exception
+    object array_nonzero(_array&) except +translate_exception
+    object array_int(_array&) except +translate_exception
+    object array_float(_array&) except +translate_exception
+    object array_complex(_array&) except +translate_exception
+    string array_debug_print(_array&) except +translate_exception
+    bint array_contains(_array&, object) except +translate_exception
 
-    void array_init_from_pyobject(ndarray&, object, object, bint, object) except +translate_exception
-    void array_init_from_pyobject(ndarray&, object, object) except +translate_exception
-    ndarray array_view(object, object, object) except +translate_exception
-    ndarray array_asarray(object, object) except +translate_exception
-    ndarray array_eval(ndarray&, object) except +translate_exception
-    ndarray array_eval_copy(ndarray&, object, object) except +translate_exception
-    ndarray array_zeros(ndt_type&, object) except +translate_exception
-    ndarray array_zeros(object, ndt_type&, object) except +translate_exception
-    ndarray array_ones(ndt_type&, object) except +translate_exception
-    ndarray array_ones(object, ndt_type&, object) except +translate_exception
-    ndarray array_full(ndt_type&, object, object) except +translate_exception
-    ndarray array_full(object, ndt_type&, object, object) except +translate_exception
-    ndarray array_empty(ndt_type&, object) except +translate_exception
-    ndarray array_empty(object, ndt_type&, object) except +translate_exception
-    ndarray array_empty_like(ndarray&) except +translate_exception
-    ndarray array_empty_like(ndarray&, ndt_type&) except +translate_exception
-    ndarray array_memmap(object, object, object, object) except +translate_exception
+    void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
+    void array_init_from_pyobject(_array&, object, object) except +translate_exception
+    _array array_view(object, object, object) except +translate_exception
+    _array array_asarray(object, object) except +translate_exception
+    _array array_eval(_array&, object) except +translate_exception
+    _array array_eval_copy(_array&, object, object) except +translate_exception
+    _array array_zeros(ndt_type&, object) except +translate_exception
+    _array array_zeros(object, ndt_type&, object) except +translate_exception
+    _array array_ones(ndt_type&, object) except +translate_exception
+    _array array_ones(object, ndt_type&, object) except +translate_exception
+    _array array_full(ndt_type&, object, object) except +translate_exception
+    _array array_full(object, ndt_type&, object, object) except +translate_exception
+    _array array_empty(ndt_type&, object) except +translate_exception
+    _array array_empty(object, ndt_type&, object) except +translate_exception
+    _array array_empty_like(_array&) except +translate_exception
+    _array array_empty_like(_array&, ndt_type&) except +translate_exception
+    _array array_memmap(object, object, object, object) except +translate_exception
 
-    ndarray array_add(ndarray&, ndarray&) except +translate_exception
-    ndarray array_subtract(ndarray&, ndarray&) except +translate_exception
-    ndarray array_multiply(ndarray&, ndarray&) except +translate_exception
-    ndarray array_divide(ndarray&, ndarray&) except +translate_exception
+    _array array_add(_array&, _array&) except +translate_exception
+    _array array_subtract(_array&, _array&) except +translate_exception
+    _array array_multiply(_array&, _array&) except +translate_exception
+    _array array_divide(_array&, _array&) except +translate_exception
 
-    ndarray array_getitem(ndarray&, object) except +translate_exception
-    void array_setitem(ndarray&, object, object) except +translate_exception
-    object array_get_shape(ndarray&) except +translate_exception
-    object array_get_strides(ndarray&) except +translate_exception
-    bint array_is_scalar(ndarray&) except +translate_exception
+    _array array_getitem(_array&, object) except +translate_exception
+    void array_setitem(_array&, object, object) except +translate_exception
+    object array_get_shape(_array&) except +translate_exception
+    object array_get_strides(_array&) except +translate_exception
+    bint array_is_scalar(_array&) except +translate_exception
 
-    bint array_is_c_contiguous(ndarray&) except +translate_exception
-    bint array_is_f_contiguous(ndarray&) except +translate_exception
+    bint array_is_c_contiguous(_array&) except +translate_exception
+    bint array_is_f_contiguous(_array&) except +translate_exception
 
-    ndarray array_range(object, object, object, object) except +translate_exception
-    ndarray array_linspace(object, object, object, object) except +translate_exception
-    ndarray nd_fields(ndarray&, object) except +translate_exception
+    _array array_range(object, object, object, object) except +translate_exception
+    _array array_linspace(object, object, object, object) except +translate_exception
+    _array nd_fields(_array&, object) except +translate_exception
 
-    ndarray array_cast(ndarray&, ndt_type&) except +translate_exception
-    ndarray array_ucast(ndarray&, ndt_type&, size_t) except +translate_exception
+    _array array_cast(_array&, ndt_type&) except +translate_exception
+    _array array_ucast(_array&, ndt_type&, size_t) except +translate_exception
     object array_adapt(object, object, object) except +translate_exception
-    object array_as_py(ndarray&, bint) except +translate_exception
+    object array_as_py(_array&, bint) except +translate_exception
     object array_as_numpy(object, bint) except +translate_exception
-    ndarray array_from_py(object) except +translate_exception
+    _array array_from_py(object) except +translate_exception
 
     int array_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
-    const char *array_access_flags_string(ndarray&) except +translate_exception
+    const char *array_access_flags_string(_array&) except +translate_exception
 
-    ndarray dynd_parse_json_type(ndt_type&, ndarray&, object) except +translate_exception
-    void dynd_parse_json_array(ndarray&, ndarray&, object) except +translate_exception
+    _array dynd_parse_json_type(ndt_type&, _array&, object) except +translate_exception
+    void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
 
-    object wrap_array(const ndarray &af)
+    object wrap_array(const _array &af)

@@ -30,19 +30,23 @@ namespace pydynd {
  * This is the typeobject and struct of w_array from Cython.
  */
 extern PyTypeObject *WArray_Type;
+
 inline bool WArray_CheckExact(PyObject *obj)
 {
   return Py_TYPE(obj) == WArray_Type;
 }
+
 inline bool WArray_Check(PyObject *obj)
 {
   return PyObject_TypeCheck(obj, WArray_Type);
 }
+
 struct WArray {
   PyObject_HEAD;
   // This is array_placement_wrapper in Cython-land
   dynd::nd::array v;
 };
+
 void init_w_array_typeobject(PyObject *type);
 
 PyObject *wrap_array(const dynd::nd::array &n);

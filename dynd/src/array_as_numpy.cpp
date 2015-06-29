@@ -342,7 +342,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     const ndt::base_dim_type *bdt = dt.extended<ndt::base_dim_type>();
     if (ndim > 0) {
       // If this is one of the array dimensions, it simply
-      // becomes one of the numpy ndarray dimensions
+      // becomes one of the numpy _array dimensions
       as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim - 1,
                         bdt->get_element_type(),
                         arrmeta + sizeof(fixed_dim_type_arrmeta));
@@ -362,7 +362,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       const cfixed_dim_type *fad = dt.extended<cfixed_dim_type>();
       if (ndim > 0) {
         // If this is one of the array dimensions, it simply
-        // becomes one of the numpy ndarray dimensions
+        // becomes one of the numpy _array dimensions
         as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim - 1,
                           fad->get_element_type(),
                           arrmeta + sizeof(cfixed_dim_type_arrmeta));

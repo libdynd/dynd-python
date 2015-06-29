@@ -5,15 +5,15 @@
 
 from translate_except cimport translate_exception
 from type cimport ndt_type
-from array cimport ndarray
+from array cimport _array
 
 cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void add_ndt_type_names_to_dir_dict(ndt_type&, object) except +translate_exception
     object get_ndt_type_dynamic_property(ndt_type&, object) except +translate_exception
 
-    void add_array_names_to_dir_dict(ndarray&, object) except +translate_exception
-    object get_array_dynamic_property(ndarray&, object) except +translate_exception
-    void set_array_dynamic_property(ndarray&, object, object) except +translate_exception
+    void add_array_names_to_dir_dict(_array&, object) except +translate_exception
+    object get_array_dynamic_property(_array&, object) except +translate_exception
+    void set_array_dynamic_property(_array&, object, object) except +translate_exception
 
     # Function properties
     cdef cppclass ndt_type_callable_wrapper:
@@ -26,7 +26,7 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
         pass
     void placement_new(ndt_type_callable_placement_wrapper&)
     void placement_delete(ndt_type_callable_placement_wrapper&)
-    # ndarray placement cast
+    # _array placement cast
     ndt_type_callable_wrapper& GET(ndt_type_callable_placement_wrapper&)
 
     # Function property of nd::array
@@ -39,7 +39,7 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
         pass
     void placement_new(array_callable_placement_wrapper&)
     void placement_delete(array_callable_placement_wrapper&)
-    # ndarray placement cast
+    # _array placement cast
     array_callable_wrapper& GET(array_callable_placement_wrapper&)
 
 cdef extern from "dynd/func/arrfunc.hpp" namespace "dynd":

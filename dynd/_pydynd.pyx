@@ -44,10 +44,10 @@ from gfunc_callable cimport *
 from vm_elwise_program cimport *
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    object array_as_numpy_struct_capsule(ndarray&) except +translate_exception
+    object array_as_numpy_struct_capsule(_array&) except +translate_exception
 
 cdef extern from "<dynd/types/datashape_formatter.hpp>" namespace "dynd":
-    string dynd_format_datashape "dynd::format_datashape" (ndarray&) except +translate_exception
+    string dynd_format_datashape "dynd::format_datashape" (_array&) except +translate_exception
     string dynd_format_datashape "dynd::format_datashape" (ndt_type&) except +translate_exception
 
 
@@ -66,9 +66,9 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     void placement_new(array_placement_wrapper&) except +translate_exception
     void placement_delete(array_placement_wrapper&)
     # nd::array placement cast
-    ndarray& GET(array_placement_wrapper&)
+    _array& GET(array_placement_wrapper&)
     # nd::array placement assignment
-    void SET(array_placement_wrapper&, ndarray&)
+    void SET(array_placement_wrapper&, _array&)
 
     # the arrfunc wrapper is a subtype of the array wrapper
     ndarrfunc& GET_arrfunc(array_placement_wrapper&)
@@ -90,7 +90,7 @@ cdef extern from "placement_wrappers.hpp" namespace "pydynd":
     void SET(vm_elwise_program_placement_wrapper&, elwise_program&)
 
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
-    ndarray dynd_format_json "dynd::format_json" (ndarray&, bint) except +translate_exception
+    _array dynd_format_json "dynd::format_json" (_array&, bint) except +translate_exception
 
 include "elwise_gfunc.pxd"
 include "elwise_reduce_gfunc.pxd"
@@ -318,7 +318,7 @@ cdef class w_type:
         The number of array dimensions in this dynd type.
 
         This property is like NumPy
-        ndarray's 'ndim'. Indexing with [] can in many cases
+        _array's 'ndim'. Indexing with [] can in many cases
         go deeper than just the array dimensions, for
         example structs can be indexed this way.
         """
@@ -333,7 +333,7 @@ cdef class w_type:
         array dimensions are indexed away.
 
         This property is roughly equivalent to NumPy
-        ndarray's 'dtype'.
+        _array's 'dtype'.
         """
         def __get__(self):
             cdef w_type result = w_type()
@@ -986,7 +986,7 @@ cdef class w_array:
 
     The dynd array is the dynamically typed multi-dimensional
     object provided by the dynd library. It is similar to
-    NumPy's ndarray, but has its dimensional structure encoded
+    NumPy's _array, but has its dimensional structure encoded
     in the dynd type, along with the element type.
 
     When given a NumPy array, the resulting dynd array is a view

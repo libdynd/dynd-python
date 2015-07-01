@@ -67,7 +67,7 @@ namespace nd {
 
       static intptr_t
       instantiate(const dynd::arrfunc_type_data *af_self,
-                  const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(data),
+                  const dynd::ndt::arrfunc_type *af_tp, size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
                   void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
                   intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
@@ -151,7 +151,7 @@ namespace nd {
 
       static intptr_t
       instantiate(const dynd::arrfunc_type_data *af_self,
-                  const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(data),
+                  const dynd::ndt::arrfunc_type *af_tp, size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
                   void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
                   intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,

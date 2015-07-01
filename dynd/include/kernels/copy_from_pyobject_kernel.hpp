@@ -425,7 +425,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -529,7 +529,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -614,7 +614,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -672,7 +672,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -736,7 +736,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -859,7 +859,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -875,7 +875,7 @@ namespace nd {
           dst_tp.extended<dynd::ndt::option_type>()
               ->get_assign_na_arrfunc_type();
       ckb_offset = assign_na_af->instantiate(
-          assign_na_af, assign_na_af_tp, NULL, ckb, ckb_offset, dst_tp,
+          assign_na_af, assign_na_af_tp, 0, NULL, ckb, ckb_offset, dst_tp,
           dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single, ectx,
           kwds, tp_vars);
       copy_from_pyobject_kernel *self = get_self(
@@ -884,7 +884,7 @@ namespace nd {
           root_ckb_offset);
       self->copy_value_offset = ckb_offset - root_ckb_offset;
       ckb_offset = copy_from_pyobject.get()->instantiate(
-          copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
+          copy_from_pyobject.get(), copy_from_pyobject.get_type(), 0, NULL, ckb,
           ckb_offset,
           dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
           dst_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single,
@@ -904,7 +904,7 @@ namespace nd {
             copy_from_pyobject_kernel<dynd::categorical_type_id>> {
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -918,7 +918,7 @@ namespace nd {
           dst_tp, buf_tp, dynd::assign_error_default);
       dynd::nd::arrfunc child =
           dynd::nd::functional::chain(copy_from_pyobject, copy_af, buf_tp);
-      return child.get()->instantiate(child.get(), child.get_type(), NULL, ckb,
+      return child.get()->instantiate(child.get(), child.get_type(), 0, NULL, ckb,
                                       ckb_offset, dst_tp, dst_arrmeta, nsrc,
                                       src_tp, src_arrmeta, kernreq, ectx,
                                       dynd::nd::array(), tp_vars);
@@ -1013,7 +1013,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -1038,7 +1038,7 @@ namespace nd {
         self->m_dim_broadcast = dim_broadcast;
         // from pyobject ckernel
         ckb_offset = copy_from_pyobject.get()->instantiate(
-            copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
+            copy_from_pyobject.get(), copy_from_pyobject.get_type(), 0, NULL, ckb,
             ckb_offset, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
             dynd::kernel_request_strided, ectx, kwds, tp_vars);
         self = reinterpret_cast<
@@ -1156,7 +1156,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -1180,7 +1180,7 @@ namespace nd {
           dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
       const char *el_arrmeta = dst_arrmeta + sizeof(dynd::var_dim_type_arrmeta);
       ckb_offset = copy_from_pyobject.get()->instantiate(
-          copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
+          copy_from_pyobject.get(), copy_from_pyobject.get_type(), 0, NULL, ckb,
           ckb_offset, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_strided, ectx, kwds, tp_vars);
       self =
@@ -1285,7 +1285,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -1321,7 +1321,7 @@ namespace nd {
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
         ckb_offset = copy_from_pyobject.get()->instantiate(
-            copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
+            copy_from_pyobject.get(), copy_from_pyobject.get_type(), 0, NULL, ckb,
             ckb_offset, field_types[i], field_arrmeta, nsrc, src_tp,
             src_arrmeta, dynd::kernel_request_single, ectx, kwds, tp_vars);
       }
@@ -1465,7 +1465,7 @@ namespace nd {
 
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *af, const dynd::ndt::arrfunc_type *af_tp,
-        char *data, void *ckb, intptr_t ckb_offset,
+        size_t data_size, char *data, void *ckb, intptr_t ckb_offset,
         const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
         const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
         dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
@@ -1499,7 +1499,7 @@ namespace nd {
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
         ckb_offset = copy_from_pyobject.get()->instantiate(
-            copy_from_pyobject.get(), copy_from_pyobject.get_type(), NULL, ckb,
+            copy_from_pyobject.get(), copy_from_pyobject.get_type(), 0, NULL, ckb,
             ckb_offset, field_types[i], field_arrmeta, nsrc, src_tp,
             src_arrmeta, dynd::kernel_request_single, ectx, kwds, tp_vars);
       }
@@ -1516,7 +1516,7 @@ namespace nd {
       : dynd::nd::base_virtual_kernel<default_copy_from_pyobject_kernel> {
     static intptr_t instantiate(
         const dynd::arrfunc_type_data *self_af,
-        const dynd::ndt::arrfunc_type *af_tp, char *data, void *ckb,
+        const dynd::ndt::arrfunc_type *af_tp, size_t data_size, char *data, void *ckb,
         intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -1527,7 +1527,7 @@ namespace nd {
         dynd::nd::arrfunc af = dynd::nd::functional::chain(
             copy_from_pyobject, dynd::nd::copy, dst_tp.value_type());
         return af.get()->instantiate(
-            af.get(), af.get_type(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
+            af.get(), af.get_type(), 0, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
             nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
       }
 

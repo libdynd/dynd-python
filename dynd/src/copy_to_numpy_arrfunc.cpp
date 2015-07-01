@@ -40,7 +40,7 @@ struct strided_of_numpy_arrmeta {
  */
 intptr_t pydynd::copy_to_numpy_ck::instantiate(
     const dynd::arrfunc_type_data *self_af,
-    const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(data), void *ckb,
+    const dynd::ndt::arrfunc_type *af_tp, size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data), void *ckb,
     intptr_t ckb_offset, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t nsrc, const dynd::ndt::type *src_tp,
     const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -73,7 +73,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
         static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get();
     return af->instantiate(
         af, static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get_type(),
-        NULL, ckb, ckb_offset, dynd::ndt::make_type<void>(), NULL, nsrc, src_tp,
+        0, NULL, ckb, ckb_offset, dynd::ndt::make_type<void>(), NULL, nsrc, src_tp,
         src_arrmeta, kernreq, ectx, dynd::nd::array(), tp_vars);
   }
   else if (PyDataType_HASFIELDS(dtype)) {

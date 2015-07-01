@@ -1278,7 +1278,7 @@ size_t DYND_UNUSED(data_size),
     static void
     resolve_dst_type(const dynd::arrfunc_type_data *,
                      const dynd::ndt::arrfunc_type *DYND_UNUSED(self_tp),
-                     char *DYND_UNUSED(data), dynd::ndt::type &, intptr_t,
+                     size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data), dynd::ndt::type &, intptr_t,
                      const dynd::ndt::type *src_tp, const dynd::nd::array &,
                      const std::map<dynd::nd::string, dynd::ndt::type> &)
     {

@@ -36,9 +36,9 @@ struct strided_of_numpy_arrmeta {
 
 intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     const dynd::arrfunc_type_data *self_af,
-    const dynd::ndt::arrfunc_type *af_tp, size_t DYND_UNUSED(data_size),
-    char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-    const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+    const dynd::ndt::arrfunc_type *af_tp, const char *DYND_UNUSED(static_data),
+    size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data), void *ckb,
+    intptr_t ckb_offset, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
     const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
     const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
@@ -67,7 +67,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
                                         ectx, dynd::nd::array());
   } else if (PyDataType_ISOBJECT(dtype)) {
     const dynd::arrfunc_type_data *af = copy_from_pyobject.get();
-    return af->instantiate(af, copy_from_pyobject.get_type(), 0, NULL, ckb,
+    return af->instantiate(af, copy_from_pyobject.get_type(), NULL, 0, NULL, ckb,
                            ckb_offset, dst_tp, dst_arrmeta, 1, src_tp,
                            src_arrmeta, kernreq, ectx, kwds, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {

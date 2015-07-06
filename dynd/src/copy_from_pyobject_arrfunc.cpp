@@ -49,12 +49,6 @@ dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::make()
   return dynd::nd::functional::multidispatch(
       dynd::ndt::type("(void, broadcast: bool) -> Any"), children,
       default_child, {-1});
-
-  /*
-    return dynd::nd::functional::multidispatch_by_type_id(
-        dynd::ndt::type("(void, broadcast: bool) -> Any"), DYND_TYPE_ID_MAX + 1,
-        children, default_child, -1);
-  */
 }
 
 struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;

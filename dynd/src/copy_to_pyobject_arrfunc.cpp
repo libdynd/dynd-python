@@ -59,9 +59,8 @@ dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
 
   default_child = dynd::nd::arrfunc::make<default_copy_to_pyobject_kernel>(0);
 
-  return dynd::nd::functional::multidispatch_by_type_id(
-      dynd::ndt::type("(Any) -> void"), DYND_TYPE_ID_MAX + 1, children,
-      default_child, false);
+  return dynd::nd::functional::multidispatch(dynd::ndt::type("(Any) -> void"),
+                                             children, default_child);
 }
 
 struct pydynd::nd::copy_to_pyobject pydynd::nd::copy_to_pyobject;

@@ -39,7 +39,7 @@ dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::make()
 
   // ...
   for (const pair<const dynd::type_id_t, dynd::nd::arrfunc> &pair :
-       dynd::nd::arrfunc::make_all<copy_from_pyobject_kernel, I>()) {
+       dynd::nd::arrfunc::make_all<copy_from_pyobject_kernel, I>(0)) {
     children[pair.first] = pair.second;
   }
 

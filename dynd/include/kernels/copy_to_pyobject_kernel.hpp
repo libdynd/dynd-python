@@ -1306,8 +1306,8 @@ namespace nd {
       : dynd::nd::base_virtual_kernel<default_copy_to_pyobject_kernel> {
     static void
     resolve_dst_type(const dynd::arrfunc_type_data *,
-                     const char *DYND_UNUSED(static_data),
                      const dynd::ndt::arrfunc_type *DYND_UNUSED(self_tp),
+                     const char *DYND_UNUSED(static_data),
                      size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
                      dynd::ndt::type &, intptr_t, const dynd::ndt::type *src_tp,
                      const dynd::nd::array &,

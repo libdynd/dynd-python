@@ -52,7 +52,7 @@ dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
   PyDateTime_IMPORT;
 
   std::map<dynd::type_id_t, dynd::nd::arrfunc> arrfuncs =
-      dynd::nd::arrfunc::make_all<copy_to_pyobject_kernel, type_ids>();
+      dynd::nd::arrfunc::make_all<copy_to_pyobject_kernel, type_ids>(0);
   for (std::pair<dynd::type_id_t, dynd::nd::arrfunc> pair : arrfuncs) {
     children[pair.first] = pair.second;
   }

@@ -66,9 +66,7 @@ namespace nd {
       }
 
       static intptr_t
-      instantiate(const dynd::arrfunc_type_data *af_self,
-                  const dynd::ndt::arrfunc_type *af_tp,
-                  const char *DYND_UNUSED(static_data),
+      instantiate(const dynd::ndt::arrfunc_type *af_tp, char *static_data,
                   size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
                   void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
@@ -99,9 +97,9 @@ namespace nd {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        self_type::make(
-            ckb, kernreq, ckb_offset,
-            af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
+        self_type::make(ckb, kernreq, ckb_offset,
+                        reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(
+                            static_data)->get());
         return ckb_offset;
       }
     };
@@ -152,9 +150,7 @@ namespace nd {
       }
 
       static intptr_t
-      instantiate(const dynd::arrfunc_type_data *af_self,
-                  const dynd::ndt::arrfunc_type *af_tp,
-                  const char *DYND_UNUSED(static_data),
+      instantiate(const dynd::ndt::arrfunc_type *af_tp, char *static_data,
                   size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
                   void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
@@ -185,9 +181,9 @@ namespace nd {
 
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        self_type::make(
-            ckb, kernreq, ckb_offset,
-            af_self->get_data_as<std::shared_ptr<scalar_ufunc_data>>()->get());
+        self_type::make(ckb, kernreq, ckb_offset,
+                        reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(
+                            static_data)->get());
         return ckb_offset;
       }
     };

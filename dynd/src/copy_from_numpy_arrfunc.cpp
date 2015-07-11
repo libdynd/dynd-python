@@ -61,9 +61,8 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     // If there is no object type in the numpy type, get the dynd equivalent
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
-    return dynd::make_assignment_kernel(NULL, ckb, ckb_offset, dst_tp,
-                                        dst_arrmeta, src_view_tp, NULL, kernreq,
-                                        ectx, dynd::nd::array());
+    return dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
+                                        src_view_tp, NULL, kernreq, ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
     dynd::arrfunc_type_data *af = copy_from_pyobject.get();
     return af->instantiate(copy_from_pyobject.get_type(), af->static_data, 0,

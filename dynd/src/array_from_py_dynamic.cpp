@@ -115,15 +115,13 @@ static nd::array allocate_nd_arr(const std::vector<intptr_t> &shape,
                                         initial_count);
         c.reserved_size = initial_count;
         data_ptr = reinterpret_cast<const var_dim_type_data *>(data_ptr)->begin;
-      }
-      else {
+      } else {
         data_ptr = NULL;
       }
       // Advance arrmeta_ptr and data_ptr to the child dimension
       arrmeta_ptr += sizeof(var_dim_type_arrmeta);
       tp = tp.extended<ndt::var_dim_type>()->get_element_type();
-    }
-    else {
+    } else {
       // Advance arrmeta_ptr and data_ptr to the child dimension
       arrmeta_ptr += sizeof(fixed_dim_type_arrmeta);
       tp = tp.extended<ndt::fixed_dim_type>()->get_element_type();
@@ -174,8 +172,7 @@ static void copy_to_promoted_nd_arr(
         char *src = const_cast<char *>(src_data_ptr);
         fn(dst_data_ptr, dst_md->stride, &src, &src_md->stride,
            shape[current_axis], ck.get());
-      }
-      else {
+      } else {
         expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy up to, and possibly including, the coordinate
         char *src = const_cast<char *>(src_data_ptr);
@@ -185,8 +182,7 @@ static void copy_to_promoted_nd_arr(
         dst_coord[current_axis].data_ptr =
             dst_data_ptr + dst_md->stride * dst_coord[current_axis].coord;
       }
-    }
-    else {
+    } else {
       // var dimension case
       const var_dim_type_arrmeta *dst_md =
           reinterpret_cast<const var_dim_type_arrmeta *>(
@@ -207,8 +203,7 @@ static void copy_to_promoted_nd_arr(
         char *src = src_d->begin;
         fn(dst_d->begin, dst_md->stride, &src, &src_md->stride, src_d->size,
            ck.get());
-      }
-      else {
+      } else {
         // Initialize the var element to the same reserved space as the
         // input
         ndt::var_dim_element_resize(
@@ -228,8 +223,7 @@ static void copy_to_promoted_nd_arr(
             dst_d->begin + dst_md->stride * dst_coord[current_axis].coord;
       }
     }
-  }
-  else {
+  } else {
     // Recursive case
     if (shape[current_axis] >= 0) {
       // strided dimension case
@@ -251,8 +245,7 @@ static void copy_to_promoted_nd_arr(
                                   current_axis + 1, promoted_axis,
                                   copy_final_coord, false);
         }
-      }
-      else {
+      } else {
         // Copy up to, and including, the coordinate
         intptr_t size = src_coord[current_axis].coord;
         intptr_t dst_stride = dst_md->stride;
@@ -267,8 +260,7 @@ static void copy_to_promoted_nd_arr(
                                   copy_final_coord, i == size);
         }
       }
-    }
-    else {
+    } else {
       // var dimension case
       const var_dim_type_arrmeta *dst_md =
           reinterpret_cast<const var_dim_type_arrmeta *>(
@@ -297,8 +289,7 @@ static void copy_to_promoted_nd_arr(
                                   current_axis + 1, promoted_axis,
                                   copy_final_coord, false);
         }
-      }
-      else {
+      } else {
         // Initialize the var element to the same reserved space as the input
         ndt::var_dim_element_resize(
             dst_coord[current_axis].tp, dst_coord[current_axis].arrmeta_ptr,
@@ -343,8 +334,7 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
     // array was created to capture dimensional structure until
     // the first value is encountered
     newelem.dtp = tp;
-  }
-  else {
+  } else {
     newelem.dtp = promote_types_arithmetic(elem.dtp, tp);
   }
   // Create the new array
@@ -353,16 +343,15 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
   // from the old `arr` to the new one
   ckernel_builder<kernel_request_host> k;
   if (elem.dtp.get_type_id() != uninitialized_type_id) {
-    make_assignment_kernel(NULL, &k, 0, newelem.dtp, newelem.arrmeta_ptr,
-                           elem.dtp, elem.arrmeta_ptr, kernel_request_strided,
-                           &eval::default_eval_context, nd::array());
-  }
-  else {
+    make_assignment_kernel(&k, 0, newelem.dtp, newelem.arrmeta_ptr, elem.dtp,
+                           elem.arrmeta_ptr, kernel_request_strided,
+                           &eval::default_eval_context);
+  } else {
     // An assignment kernel which copies one byte - will only
     // be called with count==0 when dtp is uninitialized
-    make_assignment_kernel(NULL, &k, 0, ndt::make_type<char>(), NULL,
+    make_assignment_kernel(&k, 0, ndt::make_type<char>(), NULL,
                            ndt::make_type<char>(), NULL, kernel_request_strided,
-                           &eval::default_eval_context, nd::array());
+                           &eval::default_eval_context);
   }
   copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
                           newelem, arr.get_readonly_originptr(), coord, elem, k,
@@ -396,10 +385,9 @@ static void promote_nd_arr_dim(std::vector<intptr_t> &shape,
   // created kernel.
   ckernel_builder<kernel_request_host> k;
   if (elem.dtp.get_type_id() != uninitialized_type_id) {
-    make_assignment_kernel(NULL, &k, 0, newcoord[axis].tp,
-                           newcoord[axis].arrmeta_ptr, coord[axis].tp,
-                           coord[axis].arrmeta_ptr, kernel_request_strided,
-                           &eval::default_eval_context, nd::array());
+    make_assignment_kernel(&k, 0, newcoord[axis].tp, newcoord[axis].arrmeta_ptr,
+                           coord[axis].tp, coord[axis].arrmeta_ptr,
+                           kernel_request_strided, &eval::default_eval_context);
   }
   copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
                           newelem, arr.get_readonly_originptr(), coord, elem, k,
@@ -414,12 +402,10 @@ static bool bool_assign(char *data, PyObject *obj)
   if (obj == Py_True) {
     *data = 1;
     return true;
-  }
-  else if (obj == Py_False) {
+  } else if (obj == Py_False) {
     *data = 0;
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
@@ -433,14 +419,12 @@ static bool int_assign(const ndt::type &tp, char *data, PyObject *obj)
     if (tp.get_type_id() == int64_type_id) {
       int64_t *result_ptr = reinterpret_cast<int64_t *>(data);
       *result_ptr = static_cast<int64_t>(value);
-    }
-    else {
+    } else {
 #if SIZEOF_LONG > SIZEOF_INT
       if (value >= INT_MIN && value <= INT_MAX) {
         int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
         *result_ptr = static_cast<int32_t>(value);
-      }
-      else {
+      } else {
         // Needs promotion to int64
         return false;
       }
@@ -463,13 +447,11 @@ static bool int_assign(const ndt::type &tp, char *data, PyObject *obj)
     if (tp.get_type_id() == int64_type_id) {
       int64_t *result_ptr = reinterpret_cast<int64_t *>(data);
       *result_ptr = static_cast<int64_t>(value);
-    }
-    else {
+    } else {
       if (value >= INT_MIN && value <= INT_MAX) {
         int32_t *result_ptr = reinterpret_cast<int32_t *>(data);
         *result_ptr = static_cast<int32_t>(value);
-      }
-      else {
+      } else {
         // This value requires promotion to int64
         return false;
       }
@@ -487,29 +469,24 @@ static bool real_assign(char *data, PyObject *obj)
     *result_ptr = PyFloat_AS_DOUBLE(obj);
     return true;
 #if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyInt_Check(obj)) {
+  } else if (PyInt_Check(obj)) {
     *result_ptr = PyInt_AS_LONG(obj);
     return true;
 #endif
-  }
-  else if (PyLong_Check(obj)) {
+  } else if (PyLong_Check(obj)) {
     double value = PyLong_AsDouble(obj);
     if (value == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");
     }
     *result_ptr = value;
     return true;
-  }
-  else if (obj == Py_True) {
+  } else if (obj == Py_True) {
     *result_ptr = 1;
     return true;
-  }
-  else if (obj == Py_False) {
+  } else if (obj == Py_False) {
     *result_ptr = 0;
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
@@ -522,34 +499,28 @@ static bool complex_assign(char *data, PyObject *obj)
     *result_ptr = dynd::complex<double>(PyComplex_RealAsDouble(obj),
                                         PyComplex_ImagAsDouble(obj));
     return true;
-  }
-  else if (PyFloat_Check(obj)) {
+  } else if (PyFloat_Check(obj)) {
     *result_ptr = PyFloat_AS_DOUBLE(obj);
     return true;
 #if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyInt_Check(obj)) {
+  } else if (PyInt_Check(obj)) {
     *result_ptr = PyInt_AS_LONG(obj);
     return true;
 #endif
-  }
-  else if (PyLong_Check(obj)) {
+  } else if (PyLong_Check(obj)) {
     double value = PyLong_AsDouble(obj);
     if (value == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");
     }
     *result_ptr = value;
     return true;
-  }
-  else if (obj == Py_True) {
+  } else if (obj == Py_True) {
     *result_ptr = 1;
     return true;
-  }
-  else if (obj == Py_False) {
+  } else if (obj == Py_False) {
     *result_ptr = 0;
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
@@ -625,8 +596,7 @@ static bool bytes_assign(const ndt::type &tp, const char *arrmeta, char *data,
     const ndt::bytes_type *st = tp.extended<ndt::bytes_type>();
     st->set_bytes_data(arrmeta, data, s, s + len);
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
@@ -641,7 +611,7 @@ static void array_from_py_dynamic_first_alloc(
 #if PY_VERSION_HEX < 0x03000000
       || PyString_Check(obj)
 #endif
-          ) {
+      ) {
     // Special case strings, because they act as sequences too
     elem.dtp = ndt::make_string();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
@@ -705,8 +675,7 @@ static void array_from_py_dynamic_first_alloc(
         elem.dtp = ndt::type();
       }
       return;
-    }
-    else {
+    } else {
       // If it doesn't actually check out as a sequence,
       // fall through eventually to the iterator check.
       PyErr_Clear();
@@ -731,8 +700,7 @@ static void array_from_py_dynamic_first_alloc(
       int32_t *result_ptr =
           reinterpret_cast<int32_t *>(coord[current_axis - 1].data_ptr);
       *result_ptr = static_cast<int32_t>(value);
-    }
-    else {
+    } else {
       elem.dtp = ndt::make_type<int64_t>();
       arr = allocate_nd_arr(shape, coord, elem, shape.size());
       int64_t *result_ptr =
@@ -763,8 +731,7 @@ static void array_from_py_dynamic_first_alloc(
       int32_t *result_ptr =
           reinterpret_cast<int32_t *>(coord[current_axis - 1].data_ptr);
       *result_ptr = static_cast<int32_t>(value);
-    }
-    else {
+    } else {
       elem.dtp = ndt::make_type<int64_t>();
       arr = allocate_nd_arr(shape, coord, elem, shape.size());
       int64_t *result_ptr =
@@ -845,8 +812,7 @@ static void array_from_py_dynamic_first_alloc(
                                     coord[current_axis].arrmeta_ptr, data_ptr,
                                     i);
         return;
-      }
-      else {
+      } else {
         // Because this iterator's sequence is zero-sized, we can't
         // start deducing the type yet. To start capturing the
         // dimensional structure, we make an array of
@@ -864,14 +830,12 @@ static void array_from_py_dynamic_first_alloc(
                                     0);
         return;
       }
-    }
-    else {
+    } else {
       if (PyErr_ExceptionMatches(PyExc_TypeError)) {
         // A TypeError indicates that the object doesn't support
         // the iterator protocol
         PyErr_Clear();
-      }
-      else {
+      } else {
         // Propagate the error
         throw exception();
       }
@@ -1058,8 +1022,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
           coord[current_axis].data_ptr += md->stride;
         }
         return;
-      }
-      else {
+      } else {
         // If it doesn't actually check out as a sequence,
         // fall through to the iterator check.
         PyErr_Clear();
@@ -1156,15 +1119,13 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                                     coord[current_axis].arrmeta_ptr, data_ptr,
                                     i);
         return;
-      }
-      else if (PyErr_Occurred()) {
+      } else if (PyErr_Occurred()) {
         // Propagate any error
         throw exception();
       }
       return;
     }
-  }
-  else {
+  } else {
     // It's a var dimension
     if (PySequence_Check(obj)) {
       Py_ssize_t size = PySequence_Size(obj);
@@ -1190,8 +1151,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                                 ectx);
         }
         return;
-      }
-      else {
+      } else {
         // If it doesn't actually check out as a sequence,
         // fall through to the iterator check.
         PyErr_Clear();
@@ -1246,8 +1206,7 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                                     coord[current_axis].arrmeta_ptr, data_ptr,
                                     i);
         return;
-      }
-      else {
+      } else {
         // Set it to a zero-sized var element
         char *data_ptr = coord[current_axis - 1].data_ptr;
         ndt::var_dim_element_initialize(coord[current_axis].tp,
@@ -1255,14 +1214,12 @@ static void array_from_py_dynamic(PyObject *obj, std::vector<intptr_t> &shape,
                                         data_ptr, 0);
         return;
       }
-    }
-    else {
+    } else {
       if (PyErr_ExceptionMatches(PyExc_TypeError)) {
         // A TypeError indicates that the object doesn't support
         // the iterator protocol
         PyErr_Clear();
-      }
-      else {
+      } else {
         // Propagate the error
         throw exception();
       }

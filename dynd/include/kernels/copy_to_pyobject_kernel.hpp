@@ -1257,13 +1257,12 @@ namespace nd {
       : dynd::nd::base_virtual_kernel<
             copy_to_pyobject_kernel<dynd::categorical_type_id>> {
     static intptr_t instantiate(
-        const dynd::ndt::arrfunc_type *af_tp,
-        char *DYND_UNUSED(static_data), size_t DYND_UNUSED(data_size),
-        char *data, void *ckb, intptr_t ckb_offset,
-        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-        const dynd::nd::array &kwds,
+        const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(static_data),
+        size_t DYND_UNUSED(data_size), char *data, void *ckb,
+        intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+        const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
+        const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+        const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
         const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       // Assign via an intermediate category_type buffer
@@ -1290,8 +1289,7 @@ namespace nd {
   struct default_copy_to_pyobject_kernel
       : dynd::nd::base_virtual_kernel<default_copy_to_pyobject_kernel> {
     static void
-    resolve_dst_type(const dynd::ndt::arrfunc_type *DYND_UNUSED(self_tp),
-                     char *DYND_UNUSED(static_data),
+    resolve_dst_type(char *DYND_UNUSED(static_data),
                      size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
                      dynd::ndt::type &, intptr_t, const dynd::ndt::type *src_tp,
                      const dynd::nd::array &,
@@ -1302,13 +1300,12 @@ namespace nd {
     }
 
     static intptr_t instantiate(
-        const dynd::ndt::arrfunc_type *af_tp,
-        char *DYND_UNUSED(static_data), size_t DYND_UNUSED(data_size),
-        char *data, void *ckb, intptr_t ckb_offset,
-        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-        dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-        const dynd::nd::array &kwds,
+        const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(static_data),
+        size_t DYND_UNUSED(data_size), char *data, void *ckb,
+        intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+        const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
+        const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+        const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
         const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       dynd::nd::arrfunc af = dynd::nd::functional::chain(

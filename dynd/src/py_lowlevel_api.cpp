@@ -107,11 +107,9 @@ PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
     dynd::kernel_request_t kernreq;
     if (kr == "single") {
       kernreq = dynd::kernel_request_single;
-    }
-    else if (kr == "strided") {
+    } else if (kr == "strided") {
       kernreq = dynd::kernel_request_strided;
-    }
-    else {
+    } else {
       stringstream ss;
       ss << "Invalid kernel request type ";
       dynd::print_escaped_utf8_string(ss, kr);
@@ -122,10 +120,9 @@ PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
         pydynd::eval_context_from_pyobj(ectx_obj);
 
     intptr_t kernel_size = dynd::make_assignment_kernel(
-        NULL, ckb_ptr, ckb_offset, dst_tp,
+        ckb_ptr, ckb_offset, dst_tp,
         reinterpret_cast<const char *>(dst_arrmeta), src_tp,
-        reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx,
-        dynd::nd::array());
+        reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx);
 
     return PyLong_FromSsize_t(kernel_size);
   }
@@ -222,8 +219,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
                 .get_type_id() == dynd::arrfunc_type_id) {
       dst_initialization = ((pydynd::WArray *)dst_initialization_obj)->v;
       ;
-    }
-    else if (dst_initialization_obj != Py_None) {
+    } else if (dst_initialization_obj != Py_None) {
       stringstream ss;
       ss << "dst_initialization must be None or an nd.array of type "
             "arrfunc";
@@ -244,8 +240,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
       for (intptr_t i = 0; i < reduction_ndim; ++i) {
         reduction_dimflags[i] = true;
       }
-    }
-    else {
+    } else {
       memset(reduction_dimflags.get(), 0, reduction_ndim * sizeof(bool));
       vector<intptr_t> axis_vec;
       pydynd::pyobject_as_vector_intp(axis_obj, axis_vec, true);
@@ -253,8 +248,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
         intptr_t ax = axis_vec[i];
         if (ax < -reduction_ndim || ax >= reduction_ndim) {
           throw dynd::axis_out_of_bounds(ax, reduction_ndim);
-        }
-        else if (ax < 0) {
+        } else if (ax < 0) {
           ax += reduction_ndim;
         }
         reduction_dimflags[ax] = true;
@@ -264,44 +258,36 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
     bool keepdims;
     if (keepdims_obj == Py_True) {
       keepdims = true;
-    }
-    else if (keepdims_obj == Py_False) {
+    } else if (keepdims_obj == Py_False) {
       keepdims = false;
-    }
-    else {
+    } else {
       throw dynd::type_error("keepdims must be either True or False");
     }
 
     bool associative;
     if (associative_obj == Py_True) {
       associative = true;
-    }
-    else if (associative_obj == Py_False) {
+    } else if (associative_obj == Py_False) {
       associative = false;
-    }
-    else {
+    } else {
       throw dynd::type_error("associative must be either True or False");
     }
 
     bool commutative;
     if (commutative_obj == Py_True) {
       commutative = true;
-    }
-    else if (commutative_obj == Py_False) {
+    } else if (commutative_obj == Py_False) {
       commutative = false;
-    }
-    else {
+    } else {
       throw dynd::type_error("commutative must be either True or False");
     }
 
     bool right_associative;
     if (right_associative_obj == Py_True) {
       right_associative = true;
-    }
-    else if (right_associative_obj == Py_False) {
+    } else if (right_associative_obj == Py_False) {
       right_associative = false;
-    }
-    else {
+    } else {
       throw dynd::type_error("right_associative must be either True or False");
     }
 
@@ -309,8 +295,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
     if (pydynd::WArray_Check(reduction_identity_obj)) {
       reduction_identity = ((pydynd::WArray *)reduction_identity_obj)->v;
       ;
-    }
-    else if (reduction_identity_obj != Py_None) {
+    } else if (reduction_identity_obj != Py_None) {
       stringstream ss;
       ss << "reduction_identity must be None or an nd.array";
       throw dynd::type_error(ss.str());
@@ -388,12 +373,20 @@ PyObject *make_take_arrfunc()
 const pydynd::py_lowlevel_api_t py_lowlevel_api = {
     0, // version, should increment this every time the struct changes at a
        // release
-    &get_array_ptr, &get_base_type_ptr, &array_from_ptr,
-    &make_assignment_ckernel, &make_arrfunc_from_assignment,
-    &make_arrfunc_from_property, &pydynd::numpy_typetuples_from_ufunc,
-    &pydynd::nd::functional::arrfunc_from_ufunc, &lift_arrfunc,
-    &lift_reduction_arrfunc, &arrfunc_from_pyfunc, &make_rolling_arrfunc,
-    &make_builtin_mean1d_arrfunc, &make_take_arrfunc};
+    &get_array_ptr,
+    &get_base_type_ptr,
+    &array_from_ptr,
+    &make_assignment_ckernel,
+    &make_arrfunc_from_assignment,
+    &make_arrfunc_from_property,
+    &pydynd::numpy_typetuples_from_ufunc,
+    &pydynd::nd::functional::arrfunc_from_ufunc,
+    &lift_arrfunc,
+    &lift_reduction_arrfunc,
+    &arrfunc_from_pyfunc,
+    &make_rolling_arrfunc,
+    &make_builtin_mean1d_arrfunc,
+    &make_take_arrfunc};
 } // anonymous namespace
 
 extern "C" const void *dynd_get_py_lowlevel_api()

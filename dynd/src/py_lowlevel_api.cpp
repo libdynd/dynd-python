@@ -122,7 +122,7 @@ PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
         pydynd::eval_context_from_pyobj(ectx_obj);
 
     intptr_t kernel_size = dynd::make_assignment_kernel(
-        NULL, NULL, ckb_ptr, ckb_offset, dst_tp,
+        NULL, ckb_ptr, ckb_offset, dst_tp,
         reinterpret_cast<const char *>(dst_arrmeta), src_tp,
         reinterpret_cast<const char *>(src_arrmeta), kernreq, ectx,
         dynd::nd::array());

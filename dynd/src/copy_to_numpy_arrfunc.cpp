@@ -39,8 +39,7 @@ struct strided_of_numpy_arrmeta {
  * being a pointer to the ``PyArray_Descr *`` of the type for the destination.
  */
 intptr_t pydynd::copy_to_numpy_ck::instantiate(
-    const dynd::arrfunc_type_data *self_af,
-    const dynd::ndt::arrfunc_type *af_tp, const char *DYND_UNUSED(static_data),
+    const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(static_data),
     size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data), void *ckb,
     intptr_t ckb_offset, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t nsrc, const dynd::ndt::type *src_tp,
@@ -64,16 +63,17 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     // If there is no object type in the numpy type, get the dynd equivalent
     // type and use it to do the copying
     dynd::ndt::type dst_view_tp = _type_from_numpy_dtype(dtype, dst_alignment);
-    return dynd::make_assignment_kernel(
-        NULL, NULL, ckb, ckb_offset, dst_view_tp, NULL, src_tp[0],
-        src_arrmeta[0], kernreq, ectx, dynd::nd::array());
+    return dynd::make_assignment_kernel(NULL, ckb, ckb_offset, dst_view_tp,
+                                        NULL, src_tp[0], src_arrmeta[0],
+                                        kernreq, ectx, dynd::nd::array());
   } else if (PyDataType_ISOBJECT(dtype)) {
-    const dynd::arrfunc_type_data *af =
-        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get();
+    dynd::arrfunc_type_data *af = const_cast<dynd::arrfunc_type_data *>(
+        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get());
     return af->instantiate(
-        af, static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get_type(),
-        NULL, 0, NULL, ckb, ckb_offset, dynd::ndt::make_type<void>(), NULL,
-        nsrc, src_tp, src_arrmeta, kernreq, ectx, dynd::nd::array(), tp_vars);
+        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get_type(),
+        af->static_data, 0, NULL, ckb, ckb_offset, dynd::ndt::make_type<void>(),
+        NULL, nsrc, src_tp, src_arrmeta, kernreq, ectx, dynd::nd::array(),
+        tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {
     if (src_tp[0].get_kind() != dynd::struct_kind &&
         src_tp[0].get_kind() != dynd::tuple_kind) {
@@ -148,8 +148,12 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
       src_fields_arrmeta[i] = src_arrmeta[0] + src_arrmeta_offsets[i];
     }
 
+    // Todo: Remove this
+    dynd::nd::arrfunc af = dynd::nd::arrfunc::make<copy_to_numpy_ck>(
+        dynd::ndt::type("(Any) -> void"), 0);
+
     return make_tuple_unary_op_ckernel(
-        self_af, af_tp, ckb, ckb_offset, field_count, &field_offsets[0],
+        af.get(), af_tp, ckb, ckb_offset, field_count, &field_offsets[0],
         &dst_fields_tp[0], &dst_fields_arrmeta[0],
         src_tp[0].extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
             src_arrmeta[0]),

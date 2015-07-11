@@ -139,21 +139,19 @@ namespace nd {
       }
 
       static intptr_t instantiate(
-          const dynd::arrfunc_type_data *af_self,
-          const dynd::ndt::arrfunc_type *af_tp,
-          const char *DYND_UNUSED(static_data), size_t DYND_UNUSED(data_size),
-          char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-          const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-          const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-          dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-          const dynd::nd::array &kwds,
+          const dynd::ndt::arrfunc_type *af_tp, char *static_data,
+          size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data), void *ckb,
+          intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+          const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
+          const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+          const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
           const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
         PyGILState_RAII pgs;
 
         self_type *self = self_type::make(ckb, kernreq, ckb_offset);
         self->m_proto = dynd::ndt::make_arrfunc(nsrc, src_tp, dst_tp);
-        self->m_pyfunc = *af_self->get_data_as<PyObject *>();
+        self->m_pyfunc = *reinterpret_cast<PyObject **>(static_data);
         Py_XINCREF(self->m_pyfunc);
         self->m_dst_arrmeta = dst_arrmeta;
         self->m_src_arrmeta.resize(nsrc);

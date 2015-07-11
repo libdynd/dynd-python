@@ -353,14 +353,14 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
   // from the old `arr` to the new one
   ckernel_builder<kernel_request_host> k;
   if (elem.dtp.get_type_id() != uninitialized_type_id) {
-    make_assignment_kernel(NULL, NULL, &k, 0, newelem.dtp, newelem.arrmeta_ptr,
+    make_assignment_kernel(NULL, &k, 0, newelem.dtp, newelem.arrmeta_ptr,
                            elem.dtp, elem.arrmeta_ptr, kernel_request_strided,
                            &eval::default_eval_context, nd::array());
   }
   else {
     // An assignment kernel which copies one byte - will only
     // be called with count==0 when dtp is uninitialized
-    make_assignment_kernel(NULL, NULL, &k, 0, ndt::make_type<char>(), NULL,
+    make_assignment_kernel(NULL, &k, 0, ndt::make_type<char>(), NULL,
                            ndt::make_type<char>(), NULL, kernel_request_strided,
                            &eval::default_eval_context, nd::array());
   }
@@ -396,7 +396,7 @@ static void promote_nd_arr_dim(std::vector<intptr_t> &shape,
   // created kernel.
   ckernel_builder<kernel_request_host> k;
   if (elem.dtp.get_type_id() != uninitialized_type_id) {
-    make_assignment_kernel(NULL, NULL, &k, 0, newcoord[axis].tp,
+    make_assignment_kernel(NULL, &k, 0, newcoord[axis].tp,
                            newcoord[axis].arrmeta_ptr, coord[axis].tp,
                            coord[axis].arrmeta_ptr, kernel_request_strided,
                            &eval::default_eval_context, nd::array());

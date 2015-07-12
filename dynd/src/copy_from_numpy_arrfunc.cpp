@@ -63,7 +63,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     return dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
                                         src_view_tp, NULL, kernreq, ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::arrfunc_type_data *af = copy_from_pyobject.get();
+    dynd::arrfunc_type_data *af = copy_from_pyobject::get().get();
     return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
                            kwds, tp_vars);

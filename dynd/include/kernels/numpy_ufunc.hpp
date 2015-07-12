@@ -66,9 +66,9 @@ namespace nd {
       }
 
       static intptr_t
-      instantiate(const dynd::ndt::arrfunc_type *af_tp, char *static_data,
-                  size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
-                  void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+      instantiate(char *static_data, size_t DYND_UNUSED(data_size),
+                  char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
+                  const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
                   intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
                   const char *const *DYND_UNUSED(src_arrmeta),
@@ -77,24 +77,6 @@ namespace nd {
                   const dynd::nd::array &kwds,
                   const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
-        if (dst_tp != af_tp->get_return_type()) {
-          std::stringstream ss;
-          ss << "destination type requested, " << dst_tp
-             << ", does not match the ufunc's type "
-             << af_tp->get_return_type();
-          throw dynd::type_error(ss.str());
-        }
-        intptr_t param_count = af_tp->get_npos();
-        for (intptr_t i = 0; i != param_count; ++i) {
-          if (src_tp[i] != af_tp->get_pos_type(i)) {
-            std::stringstream ss;
-            ss << "source type requested for parameter " << (i + 1) << ", "
-               << src_tp[i] << ", does not match the ufunc's type "
-               << af_tp->get_pos_type(i);
-            throw dynd::type_error(ss.str());
-          }
-        }
-
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         self_type::make(ckb, kernreq, ckb_offset,
@@ -150,9 +132,9 @@ namespace nd {
       }
 
       static intptr_t
-      instantiate(const dynd::ndt::arrfunc_type *af_tp, char *static_data,
-                  size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
-                  void *ckb, intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+      instantiate(char *static_data, size_t DYND_UNUSED(data_size),
+                  char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
+                  const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
                   intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
                   const char *const *DYND_UNUSED(src_arrmeta),
@@ -161,24 +143,6 @@ namespace nd {
                   const dynd::nd::array &kwds,
                   const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
       {
-        if (dst_tp != af_tp->get_return_type()) {
-          std::stringstream ss;
-          ss << "destination type requested, " << dst_tp
-             << ", does not match the ufunc's type "
-             << af_tp->get_return_type();
-          throw dynd::type_error(ss.str());
-        }
-        intptr_t param_count = af_tp->get_npos();
-        for (intptr_t i = 0; i != param_count; ++i) {
-          if (src_tp[i] != af_tp->get_pos_type(i)) {
-            std::stringstream ss;
-            ss << "source type requested for parameter " << (i + 1) << ", "
-               << src_tp[i] << ", does not match the ufunc's type "
-               << af_tp->get_pos_type(i);
-            throw dynd::type_error(ss.str());
-          }
-        }
-
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         self_type::make(ckb, kernreq, ckb_offset,

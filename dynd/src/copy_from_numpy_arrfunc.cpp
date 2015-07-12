@@ -35,9 +35,9 @@ struct strided_of_numpy_arrmeta {
 } // anonymous namespace
 
 intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
-    const dynd::ndt::arrfunc_type *af_tp, char *DYND_UNUSED(static_data),
-    size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data), void *ckb,
-    intptr_t ckb_offset, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+    char *DYND_UNUSED(static_data), size_t DYND_UNUSED(data_size),
+    char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
+    const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
     const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
     const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
@@ -46,8 +46,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
   if (src_tp[0].get_type_id() != dynd::void_type_id) {
     stringstream ss;
     ss << "Cannot instantiate dynd::nd::arrfunc copy_from_numpy with "
-          "signature ";
-    ss << af_tp << " with types (";
+          "signature (";
     ss << src_tp[0] << ") -> " << dst_tp;
     throw dynd::type_error(ss.str());
   }
@@ -65,9 +64,9 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
                                         src_view_tp, NULL, kernreq, ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
     dynd::arrfunc_type_data *af = copy_from_pyobject.get();
-    return af->instantiate(copy_from_pyobject.get_type(), af->static_data, 0,
-                           NULL, ckb, ckb_offset, dst_tp, dst_arrmeta, 1,
-                           src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
+    return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
+                           dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
+                           kwds, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {
     if (dst_tp.get_kind() != dynd::struct_kind &&
         dst_tp.get_kind() != dynd::tuple_kind) {
@@ -142,7 +141,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
         dynd::ndt::type("(void, broadcast: bool) -> T"), 0);
 
     return make_tuple_unary_op_ckernel(
-        af.get(), af_tp, ckb, ckb_offset, field_count,
+        af.get(), af.get_type(), ckb, ckb_offset, field_count,
         dst_tp.extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
             dst_arrmeta),
         dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_types_raw(),

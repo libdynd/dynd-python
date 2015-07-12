@@ -43,7 +43,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
     PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
     return NULL;
   }
-  const dynd::nd::arrfunc &af = ((WArrFunc *)af_obj)->v;
+  dynd::nd::arrfunc &af = ((WArrFunc *)af_obj)->v;
   if (af.is_null()) {
     PyErr_SetString(PyExc_ValueError, "cannot call a null nd.arrfunc");
     return NULL;

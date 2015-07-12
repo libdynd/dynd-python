@@ -1035,9 +1035,9 @@ namespace nd {
                        dynd::fixed_dim_type_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
-        return dynd::make_assignment_kernel(
-            NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
-            dynd::kernel_request_strided, ectx, kwds);
+        return dynd::make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta,
+                                            el_tp, el_arrmeta,
+                                            dynd::kernel_request_strided, ectx);
       }
 
       throw std::runtime_error("could not process as strided");
@@ -1178,9 +1178,9 @@ namespace nd {
                   root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
-      return dynd::make_assignment_kernel(
-          NULL, ckb, ckb_offset, el_tp, el_arrmeta, el_tp, el_arrmeta,
-          dynd::kernel_request_strided, ectx, kwds);
+      return dynd::make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta,
+                                          el_tp, el_arrmeta,
+                                          dynd::kernel_request_strided, ectx);
     }
 
     static dynd::ndt::type make_type()

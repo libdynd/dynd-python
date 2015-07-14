@@ -1360,5 +1360,5 @@ namespace ndt {
     static type make() { return type("(Any) -> void"); }
   };
 
-} // namespace dynd::ndt
+} // namespace dynd::ndt 
 } // namespace dynd

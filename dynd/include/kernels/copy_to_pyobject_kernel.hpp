@@ -22,11 +22,6 @@ namespace nd {
       *dst_obj = (*src[0] != 0) ? Py_True : Py_False;
       Py_INCREF(*dst_obj);
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(bool) -> void");
-    }
   };
 
   PyObject *pyint_from_int(int8_t v)
@@ -133,15 +128,6 @@ namespace nd {
       *dst_obj = NULL;
       *dst_obj = pyint_from_int(*reinterpret_cast<const T *>(src[0]));
     }
-
-    static dynd::ndt::type make_type()
-    {
-      std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
-      tp_vars["A0"] = dynd::ndt::make_type<T>();
-
-      return dynd::ndt::substitute(dynd::ndt::type("(A0) -> void"), tp_vars,
-                                   true);
-    }
   };
 
   template <>
@@ -204,15 +190,6 @@ namespace nd {
       *dst_obj = NULL;
       *dst_obj = PyFloat_FromDouble(*reinterpret_cast<const T *>(src[0]));
     }
-
-    static dynd::ndt::type make_type()
-    {
-      std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
-      tp_vars["A0"] = dynd::ndt::make_type<T>();
-
-      return dynd::ndt::substitute(dynd::ndt::type("(A0) -> void"), tp_vars,
-                                   true);
-    }
   };
 
   template <>
@@ -243,15 +220,6 @@ namespace nd {
           reinterpret_cast<const dynd::complex<T> *>(src[0]);
       *dst_obj = PyComplex_FromDoubles(val->real(), val->imag());
     }
-
-    static dynd::ndt::type make_type()
-    {
-      std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
-      tp_vars["A0"] = dynd::ndt::make_type<dynd::complex<T>>();
-
-      return dynd::ndt::substitute(dynd::ndt::type("(A0) -> void"), tp_vars,
-                                   true);
-    }
   };
 
   template <>
@@ -276,11 +244,6 @@ namespace nd {
       const dynd::bytes_type_data *bd =
           reinterpret_cast<const dynd::bytes_type_data *>(src[0]);
       *dst_obj = PyBytes_FromStringAndSize(bd->begin, bd->end - bd->begin);
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(bytes) -> void");
     }
   };
 
@@ -318,11 +281,6 @@ namespace nd {
           src_tp[0].extended<dynd::ndt::fixed_bytes_type>()->get_data_size());
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(FixedBytes) -> void");
-    }
   };
 
   template <>
@@ -335,11 +293,6 @@ namespace nd {
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
       *dst_obj = PyUnicode_DecodeUTF32(src[0], 4, NULL, NULL);
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(char) -> void");
     }
   };
 
@@ -435,11 +388,6 @@ namespace nd {
       default:
         throw std::runtime_error("no string_copy_kernel");
       }
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(string) -> void");
     }
   };
 
@@ -618,11 +566,6 @@ namespace nd {
         throw std::runtime_error("no fixed_string_copy_kernel");
       }
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(FixedString) -> void");
-    }
   };
 
   template <>
@@ -661,11 +604,6 @@ namespace nd {
       copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
                                     src_arrmeta[0]);
       return ckb_offset;
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(date) -> void");
     }
   };
 
@@ -706,11 +644,6 @@ namespace nd {
       copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
                                     src_arrmeta[0]);
       return ckb_offset;
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(time) -> void");
     }
   };
 
@@ -756,11 +689,6 @@ namespace nd {
                                     src_arrmeta[0]);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(datetime) -> void");
-    }
   };
 
   template <>
@@ -775,11 +703,6 @@ namespace nd {
       dynd::ndt::type tp(
           reinterpret_cast<const dynd::type_type_data *>(src[0])->tp, true);
       *dst_obj = wrap__type(std::move(tp));
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(type) -> void");
     }
   };
 
@@ -849,11 +772,6 @@ namespace nd {
           dynd::kernel_request_single, ectx, dynd::nd::array(), tp_vars);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(?Any) -> void");
-    }
   };
 
   template <>
@@ -908,11 +826,6 @@ namespace nd {
       }
 
       throw std::runtime_error("cannot process as strided");
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(Fixed * Any) -> void");
     }
   };
 
@@ -971,11 +884,6 @@ namespace nd {
           copy_to_pyobject::get().get()->static_data, data_size, data, ckb,
           ckb_offset, dst_tp, dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
           dynd::kernel_request_strided, ectx, kwds, tp_vars);
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(var * Any) -> void");
     }
   };
 
@@ -1073,11 +981,6 @@ namespace nd {
       }
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("({...}) -> void");
-    }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -1164,11 +1067,6 @@ namespace nd {
       }
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("((...)) -> void");
-    }
   };
 
   template <>
@@ -1209,11 +1107,6 @@ namespace nd {
           dst_tp, dst_arrmeta, nsrc, &src_value_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, dynd::nd::array(), tp_vars);
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(pointer[Any]) -> void");
-    }
   };
 
   template <>
@@ -1242,11 +1135,6 @@ namespace nd {
       return child.get()->instantiate(
           child.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
           dst_arrmeta, nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(Categorical) -> void");
     }
   };
 
@@ -1279,11 +1167,6 @@ namespace nd {
           af.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
           nsrc, src_tp, src_arrmeta, kernreq, ectx, kwds, tp_vars);
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(Any) -> void");
-    }
   };
 
   /*
@@ -1295,3 +1178,187 @@ namespace nd {
 
 } // namespace pydynd::nd
 } // namespace pydynd
+
+namespace dynd {
+namespace ndt {
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<bool_type_id>> {
+    static type make() { return type("(bool) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int8_type_id>> {
+    static type make() { return type("(int8) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int16_type_id>> {
+    static type make() { return type("(int16) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int32_type_id>> {
+    static type make() { return type("(int32) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int64_type_id>> {
+    static type make() { return type("(int64) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int128_type_id>> {
+    static type make() { return type("(int128) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint8_type_id>> {
+    static type make() { return type("(uint8) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint16_type_id>> {
+    static type make() { return type("(uint16) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint32_type_id>> {
+    static type make() { return type("(uint32) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint64_type_id>> {
+    static type make() { return type("(uint64) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<uint128_type_id>> {
+    static type make() { return type("(uint128) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<float16_type_id>> {
+    static type make() { return type("(float16) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<float32_type_id>> {
+    static type make() { return type("(float32) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<float64_type_id>> {
+    static type make() { return type("(float64) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<complex_float32_type_id>> {
+    static type make() { return type("(complex[float32]) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<complex_float64_type_id>> {
+    static type make() { return type("(complex[float64]) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<bytes_type_id>> {
+    static type make() { return type("(bytes) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<fixed_bytes_type_id>> {
+    static type make() { return type("(FixedBytes) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<char_type_id>> {
+    static type make() { return type("(char) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<string_type_id>> {
+    static type make() { return type("(string) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<fixed_string_type_id>> {
+    static type make() { return type("(FixedString) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<date_type_id>> {
+    static type make() { return type("(date) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<time_type_id>> {
+    static type make() { return type("(time) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<datetime_type_id>> {
+    static type make() { return type("(datetime) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<type_type_id>> {
+    static type make() { return type("(type) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<option_type_id>> {
+    static type make() { return type("(?Any) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<categorical_type_id>> {
+    static type make() { return type("(Categorical) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<fixed_dim_type_id>> {
+    static type make() { return type("(Fixed * Any) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<var_dim_type_id>> {
+    static type make() { return type("(var * Any) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<tuple_type_id>> {
+    static type make() { return type("(...) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_to_pyobject_kernel<pointer_type_id>> {
+    static type make() { return type("(pointer[Any]) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<struct_type_id>> {
+    static type make() { return type("({...}) -> void"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::default_copy_to_pyobject_kernel> {
+    static type make() { return type("(Any) -> void"); }
+  };
+
+} // namespace dynd::ndt 
+} // namespace dynd

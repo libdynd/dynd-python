@@ -39,11 +39,6 @@ namespace nd {
                 .as<dynd::bool1>();
       }
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> bool");
-    }
   };
 
   void pyint_to_int(int8_t *out, PyObject *obj)
@@ -222,15 +217,6 @@ namespace nd {
                 .as<T>();
       }
     }
-
-    static dynd::ndt::type make_type()
-    {
-      std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
-      tp_vars["R"] = dynd::ndt::make_type<T>();
-
-      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars,
-                                   true);
-    }
   };
 
   template <>
@@ -302,15 +288,6 @@ namespace nd {
                 .as<T>();
       }
     }
-
-    static dynd::ndt::type make_type()
-    {
-      std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
-      tp_vars["R"] = dynd::ndt::make_type<T>();
-
-      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars,
-                                   true);
-    }
   };
 
   template <>
@@ -347,15 +324,6 @@ namespace nd {
             array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
                 .as<dynd::complex<T>>();
       }
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      std::map<dynd::nd::string, dynd::ndt::type> tp_vars;
-      tp_vars["R"] = dynd::ndt::make_type<dynd::complex<T>>();
-
-      return dynd::ndt::substitute(dynd::ndt::type("(void) -> R"), tp_vars,
-                                   true);
     }
   };
 
@@ -427,21 +395,11 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> bytes");
-    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::fixed_bytes_type_id>
       : copy_from_pyobject_kernel<dynd::bytes_type_id> {
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> FixedBytes");
-    }
   };
 
   // TODO: This is not very efficient, could be made better
@@ -527,20 +485,11 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> string");
-    }
   };
 
   template <>
   struct copy_from_pyobject_kernel<dynd::fixed_string_type_id>
       : copy_from_pyobject_kernel<dynd::string_type_id> {
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> FixedString");
-    }
   };
 
   template <>
@@ -608,11 +557,6 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> date");
-    }
   };
 
   template <>
@@ -662,11 +606,6 @@ namespace nd {
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> time");
     }
   };
 
@@ -724,11 +663,6 @@ namespace nd {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> datetime");
-    }
   };
 
   template <>
@@ -740,11 +674,6 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       *reinterpret_cast<dynd::ndt::type *>(dst) =
           pydynd::make__type_from_pyobject(src_obj);
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> type");
     }
   };
 
@@ -866,11 +795,6 @@ namespace nd {
           ectx, kwds, tp_vars);
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> ?Any");
-    }
   };
 
   template <>
@@ -896,11 +820,6 @@ namespace nd {
                                       ckb_offset, dst_tp, dst_arrmeta, nsrc,
                                       src_tp, src_arrmeta, kernreq, ectx,
                                       dynd::nd::array(), tp_vars);
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void) -> Categorical");
     }
   };
 
@@ -1024,11 +943,6 @@ namespace nd {
       }
 
       throw std::runtime_error("could not process as strided");
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void, broadcast: bool) -> Fixed * Any");
     }
   };
 
@@ -1163,11 +1077,6 @@ namespace nd {
                                           el_tp, el_arrmeta,
                                           dynd::kernel_request_strided, ectx);
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void, broadcast: bool) -> var * Any");
-    }
   };
 
   // TODO: Should make a more efficient strided kernel function
@@ -1292,11 +1201,6 @@ namespace nd {
             src_arrmeta, dynd::kernel_request_single, ectx, kwds, tp_vars);
       }
       return ckb_offset;
-    }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void, broadcast: bool) -> (...)");
     }
   };
 
@@ -1467,11 +1371,6 @@ namespace nd {
       }
       return ckb_offset;
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void, broadcast: bool) -> {...}");
-    }
   };
 
   struct default_copy_from_pyobject_kernel
@@ -1497,12 +1396,196 @@ namespace nd {
       ss << "Unable to copy a Python object to dynd value with type " << dst_tp;
       throw std::invalid_argument(ss.str());
     }
-
-    static dynd::ndt::type make_type()
-    {
-      return dynd::ndt::type("(void, broadcast: bool) -> Any");
-    }
   };
 
 } // namespace pydynd::nd
 } // namespace pydynd
+
+namespace dynd {
+namespace ndt {
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_from_pyobject_kernel<bool_type_id>> {
+    static type make() { return type("(void) -> bool"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_from_pyobject_kernel<int8_type_id>> {
+    static type make() { return type("(void) -> int8"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<int16_type_id>> {
+    static type make() { return type("(void) -> int16"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<int32_type_id>> {
+    static type make() { return type("(void) -> int32"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<int64_type_id>> {
+    static type make() { return type("(void) -> int64"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<int128_type_id>> {
+    static type make() { return type("(void) -> int128"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<uint8_type_id>> {
+    static type make() { return type("(void) -> uint8"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<uint16_type_id>> {
+    static type make() { return type("(void) -> uint16"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<uint32_type_id>> {
+    static type make() { return type("(void) -> uint32"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<uint64_type_id>> {
+    static type make() { return type("(void) -> uint64"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<uint128_type_id>> {
+    static type make() { return type("(void) -> uint128"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<float16_type_id>> {
+    static type make() { return type("(void) -> float16"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<float32_type_id>> {
+    static type make() { return type("(void) -> float32"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<float64_type_id>> {
+    static type make() { return type("(void) -> float64"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<complex_float32_type_id>> {
+    static type make() { return type("(void) -> complex[float32]"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<complex_float64_type_id>> {
+    static type make() { return type("(void) -> complex[float64]"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<bytes_type_id>> {
+    static type make() { return type("(void) -> bytes"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<fixed_bytes_type_id>> {
+    static type make() { return type("(void) -> FixedBytes"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<string_type_id>> {
+    static type make() { return type("(void) -> string"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<fixed_string_type_id>> {
+    static type make() { return type("(void) -> FixedString"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_from_pyobject_kernel<date_type_id>> {
+    static type make() { return type("(void) -> date"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_from_pyobject_kernel<time_type_id>> {
+    static type make() { return type("(void) -> time"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<datetime_type_id>> {
+    static type make() { return type("(void) -> datetime"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::copy_from_pyobject_kernel<type_type_id>> {
+    static type make() { return type("(void) -> type"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<option_type_id>> {
+    static type make() { return type("(void) -> ?Any"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<categorical_type_id>> {
+    static type make() { return type("(void) -> Categorical"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<fixed_dim_type_id>> {
+    static type make()
+    {
+      return type("(void, broadcast: bool) -> Fixed * Any");
+    }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id>> {
+    static type make() { return type("(void, broadcast: bool) -> var * Any"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<tuple_type_id>> {
+    static type make() { return type("(void, broadcast: bool) -> (...)"); }
+  };
+
+  template <>
+  struct type::equivalent<
+      pydynd::nd::copy_from_pyobject_kernel<struct_type_id>> {
+    static type make() { return type("(void, broadcast: bool) -> {...}"); }
+  };
+
+  template <>
+  struct type::equivalent<pydynd::nd::default_copy_from_pyobject_kernel> {
+    static type make() { return type("(void, broadcast: bool) -> Any"); }
+  };
+
+} // namespace dynd::ndt
+} // namespace dynd

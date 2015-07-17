@@ -623,7 +623,7 @@ static void array_from_py_dynamic_first_alloc(
 #if PY_VERSION_HEX >= 0x03000000
   if (PyBytes_Check(obj)) {
     // Special case bytes, because they act as sequences too
-    elem.dtp = ndt::make_bytes(1);
+    elem.dtp = ndt::bytes_type::make(1);
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     bytes_assign(elem.dtp, elem.arrmeta_ptr, coord[current_axis - 1].data_ptr,
                  obj);

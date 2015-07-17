@@ -106,7 +106,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
   }
   else if (PyBytes_Check(obj)) {
     // Python bytes string
-    return ndt::make_bytes(1);
+    return ndt::bytes_type::make(1);
 #endif
   }
   else if (PyUnicode_Check(obj)) {

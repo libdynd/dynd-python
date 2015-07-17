@@ -53,7 +53,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
 
   if (PyBool_Check(obj)) {
     // Python bool
-    return ndt::make_type<dynd::bool1>();
+    return ndt::type::make<dynd::bool1>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyInt_Check(obj)) {
@@ -64,13 +64,13 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     // is independent of sizeof(long), and is the same on 32-bit
     // and 64-bit platforms.
     if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::make_type<int>();
+      return ndt::type::make<int>();
     }
     else {
-      return ndt::make_type<long>();
+      return ndt::type::make<long>();
     }
 #else
-    return ndt::make_type<int>();
+    return ndt::type::make<int>();
 #endif
 #endif // PY_VERSION_HEX < 0x03000000
   }
@@ -84,24 +84,24 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     // is independent of sizeof(long), and is the same on 32-bit
     // and 64-bit platforms.
     if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::make_type<int>();
+      return ndt::type::make<int>();
     }
     else {
-      return ndt::make_type<PY_LONG_LONG>();
+      return ndt::type::make<PY_LONG_LONG>();
     }
   }
   else if (PyFloat_Check(obj)) {
     // Python float
-    return ndt::make_type<double>();
+    return ndt::type::make<double>();
   }
   else if (PyComplex_Check(obj)) {
     // Python complex
-    return ndt::make_type<dynd::complex<double>>();
+    return ndt::type::make<dynd::complex<double>>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyString_Check(obj)) {
     // Python string
-    return ndt::make_string();
+    return ndt::string_type::make();
 #else
   }
   else if (PyBytes_Check(obj)) {
@@ -111,7 +111,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
   }
   else if (PyUnicode_Check(obj)) {
     // Python string
-    return ndt::make_string();
+    return ndt::string_type::make();
   }
   else if (PyDateTime_Check(obj)) {
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&
@@ -119,10 +119,10 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
       throw runtime_error("Converting datetimes with a timezone to dynd arrays "
                           "is not yet supported");
     }
-    return ndt::make_datetime();
+    return ndt::datetime_type::make();
   }
   else if (PyDate_Check(obj)) {
-    return ndt::make_date();
+    return ndt::date_type::make();
   }
   else if (PyTime_Check(obj)) {
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&
@@ -130,7 +130,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
       throw runtime_error("Converting times with a timezone to dynd arrays is "
                           "not yet supported");
     }
-    return ndt::make_time(tz_abstract);
+    return ndt::time_type::make(tz_abstract);
   }
   else if (WType_Check(obj)) {
     return ndt::make_type();
@@ -144,7 +144,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
 #endif // DYND_NUMPY_INTEROP
   }
   else if (obj == Py_None) {
-    return ndt::make_option(ndt::make_type<void>());
+    return ndt::make_option(ndt::type::make<void>());
   }
 
   // Check for a blaze.Array, or something which looks similar,

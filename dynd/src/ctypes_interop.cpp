@@ -138,7 +138,7 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject *cfunc,
   // Get the return type
   if (restype == Py_None) {
     // No return type
-    out_returntype = ndt::make_type<void>();
+    out_returntype = ndt::type::make<void>();
   }
   else {
     out_returntype = _type_from_ctypes_cdatatype(restype);
@@ -190,31 +190,31 @@ dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
 
     switch (proto_str[0]) {
     case 'b':
-      return ndt::make_type<int8_t>();
+      return ndt::type::make<int8_t>();
     case 'B':
-      return ndt::make_type<uint8_t>();
+      return ndt::type::make<uint8_t>();
     case 'c':
-      return ndt::make_fixed_string(1, string_encoding_ascii);
+      return ndt::fixed_string_type::make(1, string_encoding_ascii);
     case 'd':
-      return ndt::make_type<double>();
+      return ndt::type::make<double>();
     case 'f':
-      return ndt::make_type<float>();
+      return ndt::type::make<float>();
     case 'h':
-      return ndt::make_type<int16_t>();
+      return ndt::type::make<int16_t>();
     case 'H':
-      return ndt::make_type<uint16_t>();
+      return ndt::type::make<uint16_t>();
     case 'i':
-      return ndt::make_type<int32_t>();
+      return ndt::type::make<int32_t>();
     case 'I':
-      return ndt::make_type<uint32_t>();
+      return ndt::type::make<uint32_t>();
     case 'l':
-      return ndt::make_type<long>();
+      return ndt::type::make<long>();
     case 'L':
-      return ndt::make_type<unsigned long>();
+      return ndt::type::make<unsigned long>();
     case 'q':
-      return ndt::make_type<int64_t>();
+      return ndt::type::make<int64_t>();
     case 'Q':
-      return ndt::make_type<uint64_t>();
+      return ndt::type::make<uint64_t>();
     default: {
       stringstream ss;
       ss << "The ctypes type code '" << proto_str[0]
@@ -227,7 +227,7 @@ dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
     // Translate into a blockref pointer type
     pyobject_ownref target_tp_obj(PyObject_GetAttrString(d, "_type_"));
     ndt::type target_tp = _type_from_ctypes_cdatatype(target_tp_obj);
-    return ndt::make_pointer(target_tp);
+    return ndt::pointer_type::make(target_tp);
   }
   else if (PyObject_IsSubclass(d, ctypes.PyCStructType_Type)) {
     // Translate into a struct type
@@ -267,7 +267,7 @@ dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
         PyObject_CallMethod(ctypes._ctypes, (char *)"sizeof", (char *)"N", d));
     size_t total_size = pyobject_as_index(total_size_obj.get());
 
-    return ndt::make_struct(field_names, field_types);
+    return ndt::struct_type::make(field_names, field_types);
   }
   else if (PyObject_IsSubclass(d, ctypes.PyCArrayType_Type)) {
     // Translate into a fixed_dim

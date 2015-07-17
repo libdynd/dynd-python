@@ -101,32 +101,32 @@ cdef extern from "dynd/types/fixed_bytes_type.hpp" namespace "dynd":
     _type dynd_make_fixed_bytes_type "dynd::ndt::make_fixed_bytes" (intptr_t, intptr_t) except +translate_exception
 
 cdef extern from "dynd/types/byteswap_type.hpp" namespace "dynd":
-    _type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (_type&) except +translate_exception
-    _type dynd_make_byteswap_type "dynd::ndt::make_byteswap" (_type&, _type&) except +translate_exception
+    _type dynd_make_byteswap_type "dynd::ndt::byteswap_type::make" (_type&) except +translate_exception
+    _type dynd_make_byteswap_type "dynd::ndt::byteswap_type::make" (_type&, _type&) except +translate_exception
 
 cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
-    _type dynd_make_categorical_type "dynd::ndt::make_categorical" (_array&) except +translate_exception
+    _type dynd_make_categorical_type "dynd::ndt::categorical_type::make" (_array&) except +translate_exception
     _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
 cdef extern from "dynd/types/type_alignment.hpp" namespace "dynd":
     _type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (_type&) except +translate_exception
 
 cdef extern from "dynd/types/fixed_dim_kind_type.hpp" namespace "dynd":
-    _type dynd_make_fixed_dim_kind_type "dynd::ndt::make_fixed_dim_kind" (_type&) except +translate_exception
-    _type dynd_make_fixed_dim_kind_type "dynd::ndt::make_fixed_dim_kind" (_type&, intptr_t) except +translate_exception
+    _type dynd_make_fixed_dim_kind_type "dynd::ndt::fixed_dim_kind_type::make" (_type&) except +translate_exception
+    _type dynd_make_fixed_dim_kind_type "dynd::ndt::fixed_dim_kind_type::make" (_type&, intptr_t) except +translate_exception
 
 cdef extern from "dynd/types/pow_dimsym_type.hpp" namespace "dynd":
     _type dynd_make_pow_dimsym_type "dynd::ndt::make_pow_dimsym" (_type&, string&, _type&) except +translate_exception
 
 cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
-    _type dynd_make_var_dim_type "dynd::ndt::make_var_dim" (_type&) except +translate_exception
+    _type dynd_make_var_dim_type "dynd::ndt::var_dim_type::make" (_type&) except +translate_exception
 
 cdef extern from "dynd/types/property_type.hpp" namespace "dynd":
-    _type dynd_make_property_type "dynd::ndt::make_property" (_type&, string) except +translate_exception
-    _type dynd_make_reversed_property_type "dynd::ndt::make_reversed_property" (_type&, _type&, string&) except +translate_exception
+    _type dynd_make_property_type "dynd::ndt::property_type::make" (_type&, string) except +translate_exception
+    _type dynd_make_reversed_property_type "dynd::ndt::property_type::make_reversed" (_type&, _type&, string&) except +translate_exception
 
 cdef extern from "dynd/types/bytes_type.hpp" namespace "dynd":
-    _type dynd_make_bytes_type "dynd::ndt::make_bytes" (size_t) except +translate_exception
+    _type dynd_make_bytes_type "dynd::ndt::bytes_type::make" (size_t) except +translate_exception
 
 cdef extern from "type_functions.hpp" namespace "pydynd":
     void init_w_type_typeobject(object)

@@ -632,7 +632,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
       throw runtime_error("Converting datetimes with a timezone to dynd "
                           "arrays is not yet supported");
     }
-    ndt::type d = ndt::make_datetime();
+    ndt::type d = ndt::datetime_type::make();
     const ndt::datetime_type *dd = d.extended<ndt::datetime_type>();
     result = nd::empty(d);
     dd->set_cal(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
@@ -643,7 +643,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                 PyDateTime_DATE_GET_MICROSECOND(obj) * 10);
   }
   else if (PyDate_Check(obj)) {
-    ndt::type d = ndt::make_date();
+    ndt::type d = ndt::date_type::make();
     const ndt::date_type *dd = d.extended<ndt::date_type>();
     result = nd::empty(d);
     dd->set_ymd(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
@@ -656,7 +656,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
       throw runtime_error("Converting times with a timezone to dynd "
                           "arrays is not yet supported");
     }
-    ndt::type d = ndt::make_time(tz_abstract);
+    ndt::type d = ndt::time_type::make(tz_abstract);
     const ndt::time_type *tt = d.extended<ndt::time_type>();
     result = nd::empty(d);
     tt->set_time(result.get_arrmeta(), result.get_ndo()->m_data_pointer,
@@ -809,7 +809,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
       // a array dimension, prepend a var dim as a special case
       PyObject *iter = PyObject_GetIter(obj);
       if (iter != NULL) {
-        tpfull = ndt::make_var_dim(tp);
+        tpfull = ndt::var_dim_type::make(tp);
       }
       else {
         if (PyErr_Occurred()) {

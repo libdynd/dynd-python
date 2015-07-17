@@ -349,8 +349,8 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
   } else {
     // An assignment kernel which copies one byte - will only
     // be called with count==0 when dtp is uninitialized
-    make_assignment_kernel(&k, 0, ndt::make_type<char>(), NULL,
-                           ndt::make_type<char>(), NULL, kernel_request_strided,
+    make_assignment_kernel(&k, 0, ndt::type::make<char>(), NULL,
+                           ndt::type::make<char>(), NULL, kernel_request_strided,
                            &eval::default_eval_context);
   }
   copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
@@ -613,7 +613,7 @@ static void array_from_py_dynamic_first_alloc(
 #endif
       ) {
     // Special case strings, because they act as sequences too
-    elem.dtp = ndt::make_string();
+    elem.dtp = ndt::string_type::make();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     string_assign(elem.dtp, elem.arrmeta_ptr, coord[current_axis - 1].data_ptr,
                   obj, ectx);
@@ -668,7 +668,7 @@ static void array_from_py_dynamic_first_alloc(
         // start deducing the type yet. To start capturing the
         // dimensional structure, we make an array of
         // int32, while keeping elem.dtp as an uninitialized type.
-        elem.dtp = ndt::make_type<int32_t>();
+        elem.dtp = ndt::type::make<int32_t>();
         arr = allocate_nd_arr(shape, coord, elem, shape.size());
         // Make the dtype uninitialized again, to signal we have
         // deduced anything yet.
@@ -683,7 +683,7 @@ static void array_from_py_dynamic_first_alloc(
   }
 
   if (PyBool_Check(obj)) {
-    elem.dtp = ndt::make_type<dynd::bool1>();
+    elem.dtp = ndt::type::make<dynd::bool1>();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     *coord[current_axis - 1].data_ptr = (obj == Py_True);
     return;
@@ -695,20 +695,20 @@ static void array_from_py_dynamic_first_alloc(
 #if SIZEOF_LONG > SIZEOF_INT
     // Use a 32-bit int if it fits.
     if (value >= INT_MIN && value <= INT_MAX) {
-      elem.dtp = ndt::make_type<int32_t>();
+      elem.dtp = ndt::type::make<int32_t>();
       arr = allocate_nd_arr(shape, coord, elem, shape.size());
       int32_t *result_ptr =
           reinterpret_cast<int32_t *>(coord[current_axis - 1].data_ptr);
       *result_ptr = static_cast<int32_t>(value);
     } else {
-      elem.dtp = ndt::make_type<int64_t>();
+      elem.dtp = ndt::type::make<int64_t>();
       arr = allocate_nd_arr(shape, coord, elem, shape.size());
       int64_t *result_ptr =
           reinterpret_cast<int64_t *>(coord[current_axis - 1].data_ptr);
       *result_ptr = static_cast<int64_t>(value);
     }
 #else
-    elem.dtp = ndt::make_type<int32_t>();
+    elem.dtp = ndt::type::make<int32_t>();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     int32_t *result_ptr =
         reinterpret_cast<int32_t *>(coord[current_axis - 1].data_ptr);
@@ -726,13 +726,13 @@ static void array_from_py_dynamic_first_alloc(
 
     // Use a 32-bit int if it fits.
     if (value >= INT_MIN && value <= INT_MAX) {
-      elem.dtp = ndt::make_type<int32_t>();
+      elem.dtp = ndt::type::make<int32_t>();
       arr = allocate_nd_arr(shape, coord, elem, shape.size());
       int32_t *result_ptr =
           reinterpret_cast<int32_t *>(coord[current_axis - 1].data_ptr);
       *result_ptr = static_cast<int32_t>(value);
     } else {
-      elem.dtp = ndt::make_type<int64_t>();
+      elem.dtp = ndt::type::make<int64_t>();
       arr = allocate_nd_arr(shape, coord, elem, shape.size());
       int64_t *result_ptr =
           reinterpret_cast<int64_t *>(coord[current_axis - 1].data_ptr);
@@ -742,7 +742,7 @@ static void array_from_py_dynamic_first_alloc(
   }
 
   if (PyFloat_Check(obj)) {
-    elem.dtp = ndt::make_type<double>();
+    elem.dtp = ndt::type::make<double>();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     double *result_ptr =
         reinterpret_cast<double *>(coord[current_axis - 1].data_ptr);
@@ -751,7 +751,7 @@ static void array_from_py_dynamic_first_alloc(
   }
 
   if (PyComplex_Check(obj)) {
-    elem.dtp = ndt::make_type<dynd::complex<double>>();
+    elem.dtp = ndt::type::make<dynd::complex<double>>();
     arr = allocate_nd_arr(shape, coord, elem, shape.size());
     dynd::complex<double> *result_ptr =
         reinterpret_cast<dynd::complex<double> *>(
@@ -817,7 +817,7 @@ static void array_from_py_dynamic_first_alloc(
         // start deducing the type yet. To start capturing the
         // dimensional structure, we make an array of
         // int32, while keeping elem.dtp as an uninitialized type.
-        elem.dtp = ndt::make_type<int32_t>();
+        elem.dtp = ndt::type::make<int32_t>();
         arr = allocate_nd_arr(shape, coord, elem, shape.size());
         // Make the dtype uninitialized again, to signal we have
         // deduced anything yet.

@@ -372,7 +372,7 @@ namespace nd {
         throw std::invalid_argument(ss.str());
       }
 
-      dynd::ndt::type bytes_tp = dynd::ndt::make_bytes(1);
+      dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
       dynd::string_type_data bytes_d;
       dynd::string_type_arrmeta bytes_md;
       bytes_d.begin = pybytes_data;
@@ -432,7 +432,7 @@ namespace nd {
           throw std::exception();
         }
 
-        dynd::ndt::type str_tp = dynd::ndt::make_string();
+        dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_data str_d;
         dynd::string_type_arrmeta str_md;
         str_d.begin = s;
@@ -451,7 +451,7 @@ namespace nd {
         }
 
         dynd::ndt::type str_dt =
-            dynd::ndt::make_string(dynd::string_encoding_ascii);
+            dynd::ndt::string_type::make(dynd::string_encoding_ascii);
         dynd::string_type_data str_d;
         dynd::string_type_arrmeta str_md;
         str_d.begin = pystr_data;
@@ -713,7 +713,7 @@ namespace nd {
           throw std::exception();
         }
 
-        dynd::ndt::type str_tp = dynd::ndt::make_string();
+        dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
         dynd::string_type_data str_d;
         str_d.begin = s;
@@ -734,7 +734,7 @@ namespace nd {
           throw std::exception();
         }
 
-        dynd::ndt::type str_tp = dynd::ndt::make_string();
+        dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
         dynd::string_type_data str_d;
         str_d.begin = s;

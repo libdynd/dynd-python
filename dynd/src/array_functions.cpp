@@ -84,7 +84,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
   }
   else {
     // Otherwise, convert to an ASCII string
-    n_str = nd::empty(ndt::make_string(string_encoding_ascii));
+    n_str = nd::empty(ndt::string_type::make(string_encoding_ascii));
     n_str.vals() = n;
   }
   const ndt::base_string_type *bsd =
@@ -117,7 +117,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array &n)
   }
   else {
     // Otherwise, convert to a unicode string
-    n_str = nd::empty(ndt::make_string(DYND_PY_ENCODING));
+    n_str = nd::empty(ndt::string_type::make(DYND_PY_ENCODING));
     n_str.vals() = n;
   }
   const ndt::base_string_type *bsd =
@@ -909,7 +909,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
     selected__types[i] = bsd->get_field_type(selected_index[i]);
   }
   // Create the result udt
-  ndt::type rudt = ndt::make_struct(selected_fields, selected__types);
+  ndt::type rudt = ndt::struct_type::make(selected_fields, selected__types);
   ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
   const ndt::base_struct_type *rudt_bsd =
       rudt.extended<ndt::base_struct_type>();

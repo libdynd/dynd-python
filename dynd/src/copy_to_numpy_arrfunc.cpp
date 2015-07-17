@@ -69,7 +69,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     dynd::arrfunc_type_data *af = const_cast<dynd::arrfunc_type_data *>(
         static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get());
     return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset,
-                           dynd::ndt::make_type<void>(), NULL, nsrc, src_tp,
+                           dynd::ndt::type::make<void>(), NULL, nsrc, src_tp,
                            src_arrmeta, kernreq, ectx, dynd::nd::array(),
                            tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {
@@ -127,7 +127,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     }
 
     vector<dynd::ndt::type> dst_fields_tp(field_count,
-                                          dynd::ndt::make_type<void>());
+                                          dynd::ndt::type::make<void>());
     vector<copy_to_numpy_arrmeta> dst_arrmeta_values(field_count);
     vector<const char *> dst_fields_arrmeta(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
@@ -196,7 +196,7 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
     am.dim_size = PyArray_DIM(dst_arr, (int)i);
   }
   dynd::ndt::type dst_tp = dynd::ndt::make_type(
-      dst_ndim, PyArray_SHAPE(dst_arr), dynd::ndt::make_type<void>());
+      dst_ndim, PyArray_SHAPE(dst_arr), dynd::ndt::type::make<void>());
   dst_am_holder.am.dst_dtype = PyArray_DTYPE(dst_arr);
   dst_am_holder.am.dst_alignment = dst_alignment;
 

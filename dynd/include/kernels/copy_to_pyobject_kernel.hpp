@@ -756,7 +756,7 @@ namespace nd {
           src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail_arrfunc());
       ckb_offset = is_avail_af->instantiate(
           is_avail_af->static_data, 0, NULL, ckb, ckb_offset,
-          dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
+          dynd::ndt::type::make<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, dynd::nd::array(), tp_vars);
       reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
           ->reserve(ckb_offset);

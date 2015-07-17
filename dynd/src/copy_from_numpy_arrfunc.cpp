@@ -118,7 +118,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     }
 
     vector<dynd::ndt::type> src_fields_tp(field_count,
-                                          dynd::ndt::make_type<void>());
+                                          dynd::ndt::type::make<void>());
     vector<copy_from_numpy_arrmeta> src_arrmeta_values(field_count);
     vector<const char *> src_fields_arrmeta(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
@@ -186,7 +186,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
     src_alignment |= static_cast<uintptr_t>(am.stride);
   }
   dynd::ndt::type src_tp = dynd::ndt::make_type(
-      src_ndim, PyArray_SHAPE(src_arr), dynd::ndt::make_type<void>());
+      src_ndim, PyArray_SHAPE(src_arr), dynd::ndt::type::make<void>());
   src_am_holder.am.src_dtype = PyArray_DTYPE(src_arr);
   src_am_holder.am.src_alignment = src_alignment;
 

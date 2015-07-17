@@ -25,7 +25,7 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   pyobject_ownref result;
 
   // TODO: This is a hack, need a proper way to pass this dst param
-  dynd::ndt::type dst_tp = dynd::ndt::make_type<void>();
+  dynd::ndt::type dst_tp = dynd::ndt::type::make<void>();
   dynd::nd::array tmp_dst(
       dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
   tmp_dst.get_ndo()->m_type = dynd::ndt::type(dst_tp).release();

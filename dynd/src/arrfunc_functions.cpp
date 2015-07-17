@@ -101,8 +101,8 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   }
   else {
     ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
-    ndt::type proto = ndt::make_arrfunc(
-        ndt::make_tuple(ndt::make_fixed_dim_kind(el_tp)), el_tp);
+    ndt::type proto = ndt::arrfunc_type::make(
+        ndt::tuple_type::make(ndt::make_fixed_dim_kind(el_tp)), el_tp);
 
     func = pydynd::nd::functional::apply(func_obj, proto);
   }

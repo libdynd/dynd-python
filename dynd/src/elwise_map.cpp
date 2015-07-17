@@ -322,7 +322,7 @@ static PyObject *unary_elwise_map(PyObject *n_obj, PyObject *callable,
     src_tp = n.get_dtype();
   }
 
-  ndt::type edt = ndt::make_unary_expr(
+  ndt::type edt = ndt::unary_expr_type::make(
       dst_tp, src_tp, new pyobject_elwise_expr_kernel_generator(
                           callable, dst_tp, src_tp.value_type()));
   nd::array result = n.replace_dtype(edt, src_tp.get_ndim());
@@ -382,7 +382,7 @@ static PyObject *general_elwise_map(PyObject *n_list, PyObject *callable,
   ndt::type result_vdt = dst_tp;
   for (intptr_t j = 0; j < undim; ++j) {
     if (result_shape[undim - j - 1] == -1) {
-      result_vdt = ndt::make_var_dim(result_vdt);
+      result_vdt = ndt::var_dim_type::make(result_vdt);
     }
     else {
       result_vdt = ndt::make_fixed_dim(result_shape[undim - j - 1], result_vdt);

@@ -189,8 +189,8 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           for (intptr_t j = 0; j < nargs - 1; ++j) {
             param_types[j] = _type_from_numpy_type_num(argtypes[j + 1]);
           }
-          dynd::ndt::type self_tp = dynd::ndt::make_arrfunc(
-              dynd::ndt::make_tuple(param_types), return_type);
+          dynd::ndt::type self_tp = dynd::ndt::arrfunc_type::make(
+              dynd::ndt::tuple_type::make(param_types), return_type);
 
           // Fill in the dynd::nd::arrfunc instance data
           std::shared_ptr<scalar_ufunc_data> data(new scalar_ufunc_data());

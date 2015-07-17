@@ -160,35 +160,35 @@ PyObject *pydynd::_type_get_type_id(const dynd::ndt::type &d)
 static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 {
   if (obj == &PyBool_Type) {
-    return ndt::make_type<bool1>();
+    return ndt::type::make<bool1>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (obj == &PyInt_Type) {
-    return ndt::make_type<int32_t>();
+    return ndt::type::make<int32_t>();
 #endif
   }
   else if (obj == &PyLong_Type) {
-    return ndt::make_type<int32_t>();
+    return ndt::type::make<int32_t>();
   }
   else if (obj == &PyFloat_Type) {
-    return ndt::make_type<double>();
+    return ndt::type::make<double>();
   }
   else if (obj == &PyComplex_Type) {
-    return ndt::make_type<dynd::complex<double>>();
+    return ndt::type::make<dynd::complex<double>>();
   }
   else if (obj == &PyUnicode_Type) {
-    return ndt::make_string();
+    return ndt::string_type::make();
   }
   else if (obj == &PyByteArray_Type) {
-    return ndt::make_bytes(1);
+    return ndt::bytes_type::make(1);
 #if PY_VERSION_HEX >= 0x03000000
   }
   else if (obj == &PyBytes_Type) {
-    return ndt::make_bytes(1);
+    return ndt::bytes_type::make(1);
 #else
   }
   else if (obj == &PyString_Type) {
-    return ndt::make_string();
+    return ndt::string_type::make();
 #endif
   }
   else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
@@ -196,13 +196,13 @@ static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
     return _type_from_ctypes_cdatatype((PyObject *)obj);
   }
   else if (obj == PyDateTimeAPI->DateType) {
-    return ndt::make_date();
+    return ndt::date_type::make();
   }
   else if (obj == PyDateTimeAPI->TimeType) {
-    return ndt::make_time();
+    return ndt::time_type::make();
   }
   else if (obj == PyDateTimeAPI->DateTimeType) {
-    return ndt::make_datetime();
+    return ndt::datetime_type::make();
   }
 
   stringstream ss;
@@ -330,13 +330,13 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
 dynd::ndt::type pydynd::dynd_make_convert_type(const dynd::ndt::type &to_tp,
                                                const dynd::ndt::type &from_tp)
 {
-  return ndt::make_convert(to_tp, from_tp);
+  return ndt::convert_type::make(to_tp, from_tp);
 }
 
 dynd::ndt::type pydynd::dynd_make_view_type(const dynd::ndt::type &value_type,
                                             const dynd::ndt::type &operand_type)
 {
-  return ndt::make_view(value_type, operand_type);
+  return ndt::view_type::make(value_type, operand_type);
 }
 
 dynd::ndt::type pydynd::dynd_make_fixed_string_type(intptr_t size,
@@ -344,19 +344,19 @@ dynd::ndt::type pydynd::dynd_make_fixed_string_type(intptr_t size,
 {
   string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-  return ndt::make_fixed_string(size, encoding);
+  return ndt::fixed_string_type::make(size, encoding);
 }
 
 dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
 {
   string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-  return ndt::make_string(encoding);
+  return ndt::string_type::make(encoding);
 }
 
 dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type &target_tp)
 {
-  return ndt::make_pointer(target_tp);
+  return ndt::pointer_type::make(target_tp);
 }
 
 dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types,
@@ -373,7 +373,7 @@ dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types,
     ss << field_names_vec.size();
     throw invalid_argument(ss.str());
   }
-  return ndt::make_struct(field_names_vec, field_types_vec);
+  return ndt::struct_type::make(field_names_vec, field_types_vec);
 }
 
 dynd::ndt::type

@@ -751,11 +751,10 @@ namespace nd {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck =
           copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
-      dynd::arrfunc_type_data *is_avail_af = const_cast<
-          dynd::arrfunc_type_data *>(
-          src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail_arrfunc());
-      ckb_offset = is_avail_af->instantiate(
-          is_avail_af->static_data, 0, NULL, ckb, ckb_offset,
+      dynd::nd::arrfunc &is_avail =
+          src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail();
+      ckb_offset = is_avail.get()->instantiate(
+          is_avail.get()->static_data, 0, NULL, ckb, ckb_offset,
           dynd::ndt::type::make<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, dynd::nd::array(), tp_vars);
       reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
@@ -1360,5 +1359,5 @@ namespace ndt {
     static type make() { return type("(Any) -> void"); }
   };
 
-} // namespace dynd::ndt 
+} // namespace dynd::ndt
 } // namespace dynd

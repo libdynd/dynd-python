@@ -15,7 +15,6 @@
 
 #include <dynd/type.hpp>
 #include <dynd/string_encodings.hpp>
-#include "placement_wrappers.hpp"
 
 namespace pydynd {
 
@@ -31,11 +30,13 @@ inline bool WType_Check(PyObject *obj)
 {
   return PyObject_TypeCheck(obj, WType_Type);
 }
+
 struct WType {
   PyObject_HEAD;
   // This is _type_placement_wrapper in Cython-land
   dynd::ndt::type v;
 };
+
 void init_w_type_typeobject(PyObject *type);
 
 inline PyObject *wrap__type(const dynd::ndt::type &d)
@@ -44,13 +45,13 @@ inline PyObject *wrap__type(const dynd::ndt::type &d)
   if (!result) {
     throw std::runtime_error("");
   }
+
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  pydynd::placement_new(
-      reinterpret_cast<pydynd::_type_placement_wrapper &>(result->v));
-  result->v = d;
+  new (&result->v) dynd::ndt::type(d);
   return (PyObject *)result;
 }
+
 #ifdef DYND_RVALUE_REFS
 inline PyObject *wrap__type(dynd::ndt::type &&d)
 {

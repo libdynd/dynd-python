@@ -175,9 +175,6 @@ set(pydynd_CPP_SRC
     dynd/include/copy_to_pyobject_arrfunc.hpp
     dynd/include/ctypes_interop.hpp
     dynd/include/do_import_array.hpp
-    dynd/include/elwise_gfunc_functions.hpp
-    dynd/include/elwise_map.hpp
-    dynd/include/elwise_reduce_gfunc_functions.hpp
     dynd/include/eval_context_functions.hpp
     dynd/include/exception_translation.hpp
     dynd/include/gfunc_callable_functions.hpp
@@ -185,11 +182,9 @@ set(pydynd_CPP_SRC
     dynd/include/init.hpp
     dynd/include/numpy_interop.hpp
     dynd/include/numpy_ufunc_kernel.hpp
-    dynd/include/placement_wrappers.hpp
     dynd/include/py_lowlevel_api.hpp
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
-    dynd/include/vm_elwise_program_functions.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
     dynd/src/array_as_py.cpp
@@ -206,9 +201,6 @@ set(pydynd_CPP_SRC
     dynd/src/copy_to_numpy_arrfunc.cpp
     dynd/src/copy_to_pyobject_arrfunc.cpp
     dynd/src/ctypes_interop.cpp
-    dynd/src/elwise_map.cpp
-    dynd/src/elwise_gfunc_functions.cpp
-    dynd/src/elwise_reduce_gfunc_functions.cpp
     dynd/src/eval_context_functions.cpp
     dynd/src/exception_translation.cpp
     dynd/src/gfunc_callable_functions.cpp
@@ -220,7 +212,6 @@ set(pydynd_CPP_SRC
     dynd/src/py_lowlevel_api.cpp
     dynd/src/type_functions.cpp
     dynd/src/utility_functions.cpp
-    dynd/src/vm_elwise_program_functions.cpp
     )
 set(pydynd_CYTHON_SRC
     dynd/cuda.pyx
@@ -231,10 +222,7 @@ set(pydynd_CYTHON_SRC
     dynd/eval_context.pxd
     dynd/translate_except.pxd
     dynd/nd/array.pxd
-    dynd/nd/elwise_gfunc.pxd
-    dynd/nd/elwise_reduce_gfunc.pxd
     dynd/nd/gfunc_callable.pxd
-    dynd/nd/vm_elwise_program.pxd
     dynd/ndt/type.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)

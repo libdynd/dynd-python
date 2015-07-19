@@ -31,11 +31,13 @@ inline bool WType_Check(PyObject *obj)
 {
   return PyObject_TypeCheck(obj, WType_Type);
 }
+
 struct WType {
   PyObject_HEAD;
   // This is _type_placement_wrapper in Cython-land
   dynd::ndt::type v;
 };
+
 void init_w_type_typeobject(PyObject *type);
 
 inline PyObject *wrap__type(const dynd::ndt::type &d)

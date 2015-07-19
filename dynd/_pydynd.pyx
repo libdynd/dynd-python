@@ -167,28 +167,26 @@ cdef class w_type:
     # which returns a reference to the ndt::type, and
     # SET(self.v, <ndt::type value>), which sets the embedded
     # ndt::type's value.
-    cdef _type_placement_wrapper v
+
+    cdef _type v
 
     def __cinit__(self, rep=None):
-        placement_new(self.v)
         if rep is not None:
-            SET(self.v, make__type_from_pyobject(rep))
-    def __dealloc__(self):
-        placement_delete(self.v)
+            self.v = make__type_from_pyobject(rep)
 
     def __dir__(self):
         # Customize dir() so that additional properties of various types
         # will show up in IPython tab-complete, for example.
         result = dict(w_type.__dict__)
         result.update(object.__dict__)
-        add__type_names_to_dir_dict(GET(self.v), result)
+        add__type_names_to_dir_dict(self.v, result)
         return result.keys()
 
     def __call__(self, *args, **kwargs):
-        return call__type_constructor_function(GET(self.v), args, kwargs)
+        return call__type_constructor_function(self.v, args, kwargs)
 
     def __getattr__(self, name):
-        return get__type_dynamic_property(GET(self.v), name)
+        return get__type_dynamic_property(self.v, name)
 
     def match(self, rhs):
         """
@@ -210,7 +208,7 @@ cdef class w_type:
         >>> ndt.type("M * {x: ?T, y: T}").match("10 * {x : ?int32, y : ?int32}")
         False
         """
-        return GET(self.v).match(GET(w_type(rhs).v))
+        return self.v.match(w_type(rhs).v)
 
     property shape:
         """
@@ -221,7 +219,7 @@ cdef class w_type:
         array arrmeta or array data, a -1 is returned.
         """
         def __get__(self):
-            return _type_get_shape(GET(self.v))
+            return _type_get_shape(self.v)
 
     property dshape:
         """
@@ -230,7 +228,7 @@ cdef class w_type:
         The blaze datashape of the dynd type, as a string.
         """
         def __get__(self):
-            return str(<char *>dynd_format_datashape(GET(self.v)).c_str())
+            return str(<char *>dynd_format_datashape(self.v).c_str())
 
     property data_size:
         """
@@ -244,7 +242,7 @@ cdef class w_type:
         struct types require such arrmeta.
         """
         def __get__(self):
-            cdef ssize_t result = (GET(self.v)).get_data_size()
+            cdef ssize_t result = self.v.get_data_size()
             if result > 0:
                 return result
             else:
@@ -258,7 +256,7 @@ cdef class w_type:
         instance of this dynd type.
         """
         def __get__(self):
-            return (GET(self.v)).get_default_data_size()
+            return self.v.get_default_data_size()
 
     property data_alignment:
         """
@@ -272,7 +270,7 @@ cdef class w_type:
         requires an adapter transformation applied.
         """
         def __get__(self):
-            return GET(self.v).get_data_alignment()
+            return self.v.get_data_alignment()
 
     property arrmeta_size:
         """
@@ -282,7 +280,7 @@ cdef class w_type:
         this dynd type.
         """
         def __get__(self):
-            return GET(self.v).get_arrmeta_size()
+            return self.v.get_arrmeta_size()
 
     property kind:
         """
@@ -295,7 +293,7 @@ cdef class w_type:
         'expression'.
         """
         def __get__(self):
-            return _type_get_kind(GET(self.v))
+            return _type_get_kind(self.v)
 
     property type_id:
         """
@@ -307,7 +305,7 @@ cdef class w_type:
         'float64', 'complex_float32', 'string', 'byteswap'.
         """
         def __get__(self):
-            return _type_get_type_id(GET(self.v))
+            return _type_get_type_id(self.v)
 
     property ndim:
         """
@@ -321,7 +319,7 @@ cdef class w_type:
         example structs can be indexed this way.
         """
         def __get__(self):
-            return GET(self.v).get_ndim()
+            return self.v.get_ndim()
 
     property dtype:
         """
@@ -335,7 +333,7 @@ cdef class w_type:
         """
         def __get__(self):
             cdef w_type result = w_type()
-            SET(result.v, GET(self.v).get_dtype())
+            result.v = self.v.get_dtype()
             return result;
 
     property value_type:
@@ -348,7 +346,7 @@ cdef class w_type:
         """
         def __get__(self):
             cdef w_type result = w_type()
-            SET(result.v, GET(self.v).value_type())
+            result.v = self.v.value_type()
             return result
 
     property operand_type:
@@ -361,7 +359,7 @@ cdef class w_type:
         """
         def __get__(self):
             cdef w_type result = w_type()
-            SET(result.v, GET(self.v).operand_type())
+            result.v = self.v.operand_type()
             return result
 
     property canonical_type:
@@ -374,7 +372,7 @@ cdef class w_type:
         """
         def __get__(self):
             cdef w_type result = w_type()
-            SET(result.v, GET(self.v).get_canonical_type())
+            result.v = self.v.get_canonical_type()
             return result
 
     property property_names:
@@ -385,7 +383,7 @@ cdef class w_type:
         of this type.
         """
         def __get__(self):
-            return _type_array_property_names(GET(self.v))
+            return _type_array_property_names(self.v)
 
     def as_numpy(self):
         """
@@ -401,28 +399,28 @@ cdef class w_type:
         >>> ndt.int32.as_numpy()
         dtype('int32')
         """
-        return numpy_dtype_obj_from__type(GET(self.v))
+        return numpy_dtype_obj_from__type(self.v)
 
     def __getitem__(self, x):
         cdef w_type result = w_type()
-        SET(result.v, _type_getitem(GET(self.v), x))
+        result.v = _type_getitem(self.v, x)
         return result
 
     def __str__(self):
-        return str(<char *>_type_str(GET(self.v)).c_str())
+        return str(<char *>_type_str(self.v).c_str())
 
     def __repr__(self):
-        return str(<char *>_type_repr(GET(self.v)).c_str())
+        return str(<char *>_type_repr(self.v).c_str())
 
     def __richcmp__(lhs, rhs, int op):
         if op == Py_EQ:
             if type(lhs) == w_type and type(rhs) == w_type:
-                return GET((<w_type>lhs).v) == GET((<w_type>rhs).v)
+                return (<w_type>lhs).v == (<w_type>rhs).v
             else:
                 return False
         elif op == Py_NE:
             if type(lhs) == w_type and type(rhs) == w_type:
-                return GET((<w_type>lhs).v) != GET((<w_type>rhs).v)
+                return (<w_type>lhs).v != (<w_type>rhs).v
             else:
                 return False
         return NotImplemented
@@ -456,7 +454,7 @@ def replace_dtype(w_type dt, replacement_dt, size_t replace_ndim=0):
     ndt.type("3 * {x : int32, y : int32}")
     """
     cdef w_type result = w_type()
-    SET(result.v, GET(dt.v).with_replaced_dtype(GET(w_type(replacement_dt).v), replace_ndim))
+    result.v = dt.v.with_replaced_dtype(w_type(replacement_dt).v, replace_ndim)
     return result
 
 def extract_dtype(dt, size_t include_ndim=0):
@@ -486,7 +484,7 @@ def extract_dtype(dt, size_t include_ndim=0):
     ndt.type("var * int32")
     """
     cdef w_type result = w_type()
-    SET(result.v, GET(w_type(dt).v).get_dtype(include_ndim))
+    result.v = w_type(dt).v.get_dtype(include_ndim)
     return result
 
 def make_byteswap(builtin_type, operand_type=None):
@@ -515,9 +513,9 @@ def make_byteswap(builtin_type, operand_type=None):
     """
     cdef w_type result = w_type()
     if operand_type is None:
-        SET(result.v, dynd_make_byteswap_type(GET(w_type(builtin_type).v)))
+        result.v = dynd_make_byteswap_type(w_type(builtin_type).v)
     else:
-        SET(result.v, dynd_make_byteswap_type(GET(w_type(builtin_type).v), GET(w_type(operand_type).v)))
+        result.v = dynd_make_byteswap_type(w_type(builtin_type).v, w_type(operand_type).v)
     return result
 
 def make_fixed_bytes(int data_size, int data_alignment=1):
@@ -544,7 +542,7 @@ def make_fixed_bytes(int data_size, int data_alignment=1):
     ndt.type("bytes[6, align=2]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixed_bytes_type(data_size, data_alignment))
+    result.v = dynd_make_fixed_bytes_type(data_size, data_alignment)
     return result
 
 def make_convert(to_tp, from_tp):
@@ -571,7 +569,7 @@ def make_convert(to_tp, from_tp):
     ndt.type("convert[to=int16, from=float32]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_convert_type(GET(w_type(to_tp).v), GET(w_type(from_tp).v)))
+    result.v = dynd_make_convert_type(w_type(to_tp).v, w_type(from_tp).v)
     return result
 
 def make_view(value_type, operand_type):
@@ -598,7 +596,7 @@ def make_view(value_type, operand_type):
     ndt.type("view[as=int32, original=uint32]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_view_type(GET(w_type(value_type).v), GET(w_type(operand_type).v)))
+    result.v = dynd_make_view_type(w_type(value_type).v, w_type(operand_type).v)
     return result
 
 def make_unaligned(aligned_tp):
@@ -624,7 +622,7 @@ def make_unaligned(aligned_tp):
     ndt.uint8
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_unaligned_type(GET(w_type(aligned_tp).v)))
+    result.v = dynd_make_unaligned_type(w_type(aligned_tp).v)
     return result
 
 def make_fixed_string(int size, encoding=None):
@@ -655,7 +653,7 @@ def make_fixed_string(int size, encoding=None):
     ndt.type("string[10,'utf32']")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixed_string_type(size, encoding))
+    result.v = dynd_make_fixed_string_type(size, encoding)
     return result
 
 def make_string(encoding=None):
@@ -682,7 +680,7 @@ def make_string(encoding=None):
     ndt.type("string['utf16']")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_string_type(encoding))
+    result.v = dynd_make_string_type(encoding)
     return result
 
 def make_bytes(size_t alignment=1):
@@ -707,7 +705,7 @@ def make_bytes(size_t alignment=1):
     ndt.type("bytes[align=4]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_bytes_type(alignment))
+    result.v = dynd_make_bytes_type(alignment)
     return result
 
 def make_pointer(target_tp):
@@ -723,7 +721,7 @@ def make_pointer(target_tp):
         the '*' in C/C++ type declarations.
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_pointer_type(GET(w_type(target_tp).v)))
+    result.v = dynd_make_pointer_type(w_type(target_tp).v)
     return result
 
 def make_fixed_dim_kind(element_tp, ndim=None):
@@ -753,9 +751,9 @@ def make_fixed_dim_kind(element_tp, ndim=None):
     """
     cdef w_type result = w_type()
     if (ndim is None):
-        SET(result.v, dynd_make_fixed_dim_kind_type(GET(w_type(element_tp).v)))
+        result.v = dynd_make_fixed_dim_kind_type(w_type(element_tp).v)
     else:
-        SET(result.v, dynd_make_fixed_dim_kind_type(GET(w_type(element_tp).v), int(ndim)))
+        result.v = dynd_make_fixed_dim_kind_type(w_type(element_tp).v, int(ndim))
     return result
 
 def make_pow_dimsym(base_tp, exponent, element_tp):
@@ -782,8 +780,8 @@ def make_pow_dimsym(base_tp, exponent, element_tp):
 
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_pow_dimsym_type(GET(w_type(base_tp).v), exponent,
-                                            GET(w_type(element_tp).v)))
+    result.v = dynd_make_pow_dimsym_type(w_type(base_tp).v, exponent,
+                                         w_type(element_tp).v)
     return result
 
 def make_fixed_dim(shape, element_tp):
@@ -809,7 +807,7 @@ def make_fixed_dim(shape, element_tp):
     ndt.type("3 * 5 * int32")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_fixed_dim_type(shape, GET(w_type(element_tp).v)))
+    result.v = dynd_make_fixed_dim_type(shape, w_type(element_tp).v)
     return result
 
 def make_struct(field_types, field_names):
@@ -838,7 +836,7 @@ def make_struct(field_types, field_names):
     ndt.type("{x : int32, y : float64}")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_struct_type(field_types, field_names))
+    result.v = dynd_make_struct_type(field_types, field_names)
     return result
 
 def make_var_dim(element_tp):
@@ -860,7 +858,7 @@ def make_var_dim(element_tp):
     ndt.type("var * float32")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_var_dim_type(GET(w_type(element_tp).v)))
+    result.v = dynd_make_var_dim_type(w_type(element_tp).v)
     return result
 
 def make_property(operand_tp, name):
@@ -883,7 +881,7 @@ def make_property(operand_tp, name):
     """
     cdef w_type result = w_type()
     n = str(name)
-    SET(result.v, dynd_make_property_type(GET(w_type(operand_tp).v), string(<const char *>n)))
+    result.v = dynd_make_property_type(w_type(operand_tp).v, string(<const char *>n))
     return result
 
 def make_reversed_property(value_tp, operand_tp, name):
@@ -909,8 +907,8 @@ def make_reversed_property(value_tp, operand_tp, name):
     """
     cdef w_type result = w_type()
     n = str(name)
-    SET(result.v, dynd_make_reversed_property_type(GET(w_type(value_tp).v),
-                                                   GET(w_type(operand_tp).v), string(<const char *>n)))
+    result.v = dynd_make_reversed_property_type(w_type(value_tp).v,
+                                                w_type(operand_tp).v, string(<const char *>n))
     return result
 
 def make_categorical(values):
@@ -940,7 +938,7 @@ def make_categorical(values):
     ndt.type("categorical[string, [\"sunny\", \"rainy\", \"cloudy\", \"stormy\"]]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_make_categorical_type(GET(w_array(values).v)))
+    result.v = dynd_make_categorical_type(GET(w_array(values).v))
     return result
 
 def factor_categorical(values):
@@ -966,7 +964,7 @@ def factor_categorical(values):
     ndt.type("categorical[string, [\"F\", \"M\"]]")
     """
     cdef w_type result = w_type()
-    SET(result.v, dynd_factor_categorical_type(GET(w_array(values).v)))
+    result.v = dynd_factor_categorical_type(GET(w_array(values).v))
     return result
 
 ##############################################################################
@@ -1181,7 +1179,7 @@ cdef class w_array:
             The type is cast into this type.
         """
         cdef w_array result = w_array()
-        SET(result.v, array_cast(GET(self.v), GET(w_type(type).v)))
+        SET(result.v, array_cast(GET(self.v), w_type(type).v))
         return result
 
     def ucast(self, dtype, int replace_ndim=0):
@@ -1214,7 +1212,7 @@ cdef class w_array:
         nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
         """
         cdef w_array result = w_array()
-        SET(result.v, array_ucast(GET(self.v), GET(w_type(dtype).v), replace_ndim))
+        SET(result.v, array_ucast(GET(self.v), w_type(dtype).v, replace_ndim))
         return result
 
     def view_scalars(self, dtype):
@@ -1238,7 +1236,7 @@ cdef class w_array:
             The scalars are viewed as this dtype.
         """
         cdef w_array result = w_array()
-        SET(result.v, GET(self.v).view_scalars(GET(w_type(dtype).v)))
+        SET(result.v, GET(self.v).view_scalars(w_type(dtype).v))
         return result
 
     def flag_as_immutable(self):
@@ -1284,13 +1282,13 @@ cdef class w_array:
     property type:
         def __get__(self):
             cdef w_type result = w_type()
-            SET(result.v, GET(self.v).get_type())
+            result.v = GET(self.v).get_type()
             return result
 
     property dtype:
         def __get__(self):
             cdef w_type result = w_type()
-            SET(result.v, GET(self.v).get_dtype())
+            result.v = GET(self.v).get_dtype()
             return result
 
     def __repr__(self):
@@ -1512,7 +1510,7 @@ def type_of(w_array a):
     ndt.type("2 * var * float64")
     """
     cdef w_type result = w_type()
-    SET(result.v, GET(a.v).get_type())
+    result.v = GET(a.v).get_type()
     return result
 
 def dshape_of(w_array a):
@@ -1548,7 +1546,7 @@ def dtype_of(w_array a, size_t include_ndim=0):
         in the data type, default zero.
     """
     cdef w_type result = w_type()
-    SET(result.v, GET(a.v).get_dtype(include_ndim))
+    result.v = GET(a.v).get_dtype(include_ndim)
     return result
 
 def ndim_of(w_array a):
@@ -1683,13 +1681,13 @@ def zeros(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_zeros(GET(w_type(args[0]).v), access))
+        SET(result.v, array_zeros(w_type(args[0]).v, access))
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_zeros(args[0], GET(w_type(args[1]).v), access))
+        SET(result.v, array_zeros(args[0], w_type(args[1]).v, access))
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_zeros(args[:-1], GET(w_type(args[-1]).v), access))
+        SET(result.v, array_zeros(args[:-1], w_type(args[-1]).v, access))
     else:
         raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
     return result
@@ -1731,13 +1729,13 @@ def ones(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_ones(GET(w_type(args[0]).v), access))
+        SET(result.v, array_ones(w_type(args[0]).v, access))
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_ones(args[0], GET(w_type(args[1]).v), access))
+        SET(result.v, array_ones(args[0], w_type(args[1]).v, access))
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_ones(args[:-1], GET(w_type(args[-1]).v), access))
+        SET(result.v, array_ones(args[:-1], w_type(args[-1]).v, access))
     else:
         raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
     return result
@@ -1797,13 +1795,13 @@ def full(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_full(GET(w_type(args[0]).v), value, access))
+        SET(result.v, array_full(w_type(args[0]).v, value, access))
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_full(args[0], GET(w_type(args[1]).v), value, access))
+        SET(result.v, array_full(args[0], w_type(args[1]).v, value, access))
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_full(args[:-1], GET(w_type(args[-1]).v), value, access))
+        SET(result.v, array_full(args[:-1], w_type(args[-1]).v, value, access))
     else:
         raise TypeError('nd.full() expected at least 1 positional argument, got 0')
     return result
@@ -1853,13 +1851,13 @@ def empty(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_empty(GET(w_type(args[0]).v), access))
+        SET(result.v, array_empty(w_type(args[0]).v, access))
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_empty(args[0], GET(w_type(args[1]).v), access))
+        SET(result.v, array_empty(args[0], w_type(args[1]).v, access))
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_empty(args[:-1], GET(w_type(args[-1]).v), access))
+        SET(result.v, array_empty(args[:-1], w_type(args[-1]).v, access))
     else:
         raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
     return result
@@ -1898,7 +1896,7 @@ def empty_like(w_array prototype, dtype=None):
     if dtype is None:
         SET(result.v, array_empty_like(GET(prototype.v)))
     else:
-        SET(result.v, array_empty_like(GET(prototype.v), GET(w_type(dtype).v)))
+        SET(result.v, array_empty_like(GET(prototype.v), w_type(dtype).v))
     return result
 
 def memmap(filename, begin=None, end=None, access=None):
@@ -1987,7 +1985,7 @@ def groupby(data, by, groups = None):
             SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v),
                             dynd_make_categorical_type(GET(w_array(groups).v))))
         else:
-            SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v), GET(w_type(groups).v)))
+            SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v), w_type(groups).v))
     return result
 
 def range(start=None, stop=None, step=None, dtype=None):
@@ -2100,7 +2098,7 @@ def parse_json(type, json, ectx=None):
     if builtin_type(type) is w_array:
         dynd_parse_json_array(GET((<w_array>type).v), GET(w_array(json).v), ectx)
     else:
-        SET(result.v, dynd_parse_json_type(GET(w_type(type).v), GET(w_array(json).v), ectx))
+        SET(result.v, dynd_parse_json_type(w_type(type).v, GET(w_array(json).v), ectx))
         return result
 
 def format_json(w_array a, bint tuple=False):

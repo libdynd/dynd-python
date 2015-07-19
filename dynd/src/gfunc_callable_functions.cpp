@@ -35,7 +35,7 @@ void pydynd::init_w__type_callable_typeobject(PyObject *type)
 void pydynd::add__type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
 {
   if (!dt.is_builtin()) {
-    const std::pair<std::string, gfunc::callable> *properties;
+    const std::pair<std::string, nd::arrfunc> *properties;
     size_t count;
     // Add the type properties
     dt.extended()->get_dynamic_type_properties(&properties, &count);
@@ -57,10 +57,10 @@ void pydynd::add__type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
 }
 
 PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
-                                                PyObject *name)
+                                             PyObject *name)
 {
   if (!dt.is_builtin()) {
-    const std::pair<std::string, gfunc::callable> *properties;
+    const std::pair<std::string, nd::arrfunc> *properties;
     size_t count;
     // Search for a property
     dt.extended()->get_dynamic_type_properties(&properties, &count);
@@ -70,7 +70,10 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
       string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == nstr) {
-          return call_gfunc_callable(nstr, properties[i].second, dt);
+          return wrap_array(const_cast<dynd::nd::arrfunc &>(
+              properties[i].second)(dynd::kwds("self", dt)));
+          //          return call_gfunc_callable(nstr, properties[i].second,
+          //          dt);
         }
       }
     }
@@ -113,8 +116,7 @@ void pydynd::add_array_names_to_dir_dict(const dynd::nd::array &n,
         throw runtime_error("");
       }
     }
-  }
-  else {
+  } else {
     const std::pair<std::string, gfunc::callable> *properties;
     size_t count;
     // Add the array properties
@@ -143,8 +145,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
   // Search for a property
   if (!dt.is_builtin()) {
     dt.extended()->get_dynamic_array_properties(&properties, &count);
-  }
-  else {
+  } else {
     get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties,
                                               &count);
   }
@@ -161,8 +162,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
   // Search for a function
   if (!dt.is_builtin()) {
     dt.extended()->get_dynamic_array_functions(&properties, &count);
-  }
-  else {
+  } else {
     count = 0;
   }
   if (count > 0) {
@@ -187,8 +187,7 @@ void pydynd::set_array_dynamic_property(const dynd::nd::array &n,
   // Search for a property
   if (!dt.is_builtin()) {
     dt.extended()->get_dynamic_array_properties(&properties, &count);
-  }
-  else {
+  } else {
     get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties,
                                               &count);
   }
@@ -258,8 +257,7 @@ static void set_single_parameter(const ndt::type &paramtype, char *arrmeta,
     out_storage.push_back(
         array_from_py(value, 0, false, &eval::default_eval_context));
     *(const void **)data = out_storage.back().get_ndo();
-  }
-  else {
+  } else {
     array_no_dim_broadcast_assign_from_py(paramtype, arrmeta, data, value,
                                           &eval::default_eval_context);
   }
@@ -287,8 +285,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string &funcname,
   nd::array result = c.call_generic(params);
   if (result.get_type().is_scalar()) {
     return array_as_py(result, false);
-  }
-  else {
+  } else {
     return wrap_array(result);
   }
 }
@@ -422,8 +419,7 @@ static void fill_thiscall_parameters_array(const string &funcname,
         throw runtime_error(ss.str());
       }
     }
-  }
-  else if (args_count < param_count) {
+  } else if (args_count < param_count) {
     // Fill in missing parameters from the defaults
     const nd::array &default_parameters = c.get_default_parameters();
     if (!default_parameters.is_null()) {
@@ -442,15 +438,13 @@ static void fill_thiscall_parameters_array(const string &funcname,
                           default_parameters.get_ndo()->m_data_pointer +
                               data_offset);
         }
-      }
-      else {
+      } else {
         stringstream ss;
         ss << "not enough arguments for dynd callable \"" << funcname
            << "\" with parameters " << pdt;
         throw runtime_error(ss.str());
       }
-    }
-    else {
+    } else {
       stringstream ss;
       ss << "not enough arguments for dynd callable \"" << funcname
          << "\" with parameters " << pdt;
@@ -500,8 +494,8 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper &ncw,
 }
 
 PyObject *pydynd::wrap__type_callable(const std::string &funcname,
-                                         const dynd::gfunc::callable &c,
-                                         const dynd::ndt::type &d)
+                                      const dynd::nd::arrfunc &c,
+                                      const dynd::ndt::type &d)
 {
   WTypeCallable *result =
       (WTypeCallable *)WTypeCallable_Type->tp_alloc(WTypeCallable_Type, 0);
@@ -510,8 +504,8 @@ PyObject *pydynd::wrap__type_callable(const std::string &funcname,
   }
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  placement_new(reinterpret_cast<pydynd::_type_callable_placement_wrapper &>(
-      result->v));
+  placement_new(
+      reinterpret_cast<pydynd::_type_callable_placement_wrapper &>(result->v));
   result->v.d = d;
   result->v.c = c;
   result->v.funcname = funcname;
@@ -519,49 +513,74 @@ PyObject *pydynd::wrap__type_callable(const std::string &funcname,
 }
 
 static PyObject *_type_callable_call(const std::string &funcname,
-                                        const gfunc::callable &c,
-                                        const ndt::type &d, PyObject *args,
-                                        PyObject *kwargs)
+                                     const nd::arrfunc &c, const ndt::type &d,
+                                     PyObject *args, PyObject *kwargs)
 {
-  const ndt::type &pdt = c.get_parameters_type();
-  vector<nd::array> storage;
-  nd::array params = nd::empty(pdt);
-  const ndt::struct_type *fsdt = pdt.extended<ndt::struct_type>();
-  // Set the 'self' parameter value
-  set_single_parameter(funcname, fsdt->get_field_name(0),
-                       fsdt->get_field_type(0),
-                       params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
-                       params.get_ndo()->m_data_pointer +
-                           fsdt->get_data_offsets(params.get_arrmeta())[0],
-                       d);
+  return NULL;
 
-  fill_thiscall_parameters_array(funcname, c, args, kwargs, params, storage);
+  // Convert kwds into nd::arrays
+  intptr_t nkwd = PyDict_Size(kwargs);
+  vector<string> kwd_names_strings(nkwd);
+  std::vector<const char *> kwd_names(nkwd);
+  std::vector<dynd::nd::array> kwd_values(nkwd);
+  PyObject *key, *value;
+  for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwargs, &i, &key, &value); ++j) {
+    kwd_names_strings[j] = pystring_as_string(key);
+    kwd_names[j] = kwd_names_strings[j].c_str();
+    kwd_values[j] = array_from_py(value, 0, false, &dynd::eval::default_eval_context);
+  }
 
-  return wrap_array(c.call_generic(params));
+  kwd_names_strings.insert(kwd_names_strings.begin(), "self");
+  kwd_names.insert(kwd_names.begin(), "self");
+  kwd_values.insert(kwd_values.begin(), d);
+
+  dynd::nd::array result =
+      const_cast<nd::arrfunc &>(c)(0, static_cast<nd::array *>(NULL),
+         kwds(nkwd + 1, kwd_names.empty() ? NULL : kwd_names.data(),
+              kwd_values.empty() ? NULL : kwd_values.data()));
+  return wrap_array(result);
+
+  /*
+    const ndt::type &pdt = c.get_parameters_type();
+    vector<nd::array> storage;
+    nd::array params = nd::empty(pdt);
+    const ndt::struct_type *fsdt = pdt.extended<ndt::struct_type>();
+    // Set the 'self' parameter value
+    set_single_parameter(funcname, fsdt->get_field_name(0),
+                         fsdt->get_field_type(0),
+                         params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
+                         params.get_ndo()->m_data_pointer +
+                             fsdt->get_data_offsets(params.get_arrmeta())[0],
+                         d);
+
+    fill_thiscall_parameters_array(funcname, c, args, kwargs, params, storage);
+
+    return wrap_array(c.call_generic(params));
+  */
+
+  return NULL;
 }
 
 PyObject *pydynd::_type_callable_call(const _type_callable_wrapper &dcw,
-                                         PyObject *args, PyObject *kwargs)
+                                      PyObject *args, PyObject *kwargs)
 {
   return _type_callable_call(dcw.funcname, dcw.c, dcw.d, args, kwargs);
 }
 
 PyObject *pydynd::call__type_constructor_function(const dynd::ndt::type &dt,
-                                                     PyObject *args,
-                                                     PyObject *kwargs)
+                                                  PyObject *args,
+                                                  PyObject *kwargs)
 {
   // First find the __construct__ callable
   if (!dt.is_builtin()) {
-    const std::pair<std::string, gfunc::callable> *properties;
+    const std::pair<std::string, nd::arrfunc> *properties;
     size_t count;
     // Search for a function
     dt.extended()->get_dynamic_type_functions(&properties, &count);
     if (count > 0) {
       for (size_t i = 0; i < count; ++i) {
-        if (properties[i].first == "__construct__") {
-          return _type_callable_call("__construct__", properties[i].second,
-                                        dt, args, kwargs);
-        }
+        return _type_callable_call("self", properties[i].second, dt, args,
+                                   kwargs);
       }
     }
   }

@@ -771,15 +771,10 @@ namespace nd {
 
       intptr_t root_ckb_offset = ckb_offset;
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
-      dynd::arrfunc_type_data *assign_na_af =
-          const_cast<dynd::arrfunc_type_data *>(
-              dst_tp.extended<dynd::ndt::option_type>()
-                  ->get_assign_na_arrfunc());
-      const dynd::ndt::arrfunc_type *assign_na_af_tp =
-          dst_tp.extended<dynd::ndt::option_type>()
-              ->get_assign_na_arrfunc_type();
-      ckb_offset = assign_na_af->instantiate(
-          assign_na_af->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
+      dynd::nd::arrfunc assign_na =
+          dst_tp.extended<dynd::ndt::option_type>()->get_assign_na();
+      ckb_offset = assign_na.get()->instantiate(
+          assign_na.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
           dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single, ectx,
           kwds, tp_vars);
       copy_from_pyobject_kernel *self = get_self(

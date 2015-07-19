@@ -9,6 +9,7 @@
 #include <Python.h>
 
 #include <dynd/type.hpp>
+#include <dynd/func/arrfunc.hpp>
 #include <dynd/func/callable.hpp>
 
 #include <sstream>
@@ -49,7 +50,7 @@ PyObject *array_callable_call(const array_callable_wrapper &ncw, PyObject *args,
 
 struct _type_callable_wrapper {
   dynd::ndt::type d;
-  dynd::gfunc::callable c;
+  dynd::nd::arrfunc c;
   std::string funcname;
 };
 
@@ -75,14 +76,14 @@ void init_w__type_callable_typeobject(PyObject *type);
  * This calls the callable in the _type_callable_wrapper, which was
  * returned as a property of a dynd type.
  */
-PyObject *_type_callable_call(const _type_callable_wrapper &ccw,
-                                 PyObject *args, PyObject *kwargs);
+PyObject *_type_callable_call(const _type_callable_wrapper &ccw, PyObject *args,
+                              PyObject *kwargs);
 
 /**
  * This calls the dynamic __construct__ function attached to the dynd type.
  */
 PyObject *call__type_constructor_function(const dynd::ndt::type &dt,
-                                             PyObject *args, PyObject *kwargs);
+                                          PyObject *args, PyObject *kwargs);
 
 /**
  * Adds all the dynamic names exposed by the dynd type to the provided dict.
@@ -91,8 +92,7 @@ void add__type_names_to_dir_dict(const dynd::ndt::type &dt, PyObject *dict);
 /**
  * Retrieves a dynamic property from the dynd type as a Python object.
  */
-PyObject *get__type_dynamic_property(const dynd::ndt::type &dt,
-                                        PyObject *name);
+PyObject *get__type_dynamic_property(const dynd::ndt::type &dt, PyObject *name);
 
 /**
  * Adds all the dynamic names exposed by the array to the provided dict.
@@ -149,8 +149,8 @@ PyObject *wrap_array_callable(const std::string &funcname,
  * \param d  The first parameter for the callable.
  */
 PyObject *wrap__type_callable(const std::string &funcname,
-                                 const dynd::gfunc::callable &c,
-                                 const dynd::ndt::type &d);
+                              const dynd::nd::arrfunc &c,
+                              const dynd::ndt::type &d);
 
 } // namespace pydynd
 

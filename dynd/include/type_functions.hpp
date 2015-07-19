@@ -15,7 +15,6 @@
 
 #include <dynd/type.hpp>
 #include <dynd/string_encodings.hpp>
-#include "placement_wrappers.hpp"
 
 namespace pydynd {
 

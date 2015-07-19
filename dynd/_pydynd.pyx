@@ -39,7 +39,6 @@ from ndt.type cimport *
 
 from nd.array cimport *
 from nd.gfunc_callable cimport *
-from nd.vm_elwise_program cimport *
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object array_as_numpy_struct_capsule(_array&) except +translate_exception
@@ -48,50 +47,8 @@ cdef extern from "<dynd/types/datashape_formatter.hpp>" namespace "dynd":
     string dynd_format_datashape "dynd::format_datashape" (_array&) except +translate_exception
     string dynd_format_datashape "dynd::format_datashape" (_type&) except +translate_exception
 
-
-cdef extern from "placement_wrappers.hpp" namespace "pydynd":
-    cdef struct _type_placement_wrapper:
-        pass
-    void placement_new(_type_placement_wrapper&) except +translate_exception
-    void placement_delete(_type_placement_wrapper&)
-    # type placement cast
-    _type& GET(_type_placement_wrapper&)
-    # type placement assignment
-    void SET(_type_placement_wrapper&, _type&)
-
-    cdef struct array_placement_wrapper:
-        pass
-    void placement_new(array_placement_wrapper&) except +translate_exception
-    void placement_delete(array_placement_wrapper&)
-    # nd::array placement cast
-    _array& GET(array_placement_wrapper&)
-    # nd::array placement assignment
-    void SET(array_placement_wrapper&, _array&)
-
-    # the arrfunc wrapper is a subtype of the array wrapper
-    ndarrfunc& GET_arrfunc(array_placement_wrapper&)
-    void SET(array_placement_wrapper&, ndarrfunc&)
-
-#    cdef struct codegen_cache_placement_wrapper:
-#        pass
-#    void placement_new(codegen_cache_placement_wrapper&) except +translate_exception
-#    void placement_delete(codegen_cache_placement_wrapper&)
-#    # placement cast
-#    codegen_cache& GET(codegen_cache_placement_wrapper&)
-
-    cdef struct vm_elwise_program_placement_wrapper:
-        pass
-    void placement_new(vm_elwise_program_placement_wrapper&) except +translate_exception
-    void placement_delete(vm_elwise_program_placement_wrapper&)
-    # placement cast
-    elwise_program& GET(vm_elwise_program_placement_wrapper&)
-    void SET(vm_elwise_program_placement_wrapper&, elwise_program&)
-
 cdef extern from "<dynd/json_formatter.hpp>" namespace "dynd":
     _array dynd_format_json "dynd::format_json" (_array&, bint) except +translate_exception
-
-include "nd/elwise_gfunc.pxd"
-include "nd/elwise_reduce_gfunc.pxd"
 
 from eval_context cimport *
 
@@ -2137,34 +2094,6 @@ def rolling_apply(af, arr, window_size, ectx=None):
 def get_published_arrfuncs():
     return dynd_get_published_arrfuncs()
 
-def elwise_map(n, callable, dst_type, src_type = None):
-    """
-    nd.elwise_map(n, callable, dst_type, src_type=None)
-
-    Applies a deferred element-wise mapping function to
-    a dynd array 'n'.
-
-    Parameters
-    ----------
-    n : list of dynd array
-        A list of objects to which the mapping is applied.
-    callable : Python callable
-        A Python function which is called as
-        'callable(dst, src[0], ..., src[N-1])', with
-        one-dimensional dynd arrays 'dst', 'src[0]',
-        ..., 'src[N-1]'. The function should, in an element-wise
-        fashion, use the values in the different 'src'
-        arrays to calculate values that get placed into
-        the 'dst' array. The function must not return a value.
-    dst_type : dynd type
-        The type of the computation's result.
-    src_type : list of dynd type, optional
-        A list of types of the source. If a source array has
-        a different type than the one corresponding in this list,
-        it will be converted.
-    """
-    return dynd_elwise_map(n, callable, dst_type, src_type)
-
 class DebugReprObj(object):
     def __init__(self, repr_str):
         self.repr_str = repr_str
@@ -2192,63 +2121,6 @@ def debug_repr(obj):
     if isinstance(obj, w_array):
         return DebugReprObj(str(<char *>array_debug_print((<w_array>obj).v).c_str()))
 
-cdef class w_elwise_gfunc:
-    cdef elwise_gfunc_placement_wrapper v
-    cdef elwise_gfunc v2
-
-    def __cinit__(self, bytes name):
-        placement_new(self.v, name)
-    def __dealloc__(self):
-        placement_delete(self.v)
-
-    property name:
-        def __get__(self):
-            return str(<char *>GET(self.v).get_name().c_str())
-
-#    def add_kernel(self, kernel, w_codegen_cache cgcache = default_cgcache_c):
-#        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
-#        elwise_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel)
-
-    #def debug_repr(self):
-    #    """Prints a raw representation of the gfunc data."""
-    #    return str(<char *>elwise_gfunc_debug_print(GET(self.v)).c_str())
-
-    def __call__(self, *args, **kwargs):
-        """Calls the gfunc."""
-        return elwise_gfunc_call(GET(self.v), args, kwargs)
-
-#from nd.elwise_reduce_gfunc cimport *
-
-cdef class w_elwise_reduce_gfunc:
-    cdef elwise_reduce_gfunc_placement_wrapper v
- #   cdef elwise_reduce_gfunc v2
-
-    def __cinit__(self, bytes name):
-        placement_new(self.v, name)
-    def __dealloc__(self):
-        placement_delete(self.v)
-
-    property name:
-        def __get__(self):
-            return str(<char *>GET(self.v).get_name().c_str())
-
-#    def add_kernel(self, kernel, bint associative, bint commutative, identity = None, w_codegen_cache cgcache = default_cgcache_c):
-#        """Adds a kernel to the gfunc object. Currently, this means a ctypes object with prototype."""
-#        cdef w_array id
-#        if identity is None:
-#            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, array())
-#        else:
-#            id = w_array(identity)
-#            elwise_reduce_gfunc_add_kernel(GET(self.v), GET(cgcache.v), kernel, associative, commutative, GET(id.v))
-
-    #def debug_repr(self):
-    #    """Returns a raw representation of the gfunc data."""
-    #    return str(<char *>elwise_reduce_gfunc_debug_print(GET(self.v)).c_str())
-
-    def __call__(self, *args, **kwargs):
-        """Calls the gfunc."""
-        return elwise_reduce_gfunc_call(GET(self.v), args, kwargs)
-
 #cdef class w_codegen_cache:
 #    cdef codegen_cache_placement_wrapper v
 #
@@ -2261,46 +2133,17 @@ cdef class w_elwise_reduce_gfunc:
 #        """Prints a raw representation of the codegen_cache data."""
 #        return str(<char *>codegen_cache_debug_print(GET(self.v)).c_str())
 
-cdef class w_elwise_program:
-    cdef elwise_program v
-
-    def __cinit__(self, obj=None):
-        if obj is not None:
-            vm_elwise_program_from_py(obj, self.v)
-
-    def set(self, obj):
-        """Sets the elementwise program from the provided dict"""
-        vm_elwise_program_from_py(obj, self.v)
-
-    def as_dict(self):
-        """Converts the elementwise VM program into a dict"""
-        return vm_elwise_program_as_py(self.v)
-
-    #def debug_repr(self):
-    #    """Returns a raw representation of the elwise_program data."""
-    #    return str(<char *>vm_elwise_program_debug_print(GET(self.v)).c_str())
-
 cdef class w_array_callable:
-    cdef array_callable_placement_wrapper v
-
-    def __cinit__(self):
-        placement_new(self.v)
-    def __dealloc__(self):
-        placement_delete(self.v)
+    cdef array_callable_wrapper v
 
     def __call__(self, *args, **kwargs):
-        return array_callable_call(GET(self.v), args, kwargs)
+        return array_callable_call(self.v, args, kwargs)
 
 cdef class w_type_callable:
-    cdef _type_callable_placement_wrapper v
-
-    def __cinit__(self):
-        placement_new(self.v)
-    def __dealloc__(self):
-        placement_delete(self.v)
+    cdef _type_callable_wrapper v
 
     def __call__(self, *args, **kwargs):
-        return _type_callable_call(GET(self.v), args, kwargs)
+        return _type_callable_call(self.v, args, kwargs)
 
 cdef class w_eval_context:
     """

@@ -8,7 +8,6 @@
 #include "array_functions.hpp"
 #include "array_as_py.hpp"
 #include "array_assign_from_py.hpp"
-#include "placement_wrappers.hpp"
 
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/builtin_type_properties.hpp>
@@ -464,8 +463,7 @@ PyObject *pydynd::wrap_array_callable(const std::string &funcname,
   }
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  placement_new(
-      reinterpret_cast<pydynd::array_callable_placement_wrapper &>(result->v));
+  new (&result->v) array_callable_wrapper();
   result->v.n = n;
   result->v.c = c;
   result->v.funcname = funcname;
@@ -504,8 +502,8 @@ PyObject *pydynd::wrap__type_callable(const std::string &funcname,
   }
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  placement_new(
-      reinterpret_cast<pydynd::_type_callable_placement_wrapper &>(result->v));
+
+  new (&result->v) _type_callable_wrapper();
   result->v.d = d;
   result->v.c = c;
   result->v.funcname = funcname;

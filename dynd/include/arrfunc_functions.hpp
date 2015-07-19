@@ -19,7 +19,6 @@
 #include "array_as_py.hpp"
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
-#include "placement_wrappers.hpp"
 #include "eval_context_functions.hpp"
 #include "array_functions.hpp"
 

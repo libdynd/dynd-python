@@ -2,7 +2,7 @@ __all__ = ['add_computed_fields']
 
 from dynd._pydynd import as_py, as_numpy, w_type, \
                 w_array as array, make_struct, \
-                elwise_map, extract_dtype, type_of, \
+                extract_dtype, type_of, \
                 dtype_of, ndim_of
 
 class FieldExpr:

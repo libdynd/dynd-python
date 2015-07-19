@@ -230,78 +230,44 @@ set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
 source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
-cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
-set_target_properties(
-    _pydynd
-    PROPERTIES
-    OUTPUT_NAME _pydynd
-    LINKER_LANGUAGE CXX)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    set_target_properties(
-        _pydynd PROPERTIES
-        COMPILE_FLAGS
-        "-DHAVE_ROUND"
-        )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_ROUND")
 elseif(APPLE)
-    # We compile with -Werror, and Cython's code generates warnings, so
-    # disable that specifically for this project.
-    set_target_properties(
-        _pydynd PROPERTIES
-        #SOVERSION ${DYND_PYTHON_VERSION}
-        #VERSION ${DYND_PYTHON_VERSION}
-        COMPILE_FLAGS
-        "-Wno-unused-parameter -Wno-unused-function -Wno-error"
-        )
-    if(USE_RELATIVE_RPATH)
-        message(STATUS "Adding relative rpath to _pydynd for linking libdynd")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-unused-function -Wno-error")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+endif()
+
+cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
+
+#
+#if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+#elseif(APPLE)
+#    if(USE_RELATIVE_RPATH)
+#        message(STATUS "Adding relative rpath to _pydynd for linking libdynd")
         # TODO: The rpath used is Anaconda-specific, should calculate
         #       the relative install path instead of using "../../..".
-        add_custom_command(TARGET _pydynd
-            POST_BUILD COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                -add_rpath "@loader_path/../../.."
-                $<TARGET_FILE:_pydynd>)
-    else()
-        message(STATUS "NOT adding relative rpath to _pydynd for linking libdynd")
-    endif()
-else()
+#        add_custom_command(TARGET _pydynd
+#            POST_BUILD COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+#                -add_rpath "@loader_path/../../.."
+#                $<TARGET_FILE:_pydynd>)
+#    else()
+#        message(STATUS "NOT adding relative rpath to _pydynd for linking libdynd")
+#    endif()
+#else()
     # We compile with -Werror, and Cython's code generates warnings, so
     # disable that specifically for this project.
-    set_target_properties(
-        _pydynd
-        PROPERTIES
-        COMPILE_FLAGS
-        "-Wno-error"
-        )
-    if (USE_RELATIVE_RPATH)
-        set_target_properties(
-            _pydynd
-            PROPERTIES
+#    if (USE_RELATIVE_RPATH)
+#       set_target_properties(
+#            _pydynd
+#            PROPERTIES
             # TODO: The rpath used is Anaconda-specific, should make sure it
             #       works more generally.
-            INSTALL_RPATH
-            "$ORIGIN/../../.."
-            )
-    endif()
-endif()
-
-if(CUDA_FOUND)
-    cython_add_module(cuda dynd/cuda.pyx)
-
-    if (WIN32)
-        set_target_properties(
-            cuda PROPERTIES
-            COMPILE_FLAGS
-            "-DHAVE_ROUND"
-            )
-    else()
-        set_target_properties(
-            cuda PROPERTIES
-            COMPILE_FLAGS
-            "-Wno-unused-parameter -Wno-unused-function -Wno-error"
-            )
-    endif()
-endif()
-
+#            INSTALL_RPATH
+#            "$ORIGIN/../../.."
+#            )
+#    endif()
+#endif()
 
 if (DYND_INSTALL_LIB)
     target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}")

@@ -46,13 +46,13 @@ inline PyObject *wrap__type(const dynd::ndt::type &d)
   if (!result) {
     throw std::runtime_error("");
   }
+
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  pydynd::placement_new(
-      reinterpret_cast<pydynd::_type_placement_wrapper &>(result->v));
-  result->v = d;
+  new (&result->v) dynd::ndt::type(d);
   return (PyObject *)result;
 }
+
 #ifdef DYND_RVALUE_REFS
 inline PyObject *wrap__type(dynd::ndt::type &&d)
 {

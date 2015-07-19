@@ -163,11 +163,6 @@ cdef class w_type:
     >>> ndt.type('{x: float32, y: float32, z: float32}')
     ndt.type("{x : float32, y : float32, z : float32}")
     """
-    # To access the embedded ndt::type, use "GET(self.v)",
-    # which returns a reference to the ndt::type, and
-    # SET(self.v, <ndt::type value>), which sets the embedded
-    # ndt::type's value.
-
     cdef _type v
 
     def __cinit__(self, rep=None):
@@ -938,7 +933,7 @@ def make_categorical(values):
     ndt.type("categorical[string, [\"sunny\", \"rainy\", \"cloudy\", \"stormy\"]]")
     """
     cdef w_type result = w_type()
-    result.v = dynd_make_categorical_type(GET(w_array(values).v))
+    result.v = dynd_make_categorical_type(w_array(values).v)
     return result
 
 def factor_categorical(values):
@@ -964,7 +959,7 @@ def factor_categorical(values):
     ndt.type("categorical[string, [\"F\", \"M\"]]")
     """
     cdef w_type result = w_type()
-    result.v = dynd_factor_categorical_type(GET(w_array(values).v))
+    result.v = dynd_factor_categorical_type(w_array(values).v)
     return result
 
 ##############################################################################
@@ -1037,10 +1032,7 @@ cdef class w_array:
     # which returns a reference to the dynd array, and
     # SET(self.v, <array value>), which sets the embeded
     # array's value.
-    cdef array_placement_wrapper v
-
-    def __cinit__(self):
-        placement_new(self.v)
+    cdef _array v
 
     def __init__(self, value=Unsupplied, dtype=None, type=None, access=None):
         if value is not Unsupplied:
@@ -1049,34 +1041,31 @@ cdef class w_array:
                 if type is not None:
                     raise ValueError('Must provide only one of ' +
                                     'dtype or type, not both')
-                array_init_from_pyobject(GET(self.v), value, dtype, False, access)
+                array_init_from_pyobject(self.v, value, dtype, False, access)
             elif type is not None:
-                array_init_from_pyobject(GET(self.v), value, type, True, access)
+                array_init_from_pyobject(self.v, value, type, True, access)
             else:
-                array_init_from_pyobject(GET(self.v), value, access)
+                array_init_from_pyobject(self.v, value, access)
         elif dtype is not None or type is not None or access is not None:
             raise ValueError('a value for the array construction must ' +
                             'be provided when another keyword parameter is used')
-
-    def __dealloc__(self):
-        placement_delete(self.v)
 
     def __dir__(self):
         # Customize dir() so that additional properties of various types
         # will show up in IPython tab-complete, for example.
         result = dict(w_array.__dict__)
         result.update(object.__dict__)
-        add_array_names_to_dir_dict(GET(self.v), result)
+        add_array_names_to_dir_dict(self.v, result)
         return result.keys()
 
     def __getattr__(self, name):
-        return get_array_dynamic_property(GET(self.v), name)
+        return get_array_dynamic_property(self.v, name)
 
     def __setattr__(self, name, value):
-        set_array_dynamic_property(GET(self.v), name, value)
+        set_array_dynamic_property(self.v, name, value)
 
     def __contains__(self, x):
-        return array_contains(GET(self.v), x)
+        return array_contains(self.v, x)
 
     def eval(self, ectx=None):
         """
@@ -1108,7 +1097,7 @@ cdef class w_array:
                  type="3 * complex[float32]")
         """
         cdef w_array result = w_array()
-        SET(result.v, array_eval(GET(self.v), ectx))
+        result.v = array_eval(self.v, ectx)
         return result
 
     def eval_immutable(self):
@@ -1120,7 +1109,7 @@ cdef class w_array:
         as is.
         """
         cdef w_array result = w_array()
-        SET(result.v, GET(self.v).eval_immutable())
+        result.v = self.v.eval_immutable()
         return result
 
     def eval_copy(self, access=None, ectx=None):
@@ -1137,7 +1126,7 @@ cdef class w_array:
             The evaluation context to use.
         """
         cdef w_array result = w_array()
-        SET(result.v, array_eval_copy(GET(self.v), access, ectx))
+        result.v = array_eval_copy(self.v, access, ectx)
         return result
 
     def storage(self):
@@ -1161,7 +1150,7 @@ cdef class w_array:
                  type="3 * bytes[2, align=2]")
         """
         cdef w_array result = w_array()
-        SET(result.v, GET(self.v).storage())
+        result.v = self.v.storage()
         return result
 
     def cast(self, type):
@@ -1179,7 +1168,7 @@ cdef class w_array:
             The type is cast into this type.
         """
         cdef w_array result = w_array()
-        SET(result.v, array_cast(GET(self.v), w_type(type).v))
+        result.v = array_cast(self.v, w_type(type).v)
         return result
 
     def ucast(self, dtype, int replace_ndim=0):
@@ -1212,7 +1201,7 @@ cdef class w_array:
         nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
         """
         cdef w_array result = w_array()
-        SET(result.v, array_ucast(GET(self.v), w_type(dtype).v, replace_ndim))
+        result.v = array_ucast(self.v, w_type(dtype).v, replace_ndim)
         return result
 
     def view_scalars(self, dtype):
@@ -1236,7 +1225,7 @@ cdef class w_array:
             The scalars are viewed as this dtype.
         """
         cdef w_array result = w_array()
-        SET(result.v, GET(self.v).view_scalars(w_type(dtype).v))
+        result.v = self.v.view_scalars(w_type(dtype).v)
         return result
 
     def flag_as_immutable(self):
@@ -1246,7 +1235,7 @@ cdef class w_array:
         When there's still only one reference to a
         dynd array, can be used to flag it as immutable.
         """
-        GET(self.v).flag_as_immutable()
+        self.v.flag_as_immutable()
 
     property access_flags:
         """
@@ -1256,7 +1245,7 @@ cdef class w_array:
         Returns 'immutable', 'readonly', or 'readwrite'
         """
         def __get__(self):
-            return str(<char *>array_access_flags_string(GET(self.v)))
+            return str(<char *>array_access_flags_string(self.v))
 
     property is_scalar:
         """
@@ -1265,66 +1254,66 @@ cdef class w_array:
         True if the dynd array is a scalar.
         """
         def __get__(self):
-            return array_is_scalar(GET(self.v))
+            return array_is_scalar(self.v)
 
     property ndim:
         def __get__(self):
-            return GET(self.v).get_type().get_ndim()
+            return self.v.get_type().get_ndim()
 
     property shape:
         def __get__(self):
-            return array_get_shape(GET(self.v))
+            return array_get_shape(self.v)
 
     property strides:
         def __get__(self):
-            return array_get_strides(GET(self.v))
+            return array_get_strides(self.v)
 
     property type:
         def __get__(self):
             cdef w_type result = w_type()
-            result.v = GET(self.v).get_type()
+            result.v = self.v.get_type()
             return result
 
     property dtype:
         def __get__(self):
             cdef w_type result = w_type()
-            result.v = GET(self.v).get_dtype()
+            result.v = self.v.get_dtype()
             return result
 
     def __repr__(self):
-        return str(<char *>array_repr(GET(self.v)).c_str())
+        return str(<char *>array_repr(self.v).c_str())
 
     def __str__(self):
-        return array_str(GET(self.v))
+        return array_str(self.v)
 
     def __unicode__(self):
-        return array_unicode(GET(self.v))
+        return array_unicode(self.v)
 
     def __index__(self):
-        return array_index(GET(self.v))
+        return array_index(self.v)
 
     def __nonzero__(self):
-        return array_nonzero(GET(self.v))
+        return array_nonzero(self.v)
 
     def __int__(self):
-        return array_int(GET(self.v));
+        return array_int(self.v)
 
     def __float__(self):
-        return array_float(GET(self.v));
+        return array_float(self.v)
 
     def __complex__(self):
-        return array_complex(GET(self.v));
+        return array_complex(self.v)
 
     def __len__(self):
-        return GET(self.v).get_dim_size()
+        return self.v.get_dim_size()
 
     def __getitem__(self, x):
         cdef w_array result = w_array()
-        SET(result.v, array_getitem(GET(self.v), x))
+        result.v = array_getitem(self.v, x)
         return result
 
     def __setitem__(self, x, y):
-        array_setitem(GET(self.v), x, y)
+        array_setitem(self.v, x, y)
 
     def __getbuffer__(w_array self, Py_buffer* buffer, int flags):
         # Docstring triggered Cython bug (fixed in master), so it's commented out
@@ -1338,27 +1327,27 @@ cdef class w_array:
 
     def __add__(lhs, rhs):
         cdef w_array res = w_array()
-        SET(res.v, array_add(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        res.v = array_add(asarray(lhs).v, asarray(rhs).v)
         return res
 
     def __sub__(lhs, rhs):
         cdef w_array res = w_array()
-        SET(res.v, array_subtract(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        res.v = array_subtract(asarray(lhs).v, asarray(rhs).v)
         return res
 
     def __mul__(lhs, rhs):
         cdef w_array res = w_array()
-        SET(res.v, array_multiply(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        res.v = array_multiply(asarray(lhs).v, asarray(rhs).v)
         return res
 
     def __div__(lhs, rhs):
         cdef w_array res = w_array()
-        SET(res.v, array_divide(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
         return res
 
     def __truediv__(lhs, rhs):
         cdef w_array res = w_array()
-        SET(res.v, array_divide(GET(asarray(lhs).v), GET(asarray(rhs).v)))
+        res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
         return res
 
 cdef class w_arrfunc(w_array):
@@ -1392,12 +1381,6 @@ cdef class w_arrfunc(w_array):
       File "_pydynd.pyx", line 1340, in _pydynd.w_arrfunc.__call__ (_pydynd.cxx:9774)
     ValueError: parameter 2 to arrfunc does not match, expected int32, received string
     """
-
-    def __init__(self, pyfunc, proto):
-        SET(self.v, apply(pyfunc, proto))
-
-    #def __dealloc__(self):
-    #    placement_delete(self.v)
 
     def __call__(self, *args, **kwds):
         # Handle the keyword-only arguments
@@ -1433,7 +1416,7 @@ def view(obj, type=None, access=None):
         writing.
     """
     cdef w_array result = w_array()
-    SET(result.v, array_view(obj, type, access))
+    result.v = array_view(obj, type, access)
     return result
 
 def adapt(arr, tp, op):
@@ -1485,7 +1468,7 @@ cpdef w_array asarray(obj, access=None):
     """
 
     cdef w_array result = w_array()
-    SET(result.v, array_asarray(obj, access))
+    result.v = array_asarray(obj, access)
     return result
 
 def type_of(w_array a):
@@ -1510,7 +1493,7 @@ def type_of(w_array a):
     ndt.type("2 * var * float64")
     """
     cdef w_type result = w_type()
-    result.v = GET(a.v).get_type()
+    result.v = a.v.get_type()
     return result
 
 def dshape_of(w_array a):
@@ -1524,7 +1507,7 @@ def dshape_of(w_array a):
     a : dynd array
         The array whose type is requested.
     """
-    return str(<char *>dynd_format_datashape(GET(a.v)).c_str())
+    return str(<char *>dynd_format_datashape(a.v).c_str())
 
 def dtype_of(w_array a, size_t include_ndim=0):
     """
@@ -1546,7 +1529,7 @@ def dtype_of(w_array a, size_t include_ndim=0):
         in the data type, default zero.
     """
     cdef w_type result = w_type()
-    result.v = GET(a.v).get_dtype(include_ndim)
+    result.v = a.v.get_dtype(include_ndim)
     return result
 
 def ndim_of(w_array a):
@@ -1557,7 +1540,7 @@ def ndim_of(w_array a):
     This corresponds to the number of dimensions
     in a NumPy array.
     """
-    return GET(a.v).get_ndim()
+    return a.v.get_ndim()
 
 def is_c_contiguous(w_array a):
     """
@@ -1568,7 +1551,7 @@ def is_c_contiguous(w_array a):
     dimensions are ``fixed``, the strides are in decreasing
     order, and the data is tightly packed.
     """
-    return array_is_c_contiguous(GET(a.v))
+    return array_is_c_contiguous(a.v)
 
 def is_f_contiguous(w_array a):
     """
@@ -1579,7 +1562,7 @@ def is_f_contiguous(w_array a):
     dimensions are ``fixed``, the strides are in increasing
     order, and the data is tightly packed.
     """
-    return array_is_f_contiguous(GET(a.v))
+    return array_is_f_contiguous(a.v)
 
 def as_py(w_array n, tuple=False):
     """
@@ -1611,7 +1594,7 @@ def as_py(w_array n, tuple=False):
     [1.0, 2.0, 3.0, 4.0]
     """
     cdef bint tup = tuple
-    return array_as_py(GET(n.v), tup != 0)
+    return array_as_py(n.v, tup != 0)
 
 def as_numpy(w_array n, allow_copy=False):
     """
@@ -1681,13 +1664,13 @@ def zeros(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_zeros(w_type(args[0]).v, access))
+        result.v = array_zeros(w_type(args[0]).v, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_zeros(args[0], w_type(args[1]).v, access))
+        result.v = array_zeros(args[0], w_type(args[1]).v, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_zeros(args[:-1], w_type(args[-1]).v, access))
+        result.v = array_zeros(args[:-1], w_type(args[-1]).v, access)
     else:
         raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
     return result
@@ -1729,13 +1712,13 @@ def ones(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_ones(w_type(args[0]).v, access))
+        result.v = array_ones(w_type(args[0]).v, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_ones(args[0], w_type(args[1]).v, access))
+        result.v = array_ones(args[0], w_type(args[1]).v, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_ones(args[:-1], w_type(args[-1]).v, access))
+        result.v = array_ones(args[:-1], w_type(args[-1]).v, access)
     else:
         raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
     return result
@@ -1795,13 +1778,13 @@ def full(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_full(w_type(args[0]).v, value, access))
+        result.v = array_full(w_type(args[0]).v, value, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_full(args[0], w_type(args[1]).v, value, access))
+        result.v = array_full(args[0], w_type(args[1]).v, value, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_full(args[:-1], w_type(args[-1]).v, value, access))
+        result.v = array_full(args[:-1], w_type(args[-1]).v, value, access)
     else:
         raise TypeError('nd.full() expected at least 1 positional argument, got 0')
     return result
@@ -1851,13 +1834,13 @@ def empty(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        SET(result.v, array_empty(w_type(args[0]).v, access))
+        result.v = array_empty(w_type(args[0]).v, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        SET(result.v, array_empty(args[0], w_type(args[1]).v, access))
+        result.v = array_empty(args[0], w_type(args[1]).v, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        SET(result.v, array_empty(args[:-1], w_type(args[-1]).v, access))
+        result.v = array_empty(args[:-1], w_type(args[-1]).v, access)
     else:
         raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
     return result
@@ -1894,9 +1877,9 @@ def empty_like(w_array prototype, dtype=None):
     """
     cdef w_array result = w_array()
     if dtype is None:
-        SET(result.v, array_empty_like(GET(prototype.v)))
+        result.v = array_empty_like(prototype.v)
     else:
-        SET(result.v, array_empty_like(GET(prototype.v), w_type(dtype).v))
+        result.v = array_empty_like(prototype.v, w_type(dtype).v)
     return result
 
 def memmap(filename, begin=None, end=None, access=None):
@@ -1934,7 +1917,7 @@ def memmap(filename, begin=None, end=None, access=None):
     nd.array("Testing 1 2 3", string)
     """
     cdef w_array result = w_array()
-    SET(result.v, array_memmap(filename, begin, end, access))
+    result.v = array_memmap(filename, begin, end, access)
     return result
 
 def groupby(data, by, groups = None):
@@ -1977,15 +1960,15 @@ def groupby(data, by, groups = None):
     """
     cdef w_array result = w_array()
     if groups is None:
-        SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v)))
+        result.v = dynd_groupby(w_array(data).v, w_array(by).v)
     else:
         if type(groups) in [list, w_array]:
             # If groups is a list or dynd array, assume it's a list
             # of groups for a categorical type
-            SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v),
-                            dynd_make_categorical_type(GET(w_array(groups).v))))
+            result.v = dynd_groupby(w_array(data).v, w_array(by).v,
+                            dynd_make_categorical_type(w_array(groups).v))
         else:
-            SET(result.v, dynd_groupby(GET(w_array(data).v), GET(w_array(by).v), w_type(groups).v))
+            result.v = dynd_groupby(w_array(data).v, w_array(by).v, w_type(groups).v)
     return result
 
 def range(start=None, stop=None, step=None, dtype=None):
@@ -2016,11 +1999,11 @@ def range(start=None, stop=None, step=None, dtype=None):
     # Move the first argument to 'stop' if stop isn't specified
     if stop is None:
         if start is not None:
-            SET(result.v, array_range(None, start, step, dtype))
+            result.v = array_range(None, start, step, dtype)
         else:
             raise ValueError("No value provided for 'stop'")
     else:
-        SET(result.v, array_range(start, stop, step, dtype))
+        result.v = array_range(start, stop, step, dtype)
     return result
 
 def linspace(start, stop, count=50, dtype=None):
@@ -2042,7 +2025,7 @@ def linspace(start, stop, count=50, dtype=None):
         is of this type.
     """
     cdef w_array result = w_array()
-    SET(result.v, array_linspace(start, stop, count, dtype))
+    result.v = array_linspace(start, stop, count, dtype)
     return result
 
 def fields(w_array struct_array, *fields_list):
@@ -2061,7 +2044,7 @@ def fields(w_array struct_array, *fields_list):
         names to select.
     """
     cdef w_array result = w_array()
-    SET(result.v, nd_fields(GET(struct_array.v), fields_list))
+    result.v = nd_fields(struct_array.v, fields_list)
     return result
 
 def parse_json(type, json, ectx=None):
@@ -2096,9 +2079,9 @@ def parse_json(type, json, ectx=None):
     """
     cdef w_array result = w_array()
     if builtin_type(type) is w_array:
-        dynd_parse_json_array(GET((<w_array>type).v), GET(w_array(json).v), ectx)
+        dynd_parse_json_array((<w_array>type).v, w_array(json).v, ectx)
     else:
-        SET(result.v, dynd_parse_json_type(w_type(type).v, GET(w_array(json).v), ectx))
+        result.v = dynd_parse_json_type(w_type(type).v, w_array(json).v, ectx)
         return result
 
 def format_json(w_array a, bint tuple=False):
@@ -2128,7 +2111,7 @@ def format_json(w_array a, bint tuple=False):
              type="string")
     """
     cdef w_array result = w_array()
-    SET(result.v, dynd_format_json(GET(a.v), tuple != 0))
+    result.v = dynd_format_json(a.v, tuple != 0)
     return result
 
 def rolling_apply(af, arr, window_size, ectx=None):
@@ -2207,10 +2190,11 @@ def debug_repr(obj):
         The object whose debug repr is desired
     """
     if isinstance(obj, w_array):
-        return DebugReprObj(str(<char *>array_debug_print(GET((<w_array>obj).v)).c_str()))
+        return DebugReprObj(str(<char *>array_debug_print((<w_array>obj).v).c_str()))
 
 cdef class w_elwise_gfunc:
     cdef elwise_gfunc_placement_wrapper v
+    cdef elwise_gfunc v2
 
     def __cinit__(self, bytes name):
         placement_new(self.v, name)
@@ -2233,8 +2217,11 @@ cdef class w_elwise_gfunc:
         """Calls the gfunc."""
         return elwise_gfunc_call(GET(self.v), args, kwargs)
 
+#from nd.elwise_reduce_gfunc cimport *
+
 cdef class w_elwise_reduce_gfunc:
     cdef elwise_reduce_gfunc_placement_wrapper v
+ #   cdef elwise_reduce_gfunc v2
 
     def __cinit__(self, bytes name):
         placement_new(self.v, name)
@@ -2275,22 +2262,19 @@ cdef class w_elwise_reduce_gfunc:
 #        return str(<char *>codegen_cache_debug_print(GET(self.v)).c_str())
 
 cdef class w_elwise_program:
-    cdef vm_elwise_program_placement_wrapper v
+    cdef elwise_program v
 
     def __cinit__(self, obj=None):
-        placement_new(self.v)
         if obj is not None:
-            vm_elwise_program_from_py(obj, GET(self.v))
-    def __dealloc__(self):
-        placement_delete(self.v)
+            vm_elwise_program_from_py(obj, self.v)
 
     def set(self, obj):
         """Sets the elementwise program from the provided dict"""
-        vm_elwise_program_from_py(obj, GET(self.v))
+        vm_elwise_program_from_py(obj, self.v)
 
     def as_dict(self):
         """Converts the elementwise VM program into a dict"""
-        return vm_elwise_program_as_py(GET(self.v))
+        return vm_elwise_program_as_py(self.v)
 
     #def debug_repr(self):
     #    """Returns a raw representation of the elwise_program data."""

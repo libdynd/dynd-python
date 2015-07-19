@@ -43,9 +43,7 @@ PyObject *pydynd::wrap_array(const dynd::nd::array &n)
   }
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  pydynd::placement_new(
-      reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-  result->v = n;
+  new (&result->v) nd::array(n);
   return (PyObject *)result;
 }
 
@@ -57,9 +55,7 @@ PyObject *pydynd::wrap_array(const dynd::nd::arrfunc &n)
   }
   // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
   // here
-  pydynd::placement_new(
-      reinterpret_cast<pydynd::array_placement_wrapper &>(result->v));
-  result->v = n;
+  new (&result->v) nd::array(n);
   return (PyObject *)result;
 }
 

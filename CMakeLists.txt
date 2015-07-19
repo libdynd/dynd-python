@@ -238,7 +238,8 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
 endif()
 
-cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
+add_library(pydynd ${pydynd_CPP_SRC})
+cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
 
 #
 #if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -270,9 +271,9 @@ cython_add_module(_pydynd ${pydynd_CPP_SRC} ${pydynd_CYTHON_SRC})
 #endif()
 
 if (DYND_INSTALL_LIB)
-    target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}")
+    target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}" pydynd)
 else()
-    target_link_libraries(_pydynd libdynd)
+    target_link_libraries(_pydynd libdynd pydynd)
 endif()
 
 # Install all the Python scripts

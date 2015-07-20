@@ -39,11 +39,11 @@ install:
   - C:\Py\Scripts\conda update conda
   - C:\Py\Scripts\conda install pip numpy cython setuptools
   - C:\Py\Scripts\pip install wheel
-  
   - C:\Py\python -c "import struct; print(struct.calcsize('P') * 8)"
+  - SET PATH=C:\Py;C:\Py\Scripts;%PATH%
 
 build_script:
-  - REM python setup.py bdist_wheel
+  - C:\Py\python setup.py bdist_wheel
 
 test_script:
   - cd dist

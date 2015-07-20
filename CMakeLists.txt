@@ -275,15 +275,3 @@ if (DYND_INSTALL_LIB)
 else()
     target_link_libraries(_pydynd libdynd pydynd)
 endif()
-
-# Install all the Python scripts
-install(DIRECTORY dynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}"
-    FILES_MATCHING PATTERN "*.py")
-# Install the module
-install(TARGETS _pydynd DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd")
-install(DIRECTORY "dynd/include" DESTINATION "${PYTHON_PACKAGE_INSTALL_PREFIX}/dynd/include")
-# Install the libdynd binary if on unix and libdynd wasn't built separately
-if(NOT DYND_INSTALL_LIB AND NOT WIN32)
-    get_property(dynd_loc TARGET libdynd PROPERTY LOCATION)
-    install(FILES ${dynd_loc} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-endif()

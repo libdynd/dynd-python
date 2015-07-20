@@ -70,11 +70,6 @@ builtin_type = type
 # Get a boolean indicating whether CUDA support was built in or not
 cuda_support = built_with_cuda()
 
-# Create the codegen cache used by default when making gfuncs
-#cdef w_codegen_cache default_cgcache_c = w_codegen_cache()
-# Expose it outside the module too
-#default_cgcache = default_cgcache_c
-
 # Expose the git hashes and version numbers of this build
 # NOTE: Cython generates code which is not const-correct, so
 #       have to cast it away.
@@ -2120,18 +2115,6 @@ def debug_repr(obj):
     """
     if isinstance(obj, w_array):
         return DebugReprObj(str(<char *>array_debug_print((<w_array>obj).v).c_str()))
-
-#cdef class w_codegen_cache:
-#    cdef codegen_cache_placement_wrapper v
-#
-#    def __cinit__(self):
-#        placement_new(self.v)
-#    def __dealloc__(self):
-#        placement_delete(self.v)
-#
-#    def debug_repr(self):
-#        """Prints a raw representation of the codegen_cache data."""
-#        return str(<char *>codegen_cache_debug_print(GET(self.v)).c_str())
 
 cdef class w_array_callable:
     cdef array_callable_wrapper v

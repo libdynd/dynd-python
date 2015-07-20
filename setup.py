@@ -124,7 +124,12 @@ class cmake_build_ext(build_ext):
     # Just the C extensions
     return [self.get_ext_path(name) for name in self.get_names()]
 
-from subprocess import check_output
+if sys.version_info >= (2, 7):
+    from subprocess import check_output
+else:
+    def check_output(args):
+        import subprocess
+        return subprocess.Popen(args, stdout = subprocess.PIPE).communicate()[0]
 
 # Get the version number to use from git
 ver = check_output(['git', 'describe', '--dirty',

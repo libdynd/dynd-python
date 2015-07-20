@@ -237,6 +237,11 @@ endif()
 
 add_library(pydynd ${pydynd_CPP_SRC})
 cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
+set_target_properties(
+    _pydynd
+    PROPERTIES
+    OUTPUT_NAME _pydynd
+    LINKER_LANGUAGE CXX)
 
 #
 #if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

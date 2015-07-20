@@ -31,9 +31,15 @@ install:
   - cd ..
   - dir C:\
   - dir "C:\Program Files\Microsoft SDKs\Windows"
-  - C:\Python34-x64\Scripts\pip install conda
-  - C:\Python34-x64\python -c "import struct; print(struct.calcsize('P') * 8)"
-  - C:\Python34-x64\Scripts\conda --version
+  - ps: Start-FileDownload 'https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86.exe' C:\Miniconda.exe; echo "Finished downloading miniconda"
+  - cmd: C:\Miniconda.exe /S /D=C:\Py
+  - C:\Py\Scripts\conda config --set always_yes yes
+  - C:\Py\Scripts\conda update conda
+  - C:\Py\Scripts\conda install numpy cython setuptools wheel
+  
+  - C:\Py\Scripts\pip install conda
+  - C:\Py\python -c "import struct; print(struct.calcsize('P') * 8)"
+  - C:\Py\Scripts\conda --version
 
 build_script:
   - REM python setup.py bdist_wheel

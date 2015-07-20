@@ -21,8 +21,7 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
 
   matrix:
-    - PYTHON: "C:/Python34-x64"
-      PYTHON_VERSION: "3.4.1"
+    - PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "64"
 
 install:
@@ -32,14 +31,12 @@ install:
   - cd ..
   - dir C:\
   - dir "C:\Program Files\Microsoft SDKs\Windows"
-  - ps: ./appveyor/install.ps1
-  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
-  - python --version
-  - python -c "import struct; print(struct.calcsize('P') * 8)"
-  - "%CMD_IN_ENV% pip install -r appveyor/requirements.txt"
+  - C:\Python34-x64\Scripts\pip install conda
+  - C:\Python34-x64\python -c "import struct; print(struct.calcsize('P') * 8)"
+  - C:\Python34-x64\Scripts\conda --version
 
 build_script:
-  - python setup.py bdist_wheel
+  - REM python setup.py bdist_wheel
 
 test_script:
   - cd dist

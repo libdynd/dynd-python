@@ -31,12 +31,8 @@ install:
   - sudo make install
   - sudo ldconfig
   - popd
-  - mkdir build
   # Build dynd-python
-  - pushd build
-  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-  - make
-  - sudo make install
+  - sudo python setup.py install
   - popd
 
 script:

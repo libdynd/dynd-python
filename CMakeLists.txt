@@ -246,6 +246,8 @@ cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
 if (APPLE)
     set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
     set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "@loader_path")
+else()
+    set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
 
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")

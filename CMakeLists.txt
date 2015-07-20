@@ -167,7 +167,6 @@ set(pydynd_CPP_SRC
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
     dynd/include/arrfunc_functions.hpp
-    dynd/include/codegen_cache_functions.hpp
     dynd/include/arrfunc_from_pyfunc.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/copy_from_pyobject_arrfunc.hpp
@@ -195,7 +194,6 @@ set(pydynd_CPP_SRC
     dynd/src/array_from_py_typededuction.cpp
     dynd/src/arrfunc_from_pyfunc.cpp
     dynd/src/arrfunc_functions.cpp
-    dynd/src/codegen_cache_functions.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
     dynd/src/copy_from_pyobject_arrfunc.cpp
     dynd/src/copy_to_numpy_arrfunc.cpp
@@ -216,7 +214,6 @@ set(pydynd_CPP_SRC
 set(pydynd_CYTHON_SRC
     dynd/cuda.pyx
     dynd/_pydynd.pyx
-    dynd/codegen_cache.pxd
     dynd/cuda.pxd
     dynd/dynd.pxd
     dynd/eval_context.pxd

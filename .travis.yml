@@ -33,7 +33,6 @@ install:
   - popd
   # Build dynd-python
   - sudo python setup.py install
-  - popd
 
 script:
   - pushd ~

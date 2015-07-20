@@ -24,10 +24,6 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void init_w__type_callable_typeobject(object)
     cdef struct _type_callable_placement_wrapper:
         pass
-    void placement_new(_type_callable_placement_wrapper&)
-    void placement_delete(_type_callable_placement_wrapper&)
-    # _array placement cast
-    _type_callable_wrapper& GET(_type_callable_placement_wrapper&)
 
     # Function property of nd::array
     cdef cppclass array_callable_wrapper:
@@ -37,10 +33,6 @@ cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
     void init_w_array_callable_typeobject(object)
     cdef struct array_callable_placement_wrapper:
         pass
-    void placement_new(array_callable_placement_wrapper&)
-    void placement_delete(array_callable_placement_wrapper&)
-    # _array placement cast
-    array_callable_wrapper& GET(array_callable_placement_wrapper&)
 
 cdef extern from "dynd/func/arrfunc.hpp" namespace "dynd":
     cdef cppclass ndarrfunc "dynd::nd::arrfunc":

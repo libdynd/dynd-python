@@ -119,7 +119,7 @@ class cmake_build_ext(build_ext):
     chdir(saved_cwd)
 
   def get_expected_names(self):
-    return ['_pydynd', 'cuda']
+    return ['_pydynd', os.path.join('ndt', 'type'), 'cuda']
 
   def get_names(self):
     return self._found_names

@@ -153,3 +153,34 @@ cdef extern from "type_functions.hpp" namespace "pydynd":
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
+
+#cdef extern from "<dynd/types/datashape_formatter.hpp>" namespace "dynd":
+#    string dynd_format_datashape "dynd::format_datashape" (_type&) except +translate_exception
+
+
+cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":
+    void add__type_names_to_dir_dict(_type&, object) except +translate_exception
+    object get__type_dynamic_property(_type&, object) except +translate_exception
+
+    void add_array_names_to_dir_dict(_array&, object) except +translate_exception
+    object get_array_dynamic_property(_array&, object) except +translate_exception
+    void set_array_dynamic_property(_array&, object, object) except +translate_exception
+
+    # Function properties
+    cdef cppclass _type_callable_wrapper:
+        pass
+    object _type_callable_call(_type_callable_wrapper&, object, object) except +translate_exception
+    object call__type_constructor_function(_type&, object, object) except +translate_exception
+
+    void init_w__type_callable_typeobject(object)
+    cdef struct _type_callable_placement_wrapper:
+        pass
+
+    # Function property of nd::array
+    cdef cppclass array_callable_wrapper:
+        pass
+    object array_callable_call(array_callable_wrapper&, object, object) except +translate_exception
+
+    void init_w_array_callable_typeobject(object)
+    cdef struct array_callable_placement_wrapper:
+        pass

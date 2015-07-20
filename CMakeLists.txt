@@ -225,6 +225,7 @@ set(pydynd_CYTHON_SRC
     dynd/ndt/type.pxd
     )
 set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
+set_source_files_properties(dynd/ndt/type.pyx PROPERTIES CYTHON_IS_CXX 1)
 
 source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
@@ -242,16 +243,24 @@ endif()
 
 add_library(pydynd SHARED ${pydynd_CPP_SRC})
 cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
+cython_add_module(type
+    dynd/ndt/type.pxd
+    dynd/ndt/type.pyx
+)
+set_target_properties(type PROPERTIES LIBRARY_OUTPUT_DIRECTORY ndt)
 
 if (APPLE)
     set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
     set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "@loader_path")
+    set_target_properties(type PROPERTIES INSTALL_RPATH "@loader_path")
 else()
     set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "$ORIGIN")
+    set_target_properties(type PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
 
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
 target_link_libraries(_pydynd pydynd)
+target_link_libraries(type pydynd)
 
 
 #

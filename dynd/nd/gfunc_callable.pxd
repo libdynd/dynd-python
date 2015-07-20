@@ -4,7 +4,7 @@
 #
 
 from translate_except cimport translate_exception
-from ndt.type cimport _type
+from dynd.ndt.type cimport _type
 from nd.array cimport _array
 
 cdef extern from "gfunc_callable_functions.hpp" namespace "pydynd":

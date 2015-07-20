@@ -1,14 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from dynd._pydynd import w_type as type, \
-        make_byteswap, make_fixed_bytes, make_convert, \
-        make_view, \
-        make_unaligned, make_fixed_string, make_string, \
-        make_pointer, make_struct, \
-        make_fixed_dim_kind, make_fixed_dim, make_var_dim, \
-        make_pow_dimsym, make_categorical, replace_dtype, extract_dtype, \
-        factor_categorical, make_bytes, make_property, \
-        make_reversed_property, cuda_support
+from dynd.ndt.type import make_byteswap, make_fixed_bytes, make_convert, \
+    make_view, make_unaligned, make_fixed_string, make_string, make_bytes, \
+    make_pointer, make_fixed_dim_kind, make_pow_dimsym, make_fixed_dim, \
+    make_struct, make_var_dim, make_property, make_reversed_property, \
+    make_categorical, factor_categorical, extract_dtype, replace_dtype
+
+from dynd._pydynd import w_type as type, cuda_support
 
 void = type('void')
 bool = type('bool')

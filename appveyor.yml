@@ -21,9 +21,10 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
 
   matrix:
-    - PYTHON: "C:/Python34-x64"
-      PYTHON_VERSION: "3.4.1"
-      PYTHON_ARCH: "64"
+    - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "x86"
+    - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "x86_64"
 
 install:
   - md libraries
@@ -32,14 +33,17 @@ install:
   - cd ..
   - dir C:\
   - dir "C:\Program Files\Microsoft SDKs\Windows"
-  - ps: ./appveyor/install.ps1
-  - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
-  - python --version
-  - python -c "import struct; print(struct.calcsize('P') * 8)"
-  - "%CMD_IN_ENV% pip install -r appveyor/requirements.txt"
+  - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
+  - cmd: C:\Miniconda.exe /S /D=C:\Py
+  - C:\Py\Scripts\conda config --set always_yes yes
+  - C:\Py\Scripts\conda update conda
+  - C:\Py\Scripts\conda install pip numpy cython setuptools
+  - C:\Py\Scripts\pip install wheel
+  - C:\Py\python -c "import struct; print(struct.calcsize('P') * 8)"
+  - SET PATH=C:\Py;C:\Py\Scripts;%PATH%
 
 build_script:
-  - python setup.py bdist_wheel
+  - C:\Py\python setup.py bdist_wheel
 
 test_script:
   - cd dist

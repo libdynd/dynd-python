@@ -96,8 +96,12 @@ class cmake_build_ext(build_ext):
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 
-    # Move the built C-extension to the place expected by the Python build
     import shutil
+    
+    # ...
+    shutil.move('libpydynd.so', os.path.join(build_lib, 'dynd', 'libpydynd.so'))
+
+    # Move the built C-extension to the place expected by the Python build
     self._found_names = []
     for name in self.get_expected_names():
         built_path = self.get_ext_built(name)
@@ -171,7 +175,7 @@ setup(
         'dynd._lowlevel',
         'dynd.tests',
     ],
-    package_data = {'dynd': ['*.pxd', 'include/*.hpp']},
+    package_data = {'dynd': ['libpydynd.dylib', '*.pxd', 'include/*.hpp']},
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
     ext_modules = [Extension('_pydynd', sources=[])],

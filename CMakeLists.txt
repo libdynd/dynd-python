@@ -6,6 +6,8 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(dynd-python)
 
+set(CMAKE_MACOSX_RPATH 1)
+
 ################################################
 # Some options configurable from the CMAKE command execution
 #
@@ -229,14 +231,28 @@ source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_ROUND")
-elseif(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-unused-function -Wno-error")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    if(APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-unused-function -Wno-error")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+    endif()
 endif()
 
-add_library(pydynd ${pydynd_CPP_SRC})
+add_library(pydynd SHARED ${pydynd_CPP_SRC})
 cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
+
+if (APPLE)
+    set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "@loader_path")
+else()
+    set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "$ORIGIN")
+endif()
+
+target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
+target_link_libraries(_pydynd pydynd)
+
 
 #
 #if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -266,9 +282,3 @@ cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
 #            )
 #    endif()
 #endif()
-
-if (DYND_INSTALL_LIB)
-    target_link_libraries(_pydynd "${LIBDYND_LIBRARIES}" pydynd)
-else()
-    target_link_libraries(_pydynd libdynd pydynd)
-endif()

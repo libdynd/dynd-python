@@ -225,58 +225,35 @@ set(pydynd_SRC
     dynd/src/utility_functions.cpp
 )
 
-set(config_SRC
-    dynd/config.pxd
-    dynd/config.pyx
-)
-set_source_files_properties(${config_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-set(eval_context_SRC
-    dynd/eval_context.pxd
-    dynd/eval_context.pyx
-)
-set_source_files_properties(${eval_context_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-set(type_SRC
-    dynd/ndt/type.pxd
-    dynd/ndt/type.pyx
-)
-set_source_files_properties(${type_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-set(array_SRC
-    dynd/nd/array.pxd
-    dynd/nd/array.pyx
-)
-set_source_files_properties(${array_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-set(arrfunc_SRC
-    dynd/nd/arrfunc.pxd
-    dynd/nd/arrfunc.pyx
-)
-set_source_files_properties(${arrfunc_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
-source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
-
 add_library(pydynd SHARED ${pydynd_SRC})
-
-cython_add_module(config ${config_SRC})
-
-cython_add_module(eval_context ${eval_context_SRC})
-
-cython_add_module(type ${type_SRC})
-set_target_properties(type PROPERTIES LIBRARY_OUTPUT_DIRECTORY ndt)
-
-cython_add_module(array ${array_SRC})
-set_target_properties(array PROPERTIES LIBRARY_OUTPUT_DIRECTORY nd)
-
-cython_add_module(arrfunc ${arrfunc_SRC})
-set_target_properties(arrfunc PROPERTIES LIBRARY_OUTPUT_DIRECTORY nd)
 
 if(APPLE)
     set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif()
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
+
+foreach(module config eval_context ndt.type nd.array nd.arrfunc)
+    string(FIND ${module} "." begin REVERSE)
+    if(${begin} EQUAL -1)
+        set(target ${module})
+        set(target_path "")
+    else()
+        string(SUBSTRING ${module} ${begin} -1 target)
+        string(SUBSTRING ${target} 1 -1 target)
+        string(SUBSTRING ${module} 0 ${begin} target_path)
+        set(target_path "${target_path}/")
+    endif()
+
+    set(target_SRC
+        dynd/${target_path}${target}.pyx
+    )
+    set_source_files_properties(${target_SRC} PROPERTIES CYTHON_IS_CXX 1)
+
+    cython_add_module(${target} ${target_SRC})
+    if (NOT ${target_path} EQUAL "")
+        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${target_path})
+    endif()
+endforeach(module)
 
 if(APPLE)
     set_target_properties(config PROPERTIES INSTALL_RPATH "@loader_path")
@@ -284,31 +261,3 @@ else()
     set_target_properties(config PROPERTIES INSTALL_RPATH "$ORIGIN")
 endif()
 target_link_libraries(config pydynd)
-
-if(APPLE)
-    set_target_properties(eval_context PROPERTIES INSTALL_RPATH "@loader_path")
-else()
-    set_target_properties(eval_context PROPERTIES INSTALL_RPATH "$ORIGIN")
-endif()
-target_link_libraries(eval_context pydynd)
-
-if(APPLE)
-    set_target_properties(type PROPERTIES INSTALL_RPATH "@loader_path/..")
-else()
-    set_target_properties(type PROPERTIES INSTALL_RPATH "$ORIGIN/..")
-endif()
-target_link_libraries(type pydynd)
-
-if(APPLE)
-    set_target_properties(array PROPERTIES INSTALL_RPATH "@loader_path/..")
-else()
-    set_target_properties(array PROPERTIES INSTALL_RPATH "$ORIGIN/..")
-endif()
-target_link_libraries(array pydynd)
-
-if(APPLE)
-    set_target_properties(arrfunc PROPERTIES INSTALL_RPATH "@loader_path/..")
-else()
-    set_target_properties(arrfunc PROPERTIES INSTALL_RPATH "$ORIGIN/..")
-endif()
-target_link_libraries(arrfunc pydynd)

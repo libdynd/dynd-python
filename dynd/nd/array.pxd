@@ -57,6 +57,7 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     bint array_is_f_contiguous(_array&) except +translate_exception
 
     object array_as_py(_array&, bint) except +translate_exception
+    object array_as_numpy(object, bint) except +translate_exception
 
     const char *array_access_flags_string(_array&) except +translate_exception
 
@@ -73,6 +74,9 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
 
     _array nd_fields(_array&, object) except +translate_exception
+
+    int array_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1
+    int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     object get_array_dynamic_property(_array&, object) except +translate_exception

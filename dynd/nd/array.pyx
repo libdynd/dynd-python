@@ -188,6 +188,16 @@ cdef class array(object):
         res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
         return res
 
+    def __getbuffer__(array self, Py_buffer* buffer, int flags):
+        # Docstring triggered Cython bug (fixed in master), so it's commented out
+        #"""PEP 3118 buffer protocol"""
+        array_getbuffer_pep3118(self, buffer, flags)
+
+    def __releasebuffer__(array self, Py_buffer* buffer):
+        # Docstring triggered Cython bug (fixed in master), so it's commented out
+        #"""PEP 3118 buffer protocol"""
+        array_releasebuffer_pep3118(self, buffer)
+
     def cast(self, tp):
         """
         a.cast(type)
@@ -365,6 +375,15 @@ def dshape_of(array a):
     """
     return str(<char *>dynd_format_datashape(a.v).c_str())
 
+def ndim_of(array a):
+    """
+    nd.ndim_of(a)
+    The number of array dimensions in the dynd array `a`.
+    This corresponds to the number of dimensions
+    in a NumPy array.
+    """
+    return a.v.get_ndim()
+
 def is_c_contiguous(array a):
     """
     nd.is_c_contiguous(a)
@@ -411,6 +430,33 @@ def as_py(array n, tuple=False):
     """
     cdef bint tup = tuple
     return array_as_py(n.v, tup != 0)
+
+def as_numpy(array n, allow_copy=False):
+    """
+    nd.as_numpy(n, allow_copy=False)
+    Evaluates the dynd array, and converts it into a NumPy object.
+    Parameters
+    ----------
+    n : dynd array
+        The array to convert into native Python types.
+    allow_copy : bool, optional
+        If true, allows a copy to be made when the array types
+        can't be directly viewed as a NumPy array, but with a
+        data-preserving copy they can be.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> import numpy as np
+    >>> a = nd.array([[1, 2, 3], [4, 5, 6]])
+    >>> a
+    nd.array([[1, 2, 3], [4, 5, 6]],
+             type="2 * 3 * int32")
+    >>> nd.as_numpy(a)
+    array([[1, 2, 3],
+           [4, 5, 6]])
+    """
+    # TODO: Could also convert dynd types into numpy dtypes
+    return array_as_numpy(n, bool(allow_copy))
 
 def view(obj, type=None, access=None):
     """

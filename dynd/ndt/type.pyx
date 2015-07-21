@@ -150,6 +150,19 @@ cdef class type(object):
                 return False
         return NotImplemented
 
+    def as_numpy(self):
+        """
+        tp.as_numpy()
+        If possible, converts the ndt.type object into an
+        equivalent numpy dtype.
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+        >>> ndt.int32.as_numpy()
+        dtype('int32')
+        """
+        return numpy_dtype_obj_from__type(self.v)
+
     def match(self, rhs):
         """
         tp.match(candidate)
@@ -169,13 +182,92 @@ cdef class type(object):
         """
         return self.v.match(type(rhs).v)
 
-
 init_w_type_typeobject(type)
+
+cdef class type_callable:
+    cdef _type_callable_wrapper v
+
+    def __call__(self, *args, **kwargs):
+        return _type_callable_call(self.v, args, kwargs)
+
+init_w__type_callable_typeobject(type_callable)
 
 class UnsuppliedType(object):
     pass
 
 Unsupplied = UnsuppliedType()
+
+def make_byteswap(builtin_type, operand_type=None):
+    """
+    ndt.make_byteswap(builtin_type, operand_type=None)
+    Constructs a byteswap type from a builtin one, with an
+    optional expression type to chain in as the operand.
+    Parameters
+    ----------
+    builtin_type : dynd type
+        The builtin dynd type (like ndt.int16, ndt.float64) to
+        which to apply the byte swap operation.
+    operand_type: dynd type, optional
+        An expression dynd type whose value type is a fixed bytes
+        dynd type with the same data size and alignment as
+        'builtin_type'.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_byteswap(ndt.int16)
+    ndt.type("byteswap[int16]")
+    """
+    cdef type result = type()
+    if operand_type is None:
+        result.v = dynd_make_byteswap_type(type(builtin_type).v)
+    else:
+        result.v = dynd_make_byteswap_type(type(builtin_type).v, type(operand_type).v)
+    return result
+
+def make_convert(to_tp, from_tp):
+    """
+    ndt.make_convert(to_tp, from_tp)
+    Constructs an expression type which converts from one
+    dynd type to another.
+    Parameters
+    ----------
+    to_tp : dynd type
+        The dynd type being converted to. This is the 'value_type'
+        of the resulting expression dynd type.
+    from_tp : dynd type
+        The dynd type being converted from. This is the 'operand_type'
+        of the resulting expression dynd type.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_convert(ndt.int16, ndt.float32)
+    ndt.type("convert[to=int16, from=float32]")
+    """
+    cdef type result = type()
+    result.v = dynd_make_convert_type(type(to_tp).v, type(from_tp).v)
+    return result
+
+def make_unaligned(aligned_tp):
+    """
+    ndt.make_unaligned(aligned_tp)
+    Constructs a type with alignment of 1 from the given type.
+    If the type already has alignment 1, just returns it.
+    Parameters
+    ----------
+    aligned_tp : dynd type
+        The dynd type which should be viewed on data that is
+        not properly aligned.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_unaligned(ndt.int32)
+    ndt.type("unaligned[int32]")
+    >>> ndt.make_unaligned(ndt.uint8)
+    ndt.uint8
+    """
+    cdef type result = type()
+    result.v = dynd_make_unaligned_type(type(aligned_tp).v)
+    return result
 
 def make_fixed_bytes(int data_size, int data_alignment=1):
     """

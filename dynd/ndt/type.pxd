@@ -21,6 +21,16 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
 
         bint match(_type&) except +translate_exception
 
+cdef extern from "numpy_interop.hpp" namespace "pydynd":
+    object numpy_dtype_obj_from__type(_type&) except +translate_exception
+
+cdef extern from "dynd/types/type_alignment.hpp" namespace "dynd":
+    _type dynd_make_unaligned_type "dynd::ndt::make_unaligned" (_type&) except +translate_exception
+
+cdef extern from "dynd/types/byteswap_type.hpp" namespace "dynd":
+    _type dynd_make_byteswap_type "dynd::ndt::byteswap_type::make" (_type&) except +translate_exception
+    _type dynd_make_byteswap_type "dynd::ndt::byteswap_type::make" (_type&, _type&) except +translate_exception
+
 cdef extern from 'dynd/types/fixed_bytes_type.hpp' namespace 'dynd':
     _type dynd_make_fixed_bytes_type 'dynd::ndt::make_fixed_bytes'(intptr_t, intptr_t) except +translate_exception
 
@@ -35,7 +45,15 @@ cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_type&) except +translate_exception
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
+    void add__type_names_to_dir_dict(_type&, object) except +translate_exception
     object get__type_dynamic_property(_type&, object) except +translate_exception
+
+    # Function properties
+    cdef cppclass _type_callable_wrapper:
+        pass
+    object _type_callable_call(_type_callable_wrapper&, object, object) except +translate_exception
+
+    void init_w__type_callable_typeobject(object)
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     void init_w_type_typeobject(object)

@@ -85,9 +85,31 @@ cdef class array(object):
         def __get__(self):
             return str(<char *>array_access_flags_string(self.v))
 
+    property ndim:
+        """
+        tp.ndim
+        The number of array dimensions in this dynd type.
+        This property is like NumPy
+        _array's 'ndim'. Indexing with [] can in many cases
+        go deeper than just the array dimensions, for
+        example structs can be indexed this way.
+        """
+        def __get__(self):
+            return self.v.get_ndim()
+
+    property strides:
+        def __get__(self):
+            return array_get_strides(self.v)
+
     property shape:
         def __get__(self):
             return array_get_shape(self.v)
+
+    property dtype:
+        def __get__(self):
+            cdef type result = type()
+            result.v = self.v.get_dtype()
+            return result
 
     def __contains__(self, x):
         return array_contains(self.v, x)

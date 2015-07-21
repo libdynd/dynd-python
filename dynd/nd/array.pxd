@@ -11,6 +11,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
         _type get_type()
         _type get_dtype()
         _type get_dtype(size_t)
+        intptr_t get_ndim()
         intptr_t get_dim_size() except +translate_exception
 
         _array view_scalars(_type&) except +translate_exception
@@ -30,6 +31,7 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 
     _array array_asarray(object, object) except +translate_exception
     object array_get_shape(_array&) except +translate_exception
+    object array_get_strides(_array&) except +translate_exception
     _array array_getitem(_array&, object) except +translate_exception
     void array_setitem(_array&, object, object) except +translate_exception
     _array array_view(object, object, object) except +translate_exception

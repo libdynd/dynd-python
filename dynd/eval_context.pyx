@@ -72,3 +72,34 @@ cdef class eval_context(object):
         return get_eval_context_repr(self)
 
 init_w_eval_context_typeobject(eval_context)
+
+def modify_default_eval_context(**kwargs):
+    """
+    nd.modify_default_eval_context(reset=False,
+                    errmode=None,
+                    cuda_device_errmode=None,
+                    date_parse_order=None,
+                    century_window=None)
+    Modify the default dynd evaluation context, overriding the defaults via
+    the chosen parameters. This is not recommended for typical use
+    except in interactive sessions. Using the ``ectx=`` parameter to
+    evaluation methods is preferred in library code.
+    Parameters
+    ----------
+    reset : bool, optional
+        If set to true, first resets the default evaluation context to
+        factory settings.
+    errmode : 'inexact', 'fractional', 'overflow', 'nocheck', optional
+        The default error mode used in computations when none is specified.
+    cuda_device_errmode : 'inexact', 'fractional', 'overflow', 'nocheck', optional
+        The default error mode used in cuda computations when none is
+        specified.
+    date_parse_order : 'NoAmbig', 'YMD', 'MDY', 'DMY', optional
+        How to interpret dates being parsed when the order of year, month and
+        day is ambiguous from the format.
+    century_window : int, optional
+        Whether and how to interpret two digit years. If 0, disallow them.
+        If 1-99, use a sliding window beginning that number of years ago.
+        If greater than 1000, use a fixed window starting at that year.
+    """
+    dynd_modify_default_eval_context(kwargs)

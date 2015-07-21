@@ -33,10 +33,21 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array array_full(object, _type&, object, object) except +translate_exception
     _array array_empty(_type&, object) except +translate_exception
     _array array_empty(object, _type&, object) except +translate_exception
+    object array_index(_array&) except +translate_exception
+    bint array_contains(_array&, object) except +translate_exception
+    object array_nonzero(_array&) except +translate_exception
+
+    _array array_ucast(_array&, _type&, size_t) except +translate_exception
+
+    bint array_is_c_contiguous(_array&) except +translate_exception
+    bint array_is_f_contiguous(_array&) except +translate_exception
 
     object array_as_py(_array&, bint) except +translate_exception
 
     const char *array_access_flags_string(_array&) except +translate_exception
+
+    string array_repr(_array&) except +translate_exception
+    object array_str(_array&) except +translate_exception
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     object get_array_dynamic_property(_array&, object) except +translate_exception

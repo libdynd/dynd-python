@@ -237,6 +237,29 @@ def make_fixed_string(int size, encoding=None):
     result.v = dynd_make_fixed_string_type(size, encoding)
     return result
 
+def make_string(encoding=None):
+    """
+    ndt.make_string(encoding='utf_8')
+    Constructs a variable-sized string dynd type
+    with the specified encoding.
+    Parameters
+    ----------
+    encoding : string, optional
+        The encoding used for storing unicode code points. Supported
+        values are 'ascii', 'utf_8', 'utf_16', 'utf_32', 'ucs_2'.
+        Default: 'utf_8'.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_string()
+    ndt.string
+    >>> ndt.make_string('utf_16')
+    ndt.type("string['utf16']")
+    """
+    cdef type result = type()
+    result.v = dynd_make_string_type(encoding)
+    return result
+
 def make_struct(field_types, field_names):
     """
     ndt.make_struct(field_types, field_names)

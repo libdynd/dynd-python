@@ -1,5 +1,5 @@
 from .type import type, Unsupplied, make_fixed_bytes, make_fixed_string, make_struct, \
-    make_fixed_dim
+    make_fixed_dim, make_string
 
 void = type('void')
 bool = type('bool')

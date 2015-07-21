@@ -89,6 +89,9 @@ cdef class array(object):
         def __get__(self):
             return array_get_shape(self.v)
 
+    def __contains__(self, x):
+        return array_contains(self.v, x)
+
     def __getattr__(self, name):
         return get_array_dynamic_property(self.v, name)
 
@@ -97,11 +100,52 @@ cdef class array(object):
         result.v = array_getitem(self.v, x)
         return result
 
+    def __index__(self):
+        return array_index(self.v)
+
     def __len__(self):
         return self.v.get_dim_size()
 
+    def __nonzero__(self):
+        return array_nonzero(self.v)
+
+    def __repr__(self):
+        return str(<char *>array_repr(self.v).c_str())
+
     def __setitem__(self, x, y):
         array_setitem(self.v, x, y)
+
+    def __str__(self):
+        return array_str(self.v)
+
+    def ucast(self, dtype, int replace_ndim=0):
+        """
+        a.ucast(dtype, replace_ndim=0)
+        Casts the dynd array's dtype to the requested type,
+        producing a conversion type. The dtype is the type
+        after the nd.ndim_of(a) array dimensions.
+        Parameters
+        ----------
+        dtype : dynd type
+            The dtype of the array is cast into this type.
+            If `replace_ndim` is not zero, then that many
+            dimensions are included in what is cast as well.
+        replace_ndim : integer, optional
+            The number of array dimensions to replace in doing
+            the cast.
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+        >>> from datetime import date
+        >>> a = nd.array([date(1929,3,13), date(1979,3,22)]).ucast('{month: int32, year: int32, day: float32}')
+        >>> a
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="Fixed * convert[to={month : int32, year : int32, day : float32}, from=date]")
+        >>> a.eval()
+        nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
+        """
+        cdef array result = array()
+        result.v = array_ucast(self.v, type(dtype).v, replace_ndim)
+        return result
 
 init_w_array_typeobject(array)
 
@@ -156,6 +200,26 @@ def dshape_of(array a):
         The array whose type is requested.
     """
     return str(<char *>dynd_format_datashape(a.v).c_str())
+
+def is_c_contiguous(array a):
+    """
+    nd.is_c_contiguous(a)
+    Returns True if the array is C-contiguous, False
+    otherwise. An array is C-contiguous if all its array
+    dimensions are ``fixed``, the strides are in decreasing
+    order, and the data is tightly packed.
+    """
+    return array_is_c_contiguous(a.v)
+
+def is_f_contiguous(array a):
+    """
+    nd.is_f_contiguous(a)
+    Returns True if the array is F-contiguous, False
+    otherwise. An array is F-contiguous if all its array
+    dimensions are ``fixed``, the strides are in increasing
+    order, and the data is tightly packed.
+    """
+    return array_is_f_contiguous(a.v)
 
 def as_py(array n, tuple=False):
     """

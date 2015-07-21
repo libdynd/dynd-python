@@ -1,3 +1,5 @@
+from libcpp.string cimport string
+
 from ..config cimport translate_exception
 
 from dynd.ndt.type cimport _type
@@ -6,6 +8,9 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
     cdef cppclass _array 'dynd::nd::array':
 
         _type get_type()
+
+cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
+    string dynd_format_datashape 'dynd::format_datashape' (_array&) except +translate_exception
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void init_w_array_typeobject(object)

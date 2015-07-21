@@ -102,6 +102,17 @@ def type_of(array a):
     result.v = a.v.get_type()
     return result
 
+def dshape_of(array a):
+    """
+    nd.dshape_of(a)
+    The blaze datashape of the dynd array, as a string.
+    Parameters
+    ----------
+    a : dynd array
+        The array whose type is requested.
+    """
+    return str(<char *>dynd_format_datashape(a.v).c_str())
+
 def as_py(array n, tuple=False):
     """
     nd.as_py(n, tuple=False)

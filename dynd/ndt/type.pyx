@@ -138,6 +138,26 @@ cdef class type(object):
                 return False
         return NotImplemented
 
+    def match(self, rhs):
+        """
+        tp.match(candidate)
+        Returns True if the candidate type ``candidate`` matches the possibly
+        symbolic pattern type ``tp``, False otherwise.
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+        >>> ndt.type("T").match(ndt.int32)
+        True
+        >>> ndt.type("Dim * T").match(ndt.int32)
+        False
+        >>> ndt.type("M * {x: ?T, y: T}").match("10 * {x : ?int32, y : int32}")
+        True
+        >>> ndt.type("M * {x: ?T, y: T}").match("10 * {x : ?int32, y : ?int32}")
+        False
+        """
+        return self.v.match(type(rhs).v)
+
+
 init_w_type_typeobject(type)
 
 class UnsuppliedType(object):

@@ -1,3 +1,5 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 from dynd.ndt.type cimport type, dynd_make_categorical_type
 from dynd.ndt import Unsupplied
 

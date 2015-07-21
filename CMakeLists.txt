@@ -167,8 +167,8 @@ else()
 endif()
 
 # Configure cmake defines
-configure_file("dynd/config.pxi.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/dynd/config.pxi")
+#configure_file("dynd/config.pxi.in"
+ #              "${CMAKE_CURRENT_BINARY_DIR}/dynd/config.pxi")
 
 set(pydynd_SRC
     dynd/include/array_as_numpy.hpp
@@ -225,44 +225,39 @@ set(pydynd_SRC
     dynd/src/utility_functions.cpp
 )
 
-set(type_SRC
-    dynd/ndt/type.pxd
-    dynd/ndt/type.pyx
-)
-set_source_files_properties(${type_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-set(config_SRC
-    dynd/cuda.pyx
-    dynd/config.pyx
-    dynd/cuda.pxd
-    dynd/dynd.pxd
-    dynd/eval_context.pxd
-    dynd/translate_except.pxd
-    dynd/nd/array.pxd
-    dynd/nd/gfunc_callable.pxd
-)
-set_source_files_properties(${config_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
-source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
-
 add_library(pydynd SHARED ${pydynd_SRC})
-
-cython_add_module(config ${config_SRC})
-
-cython_add_module(type ${type_SRC})
-set_target_properties(type PROPERTIES LIBRARY_OUTPUT_DIRECTORY ndt)
 
 if(APPLE)
     set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif()
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
 
-foreach(target config type)
-    if(APPLE)
-        set_target_properties(${target} PROPERTIES INSTALL_RPATH "@loader_path")
-    else()
-        set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
+foreach(module config eval_context ndt.type nd.array nd.arrfunc)
+    string(REPLACE "." ";" directories ${module})
+    list(GET directories -1 module_name)
+    list(REMOVE_AT directories -1)
+
+    string(REPLACE "." "/" module_root "${module}")
+    set(module_SRC dynd/${module_root}.pyx)
+    set_source_files_properties(${module_SRC} PROPERTIES CYTHON_IS_CXX 1)
+
+    cython_add_module(${module_name} ${module_SRC})
+    if (directories)
+        string(REPLACE ";" "/" module_output_directory ${directories})
+        set_target_properties(${module_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${module_output_directory})
     endif()
-    target_link_libraries(${target} pydynd)
-endforeach(target)
+
+    if(APPLE)
+        set(module_install_rpath "@loader_path")
+    else()
+        set(module_install_rpath "$ORIGIN")
+    endif()
+    list(LENGTH directories i)
+    while(${i} GREATER 0)
+        set(module_install_rpath "${module_install_rpath}/..")
+        math(EXPR i "${i} - 1" )
+    endwhile(${i} GREATER 0)
+    set_target_properties(${module_name} PROPERTIES INSTALL_RPATH ${module_install_rpath})
+
+    target_link_libraries(${module_name} pydynd)
+endforeach(module)

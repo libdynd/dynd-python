@@ -120,7 +120,8 @@ class cmake_build_ext(build_ext):
     chdir(saved_cwd)
 
   def get_expected_names(self):
-    return ['config', os.path.join('ndt', 'type'), 'cuda']
+    return ['config', 'eval_context', os.path.join('ndt', 'type'), \
+        os.path.join('nd', 'array'), os.path.join('nd', 'arrfunc')]
 
   def get_names(self):
     return self._found_names
@@ -171,9 +172,9 @@ setup(
     url = 'https://github.com/libdynd/dynd-python',
     packages = [
         'dynd',
+        'dynd._lowlevel',
         'dynd.nd',
         'dynd.ndt',
-        'dynd._lowlevel',
         'dynd.tests',
     ],
     package_data = {'dynd': ['*.pxd', 'include/*.hpp']},

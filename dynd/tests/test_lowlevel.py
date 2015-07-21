@@ -1,7 +1,8 @@
 import sys
 import unittest
 import ctypes
-from dynd import nd, ndt, _lowlevel
+from dynd import nd, ndt
+from dynd import _lowlevel
 
 class TestLowLevel(unittest.TestCase):
     def type_id_of(self, dt):
@@ -91,11 +92,11 @@ class TestLowLevel(unittest.TestCase):
                                     ndt.int32, ndt.uint32)),
                         _lowlevel.type_id.VIEW)
         # CUDA types
-        if ndt.cuda_support:
-            self.assertEqual(self.type_id_of(ndt.type('cuda_device[int32]')),
-                             _lowlevel.type_id.CUDA_DEVICE)
-            self.assertEqual(self.type_id_of(ndt.type('cuda_host[int32]')),
-                             _lowlevel.type_id.CUDA_HOST)
+#        if ndt.cuda_support:
+ #           self.assertEqual(self.type_id_of(ndt.type('cuda_device[int32]')),
+  #                           _lowlevel.type_id.CUDA_DEVICE)
+   #         self.assertEqual(self.type_id_of(ndt.type('cuda_host[int32]')),
+    #                         _lowlevel.type_id.CUDA_HOST)
         # Uniform arrays
         self.assertEqual(self.type_id_of(ndt.type('fixed[3] * int32')),
                         _lowlevel.type_id.FIXED_DIM)

@@ -5,8 +5,8 @@ __all__ = [
         'arrfunc_instantiate']
 
 import ctypes
-from ..config import w_array as nd_array, type_of as nd_type_of, \
-                      w_eval_context as nd_eval_context
+from ..nd.array import array as nd_array, type_of as nd_type_of
+from ..eval_context import eval_context as nd_eval_context
 from .api import api, py_api, get_base_type_ptr
 from .ctypes_types import (CKernelPrefixStruct, NDArrayPreambleStruct,
         CKernelBuilderStruct,

@@ -5,7 +5,7 @@ __all__ = ['build_arrmeta_struct']
 import ctypes
 
 from .ctypes_types import MemoryBlockData
-from ..config import w_type as _type
+from ..ndt.type import type as _type
 
 # Metadata ctypes for types that don't have child arrmeta
 class EmptyMetadata(ctypes.Structure):

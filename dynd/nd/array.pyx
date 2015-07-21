@@ -760,3 +760,20 @@ def squeeze(a, axis=None):
                 break
     ix = tuple(ix)
     return a[ix]
+
+def fields(array struct_array, *fields_list):
+    """
+    nd.fields(struct_array, *fields_list)
+    Selects fields from an array of structs.
+    Parameters
+    ----------
+    struct_array : dynd array with struct dtype
+        A dynd array whose dtype has kind 'struct'. This
+        could be a single struct instance, or an array of structs.
+    *fields_list : string
+        The remaining parameters must all be strings, and are the field
+        names to select.
+    """
+    cdef array result = array()
+    result.v = nd_fields(struct_array.v, fields_list)
+    return result

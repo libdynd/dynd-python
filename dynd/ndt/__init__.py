@@ -34,3 +34,5 @@ bytes = type('bytes')
 
 # Some classes making dimension construction easier
 from .dim_helpers import *
+
+from . import dynd_ctypes as ctypes

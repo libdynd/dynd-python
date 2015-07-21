@@ -72,6 +72,8 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array dynd_parse_json_type(_type&, _array&, object) except +translate_exception
     void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
 
+    _array nd_fields(_array&, object) except +translate_exception
+
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     object get_array_dynamic_property(_array&, object) except +translate_exception
 

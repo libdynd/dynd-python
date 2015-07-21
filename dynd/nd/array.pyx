@@ -114,8 +114,19 @@ cdef class array(object):
     def __contains__(self, x):
         return array_contains(self.v, x)
 
+    def __dir__(self):
+        # Customize dir() so that additional properties of various types
+        # will show up in IPython tab-complete, for example.
+        result = dict(array.__dict__)
+        result.update(object.__dict__)
+        add_array_names_to_dir_dict(self.v, result)
+        return result.keys()
+
     def __getattr__(self, name):
         return get_array_dynamic_property(self.v, name)
+
+    def __setattr__(self, name, value):
+        set_array_dynamic_property(self.v, name, value)
 
     def __getitem__(self, x):
         cdef array result = array()
@@ -272,6 +283,14 @@ cdef class array(object):
         return result
 
 init_w_array_typeobject(array)
+
+cdef class array_callable:
+    cdef array_callable_wrapper v
+
+    def __call__(self, *args, **kwargs):
+        return array_callable_call(self.v, args, kwargs)
+
+init_w_array_callable_typeobject(array_callable)
 
 cpdef array asarray(obj, access=None):
     """

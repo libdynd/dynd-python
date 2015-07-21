@@ -14,6 +14,7 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
         size_t get_default_data_size() except +translate_exception
         size_t get_data_alignment()
         size_t get_arrmeta_size()
+        _type get_canonical_type()
 
         bint operator==(_type&)
         bint operator!=(_type&)

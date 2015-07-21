@@ -162,6 +162,5 @@ class TestTime(unittest.TestCase):
         self.assertEqual(nd.as_py(s.second), 8)
         self.assertEqual(nd.as_py(s.tick), 7654320)
 
-
 if __name__ == '__main__':
     unittest.main(verbosity=2)

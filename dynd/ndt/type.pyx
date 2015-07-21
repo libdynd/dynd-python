@@ -41,6 +41,18 @@ cdef class type(object):
         def __get__(self):
             return _type_get_shape(self.v)
 
+    property canonical_type:
+        """
+        tp.canonical_type
+        Returns a version of this type that is canonical,
+        where any intermediate pointers are removed and expressions
+        are stripped away.
+        """
+        def __get__(self):
+            cdef type result = type()
+            result.v = self.v.get_canonical_type()
+            return result
+
     property dshape:
         """
         tp.dshape

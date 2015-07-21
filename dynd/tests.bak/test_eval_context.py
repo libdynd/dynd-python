@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import
 import unittest
-from dynd import nd, ndt, _lowlevel
+from dynd import nd, ndt
 
 class TestEvalContext(unittest.TestCase):
     def test_basic_properties(self):

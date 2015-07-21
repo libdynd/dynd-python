@@ -1,57 +1,13 @@
-from __future__ import absolute_import
-
-import os
-
-def get_include():
-    import numpy as np
-    return [os.path.join(os.path.dirname(__file__), 'include'), np.get_include()]
-
-# dynd._lowlevel is not imported by default
-from . import nd, ndt
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \
                 _dynd_git_sha1 as __libdynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__
 
-def fix_version(v):
-    if '.' in v:
-        vlst = v.lstrip('v').split('.')
-        vlst = vlst[:-1] + vlst[-1].split('-')
-
-        if len(vlst) <= 3:
-            v = '.'.join('vlst')
-            vtup = tuple(int(x) for x in vlst)
-        else:
-            # The first 3 numbers are always integer
-            vtup = tuple(int(x) for x in vlst[:3])
-            # The 4th one may not be, so trap it
-            try:
-                vtup = vtup + (int(vlst[3]),)
-                # Zero pad the dev version #, so it sorts lexicographically
-                vlst[3] = 'dev%03d' % int(vlst[3])
-                # increment the third version number, so
-                # the '.dev##' versioning convention works
-                vlst[2] = str(int(vlst[2]) + 1)
-            except ValueError:
-                pass
-            ver = '.'.join(vlst[:4]) + '+' + '.'.join(vlst[4:])
-        return v, vtup
-    else:
-        # When a "git checkout --depth=1 ..." has been done,
-        # it will look like "96da079" or "96da079-dirty"
-        return v, (0, 0, 0)
-
-__version__, __version_info__ = fix_version(__version__)
-__libdynd_version__, __libdynd_version_info__ = fix_version(__libdynd_version__)
-
-del fix_version
-
 def test(verbosity=1, xunitfile=None, exit=False):
     """
     Runs the full DyND test suite, outputing
     the results of the tests to  sys.stdout.
-
     Parameters
     ----------
     verbosity : int, optional

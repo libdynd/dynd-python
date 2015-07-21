@@ -1,7 +1,7 @@
 import sys
 import unittest
 import ctypes
-from dynd import nd, ndt, _lowlevel
+from dynd import nd, ndt
 
 class TestLowLevel(unittest.TestCase):
     def type_id_of(self, dt):

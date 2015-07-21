@@ -2,7 +2,7 @@ from __future__ import print_function, absolute_import
 import sys
 import ctypes
 import unittest
-from dynd import nd, ndt, _lowlevel
+from dynd import nd, ndt
 import numpy as np
 
 if sys.version_info >= (2, 7):

@@ -1,12 +1,4 @@
-from __future__ import absolute_import, division, print_function
-
-from dynd.ndt.type import make_byteswap, make_fixed_bytes, make_convert, \
-    make_view, make_unaligned, make_fixed_string, make_string, make_bytes, \
-    make_pointer, make_fixed_dim_kind, make_pow_dimsym, make_fixed_dim, \
-    make_struct, make_var_dim, make_property, make_reversed_property, \
-    make_categorical, factor_categorical, extract_dtype, replace_dtype
-
-from dynd.config import w_type as type, cuda_support
+from .type import type, make_fixed_bytes, make_fixed_string, make_struct
 
 void = type('void')
 bool = type('bool')
@@ -36,10 +28,5 @@ date = type('date')
 time = type('time')
 datetime = type('datetime')
 datetimeutc = type('datetime[tz="UTC"]')
-json = type('json')
+#json = type('json')
 bytes = type('bytes')
-
-# Includes ctypes definitions
-from . import dynd_ctypes as ctypes
-# Some classes making dimension construction easier
-from .dim_helpers import *

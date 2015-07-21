@@ -120,7 +120,7 @@ class cmake_build_ext(build_ext):
     chdir(saved_cwd)
 
   def get_expected_names(self):
-    return ['config', os.path.join('ndt', 'type'), 'cuda']
+    return ['config', os.path.join('ndt', 'type'), os.path.join('nd', 'array')]
 
   def get_names(self):
     return self._found_names
@@ -173,7 +173,6 @@ setup(
         'dynd',
         'dynd.nd',
         'dynd.ndt',
-        'dynd._lowlevel',
         'dynd.tests',
     ],
     package_data = {'dynd': ['*.pxd', 'include/*.hpp']},

@@ -65,9 +65,9 @@ def inline(statement, header = ''):
   else:
     if (sys.version_info >= (3,0)):
       import sysconfig
-      extra_link_args = [os.path.join(os.path.dirname(dynd.__file__), '_pydynd' + sysconfig.get_config_var('SO'))]
+      extra_link_args = [os.path.join(os.path.dirname(dynd.__file__), 'config' + sysconfig.get_config_var('SO'))]
     else:
-      extra_link_args = [os.path.join(os.path.dirname(dynd.__file__), '_pydynd.so')]
+      extra_link_args = [os.path.join(os.path.dirname(dynd.__file__), 'config.so')]
 
   ext = distutils.core.Extension('inline', [srcfile.name], extra_compile_args = ['-std=c++11'],
     include_dirs = get_include(), language = 'c++', libraries = ['dynd'], 

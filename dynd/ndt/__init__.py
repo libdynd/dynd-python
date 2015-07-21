@@ -6,7 +6,7 @@ from dynd.ndt.type import make_byteswap, make_fixed_bytes, make_convert, \
     make_struct, make_var_dim, make_property, make_reversed_property, \
     make_categorical, factor_categorical, extract_dtype, replace_dtype
 
-from dynd._pydynd import w_type as type, cuda_support
+from dynd.config import w_type as type, cuda_support
 
 void = type('void')
 bool = type('bool')

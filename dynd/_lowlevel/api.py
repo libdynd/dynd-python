@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import sys
 import ctypes
-from .._pydynd import _get_lowlevel_api, _get_py_lowlevel_api
+from ..config import _get_lowlevel_api, _get_py_lowlevel_api
 from .ctypes_types import (ArrFuncTypeDataPtr,
         CKernelBuilderStructPtr)
 

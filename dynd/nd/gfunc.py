@@ -2,7 +2,7 @@ __all__ = ['mean1d']
 
 #, 'codegen_cache', 'default_cgcache', 'elwise_reduce']
 
-from dynd._pydynd import get_published_arrfuncs
+from dynd.config import get_published_arrfuncs
 
 #        default_cgcache as default_cgcache, \
 #        w_codegen_cache as codegen_cache, \

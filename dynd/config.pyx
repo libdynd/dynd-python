@@ -760,7 +760,7 @@ cdef class w_arrfunc(w_array):
     >>> af(1, "test")
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
-      File "_pydynd.pyx", line 1340, in _pydynd.w_arrfunc.__call__ (_pydynd.cxx:9774)
+      File "config.pyx", line 1340, in config.w_arrfunc.__call__ (config.cxx:9774)
     ValueError: parameter 2 to arrfunc does not match, expected int32, received string
     """
 

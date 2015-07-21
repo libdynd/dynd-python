@@ -9,7 +9,7 @@ def get_include():
 # dynd._lowlevel is not imported by default
 from . import nd, ndt
 
-from ._pydynd import _dynd_version_string as __libdynd_version__, \
+from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \
                 _dynd_git_sha1 as __libdynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__

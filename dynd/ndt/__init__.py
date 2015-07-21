@@ -1,5 +1,5 @@
 from .type import type, Unsupplied, make_fixed_bytes, make_fixed_string, make_struct, \
-    make_fixed_dim, make_string
+    make_fixed_dim, make_string, make_var_dim, make_fixed_dim_kind
 
 void = type('void')
 bool = type('bool')
@@ -31,3 +31,6 @@ datetime = type('datetime')
 datetimeutc = type('datetime[tz="UTC"]')
 json = type('json')
 bytes = type('bytes')
+
+# Some classes making dimension construction easier
+from .dim_helpers import *

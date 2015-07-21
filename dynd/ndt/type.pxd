@@ -23,6 +23,13 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
 cdef extern from 'dynd/types/fixed_bytes_type.hpp' namespace 'dynd':
     _type dynd_make_fixed_bytes_type 'dynd::ndt::make_fixed_bytes'(intptr_t, intptr_t) except +translate_exception
 
+cdef extern from "dynd/types/fixed_dim_kind_type.hpp" namespace "dynd":
+    _type dynd_make_fixed_dim_kind_type "dynd::ndt::fixed_dim_kind_type::make" (_type&) except +translate_exception
+    _type dynd_make_fixed_dim_kind_type "dynd::ndt::fixed_dim_kind_type::make" (_type&, intptr_t) except +translate_exception
+
+cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
+    _type dynd_make_var_dim_type "dynd::ndt::var_dim_type::make" (_type&) except +translate_exception
+
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_type&) except +translate_exception
 

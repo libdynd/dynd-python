@@ -9,7 +9,11 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
     cdef cppclass _array 'dynd::nd::array':
 
         _type get_type()
+        _type get_dtype()
+        _type get_dtype(size_t)
         intptr_t get_dim_size() except +translate_exception
+
+        _array view_scalars(_type&) except +translate_exception
 
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_array&) except +translate_exception
@@ -45,6 +49,7 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array array_cast(_array&, _type&) except +translate_exception
     _array array_ucast(_array&, _type&, size_t) except +translate_exception
     _array array_range(object, object, object, object) except +translate_exception
+    _array array_linspace(object, object, object, object) except +translate_exception
 
     bint array_is_c_contiguous(_array&) except +translate_exception
     bint array_is_f_contiguous(_array&) except +translate_exception
@@ -55,6 +60,7 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 
     string array_repr(_array&) except +translate_exception
     object array_str(_array&) except +translate_exception
+    object array_unicode(_array&) except +translate_exception
 
     _array array_add(_array&, _array&) except +translate_exception
     _array array_subtract(_array&, _array&) except +translate_exception

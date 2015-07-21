@@ -127,6 +127,9 @@ cdef class array(object):
     def __str__(self):
         return array_str(self.v)
 
+    def __unicode__(self):
+        return array_unicode(self.v)
+
     def __add__(lhs, rhs):
         cdef array res = array()
         res.v = array_add(asarray(lhs).v, asarray(rhs).v)
@@ -226,6 +229,26 @@ cdef class array(object):
         result.v = array_ucast(self.v, type(dtype).v, replace_ndim)
         return result
 
+    def view_scalars(self, dtp):
+        """
+        a.view_scalars(dtype)
+        Views the data of the dynd array as the requested dtype,
+        where it makes sense.
+        If the array is a one-dimensional contiguous
+        array of plain old data, the new dtype may have a different
+        element size than original one.
+        When the array has an expression type, the
+        view is created by layering another view dtype
+        onto the array's existing expression.
+        Parameters
+        ----------
+        dtype : dynd type
+            The scalars are viewed as this dtype.
+        """
+        cdef array result = array()
+        result.v = self.v.view_scalars(type(dtp).v)
+        return result
+
 init_w_array_typeobject(array)
 
 cpdef array asarray(obj, access=None):
@@ -267,6 +290,27 @@ def type_of(array a):
     """
     cdef type result = type()
     result.v = a.v.get_type()
+    return result
+
+def dtype_of(array a, size_t include_ndim=0):
+    """
+    nd.dtype_of(a)
+    The data type of the dynd array. This is
+    the type after removing all the array
+    dimensions from the dynd type of `a`.
+    If `include_ndim` is provided, that many
+    array dimensions are included in the
+    data type returned.
+    Parameters
+    ----------
+    a : dynd array
+        The array whose type is requested.
+    include_ndim : int, optional
+        The number of array dimensions to include
+        in the data type, default zero.
+    """
+    cdef type result = type()
+    result.v = a.v.get_dtype(include_ndim)
     return result
 
 def dshape_of(array a):
@@ -582,6 +626,26 @@ def range(start=None, stop=None, step=None, dtype=None):
             raise ValueError("No value provided for 'stop'")
     else:
         result.v = array_range(start, stop, step, dtype)
+    return result
+
+def linspace(start, stop, count=50, dtype=None):
+    """
+    nd.linspace(start, stop, count=50, dtype=None)
+    Constructs a specified count of values interpolating a range.
+    Parameters
+    ----------
+    start : floating point scalar
+        The value of the first element of the resulting dynd array.
+    stop : floating point scalar
+        The value of the last element of the resulting dynd array.
+    count : int, optional
+        The number of elements in the resulting dynd array.
+    dtype : dynd type, optional
+        If provided, it must be a scalar type, and the result
+        is of this type.
+    """
+    cdef array result = array()
+    result.v = array_linspace(start, stop, count, dtype)
     return result
 
 def parse_json(tp, json, ectx=None):

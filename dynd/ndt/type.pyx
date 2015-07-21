@@ -283,3 +283,50 @@ def make_struct(field_types, field_names):
     cdef type result = type()
     result.v = dynd_make_struct_type(field_types, field_names)
     return result
+
+def make_fixed_dim_kind(element_tp, ndim=None):
+    """
+    ndt.make_fixed_dim_kind(element_tp, ndim=1)
+    Constructs an array dynd type with one or more symbolic fixed
+    dimensions. A single fixed_dim_kind dynd type corresponds
+    to one dimension, so when ndim > 1, multiple fixed_dim_kind
+    dimensions are created.
+    Parameters
+    ----------
+    element_tp : dynd type
+        The type of one element in the symbolic array.
+    ndim : int
+        The number of fixed_dim_kind dimensions to create.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_fixed_dim_kind(ndt.int32)
+    ndt.type("Fixed * int32")
+    >>> ndt.make_fixed_dim_kind(ndt.int32, 3)
+    ndt.type("Fixed * Fixed * Fixed * int32")
+    """
+    cdef type result = type()
+    if (ndim is None):
+        result.v = dynd_make_fixed_dim_kind_type(type(element_tp).v)
+    else:
+        result.v = dynd_make_fixed_dim_kind_type(type(element_tp).v, int(ndim))
+    return result
+
+
+def make_var_dim(element_tp):
+    """
+    ndt.make_fixed_dim(element_tp)
+    Constructs a var_dim type.
+    Parameters
+    ----------
+    element_tp : dynd type
+        The type of each element in the resulting array type.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_var_dim(ndt.float32)
+    ndt.type("var * float32")
+    """
+    cdef type result = type()
+    result.v = dynd_make_var_dim_type(type(element_tp).v)
+    return result

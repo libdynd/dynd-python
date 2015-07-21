@@ -188,6 +188,28 @@ def make_fixed_bytes(int data_size, int data_alignment=1):
     result.v = dynd_make_fixed_bytes_type(data_size, data_alignment)
     return result
 
+def make_fixed_dim(shape, element_tp):
+    """
+    ndt.make_fixed_dim(shape, element_tp)
+    Constructs a fixed_dim type of the given shape.
+    Parameters
+    ----------
+    shape : tuple of int
+        The multi-dimensional shape of the resulting fixed array type.
+    element_tp : dynd type
+        The type of each element in the resulting array type.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_fixed_dim(5, ndt.int32)
+    ndt.type("5 * int32")
+    >>> ndt.make_fixed_dim((3,5), ndt.int32)
+    ndt.type("3 * 5 * int32")
+    """
+    cdef type result = type()
+    result.v = dynd_make_fixed_dim_type(shape, type(element_tp).v)
+    return result
+
 def make_fixed_string(int size, encoding=None):
     """
     ndt.make_fixed_string(size, encoding='utf_8')

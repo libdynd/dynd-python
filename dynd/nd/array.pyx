@@ -76,10 +76,54 @@ cdef class array(object):
             raise ValueError('a value for the array construction must ' +
                             'be provided when another keyword parameter is used')
 
+    property access_flags:
+        """
+        a.access_flags
+        The access flags of the dynd array, as a string.
+        Returns 'immutable', 'readonly', or 'readwrite'
+        """
+        def __get__(self):
+            return str(<char *>array_access_flags_string(self.v))
+
+    property shape:
+        def __get__(self):
+            return array_get_shape(self.v)
+
     def __getattr__(self, name):
         return get_array_dynamic_property(self.v, name)
 
+    def __getitem__(self, x):
+        cdef array result = array()
+        result.v = array_getitem(self.v, x)
+        return result
+
+    def __len__(self):
+        return self.v.get_dim_size()
+
+    def __setitem__(self, x, y):
+        array_setitem(self.v, x, y)
+
 init_w_array_typeobject(array)
+
+cpdef array asarray(obj, access=None):
+    """
+    nd.asarray(obj, access=None)
+    Constructs a dynd array from the object, taking a view
+    if possible, otherwise making a copy.
+    Parameters
+    ----------
+    obj : object
+        The object which is to be converted into a dynd array,
+        as a view if possible, otherwise a copy.
+    access : 'readwrite'/'rw', 'readonly'/'r', 'immutable', optional
+        If provided, the access flags the resulting array should
+        satisfy. When a view can be taken, but these access flags
+        cannot, a copy is made.
+    """
+
+    cdef array result = array()
+    result.v = array_asarray(obj, access)
+    return result
 
 def type_of(array a):
     """
@@ -139,3 +183,228 @@ def as_py(array n, tuple=False):
     """
     cdef bint tup = tuple
     return array_as_py(n.v, tup != 0)
+
+def view(obj, type=None, access=None):
+    """
+    nd.view(obj, type=None, access=None)
+    Constructs a dynd array which is a view of the data from
+    `obj`. The `access` parameter can be used to require writable
+    access for an output parameter, or to produce a read-only
+    view of writable data.
+    Parameters
+    ----------
+    obj : object
+        A Python object which backs some array data, such as
+        a dynd array, a numpy array, or an object supporting
+        the Python buffer protocol.
+    type : ndt.type, optional
+        If provided, requests that the memory of ``obj`` be viewed
+        as this type.
+    access : 'readwrite'/'rw' or 'readonly'/'r', optional
+        The access flags for the constructed array. Use 'readwrite'
+        to require that the view be writable, and 'readonly' to
+        provide a view of data to someone else without allowing
+        writing.
+    """
+    cdef array result = array()
+    result.v = array_view(obj, type, access)
+    return result
+
+def zeros(*args, **kwargs):
+    """
+    nd.zeros(dtype, *, access=None)
+    nd.zeros(shape, dtype, *, access=None)
+    nd.zeros(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
+    Creates an array of zeros of the specified
+    type. Dimensions may be provided as integer
+    positional parameters, a tuple of integers,
+    or within the dtype itself.
+    TODO: In the immutable case it should use zero-strides to optimize storage.
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to readwrite.
+    """
+    # Handle the keyword-only arguments
+    access = kwargs.pop('access', None)
+    if kwargs:
+        msg = "nd.zeros() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef array result = array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        result.v = array_zeros(type(args[0]).v, access)
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        result.v = array_zeros(args[0], type(args[1]).v, access)
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        result.v = array_zeros(args[:-1], type(args[-1]).v, access)
+    else:
+        raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
+    return result
+
+def ones(*args, **kwargs):
+    """
+    nd.ones(type, *, access=None)
+    nd.ones(shape, dtype, *, access=None)
+    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
+    Creates an array of ones of the specified
+    type. Dimensions may be provided as integer
+    positional parameters, a tuple of integers,
+    or within the dtype itself.
+    TODO: In the immutable case it should use zero-strides to optimize storage.
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to readwrite.
+    """
+    # Handle the keyword-only arguments
+    access = kwargs.pop('access', None)
+    if kwargs:
+        msg = "nd.ones() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef array result = array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        result.v = array_ones(type(args[0]).v, access)
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        result.v = array_ones(args[0], type(args[1]).v, access)
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        result.v = array_ones(args[:-1], type(args[-1]).v, access)
+    else:
+        raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
+    return result
+
+def full(*args, **kwargs):
+    """
+    nd.full(type, *, value, access=None)
+    nd.ones(shape, dtype, *, value, access=None)
+    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, value, access=None)
+    Creates an array filled with the given value and
+    of the specified type. Dimensions may be provided as
+    integer positional parameters, a tuple of integers,
+    or within the dtype itself.
+    TODO: In the immutable case it should use zero-strides to optimize storage.
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to readwrite.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> nd.full(2, 3, ndt.int32, value=123)
+    nd.array([[123, 123, 123], [123, 123, 123]],
+             type="2 * 3 * int32")
+    >>> nd.full(2, 2, ndt.int32, value=[1, 5])
+    nd.array([[1, 5], [1, 5]],
+             type="2 * 2 * int32")
+    >>> nd.full('3 * {x : int32, y : 2 * int16}', value=[1, [2, 3]], access='rw')
+    nd.array([[1, [2, 3]], [1, [2, 3]], [1, [2, 3]]],
+             type="3 * {x : int32, y : 2 * int16}")
+    """
+    # Handle the keyword-only arguments
+    if 'value' not in kwargs:
+        raise TypeError("nd.full() missing required " +
+                    "keyword-only argument: 'value'")
+    access = kwargs.pop('access', None)
+    value = kwargs.pop('value', None)
+    if kwargs:
+        msg = "nd.full() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef array result = array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        result.v = array_full(type(args[0]).v, value, access)
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        result.v = array_full(args[0], type(args[1]).v, value, access)
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        result.v = array_full(args[:-1], type(args[-1]).v, value, access)
+    else:
+        raise TypeError('nd.full() expected at least 1 positional argument, got 0')
+    return result
+
+def empty(*args, **kwargs):
+    """
+    nd.empty(type, access=None)
+    nd.empty(shape, dtype, access=None)
+    nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype, access=None)
+    Creates an uninitialized array of the specified type.
+    Dimensions may be provided as integer positional
+    parameters, a tuple of integers, or within the dtype itself.
+    TODO: Add order= keyword-only argument. This would accept
+    'C', 'F', or a permutation tuple.
+    Parameters
+    ----------
+    shape : list of int, optional
+        If provided, specifies the shape for dimensions which
+        are prepended to the following dtype.
+    dtype : dynd type
+        The dtype of the uninitialized array to create.
+    access : 'readwrite' or 'immutable', optional
+        Specifies the access control of the resulting copy. Defaults
+        to readwrite.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> nd.empty('2 * 2 * int8')
+    nd.array([[0, -14], [0, 0]],
+             type="2 * 2 * int8")
+    >>> nd.empty((2, 2), ndt.int16)
+    nd.array([[0, 27], [159, 0]],
+             type="2 * 2 * int16")
+    """
+    # Handle the keyword-only arguments
+    access = kwargs.pop('access', None)
+    if kwargs:
+        msg = "nd.empty() got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kwargs.keys()[0]))
+
+    cdef array result = array()
+    largs = len(args)
+    if largs  == 1:
+        # Only the full type is provided
+        result.v = array_empty(type(args[0]).v, access)
+    elif largs == 2:
+        # The shape is a provided as a tuple (or single integer)
+        result.v = array_empty(args[0], type(args[1]).v, access)
+    elif largs > 2:
+        # The shape is expanded out in the arguments
+        result.v = array_empty(args[:-1], type(args[-1]).v, access)
+    else:
+        raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
+    return result

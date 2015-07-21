@@ -1,4 +1,5 @@
 from cpython.object cimport Py_EQ, Py_NE
+from dynd.nd.array cimport _array, array
 
 cdef class type(object):
     """
@@ -224,6 +225,31 @@ def make_byteswap(builtin_type, operand_type=None):
         result.v = dynd_make_byteswap_type(type(builtin_type).v, type(operand_type).v)
     return result
 
+def make_categorical(values):
+    """
+    ndt.make_categorical(values)
+    Constructs a categorical dynd type with the
+    specified values as its categories.
+    Instances of the resulting type are integers, consisting
+    of indices into this values array. The size of the values
+    array controls what kind of integers are used, if there
+    are 256 or fewer categories, a uint8 is used, if 65536 or
+    fewer, a uint16 is used, and otherwise a uint32 is used.
+    Parameters
+    ----------
+    values : one-dimensional array
+        This is an array of the values that become the categories
+        of the resulting type. The values must be unique.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_categorical(['sunny', 'rainy', 'cloudy', 'stormy'])
+    ndt.type("categorical[string, [\"sunny\", \"rainy\", \"cloudy\", \"stormy\"]]")
+    """
+    cdef type result = type()
+    result.v = dynd_make_categorical_type(array(values).v)
+    return result
+
 def make_convert(to_tp, from_tp):
     """
     ndt.make_convert(to_tp, from_tp)
@@ -433,4 +459,28 @@ def make_var_dim(element_tp):
     """
     cdef type result = type()
     result.v = dynd_make_var_dim_type(type(element_tp).v)
+    return result
+
+
+def make_view(value_type, operand_type):
+    """
+    ndt.make_view(value_type, operand_type)
+    Constructs an expression type which views the bytes of
+    one type as another.
+    Parameters
+    ----------
+    value_type : dynd type
+        The dynd type to interpret the bytes as. This is the 'value_type'
+        of the resulting expression dynd type.
+    operand_type : dynd type
+        The dynd type the memory originally was. This is the 'operand_type'
+        of the resulting expression dynd type.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_view(ndt.int32, ndt.uint32)
+    ndt.type("view[as=int32, original=uint32]")
+    """
+    cdef type result = type()
+    result.v = dynd_make_view_type(type(value_type).v, type(operand_type).v)
     return result

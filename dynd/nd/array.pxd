@@ -16,6 +16,9 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd':
 
         _array view_scalars(_type&) except +translate_exception
 
+    _array dynd_groupby "dynd::nd::groupby"(_array&, _array&, _type) except +translate_exception
+    _array dynd_groupby "dynd::nd::groupby"(_array&, _array&) except +translate_exception
+
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_array&) except +translate_exception
 

@@ -2,6 +2,7 @@ from libc.stdint cimport intptr_t
 from libcpp.string cimport string
 
 from ..config cimport translate_exception
+from dynd.nd.array cimport _array
 
 cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
     cdef cppclass _type 'dynd::ndt::type':
@@ -43,6 +44,10 @@ cdef extern from "dynd/types/var_dim_type.hpp" namespace "dynd":
 
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_type&) except +translate_exception
+
+cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
+    _type dynd_make_categorical_type "dynd::ndt::categorical_type::make" (_array&) except +translate_exception
+    _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     void add__type_names_to_dir_dict(_type&, object) except +translate_exception

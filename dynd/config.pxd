@@ -18,3 +18,7 @@ cdef extern from 'dynd/config.hpp' namespace 'dynd':
 cdef extern from 'git_version.hpp' namespace 'pydynd':
     extern char[] dynd_python_version_string
     extern char[] dynd_python_git_sha1
+
+cdef extern from "py_lowlevel_api.hpp":
+    void *dynd_get_lowlevel_api()
+    void *dynd_get_py_lowlevel_api()

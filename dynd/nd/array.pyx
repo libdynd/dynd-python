@@ -1,4 +1,4 @@
-from dynd.ndt.type cimport type
+from dynd.ndt.type cimport type, dynd_make_categorical_type
 from dynd.ndt import Unsupplied
 
 cdef class array(object):
@@ -681,6 +681,53 @@ def empty(*args, **kwargs):
         result.v = array_empty(args[:-1], type(args[-1]).v, access)
     else:
         raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
+    return result
+
+def groupby(data, by, groups = None):
+    """
+    nd.groupby(data, by, groups=None)
+    Produces an array containing the elements of `data`, grouped
+    according to `by` which has corresponding shape.
+    Parameters
+    ----------
+    data : dynd array
+        A one-dimensional array of the data to be copied into
+        the resulting grouped array.
+    by : dynd array
+        A one-dimensional array, of the same size as 'data',
+        with the category values for the grouping.
+    groups : categorical dynd type, optional
+        If provided, the categories of this type are used
+        as the groups for the grouping operation.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'])
+    >>> a.groups
+    nd.array(["F", "M"],
+             type="2 * string")
+    >>> a.eval()
+    nd.array([[2, 5, 6], [1, 3, 4]],
+             type="fixed[2] * var * int32")
+    >>> a = nd.groupby([1, 2, 3, 4, 5, 6], ['M', 'F', 'M', 'M', 'F', 'F'], ['M', 'N', 'F'])
+    >>> a.groups
+    nd.array(["M", "N", "F"],
+             type="3 * string")
+    >>> a.eval()
+    nd.array([[1, 3, 4],        [], [2, 5, 6]],
+             type="fixed[3] * var * int32")
+    """
+    cdef array result = array()
+    if groups is None:
+        result.v = dynd_groupby(array(data).v, array(by).v)
+    else:
+        if isinstance(groups, (list, array)):
+            # If groups is a list or dynd array, assume it's a list
+            # of groups for a categorical type
+            result.v = dynd_groupby(array(data).v, array(by).v,
+                            dynd_make_categorical_type(array(groups).v))
+        else:
+            result.v = dynd_groupby(array(data).v, array(by).v, type(groups).v)
     return result
 
 def range(start=None, stop=None, step=None, dtype=None):

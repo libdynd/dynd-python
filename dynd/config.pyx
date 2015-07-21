@@ -9,7 +9,6 @@ _dynd_python_git_sha1 = str(<char *>dynd_python_git_sha1)
 # Initialize Numpy
 import_numpy()
 
-
 # Exceptions to convert from C++
 class BroadcastError(Exception):
     pass
@@ -19,3 +18,9 @@ pydynd_init()
 
 # Register all the exception objects with the exception translator
 set_broadcast_exception(BroadcastError)
+
+def _get_lowlevel_api():
+    return <size_t>dynd_get_lowlevel_api()
+
+def _get_py_lowlevel_api():
+    return <size_t>dynd_get_py_lowlevel_api()

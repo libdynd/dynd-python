@@ -1,3 +1,5 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 from cpython.object cimport Py_EQ, Py_NE
 from dynd.nd.array cimport _array, array
 

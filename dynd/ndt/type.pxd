@@ -24,6 +24,9 @@ cdef extern from 'dynd/types/fixed_bytes_type.hpp' namespace 'dynd':
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_type&) except +translate_exception
 
+cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
+    object get__type_dynamic_property(_type&, object) except +translate_exception
+
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     void init_w_type_typeobject(object)
 

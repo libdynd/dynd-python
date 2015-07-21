@@ -116,6 +116,9 @@ cdef class type(object):
         def __get__(self):
             return _type_get_type_id(self.v)
 
+    def __getattr__(self, name):
+        return get__type_dynamic_property(self.v, name)
+
     def __str__(self):
         return str(<char *>_type_str(self.v).c_str())
 
@@ -136,6 +139,11 @@ cdef class type(object):
         return NotImplemented
 
 init_w_type_typeobject(type)
+
+class UnsuppliedType(object):
+    pass
+
+Unsupplied = UnsuppliedType()
 
 def make_fixed_bytes(int data_size, int data_alignment=1):
     """

@@ -1,4 +1,4 @@
-from .type import type, make_fixed_bytes, make_fixed_string, make_struct
+from .type import type, Unsupplied, make_fixed_bytes, make_fixed_string, make_struct
 
 void = type('void')
 bool = type('bool')

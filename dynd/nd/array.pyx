@@ -103,6 +103,15 @@ cdef class array(object):
     def __index__(self):
         return array_index(self.v)
 
+    def __int__(self):
+        return array_int(self.v)
+
+    def __float__(self):
+        return array_float(self.v)
+
+    def __complex__(self):
+        return array_complex(self.v)
+
     def __len__(self):
         return self.v.get_dim_size()
 
@@ -117,6 +126,76 @@ cdef class array(object):
 
     def __str__(self):
         return array_str(self.v)
+
+    def __add__(lhs, rhs):
+        cdef array res = array()
+        res.v = array_add(asarray(lhs).v, asarray(rhs).v)
+        return res
+
+    def __sub__(lhs, rhs):
+        cdef array res = array()
+        res.v = array_subtract(asarray(lhs).v, asarray(rhs).v)
+        return res
+
+    def __mul__(lhs, rhs):
+        cdef array res = array()
+        res.v = array_multiply(asarray(lhs).v, asarray(rhs).v)
+        return res
+
+    def __div__(lhs, rhs):
+        cdef array res = array()
+        res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
+        return res
+
+    def __truediv__(lhs, rhs):
+        cdef array res = array()
+        res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
+        return res
+
+    def cast(self, tp):
+        """
+        a.cast(type)
+        Casts the dynd array's type to the requested type,
+        producing a conversion type. If the data for the
+        new type is identical, it is used directly to avoid
+        the conversion.
+        Parameters
+        ----------
+        type : dynd type
+            The type is cast into this type.
+        """
+        cdef array result = array()
+        result.v = array_cast(self.v, type(tp).v)
+        return result
+
+    def eval(self, ectx=None):
+        """
+        a.eval(ectx=<default eval_context>)
+        Returns a version of the dynd array with plain values,
+        all expressions evaluated. This returns the original
+        array back if it has no expression type.
+        Parameters
+        ----------
+        ectx : nd.eval_context
+            The evaluation context to use.
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+        >>> a = nd.array([1.5, 2, 3])
+        >>> a
+        nd.array([1.5,   2,   3],
+                 type="3 * float64")
+        >>> b = a.ucast(ndt.complex_float32)
+        >>> b
+        nd.array([(1.5 + 0j),   (2 + 0j),   (3 + 0j)],
+                 type="3 * convert[to=complex[float32], from=float64]")
+        >>> b.eval()
+        nd.array([(1.5 + 0j),   (2 + 0j),   (3 + 0j)],
+                 type="3 * complex[float32]")
+        """
+        cdef array result = array()
+        result.v = array_eval(self.v, ectx)
+        return result
 
     def ucast(self, dtype, int replace_ndim=0):
         """
@@ -472,3 +551,126 @@ def empty(*args, **kwargs):
     else:
         raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
     return result
+
+def range(start=None, stop=None, step=None, dtype=None):
+    """
+    nd.range(stop, dtype=None)
+    nd.range(start, stop, step=None, dtype=None)
+    Constructs a dynd array representing a stepped range of values.
+    This function assumes that (stop-start)/step is approximately
+    an integer, so as to be able to produce reasonable values with
+    fractional steps which can't be exactly represented, such as 0.1.
+    Parameters
+    ----------
+    start : int, optional
+        If provided, this is the first value in the resulting dynd array.
+    stop : int
+        This provides the stopping criteria for the range, and is
+        not included in the resulting dynd array.
+    step : int
+        This is the increment.
+    dtype : dynd type, optional
+        If provided, it must be a scalar type, and the result
+        is of this type.
+    """
+    cdef array result = array()
+    # Move the first argument to 'stop' if stop isn't specified
+    if stop is None:
+        if start is not None:
+            result.v = array_range(None, start, step, dtype)
+        else:
+            raise ValueError("No value provided for 'stop'")
+    else:
+        result.v = array_range(start, stop, step, dtype)
+    return result
+
+def parse_json(tp, json, ectx=None):
+    """
+    nd.parse_json(type, json, ectx)
+    Parses an input JSON string as a particular dynd type.
+    Parameters
+    ----------
+    type : dynd type
+        The type to interpret the input JSON as. If the data
+        does not match this type, an error is raised during parsing.
+    json : string or bytes
+        String that contains the JSON to parse.
+    ectx : eval_context, optional
+        If provided an evaluation context to use when processing the JSON.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> nd.parse_json('var * int8', '[1, 2, 3, 4, 5]')
+    nd.array([1, 2, 3, 4, 5],
+             type="var * int8")
+    >>> nd.parse_json('4 * int8', '[1, 2, 3, 4]')
+    nd.array([1, 2, 3, 4],
+             type="4 * int8")
+    >>> nd.parse_json('2 * {x: int8, y: int8}', '[{"x":0, "y":1}, {"y":2, "x":3}]')
+    nd.array([[0, 1], [3, 2]],
+             type="2 * {x : int8, y : int8}")
+    """
+    cdef array result = array()
+    if isinstance(tp, array):
+        dynd_parse_json_array((<array>tp).v, array(json).v, ectx)
+    else:
+        result.v = dynd_parse_json_type(type(tp).v, array(json).v, ectx)
+        return result
+
+import operator
+
+def _validate_squeeze_index(i, sz):
+    try:
+        i = operator.index(i)
+    except TypeError:
+        raise TypeError('nd.squeeze() requires an int or '
+                    + 'tuple of ints for axis parameter')
+    if i >= 0:
+        if i >= sz:
+            raise IndexError('nd.squeeze() axis %d is out of range' % i)
+    else:
+        if i < -sz:
+            raise IndexError('nd.squeeze() axis %d is out of range' % i)
+        else:
+            i += sz
+    return i
+
+def squeeze(a, axis=None):
+    """Removes size-one dimensions from the beginning and end of the shape.
+    If `axis` is provided, removes the dimensions specified in the tuple.
+    Parameters
+    ----------
+    a : nd.array
+        The array to be squeezed.
+    axis : int or tuple of int, optional
+        Specifies which exact dimensions to remove. The dimensions specified
+        must have size one.
+    """
+    s = a.shape
+    ssz = len(s)
+    ix = [slice(None)]*ssz
+    if axis is not None:
+        if isinstance(axis, tuple):
+            axis = [_validate_squeeze_index(x, ssz) for x in axis]
+        else:
+            axis = [_validate_squeeze_index(axis, ssz)]
+        for x in axis:
+            if s[x] != 1:
+                raise IndexError(('nd.squeeze() requested axis %d ' +
+                        'has shape %d, not 1 as required') % (x, s[x]))
+            ix[x] = 0
+    else:
+        # Construct a list of indexer objects which trim off the
+        # beginning and end
+        for i in range(ssz):
+            if s[i] == 1:
+                ix[i] = 0
+            else:
+                break
+        for i in range(ssz-1, -1, -1):
+            if s[i] == 1:
+                ix[i] = 0
+            else:
+                break
+    ix = tuple(ix)
+    return a[ix]

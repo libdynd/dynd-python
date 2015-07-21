@@ -20,6 +20,10 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
 
+    object array_int(_array&) except +translate_exception
+    object array_float(_array&) except +translate_exception
+    object array_complex(_array&) except +translate_exception
+
     _array array_asarray(object, object) except +translate_exception
     object array_get_shape(_array&) except +translate_exception
     _array array_getitem(_array&, object) except +translate_exception
@@ -37,7 +41,10 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     bint array_contains(_array&, object) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
+    _array array_eval(_array&, object) except +translate_exception
+    _array array_cast(_array&, _type&) except +translate_exception
     _array array_ucast(_array&, _type&, size_t) except +translate_exception
+    _array array_range(object, object, object, object) except +translate_exception
 
     bint array_is_c_contiguous(_array&) except +translate_exception
     bint array_is_f_contiguous(_array&) except +translate_exception
@@ -48,6 +55,14 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 
     string array_repr(_array&) except +translate_exception
     object array_str(_array&) except +translate_exception
+
+    _array array_add(_array&, _array&) except +translate_exception
+    _array array_subtract(_array&, _array&) except +translate_exception
+    _array array_multiply(_array&, _array&) except +translate_exception
+    _array array_divide(_array&, _array&) except +translate_exception
+
+    _array dynd_parse_json_type(_type&, _array&, object) except +translate_exception
+    void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     object get_array_dynamic_property(_array&, object) except +translate_exception

@@ -253,7 +253,9 @@ cython_add_module(config ${config_SRC})
 cython_add_module(type ${type_SRC})
 set_target_properties(type PROPERTIES LIBRARY_OUTPUT_DIRECTORY ndt)
 
-set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+if(APPLE)
+    set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif()
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
 
 foreach(target config type)

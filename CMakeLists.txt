@@ -138,6 +138,17 @@ else()
     endif()
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_ROUND")
+else()
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    if(APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-unused-function -Wno-error")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+    endif()
+endif()
+
 include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
@@ -159,7 +170,7 @@ endif()
 configure_file("dynd/config.pxi.in"
                "${CMAKE_CURRENT_BINARY_DIR}/dynd/config.pxi")
 
-set(pydynd_CPP_SRC
+set(pydynd_SRC
     dynd/include/array_as_numpy.hpp
     dynd/include/array_as_pep3118.hpp
     dynd/include/array_as_py.hpp
@@ -212,82 +223,44 @@ set(pydynd_CPP_SRC
     dynd/src/py_lowlevel_api.cpp
     dynd/src/type_functions.cpp
     dynd/src/utility_functions.cpp
-    )
-set(pydynd_CYTHON_SRC
+)
+
+set(type_SRC
+    dynd/ndt/type.pxd
+    dynd/ndt/type.pyx
+)
+set_source_files_properties(${type_SRC} PROPERTIES CYTHON_IS_CXX 1)
+
+set(config_SRC
     dynd/cuda.pyx
-    dynd/_pydynd.pyx
+    dynd/config.pyx
     dynd/cuda.pxd
     dynd/dynd.pxd
     dynd/eval_context.pxd
     dynd/translate_except.pxd
     dynd/nd/array.pxd
     dynd/nd/gfunc_callable.pxd
-    dynd/ndt/type.pxd
-    )
-set_source_files_properties(${pydynd_CYTHON_SRC} PROPERTIES CYTHON_IS_CXX 1)
-set_source_files_properties(dynd/ndt/type.pyx PROPERTIES CYTHON_IS_CXX 1)
+)
+set_source_files_properties(${config_SRC} PROPERTIES CYTHON_IS_CXX 1)
 
 source_group("Cython Source" REGULAR_EXPRESSION ".*pyx$")
 source_group("Cython Headers" REGULAR_EXPRESSION ".*pxd$")
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_ROUND")
-else()
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    if(APPLE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-unused-function -Wno-error")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
-    endif()
-endif()
+add_library(pydynd SHARED ${pydynd_SRC})
 
-add_library(pydynd SHARED ${pydynd_CPP_SRC})
-cython_add_module(_pydynd ${pydynd_CYTHON_SRC})
-cython_add_module(type
-    dynd/ndt/type.pxd
-    dynd/ndt/type.pyx
-)
+cython_add_module(config ${config_SRC})
+
+cython_add_module(type ${type_SRC})
 set_target_properties(type PROPERTIES LIBRARY_OUTPUT_DIRECTORY ndt)
 
-if (APPLE)
-    set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-    set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "@loader_path")
-    set_target_properties(type PROPERTIES INSTALL_RPATH "@loader_path")
-else()
-    set_target_properties(_pydynd PROPERTIES INSTALL_RPATH "$ORIGIN")
-    set_target_properties(type PROPERTIES INSTALL_RPATH "$ORIGIN")
-endif()
-
+set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
-target_link_libraries(_pydynd pydynd)
-target_link_libraries(type pydynd)
 
-
-#
-#if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-#elseif(APPLE)
-#    if(USE_RELATIVE_RPATH)
-#        message(STATUS "Adding relative rpath to _pydynd for linking libdynd")
-        # TODO: The rpath used is Anaconda-specific, should calculate
-        #       the relative install path instead of using "../../..".
-#        add_custom_command(TARGET _pydynd
-#            POST_BUILD COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-#                -add_rpath "@loader_path/../../.."
-#                $<TARGET_FILE:_pydynd>)
-#    else()
-#        message(STATUS "NOT adding relative rpath to _pydynd for linking libdynd")
-#    endif()
-#else()
-    # We compile with -Werror, and Cython's code generates warnings, so
-    # disable that specifically for this project.
-#    if (USE_RELATIVE_RPATH)
-#       set_target_properties(
-#            _pydynd
-#            PROPERTIES
-            # TODO: The rpath used is Anaconda-specific, should make sure it
-            #       works more generally.
-#            INSTALL_RPATH
-#            "$ORIGIN/../../.."
-#            )
-#    endif()
-#endif()
+foreach(target config type)
+    if(APPLE)
+        set_target_properties(${target} PROPERTIES INSTALL_RPATH "@loader_path")
+    else()
+        set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
+    endif()
+    target_link_libraries(${target} pydynd)
+endforeach(target)

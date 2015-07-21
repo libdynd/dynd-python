@@ -5,7 +5,7 @@ __all__ = ['array_preamble_of', 'data_address_of',
 
 import ctypes
 
-from .._pydynd import w_array as nd_array, type_of as nd_type_of
+from ..config import w_array as nd_array, type_of as nd_type_of
 from .ctypes_types import NDArrayPreambleStruct
 from .api import py_api
 from .arrmeta_struct import build_arrmeta_struct

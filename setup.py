@@ -96,10 +96,11 @@ class cmake_build_ext(build_ext):
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 
-    import shutil
-    
-    # ...
-    shutil.move('libpydynd.so', os.path.join(build_lib, 'dynd', 'libpydynd.so'))
+    import glob, shutil
+  
+    # Move the built libpydynd library to the place expected by the Python build
+    name, = glob.glob('libpydynd.*')
+    shutil.move(name, os.path.join(build_lib, 'dynd', name))
 
     # Move the built C-extension to the place expected by the Python build
     self._found_names = []
@@ -119,7 +120,7 @@ class cmake_build_ext(build_ext):
     chdir(saved_cwd)
 
   def get_expected_names(self):
-    return ['_pydynd', os.path.join('ndt', 'type'), 'cuda']
+    return ['config', os.path.join('ndt', 'type'), 'cuda']
 
   def get_names(self):
     return self._found_names
@@ -175,10 +176,10 @@ setup(
         'dynd._lowlevel',
         'dynd.tests',
     ],
-    package_data = {'dynd': ['libpydynd.dylib', '*.pxd', 'include/*.hpp']},
+    package_data = {'dynd': ['*.pxd', 'include/*.hpp']},
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
-    ext_modules = [Extension('_pydynd', sources=[])],
+    ext_modules = [Extension('config', sources=[])],
     # This includes both build and install requirements. Setuptools' setup_requires
     # option does not actually install things, so isn't actually helpful...
     install_requires=open('dev-requirements.txt').read().strip().split('\n'),

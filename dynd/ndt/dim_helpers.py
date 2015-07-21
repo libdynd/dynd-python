@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from dynd.ndt.type import make_var_dim, make_fixed_dim, make_fixed_dim_kind
-from dynd._pydynd import w_type
+from dynd.config import w_type
 
 __all__ = ['var', 'fixed']
 

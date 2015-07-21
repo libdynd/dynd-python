@@ -1,7 +1,7 @@
 __all__ = ['add_computed_fields']
 
 from dynd.ndt import make_struct, extract_dtype
-from dynd._pydynd import as_py, as_numpy, w_type, \
+from dynd.config import as_py, as_numpy, w_type, \
                 w_array as array, type_of, dtype_of, ndim_of
 
 class FieldExpr:

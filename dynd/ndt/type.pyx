@@ -3,7 +3,7 @@ class UnsuppliedType(object):
     pass
 Unsupplied = UnsuppliedType()
 
-from dynd._pydynd cimport w_type
+from dynd.config cimport w_type
 
 def make_byteswap(builtin_type, operand_type=None):
     """
@@ -429,7 +429,7 @@ def make_reversed_property(value_tp, operand_tp, name):
                                                 w_type(operand_tp).v, string(<const char *>n))
     return result
 
-from dynd._pydynd cimport _array, w_array
+from dynd.config cimport _array, w_array
 
 def make_categorical(values):
     """

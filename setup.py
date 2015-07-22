@@ -25,7 +25,7 @@ class cmake_build_ext(build_ext):
     if (suffix is None):
       suffix = sysconfig.get_config_var('SO')
     filename = name + suffix
-    return os.path.join(package_dir, filename)    
+    return os.path.join(package_dir, filename)
 
   def get_ext_built(self, name):
     if sys.platform != 'win32':
@@ -73,7 +73,6 @@ class cmake_build_ext(build_ext):
     if os.path.isfile(os.path.join(source,
                           'libraries/libdynd/include/dynd/array.hpp')):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
-        static_lib_option = '-DDYND_SHARED_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
     else:
         built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
@@ -86,8 +85,13 @@ class cmake_build_ext(build_ext):
         self.spawn(['make'])
     else:
         import struct
-        # Always build with MSVC 2013 (TODO: 2015 support)
-        cmake_generator = 'Visual Studio 12 2013'
+        # User-chosen MSVC (or 2013 by default)
+        if msvc == '2013':
+            cmake_generator = 'Visual Studio 12 2013'
+        elif msvc == '2015':
+            cmake_generator = 'Visual Studio 14 2015'
+        else:
+            raise ValueError('Unrecognized MSVC version %s' % msvc)
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
         self.spawn(['cmake', source, pyexe_option, install_lib_option,
@@ -97,10 +101,13 @@ class cmake_build_ext(build_ext):
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 
     import glob, shutil
-  
+
     # Move the built libpydynd library to the place expected by the Python build
-    name, = glob.glob('libpydynd.*')
-    shutil.move(name, os.path.join(build_lib, 'dynd', name))
+    if sys.platform != 'win32':
+        name, = glob.glob('libpydynd.*')
+        shutil.move(name, os.path.join(build_lib, 'dynd', name))
+    else:
+        shutil.move(os.path.join('Release', 'pydynd.dll'), os.path.join(build_lib, 'dynd', 'pydynd.dll'))
 
     # Move the built C-extension to the place expected by the Python build
     self._found_names = []
@@ -161,6 +168,16 @@ if '.' in ver:
         # + '+' + '.'.join(vlst[4:])
     else:
         ver = '.'.join(vlst)
+
+# Hack in an extra parameter for specifying the MSVC version
+msvc = '2013'
+if '--msvc' in sys.argv:
+    i = sys.argv.index('--msvc')
+    if i+1 >= len(sys.argv):
+        print('Error: --msvc option requires MSVC version (2013 or 2015)')
+        sys.exit(1)
+    msvc = sys.argv[i+1]
+    del sys.argv[i:i+2]
 
 setup(
     name = 'dynd',

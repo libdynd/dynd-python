@@ -67,7 +67,11 @@ if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
 else()
     # Set some options used by the libdynd CMakeLists.txt
-    set(DYND_SHARED_LIB ON)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+        set(DYND_SHARED_LIB OFF)
+    else()
+        set(DYND_SHARED_LIB ON)
+    endif()
     # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 

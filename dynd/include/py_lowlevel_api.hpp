@@ -8,6 +8,7 @@
 
 #include <dynd/lowlevel_api.hpp>
 
+#include "config.hpp"
 #include "array_functions.hpp"
 #include "type_functions.hpp"
 
@@ -61,6 +62,6 @@ struct py_lowlevel_api_t {
 /**
  * Returns a pointer to the static low level API structure.
  */
-extern "C" const void *dynd_get_py_lowlevel_api();
+extern "C" PYDYND_API const void *dynd_get_py_lowlevel_api();
 
 #endif // _DYND__PY_LOWLEVEL_API_HPP_

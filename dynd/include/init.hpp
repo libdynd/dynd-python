@@ -6,9 +6,11 @@
 #ifndef DYND__INIT_HPP
 #define DYND__INIT_HPP
 
+#include "config.hpp"
+
 namespace pydynd {
 
-void pydynd_init();
+PYDYND_API void pydynd_init();
 
 } // namespace pydynd
 

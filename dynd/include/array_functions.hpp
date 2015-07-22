@@ -17,6 +17,7 @@
 #include <dynd/shape_tools.hpp>
 #include <dynd/json_parser.hpp>
 
+#include "config.hpp"
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"
 #include "array_as_numpy.hpp"
@@ -46,39 +47,44 @@ struct WArray {
   dynd::nd::array v;
 };
 
-void init_w_array_typeobject(PyObject *type);
+PYDYND_API void init_w_array_typeobject(PyObject *type);
 
-PyObject *wrap_array(const dynd::nd::array &n);
-PyObject *wrap_array(const dynd::nd::arrfunc &n);
+PYDYND_API PyObject *wrap_array(const dynd::nd::array &n);
+PYDYND_API PyObject *wrap_array(const dynd::nd::arrfunc &n);
 
-void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj, PyObject *dt,
-                              bool uniform, PyObject *access);
-void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
-                              PyObject *access);
+PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
+                                         PyObject *dt, bool uniform,
+                                         PyObject *access);
+PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
+                                         PyObject *access);
 
-dynd::nd::array array_view(PyObject *obj, PyObject *type, PyObject *access);
-dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
+PYDYND_API dynd::nd::array array_view(PyObject *obj, PyObject *type,
+                                      PyObject *access);
+PYDYND_API dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
 
-dynd::nd::array array_eval(const dynd::nd::array &n, PyObject *ectx);
+PYDYND_API dynd::nd::array array_eval(const dynd::nd::array &n, PyObject *ectx);
 dynd::nd::array array_eval_copy(const dynd::nd::array &n, PyObject *access,
                                 PyObject *ectx);
 
-dynd::nd::array array_zeros(const dynd::ndt::type &d, PyObject *access);
-dynd::nd::array array_zeros(PyObject *shape, const dynd::ndt::type &d,
-                            PyObject *access);
+PYDYND_API dynd::nd::array array_zeros(const dynd::ndt::type &d,
+                                       PyObject *access);
+PYDYND_API dynd::nd::array
+array_zeros(PyObject *shape, const dynd::ndt::type &d, PyObject *access);
 
-dynd::nd::array array_ones(const dynd::ndt::type &d, PyObject *access);
-dynd::nd::array array_ones(PyObject *shape, const dynd::ndt::type &d,
-                           PyObject *access);
+PYDYND_API dynd::nd::array array_ones(const dynd::ndt::type &d,
+                                      PyObject *access);
+PYDYND_API dynd::nd::array array_ones(PyObject *shape, const dynd::ndt::type &d,
+                                      PyObject *access);
 
-dynd::nd::array array_full(const dynd::ndt::type &d, PyObject *value,
-                           PyObject *access);
-dynd::nd::array array_full(PyObject *shape, const dynd::ndt::type &d,
-                           PyObject *value, PyObject *access);
+PYDYND_API dynd::nd::array array_full(const dynd::ndt::type &d, PyObject *value,
+                                      PyObject *access);
+PYDYND_API dynd::nd::array array_full(PyObject *shape, const dynd::ndt::type &d,
+                                      PyObject *value, PyObject *access);
 
-dynd::nd::array array_empty(const dynd::ndt::type &d, PyObject *access);
-dynd::nd::array array_empty(PyObject *shape, const dynd::ndt::type &d,
-                            PyObject *access);
+PYDYND_API dynd::nd::array array_empty(const dynd::ndt::type &d,
+                                       PyObject *access);
+PYDYND_API dynd::nd::array
+array_empty(PyObject *shape, const dynd::ndt::type &d, PyObject *access);
 
 inline dynd::nd::array array_empty_like(const dynd::nd::array &n)
 {
@@ -91,8 +97,8 @@ inline dynd::nd::array array_empty_like(const dynd::nd::array &n,
   return dynd::nd::empty_like(n, d);
 }
 
-dynd::nd::array array_memmap(PyObject *filename, PyObject *begin, PyObject *end,
-                             PyObject *access);
+PYDYND_API dynd::nd::array array_memmap(PyObject *filename, PyObject *begin,
+                                        PyObject *end, PyObject *access);
 
 inline bool array_is_c_contiguous(const dynd::nd::array &n)
 {
@@ -148,13 +154,13 @@ inline std::string array_repr(const dynd::nd::array &n)
   return ss.str();
 }
 
-PyObject *array_str(const dynd::nd::array &n);
-PyObject *array_unicode(const dynd::nd::array &n);
-PyObject *array_index(const dynd::nd::array &n);
-PyObject *array_nonzero(const dynd::nd::array &n);
-PyObject *array_int(const dynd::nd::array &n);
-PyObject *array_float(const dynd::nd::array &n);
-PyObject *array_complex(const dynd::nd::array &n);
+PYDYND_API PyObject *array_str(const dynd::nd::array &n);
+PYDYND_API PyObject *array_unicode(const dynd::nd::array &n);
+PYDYND_API PyObject *array_index(const dynd::nd::array &n);
+PYDYND_API PyObject *array_nonzero(const dynd::nd::array &n);
+PYDYND_API PyObject *array_int(const dynd::nd::array &n);
+PYDYND_API PyObject *array_float(const dynd::nd::array &n);
+PYDYND_API PyObject *array_complex(const dynd::nd::array &n);
 
 inline std::string array_debug_print(const dynd::nd::array &n)
 {
@@ -163,48 +169,52 @@ inline std::string array_debug_print(const dynd::nd::array &n)
   return ss.str();
 }
 
-bool array_contains(const dynd::nd::array &n, PyObject *x);
+PYDYND_API bool array_contains(const dynd::nd::array &n, PyObject *x);
 
-dynd::nd::array array_cast(const dynd::nd::array &n, const dynd::ndt::type &dt);
+PYDYND_API dynd::nd::array array_cast(const dynd::nd::array &n,
+                                      const dynd::ndt::type &dt);
 
-dynd::nd::array array_ucast(const dynd::nd::array &n, const dynd::ndt::type &dt,
-                            intptr_t replace_ndim);
+PYDYND_API dynd::nd::array array_ucast(const dynd::nd::array &n,
+                                       const dynd::ndt::type &dt,
+                                       intptr_t replace_ndim);
 
 PyObject *array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op);
 
-PyObject *array_get_shape(const dynd::nd::array &n);
+PYDYND_API PyObject *array_get_shape(const dynd::nd::array &n);
 
-PyObject *array_get_strides(const dynd::nd::array &n);
+PYDYND_API PyObject *array_get_strides(const dynd::nd::array &n);
 
 bool array_is_scalar(const dynd::nd::array &n);
 
 /**
  * Implementation of __getitem__ for the wrapped array object.
  */
-dynd::nd::array array_getitem(const dynd::nd::array &n, PyObject *subscript);
+PYDYND_API dynd::nd::array array_getitem(const dynd::nd::array &n,
+                                         PyObject *subscript);
 
 /**
  * Implementation of __setitem__ for the wrapped dynd array object.
  */
-void array_setitem(const dynd::nd::array &n, PyObject *subscript,
-                   PyObject *value);
+PYDYND_API void array_setitem(const dynd::nd::array &n, PyObject *subscript,
+                              PyObject *value);
 
 /**
  * Implementation of nd.range().
  */
-dynd::nd::array array_range(PyObject *start, PyObject *stop, PyObject *step,
-                            PyObject *dt);
+PYDYND_API dynd::nd::array array_range(PyObject *start, PyObject *stop,
+                                       PyObject *step, PyObject *dt);
 
 /**
  * Implementation of nd.linspace().
  */
-dynd::nd::array array_linspace(PyObject *start, PyObject *stop, PyObject *count,
-                               PyObject *dt);
+PYDYND_API dynd::nd::array array_linspace(PyObject *start, PyObject *stop,
+                                          PyObject *count, PyObject *dt);
 
 /**
  * Implementation of nd.fields().
  */
-dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list);
+PYDYND_API dynd::nd::array nd_fields(const dynd::nd::array &n,
+                                     PyObject *field_list);
 
 inline const char *array_access_flags_string(const dynd::nd::array &n)
 {

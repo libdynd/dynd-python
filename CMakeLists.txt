@@ -21,7 +21,7 @@ option(DYND_INSTALL_LIB
     option(DYND_CUDA
         "Use a libdynd built with CUDA."
         OFF)
-# -DUSE_RELATIVE_RPATH=ON/OFF, For OSX, to use the @rpath mechanism
+# -DUSE_RELATIVE_RPATH=ON/OFF, For Linux and OSX, to use the @rpath mechanism
 #   for creating a build which is linked with relative paths. The
 #   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
 if(UNIX)
@@ -181,6 +181,7 @@ set(pydynd_SRC
     dynd/include/array_functions.hpp
     dynd/include/arrfunc_functions.hpp
     dynd/include/arrfunc_from_pyfunc.hpp
+    dynd/include/config.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/copy_from_pyobject_arrfunc.hpp
     dynd/include/copy_to_numpy_arrfunc.hpp
@@ -226,11 +227,21 @@ set(pydynd_SRC
 )
 
 add_library(pydynd SHARED ${pydynd_SRC})
+set_property(
+   TARGET pydynd
+   PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
+   )
 
 if(APPLE)
     set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+elseif(WIN32)
+    target_link_libraries(pydynd "${PYTHON_LIBRARIES}")
 endif()
-target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
+if(DYND_INSTALL_LIB)
+    target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
+else()
+    target_link_libraries(pydynd libdynd)
+endif()
 
 foreach(module config eval_context ndt.type nd.array nd.arrfunc nd.functional)
     string(REPLACE "." ";" directories ${module})

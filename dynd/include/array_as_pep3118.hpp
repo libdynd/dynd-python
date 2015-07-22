@@ -10,6 +10,8 @@
 
 #include <dynd/array.hpp>
 
+#include "config.hpp"
+
 namespace pydynd {
 
 /**
@@ -28,12 +30,13 @@ std::string make_pep3118_format(intptr_t &out_itemsize,
 /**
  * \brief Converts an nd::array into a PEP3118 buffer.
  */
-int array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags);
+PYDYND_API int array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer,
+                                       int flags);
 
 /**
  * \brief Frees a previously created PEP3118 buffer.
  */
-int array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer);
+PYDYND_API int array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer);
 
 } // namespace pydynd
 

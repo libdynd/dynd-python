@@ -8,11 +8,13 @@
 
 #include <Python.h>
 
+#include "config.hpp"
+
 namespace pydynd {
 
-void translate_exception();
+PYDYND_API void translate_exception();
 
-void set_broadcast_exception(PyObject *e);
+PYDYND_API void set_broadcast_exception(PyObject *e);
 
 } // namespace pydynd
 

@@ -6,7 +6,7 @@
 #ifndef _DYND__NDARRAY_AS_NUMPY_HPP_
 #define _DYND__NDARRAY_AS_NUMPY_HPP_
 
-#include <Python.h>
+#include "config.hpp"
 
 #include <dynd/array.hpp>
 
@@ -20,7 +20,7 @@ namespace pydynd {
  * \param allow_copy  If true, a copy can be made to make things fit,
  *                    otherwise produce an error instead of a copy.
  */
-PyObject *array_as_numpy(PyObject *a_obj, bool allow_copy);
+PYDYND_API PyObject *array_as_numpy(PyObject *a_obj, bool allow_copy);
 
 } // namespace pydynd
 

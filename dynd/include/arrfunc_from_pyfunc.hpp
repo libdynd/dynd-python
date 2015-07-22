@@ -9,11 +9,14 @@
 
 #include <dynd/func/arrfunc.hpp>
 
+#include "config.hpp"
+
 namespace pydynd {
 namespace nd {
   namespace functional {
 
-    dynd::nd::arrfunc apply(PyObject *pyfunc, const dynd::ndt::type &proto);
+    PYDYND_API dynd::nd::arrfunc apply(PyObject *pyfunc,
+                                       const dynd::ndt::type &proto);
 
     inline dynd::nd::arrfunc apply(PyObject *pyfunc, PyObject *proto)
     {

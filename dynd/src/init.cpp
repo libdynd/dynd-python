@@ -3,7 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#include <Python.h>
+#define NUMPY_IMPORT_ARRAY
+#include "numpy_interop.hpp"
 
 #include "init.hpp"
 #include "ctypes_interop.hpp"
@@ -20,6 +21,7 @@ static void pydynd_cleanup() { dynd::libdynd_cleanup(); }
 
 void pydynd::pydynd_init()
 {
+  import_numpy();
   dynd::libdynd_init();
   atexit(pydynd_cleanup);
   pydynd::init_type_functions();

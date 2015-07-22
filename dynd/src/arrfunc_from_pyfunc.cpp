@@ -21,18 +21,18 @@
 
 using namespace std;
 
-dynd::nd::arrfunc pydynd::nd::functional::apply(PyObject *instantiate_pyfunc,
-                                                const dynd::ndt::type &proto)
+dynd::nd::callable pydynd::nd::functional::apply(PyObject *instantiate_pyfunc,
+                                                 const dynd::ndt::type &proto)
 {
-  if (proto.get_type_id() != dynd::arrfunc_type_id) {
+  if (proto.get_type_id() != dynd::callable_type_id) {
     stringstream ss;
-    ss << "creating a dynd dynd::nd::arrfunc from a python func requires a "
+    ss << "creating a dynd dynd::nd::callable from a python func requires a "
           "function "
           "prototype, was given type " << proto;
     throw dynd::type_error(ss.str());
   }
 
   Py_INCREF(instantiate_pyfunc);
-  return dynd::nd::arrfunc::make<apply_pyobject_kernel>(proto,
-                                                        instantiate_pyfunc, 0);
+  return dynd::nd::callable::make<apply_pyobject_kernel>(proto,
+                                                         instantiate_pyfunc, 0);
 }

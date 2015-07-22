@@ -45,7 +45,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
 {
   if (src_tp[0].get_type_id() != dynd::void_type_id) {
     stringstream ss;
-    ss << "Cannot instantiate dynd::nd::arrfunc copy_from_numpy with "
+    ss << "Cannot instantiate dynd::nd::callable copy_from_numpy with "
           "signature (";
     ss << src_tp[0] << ") -> " << dst_tp;
     throw dynd::type_error(ss.str());
@@ -63,7 +63,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     return dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
                                         src_view_tp, NULL, kernreq, ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::arrfunc_type_data *af = copy_from_pyobject::get().get();
+    dynd::callable_type_data *af = copy_from_pyobject::get().get();
     return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
                            kwds, tp_vars);
@@ -137,7 +137,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     }
 
     // Todo: Remove this line
-    dynd::nd::arrfunc af = dynd::nd::arrfunc::make<copy_from_numpy_kernel>(
+    dynd::nd::callable af = dynd::nd::callable::make<copy_from_numpy_kernel>(
         dynd::ndt::type("(void, broadcast: bool) -> T"), 0);
 
     return make_tuple_unary_op_ckernel(
@@ -155,10 +155,10 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
   }
 }
 
-dynd::nd::arrfunc pydynd::nd::copy_from_numpy::make()
+dynd::nd::callable pydynd::nd::copy_from_numpy::make()
 {
   return dynd::nd::functional::elwise(
-      dynd::nd::arrfunc::make<copy_from_numpy_kernel>(
+      dynd::nd::callable::make<copy_from_numpy_kernel>(
           dynd::ndt::type("(void, broadcast: bool) -> T"), 0));
 }
 

@@ -18,7 +18,7 @@
 
 namespace dynd {
 // Forward declaration
-struct arrfunc_type_data;
+struct callable_type_data;
 } // namespace dynd
 
 namespace pydynd {
@@ -149,7 +149,7 @@ inline std::string pyobject_repr(PyObject *obj)
 }
 
 void pyobject_as_vector__type(PyObject *list_dtype,
-                                 std::vector<dynd::ndt::type> &vector_dtype);
+                              std::vector<dynd::ndt::type> &vector_dtype);
 void pyobject_as_vector_string(PyObject *list_string,
                                std::vector<std::string> &vector_string);
 void pyobject_as_vector_intp(PyObject *list_index,
@@ -244,9 +244,10 @@ uint32_t pyarg_access_flags(PyObject *obj);
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
 
-const dynd::arrfunc_type_data *pyarg_arrfunc_ro(PyObject *af,
-                                                const char *paramname);
-dynd::arrfunc_type_data *pyarg_arrfunc_rw(PyObject *af, const char *paramname);
+const dynd::callable_type_data *pyarg_callable_ro(PyObject *af,
+                                                  const char *paramname);
+dynd::callable_type_data *pyarg_callable_rw(PyObject *af,
+                                            const char *paramname);
 
 } // namespace pydynd
 

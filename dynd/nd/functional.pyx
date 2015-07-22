@@ -1,5 +1,5 @@
 from .. import ndt
-from .arrfunc cimport arrfunc, wrap_arrfunc
+from .arrfunc cimport callable, wrap_callable
 
 def apply(tp_or_func, func = None):
     def make(tp, func):
@@ -9,12 +9,12 @@ def apply(tp_or_func, func = None):
         if isinstance(tp_or_func, ndt.type):
             return lambda func: make(tp_or_func, func)
 
-        return make(ndt.arrfunc(tp_or_func), tp_or_func)
+        return make(ndt.callable(tp_or_func), tp_or_func)
 
     return make(tp_or_func, func)
 
 def elwise(func):
-    if not isinstance(func, arrfunc):
+    if not isinstance(func, callable):
         func = apply(func)
 
-    return wrap_arrfunc(_elwise((<arrfunc> func).v))
+    return wrap_callable(_elwise((<callable> func).v))

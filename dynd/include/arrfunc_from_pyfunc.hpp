@@ -15,10 +15,10 @@ namespace pydynd {
 namespace nd {
   namespace functional {
 
-    PYDYND_API dynd::nd::arrfunc apply(PyObject *pyfunc,
-                                       const dynd::ndt::type &proto);
+    PYDYND_API dynd::nd::callable apply(PyObject *pyfunc,
+                                        const dynd::ndt::type &proto);
 
-    inline dynd::nd::arrfunc apply(PyObject *pyfunc, PyObject *proto)
+    inline dynd::nd::callable apply(PyObject *pyfunc, PyObject *proto)
     {
       return apply(pyfunc, make__type_from_pyobject(proto));
     }

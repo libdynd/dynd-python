@@ -489,7 +489,7 @@ def make_view(value_type, operand_type):
 
 from dynd.nd.array cimport asarray
 
-class arrfunc_factory(__builtins__.type):
+class callable_factory(__builtins__.type):
     def __call__(self, ret_or_func, *args):
         if isinstance(ret_or_func, type):
             ret = ret_or_func
@@ -498,16 +498,10 @@ class arrfunc_factory(__builtins__.type):
             ret = func.__annotations__['return']
             args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 
-        return wrap_type(make_arrfunc((<type> ret).v, (<type> tuple(*args)).v))
+        return wrap_type(make_callable((<type> ret).v, (<type> tuple(*args)).v))
 
-class arrfunc(object):
-    __metaclass__ = arrfunc_factory
-
-def from_annotations(func):
-    ret = func.__annotations__['return']
-    args = [func.__annotations__[name] for name in func.__code__.co_varnames]
-
-    return arrfunc(ret, *args)
+class callable(object):
+    __metaclass__ = callable_factory
 
 class tuple_factory(__builtins__.type):
     def __call__(self, *args):

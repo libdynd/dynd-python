@@ -61,8 +61,8 @@ namespace nd {
 
       void single(char *dst, char *const *src)
       {
-        const dynd::ndt::arrfunc_type *fpt =
-            m_proto.extended<dynd::ndt::arrfunc_type>();
+        const dynd::ndt::callable_type *fpt =
+            m_proto.extended<dynd::ndt::callable_type>();
         intptr_t nsrc = fpt->get_npos();
         const dynd::ndt::type &dst_tp = fpt->get_return_type();
         const dynd::ndt::type *src_tp = fpt->get_pos_types_raw();
@@ -96,8 +96,8 @@ namespace nd {
       void strided(char *dst, intptr_t dst_stride, char *const *src,
                    const intptr_t *src_stride, size_t count)
       {
-        const dynd::ndt::arrfunc_type *fpt =
-            m_proto.extended<dynd::ndt::arrfunc_type>();
+        const dynd::ndt::callable_type *fpt =
+            m_proto.extended<dynd::ndt::callable_type>();
         intptr_t nsrc = fpt->get_npos();
         const dynd::ndt::type &dst_tp = fpt->get_return_type();
         const dynd::ndt::type *src_tp = fpt->get_pos_types_raw();
@@ -150,7 +150,7 @@ namespace nd {
         PyGILState_RAII pgs;
 
         self_type *self = self_type::make(ckb, kernreq, ckb_offset);
-        self->m_proto = dynd::ndt::arrfunc_type::make(
+        self->m_proto = dynd::ndt::callable_type::make(
             dst_tp, dynd::nd::array(src_tp, nsrc));
         self->m_pyfunc = *reinterpret_cast<PyObject **>(static_data);
         Py_XINCREF(self->m_pyfunc);
@@ -161,7 +161,7 @@ namespace nd {
         return ckb_offset;
       }
 
-      static void free(dynd::arrfunc_type_data *self_af)
+      static void free(dynd::callable_type_data *self_af)
       {
         PyObject *pyfunc = *reinterpret_cast<PyObject **>(self_af->static_data);
         if (pyfunc) {

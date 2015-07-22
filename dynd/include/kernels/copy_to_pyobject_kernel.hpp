@@ -751,7 +751,7 @@ namespace nd {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck =
           copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
-      dynd::nd::arrfunc &is_avail =
+      dynd::nd::callable &is_avail =
           src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail();
       ckb_offset = is_avail.get()->instantiate(
           is_avail.get()->static_data, 0, NULL, ckb, ckb_offset,
@@ -1127,9 +1127,9 @@ namespace nd {
           src_tp[0]
               .extended<dynd::ndt::categorical_type>()
               ->get_category_type();
-      dynd::nd::arrfunc child = dynd::nd::functional::chain(
-          make_arrfunc_from_assignment(buffer_tp, src_tp[0],
-                                       dynd::assign_error_default),
+      dynd::nd::callable child = dynd::nd::functional::chain(
+          make_callable_from_assignment(buffer_tp, src_tp[0],
+                                        dynd::assign_error_default),
           copy_to_pyobject, buffer_tp);
       return child.get()->instantiate(
           child.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
@@ -1160,7 +1160,7 @@ namespace nd {
                 const dynd::nd::array &kwds,
                 const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
-      dynd::nd::arrfunc af = dynd::nd::functional::chain(
+      dynd::nd::callable af = dynd::nd::functional::chain(
           dynd::nd::copy, copy_to_pyobject, src_tp[0].value_type());
       return af.get()->instantiate(
           af.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,

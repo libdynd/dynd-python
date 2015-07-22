@@ -52,7 +52,7 @@ PYDYND_API PyObject *array_callable_call(const array_callable_wrapper &ncw, PyOb
 
 struct _type_callable_wrapper {
   dynd::ndt::type d;
-  dynd::nd::arrfunc c;
+  dynd::nd::callable c;
   std::string funcname;
 };
 
@@ -154,7 +154,7 @@ PyObject *wrap_array_callable(const std::string &funcname,
  * \param d  The first parameter for the callable.
  */
 PyObject *wrap__type_callable(const std::string &funcname,
-                              const dynd::nd::arrfunc &c,
+                              const dynd::nd::callable &c,
                               const dynd::ndt::type &d);
 
 } // namespace pydynd

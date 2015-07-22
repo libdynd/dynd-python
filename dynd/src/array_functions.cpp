@@ -34,8 +34,8 @@ void pydynd::init_w_array_typeobject(PyObject *type)
 
 PyObject *pydynd::wrap_array(const dynd::nd::array &n)
 {
-  if (n.get_type().get_type_id() == arrfunc_type_id) {
-    return wrap_array(nd::arrfunc(n));
+  if (n.get_type().get_type_id() == callable_type_id) {
+    return wrap_array(nd::callable(n));
   }
   WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
   if (!result) {
@@ -47,9 +47,9 @@ PyObject *pydynd::wrap_array(const dynd::nd::array &n)
   return (PyObject *)result;
 }
 
-PyObject *pydynd::wrap_array(const dynd::nd::arrfunc &n)
+PyObject *pydynd::wrap_array(const dynd::nd::callable &n)
 {
-  WArrFunc *result = (WArrFunc *)WArrFunc_Type->tp_alloc(WArrFunc_Type, 0);
+  WCallable *result = (WCallable *)WCallable_Type->tp_alloc(WCallable_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }

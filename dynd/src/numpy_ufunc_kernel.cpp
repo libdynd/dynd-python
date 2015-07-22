@@ -116,9 +116,9 @@ PyObject *pydynd::numpy_typetuples_from_ufunc(PyObject *ufunc)
   return result;
 }
 
-PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
-                                                     PyObject *type_tuple,
-                                                     int ckernel_acquires_gil)
+PyObject *pydynd::nd::functional::callable_from_ufunc(PyObject *ufunc,
+                                                      PyObject *type_tuple,
+                                                      int ckernel_acquires_gil)
 {
   try {
     // NOTE: This function does not raise C++ exceptions,
@@ -126,7 +126,7 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
     if (!PyObject_TypeCheck(ufunc, &PyUFunc_Type)) {
       stringstream ss;
       ss << "a numpy ufunc object is required by this function to create a "
-            "arrfunc, ";
+            "callable, ";
       pyobject_ownref repr_obj(PyObject_Repr(ufunc));
       ss << "got " << pydynd::pystring_as_string(repr_obj.get());
       PyErr_SetString(PyExc_TypeError, ss.str().c_str());
@@ -188,10 +188,10 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           for (intptr_t j = 0; j < nargs - 1; ++j) {
             param_types[j] = _type_from_numpy_type_num(argtypes[j + 1]);
           }
-          dynd::ndt::type self_tp = dynd::ndt::arrfunc_type::make(
+          dynd::ndt::type self_tp = dynd::ndt::callable_type::make(
               return_type, dynd::ndt::tuple_type::make(param_types));
 
-          // Fill in the dynd::nd::arrfunc instance data
+          // Fill in the dynd::nd::callable instance data
           std::shared_ptr<scalar_ufunc_data> data(new scalar_ufunc_data());
           data->ufunc = uf;
           Py_INCREF(uf);
@@ -200,12 +200,12 @@ PyObject *pydynd::nd::functional::arrfunc_from_ufunc(PyObject *ufunc,
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
             return pydynd::wrap_array(
-                dynd::nd::arrfunc::make<scalar_ufunc_ck<true>>(self_tp, data,
-                                                               0));
+                dynd::nd::callable::make<scalar_ufunc_ck<true>>(self_tp, data,
+                                                                0));
           } else {
             return pydynd::wrap_array(
-                dynd::nd::arrfunc::make<scalar_ufunc_ck<false>>(self_tp, data,
-                                                                0));
+                dynd::nd::callable::make<scalar_ufunc_ck<false>>(self_tp, data,
+                                                                 0));
           }
         } else {
           // TODO: support gufunc

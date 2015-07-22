@@ -3,7 +3,7 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 // This header defines some wrapping functions to
-// access various nd::arrfunc parameters
+// access various nd::callable parameters
 //
 
 #pragma once
@@ -25,28 +25,28 @@
 namespace pydynd {
 
 /**
- * This is the typeobject and struct of w_arrfunc from Cython.
+ * This is the typeobject and struct of w_callable from Cython.
  */
-extern PyTypeObject *WArrFunc_Type;
-inline bool WArrFunc_CheckExact(PyObject *obj)
+extern PyTypeObject *WCallable_Type;
+inline bool WCallable_CheckExact(PyObject *obj)
 {
-  return Py_TYPE(obj) == WArrFunc_Type;
+  return Py_TYPE(obj) == WCallable_Type;
 }
-inline bool WArrFunc_Check(PyObject *obj)
+inline bool WCallable_Check(PyObject *obj)
 {
-  return PyObject_TypeCheck(obj, WArrFunc_Type);
+  return PyObject_TypeCheck(obj, WCallable_Type);
 }
 
-struct WArrFunc {
+struct WCallable {
   PyObject_HEAD;
 
   // This is array_placement_wrapper in Cython-land
-  dynd::nd::arrfunc v;
+  dynd::nd::callable v;
 };
 
-PYDYND_API inline PyObject *wrap_arrfunc(const dynd::nd::arrfunc &n)
+PYDYND_API inline PyObject *wrap_callable(const dynd::nd::callable &n)
 {
-  WArrFunc *result = (WArrFunc *) WArrFunc_Type->tp_alloc(WArrFunc_Type, 0);
+  WCallable *result = (WCallable *)WCallable_Type->tp_alloc(WCallable_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -55,18 +55,17 @@ PYDYND_API inline PyObject *wrap_arrfunc(const dynd::nd::arrfunc &n)
   return reinterpret_cast<PyObject *>(result);
 }
 
+PYDYND_API void init_w_callable_typeobject(PyObject *type);
 
-PYDYND_API void init_w_arrfunc_typeobject(PyObject *type);
+PYDYND_API PyObject *callable_call(PyObject *af_obj, PyObject *args_obj,
+                                   PyObject *kwds_obj, PyObject *ectx_obj);
 
-PYDYND_API PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj,
-                                  PyObject *kwds_obj, PyObject *ectx_obj);
-
-PyObject *arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
-                                PyObject *window_size_obj, PyObject *ectx_obj);
+PyObject *callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
+                                 PyObject *window_size_obj, PyObject *ectx_obj);
 
 /**
- * Returns a dictionary of all the published arrfuncs.
+ * Returns a dictionary of all the published callables.
  */
-PyObject *get_published_arrfuncs();
+PyObject *get_published_callables();
 
 } // namespace pydynd

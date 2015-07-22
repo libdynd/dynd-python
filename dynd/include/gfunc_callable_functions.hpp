@@ -14,6 +14,8 @@
 
 #include <sstream>
 
+#include "config.hpp"
+
 namespace pydynd {
 
 struct array_callable_wrapper {
@@ -39,13 +41,13 @@ struct WArrayCallable {
   // This is array_placement_wrapper in Cython-land
   array_callable_wrapper v;
 };
-void init_w_array_callable_typeobject(PyObject *type);
+PYDYND_API void init_w_array_callable_typeobject(PyObject *type);
 
 /**
  * This calls the callable in the array_callable_wrapper, which was
  * returned as a property of an array.
  */
-PyObject *array_callable_call(const array_callable_wrapper &ncw, PyObject *args,
+PYDYND_API PyObject *array_callable_call(const array_callable_wrapper &ncw, PyObject *args,
                               PyObject *kwargs);
 
 struct _type_callable_wrapper {
@@ -71,12 +73,12 @@ struct WTypeCallable {
   // This is _type_placement_wrapper in Cython-land
   _type_callable_wrapper v;
 };
-void init_w__type_callable_typeobject(PyObject *type);
+PYDYND_API void init_w__type_callable_typeobject(PyObject *type);
 /**
  * This calls the callable in the _type_callable_wrapper, which was
  * returned as a property of a dynd type.
  */
-PyObject *_type_callable_call(const _type_callable_wrapper &ccw, PyObject *args,
+PYDYND_API PyObject *_type_callable_call(const _type_callable_wrapper &ccw, PyObject *args,
                               PyObject *kwargs);
 
 /**
@@ -92,21 +94,24 @@ void add__type_names_to_dir_dict(const dynd::ndt::type &dt, PyObject *dict);
 /**
  * Retrieves a dynamic property from the dynd type as a Python object.
  */
-PyObject *get__type_dynamic_property(const dynd::ndt::type &dt, PyObject *name);
+PYDYND_API PyObject *get__type_dynamic_property(const dynd::ndt::type &dt,
+                                                PyObject *name);
 
 /**
  * Adds all the dynamic names exposed by the array to the provided dict.
  */
-void add_array_names_to_dir_dict(const dynd::nd::array &n, PyObject *dict);
+PYDYND_API void add_array_names_to_dir_dict(const dynd::nd::array &n,
+                                            PyObject *dict);
 /**
  * Retrieves a dynamic property from the nd::array.
  */
-PyObject *get_array_dynamic_property(const dynd::nd::array &n, PyObject *name);
+PYDYND_API PyObject *get_array_dynamic_property(const dynd::nd::array &n,
+                                                PyObject *name);
 /**
  * Sets a dynamic property of the nd::array.
  */
-void set_array_dynamic_property(const dynd::nd::array &n, PyObject *name,
-                                PyObject *value);
+PYDYND_API void set_array_dynamic_property(const dynd::nd::array &n,
+                                           PyObject *name, PyObject *value);
 
 /**
  * Calls the callable with the single dynd type parameter

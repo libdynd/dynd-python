@@ -14,6 +14,8 @@
 
 #include <dynd/type.hpp>
 
+#include "config.hpp"
+
 namespace dynd {
 // Forward declaration
 struct arrfunc_type_data;

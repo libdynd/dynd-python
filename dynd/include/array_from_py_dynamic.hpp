@@ -10,6 +10,8 @@
 
 #include <dynd/array.hpp>
 
+#include "config.hpp"
+
 namespace pydynd {
 
 /**

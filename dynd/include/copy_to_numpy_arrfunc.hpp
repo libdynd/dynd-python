@@ -10,6 +10,8 @@
 #include <dynd/kernels/base_virtual_kernel.hpp>
 #include <dynd/func/arrfunc.hpp>
 
+#include "config.hpp"
+
 namespace pydynd {
 
 /**

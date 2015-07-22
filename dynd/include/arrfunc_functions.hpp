@@ -15,6 +15,7 @@
 
 #include <dynd/func/arrfunc.hpp>
 
+#include "config.hpp"
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"
 #include "array_as_numpy.hpp"
@@ -41,10 +42,10 @@ struct WArrFunc {
   // This is array_placement_wrapper in Cython-land
   dynd::nd::arrfunc v;
 };
-void init_w_arrfunc_typeobject(PyObject *type);
+PYDYND_API void init_w_arrfunc_typeobject(PyObject *type);
 
-PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj, PyObject *kwds_obj,
-                       PyObject *ectx_obj);
+PYDYND_API PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj,
+                                  PyObject *kwds_obj, PyObject *ectx_obj);
 
 PyObject *arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                 PyObject *window_size_obj, PyObject *ectx_obj);

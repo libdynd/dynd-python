@@ -46,6 +46,8 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
 
+#include "config.hpp"
+
 #ifndef NPY_DATETIME_NAT
 #define NPY_DATETIME_NAT NPY_MIN_INT64
 #endif
@@ -125,7 +127,7 @@ void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &tp, PyArray_Descr *d,
  *
  * \param tp  The dynd type to convert.
  */
-PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp);
+PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp);
 
 /** Small helper for cython parameter */
 inline PyObject *numpy_dtype_obj_from__type(const dynd::ndt::type &tp)
@@ -140,8 +142,8 @@ inline PyObject *numpy_dtype_obj_from__type(const dynd::ndt::type &tp)
  * \param tp  The dynd type to convert.
  * \param arrmeta  The arrmeta for the dynd type.
  */
-PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp,
-                                         const char *arrmeta);
+PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp,
+                                                 const char *arrmeta);
 
 /**
  * Converts a pytypeobject for a n`umpy scalar

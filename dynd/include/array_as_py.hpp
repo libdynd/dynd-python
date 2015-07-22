@@ -10,6 +10,8 @@
 
 #include <dynd/array.hpp>
 
+#include "config.hpp"
+
 namespace pydynd {
 
 /**
@@ -20,7 +22,8 @@ namespace pydynd {
  * \param struct_as_pytuple  If true, converts structs into tuples, otherwise
  *                           converts them into dicts.
  */
-PyObject *array_as_py(const dynd::nd::array &n, bool struct_as_pytuple);
+PYDYND_API PyObject *array_as_py(const dynd::nd::array &n,
+                                 bool struct_as_pytuple);
 
 /** Converts a uint128 into a PyLong */
 PyObject *pylong_from_uint128(const dynd::uint128 &val);

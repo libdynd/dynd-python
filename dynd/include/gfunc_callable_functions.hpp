@@ -3,14 +3,13 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DYND__GFUNC_CALLABLE_FUNCTIONS_HPP_
-#define _DYND__GFUNC_CALLABLE_FUNCTIONS_HPP_
+#pragma once
 
 #include <Python.h>
 
 #include <dynd/type.hpp>
-#include <dynd/func/arrfunc.hpp>
 #include <dynd/func/callable.hpp>
+#include <dynd/gfunc/callable.hpp>
 
 #include <sstream>
 
@@ -158,5 +157,3 @@ PyObject *wrap__type_callable(const std::string &funcname,
                               const dynd::ndt::type &d);
 
 } // namespace pydynd
-
-#endif // _DYND__GFUNC_CALLABLE_FUNCTIONS_HPP_

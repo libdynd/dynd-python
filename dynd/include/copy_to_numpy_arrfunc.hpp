@@ -8,7 +8,7 @@
 #include "numpy_interop.hpp"
 
 #include <dynd/kernels/base_virtual_kernel.hpp>
-#include <dynd/func/arrfunc.hpp>
+#include <dynd/func/callable.hpp>
 
 #include "config.hpp"
 

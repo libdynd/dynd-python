@@ -321,6 +321,8 @@ cpdef array asarray(obj, access=None):
     """
 
     cdef array result = array()
+    if isinstance(obj, tuple):
+        obj = list(obj)
     result.v = array_asarray(obj, access)
     return result
 

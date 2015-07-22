@@ -121,7 +121,7 @@ class cmake_build_ext(build_ext):
 
   def get_expected_names(self):
     return ['config', 'eval_context', os.path.join('ndt', 'type'), \
-        os.path.join('nd', 'array'), os.path.join('nd', 'arrfunc')]
+        os.path.join('nd', 'array'), os.path.join('nd', 'arrfunc'), os.path.join('nd', 'functional')]
 
   def get_names(self):
     return self._found_names

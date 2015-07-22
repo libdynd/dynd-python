@@ -486,3 +486,43 @@ def make_view(value_type, operand_type):
     cdef type result = type()
     result.v = dynd_make_view_type(type(value_type).v, type(operand_type).v)
     return result
+
+from dynd.nd.array cimport asarray
+
+class arrfunc_factory(__builtins__.type):
+    def __call__(self, ret_or_func, *args):
+        if isinstance(ret_or_func, type):
+            ret = ret_or_func
+        else:
+            func = ret_or_func
+            ret = func.__annotations__['return']
+            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
+
+        return wrap_type(make_arrfunc((<type> ret).v, (<type> tuple(*args)).v))
+
+class arrfunc(object):
+    __metaclass__ = arrfunc_factory
+
+def from_annotations(func):
+    ret = func.__annotations__['return']
+    args = [func.__annotations__[name] for name in func.__code__.co_varnames]
+
+    return arrfunc(ret, *args)
+
+class tuple_factory(__builtins__.type):
+    def __call__(self, *args):
+        return wrap_type(make_tuple(asarray(args).v))
+
+class tuple(object):
+    __metaclass__ = tuple_factory
+
+"""
+class struct_factory(__builtins__.type):
+    def __call__(self, **kwds):
+        make_struct(asarray(kwds.keys()).v, asarray(kwds.values()).v)
+        return None
+#        return wrap_type(make_tuple(asarray(args).v))
+
+class struct(object):
+    __metaclass__ = struct_factory
+"""

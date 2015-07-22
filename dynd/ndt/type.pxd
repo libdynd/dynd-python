@@ -49,6 +49,15 @@ cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
     _type dynd_make_categorical_type "dynd::ndt::categorical_type::make" (_array&) except +translate_exception
     _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
+cdef extern from 'dynd/types/arrfunc_type.hpp' namespace 'dynd':
+    _type make_arrfunc 'dynd::ndt::arrfunc_type::make'(_type &, _type &)
+
+cdef extern from 'dynd/types/struct_type.hpp' namespace 'dynd':
+    _type make_struct 'dynd::ndt::struct_type::make'(_array &, _array &) except +translate_exception
+
+cdef extern from 'dynd/types/tuple_type.hpp' namespace 'dynd':
+    _type make_tuple 'dynd::ndt::tuple_type::make'(_array&) except +translate_exception
+
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     void add__type_names_to_dir_dict(_type&, object) except +translate_exception
     object get__type_dynamic_property(_type&, object) except +translate_exception
@@ -83,3 +92,8 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 cdef class type(object):
     cdef _type v
+
+cdef inline type wrap_type(_type v):
+    cdef type res = type()
+    res.v = v
+    return res

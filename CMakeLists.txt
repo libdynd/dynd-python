@@ -232,7 +232,7 @@ if(APPLE)
 endif()
 target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
 
-foreach(module config eval_context ndt.type nd.array nd.arrfunc)
+foreach(module config eval_context ndt.type nd.array nd.arrfunc nd.functional)
     string(REPLACE "." ";" directories ${module})
     list(GET directories -1 module_name)
     list(REMOVE_AT directories -1)

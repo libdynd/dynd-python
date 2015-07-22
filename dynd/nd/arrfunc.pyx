@@ -1,6 +1,6 @@
-from .array cimport array
+from dynd.ndt.type cimport wrap_type
 
-cdef class arrfunc(array):
+cdef class arrfunc(object):
     """
     nd.arrfunc(func, proto)
 
@@ -31,6 +31,10 @@ cdef class arrfunc(array):
       File "config.pyx", line 1340, in config.w_arrfunc.__call__ (config.cxx:9774)
     ValueError: parameter 2 to arrfunc does not match, expected int32, received string
     """
+
+    property type:
+        def __get__(self):
+            return wrap_type(self.v.get_array_type())
 
     def __call__(self, *args, **kwds):
         # Handle the keyword-only arguments

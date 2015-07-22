@@ -6,8 +6,7 @@
 // access various nd::arrfunc parameters
 //
 
-#ifndef _DYND__ARRFUNC_FUNCTIONS_HPP_
-#define _DYND__ARRFUNC_FUNCTIONS_HPP_
+#pragma once
 
 #include <Python.h>
 
@@ -37,11 +36,26 @@ inline bool WArrFunc_Check(PyObject *obj)
 {
   return PyObject_TypeCheck(obj, WArrFunc_Type);
 }
+
 struct WArrFunc {
   PyObject_HEAD;
+
   // This is array_placement_wrapper in Cython-land
   dynd::nd::arrfunc v;
 };
+
+PYDYND_API inline PyObject *wrap_arrfunc(const dynd::nd::arrfunc &n)
+{
+  WArrFunc *result = (WArrFunc *) WArrFunc_Type->tp_alloc(WArrFunc_Type, 0);
+  if (!result) {
+    throw std::runtime_error("");
+  }
+
+  result->v = n;
+  return reinterpret_cast<PyObject *>(result);
+}
+
+
 PYDYND_API void init_w_arrfunc_typeobject(PyObject *type);
 
 PYDYND_API PyObject *arrfunc_call(PyObject *af_obj, PyObject *args_obj,
@@ -56,5 +70,3 @@ PyObject *arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
 PyObject *get_published_arrfuncs();
 
 } // namespace pydynd
-
-#endif // _DYND__ARRFUNC_FUNCTIONS_HPP_

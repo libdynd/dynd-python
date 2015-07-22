@@ -771,7 +771,7 @@ namespace nd {
 
       intptr_t root_ckb_offset = ckb_offset;
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
-      dynd::nd::arrfunc assign_na =
+      dynd::nd::callable assign_na =
           dst_tp.extended<dynd::ndt::option_type>()->get_assign_na();
       ckb_offset = assign_na.get()->instantiate(
           assign_na.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
@@ -807,9 +807,9 @@ namespace nd {
       // Assign via an intermediate category_type buffer
       const dynd::ndt::type &buf_tp =
           dst_tp.extended<dynd::ndt::categorical_type>()->get_category_type();
-      dynd::nd::arrfunc copy_af = make_arrfunc_from_assignment(
+      dynd::nd::callable copy_af = make_callable_from_assignment(
           dst_tp, buf_tp, dynd::assign_error_default);
-      dynd::nd::arrfunc child =
+      dynd::nd::callable child =
           dynd::nd::functional::chain(copy_from_pyobject, copy_af, buf_tp);
       return child.get()->instantiate(child.get()->static_data, 0, NULL, ckb,
                                       ckb_offset, dst_tp, dst_arrmeta, nsrc,
@@ -1379,7 +1379,7 @@ namespace nd {
         const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
     {
       if (dst_tp.get_kind() == dynd::expr_kind) {
-        dynd::nd::arrfunc af = dynd::nd::functional::chain(
+        dynd::nd::callable af = dynd::nd::functional::chain(
             copy_from_pyobject, dynd::nd::copy, dst_tp.value_type());
         return af.get()->instantiate(af.get()->static_data, 0, NULL, ckb,
                                      ckb_offset, dst_tp, dst_arrmeta, nsrc,

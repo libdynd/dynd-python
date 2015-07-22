@@ -56,12 +56,10 @@ intptr_t pydynd::pyobject_as_index(PyObject *index)
   if (PyLong_Check(start_obj.get())) {
     result = PyLong_AsSsize_t(start_obj.get());
 #if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyInt_Check(start_obj.get())) {
+  } else if (PyInt_Check(start_obj.get())) {
     result = PyInt_AS_LONG(start_obj.get());
 #endif
-  }
-  else {
+  } else {
     throw runtime_error(
         "Value returned from PyNumber_Index is not an int or long");
   }
@@ -103,8 +101,7 @@ irange pydynd::pyobject_as_irange(PyObject *index)
       result.set_step(pyobject_as_index(slice->step));
     }
     return result;
-  }
-  else {
+  } else {
     return irange(pyobject_as_index(index));
   }
 }
@@ -125,33 +122,30 @@ std::string pydynd::pystring_as_string(PyObject *str)
     }
     return string(data, len);
 #if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyString_Check(str)) {
+  } else if (PyString_Check(str)) {
     if (PyString_AsStringAndSize(str, &data, &len) < 0) {
       throw runtime_error("Error getting string data");
     }
     return string(data, len);
 #endif
-  }
-  else if (WArray_Check(str)) {
+  } else if (WArray_Check(str)) {
     const nd::array &n = ((WArray *)str)->v;
     if (n.get_type().value_type().get_kind() == string_kind) {
       return n.as<string>();
-    }
-    else {
+    } else {
       stringstream ss;
       ss << "Cannot implicitly convert object of type ";
       ss << n.get_type() << " to string";
       throw dynd::type_error(ss.str());
     }
-  }
-  else {
+  } else {
     throw dynd::type_error("Cannot convert pyobject to string");
   }
 }
 
-void pydynd::pyobject_as_vector__type(
-    PyObject *list_of_types, std::vector<dynd::ndt::type> &vector_of__types)
+void
+pydynd::pyobject_as_vector__type(PyObject *list_of_types,
+                                 std::vector<dynd::ndt::type> &vector_of__types)
 {
   Py_ssize_t size = PySequence_Size(list_of_types);
   vector_of__types.resize(size);
@@ -205,12 +199,10 @@ void pydynd::pyobject_as_vector_intp(PyObject *list_index,
         vector_intp.resize(1);
         vector_intp[0] = v;
         return;
-      }
-      else if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+      } else if (PyErr_ExceptionMatches(PyExc_TypeError)) {
         // Swallow a type error, fall through to the sequence code
         PyErr_Clear();
-      }
-      else {
+      } else {
         // Propagate the error
         throw exception();
       }
@@ -264,23 +256,20 @@ static void mark_axis(PyObject *int_axis, int ndim, bool1 *reduce_axes)
 
   if (value >= ndim || value < -ndim) {
     throw dynd::axis_out_of_bounds(value, ndim);
-  }
-  else if (value < 0) {
+  } else if (value < 0) {
     value += ndim;
   }
 
   if (!reduce_axes[value]) {
     reduce_axes[value] = true;
-  }
-  else {
+  } else {
     stringstream ss;
     ss << "axis " << value << " is specified more than once";
     throw runtime_error(ss.str());
   }
 }
 
-int pydynd::pyarg_axis_argument(PyObject *axis, int ndim,
-                                bool1 *reduce_axes)
+int pydynd::pyarg_axis_argument(PyObject *axis, int ndim, bool1 *reduce_axes)
 {
   int axis_count = 0;
 
@@ -290,8 +279,7 @@ int pydynd::pyarg_axis_argument(PyObject *axis, int ndim,
       reduce_axes[i] = true;
     }
     axis_count = ndim;
-  }
-  else {
+  } else {
     // Start with no axes marked
     for (int i = 0; i < ndim; ++i) {
       reduce_axes[i] = false;
@@ -303,8 +291,7 @@ int pydynd::pyarg_axis_argument(PyObject *axis, int ndim,
         mark_axis(PyTuple_GET_ITEM(axis, i), ndim, reduce_axes);
         axis_count++;
       }
-    }
-    else {
+    } else {
       // Just one axis
       mark_axis(axis, ndim, reduce_axes);
       axis_count = 1;
@@ -385,8 +372,7 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
 
   if (s == string0) {
     return value0;
-  }
-  else if (s == string1) {
+  } else if (s == string1) {
     return value1;
   }
 
@@ -409,11 +395,9 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
 
   if (s == string0) {
     return value0;
-  }
-  else if (s == string1) {
+  } else if (s == string1) {
     return value1;
-  }
-  else if (s == string2) {
+  } else if (s == string2) {
     return value2;
   }
 
@@ -437,14 +421,11 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
 
   if (s == string0) {
     return value0;
-  }
-  else if (s == string1) {
+  } else if (s == string1) {
     return value1;
-  }
-  else if (s == string2) {
+  } else if (s == string2) {
     return value2;
-  }
-  else if (s == string3) {
+  } else if (s == string3) {
     return value3;
   }
 
@@ -469,17 +450,13 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
 
   if (s == string0) {
     return value0;
-  }
-  else if (s == string1) {
+  } else if (s == string1) {
     return value1;
-  }
-  else if (s == string2) {
+  } else if (s == string2) {
     return value2;
-  }
-  else if (s == string3) {
+  } else if (s == string3) {
     return value3;
-  }
-  else if (s == string4) {
+  } else if (s == string4) {
     return value4;
   }
 
@@ -497,11 +474,9 @@ bool pydynd::pyarg_bool(PyObject *obj, const char *argname, bool default_value)
 
   if (obj == Py_False) {
     return false;
-  }
-  else if (obj == Py_True) {
+  } else if (obj == Py_True) {
     return true;
-  }
-  else {
+  } else {
     stringstream ss;
     ss << "argument " << argname << " must be a boolean True or False";
     throw runtime_error(ss.str());
@@ -539,28 +514,28 @@ uint32_t pydynd::pyarg_creation_access_flags(PyObject *access)
       nd::read_access_flag | nd::immutable_access_flag);
 }
 
-const dynd::arrfunc_type_data *pydynd::pyarg_arrfunc_ro(PyObject *af,
-                                                        const char *paramname)
+const dynd::callable_type_data *pydynd::pyarg_callable_ro(PyObject *af,
+                                                          const char *paramname)
 {
   if (!WArray_Check(af) ||
-      ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+      ((WArray *)af)->v.get_type().get_type_id() != callable_type_id) {
     stringstream ss;
-    ss << paramname << " must be an nd.array of type arrfunc";
+    ss << paramname << " must be an nd.array of type callable";
     throw runtime_error(ss.str());
   }
-  return reinterpret_cast<const arrfunc_type_data *>(
+  return reinterpret_cast<const callable_type_data *>(
       ((WArray *)af)->v.get_readonly_originptr());
 }
 
-dynd::arrfunc_type_data *pydynd::pyarg_arrfunc_rw(PyObject *af,
-                                                  const char *paramname)
+dynd::callable_type_data *pydynd::pyarg_callable_rw(PyObject *af,
+                                                    const char *paramname)
 {
   if (!WArray_Check(af) ||
-      ((WArray *)af)->v.get_type().get_type_id() != arrfunc_type_id) {
+      ((WArray *)af)->v.get_type().get_type_id() != callable_type_id) {
     stringstream ss;
-    ss << paramname << " must be an nd.array of type arrfunc";
+    ss << paramname << " must be an nd.array of type callable";
     throw runtime_error(ss.str());
   }
-  return reinterpret_cast<arrfunc_type_data *>(
+  return reinterpret_cast<callable_type_data *>(
       ((WArray *)af)->v.get_readwrite_originptr());
 }

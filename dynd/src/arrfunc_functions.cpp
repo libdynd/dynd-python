@@ -29,33 +29,33 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WArrFunc_Type;
+PyTypeObject *pydynd::WCallable_Type;
 
-void pydynd::init_w_arrfunc_typeobject(PyObject *type)
+void pydynd::init_w_callable_typeobject(PyObject *type)
 {
-  WArrFunc_Type = (PyTypeObject *)type;
+  WCallable_Type = (PyTypeObject *)type;
 }
 
-PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
+PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
                                PyObject *kwds_obj, PyObject *ectx_obj)
 {
-  if (!WArrFunc_Check(af_obj)) {
-    PyErr_SetString(PyExc_TypeError, "arrfunc_call expected an nd.arrfunc");
+  if (!WCallable_Check(af_obj)) {
+    PyErr_SetString(PyExc_TypeError, "callable_call expected an nd.callable");
     return NULL;
   }
-  dynd::nd::arrfunc &af = ((WArrFunc *)af_obj)->v;
+  dynd::nd::callable &af = ((WCallable *)af_obj)->v;
   if (af.is_null()) {
-    PyErr_SetString(PyExc_ValueError, "cannot call a null nd.arrfunc");
+    PyErr_SetString(PyExc_ValueError, "cannot call a null nd.callable");
     return NULL;
   }
   if (!PyTuple_Check(args_obj)) {
     PyErr_SetString(PyExc_ValueError,
-                    "arrfunc_call requires a tuple of arguments");
+                    "callable_call requires a tuple of arguments");
     return NULL;
   }
   if (!PyDict_Check(kwds_obj)) {
     PyErr_SetString(PyExc_ValueError,
-                    "arrfunc_call requires a dictionary of keyword arguments");
+                    "callable_call requires a dictionary of keyword arguments");
     return NULL;
   }
   const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
@@ -87,7 +87,7 @@ PyObject *pydynd::arrfunc_call(PyObject *af_obj, PyObject *args_obj,
   return wrap_array(result);
 }
 
-PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
+PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
                                         PyObject *window_size_obj,
                                         PyObject *ectx_obj)
 {
@@ -95,27 +95,27 @@ PyObject *pydynd::arrfunc_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
       const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
   dynd::nd::array arr = array_from_py(arr_obj, 0, false, ectx);
   intptr_t window_size = pyobject_as_index(window_size_obj);
-  dynd::nd::arrfunc func;
-  if (WArrFunc_Check(func_obj)) {
-    func = ((WArrFunc *)func_obj)->v;
+  dynd::nd::callable func;
+  if (WCallable_Check(func_obj)) {
+    func = ((WCallable *)func_obj)->v;
   } else {
     ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
-    ndt::type proto = ndt::arrfunc_type::make(
+    ndt::type proto = ndt::callable_type::make(
         el_tp, ndt::tuple_type::make(ndt::make_fixed_dim_kind(el_tp)));
 
     func = pydynd::nd::functional::apply(func_obj, proto);
   }
-  dynd::nd::arrfunc roll = dynd::nd::functional::rolling(func, window_size);
+  dynd::nd::callable roll = dynd::nd::functional::rolling(func, window_size);
   dynd::nd::array result = roll(arr);
   return wrap_array(result);
 }
 
-PyObject *pydynd::get_published_arrfuncs()
+PyObject *pydynd::get_published_callables()
 {
   pyobject_ownref res(PyDict_New());
-  const map<dynd::nd::string, dynd::nd::arrfunc> &reg =
+  const map<dynd::nd::string, dynd::nd::callable> &reg =
       func::get_regfunctions();
-  for (map<dynd::nd::string, dynd::nd::arrfunc>::const_iterator it =
+  for (map<dynd::nd::string, dynd::nd::callable>::const_iterator it =
            reg.begin();
        it != reg.end(); ++it) {
     PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),

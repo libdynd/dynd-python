@@ -21,7 +21,7 @@ namespace nd {
 
   /**
    * This is the arrmeta to provide for the source
-   * void type when instantiating the copy_from_numpy arrfunc.
+   * void type when instantiating the copy_from_numpy callable.
    */
   struct copy_from_numpy_arrmeta {
     // This is the source PyArray_Descr *.
@@ -33,7 +33,7 @@ namespace nd {
   };
 
   extern struct copy_from_numpy : dynd::nd::declfunc<copy_from_numpy> {
-    static dynd::nd::arrfunc make();
+    static dynd::nd::callable make();
   } copy_from_numpy;
 
   void array_copy_from_numpy(const dynd::ndt::type &dst_tp,

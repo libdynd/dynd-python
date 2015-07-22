@@ -132,16 +132,16 @@ PyObject *make_assignment_ckernel(void *ckb, intptr_t ckb_offset,
   }
 }
 
-PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj,
-                                       PyObject *src_tp_obj,
-                                       PyObject *errmode_obj)
+PyObject *make_callable_from_assignment(PyObject *dst_tp_obj,
+                                        PyObject *src_tp_obj,
+                                        PyObject *errmode_obj)
 {
   try {
     dynd::ndt::type dst_tp = pydynd::make__type_from_pyobject(dst_tp_obj);
     dynd::ndt::type src_tp = pydynd::make__type_from_pyobject(src_tp_obj);
     dynd::assign_error_mode errmode = pydynd::pyarg_error_mode(errmode_obj);
-    dynd::nd::arrfunc af =
-        dynd::make_arrfunc_from_assignment(dst_tp, src_tp, errmode);
+    dynd::nd::callable af =
+        dynd::make_callable_from_assignment(dst_tp, src_tp, errmode);
 
     return pydynd::wrap_array(af);
   }
@@ -151,12 +151,12 @@ PyObject *make_arrfunc_from_assignment(PyObject *dst_tp_obj,
   }
 }
 
-PyObject *make_arrfunc_from_property(PyObject *tp_obj, PyObject *propname_obj)
+PyObject *make_callable_from_property(PyObject *tp_obj, PyObject *propname_obj)
 {
   try {
     dynd::ndt::type tp = pydynd::make__type_from_pyobject(tp_obj);
     std::string propname = pydynd::pystring_as_string(propname_obj);
-    dynd::nd::arrfunc af = dynd::make_arrfunc_from_property(tp, propname);
+    dynd::nd::callable af = dynd::make_callable_from_property(tp, propname);
 
     return pydynd::wrap_array(af);
   }
@@ -166,15 +166,15 @@ PyObject *make_arrfunc_from_property(PyObject *tp_obj, PyObject *propname_obj)
   }
 }
 
-PyObject *lift_arrfunc(PyObject *af)
+PyObject *lift_callable(PyObject *af)
 {
   try {
     // Convert all the input parameters
     if (!pydynd::WArray_Check(af) ||
         ((pydynd::WArray *)af)->v.get_type().get_type_id() !=
-            dynd::arrfunc_type_id) {
+            dynd::callable_type_id) {
       stringstream ss;
-      ss << "af must be an nd.array of type arrfunc";
+      ss << "af must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
     }
     return pydynd::wrap_array(
@@ -186,43 +186,43 @@ PyObject *lift_arrfunc(PyObject *af)
   }
 }
 
-PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
-                                 PyObject *lifted_type_obj,
-                                 PyObject *dst_initialization_obj,
-                                 PyObject *axis_obj, PyObject *keepdims_obj,
-                                 PyObject *associative_obj,
-                                 PyObject *commutative_obj,
-                                 PyObject *right_associative_obj,
-                                 PyObject *reduction_identity_obj)
+PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
+                                  PyObject *lifted_type_obj,
+                                  PyObject *dst_initialization_obj,
+                                  PyObject *axis_obj, PyObject *keepdims_obj,
+                                  PyObject *associative_obj,
+                                  PyObject *commutative_obj,
+                                  PyObject *right_associative_obj,
+                                  PyObject *reduction_identity_obj)
 {
   try {
     // Convert all the input parameters
     if (!pydynd::WArray_Check(elwise_reduction_obj) ||
         ((pydynd::WArray *)elwise_reduction_obj)->v.get_type().get_type_id() !=
-            dynd::arrfunc_type_id) {
+            dynd::callable_type_id) {
       stringstream ss;
-      ss << "elwise_reduction must be an nd.array of type arrfunc";
+      ss << "elwise_reduction must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
     }
     const dynd::nd::array &elwise_reduction =
         ((pydynd::WArray *)elwise_reduction_obj)->v;
-    const dynd::arrfunc_type_data *elwise_reduction_af =
-        reinterpret_cast<const dynd::arrfunc_type_data *>(
+    const dynd::callable_type_data *elwise_reduction_af =
+        reinterpret_cast<const dynd::callable_type_data *>(
             elwise_reduction.get_readonly_originptr());
-    const dynd::ndt::arrfunc_type *elwise_reduction_af_tp =
-        elwise_reduction.get_type().extended<dynd::ndt::arrfunc_type>();
+    const dynd::ndt::callable_type *elwise_reduction_af_tp =
+        elwise_reduction.get_type().extended<dynd::ndt::callable_type>();
 
     dynd::nd::array dst_initialization;
     if (pydynd::WArray_Check(dst_initialization_obj) &&
         ((pydynd::WArray *)dst_initialization_obj)
                 ->v.get_type()
-                .get_type_id() == dynd::arrfunc_type_id) {
+                .get_type_id() == dynd::callable_type_id) {
       dst_initialization = ((pydynd::WArray *)dst_initialization_obj)->v;
       ;
     } else if (dst_initialization_obj != Py_None) {
       stringstream ss;
       ss << "dst_initialization must be None or an nd.array of type "
-            "arrfunc";
+            "callable";
       throw dynd::type_error(ss.str());
     }
 
@@ -301,7 +301,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
       throw dynd::type_error(ss.str());
     }
 
-    dynd::nd::arrfunc out_af = dynd::lift_reduction_arrfunc(
+    dynd::nd::callable out_af = dynd::lift_reduction_callable(
         elwise_reduction, lifted_type, dst_initialization, keepdims,
         reduction_ndim, reduction_dimflags.get(), associative, commutative,
         right_associative, reduction_identity);
@@ -314,7 +314,7 @@ PyObject *lift_reduction_arrfunc(PyObject *elwise_reduction_obj,
   }
 }
 
-PyObject *arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto)
+PyObject *callable_from_pyfunc(PyObject *pyfunc, PyObject *proto)
 {
   try {
     return pydynd::wrap_array(pydynd::nd::functional::apply(pyfunc, proto));
@@ -325,16 +325,17 @@ PyObject *arrfunc_from_pyfunc(PyObject *pyfunc, PyObject *proto)
   }
 }
 
-static PyObject *make_rolling_arrfunc(PyObject *window_op_obj,
-                                      PyObject *window_size_obj)
+static PyObject *make_rolling_callable(PyObject *window_op_obj,
+                                       PyObject *window_size_obj)
 {
   try {
-    if (!pydynd::WArrFunc_Check(window_op_obj)) {
+    if (!pydynd::WCallable_Check(window_op_obj)) {
       stringstream ss;
-      ss << "window_op must be an nd.arrfunc";
+      ss << "window_op must be an nd.callable";
       throw dynd::type_error(ss.str());
     }
-    const dynd::nd::arrfunc &window_op = ((pydynd::WArrFunc *)window_op_obj)->v;
+    const dynd::nd::callable &window_op =
+        ((pydynd::WCallable *)window_op_obj)->v;
     intptr_t window_size = pydynd::pyobject_as_index(window_size_obj);
     return pydynd::wrap_array(
         dynd::nd::functional::rolling(window_op, window_size));
@@ -345,13 +346,13 @@ static PyObject *make_rolling_arrfunc(PyObject *window_op_obj,
   }
 }
 
-PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj, PyObject *minp_obj)
+PyObject *make_builtin_mean1d_callable(PyObject *tp_obj, PyObject *minp_obj)
 {
   try {
     dynd::ndt::type tp = pydynd::make__type_from_pyobject(tp_obj);
     intptr_t minp = pydynd::pyobject_as_index(minp_obj);
     return pydynd::wrap_array(
-        dynd::kernels::make_builtin_mean1d_arrfunc(tp.get_type_id(), minp));
+        dynd::kernels::make_builtin_mean1d_callable(tp.get_type_id(), minp));
   }
   catch (...) {
     pydynd::translate_exception();
@@ -359,7 +360,7 @@ PyObject *make_builtin_mean1d_arrfunc(PyObject *tp_obj, PyObject *minp_obj)
   }
 }
 
-PyObject *make_take_arrfunc()
+PyObject *make_take_callable()
 {
   try {
     return pydynd::wrap_array(dynd::nd::take::make());
@@ -377,16 +378,16 @@ const pydynd::py_lowlevel_api_t py_lowlevel_api = {
     &get_base_type_ptr,
     &array_from_ptr,
     &make_assignment_ckernel,
-    &make_arrfunc_from_assignment,
-    &make_arrfunc_from_property,
+    &make_callable_from_assignment,
+    &make_callable_from_property,
     &pydynd::numpy_typetuples_from_ufunc,
-    &pydynd::nd::functional::arrfunc_from_ufunc,
-    &lift_arrfunc,
-    &lift_reduction_arrfunc,
-    &arrfunc_from_pyfunc,
-    &make_rolling_arrfunc,
-    &make_builtin_mean1d_arrfunc,
-    &make_take_arrfunc};
+    &pydynd::nd::functional::callable_from_ufunc,
+    &lift_callable,
+    &lift_reduction_callable,
+    &callable_from_pyfunc,
+    &make_rolling_callable,
+    &make_builtin_mean1d_callable,
+    &make_take_callable};
 } // anonymous namespace
 
 extern "C" const void *dynd_get_py_lowlevel_api()

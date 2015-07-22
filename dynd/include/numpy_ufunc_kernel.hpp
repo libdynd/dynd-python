@@ -35,7 +35,7 @@ namespace nd {
 
     /**
      * Given a ufunc and a type tuple supported by that ufunc,
-     * returns an arrfunc.
+     * returns an callable.
      *
      * \param ufunc  The numpy ufunc.
      * \param type_tuple  The tuple of types defining the kernel signature.
@@ -45,10 +45,10 @@ namespace nd {
      *                              nice, rigorous way of specifying the need
      *                              for this, we make it a parameter.
      *
-     * \returns An arrfunc inside an nd::array.
+     * \returns An callable inside an nd::array.
      */
-    PyObject *arrfunc_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
-                                 int ckernel_acquires_gil);
+    PyObject *callable_from_ufunc(PyObject *ufunc, PyObject *type_tuple,
+                                  int ckernel_acquires_gil);
 
   } // namespace pydynd::nd::functional
 } // namespace pydynd::nd

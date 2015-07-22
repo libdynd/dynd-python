@@ -326,7 +326,7 @@ cpdef array asarray(obj, access=None):
     result.v = array_asarray(obj, access)
     return result
 
-from dynd.nd.arrfunc cimport arrfunc
+from dynd.nd.arrfunc cimport callable
 
 def type_of(a):
     """
@@ -348,8 +348,8 @@ def type_of(a):
     cdef type result = type()
     if isinstance(a, array):
         result.v = (<array> a).v.get_type()
-    elif isinstance(a, arrfunc):
-        result.v = (<arrfunc> a).v.get_array_type()
+    elif isinstance(a, callable):
+        result.v = (<callable> a).v.get_array_type()
 
     return result
 

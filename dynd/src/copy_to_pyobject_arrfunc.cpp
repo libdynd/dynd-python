@@ -47,17 +47,17 @@ typedef dynd::integer_sequence<
     dynd::struct_type_id, dynd::tuple_type_id, dynd::pointer_type_id,
     dynd::categorical_type_id> type_ids;
 
-dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
+dynd::nd::callable pydynd::nd::copy_to_pyobject::make()
 {
   PyDateTime_IMPORT;
 
-  std::map<dynd::type_id_t, dynd::nd::arrfunc> arrfuncs =
-      dynd::nd::arrfunc::make_all<copy_to_pyobject_kernel, type_ids>(0);
-  for (std::pair<dynd::type_id_t, dynd::nd::arrfunc> pair : arrfuncs) {
+  std::map<dynd::type_id_t, dynd::nd::callable> callables =
+      dynd::nd::callable::make_all<copy_to_pyobject_kernel, type_ids>(0);
+  for (std::pair<dynd::type_id_t, dynd::nd::callable> pair : callables) {
     children[pair.first] = pair.second;
   }
 
-  default_child = dynd::nd::arrfunc::make<default_copy_to_pyobject_kernel>(0);
+  default_child = dynd::nd::callable::make<default_copy_to_pyobject_kernel>(0);
 
   return dynd::nd::functional::multidispatch(dynd::ndt::type("(Any) -> void"),
                                              children, default_child);
@@ -65,5 +65,5 @@ dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::make()
 
 struct pydynd::nd::copy_to_pyobject pydynd::nd::copy_to_pyobject;
 
-dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::children[DYND_TYPE_ID_MAX + 1];
-dynd::nd::arrfunc pydynd::nd::copy_to_pyobject::default_child;
+dynd::nd::callable pydynd::nd::copy_to_pyobject::children[DYND_TYPE_ID_MAX + 1];
+dynd::nd::callable pydynd::nd::copy_to_pyobject::default_child;

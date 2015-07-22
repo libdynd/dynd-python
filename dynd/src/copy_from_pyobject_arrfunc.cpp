@@ -20,7 +20,7 @@
 
 using namespace std;
 
-dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::make()
+dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
 {
   typedef dynd::type_id_sequence<
       dynd::bool_type_id, dynd::int8_type_id, dynd::int16_type_id,
@@ -38,13 +38,14 @@ dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::make()
   PyDateTime_IMPORT;
 
   // ...
-  for (const pair<const dynd::type_id_t, dynd::nd::arrfunc> &pair :
-       dynd::nd::arrfunc::make_all<copy_from_pyobject_kernel, I>(0)) {
+  for (const pair<const dynd::type_id_t, dynd::nd::callable> &pair :
+       dynd::nd::callable::make_all<copy_from_pyobject_kernel, I>(0)) {
     children[pair.first] = pair.second;
   }
 
   // ...
-  default_child = dynd::nd::arrfunc::make<default_copy_from_pyobject_kernel>(0);
+  default_child =
+      dynd::nd::callable::make<default_copy_from_pyobject_kernel>(0);
 
   return dynd::nd::functional::multidispatch(
       dynd::ndt::type("(void, broadcast: bool) -> Any"), children,
@@ -53,6 +54,6 @@ dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::make()
 
 struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;
 
-dynd::nd::arrfunc
+dynd::nd::callable
     pydynd::nd::copy_from_pyobject::children[DYND_TYPE_ID_MAX + 1];
-dynd::nd::arrfunc pydynd::nd::copy_from_pyobject::default_child;
+dynd::nd::callable pydynd::nd::copy_from_pyobject::default_child;

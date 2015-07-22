@@ -49,7 +49,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
 {
   if (dst_tp.get_type_id() != dynd::void_type_id) {
     stringstream ss;
-    ss << "Cannot instantiate dynd::nd::arrfunc with signature (";
+    ss << "Cannot instantiate dynd::nd::callable with signature (";
     ss << src_tp[0] << ") -> " << dst_tp;
     throw dynd::type_error(ss.str());
   }
@@ -66,8 +66,8 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
                                         src_tp[0], src_arrmeta[0], kernreq,
                                         ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::arrfunc_type_data *af = const_cast<dynd::arrfunc_type_data *>(
-        static_cast<dynd::nd::arrfunc>(nd::copy_to_pyobject).get());
+    dynd::callable_type_data *af = const_cast<dynd::callable_type_data *>(
+        static_cast<dynd::nd::callable>(nd::copy_to_pyobject).get());
     return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset,
                            dynd::ndt::type::make<void>(), NULL, nsrc, src_tp,
                            src_arrmeta, kernreq, ectx, dynd::nd::array(),
@@ -147,7 +147,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     }
 
     // Todo: Remove this
-    dynd::nd::arrfunc af = dynd::nd::arrfunc::make<copy_to_numpy_ck>(
+    dynd::nd::callable af = dynd::nd::callable::make<copy_to_numpy_ck>(
         dynd::ndt::type("(Any) -> void"), 0);
 
     return make_tuple_unary_op_ckernel(
@@ -165,9 +165,9 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
   }
 }
 
-dynd::nd::arrfunc pydynd::copy_to_numpy::make()
+dynd::nd::callable pydynd::copy_to_numpy::make()
 {
-  return dynd::nd::functional::elwise(dynd::nd::arrfunc::make<copy_to_numpy_ck>(
+  return dynd::nd::functional::elwise(dynd::nd::callable::make<copy_to_numpy_ck>(
       dynd::ndt::type("(Any) -> void"), 0));
 }
 

@@ -34,7 +34,7 @@ void pydynd::init_w__type_callable_typeobject(PyObject *type)
 void pydynd::add__type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
 {
   if (!dt.is_builtin()) {
-    const std::pair<std::string, nd::arrfunc> *properties;
+    const std::pair<std::string, nd::callable> *properties;
     size_t count;
     // Add the type properties
     dt.extended()->get_dynamic_type_properties(&properties, &count);
@@ -59,7 +59,7 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
                                              PyObject *name)
 {
   if (!dt.is_builtin()) {
-    const std::pair<std::string, nd::arrfunc> *properties;
+    const std::pair<std::string, nd::callable> *properties;
     size_t count;
     // Search for a property
     dt.extended()->get_dynamic_type_properties(&properties, &count);
@@ -69,7 +69,7 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
       string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == nstr) {
-          return wrap_array(const_cast<dynd::nd::arrfunc &>(
+          return wrap_array(const_cast<dynd::nd::callable &>(
               properties[i].second)(dynd::kwds("self", dt)));
           //          return call_gfunc_callable(nstr, properties[i].second,
           //          dt);
@@ -492,7 +492,7 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper &ncw,
 }
 
 PyObject *pydynd::wrap__type_callable(const std::string &funcname,
-                                      const dynd::nd::arrfunc &c,
+                                      const dynd::nd::callable &c,
                                       const dynd::ndt::type &d)
 {
   WTypeCallable *result =
@@ -511,7 +511,7 @@ PyObject *pydynd::wrap__type_callable(const std::string &funcname,
 }
 
 static PyObject *_type_callable_call(const std::string &funcname,
-                                     const nd::arrfunc &c, const ndt::type &d,
+                                     const nd::callable &c, const ndt::type &d,
                                      PyObject *args, PyObject *kwargs)
 {
   return NULL;
@@ -533,7 +533,7 @@ static PyObject *_type_callable_call(const std::string &funcname,
   kwd_values.insert(kwd_values.begin(), d);
 
   dynd::nd::array result =
-      const_cast<nd::arrfunc &>(c)(0, static_cast<nd::array *>(NULL),
+      const_cast<nd::callable &>(c)(0, static_cast<nd::array *>(NULL),
          kwds(nkwd + 1, kwd_names.empty() ? NULL : kwd_names.data(),
               kwd_values.empty() ? NULL : kwd_values.data()));
   return wrap_array(result);
@@ -571,7 +571,7 @@ PyObject *pydynd::call__type_constructor_function(const dynd::ndt::type &dt,
 {
   // First find the __construct__ callable
   if (!dt.is_builtin()) {
-    const std::pair<std::string, nd::arrfunc> *properties;
+    const std::pair<std::string, nd::callable> *properties;
     size_t count;
     // Search for a function
     dt.extended()->get_dynamic_type_functions(&properties, &count);

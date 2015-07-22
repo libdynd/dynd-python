@@ -326,7 +326,9 @@ cpdef array asarray(obj, access=None):
     result.v = array_asarray(obj, access)
     return result
 
-def type_of(array a):
+from dynd.nd.arrfunc cimport arrfunc
+
+def type_of(a):
     """
     nd.type_of(a)
     The dynd type of the array. This is the full
@@ -344,7 +346,11 @@ def type_of(array a):
     ndt.type("2 * var * float64")
     """
     cdef type result = type()
-    result.v = a.v.get_type()
+    if isinstance(a, array):
+        result.v = (<array> a).v.get_type()
+    elif isinstance(a, arrfunc):
+        result.v = (<arrfunc> a).v.get_array_type()
+
     return result
 
 def dtype_of(array a, size_t include_ndim=0):

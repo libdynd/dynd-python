@@ -93,3 +93,5 @@ cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
 
 cdef class array(object):
     cdef _array v
+
+cpdef array asarray(obj, access=*)

@@ -2,7 +2,7 @@ from ..config cimport translate_exception
 from .array cimport array
 from dynd.ndt.type cimport _type
 
-cdef extern from 'dynd/func/arrfunc.hpp' namespace 'dynd':
+cdef extern from 'dynd/func/callable.hpp' namespace 'dynd':
     cdef cppclass _callable 'dynd::nd::callable':
         _type get_array_type()
 

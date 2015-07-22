@@ -9,7 +9,7 @@
 
 #include <dynd/kernels/ckernel_builder.hpp>
 #include <dynd/kernels/base_virtual_kernel.hpp>
-#include <dynd/func/arrfunc.hpp>
+#include <dynd/func/callable.hpp>
 #include <dynd/eval/eval_context.hpp>
 
 #include "config.hpp"

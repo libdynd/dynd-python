@@ -326,7 +326,7 @@ cpdef array asarray(obj, access=None):
     result.v = array_asarray(obj, access)
     return result
 
-from dynd.nd.arrfunc cimport callable
+from dynd.nd.callable cimport callable
 
 def type_of(a):
     """

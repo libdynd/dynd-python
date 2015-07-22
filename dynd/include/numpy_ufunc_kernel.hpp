@@ -8,7 +8,7 @@
 #include "config.hpp"
 #include "numpy_interop.hpp"
 #include <numpy/ufuncobject.h>
-#include <dynd/func/arrfunc.hpp>
+#include <dynd/func/callable.hpp>
 
 namespace pydynd {
 

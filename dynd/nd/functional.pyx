@@ -1,5 +1,5 @@
 from .. import ndt
-from .arrfunc cimport callable, wrap_callable
+from .callable cimport callable, wrap_callable
 
 def apply(tp_or_func, func = None):
     def make(tp, func):

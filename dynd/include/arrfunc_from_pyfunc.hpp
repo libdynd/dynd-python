@@ -7,7 +7,7 @@
 
 #include "type_functions.hpp"
 
-#include <dynd/func/arrfunc.hpp>
+#include <dynd/func/callable.hpp>
 
 #include "config.hpp"
 

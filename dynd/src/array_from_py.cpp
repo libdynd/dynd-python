@@ -6,7 +6,7 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include <dynd/func/arrfunc.hpp>
+#include <dynd/func/callable.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/var_dim_type.hpp>

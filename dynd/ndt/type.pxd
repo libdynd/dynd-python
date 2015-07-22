@@ -49,7 +49,7 @@ cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
     _type dynd_make_categorical_type "dynd::ndt::categorical_type::make" (_array&) except +translate_exception
     _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
-cdef extern from 'dynd/types/arrfunc_type.hpp' namespace 'dynd':
+cdef extern from 'dynd/types/callable_type.hpp' namespace 'dynd':
     _type make_callable 'dynd::ndt::callable_type::make'(_type &, _type &)
 
 cdef extern from 'dynd/types/struct_type.hpp' namespace 'dynd':

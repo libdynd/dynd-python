@@ -23,7 +23,7 @@
 #include <dynd/func/rolling.hpp>
 #include <dynd/view.hpp>
 #include <dynd/func/callable.hpp>
-#include <dynd/func/arrfunc_registry.hpp>
+#include <dynd/func/callable_registry.hpp>
 
 using namespace std;
 using namespace dynd;

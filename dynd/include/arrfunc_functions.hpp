@@ -12,7 +12,7 @@
 
 #include <sstream>
 
-#include <dynd/func/arrfunc.hpp>
+#include <dynd/func/callable.hpp>
 
 #include "config.hpp"
 #include "array_from_py.hpp"

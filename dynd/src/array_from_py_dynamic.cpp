@@ -11,7 +11,7 @@
 #include <dynd/types/var_dim_type.hpp>
 #include <dynd/types/base_struct_type.hpp>
 #include <dynd/types/date_type.hpp>
-#include <dynd/types/arrfunc_type.hpp>
+#include <dynd/types/callable_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/type_promotion.hpp>

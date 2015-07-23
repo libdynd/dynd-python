@@ -1,4 +1,4 @@
-from dynd.ndt.type cimport wrap_type
+from dynd.wrapper cimport wrap
 
 cdef class callable(object):
     """
@@ -34,7 +34,7 @@ cdef class callable(object):
 
     property type:
         def __get__(self):
-            return wrap_type(self.v.get_array_type())
+            return wrap(self.v.get_array_type())
 
     def __call__(self, *args, **kwds):
         # Handle the keyword-only arguments

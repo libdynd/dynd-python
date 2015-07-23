@@ -1,6 +1,8 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
 from cpython.object cimport Py_EQ, Py_NE
+
+from dynd.wrapper cimport wrap
 from dynd.nd.array cimport _array, array
 
 cdef class type(object):
@@ -498,14 +500,14 @@ class callable_factory(__builtins__.type):
             ret = func.__annotations__['return']
             args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 
-        return wrap_type(make_callable((<type> ret).v, (<type> tuple(*args)).v))
+        return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v))
 
 class callable(object):
     __metaclass__ = callable_factory
 
 class tuple_factory(__builtins__.type):
     def __call__(self, *args):
-        return wrap_type(make_tuple(asarray(args).v))
+        return wrap(make_tuple(asarray(args).v))
 
 class tuple(object):
     __metaclass__ = tuple_factory
@@ -515,7 +517,7 @@ class struct_factory(__builtins__.type):
     def __call__(self, **kwds):
         make_struct(asarray(kwds.keys()).v, asarray(kwds.values()).v)
         return None
-#        return wrap_type(make_tuple(asarray(args).v))
+#        return wrap(make_tuple(asarray(args).v))
 
 class struct(object):
     __metaclass__ = struct_factory

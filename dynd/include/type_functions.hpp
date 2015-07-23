@@ -31,39 +31,6 @@ namespace pydynd {
 
 PYDYND_API void init_w_type_typeobject(PyObject *type);
 
-inline PyObject *wrap__type(const dynd::ndt::type &d)
-{
-  DyND_PyTypeObject *result =
-      (DyND_PyTypeObject *)DyND_PyWrapper_Type<dynd::ndt::type>()->tp_alloc(
-          DyND_PyWrapper_Type<dynd::ndt::type>(), 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-
-  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
-  // here
-  new (&result->v) dynd::ndt::type(d);
-  return (PyObject *)result;
-}
-
-#ifdef DYND_RVALUE_REFS
-inline PyObject *wrap__type(dynd::ndt::type &&d)
-{
-  DyND_PyTypeObject *result =
-      (DyND_PyTypeObject *)DyND_PyWrapper_Type<dynd::ndt::type>()->tp_alloc(
-          DyND_PyWrapper_Type<dynd::ndt::type>(), 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
-  // here
-  pydynd::placement_new(
-      reinterpret_cast<pydynd::_type_placement_wrapper &>(result->v));
-  result->v = DYND_MOVE(d);
-  return (PyObject *)result;
-}
-#endif
-
 inline std::string _type_str(const dynd::ndt::type &d)
 {
   std::stringstream ss;

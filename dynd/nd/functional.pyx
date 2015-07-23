@@ -1,6 +1,6 @@
 from dynd.wrapper cimport wrap
 from .. import ndt
-from .callable cimport callable, wrap_callable
+from .callable cimport callable
 
 def apply(tp_or_func, func = None):
     def make(tp, func):

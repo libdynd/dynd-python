@@ -92,8 +92,3 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 cdef class type(object):
     cdef _type v
-
-cdef inline type wrap_type(_type v):
-    cdef type res = type()
-    res.v = v
-    return res

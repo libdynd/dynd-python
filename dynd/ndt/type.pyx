@@ -2,7 +2,7 @@
 
 from cpython.object cimport Py_EQ, Py_NE
 
-from dynd.wrapper cimport wrap
+from dynd.wrapper cimport set_wrapper_type, wrap
 from dynd.nd.array cimport _array, array
 
 cdef class type(object):
@@ -187,7 +187,7 @@ cdef class type(object):
         """
         return self.v.match(type(rhs).v)
 
-init_w_type_typeobject(type)
+set_wrapper_type[_type](type)
 
 cdef class type_callable:
     cdef _type_callable_wrapper v

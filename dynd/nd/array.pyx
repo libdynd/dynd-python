@@ -1,5 +1,7 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
+from dynd.wrapper cimport set_wrapper_type
+
 from dynd.ndt.type cimport type, dynd_make_categorical_type
 from dynd.ndt import Unsupplied
 
@@ -294,7 +296,7 @@ cdef class array(object):
         result.v = self.v.view_scalars(type(dtp).v)
         return result
 
-init_w_array_typeobject(array)
+set_wrapper_type[_array](array)
 
 cdef class array_callable:
     cdef array_callable_wrapper v

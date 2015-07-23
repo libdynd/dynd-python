@@ -1,4 +1,4 @@
-from dynd.wrapper cimport wrap
+from dynd.wrapper cimport set_wrapper_type, wrap
 
 cdef class callable(object):
     """
@@ -44,4 +44,4 @@ cdef class callable(object):
 #            raise TypeError(msg % (kwds.keys()[0]))
         return callable_call(self, args, kwds, ectx)
 
-init_w_callable_typeobject(callable)
+set_wrapper_type[_callable](callable)

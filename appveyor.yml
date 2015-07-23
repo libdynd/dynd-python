@@ -10,9 +10,13 @@ branches:
 # Do not build on tags (GitHub only)
 skip_tags: true
 
+# Operating system (build VM template)
+#os: Visual Studio 2015  # <-- is really really slow!!! :(
+
+matrix:
+  fast_finish: true     # immediately finish build once one of the jobs fails.
+
 environment:
-  # Operating system (build VM template)
-  os: Windows Server 2012
 
   global:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
@@ -21,10 +25,15 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
 
   matrix:
+    #- PYTHON_VERSION: "3.4"
+    #  PYTHON_ARCH: "x86_64"
+    #  MSVC: 2015
     - PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "x86"
+      MSVC: 2013
     - PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "x86_64"
+      MSVC: 2013
 
 install:
   - md libraries
@@ -33,6 +42,8 @@ install:
   - cd ..
   - dir C:\
   - dir "C:\Program Files\Microsoft SDKs\Windows"
+  - dir "C:\Program Files (x86)\Microsoft Visual*"
+  - cmake --version
   - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
   - cmd: C:\Miniconda.exe /S /D=C:\Py
   - C:\Py\Scripts\conda config --set always_yes yes
@@ -43,7 +54,7 @@ install:
   - SET PATH=C:\Py;C:\Py\Scripts;%PATH%
 
 build_script:
-  - C:\Py\python setup.py bdist_wheel
+  - C:\Py\python setup.py bdist_wheel --msvc %MSVC%
 
 test_script:
   - cd dist

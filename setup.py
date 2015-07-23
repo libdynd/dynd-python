@@ -28,13 +28,15 @@ class cmake_build_ext(build_ext):
     return os.path.join(package_dir, filename)
 
   def get_ext_built(self, name):
-    if sys.platform != 'win32':
+    if sys.platform == 'win32':
+        head, tail = os.path.split(name)
+        return os.path.join(head, 'Release', tail + '.pyd')
+    else:
         suffix = sysconfig.get_config_var('EXT_SUFFIX')
         if (suffix is None):
             suffix = sysconfig.get_config_var('SO')
         return name + suffix
 
-    return os.path.join('Release', name + '.pyd')
 
   def run(self):
     # We don't call the origin build_ext, instead ignore that
@@ -118,11 +120,13 @@ class cmake_build_ext(build_ext):
             if os.path.exists(ext_path):
                 os.remove(ext_path)
             self.mkpath(os.path.dirname(ext_path))
-            print('Moving built DyND C-extension to build path', ext_path)
+            print('Moving built DyND C-extension', built_path,
+                  'to build path', ext_path)
             shutil.move(self.get_ext_built(name), ext_path)
             self._found_names.append(name)
         else:
-            print('DyND C-extension skipped:', built_path)
+            raise RuntimeError('DyND C-extension failed to build:',
+                               os.path.abspath(built_path))
 
     chdir(saved_cwd)
 

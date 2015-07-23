@@ -22,21 +22,22 @@ namespace pydynd {
 /**
  * This is the typeobject and struct of w_type from Cython.
  */
-extern PyTypeObject *WType_Type;
 inline bool WType_CheckExact(PyObject *obj)
 {
-  return Py_TYPE(obj) == WType_Type;
+  return Py_TYPE(obj) == DyND_PyWrapper_Type<dynd::ndt::type>();
 }
 inline bool WType_Check(PyObject *obj)
 {
-  return PyObject_TypeCheck(obj, WType_Type);
+  return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<dynd::ndt::type>());
 }
 
 PYDYND_API void init_w_type_typeobject(PyObject *type);
 
 inline PyObject *wrap__type(const dynd::ndt::type &d)
 {
-  DyND_PyTypeObject *result = (DyND_PyTypeObject *)WType_Type->tp_alloc(WType_Type, 0);
+  DyND_PyTypeObject *result =
+      (DyND_PyTypeObject *)DyND_PyWrapper_Type<dynd::ndt::type>()->tp_alloc(
+          DyND_PyWrapper_Type<dynd::ndt::type>(), 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -50,7 +51,9 @@ inline PyObject *wrap__type(const dynd::ndt::type &d)
 #ifdef DYND_RVALUE_REFS
 inline PyObject *wrap__type(dynd::ndt::type &&d)
 {
-  DyND_PyTypeObject *result = (DyND_PyTypeObject *)WType_Type->tp_alloc(WType_Type, 0);
+  DyND_PyTypeObject *result =
+      (DyND_PyTypeObject *)DyND_PyWrapper_Type<dynd::ndt::type>()->tp_alloc(
+          DyND_PyWrapper_Type<dynd::ndt::type>(), 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -94,8 +97,9 @@ PYDYND_API dynd::ndt::type make__type_from_pyobject(PyObject *obj);
 /**
  * Creates a convert type.
  */
-PYDYND_API dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
-                                       const dynd::ndt::type &from_tp);
+PYDYND_API dynd::ndt::type
+dynd_make_convert_type(const dynd::ndt::type &to_tp,
+                       const dynd::ndt::type &from_tp);
 
 /**
  * Creates a view type.

@@ -29,11 +29,9 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WCallable_Type;
-
 void pydynd::init_w_callable_typeobject(PyObject *type)
 {
-  WCallable_Type = (PyTypeObject *)type;
+  DyND_PyWrapper_Type<dynd::nd::callable>() = (PyTypeObject *)type;
 }
 
 PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,

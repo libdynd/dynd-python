@@ -36,11 +36,9 @@ void pydynd::init_type_functions()
   PyDateTime_IMPORT;
 }
 
-PyTypeObject *pydynd::WType_Type;
-
 void pydynd::init_w_type_typeobject(PyObject *type)
 {
-  pydynd::WType_Type = (PyTypeObject *)type;
+  DyND_PyWrapper_Type<dynd::ndt::type>() = (PyTypeObject *)type;
 }
 
 inline void print_generic_type_repr(ostream &o, const ndt::type &d)

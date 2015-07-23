@@ -25,11 +25,9 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WArray_Type;
-
 void pydynd::init_w_array_typeobject(PyObject *type)
 {
-  WArray_Type = (PyTypeObject *)type;
+  DyND_PyWrapper_Type<dynd::nd::array>() = (PyTypeObject *)type;
 }
 
 PyObject *pydynd::wrap_array(const dynd::nd::array &n)
@@ -37,7 +35,9 @@ PyObject *pydynd::wrap_array(const dynd::nd::array &n)
   if (n.get_type().get_type_id() == callable_type_id) {
     return wrap_array(nd::callable(n));
   }
-  DyND_PyArrayObject *result = (DyND_PyArrayObject *)WArray_Type->tp_alloc(WArray_Type, 0);
+  DyND_PyArrayObject *result =
+      (DyND_PyArrayObject *)DyND_PyWrapper_Type<dynd::nd::array>()->tp_alloc(
+          DyND_PyWrapper_Type<dynd::nd::array>(), 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -49,7 +49,9 @@ PyObject *pydynd::wrap_array(const dynd::nd::array &n)
 
 PyObject *pydynd::wrap_array(const dynd::nd::callable &n)
 {
-  DyND_PyCallableObject *result = (DyND_PyCallableObject *)WCallable_Type->tp_alloc(WCallable_Type, 0);
+  DyND_PyCallableObject *result =
+      (DyND_PyCallableObject *)DyND_PyWrapper_Type<dynd::nd::callable>()
+          ->tp_alloc(DyND_PyWrapper_Type<dynd::nd::callable>(), 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -77,8 +79,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
           string_encoding_ascii) {
     // If it's already an ASCII string, pass-through
     n_str = n;
-  }
-  else {
+  } else {
     // Otherwise, convert to an ASCII string
     n_str = nd::empty(ndt::string_type::make(string_encoding_ascii));
     n_str.vals() = n;
@@ -110,8 +111,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array &n)
           DYND_PY_ENCODING) {
     // If it's already a unicode string, pass-through
     n_str = n;
-  }
-  else {
+  } else {
     // Otherwise, convert to a unicode string
     n_str = nd::empty(ndt::string_type::make(DYND_PY_ENCODING));
     n_str.vals() = n;
@@ -160,8 +160,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
     if (n.as<bool>(assign_error_nocheck)) {
       Py_INCREF(Py_True);
       return Py_True;
-    }
-    else {
+    } else {
       Py_INCREF(Py_False);
       return Py_False;
     }
@@ -176,8 +175,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
     if (begin != end) {
       Py_INCREF(Py_True);
       return Py_True;
-    }
-    else {
+    } else {
       Py_INCREF(Py_False);
       return Py_False;
     }
@@ -194,8 +192,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
       if (*begin != 0) {
         Py_INCREF(Py_True);
         return Py_True;
-      }
-      else {
+      } else {
         ++begin;
       }
     }
@@ -226,8 +223,7 @@ PyObject *pydynd::array_int(const dynd::nd::array &n)
   case sint_kind:
     if (vt.get_type_id() != uint64_type_id) {
       return PyLong_FromLongLong(n.as<int64_t>());
-    }
-    else {
+    } else {
       return PyLong_FromUnsignedLongLong(n.as<uint64_t>());
     }
   default:
@@ -292,8 +288,8 @@ void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
         nd::read_access_flag, "r", nd::read_access_flag, "immutable",
         nd::read_access_flag | nd::immutable_access_flag);
   }
-  n = array_from_py(obj, make__type_from_pyobject(dt), fulltype,
-                    access_flags, &eval::default_eval_context);
+  n = array_from_py(obj, make__type_from_pyobject(dt), fulltype, access_flags,
+                    &eval::default_eval_context);
 }
 
 void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
@@ -349,8 +345,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
     }
     if (type == Py_None) {
       return obj_dynd;
-    }
-    else {
+    } else {
       ndt::type tp = make__type_from_pyobject(type);
       return nd::view(obj_dynd, tp);
     }
@@ -362,8 +357,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
         array_from_numpy_array((PyArrayObject *)obj, access_flags, false);
     if (type == Py_None) {
       return result;
-    }
-    else {
+    } else {
       ndt::type tp = make__type_from_pyobject(type);
       return nd::view(result, tp);
     }
@@ -401,9 +395,8 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
       if ((access_flags & nd::immutable_access_flag) &&
           !(raf & nd::immutable_access_flag)) {
         ok = false;
-      }
-      else if ((access_flags & nd::write_access_flag) == 0 &&
-               (raf & nd::write_access_flag) != 0) {
+      } else if ((access_flags & nd::write_access_flag) == 0 &&
+                 (raf & nd::write_access_flag) != 0) {
         // Convert it to a readonly view
         nd::array result(
             shallow_copy_array_memory_block(obj_dynd.get_memblock()));
@@ -417,12 +410,10 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
 
       if (ok) {
         return obj_dynd;
-      }
-      else {
+      } else {
         return obj_dynd.eval_copy(access_flags);
       }
-    }
-    else {
+    } else {
       return obj_dynd;
     }
   }
@@ -434,8 +425,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
     if (access_flags == 0) {
       // Always return it as a view if no specific access flags are specified
       return result;
-    }
-    else {
+    } else {
       bool ok = true;
       // TODO: Make an nd::view function to handle this logic
       uint32_t raf = result.get_access_flags();
@@ -453,8 +443,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
       }
       if (ok) {
         return result;
-      }
-      else {
+      } else {
         return result.eval_copy(access_flags);
       }
     }
@@ -611,8 +600,7 @@ void contains_callback(const ndt::type &DYND_UNUSED(dt),
                        void *callback_data)
 {
   contains_data *cd = reinterpret_cast<contains_data *>(callback_data);
-  dynd::expr_single_t fn =
-      cd->k->get()->get_function<dynd::expr_single_t>();
+  dynd::expr_single_t fn = cd->k->get()->get_function<dynd::expr_single_t>();
   int dst;
   char *src[2] = {const_cast<char *>(cd->x_data), data};
   fn(reinterpret_cast<char *>(&dst), src, cd->k->get());
@@ -643,8 +631,7 @@ bool pydynd::array_contains(const dynd::nd::array &n, PyObject *x)
     budd = dt.extended<ndt::base_dim_type>();
     arrmeta = n.get_arrmeta();
     data = n.get_readonly_originptr();
-  }
-  else {
+  } else {
     tmp = n.eval();
     if (!tmp.get_type().is_dim()) {
       throw runtime_error("internal error in array_contains: expected dim kind "
@@ -746,8 +733,7 @@ static void pyobject_as_irange_array(intptr_t &out_size,
     out_size = 1;
     out_indices.init(1);
     out_indices[0] = pyobject_as_irange(subscript);
-  }
-  else {
+  } else {
     out_size = PyTuple_GET_SIZE(subscript);
     // Tuple of subscripts
     out_indices.init(out_size);
@@ -762,8 +748,7 @@ dynd::nd::array pydynd::array_getitem(const dynd::nd::array &n,
 {
   if (subscript == Py_Ellipsis) {
     return n.at_array(0, NULL);
-  }
-  else {
+  } else {
     // Convert the pyobject into an array of iranges
     intptr_t size;
     shortvector<irange> indices;
@@ -780,8 +765,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
   if (subscript == Py_Ellipsis) {
     array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
 #if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyInt_Check(subscript)) {
+  } else if (PyInt_Check(subscript)) {
     long i = PyInt_AS_LONG(subscript);
     const char *arrmeta = n.get_arrmeta();
     char *data = n.get_readwrite_originptr();
@@ -790,8 +774,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
     array_broadcast_assign_from_py(d, arrmeta, data, value,
                                    &eval::default_eval_context);
 #endif // PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyLong_Check(subscript)) {
+  } else if (PyLong_Check(subscript)) {
     intptr_t i = PyLong_AsSsize_t(subscript);
     if (i == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");
@@ -802,8 +785,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
     array_broadcast_assign_from_py(d, arrmeta, data, value,
                                    &eval::default_eval_context);
-  }
-  else {
+  } else {
     intptr_t size;
     shortvector<irange> indices;
     pyobject_as_irange_array(size, indices, subscript);
@@ -820,22 +802,19 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step,
 
   if (start != Py_None) {
     start_nd = array_from_py(start, 0, false, &eval::default_eval_context);
-  }
-  else {
+  } else {
     start_nd = 0;
   }
   stop_nd = array_from_py(stop, 0, false, &eval::default_eval_context);
   if (step != Py_None) {
     step_nd = array_from_py(step, 0, false, &eval::default_eval_context);
-  }
-  else {
+  } else {
     step_nd = 1;
   }
 
   if (dt != Py_None) {
     dt_nd = make__type_from_pyobject(dt);
-  }
-  else {
+  } else {
     dt_nd = promote_types_arithmetic(
         start_nd.get_type(),
         promote_types_arithmetic(stop_nd.get_type(), step_nd.get_type()));
@@ -864,8 +843,7 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
   stop_nd = array_from_py(stop, 0, false, &eval::default_eval_context);
   if (dt == Py_None) {
     return nd::linspace(start_nd, stop_nd, count_val);
-  }
-  else {
+  } else {
     return nd::linspace(start_nd, stop_nd, count_val,
                         make__type_from_pyobject(dt));
   }

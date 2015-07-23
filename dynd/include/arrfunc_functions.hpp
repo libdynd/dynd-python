@@ -31,19 +31,20 @@ namespace pydynd {
 /**
  * This is the typeobject and struct of w_callable from Cython.
  */
-extern PyTypeObject *WCallable_Type;
 inline bool WCallable_CheckExact(PyObject *obj)
 {
-  return Py_TYPE(obj) == WCallable_Type;
+  return Py_TYPE(obj) == DyND_PyWrapper_Type<dynd::nd::callable>();
 }
 inline bool WCallable_Check(PyObject *obj)
 {
-  return PyObject_TypeCheck(obj, WCallable_Type);
+  return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<dynd::nd::callable>());
 }
 
 PYDYND_API inline PyObject *wrap_callable(const dynd::nd::callable &n)
 {
-  DyND_PyCallableObject *result = (DyND_PyCallableObject *)WCallable_Type->tp_alloc(WCallable_Type, 0);
+  DyND_PyCallableObject *result =
+      (DyND_PyCallableObject *)DyND_PyWrapper_Type<dynd::nd::callable>()
+          ->tp_alloc(DyND_PyWrapper_Type<dynd::nd::callable>(), 0);
   if (!result) {
     throw std::runtime_error("");
   }

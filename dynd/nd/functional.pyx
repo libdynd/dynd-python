@@ -1,5 +1,10 @@
+from libcpp.vector cimport vector
+
 from .. import ndt
-from .callable cimport callable, wrap_callable
+from .callable cimport callable, _callable, wrap_callable
+
+from dynd.wrapper cimport wrap, begin, end
+from dynd.ndt.type cimport type, _type
 
 def apply(tp_or_func, func = None):
     def make(tp, func):
@@ -18,3 +23,7 @@ def elwise(func):
         func = apply(func)
 
     return wrap_callable(_elwise((<callable> func).v))
+
+def multidispatch(type tp, iterable = None, callable default = callable()):
+    return wrap(_multidispatch(tp.v, begin[_callable](iterable),
+        end[_callable](iterable), default.v))

@@ -1,3 +1,4 @@
+from dynd.wrapper cimport set_wrapper_type
 from dynd.ndt.type cimport wrap_type
 
 cdef class callable(object):
@@ -45,3 +46,4 @@ cdef class callable(object):
         return callable_call(self, args, kwds, ectx)
 
 init_w_callable_typeobject(callable)
+set_wrapper_type[_callable](callable)

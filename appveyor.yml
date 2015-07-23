@@ -42,6 +42,8 @@ install:
   - cd ..
   - dir C:\
   - dir "C:\Program Files\Microsoft SDKs\Windows"
+  - dir "C:\Program Files (x86)\Microsoft Visual*"
+  - cmake --version
   - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
   - cmd: C:\Miniconda.exe /S /D=C:\Py
   - C:\Py\Scripts\conda config --set always_yes yes

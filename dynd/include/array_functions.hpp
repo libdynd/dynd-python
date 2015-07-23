@@ -28,6 +28,8 @@
 
 typedef DyND_PyWrapperObject<dynd::nd::array> DyND_PyArrayObject;
 
+template PYDYND_API void DyND_PyWrapper_Type<dynd::nd::array>(PyObject *obj);
+
 inline int DyND_PyArray_Check(PyObject *obj)
 {
   return DyND_PyWrapper_Check<dynd::nd::array>(obj);

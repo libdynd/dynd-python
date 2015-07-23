@@ -44,4 +44,4 @@ cdef class callable(object):
 #            raise TypeError(msg % (kwds.keys()[0]))
         return callable_call(self, args, kwds, ectx)
 
-set_wrapper_type[_callable](callable)
+init_w_callable_typeobject(callable)

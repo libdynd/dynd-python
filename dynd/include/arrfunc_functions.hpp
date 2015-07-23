@@ -26,6 +26,8 @@
 
 typedef DyND_PyWrapperObject<dynd::nd::callable> DyND_PyCallableObject;
 
+template PYDYND_API void DyND_PyWrapper_Type<dynd::nd::callable>(PyObject *obj);
+
 inline int DyND_PyCallable_Check(PyObject *obj)
 {
   return DyND_PyWrapper_Check<dynd::nd::callable>(obj);

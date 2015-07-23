@@ -25,11 +25,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-void pydynd::init_w_array_typeobject(PyObject *type)
-{
-  DyND_PyWrapper_Type<dynd::nd::array>() = (PyTypeObject *)type;
-}
-
 PyObject *pydynd::array_str(const dynd::nd::array &n)
 {
 #if PY_VERSION_HEX >= 0x03000000

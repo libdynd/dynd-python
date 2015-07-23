@@ -187,7 +187,7 @@ cdef class type(object):
         """
         return self.v.match(type(rhs).v)
 
-init_w_type_typeobject(type)
+set_wrapper_type[_type](type)
 
 cdef class type_callable:
     cdef _type_callable_wrapper v

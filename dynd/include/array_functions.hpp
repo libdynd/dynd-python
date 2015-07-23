@@ -42,8 +42,6 @@ inline int DyND_PyArray_CheckExact(PyObject *obj)
 
 namespace pydynd {
 
-PYDYND_API void init_w_array_typeobject(PyObject *type);
-
 PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
                                          PyObject *dt, bool uniform,
                                          PyObject *access);

@@ -12,7 +12,7 @@ skip_tags: true
 
 environment:
   # Operating system (build VM template)
-  os: Windows Server 2012
+  os: Visual Studio 2015
 
   global:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
@@ -22,9 +22,14 @@ environment:
 
   matrix:
     - PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "x86_64"
+      MSVC: 2015
+    - PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "x86"
+      MSVC: 2013
     - PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "x86_64"
+      MSVC: 2013
 
 install:
   - md libraries
@@ -43,7 +48,7 @@ install:
   - SET PATH=C:\Py;C:\Py\Scripts;%PATH%
 
 build_script:
-  - C:\Py\python setup.py bdist_wheel
+  - C:\Py\python setup.py bdist_wheel --msvc %MSVC%
 
 test_script:
   - cd dist

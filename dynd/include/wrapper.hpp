@@ -23,13 +23,13 @@ PyTypeObject *&DyND_PyWrapper_Type()
 }
 
 template <typename T>
-PYDYND_API void DyND_PyWrapper_Type(PyObject *obj)
+void DyND_PyWrapper_Type(PyObject *obj)
 {
   DyND_PyWrapper_Type<T>() = reinterpret_cast<PyTypeObject *>(obj);
 }
 
 template <typename T>
-PYDYND_API PyObject *DyND_PyWrapper_New(const T &v)
+PyObject *DyND_PyWrapper_New(const T &v)
 {
   PyTypeObject *type = DyND_PyWrapper_Type<T>();
 

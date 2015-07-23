@@ -125,7 +125,7 @@ struct DyND_PyWrapperIter {
 namespace std {
 
 template <typename T>
-PYDYND_API DyND_PyWrapperIter<T> begin(PyObject *obj)
+DyND_PyWrapperIter<T> begin(PyObject *obj)
 {
   PyObject *iter = PyObject_GetIter(obj);
   if (iter == NULL) {
@@ -140,7 +140,7 @@ PYDYND_API DyND_PyWrapperIter<T> begin(PyObject *obj)
 }
 
 template <typename T>
-PYDYND_API DyND_PyWrapperIter<T> end(PyObject *obj)
+DyND_PyWrapperIter<T> end(PyObject *obj)
 {
   PyObject *iter = PyObject_GetIter(obj);
   if (iter == NULL) {

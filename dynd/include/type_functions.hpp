@@ -2,12 +2,8 @@
 // Copyright (C) 2011-15 DyND Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
-// This header defines some wrapping functions to
-// access various dynd type parameters
-//
 
-#ifndef _DYND__DTYPE_FUNCTIONS_HPP_
-#define _DYND__DTYPE_FUNCTIONS_HPP_
+#pragma once
 
 #include <Python.h>
 
@@ -17,58 +13,25 @@
 #include <dynd/string_encodings.hpp>
 
 #include "config.hpp"
+#include "wrapper.hpp"
+
+typedef DyND_PyWrapperObject<dynd::ndt::type> DyND_PyTypeObject;
+
+template PYDYND_API void DyND_PyWrapper_Type<dynd::ndt::type>(PyObject *obj);
+
+inline int DyND_PyType_Check(PyObject *obj)
+{
+  return DyND_PyWrapper_Check<dynd::ndt::type>(obj);
+}
+
+inline int DyND_PyType_CheckExact(PyObject *obj)
+{
+  return DyND_PyWrapper_CheckExact<dynd::ndt::type>(obj);
+}
 
 namespace pydynd {
 
-/**
- * This is the typeobject and struct of w_type from Cython.
- */
-extern PyTypeObject *WType_Type;
-inline bool WType_CheckExact(PyObject *obj)
-{
-  return Py_TYPE(obj) == WType_Type;
-}
-inline bool WType_Check(PyObject *obj)
-{
-  return PyObject_TypeCheck(obj, WType_Type);
-}
-
-struct WType {
-  PyObject_HEAD;
-  // This is _type_placement_wrapper in Cython-land
-  dynd::ndt::type v;
-};
-
 PYDYND_API void init_w_type_typeobject(PyObject *type);
-
-inline PyObject *wrap__type(const dynd::ndt::type &d)
-{
-  WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-
-  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
-  // here
-  new (&result->v) dynd::ndt::type(d);
-  return (PyObject *)result;
-}
-
-#ifdef DYND_RVALUE_REFS
-inline PyObject *wrap__type(dynd::ndt::type &&d)
-{
-  WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
-  // here
-  pydynd::placement_new(
-      reinterpret_cast<pydynd::_type_placement_wrapper &>(result->v));
-  result->v = DYND_MOVE(d);
-  return (PyObject *)result;
-}
-#endif
 
 inline std::string _type_str(const dynd::ndt::type &d)
 {
@@ -101,8 +64,9 @@ PYDYND_API dynd::ndt::type make__type_from_pyobject(PyObject *obj);
 /**
  * Creates a convert type.
  */
-PYDYND_API dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
-                                       const dynd::ndt::type &from_tp);
+PYDYND_API dynd::ndt::type
+dynd_make_convert_type(const dynd::ndt::type &to_tp,
+                       const dynd::ndt::type &from_tp);
 
 /**
  * Creates a view type.
@@ -145,5 +109,3 @@ PYDYND_API PyObject *_type_array_property_names(const dynd::ndt::type &d);
 PYDYND_API void init_type_functions();
 
 } // namespace pydynd
-
-#endif // _DYND__DTYPE_FUNCTIONS_HPP_

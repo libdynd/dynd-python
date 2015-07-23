@@ -36,11 +36,9 @@ void pydynd::init_type_functions()
   PyDateTime_IMPORT;
 }
 
-PyTypeObject *pydynd::WType_Type;
-
 void pydynd::init_w_type_typeobject(PyObject *type)
 {
-  pydynd::WType_Type = (PyTypeObject *)type;
+  DyND_PyWrapper_Type<dynd::ndt::type>() = (PyTypeObject *)type;
 }
 
 inline void print_generic_type_repr(ostream &o, const ndt::type &d)
@@ -215,8 +213,8 @@ static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 
 dynd::ndt::type pydynd::make__type_from_pyobject(PyObject *obj)
 {
-  if (WType_Check(obj)) {
-    return ((WType *)obj)->v;
+  if (DyND_PyType_Check(obj)) {
+    return ((DyND_PyTypeObject *)obj)->v;
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyString_Check(obj)) {
@@ -226,8 +224,8 @@ dynd::ndt::type pydynd::make__type_from_pyobject(PyObject *obj)
   else if (PyUnicode_Check(obj)) {
     return ndt::type(pystring_as_string(obj));
   }
-  else if (WArray_Check(obj)) {
-    return ((WArray *)obj)->v.as<ndt::type>();
+  else if (DyND_PyArray_Check(obj)) {
+    return ((DyND_PyArrayObject *)obj)->v.as<ndt::type>();
   }
   else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP

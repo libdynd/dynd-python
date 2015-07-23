@@ -198,6 +198,7 @@ set(pydynd_SRC
     dynd/include/py_lowlevel_api.hpp
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
+    dynd/include/wrapper.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
     dynd/src/array_as_py.cpp

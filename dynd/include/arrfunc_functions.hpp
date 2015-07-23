@@ -22,38 +22,23 @@
 #include "eval_context_functions.hpp"
 #include "array_functions.hpp"
 
+#include "wrapper.hpp"
+
+typedef DyND_PyWrapperObject<dynd::nd::callable> DyND_PyCallableObject;
+
+template PYDYND_API void DyND_PyWrapper_Type<dynd::nd::callable>(PyObject *obj);
+
+inline int DyND_PyCallable_Check(PyObject *obj)
+{
+  return DyND_PyWrapper_Check<dynd::nd::callable>(obj);
+}
+
+inline int DyND_PyCallable_CheckExact(PyObject *obj)
+{
+  return DyND_PyWrapper_CheckExact<dynd::nd::callable>(obj);
+}
+
 namespace pydynd {
-
-/**
- * This is the typeobject and struct of w_callable from Cython.
- */
-extern PyTypeObject *WCallable_Type;
-inline bool WCallable_CheckExact(PyObject *obj)
-{
-  return Py_TYPE(obj) == WCallable_Type;
-}
-inline bool WCallable_Check(PyObject *obj)
-{
-  return PyObject_TypeCheck(obj, WCallable_Type);
-}
-
-struct WCallable {
-  PyObject_HEAD;
-
-  // This is array_placement_wrapper in Cython-land
-  dynd::nd::callable v;
-};
-
-PYDYND_API inline PyObject *wrap_callable(const dynd::nd::callable &n)
-{
-  WCallable *result = (WCallable *)WCallable_Type->tp_alloc(WCallable_Type, 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-
-  result->v = n;
-  return reinterpret_cast<PyObject *>(result);
-}
 
 PYDYND_API void init_w_callable_typeobject(PyObject *type);
 

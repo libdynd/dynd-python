@@ -69,7 +69,7 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
       string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == nstr) {
-          return wrap_array(const_cast<dynd::nd::callable &>(
+          return DyND_PyWrapper_New(const_cast<dynd::nd::callable &>(
               properties[i].second)(dynd::kwds("self", dt)));
           //          return call_gfunc_callable(nstr, properties[i].second,
           //          dt);
@@ -154,7 +154,8 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
     string nstr = pystring_as_string(name);
     for (size_t i = 0; i < count; ++i) {
       if (properties[i].first == nstr) {
-        return wrap_array(call_gfunc_callable(nstr, properties[i].second, n));
+        return DyND_PyWrapper_New(
+            call_gfunc_callable(nstr, properties[i].second, n));
       }
     }
   }
@@ -285,7 +286,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string &funcname,
   if (result.get_type().is_scalar()) {
     return array_as_py(result, false);
   } else {
-    return wrap_array(result);
+    return DyND_PyWrapper_New(result);
   }
 }
 
@@ -488,7 +489,7 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper &ncw,
   fill_thiscall_parameters_array(ncw.funcname, ncw.c, args, kwargs, params,
                                  storage);
 
-  return wrap_array(ncw.c.call_generic(params));
+  return DyND_PyWrapper_New(ncw.c.call_generic(params));
 }
 
 PyObject *pydynd::wrap__type_callable(const std::string &funcname,
@@ -525,18 +526,19 @@ static PyObject *_type_callable_call(const std::string &funcname,
   for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwargs, &i, &key, &value); ++j) {
     kwd_names_strings[j] = pystring_as_string(key);
     kwd_names[j] = kwd_names_strings[j].c_str();
-    kwd_values[j] = array_from_py(value, 0, false, &dynd::eval::default_eval_context);
+    kwd_values[j] =
+        array_from_py(value, 0, false, &dynd::eval::default_eval_context);
   }
 
   kwd_names_strings.insert(kwd_names_strings.begin(), "self");
   kwd_names.insert(kwd_names.begin(), "self");
   kwd_values.insert(kwd_values.begin(), d);
 
-  dynd::nd::array result =
-      const_cast<nd::callable &>(c)(0, static_cast<nd::array *>(NULL),
-         kwds(nkwd + 1, kwd_names.empty() ? NULL : kwd_names.data(),
-              kwd_values.empty() ? NULL : kwd_values.data()));
-  return wrap_array(result);
+  dynd::nd::array result = const_cast<nd::callable &>(c)(
+      0, static_cast<nd::array *>(NULL),
+      kwds(nkwd + 1, kwd_names.empty() ? NULL : kwd_names.data(),
+           kwd_values.empty() ? NULL : kwd_values.data()));
+  return DyND_PyWrapper_New(result);
 
   /*
     const ndt::type &pdt = c.get_parameters_type();
@@ -553,7 +555,7 @@ static PyObject *_type_callable_call(const std::string &funcname,
 
     fill_thiscall_parameters_array(funcname, c, args, kwargs, params, storage);
 
-    return wrap_array(c.call_generic(params));
+    return DyND_PyWrapper_New(c.call_generic(params));
   */
 
   return NULL;

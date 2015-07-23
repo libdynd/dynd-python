@@ -69,7 +69,7 @@ PyObject *array_from_ptr(PyObject *tp, PyObject *ptr, PyObject *owner,
     Py_INCREF(owner);
     result.get_ndo()->m_data_reference = owner_memblock.release();
     result.get_ndo()->m_flags = access_flags;
-    return pydynd::wrap_array(std::move(result));
+    return DyND_PyWrapper_New(std::move(result));
   }
   catch (...) {
     pydynd::translate_exception();
@@ -143,7 +143,7 @@ PyObject *make_callable_from_assignment(PyObject *dst_tp_obj,
     dynd::nd::callable af =
         dynd::make_callable_from_assignment(dst_tp, src_tp, errmode);
 
-    return pydynd::wrap_array(af);
+    return DyND_PyWrapper_New(af);
   }
   catch (...) {
     pydynd::translate_exception();
@@ -158,7 +158,7 @@ PyObject *make_callable_from_property(PyObject *tp_obj, PyObject *propname_obj)
     std::string propname = pydynd::pystring_as_string(propname_obj);
     dynd::nd::callable af = dynd::make_callable_from_property(tp, propname);
 
-    return pydynd::wrap_array(af);
+    return DyND_PyWrapper_New(af);
   }
   catch (...) {
     pydynd::translate_exception();
@@ -177,7 +177,7 @@ PyObject *lift_callable(PyObject *af)
       ss << "af must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
     }
-    return pydynd::wrap_array(
+    return DyND_PyWrapper_New(
         dynd::nd::functional::elwise(((DyND_PyArrayObject *)af)->v));
   }
   catch (...) {
@@ -198,8 +198,9 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
   try {
     // Convert all the input parameters
     if (!pydynd::WArray_Check(elwise_reduction_obj) ||
-        ((DyND_PyArrayObject *)elwise_reduction_obj)->v.get_type().get_type_id() !=
-            dynd::callable_type_id) {
+        ((DyND_PyArrayObject *)elwise_reduction_obj)
+                ->v.get_type()
+                .get_type_id() != dynd::callable_type_id) {
       stringstream ss;
       ss << "elwise_reduction must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
@@ -306,7 +307,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
         reduction_ndim, reduction_dimflags.get(), associative, commutative,
         right_associative, reduction_identity);
 
-    return pydynd::wrap_array(out_af);
+    return DyND_PyWrapper_New(out_af);
   }
   catch (...) {
     pydynd::translate_exception();
@@ -317,7 +318,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
 PyObject *callable_from_pyfunc(PyObject *pyfunc, PyObject *proto)
 {
   try {
-    return pydynd::wrap_array(pydynd::nd::functional::apply(pyfunc, proto));
+    return DyND_PyWrapper_New(pydynd::nd::functional::apply(pyfunc, proto));
   }
   catch (...) {
     pydynd::translate_exception();
@@ -337,7 +338,7 @@ static PyObject *make_rolling_callable(PyObject *window_op_obj,
     const dynd::nd::callable &window_op =
         ((DyND_PyCallableObject *)window_op_obj)->v;
     intptr_t window_size = pydynd::pyobject_as_index(window_size_obj);
-    return pydynd::wrap_array(
+    return DyND_PyWrapper_New(
         dynd::nd::functional::rolling(window_op, window_size));
   }
   catch (...) {
@@ -351,7 +352,7 @@ PyObject *make_builtin_mean1d_callable(PyObject *tp_obj, PyObject *minp_obj)
   try {
     dynd::ndt::type tp = pydynd::make__type_from_pyobject(tp_obj);
     intptr_t minp = pydynd::pyobject_as_index(minp_obj);
-    return pydynd::wrap_array(
+    return DyND_PyWrapper_New(
         dynd::kernels::make_builtin_mean1d_callable(tp.get_type_id(), minp));
   }
   catch (...) {
@@ -363,7 +364,7 @@ PyObject *make_builtin_mean1d_callable(PyObject *tp_obj, PyObject *minp_obj)
 PyObject *make_take_callable()
 {
   try {
-    return pydynd::wrap_array(dynd::nd::take::make());
+    return DyND_PyWrapper_New(dynd::nd::take::make());
   }
   catch (...) {
     pydynd::translate_exception();

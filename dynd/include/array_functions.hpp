@@ -45,9 +45,6 @@ inline bool WArray_Check(PyObject *obj)
 
 PYDYND_API void init_w_array_typeobject(PyObject *type);
 
-PYDYND_API PyObject *wrap_array(const dynd::nd::array &n);
-PYDYND_API PyObject *wrap_array(const dynd::nd::callable &n);
-
 PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
                                          PyObject *dt, bool uniform,
                                          PyObject *access);

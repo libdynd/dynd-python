@@ -35,7 +35,7 @@ void pydynd::init_w_callable_typeobject(PyObject *type)
 }
 
 PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
-                               PyObject *kwds_obj, PyObject *ectx_obj)
+                                PyObject *kwds_obj, PyObject *ectx_obj)
 {
   if (!WCallable_Check(af_obj)) {
     PyErr_SetString(PyExc_TypeError, "callable_call expected an nd.callable");
@@ -82,12 +82,12 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
       af(narg, arg_values.empty() ? NULL : arg_values.data(),
          kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
               kwd_values.empty() ? NULL : kwd_values.data()));
-  return wrap_array(result);
+  return DyND_PyWrapper_New(result);
 }
 
 PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
-                                        PyObject *window_size_obj,
-                                        PyObject *ectx_obj)
+                                         PyObject *window_size_obj,
+                                         PyObject *ectx_obj)
 {
   eval::eval_context *ectx =
       const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
@@ -105,7 +105,7 @@ PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   }
   dynd::nd::callable roll = dynd::nd::functional::rolling(func, window_size);
   dynd::nd::array result = roll(arr);
-  return wrap_array(result);
+  return DyND_PyWrapper_New(result);
 }
 
 PyObject *pydynd::get_published_callables()
@@ -117,7 +117,7 @@ PyObject *pydynd::get_published_callables()
            reg.begin();
        it != reg.end(); ++it) {
     PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),
-                   wrap_array(it->second));
+                   DyND_PyWrapper_New(it->second));
   }
   return res.release();
 }

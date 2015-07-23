@@ -662,7 +662,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       // make copies of strings
       if (a.get_type().get_kind() == expr_kind) {
         // If it's an expression kind
-        pyobject_ownref n_tmp(wrap_array(a.eval()));
+        pyobject_ownref n_tmp(DyND_PyWrapper_New(a.eval()));
         return array_as_numpy(n_tmp.get(), true);
       }
       else if (a.get_type().get_kind() == string_kind) {
@@ -681,7 +681,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
 
   if (a.get_type().get_type_id() == var_dim_type_id) {
     // If it's a var_dim, view it as fixed then try again
-    pyobject_ownref n_tmp(wrap_array(a.view(ndt::make_fixed_dim(
+    pyobject_ownref n_tmp(DyND_PyWrapper_New(a.view(ndt::make_fixed_dim(
         a.get_dim_size(),
         a.get_type().extended<ndt::base_dim_type>()->get_element_type()))));
     return array_as_numpy(n_tmp.get(), allow_copy);

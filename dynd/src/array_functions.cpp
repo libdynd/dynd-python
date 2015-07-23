@@ -30,37 +30,6 @@ void pydynd::init_w_array_typeobject(PyObject *type)
   DyND_PyWrapper_Type<dynd::nd::array>() = (PyTypeObject *)type;
 }
 
-PyObject *pydynd::wrap_array(const dynd::nd::array &n)
-{
-  if (n.get_type().get_type_id() == callable_type_id) {
-    return wrap_array(nd::callable(n));
-  }
-  DyND_PyArrayObject *result =
-      (DyND_PyArrayObject *)DyND_PyWrapper_Type<dynd::nd::array>()->tp_alloc(
-          DyND_PyWrapper_Type<dynd::nd::array>(), 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
-  // here
-  new (&result->v) nd::array(n);
-  return (PyObject *)result;
-}
-
-PyObject *pydynd::wrap_array(const dynd::nd::callable &n)
-{
-  DyND_PyCallableObject *result =
-      (DyND_PyCallableObject *)DyND_PyWrapper_Type<dynd::nd::callable>()
-          ->tp_alloc(DyND_PyWrapper_Type<dynd::nd::callable>(), 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-  // Calling tp_alloc doesn't call Cython's __cinit__, so do the placement new
-  // here
-  new (&result->v) nd::array(n);
-  return (PyObject *)result;
-}
-
 PyObject *pydynd::array_str(const dynd::nd::array &n)
 {
 #if PY_VERSION_HEX >= 0x03000000
@@ -682,9 +651,9 @@ dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
 
 PyObject *pydynd::array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op)
 {
-  return wrap_array(array_from_py(a, 0, false, &eval::default_eval_context)
-                        .adapt(make__type_from_pyobject(tp_obj),
-                               pystring_as_string(adapt_op)));
+  return DyND_PyWrapper_New(
+      array_from_py(a, 0, false, &eval::default_eval_context).adapt(
+          make__type_from_pyobject(tp_obj), pystring_as_string(adapt_op)));
 }
 
 PyObject *pydynd::array_get_shape(const dynd::nd::array &n)

@@ -199,11 +199,11 @@ PyObject *pydynd::nd::functional::callable_from_ufunc(PyObject *ufunc,
           data->funcptr = uf->functions[i];
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
-            return pydynd::wrap_array(
+            return DyND_PyWrapper_New(
                 dynd::nd::callable::make<scalar_ufunc_ck<true>>(self_tp, data,
                                                                 0));
           } else {
-            return pydynd::wrap_array(
+            return DyND_PyWrapper_New(
                 dynd::nd::callable::make<scalar_ufunc_ck<false>>(self_tp, data,
                                                                  0));
           }

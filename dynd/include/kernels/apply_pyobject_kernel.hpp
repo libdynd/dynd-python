@@ -79,7 +79,7 @@ namespace nd {
             src_tp[i].extended()->arrmeta_copy_construct(
                 n.get_arrmeta(), m_src_arrmeta[i], NULL);
           }
-          PyTuple_SET_ITEM(args.get(), i, pydynd::wrap_array(std::move(n)));
+          PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
         }
         // Now call the function
         pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
@@ -114,7 +114,7 @@ namespace nd {
             src_tp[i].extended()->arrmeta_copy_construct(
                 n.get_arrmeta(), m_src_arrmeta[i], NULL);
           }
-          PyTuple_SET_ITEM(args.get(), i, pydynd::wrap_array(std::move(n)));
+          PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
         }
         // Do the loop, reusing the args we created
         for (size_t j = 0; j != count; ++j) {

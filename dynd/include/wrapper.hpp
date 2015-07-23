@@ -27,3 +27,17 @@ void DyND_PyWrapper_Type(PyObject *obj)
 {
   DyND_PyWrapper_Type<T>() = reinterpret_cast<PyTypeObject *>(obj);
 }
+
+template <typename T>
+PyObject *DyND_PyWrapper_New(const T &v)
+{
+  PyTypeObject *type = DyND_PyWrapper_Type<T>();
+
+  DyND_PyWrapperObject<T> *obj =
+      reinterpret_cast<DyND_PyWrapperObject<T> *>(type->tp_alloc(type, 0));
+  if (obj == NULL) {
+    throw std::runtime_error("");
+  }
+  new (&obj->v) T(v);
+  return reinterpret_cast<PyObject *>(obj);
+}

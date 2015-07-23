@@ -40,19 +40,6 @@ inline bool WCallable_Check(PyObject *obj)
   return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<dynd::nd::callable>());
 }
 
-PYDYND_API inline PyObject *wrap_callable(const dynd::nd::callable &n)
-{
-  DyND_PyCallableObject *result =
-      (DyND_PyCallableObject *)DyND_PyWrapper_Type<dynd::nd::callable>()
-          ->tp_alloc(DyND_PyWrapper_Type<dynd::nd::callable>(), 0);
-  if (!result) {
-    throw std::runtime_error("");
-  }
-
-  result->v = n;
-  return reinterpret_cast<PyObject *>(result);
-}
-
 PYDYND_API void init_w_callable_typeobject(PyObject *type);
 
 PYDYND_API PyObject *callable_call(PyObject *af_obj, PyObject *args_obj,

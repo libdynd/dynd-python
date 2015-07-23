@@ -170,7 +170,7 @@ PyObject *lift_callable(PyObject *af)
 {
   try {
     // Convert all the input parameters
-    if (!pydynd::WArray_Check(af) ||
+    if (!DyND_PyArray_Check(af) ||
         ((DyND_PyArrayObject *)af)->v.get_type().get_type_id() !=
             dynd::callable_type_id) {
       stringstream ss;
@@ -197,7 +197,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
 {
   try {
     // Convert all the input parameters
-    if (!pydynd::WArray_Check(elwise_reduction_obj) ||
+    if (!DyND_PyArray_Check(elwise_reduction_obj) ||
         ((DyND_PyArrayObject *)elwise_reduction_obj)
                 ->v.get_type()
                 .get_type_id() != dynd::callable_type_id) {
@@ -214,7 +214,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
         elwise_reduction.get_type().extended<dynd::ndt::callable_type>();
 
     dynd::nd::array dst_initialization;
-    if (pydynd::WArray_Check(dst_initialization_obj) &&
+    if (DyND_PyArray_Check(dst_initialization_obj) &&
         ((DyND_PyArrayObject *)dst_initialization_obj)
                 ->v.get_type()
                 .get_type_id() == dynd::callable_type_id) {
@@ -293,7 +293,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
     }
 
     dynd::nd::array reduction_identity;
-    if (pydynd::WArray_Check(reduction_identity_obj)) {
+    if (DyND_PyArray_Check(reduction_identity_obj)) {
       reduction_identity = ((DyND_PyArrayObject *)reduction_identity_obj)->v;
       ;
     } else if (reduction_identity_obj != Py_None) {
@@ -330,7 +330,7 @@ static PyObject *make_rolling_callable(PyObject *window_op_obj,
                                        PyObject *window_size_obj)
 {
   try {
-    if (!pydynd::WCallable_Check(window_op_obj)) {
+    if (!DyND_PyCallable_Check(window_op_obj)) {
       stringstream ss;
       ss << "window_op must be an nd.callable";
       throw dynd::type_error(ss.str());

@@ -37,7 +37,7 @@ void pydynd::init_w_callable_typeobject(PyObject *type)
 PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
                                 PyObject *kwds_obj, PyObject *ectx_obj)
 {
-  if (!WCallable_Check(af_obj)) {
+  if (!DyND_PyCallable_Check(af_obj)) {
     PyErr_SetString(PyExc_TypeError, "callable_call expected an nd.callable");
     return NULL;
   }
@@ -94,7 +94,7 @@ PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   dynd::nd::array arr = array_from_py(arr_obj, 0, false, ectx);
   intptr_t window_size = pyobject_as_index(window_size_obj);
   dynd::nd::callable func;
-  if (WCallable_Check(func_obj)) {
+  if (DyND_PyCallable_Check(func_obj)) {
     func = ((DyND_PyCallableObject *)func_obj)->v;
   } else {
     ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);

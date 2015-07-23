@@ -290,7 +290,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
   }
 
   // If it's a Cython w_array
-  if (WArray_Check(obj)) {
+  if (DyND_PyArray_Check(obj)) {
     const nd::array &obj_dynd = ((DyND_PyArrayObject *)obj)->v;
     if (access_flags != 0) {
       uint32_t raf = obj_dynd.get_access_flags();
@@ -354,7 +354,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
   }
 
   // If it's a dynd-native w_array
-  if (WArray_Check(obj)) {
+  if (DyND_PyArray_Check(obj)) {
     const nd::array &obj_dynd = ((DyND_PyArrayObject *)obj)->v;
     if (access_flags != 0) {
       // Flag for whether it's ok to take this view

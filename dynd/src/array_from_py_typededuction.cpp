@@ -132,7 +132,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     }
     return ndt::time_type::make(tz_abstract);
   }
-  else if (WType_Check(obj)) {
+  else if (DyND_PyType_Check(obj)) {
     return ndt::make_type();
   }
   else if (PyType_Check(obj)) {

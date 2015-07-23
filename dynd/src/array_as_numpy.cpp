@@ -508,7 +508,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 
 PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
 {
-  if (!WArray_Check(a_obj)) {
+  if (!DyND_PyArray_Check(a_obj)) {
     throw runtime_error("can only call dynd's as_numpy on dynd arrays");
   }
   nd::array a = ((DyND_PyArrayObject *)a_obj)->v;

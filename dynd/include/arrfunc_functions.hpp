@@ -26,19 +26,17 @@
 
 typedef DyND_PyWrapperObject<dynd::nd::callable> DyND_PyCallableObject;
 
-namespace pydynd {
+inline int DyND_PyCallable_Check(PyObject *obj)
+{
+  return DyND_PyWrapper_Check<dynd::nd::callable>(obj);
+}
 
-/**
- * This is the typeobject and struct of w_callable from Cython.
- */
-inline bool WCallable_CheckExact(PyObject *obj)
+inline int DyND_PyCallable_CheckExact(PyObject *obj)
 {
-  return Py_TYPE(obj) == DyND_PyWrapper_Type<dynd::nd::callable>();
+  return DyND_PyWrapper_CheckExact<dynd::nd::callable>(obj);
 }
-inline bool WCallable_Check(PyObject *obj)
-{
-  return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<dynd::nd::callable>());
-}
+
+namespace pydynd {
 
 PYDYND_API void init_w_callable_typeobject(PyObject *type);
 

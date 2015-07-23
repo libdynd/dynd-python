@@ -41,3 +41,15 @@ PyObject *DyND_PyWrapper_New(const T &v)
   new (&obj->v) T(v);
   return reinterpret_cast<PyObject *>(obj);
 }
+
+template <typename T>
+int DyND_PyWrapper_Check(PyObject *obj)
+{
+  return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<T>());
+}
+
+template <typename T>
+int DyND_PyWrapper_CheckExact(PyObject *obj)
+{
+  return Py_TYPE(obj) == DyND_PyWrapper_Type<T>();
+}

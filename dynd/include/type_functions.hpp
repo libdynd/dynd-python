@@ -17,19 +17,17 @@
 
 typedef DyND_PyWrapperObject<dynd::ndt::type> DyND_PyTypeObject;
 
-namespace pydynd {
+inline int DyND_PyType_Check(PyObject *obj)
+{
+  return DyND_PyWrapper_Check<dynd::ndt::type>(obj);
+}
 
-/**
- * This is the typeobject and struct of w_type from Cython.
- */
-inline bool WType_CheckExact(PyObject *obj)
+inline int DyND_PyType_CheckExact(PyObject *obj)
 {
-  return Py_TYPE(obj) == DyND_PyWrapper_Type<dynd::ndt::type>();
+  return DyND_PyWrapper_CheckExact<dynd::ndt::type>(obj);
 }
-inline bool WType_Check(PyObject *obj)
-{
-  return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<dynd::ndt::type>());
-}
+
+namespace pydynd {
 
 PYDYND_API void init_w_type_typeobject(PyObject *type);
 

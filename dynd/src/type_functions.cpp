@@ -216,7 +216,7 @@ static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 dynd::ndt::type pydynd::make__type_from_pyobject(PyObject *obj)
 {
   if (WType_Check(obj)) {
-    return ((WType *)obj)->v;
+    return ((DyND_PyTypeObject *)obj)->v;
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyString_Check(obj)) {
@@ -227,7 +227,7 @@ dynd::ndt::type pydynd::make__type_from_pyobject(PyObject *obj)
     return ndt::type(pystring_as_string(obj));
   }
   else if (WArray_Check(obj)) {
-    return ((WArray *)obj)->v.as<ndt::type>();
+    return ((DyND_PyArrayObject *)obj)->v.as<ndt::type>();
   }
   else if (PyType_Check(obj)) {
 #if DYND_NUMPY_INTEROP

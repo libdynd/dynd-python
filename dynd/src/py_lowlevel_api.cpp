@@ -24,12 +24,12 @@
 using namespace std;
 
 namespace {
-dynd::array_preamble *get_array_ptr(pydynd::WArray *obj)
+dynd::array_preamble *get_array_ptr(DyND_PyArrayObject *obj)
 {
   return obj->v.get_ndo();
 }
 
-const dynd::ndt::base_type *get_base_type_ptr(pydynd::WType *obj)
+const dynd::ndt::base_type *get_base_type_ptr(DyND_PyTypeObject *obj)
 {
   return obj->v.extended();
 }
@@ -171,14 +171,14 @@ PyObject *lift_callable(PyObject *af)
   try {
     // Convert all the input parameters
     if (!pydynd::WArray_Check(af) ||
-        ((pydynd::WArray *)af)->v.get_type().get_type_id() !=
+        ((DyND_PyArrayObject *)af)->v.get_type().get_type_id() !=
             dynd::callable_type_id) {
       stringstream ss;
       ss << "af must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
     }
     return pydynd::wrap_array(
-        dynd::nd::functional::elwise(((pydynd::WArray *)af)->v));
+        dynd::nd::functional::elwise(((DyND_PyArrayObject *)af)->v));
   }
   catch (...) {
     pydynd::translate_exception();
@@ -198,14 +198,14 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
   try {
     // Convert all the input parameters
     if (!pydynd::WArray_Check(elwise_reduction_obj) ||
-        ((pydynd::WArray *)elwise_reduction_obj)->v.get_type().get_type_id() !=
+        ((DyND_PyArrayObject *)elwise_reduction_obj)->v.get_type().get_type_id() !=
             dynd::callable_type_id) {
       stringstream ss;
       ss << "elwise_reduction must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
     }
     const dynd::nd::array &elwise_reduction =
-        ((pydynd::WArray *)elwise_reduction_obj)->v;
+        ((DyND_PyArrayObject *)elwise_reduction_obj)->v;
     const dynd::callable_type_data *elwise_reduction_af =
         reinterpret_cast<const dynd::callable_type_data *>(
             elwise_reduction.get_readonly_originptr());
@@ -214,10 +214,10 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
 
     dynd::nd::array dst_initialization;
     if (pydynd::WArray_Check(dst_initialization_obj) &&
-        ((pydynd::WArray *)dst_initialization_obj)
+        ((DyND_PyArrayObject *)dst_initialization_obj)
                 ->v.get_type()
                 .get_type_id() == dynd::callable_type_id) {
-      dst_initialization = ((pydynd::WArray *)dst_initialization_obj)->v;
+      dst_initialization = ((DyND_PyArrayObject *)dst_initialization_obj)->v;
       ;
     } else if (dst_initialization_obj != Py_None) {
       stringstream ss;
@@ -293,7 +293,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
 
     dynd::nd::array reduction_identity;
     if (pydynd::WArray_Check(reduction_identity_obj)) {
-      reduction_identity = ((pydynd::WArray *)reduction_identity_obj)->v;
+      reduction_identity = ((DyND_PyArrayObject *)reduction_identity_obj)->v;
       ;
     } else if (reduction_identity_obj != Py_None) {
       stringstream ss;
@@ -335,7 +335,7 @@ static PyObject *make_rolling_callable(PyObject *window_op_obj,
       throw dynd::type_error(ss.str());
     }
     const dynd::nd::callable &window_op =
-        ((pydynd::WCallable *)window_op_obj)->v;
+        ((DyND_PyCallableObject *)window_op_obj)->v;
     intptr_t window_size = pydynd::pyobject_as_index(window_size_obj);
     return pydynd::wrap_array(
         dynd::nd::functional::rolling(window_op, window_size));

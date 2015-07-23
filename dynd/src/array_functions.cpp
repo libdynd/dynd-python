@@ -37,7 +37,7 @@ PyObject *pydynd::wrap_array(const dynd::nd::array &n)
   if (n.get_type().get_type_id() == callable_type_id) {
     return wrap_array(nd::callable(n));
   }
-  WArray *result = (WArray *)WArray_Type->tp_alloc(WArray_Type, 0);
+  DyND_PyArrayObject *result = (DyND_PyArrayObject *)WArray_Type->tp_alloc(WArray_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -49,7 +49,7 @@ PyObject *pydynd::wrap_array(const dynd::nd::array &n)
 
 PyObject *pydynd::wrap_array(const dynd::nd::callable &n)
 {
-  WCallable *result = (WCallable *)WCallable_Type->tp_alloc(WCallable_Type, 0);
+  DyND_PyCallableObject *result = (DyND_PyCallableObject *)WCallable_Type->tp_alloc(WCallable_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -326,7 +326,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
 
   // If it's a Cython w_array
   if (WArray_Check(obj)) {
-    const nd::array &obj_dynd = ((WArray *)obj)->v;
+    const nd::array &obj_dynd = ((DyND_PyArrayObject *)obj)->v;
     if (access_flags != 0) {
       uint32_t raf = obj_dynd.get_access_flags();
       if ((access_flags & nd::immutable_access_flag) &&
@@ -392,7 +392,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
 
   // If it's a dynd-native w_array
   if (WArray_Check(obj)) {
-    const nd::array &obj_dynd = ((WArray *)obj)->v;
+    const nd::array &obj_dynd = ((DyND_PyArrayObject *)obj)->v;
     if (access_flags != 0) {
       // Flag for whether it's ok to take this view
       bool ok = true;

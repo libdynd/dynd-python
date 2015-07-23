@@ -2,12 +2,8 @@
 // Copyright (C) 2011-15 DyND Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
-// This header defines some wrapping functions to
-// access various dynd type parameters
-//
 
-#ifndef _DYND__DTYPE_FUNCTIONS_HPP_
-#define _DYND__DTYPE_FUNCTIONS_HPP_
+#pragma once
 
 #include <Python.h>
 
@@ -17,6 +13,9 @@
 #include <dynd/string_encodings.hpp>
 
 #include "config.hpp"
+#include "wrapper.hpp"
+
+typedef DyND_PyWrapperObject<dynd::ndt::type> DyND_PyTypeObject;
 
 namespace pydynd {
 
@@ -33,17 +32,11 @@ inline bool WType_Check(PyObject *obj)
   return PyObject_TypeCheck(obj, WType_Type);
 }
 
-struct WType {
-  PyObject_HEAD;
-  // This is _type_placement_wrapper in Cython-land
-  dynd::ndt::type v;
-};
-
 PYDYND_API void init_w_type_typeobject(PyObject *type);
 
 inline PyObject *wrap__type(const dynd::ndt::type &d)
 {
-  WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
+  DyND_PyTypeObject *result = (DyND_PyTypeObject *)WType_Type->tp_alloc(WType_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -57,7 +50,7 @@ inline PyObject *wrap__type(const dynd::ndt::type &d)
 #ifdef DYND_RVALUE_REFS
 inline PyObject *wrap__type(dynd::ndt::type &&d)
 {
-  WType *result = (WType *)WType_Type->tp_alloc(WType_Type, 0);
+  DyND_PyTypeObject *result = (DyND_PyTypeObject *)WType_Type->tp_alloc(WType_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }
@@ -145,5 +138,3 @@ PYDYND_API PyObject *_type_array_property_names(const dynd::ndt::type &d);
 PYDYND_API void init_type_functions();
 
 } // namespace pydynd
-
-#endif // _DYND__DTYPE_FUNCTIONS_HPP_

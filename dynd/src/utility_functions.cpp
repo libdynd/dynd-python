@@ -129,7 +129,7 @@ std::string pydynd::pystring_as_string(PyObject *str)
     return string(data, len);
 #endif
   } else if (WArray_Check(str)) {
-    const nd::array &n = ((WArray *)str)->v;
+    const nd::array &n = ((DyND_PyArrayObject *)str)->v;
     if (n.get_type().value_type().get_kind() == string_kind) {
       return n.as<string>();
     } else {
@@ -518,24 +518,24 @@ const dynd::callable_type_data *pydynd::pyarg_callable_ro(PyObject *af,
                                                           const char *paramname)
 {
   if (!WArray_Check(af) ||
-      ((WArray *)af)->v.get_type().get_type_id() != callable_type_id) {
+      ((DyND_PyArrayObject *)af)->v.get_type().get_type_id() != callable_type_id) {
     stringstream ss;
     ss << paramname << " must be an nd.array of type callable";
     throw runtime_error(ss.str());
   }
   return reinterpret_cast<const callable_type_data *>(
-      ((WArray *)af)->v.get_readonly_originptr());
+      ((DyND_PyArrayObject *)af)->v.get_readonly_originptr());
 }
 
 dynd::callable_type_data *pydynd::pyarg_callable_rw(PyObject *af,
                                                     const char *paramname)
 {
   if (!WArray_Check(af) ||
-      ((WArray *)af)->v.get_type().get_type_id() != callable_type_id) {
+      ((DyND_PyArrayObject *)af)->v.get_type().get_type_id() != callable_type_id) {
     stringstream ss;
     ss << paramname << " must be an nd.array of type callable";
     throw runtime_error(ss.str());
   }
   return reinterpret_cast<callable_type_data *>(
-      ((WArray *)af)->v.get_readwrite_originptr());
+      ((DyND_PyArrayObject *)af)->v.get_readwrite_originptr());
 }

@@ -467,7 +467,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 {
   // If it's a Cython w_array
   if (WArray_Check(obj)) {
-    const nd::array &result = ((WArray *)obj)->v;
+    const nd::array &result = ((DyND_PyArrayObject *)obj)->v;
     if (always_copy) {
       return result.eval_copy(access_flags);
     }
@@ -666,7 +666,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                  PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
   }
   else if (WType_Check(obj)) {
-    result = nd::array_rw(((WType *)obj)->v);
+    result = nd::array_rw(((DyND_PyTypeObject *)obj)->v);
   }
   else if (PyList_Check(obj)) {
     result = array_from_pylist(obj, ectx);

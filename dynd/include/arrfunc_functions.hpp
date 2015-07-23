@@ -22,6 +22,10 @@
 #include "eval_context_functions.hpp"
 #include "array_functions.hpp"
 
+#include "wrapper.hpp"
+
+typedef DyND_PyWrapperObject<dynd::nd::callable> DyND_PyCallableObject;
+
 namespace pydynd {
 
 /**
@@ -37,16 +41,9 @@ inline bool WCallable_Check(PyObject *obj)
   return PyObject_TypeCheck(obj, WCallable_Type);
 }
 
-struct WCallable {
-  PyObject_HEAD;
-
-  // This is array_placement_wrapper in Cython-land
-  dynd::nd::callable v;
-};
-
 PYDYND_API inline PyObject *wrap_callable(const dynd::nd::callable &n)
 {
-  WCallable *result = (WCallable *)WCallable_Type->tp_alloc(WCallable_Type, 0);
+  DyND_PyCallableObject *result = (DyND_PyCallableObject *)WCallable_Type->tp_alloc(WCallable_Type, 0);
   if (!result) {
     throw std::runtime_error("");
   }

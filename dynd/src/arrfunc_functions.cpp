@@ -43,7 +43,7 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
     PyErr_SetString(PyExc_TypeError, "callable_call expected an nd.callable");
     return NULL;
   }
-  dynd::nd::callable &af = ((WCallable *)af_obj)->v;
+  dynd::nd::callable &af = ((DyND_PyCallableObject *)af_obj)->v;
   if (af.is_null()) {
     PyErr_SetString(PyExc_ValueError, "cannot call a null nd.callable");
     return NULL;
@@ -97,7 +97,7 @@ PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   intptr_t window_size = pyobject_as_index(window_size_obj);
   dynd::nd::callable func;
   if (WCallable_Check(func_obj)) {
-    func = ((WCallable *)func_obj)->v;
+    func = ((DyND_PyCallableObject *)func_obj)->v;
   } else {
     ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
     ndt::type proto = ndt::callable_type::make(

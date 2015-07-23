@@ -511,7 +511,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
   if (!WArray_Check(a_obj)) {
     throw runtime_error("can only call dynd's as_numpy on dynd arrays");
   }
-  nd::array a = ((WArray *)a_obj)->v;
+  nd::array a = ((DyND_PyArrayObject *)a_obj)->v;
   if (a.get_ndo() == NULL) {
     throw runtime_error("cannot convert NULL dynd array to numpy");
   }

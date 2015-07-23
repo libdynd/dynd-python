@@ -24,6 +24,10 @@
 #include "array_as_pep3118.hpp"
 #include "eval_context_functions.hpp"
 
+#include "wrapper.hpp"
+
+typedef DyND_PyWrapperObject<dynd::nd::array> DyND_PyArrayObject;
+
 namespace pydynd {
 
 /**
@@ -40,12 +44,6 @@ inline bool WArray_Check(PyObject *obj)
 {
   return PyObject_TypeCheck(obj, WArray_Type);
 }
-
-struct WArray {
-  PyObject_HEAD;
-  // This is array_placement_wrapper in Cython-land
-  dynd::nd::array v;
-};
 
 PYDYND_API void init_w_array_typeobject(PyObject *type);
 

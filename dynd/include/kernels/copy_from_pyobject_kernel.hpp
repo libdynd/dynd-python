@@ -363,7 +363,7 @@ namespace nd {
         }
       } else if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
         return;
       } else {
         std::stringstream ss;
@@ -464,7 +464,7 @@ namespace nd {
 #endif
       } else if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
         return;
       } else {
         std::stringstream ss;
@@ -537,7 +537,7 @@ namespace nd {
                     PyDateTime_GET_DAY(src_obj));
       } else if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
       } else {
         dynd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
@@ -587,7 +587,7 @@ namespace nd {
                          DYND_TICKS_PER_MICROSECOND);
       } else if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
       } else {
         dynd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
@@ -643,7 +643,7 @@ namespace nd {
                     PyDateTime_DATE_GET_MICROSECOND(src_obj) * 10);
       } else if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
       } else {
         dynd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
@@ -702,7 +702,7 @@ namespace nd {
         assign_na_fn(dst, NULL, assign_na);
       } else if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
       } else if (dst_tp.get_kind() != dynd::string_kind &&
                  PyUnicode_Check(src_obj)) {
         // Copy from the string
@@ -838,7 +838,7 @@ namespace nd {
 
       if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -958,7 +958,7 @@ namespace nd {
 
       if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1090,7 +1090,7 @@ namespace nd {
 
       if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1215,7 +1215,7 @@ namespace nd {
 
       if (pydynd::WArray_Check(src_obj)) {
         dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((pydynd::WArray *)src_obj)->v);
+                                ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP

@@ -70,8 +70,6 @@ cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     void init_w__type_callable_typeobject(object)
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
-    void init_w_type_typeobject(object)
-
     _type make__type_from_pyobject(object) except +translate_exception
 
     object _type_get_shape(_type&) except +translate_exception
@@ -92,8 +90,3 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 cdef class type(object):
     cdef _type v
-
-cdef inline type wrap_type(_type v):
-    cdef type res = type()
-    res.v = v
-    return res

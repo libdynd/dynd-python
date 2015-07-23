@@ -7,10 +7,7 @@ cdef extern from 'dynd/func/callable.hpp' namespace 'dynd':
         _type get_array_type()
 
 cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
-    void init_w_callable_typeobject(object)
     object callable_call(object, object, object, object) except +translate_exception
-
-    object wrap_callable(_callable &) except +translate_exception
 
 cdef class callable(object):
     cdef _callable v

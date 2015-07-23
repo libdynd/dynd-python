@@ -29,21 +29,14 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WCallable_Type;
-
-void pydynd::init_w_callable_typeobject(PyObject *type)
-{
-  WCallable_Type = (PyTypeObject *)type;
-}
-
 PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
                                PyObject *kwds_obj, PyObject *ectx_obj)
 {
-  if (!WCallable_Check(af_obj)) {
+  if (!DyND_PyCallable_Check(af_obj)) {
     PyErr_SetString(PyExc_TypeError, "callable_call expected an nd.callable");
     return NULL;
   }
-  dynd::nd::callable &af = ((WCallable *)af_obj)->v;
+  dynd::nd::callable &af = ((DyND_PyCallableObject *)af_obj)->v;
   if (af.is_null()) {
     PyErr_SetString(PyExc_ValueError, "cannot call a null nd.callable");
     return NULL;
@@ -84,7 +77,7 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
       af(narg, arg_values.empty() ? NULL : arg_values.data(),
          kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
               kwd_values.empty() ? NULL : kwd_values.data()));
-  return wrap_array(result);
+  return DyND_PyWrapper_New(result);
 }
 
 PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
@@ -96,8 +89,8 @@ PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   dynd::nd::array arr = array_from_py(arr_obj, 0, false, ectx);
   intptr_t window_size = pyobject_as_index(window_size_obj);
   dynd::nd::callable func;
-  if (WCallable_Check(func_obj)) {
-    func = ((WCallable *)func_obj)->v;
+  if (DyND_PyCallable_Check(func_obj)) {
+    func = ((DyND_PyCallableObject *)func_obj)->v;
   } else {
     ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
     ndt::type proto = ndt::callable_type::make(
@@ -107,7 +100,7 @@ PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
   }
   dynd::nd::callable roll = dynd::nd::functional::rolling(func, window_size);
   dynd::nd::array result = roll(arr);
-  return wrap_array(result);
+  return DyND_PyWrapper_New(result);
 }
 
 PyObject *pydynd::get_published_callables()
@@ -119,7 +112,7 @@ PyObject *pydynd::get_published_callables()
            reg.begin();
        it != reg.end(); ++it) {
     PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),
-                   wrap_array(it->second));
+                   DyND_PyWrapper_New(it->second));
   }
   return res.release();
 }

@@ -24,33 +24,21 @@
 #include "array_as_pep3118.hpp"
 #include "eval_context_functions.hpp"
 
+#include "wrapper.hpp"
+
+typedef DyND_PyWrapperObject<dynd::nd::array> DyND_PyArrayObject;
+
+inline int DyND_PyArray_Check(PyObject *obj)
+{
+  return DyND_PyWrapper_Check<dynd::nd::array>(obj);
+}
+
+inline int DyND_PyArray_CheckExact(PyObject *obj)
+{
+  return DyND_PyWrapper_CheckExact<dynd::nd::array>(obj);
+}
+
 namespace pydynd {
-
-/**
- * This is the typeobject and struct of w_array from Cython.
- */
-extern PyTypeObject *WArray_Type;
-
-inline bool WArray_CheckExact(PyObject *obj)
-{
-  return Py_TYPE(obj) == WArray_Type;
-}
-
-inline bool WArray_Check(PyObject *obj)
-{
-  return PyObject_TypeCheck(obj, WArray_Type);
-}
-
-struct WArray {
-  PyObject_HEAD;
-  // This is array_placement_wrapper in Cython-land
-  dynd::nd::array v;
-};
-
-PYDYND_API void init_w_array_typeobject(PyObject *type);
-
-PYDYND_API PyObject *wrap_array(const dynd::nd::array &n);
-PYDYND_API PyObject *wrap_array(const dynd::nd::callable &n);
 
 PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
                                          PyObject *dt, bool uniform,

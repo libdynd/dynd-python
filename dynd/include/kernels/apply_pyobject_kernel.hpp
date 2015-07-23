@@ -38,7 +38,7 @@ namespace nd {
         for (intptr_t i = 0; i != nsrc; ++i) {
           PyObject *item = PyTuple_GET_ITEM(args, i);
           if (Py_REFCNT(item) != 1 ||
-              ((pydynd::WArray *)item)
+              ((DyND_PyArrayObject *)item)
                       ->v.get_ndo()
                       ->m_memblockdata.m_use_count != 1) {
             std::stringstream ss;
@@ -49,10 +49,10 @@ namespace nd {
             ss << (i + 1) << " which contained temporary memory.";
             ss << " This is disallowed.\n";
             ss << "Python wrapper ref count: " << Py_REFCNT(item) << "\n";
-            ((pydynd::WArray *)item)->v.debug_print(ss);
+            ((DyND_PyArrayObject *)item)->v.debug_print(ss);
             // Set all the args' data pointers to NULL as a precaution
             for (i = 0; i != nsrc; ++i) {
-              ((pydynd::WArray *)item)->v.get_ndo()->m_data_pointer = NULL;
+              ((DyND_PyArrayObject *)item)->v.get_ndo()->m_data_pointer = NULL;
             }
             throw std::runtime_error(ss.str());
           }
@@ -79,7 +79,7 @@ namespace nd {
             src_tp[i].extended()->arrmeta_copy_construct(
                 n.get_arrmeta(), m_src_arrmeta[i], NULL);
           }
-          PyTuple_SET_ITEM(args.get(), i, pydynd::wrap_array(std::move(n)));
+          PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
         }
         // Now call the function
         pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
@@ -114,7 +114,7 @@ namespace nd {
             src_tp[i].extended()->arrmeta_copy_construct(
                 n.get_arrmeta(), m_src_arrmeta[i], NULL);
           }
-          PyTuple_SET_ITEM(args.get(), i, pydynd::wrap_array(std::move(n)));
+          PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
         }
         // Do the loop, reusing the args we created
         for (size_t j = 0; j != count; ++j) {
@@ -132,7 +132,7 @@ namespace nd {
           dst += dst_stride;
           for (intptr_t i = 0; i != nsrc; ++i) {
             const dynd::nd::array &n =
-                ((pydynd::WArray *)PyTuple_GET_ITEM(args.get(), i))->v;
+                ((DyND_PyArrayObject *)PyTuple_GET_ITEM(args.get(), i))->v;
             n.get_ndo()->m_data_pointer += src_stride[i];
           }
         }

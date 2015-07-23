@@ -7,33 +7,34 @@
 
 #include <Python.h>
 
-namespace pydynd {
+#include "config.hpp"
 
 template <typename T>
-struct PyWrapper {
+struct DyND_PyWrapperObject {
   PyObject_HEAD;
   T v;
 };
 
 template <typename T>
-PyTypeObject *&get_wrapper_type()
+PyTypeObject *&DyND_PyWrapper_Type()
 {
   static PyTypeObject *type = NULL;
   return type;
 }
 
 template <typename T>
-void set_wrapper_type(PyObject *obj)
+PYDYND_API void DyND_PyWrapper_Type(PyObject *obj)
 {
-  get_wrapper_type<T>() = reinterpret_cast<PyTypeObject *>(obj);
+  DyND_PyWrapper_Type<T>() = reinterpret_cast<PyTypeObject *>(obj);
 }
 
 template <typename T>
-PyObject *wrap(const T &v)
+PYDYND_API PyObject *DyND_PyWrapper_New(const T &v)
 {
-  PyTypeObject *type = get_wrapper_type<T>();
+  PyTypeObject *type = DyND_PyWrapper_Type<T>();
 
-  PyWrapper<T> *obj = reinterpret_cast<PyWrapper<T> *>(type->tp_alloc(type, 0));
+  DyND_PyWrapperObject<T> *obj =
+      reinterpret_cast<DyND_PyWrapperObject<T> *>(type->tp_alloc(type, 0));
   if (obj == NULL) {
     throw std::runtime_error("");
   }
@@ -42,15 +43,28 @@ PyObject *wrap(const T &v)
 }
 
 template <typename T>
-struct PyWrapperIter {
+int DyND_PyWrapper_Check(PyObject *obj)
+{
+  return PyObject_TypeCheck(obj, DyND_PyWrapper_Type<T>());
+}
+
+template <typename T>
+int DyND_PyWrapper_CheckExact(PyObject *obj)
+{
+  return Py_TYPE(obj) == DyND_PyWrapper_Type<T>();
+}
+
+template <typename T>
+struct DyND_PyWrapperIter {
   typedef T value_type;
 
   PyObject *iter;
   PyObject *item;
 
-  PyWrapperIter() = default;
+  DyND_PyWrapperIter() = default;
 
-  PyWrapperIter(const PyWrapperIter &other) : iter(other.iter), item(other.item)
+  DyND_PyWrapperIter(const DyND_PyWrapperIter &other)
+      : iter(other.iter), item(other.item)
   {
     Py_INCREF(iter);
     if (item != NULL) {
@@ -58,7 +72,7 @@ struct PyWrapperIter {
     }
   }
 
-  ~PyWrapperIter()
+  ~DyND_PyWrapperIter()
   {
     Py_DECREF(iter);
     if (item != NULL) {
@@ -66,7 +80,7 @@ struct PyWrapperIter {
     }
   }
 
-  PyWrapperIter &operator=(const PyWrapperIter &other)
+  DyND_PyWrapperIter &operator=(const DyND_PyWrapperIter &other)
   {
     iter = other.iter;
     Py_INCREF(iter);
@@ -77,7 +91,7 @@ struct PyWrapperIter {
     }
   }
 
-  PyWrapperIter &operator++()
+  DyND_PyWrapperIter &operator++()
   {
     Py_DECREF(item);
     item = PyIter_Next(iter);
@@ -85,39 +99,40 @@ struct PyWrapperIter {
     return *this;
   }
 
-  PyWrapperIter operator++(int)
+  DyND_PyWrapperIter operator++(int)
   {
-    PyWrapperIter tmp(*this);
+    DyND_PyWrapperIter tmp(*this);
     operator++();
     return tmp;
   }
 
-  T &operator*() { return reinterpret_cast<PyWrapper<T> *>(item)->v; }
+  T &operator*()
+  {
+    return reinterpret_cast<DyND_PyWrapperObject<T> *>(item)->v;
+  }
 
-  bool operator==(const PyWrapperIter &other) const
+  bool operator==(const DyND_PyWrapperIter &other) const
   {
     return item == other.item;
   }
 
-  bool operator!=(const PyWrapperIter &other) const
+  bool operator!=(const DyND_PyWrapperIter &other) const
   {
     return item != other.item;
   }
 };
 
-} // namespace pydynd
-
 namespace std {
 
 template <typename T>
-pydynd::PyWrapperIter<T> begin(PyObject *obj)
+PYDYND_API DyND_PyWrapperIter<T> begin(PyObject *obj)
 {
   PyObject *iter = PyObject_GetIter(obj);
   if (iter == NULL) {
     std::cout << "not an iterator" << std::endl;
   }
 
-  pydynd::PyWrapperIter<T> it;
+  DyND_PyWrapperIter<T> it;
   it.iter = iter;
   it.item = PyIter_Next(it.iter);
 
@@ -125,14 +140,14 @@ pydynd::PyWrapperIter<T> begin(PyObject *obj)
 }
 
 template <typename T>
-pydynd::PyWrapperIter<T> end(PyObject *obj)
+PYDYND_API DyND_PyWrapperIter<T> end(PyObject *obj)
 {
   PyObject *iter = PyObject_GetIter(obj);
   if (iter == NULL) {
     std::cout << "not an iterator" << std::endl;
   }
 
-  pydynd::PyWrapperIter<T> it;
+  DyND_PyWrapperIter<T> it;
   it.iter = iter;
   it.item = NULL;
 

@@ -810,10 +810,10 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
       Py_INCREF(obj);
       memblock = dynd::make_external_memory_block(obj, py_decref_function);
     } else {
-      if (WArray_CheckExact(base)) {
+      if (DyND_PyArray_CheckExact(base)) {
         // If the base of the numpy array is an nd::array, skip the Python
         // reference
-        memblock = ((pydynd::WArray *)base)->v.get_data_memblock();
+        memblock = ((DyND_PyArrayObject *)base)->v.get_data_memblock();
       } else {
         Py_INCREF(base);
         memblock = dynd::make_external_memory_block(base, py_decref_function);

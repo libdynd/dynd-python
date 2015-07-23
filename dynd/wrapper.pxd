@@ -1,14 +1,16 @@
-cdef extern from 'wrapper.hpp' namespace 'pydynd':
-    cdef cppclass PyWrapper[T]:
+from cpython.ref cimport PyObject
+
+cdef extern from 'wrapper.hpp':
+    cdef cppclass wrapper 'DyND_PyWrapper'[T]:
         pass
 
-    cdef void set_wrapper_type 'pydynd::set_wrapper_type'[T](object)
+    cdef void set_wrapper_type 'DyND_PyWrapper_Type'[T](object)
 
-    cdef object wrap 'pydynd::wrap'[T](const T &)
+    cdef object wrap 'DyND_PyWrapper_New'[T](const T &)
 
-    cdef cppclass PyWrapperIter[T]:
+    cdef cppclass wrapper_iter 'DyND_PyWrapperIter'[T]:
         pass
 
 cdef extern from 'wrapper.hpp' namespace 'std':
-    PyWrapperIter[T] begin[T](object)
-    PyWrapperIter[T] end[T](object)
+    wrapper_iter[T] begin[T](object)
+    wrapper_iter[T] end[T](object)

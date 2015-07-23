@@ -1,14 +1,14 @@
 from libcpp.vector cimport vector
 
 from .. import ndt
-from .callable cimport callable, _callable, wrap_callable
+from .callable cimport callable, _callable
 
 from dynd.wrapper cimport wrap, begin, end
 from dynd.ndt.type cimport type, _type
 
 def apply(tp_or_func, func = None):
     def make(tp, func):
-        return wrap_array(_apply(func, tp))
+        return wrap(_apply(func, tp))
 
     if func is None:
         if isinstance(tp_or_func, ndt.type):
@@ -22,7 +22,7 @@ def elwise(func):
     if not isinstance(func, callable):
         func = apply(func)
 
-    return wrap_callable(_elwise((<callable> func).v))
+    return wrap(_elwise((<callable> func).v))
 
 def multidispatch(type tp, iterable = None, callable default = callable()):
     return wrap(_multidispatch(tp.v, begin[_callable](iterable),

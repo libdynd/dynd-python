@@ -9,22 +9,22 @@ class TestType(unittest.TestCase):
         self.assertEqual(ndt.type('(int32)'), ndt.tuple(ndt.int32))
         self.assertEqual(ndt.type('(int32, float64)'), ndt.tuple(ndt.int32, ndt.float64))
 
-    def test_struct(self):
-        self.assertEqual(ndt.type('{}'), ndt.struct())
-        self.assertEqual(ndt.type('{x: int32}'),
-            ndt.struct(x = ndt.int32))
+#    def test_struct(self):
+ #       self.assertEqual(ndt.type('{}'), ndt.struct())
+  #      self.assertEqual(ndt.type('{x: int32}'),
+   #         ndt.struct(x = ndt.int32))
 
 #        Works, but order is lost because of Python
 #        self.assertEqual(ndt.type('{x: int32, y: float64}'),
 #            ndt.struct(x = ndt.int32, y = ndt.float64))
 
-    def test_callable(self):
-        self.assertEqual(ndt.type('() -> void'),
-            ndt.callable(ndt.void))
-        self.assertEqual(ndt.type('(int32) -> void'),
-            ndt.callable(ndt.void, ndt.int32))
-        self.assertEqual(ndt.type('(int32, float64) -> void'),
-            ndt.callable(ndt.void, ndt.int32, ndt.float64))
+#    def test_callable(self):
+ #       self.assertEqual(ndt.type('() -> void'),
+  #          ndt.callable(ndt.void))
+   #     self.assertEqual(ndt.type('(int32) -> void'),
+    #        ndt.callable(ndt.void, ndt.int32))
+     #   self.assertEqual(ndt.type('(int32, float64) -> void'),
+      #      ndt.callable(ndt.void, ndt.int32, ndt.float64))
 
 class TestDType(unittest.TestCase):
     def test_bool_type_properties(self):

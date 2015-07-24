@@ -12,7 +12,6 @@
 #include "config.hpp"
 
 #include <dynd/type.hpp>
-#include <dynd/codegen/calling_conventions.hpp>
 
 namespace pydynd {
 
@@ -123,12 +122,6 @@ inline bool CDataObject_Check(PyObject *v)
 {
   return PyObject_TypeCheck(v, (PyTypeObject *)ctypes.PyCData_Type);
 }
-
-/**
- * Gets the calling convention of the ctypes function pointer object.
- */
-dynd::calling_convention_t
-get_ctypes_calling_convention(PyCFuncPtrObject *cfunc);
 
 /**
  * Gets the signature of the ctypes function pointer object.

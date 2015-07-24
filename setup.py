@@ -32,7 +32,7 @@ class cmake_build_ext(build_ext):
         head, tail = os.path.split(name)
         return os.path.join(head, 'Release', tail + '.pyd')
     else:
-        suffix = sysconfig.get_config_var('EXT_SUFFIX')
+        suffix = sysconfig.get_config_var('SHLIB_SUFFIX')
         if (suffix is None):
             suffix = sysconfig.get_config_var('SO')
         return name + suffix

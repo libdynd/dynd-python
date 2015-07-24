@@ -5,6 +5,33 @@ from cpython.object cimport Py_EQ, Py_NE
 from dynd.wrapper cimport set_wrapper_type, wrap
 from dynd.nd.array cimport _array, array
 
+__all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
+    'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
+    'float64', 'float128', 'complex_float32', 'complex_float64', 'void', \
+    'tuple', 'struct', 'callable']
+
+type_ids = {}
+type_ids['UNINITIALIZED'] = uninitialized_type_id
+type_ids['BOOL'] = bool_type_id
+type_ids['INT8'] = int8_type_id
+type_ids['INT16'] = int16_type_id
+type_ids['INT32'] = int32_type_id
+type_ids['INT64'] = int64_type_id
+type_ids['INT128'] = int128_type_id
+type_ids['UINT8'] = uint8_type_id
+type_ids['UINT16'] = uint16_type_id
+type_ids['UINT32'] = uint32_type_id
+type_ids['UINT64'] = uint64_type_id
+type_ids['UINT128'] = uint128_type_id
+type_ids['FLOAT16'] = float16_type_id
+type_ids['FLOAT32'] = float32_type_id
+type_ids['FLOAT64'] = float64_type_id
+type_ids['FLOAT128'] = float128_type_id
+type_ids['COMPLEX64'] = complex_float32_type_id
+type_ids['COMPLEX128'] = complex_float64_type_id
+type_ids['VOID'] = void_type_id
+type_ids['CALLABLE'] = callable_type_id
+
 cdef class type(object):
     """
     ndt.type(obj=None)
@@ -491,8 +518,54 @@ def make_view(value_type, operand_type):
 
 from dynd.nd.array cimport asarray
 
+bool = type(bool_type_id)
+int8 = type(int8_type_id)
+int16 = type(int16_type_id)
+int32 = type(int32_type_id)
+int64 = type(int64_type_id)
+int128 = type(int128_type_id)
+uint8 = type(uint8_type_id)
+uint16 = type(uint16_type_id)
+uint32 = type(uint32_type_id)
+uint64 = type(uint64_type_id)
+uint128 = type(uint128_type_id)
+float16 = type(float16_type_id)
+float32 = type(float32_type_id)
+float64 = type(float64_type_id)
+float128 = type(float128_type_id)
+complex_float32 = type(complex_float32_type_id)
+complex_float64 = type(complex_float64_type_id)
+void = type(void_type_id)
+
+class tuple_factory(__builtins__.type):
+    def __call__(self, *args):
+        if args:
+            return wrap(_tuple(asarray(args).v))
+
+        return wrap(_tuple())
+
+class tuple(object):
+    __metaclass__ = tuple_factory
+
+class struct_factory(__builtins__.type):
+    def __call__(self, **kwds):
+        if kwds:
+            return wrap(_struct(asarray(kwds.keys()).v, asarray(kwds.values()).v))
+
+        return wrap(_struct())
+
+class struct(object):
+    __metaclass__ = struct_factory
+
+#class fixed_dim(__builtins__.type):
+#    def __call__(self, size_or_element_tp, element_tp = None):
+#        if isinstance(size_or_element_tp, type):
+#            return make_fixed_dim_kind(size_or_element_tp)
+#
+#        return make_fixed_dim(size_or_element_tp, (<type> element_tp).v)
+
 class callable_factory(__builtins__.type):
-    def __call__(self, ret_or_func, *args):
+    def __call__(self, ret_or_func, *args, **kwds):
         if isinstance(ret_or_func, type):
             ret = ret_or_func
         else:
@@ -500,17 +573,14 @@ class callable_factory(__builtins__.type):
             ret = func.__annotations__['return']
             args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 
-        return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v))
+        return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v, (<type> struct(**kwds)).v))
+
+    @property
+    def id(self):
+        return callable_type_id
 
 class callable(object):
     __metaclass__ = callable_factory
-
-class tuple_factory(__builtins__.type):
-    def __call__(self, *args):
-        return wrap(make_tuple(asarray(args).v))
-
-class tuple(object):
-    __metaclass__ = tuple_factory
 
 """
 class struct_factory(__builtins__.type):

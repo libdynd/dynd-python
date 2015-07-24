@@ -63,63 +63,6 @@ void pydynd::init_ctypes_interop()
   }
 }
 
-calling_convention_t
-pydynd::get_ctypes_calling_convention(PyCFuncPtrObject *cfunc)
-{
-  // This is the internal StgDictObject "flags" attribute, which is
-  // custom-placed in the typeobject's dict by ctypes.
-  pyobject_ownref flags_obj(
-      PyObject_GetAttrString((PyObject *)Py_TYPE(cfunc), "_flags_"));
-
-  long flags;
-#if PY_VERSION_HEX >= 0x03000000
-  // TODO: Need to look at the ctypes implementation to validate that
-  //       the internals haven't changed in a way which affects what
-  //       we're doing here.
-  flags = PyLong_AsLong(flags_obj);
-#else
-  flags = PyInt_AsLong(flags_obj);
-#endif
-  if (flags == -1 && PyErr_Occurred()) {
-    throw std::runtime_error("Error getting ctypes function flags");
-  }
-
-  if (flags & 0x02) { // 0x02 is FUNCFLAG_HRESULT
-    throw std::runtime_error(
-        "Functions returning an HRESULT are not supported");
-  }
-
-  // if (flags&0x04) { // 0x04 is FUNCFLAG_PYTHONAPI, may need special handling
-  //}
-
-  if (flags & 0x08) { // 0x08 is FUNCFLAG_USE_ERRNO
-    throw std::runtime_error("Functions using errno are not yet supported");
-  }
-
-  if (flags & 0x10) { // 0x10 is FUNCFLAG_USE_LASTERROR
-    throw std::runtime_error("Functions using lasterror are not yet supported");
-  }
-
-#if defined(_WIN32)
-  if (cfunc->index) {
-    throw std::runtime_error("COM functions are not supported");
-  }
-#if !defined(_M_X64)
-  // Only on 32-bit Windows are non-CDECL calling conventions supported
-  if (flags & 0x01) { // 0x01 is FUNCFLAG_CDECL from cpython's internal ctypes.h
-    return cdecl_callconv;
-  }
-  else {
-    return win32_stdcall_callconv;
-  }
-#else
-  return cdecl_callconv;
-#endif
-#else
-  return cdecl_callconv;
-#endif
-}
-
 void pydynd::get_ctypes_signature(PyCFuncPtrObject *cfunc,
                                   ndt::type &out_returntype,
                                   std::vector<dynd::ndt::type> &out_paramtypes)

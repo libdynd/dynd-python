@@ -194,14 +194,16 @@ static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 
 dynd::ndt::type pydynd::make__type_from_pyobject(PyObject *obj)
 {
-  if (PyInt_Check(obj)) {
-    return ndt::type(static_cast<type_id_t>(PyInt_AS_LONG(obj)));
-  } else if (DyND_PyType_Check(obj)) {
+  if (DyND_PyType_Check(obj)) {
     return ((DyND_PyTypeObject *)obj)->v;
 #if PY_VERSION_HEX < 0x03000000
   } else if (PyString_Check(obj)) {
     return ndt::type(pystring_as_string(obj));
+  } else if (PyInt_Check(obj)) {
+    return ndt::type(static_cast<type_id_t>(PyInt_AS_LONG(obj)));
 #endif
+  } else if (PyLong_Check(obj)) {
+    return ndt::type(static_cast<type_id_t>(PyLong_AsLong(obj)));
   } else if (PyUnicode_Check(obj)) {
     return ndt::type(pystring_as_string(obj));
   } else if (DyND_PyArray_Check(obj)) {

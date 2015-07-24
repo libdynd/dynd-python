@@ -10,4 +10,4 @@ from .callable import callable
 inf = float('inf')
 nan = float('nan')
 
-import functional
+from . import functional

@@ -550,7 +550,7 @@ class tuple(object):
 class struct_factory(__builtins__.type):
     def __call__(self, **kwds):
         if kwds:
-            return wrap(_struct(asarray(kwds.keys()).v, asarray(kwds.values()).v))
+            return wrap(_struct(asarray(list(kwds.keys())).v, asarray(list(kwds.values())).v))
 
         return wrap(_struct())
 

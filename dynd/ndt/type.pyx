@@ -491,6 +491,26 @@ def make_view(value_type, operand_type):
 
 from dynd.nd.array cimport asarray
 
+class tuple_factory(__builtins__.type):
+    def __call__(self, *args):
+        if args:
+            return wrap(_tuple(asarray(args).v))
+
+        return wrap(_tuple())
+
+class tuple(object):
+    __metaclass__ = tuple_factory
+
+class struct_factory(__builtins__.type):
+    def __call__(self, **kwds):
+        if kwds:
+            return wrap(_struct(asarray(list(kwds.keys())).v, asarray(list(kwds.values())).v))
+
+        return wrap(_struct())
+
+class struct(object):
+    __metaclass__ = struct_factory
+
 class callable_factory(__builtins__.type):
     def __call__(self, ret_or_func, *args):
         if isinstance(ret_or_func, type):
@@ -504,21 +524,3 @@ class callable_factory(__builtins__.type):
 
 class callable(object):
     __metaclass__ = callable_factory
-
-class tuple_factory(__builtins__.type):
-    def __call__(self, *args):
-        return wrap(make_tuple(asarray(args).v))
-
-class tuple(object):
-    __metaclass__ = tuple_factory
-
-"""
-class struct_factory(__builtins__.type):
-    def __call__(self, **kwds):
-        make_struct(asarray(kwds.keys()).v, asarray(kwds.values()).v)
-        return None
-#        return wrap(make_tuple(asarray(args).v))
-
-class struct(object):
-    __metaclass__ = struct_factory
-"""

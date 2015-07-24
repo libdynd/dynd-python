@@ -55,8 +55,17 @@ cdef extern from 'dynd/types/callable_type.hpp' namespace 'dynd':
 cdef extern from 'dynd/types/struct_type.hpp' namespace 'dynd':
     _type make_struct 'dynd::ndt::struct_type::make'(_array &, _array &) except +translate_exception
 
-cdef extern from 'dynd/types/tuple_type.hpp' namespace 'dynd':
-    _type make_tuple 'dynd::ndt::tuple_type::make'(_array&) except +translate_exception
+cdef extern from 'dynd/types/tuple_type.hpp':
+    _type _tuple 'dynd::ndt::tuple_type::make'() \
+        except +translate_exception
+    _type _tuple 'dynd::ndt::tuple_type::make'(const _array &) \
+        except +translate_exception
+
+cdef extern from 'dynd/types/struct_type.hpp':
+    _type _struct 'dynd::ndt::struct_type::make'() \
+        except +translate_exception
+    _type _struct 'dynd::ndt::struct_type::make'(const _array &, const _array &) \
+        except +translate_exception
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     void add__type_names_to_dir_dict(_type&, object) except +translate_exception

@@ -32,15 +32,11 @@ class cmake_build_ext(build_ext):
         head, tail = os.path.split(name)
         return os.path.join(head, 'Release', tail + '.pyd')
     else:
-        suffix = sysconfig.get_config_var('SHLIB_SUFFIX')
-        if (suffix is None):
-            suffix = sysconfig.get_config_var('SO')
+        suffix = sysconfig.get_config_var('SO')
         return name + suffix
 
 
   def run(self):
-    print(sysconfig.get_config_vars())
-
     # We don't call the origin build_ext, instead ignore that
     # default behavior and call cmake for DyND's one C-extension.
 

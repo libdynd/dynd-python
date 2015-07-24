@@ -3,6 +3,20 @@ import ctypes
 import unittest
 from dynd import nd, ndt
 
+class TestTypeID(unittest.TestCase):
+    def test_callable(self):
+        self.assertEqual(ndt.type_ids['CALLABLE'], ndt.callable.id)
+
+class TestType(unittest.TestCase):
+    def test_tuple(self):
+        tp = ndt.tuple(ndt.int32, ndt.float64)
+
+    def test_struct(self):
+        tp = ndt.struct(x = ndt.int32, y = ndt.float64)
+
+    def test_callable(self):
+        tp = ndt.callable(ndt.void, ndt.int32, ndt.float64, x = ndt.complex128)
+
 class TestDType(unittest.TestCase):
     def test_bool_type_properties(self):
         self.assertEqual(type(ndt.bool), ndt.type)
@@ -194,6 +208,9 @@ class TestDType(unittest.TestCase):
 
     def test_cstruct_type(self):
         self.assertFalse(ndt.type('{x: int32}') == ndt.type('{y: int32}'))
+
+    def test_callable_type(self):
+        tp = ndt.callable(ndt.int32, ndt.float64)        
 
     def test_struct_type(self):
         tp = ndt.make_struct([ndt.int32, ndt.int64], ['x', 'y'])

@@ -9,3 +9,5 @@ from .callable import callable
 
 inf = float('inf')
 nan = float('nan')
+
+from . import functional

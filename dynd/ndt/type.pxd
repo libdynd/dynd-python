@@ -4,11 +4,64 @@ from libcpp.string cimport string
 from ..config cimport translate_exception
 from dynd.nd.array cimport _array
 
+cdef extern from 'dynd/types/type_id.hpp' namespace 'dynd':
+    ctypedef enum type_id_t:
+        uninitialized_type_id
+        bool_type_id
+        int8_type_id
+        int16_type_id
+        int32_type_id
+        int64_type_id
+        int128_type_id
+        uint8_type_id
+        uint16_type_id
+        uint32_type_id
+        uint64_type_id
+        uint128_type_id
+        float16_type_id
+        float32_type_id
+        float64_type_id
+        float128_type_id
+        complex_float32_type_id
+        complex_float64_type_id
+        void_type_id
+
+        pointer_type_id
+        void_pointer_type_id
+
+        bytes_type_id
+        fixed_bytes_type_id
+
+        char_type_id
+        string_type_id
+        fixed_string_type_id
+
+        categorical_type_id
+
+        option_type_id
+
+        date_type_id
+        time_type_id
+        datetime_type_id
+        busdate_type_id
+
+        json_type_id
+
+        tuple_type_id
+        struct_type_id
+
+        fixed_dim_type_id
+        offset_dim_type_id
+        var_dim_type_id
+
+        callable_type_id
+
+        type_type_id
+
 cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
     cdef cppclass _type 'dynd::ndt::type':
         _type()
-#        _type(type_id_t) except +translate_exception
- #       _type(type_id_t, uintptr_t) except +translate_exception
+        _type(type_id_t) except +translate_exception
         _type(string&) except +translate_exception
 
         size_t get_data_size()
@@ -49,14 +102,20 @@ cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
     _type dynd_make_categorical_type "dynd::ndt::categorical_type::make" (_array&) except +translate_exception
     _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
-cdef extern from 'dynd/types/callable_type.hpp' namespace 'dynd':
-    _type make_callable 'dynd::ndt::callable_type::make'(_type &, _type &)
+cdef extern from 'dynd/types/callable_type.hpp':
+    _type make_callable 'dynd::ndt::callable_type::make'(_type &, _type &, _type &)
 
-cdef extern from 'dynd/types/struct_type.hpp' namespace 'dynd':
-    _type make_struct 'dynd::ndt::struct_type::make'(_array &, _array &) except +translate_exception
+cdef extern from 'dynd/types/tuple_type.hpp':
+    _type _tuple 'dynd::ndt::tuple_type::make'() \
+        except +translate_exception
+    _type _tuple 'dynd::ndt::tuple_type::make'(const _array &) \
+        except +translate_exception
 
-cdef extern from 'dynd/types/tuple_type.hpp' namespace 'dynd':
-    _type make_tuple 'dynd::ndt::tuple_type::make'(_array&) except +translate_exception
+cdef extern from 'dynd/types/struct_type.hpp':
+    _type _struct 'dynd::ndt::struct_type::make'() \
+        except +translate_exception
+    _type _struct 'dynd::ndt::struct_type::make'(const _array &, const _array &) \
+        except +translate_exception
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
     void add__type_names_to_dir_dict(_type&, object) except +translate_exception

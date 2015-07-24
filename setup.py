@@ -39,6 +39,8 @@ class cmake_build_ext(build_ext):
 
 
   def run(self):
+    print(sysconfig.get_config_vars())
+
     # We don't call the origin build_ext, instead ignore that
     # default behavior and call cmake for DyND's one C-extension.
 

@@ -75,7 +75,7 @@ namespace nd {
                   dynd::kernel_request_t kernreq,
                   const dynd::eval::eval_context *DYND_UNUSED(ectx),
                   const dynd::nd::array &kwds,
-                  const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+                  const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
@@ -141,7 +141,7 @@ namespace nd {
                   dynd::kernel_request_t kernreq,
                   const dynd::eval::eval_context *DYND_UNUSED(ectx),
                   const dynd::nd::array &kwds,
-                  const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+                  const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;

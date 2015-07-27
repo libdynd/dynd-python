@@ -390,7 +390,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
@@ -480,7 +480,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
@@ -552,7 +552,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
@@ -602,7 +602,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
@@ -658,7 +658,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
       return ckb_offset;
@@ -766,7 +766,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
 
       intptr_t root_ckb_offset = ckb_offset;
@@ -802,7 +802,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       // Assign via an intermediate category_type buffer
       const dynd::ndt::type &buf_tp =
@@ -903,7 +903,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1038,7 +1038,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1160,7 +1160,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1331,7 +1331,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       bool dim_broadcast = kwds.p("broadcast").as<bool>();
 
@@ -1376,7 +1376,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       if (dst_tp.get_kind() == dynd::expr_kind) {
         dynd::nd::callable af = dynd::nd::functional::chain(

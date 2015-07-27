@@ -274,7 +274,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       copy_to_pyobject_kernel::make(
           ckb, kernreq, ckb_offset,
@@ -364,7 +364,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       switch (
           src_tp[0].extended<dynd::ndt::base_string_type>()->get_encoding()) {
@@ -417,7 +417,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       fixed_string_ascii_copy_kernel::make(ckb, kernreq, ckb_offset,
                                            src_tp[0].get_data_size());
@@ -451,7 +451,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       fixed_string_utf8_copy_kernel::make(ckb, kernreq, ckb_offset,
                                           src_tp[0].get_data_size());
@@ -487,7 +487,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       fixed_string_utf16_copy_kernel::make(ckb, kernreq, ckb_offset,
                                            src_tp[0].get_data_size());
@@ -523,7 +523,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       fixed_string_utf32_copy_kernel::make(ckb, kernreq, ckb_offset,
                                            src_tp[0].get_data_size());
@@ -541,7 +541,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       switch (
           src_tp[0].extended<dynd::ndt::base_string_type>()->get_encoding()) {
@@ -599,7 +599,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
                                     src_arrmeta[0]);
@@ -639,7 +639,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
                                     src_arrmeta[0]);
@@ -683,7 +683,7 @@ namespace nd {
         dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *DYND_UNUSED(ectx),
         const dynd::nd::array &DYND_UNUSED(kwds),
-        const std::map<dynd::nd::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+        const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, src_tp[0],
                                     src_arrmeta[0]);
@@ -746,7 +746,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck =
@@ -809,7 +809,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       intptr_t dim_size, stride;
       dynd::ndt::type el_tp;
@@ -867,7 +867,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       copy_to_pyobject_kernel::make(
           ckb, kernreq, ckb_offset,
@@ -936,7 +936,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck =
@@ -1035,7 +1035,7 @@ namespace nd {
         const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
         const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
         const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-        const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+        const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck = copy_to_pyobject_kernel::make(
@@ -1096,7 +1096,7 @@ namespace nd {
                 const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                 const dynd::eval::eval_context *ectx,
                 const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+                const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
       dynd::ndt::type src_value_tp =
@@ -1120,7 +1120,7 @@ namespace nd {
                 const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                 const dynd::eval::eval_context *ectx,
                 const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+                const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       // Assign via an intermediate category_type buffer
       const dynd::ndt::type &buffer_tp =
@@ -1139,12 +1139,12 @@ namespace nd {
 
   struct default_copy_to_pyobject_kernel
       : dynd::nd::base_virtual_kernel<default_copy_to_pyobject_kernel> {
-    static void
-    resolve_dst_type(char *DYND_UNUSED(static_data),
-                     size_t DYND_UNUSED(data_size), char *DYND_UNUSED(data),
-                     dynd::ndt::type &, intptr_t, const dynd::ndt::type *src_tp,
-                     const dynd::nd::array &,
-                     const std::map<dynd::nd::string, dynd::ndt::type> &)
+    static void resolve_dst_type(char *DYND_UNUSED(static_data),
+                                 size_t DYND_UNUSED(data_size),
+                                 char *DYND_UNUSED(data), dynd::ndt::type &,
+                                 intptr_t, const dynd::ndt::type *src_tp,
+                                 const dynd::nd::array &,
+                                 const std::map<std::string, dynd::ndt::type> &)
     {
       std::cout << "default_copy_to_pyobject_kernel::resolve_dst_type"
                 << std::endl;
@@ -1158,7 +1158,7 @@ namespace nd {
                 const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                 const dynd::eval::eval_context *ectx,
                 const dynd::nd::array &kwds,
-                const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+                const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       dynd::nd::callable af = dynd::nd::functional::chain(
           dynd::nd::copy, copy_to_pyobject, src_tp[0].value_type());

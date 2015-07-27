@@ -35,7 +35,7 @@ struct copy_to_numpy_ck : dynd::nd::base_virtual_kernel<copy_to_numpy_ck> {
               const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
               dynd::kernel_request_t kernreq,
               const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
-              const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars);
+              const std::map<std::string, dynd::ndt::type> &tp_vars);
 };
 
 extern struct copy_to_numpy : dynd::nd::declfunc<copy_to_numpy> {

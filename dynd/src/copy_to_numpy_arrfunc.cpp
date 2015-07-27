@@ -45,7 +45,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
     dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
     const dynd::nd::array &kwds,
-    const std::map<dynd::nd::string, dynd::ndt::type> &tp_vars)
+    const std::map<std::string, dynd::ndt::type> &tp_vars)
 {
   if (dst_tp.get_type_id() != dynd::void_type_id) {
     stringstream ss;

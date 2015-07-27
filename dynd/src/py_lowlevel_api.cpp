@@ -177,8 +177,8 @@ PyObject *lift_callable(PyObject *af)
       ss << "af must be an nd.array of type callable";
       throw dynd::type_error(ss.str());
     }
-    return DyND_PyWrapper_New(
-        dynd::nd::functional::elwise(((DyND_PyArrayObject *)af)->v));
+    return DyND_PyWrapper_New(dynd::nd::functional::elwise(
+        dynd::nd::callable(((DyND_PyArrayObject *)af)->v)));
   }
   catch (...) {
     pydynd::translate_exception();
@@ -303,9 +303,10 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
     }
 
     dynd::nd::callable out_af = dynd::lift_reduction_callable(
-        elwise_reduction, lifted_type, dst_initialization, keepdims,
-        reduction_ndim, reduction_dimflags.get(), associative, commutative,
-        right_associative, reduction_identity);
+        dynd::nd::callable(elwise_reduction), lifted_type,
+        dynd::nd::callable(dst_initialization), keepdims, reduction_ndim,
+        reduction_dimflags.get(), associative, commutative, right_associative,
+        reduction_identity);
 
     return DyND_PyWrapper_New(out_af);
   }

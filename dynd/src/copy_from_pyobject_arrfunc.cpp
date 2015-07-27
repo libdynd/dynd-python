@@ -48,8 +48,16 @@ dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
       dynd::nd::callable::make<default_copy_from_pyobject_kernel>(0);
 
   return dynd::nd::functional::multidispatch(
-      dynd::ndt::type("(void, broadcast: bool) -> Any"), children,
-      default_child, {-1});
+      dynd::ndt::type("(void, broadcast: bool) -> Any"),
+      [](const dynd::ndt::type &dst_tp, intptr_t DYND_UNUSED(nsrc),
+         const dynd::ndt::type *src_tp) -> dynd::nd::callable & {
+        dynd::nd::callable &child = overload(dst_tp);
+        if (child.is_null()) {
+          return default_child;
+        }
+        return child;
+      },
+      0);
 }
 
 struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;

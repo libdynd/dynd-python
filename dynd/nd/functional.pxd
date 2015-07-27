@@ -9,4 +9,4 @@ cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd::nd::functional":
     _callable _apply 'pydynd::nd::functional::apply'(object, object) except +translate_exception
 
 cdef extern from 'dynd/func/multidispatch.hpp' namespace 'dynd::nd::functional':
-    _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T, _callable) except +translate_exception
+    _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T) except +translate_exception

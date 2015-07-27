@@ -22,6 +22,6 @@ def elwise(func):
 
     return wrap(_elwise((<callable> func).v))
 
-def multidispatch(type tp, iterable = None, callable default = callable()):
+def multidispatch(type tp, iterable = None):
     return wrap(_multidispatch(tp.v, begin[_callable](iterable),
-        end[_callable](iterable), default.v))
+        end[_callable](iterable)))

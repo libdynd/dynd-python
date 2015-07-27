@@ -19,6 +19,11 @@ namespace nd {
     static dynd::nd::callable children[DYND_TYPE_ID_MAX + 1];
     static dynd::nd::callable default_child;
 
+    static dynd::nd::callable &overload(const dynd::ndt::type &dst_tp)
+    {
+      return children[dst_tp.get_type_id()];
+    }
+
     static dynd::nd::callable make();
   } copy_from_pyobject;
 

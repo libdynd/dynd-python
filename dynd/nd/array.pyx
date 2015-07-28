@@ -1,6 +1,8 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from dynd.wrapper cimport set_wrapper_type
+from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
+
+from dynd.wrapper cimport set_wrapper_type, wrap
 
 from dynd.ndt.type cimport type, dynd_make_categorical_type
 from dynd.ndt import Unsupplied
@@ -191,6 +193,20 @@ cdef class array(object):
         cdef array res = array()
         res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
         return res
+
+    def __richcmp__(a0, a1, int op):
+        if op == Py_LT:
+            return wrap(asarray(a0).v < asarray(a1).v)
+        elif op == Py_LE:
+            return wrap(asarray(a0).v <= asarray(a1).v)
+        elif op == Py_EQ:
+            return wrap(asarray(a0).v == asarray(a1).v)
+        elif op == Py_NE:
+            return wrap(asarray(a0).v != asarray(a1).v)
+        elif op == Py_GE:
+            return wrap(asarray(a0).v >= asarray(a1).v)
+        elif op == Py_GT:
+            return wrap(asarray(a0).v > asarray(a1).v)
 
     def __getbuffer__(array self, Py_buffer* buffer, int flags):
         # Docstring triggered Cython bug (fixed in master), so it's commented out

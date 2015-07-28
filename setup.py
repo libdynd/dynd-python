@@ -84,7 +84,6 @@ class cmake_build_ext(build_ext):
     else:
         osx_deployment_target = ''
 
-
     if sys.platform != 'win32':
         self.spawn(['cmake', pyexe_option, install_lib_option,
                     osx_deployment_target,

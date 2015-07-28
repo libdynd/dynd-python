@@ -13,8 +13,6 @@ import re
 import struct
 is_64_bit = struct.calcsize('@P') == 8
 
-print(sysconfig.get_config_vars())
-
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"
 

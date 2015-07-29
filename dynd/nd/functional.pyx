@@ -6,19 +6,22 @@ from .array cimport _array
 from dynd.ndt.type cimport type, make_callable
 from dynd.ndt.type cimport as_numba_type, from_numba_type
 
+# This takes a Python func passed through the jit decorator, and returns
+# a DyND callable object
 cdef public object jit_func(object func, intptr_t nsrc, const _type *src_tp):
     from llvmlite import ir
 
+    # This is the Numba signature
     signature = tuple(as_numba_type(src_tp[i]) for i in range(nsrc))
 
+    # Compile the function with Numba
     func.compile(signature)
     compile_res = func._compileinfos[signature]
 
-    # Check if there is a corresponding dst_tp in DyND
+    # Check if there is a corresponding return type in DyND
     cdef _type dst_tp = from_numba_type(compile_res.signature.return_type)
 
     # The following generates the wrapper function using LLVM IR
-    # (From here) #
     fndesc = compile_res.fndesc
     target_context = compile_res.target_context
     library = target_context.jit_codegen().create_library(name = 'library')
@@ -31,6 +34,7 @@ cdef public object jit_func(object func, intptr_t nsrc, const _type *src_tp):
 
     CharType = ir.IntType(8)
 
+    # DyND needs a function pointer of type void (char *dst, char *const *src)
     single = ir.Function(ir_module, ir.FunctionType(ir.VoidType(),
         [CharType.as_pointer(), CharType.as_pointer().as_pointer()]),
         name = 'single')
@@ -38,21 +42,29 @@ cdef public object jit_func(object func, intptr_t nsrc, const _type *src_tp):
     bb_entry = single.append_basic_block('entry')
     irbuilder = ir.IRBuilder(bb_entry)
 
+
+    # For each argument i, do the following:
+    # 1) Use GEP to get the char ** corresponding to src[i]
+    # 2) Load the char * from that char **
+    # 3) Cast it to its appropriate type expected by Numba.
+    # 4) Load its value
+
     src = []
     for i, ir_type in enumerate(wrapped_func_ir_tp.args[-nsrc::]):
         src.append(irbuilder.load(irbuilder.bitcast(irbuilder.load(irbuilder.gep(single.args[1],
             [ir.Constant(ir.IntType(32), i)])), ir_type.as_pointer())))
 
+    # Call the wrapped Numba function pointer with the values of src
     status, dst = target_context.call_conv.call_function(irbuilder, wrapped_func,
         fndesc.restype, fndesc.argtypes, src)
 
+    # Store the returned value from the Numba function
     irbuilder.store(dst,
         irbuilder.bitcast(single.args[0], wrapped_func_ir_tp.args[0]))
     irbuilder.ret_void()
 
     library.add_ir_module(ir_module)
     library.finalize()
-    # (To here) #
 
     return wrap(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
             library.get_pointer_to_function('single')))

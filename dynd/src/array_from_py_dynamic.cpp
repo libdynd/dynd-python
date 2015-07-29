@@ -170,14 +170,14 @@ static void copy_to_promoted_nd_arr(
         expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy the full dimension
         char *src = const_cast<char *>(src_data_ptr);
-        fn(dst_data_ptr, dst_md->stride, &src, &src_md->stride,
-           shape[current_axis], ck.get());
+        fn(ck.get(), dst_data_ptr, dst_md->stride, &src, &src_md->stride,
+           shape[current_axis]);
       } else {
         expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy up to, and possibly including, the coordinate
         char *src = const_cast<char *>(src_data_ptr);
-        fn(dst_data_ptr, dst_md->stride, &src, &src_md->stride,
-           src_coord[current_axis].coord + int(copy_final_coord), ck.get());
+        fn(ck.get(), dst_data_ptr, dst_md->stride, &src, &src_md->stride,
+           src_coord[current_axis].coord + int(copy_final_coord));
         dst_coord[current_axis].coord = src_coord[current_axis].coord;
         dst_coord[current_axis].data_ptr =
             dst_data_ptr + dst_md->stride * dst_coord[current_axis].coord;
@@ -201,8 +201,8 @@ static void copy_to_promoted_nd_arr(
         expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         // Copy the full dimension
         char *src = src_d->begin;
-        fn(dst_d->begin, dst_md->stride, &src, &src_md->stride, src_d->size,
-           ck.get());
+        fn(ck.get(), dst_d->begin, dst_md->stride, &src, &src_md->stride,
+           src_d->size);
       } else {
         // Initialize the var element to the same reserved space as the
         // input
@@ -215,8 +215,8 @@ static void copy_to_promoted_nd_arr(
         expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
         if (fn != NULL) {
           char *src = src_d->begin;
-          fn(dst_d->begin, dst_md->stride, &src, &src_md->stride,
-             src_coord[current_axis].coord + int(copy_final_coord), ck.get());
+          fn(ck.get(), dst_d->begin, dst_md->stride, &src, &src_md->stride,
+             src_coord[current_axis].coord + int(copy_final_coord));
         }
         dst_coord[current_axis].coord = src_coord[current_axis].coord;
         dst_coord[current_axis].data_ptr =
@@ -350,8 +350,8 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
     // An assignment kernel which copies one byte - will only
     // be called with count==0 when dtp is uninitialized
     make_assignment_kernel(&k, 0, ndt::type::make<char>(), NULL,
-                           ndt::type::make<char>(), NULL, kernel_request_strided,
-                           &eval::default_eval_context);
+                           ndt::type::make<char>(), NULL,
+                           kernel_request_strided, &eval::default_eval_context);
   }
   copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
                           newelem, arr.get_readonly_originptr(), coord, elem, k,

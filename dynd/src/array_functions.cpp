@@ -567,7 +567,7 @@ void contains_callback(const ndt::type &DYND_UNUSED(dt),
   dynd::expr_single_t fn = cd->k->get()->get_function<dynd::expr_single_t>();
   int dst;
   char *src[2] = {const_cast<char *>(cd->x_data), data};
-  fn(reinterpret_cast<char *>(&dst), src, cd->k->get());
+  fn(cd->k->get(), reinterpret_cast<char *>(&dst), src);
   if (!cd->found && (dst != 0)) {
     cd->found = true;
   }

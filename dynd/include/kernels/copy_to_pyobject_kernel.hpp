@@ -725,9 +725,9 @@ namespace nd {
       dynd::expr_single_t copy_value_fn =
           copy_value->get_function<dynd::expr_single_t>();
       char value_is_avail = 0;
-      is_avail_fn(&value_is_avail, src, is_avail);
+      is_avail_fn(is_avail, &value_is_avail, src);
       if (value_is_avail != 0) {
-        copy_value_fn(dst, src, copy_value);
+        copy_value_fn(copy_value, dst, src);
       } else {
         *dst_obj = Py_None;
         Py_INCREF(*dst_obj);
@@ -793,8 +793,9 @@ namespace nd {
       ckernel_prefix *copy_el = get_child_ckernel();
       dynd::expr_strided_t copy_el_fn =
           copy_el->get_function<dynd::expr_strided_t>();
-      copy_el_fn(reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
-                 sizeof(PyObject *), src, &stride, dim_size, copy_el);
+      copy_el_fn(copy_el,
+                 reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
+                 sizeof(PyObject *), src, &stride, dim_size);
       if (PyErr_Occurred()) {
         throw std::exception();
       }
@@ -851,8 +852,9 @@ namespace nd {
       dynd::expr_strided_t copy_el_fn =
           copy_el->get_function<dynd::expr_strided_t>();
       char *el_src = vd->begin + offset;
-      copy_el_fn(reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
-                 sizeof(PyObject *), &el_src, &stride, vd->size, copy_el);
+      copy_el_fn(copy_el,
+                 reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
+                 sizeof(PyObject *), &el_src, &stride, vd->size);
       if (PyErr_Occurred()) {
         throw std::exception();
       }
@@ -913,7 +915,7 @@ namespace nd {
             copy_el->get_function<dynd::expr_single_t>();
         char *el_src = src[0] + field_offsets[i];
         pyobject_ownref el;
-        copy_el_fn(reinterpret_cast<char *>(el.obj_addr()), &el_src, copy_el);
+        copy_el_fn(copy_el, reinterpret_cast<char *>(el.obj_addr()), &el_src);
         PyDict_SetItem(dct.get(), PyTuple_GET_ITEM(m_field_names.get(), i),
                        el.get());
       }
@@ -1014,7 +1016,7 @@ namespace nd {
         char *el_src = src[0] + field_offsets[i];
         char *el_dst =
             reinterpret_cast<char *>(((PyTupleObject *)tup.get())->ob_item + i);
-        copy_el_fn(el_dst, &el_src, copy_el);
+        copy_el_fn(copy_el, el_dst, &el_src);
       }
       if (PyErr_Occurred()) {
         throw std::exception();
@@ -1083,7 +1085,7 @@ namespace nd {
       // The src value is a pointer, and copy_value_fn expects a pointer
       // to that pointer
       char **src_ptr = reinterpret_cast<char **>(src[0]);
-      copy_value_fn(dst, src_ptr, copy_value);
+      copy_value_fn(copy_value, dst, src_ptr);
     }
 
     void destruct_children() { get_child_ckernel()->destroy(); }

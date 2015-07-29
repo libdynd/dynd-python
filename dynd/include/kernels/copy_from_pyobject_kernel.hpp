@@ -699,7 +699,7 @@ namespace nd {
         ckernel_prefix *assign_na = get_child_ckernel();
         dynd::expr_single_t assign_na_fn =
             assign_na->get_function<dynd::expr_single_t>();
-        assign_na_fn(dst, NULL, assign_na);
+        assign_na_fn(assign_na, dst, NULL);
       } else if (DyND_PyArray_Check(src_obj)) {
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
                                 ((DyND_PyArrayObject *)src_obj)->v);
@@ -750,7 +750,7 @@ namespace nd {
         ckernel_prefix *copy_value = get_child_ckernel(copy_value_offset);
         dynd::expr_single_t copy_value_fn =
             copy_value->get_function<dynd::expr_single_t>();
-        copy_value_fn(dst, src, copy_value);
+        copy_value_fn(copy_value, dst, src);
       }
     }
 
@@ -879,16 +879,16 @@ namespace nd {
       }
       if (src_dim_size == 1 && m_dim_size > 1) {
         // Copy once from Python, then duplicate that element
-        copy_el_fn(dst, 0, &child_src, &child_stride, 1, copy_el);
+        copy_el_fn(copy_el, dst, 0, &child_src, &child_stride, 1);
         ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
         dynd::expr_strided_t copy_dst_fn =
             copy_dst->get_function<dynd::expr_strided_t>();
         intptr_t zero = 0;
-        copy_dst_fn(dst + m_stride, m_stride, &dst, &zero, m_dim_size - 1,
-                    copy_dst);
+        copy_dst_fn(copy_dst, dst + m_stride, m_stride, &dst, &zero,
+                    m_dim_size - 1);
       } else {
-        copy_el_fn(dst, m_stride, &child_src, &child_stride, m_dim_size,
-                   copy_el);
+        copy_el_fn(copy_el, dst, m_stride, &child_src, &child_stride,
+                   m_dim_size);
       }
       if (PyErr_Occurred()) {
         throw std::exception();
@@ -1012,18 +1012,18 @@ namespace nd {
       }
       if (src_dim_size == 1 && vdd->size > 1) {
         // Copy once from Python, then duplicate that element
-        copy_el_fn(vdd->begin + m_offset, 0, &child_src, &child_stride, 1,
-                   copy_el);
+        copy_el_fn(copy_el, vdd->begin + m_offset, 0, &child_src, &child_stride,
+                   1);
         ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
         dynd::expr_strided_t copy_dst_fn =
             copy_dst->get_function<dynd::expr_strided_t>();
         intptr_t zero = 0;
         char *src_to_dup = vdd->begin + m_offset;
-        copy_dst_fn(vdd->begin + m_offset + m_stride, m_stride, &src_to_dup,
-                    &zero, vdd->size - 1, copy_dst);
+        copy_dst_fn(copy_dst, vdd->begin + m_offset + m_stride, m_stride,
+                    &src_to_dup, &zero, vdd->size - 1);
       } else {
-        copy_el_fn(vdd->begin + m_offset, m_stride, &child_src, &child_stride,
-                   vdd->size, copy_el);
+        copy_el_fn(copy_el, vdd->begin + m_offset, m_stride, &child_src,
+                   &child_stride, vdd->size);
       }
       if (PyErr_Occurred()) {
         throw std::exception();
@@ -1140,7 +1140,7 @@ namespace nd {
             copy_el->get_function<dynd::expr_single_t>();
         char *el_dst = dst + field_offsets[i];
         char *el_src = child_src + i * child_stride;
-        copy_el_fn(el_dst, &el_src, copy_el);
+        copy_el_fn(copy_el, el_dst, &el_src);
       }
       if (PyErr_Occurred()) {
         throw std::exception();
@@ -1255,7 +1255,7 @@ namespace nd {
                 copy_el->get_function<dynd::expr_single_t>();
             char *el_dst = dst + field_offsets[i];
             char *el_src = reinterpret_cast<char *>(&dict_value);
-            copy_el_fn(el_dst, &el_src, copy_el);
+            copy_el_fn(copy_el, el_dst, &el_src);
             populated_fields[i] = true;
           } else {
             std::stringstream ss;
@@ -1310,7 +1310,7 @@ namespace nd {
               copy_el->get_function<dynd::expr_single_t>();
           char *el_dst = dst + field_offsets[i];
           char *el_src = child_src + i * child_stride;
-          copy_el_fn(el_dst, &el_src, copy_el);
+          copy_el_fn(copy_el, el_dst, &el_src);
         }
       }
       if (PyErr_Occurred()) {

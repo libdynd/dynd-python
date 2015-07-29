@@ -12,22 +12,14 @@ cdef extern from 'dynd/func/elwise.hpp' namespace 'dynd::nd::functional':
 cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd::nd::functional":
     _callable _apply 'pydynd::nd::functional::apply'(object, object) except +translate_exception
 
-cdef extern from "kernels/apply_numba_kernel.hpp" namespace "pydynd::nd::functional":
-    _callable numba_helper "pydynd::nd::functional::numba_helper"(const _type &tp, intptr_t)
-
-    _callable &dereference "pydynd::nd::functional::dereference"(_callable *)
+cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functional":
+    _callable _apply_jit "pydynd::nd::functional::apply_jit"(const _type &tp, intptr_t)
 
     cdef cppclass jit_dispatcher:
         jit_dispatcher(object, object (*)(object, intptr_t, const _type *))
 
 cdef extern from 'dynd/func/multidispatch.hpp' namespace 'dynd::nd::functional':
-    _callable _multidispatch2 'dynd::nd::functional::multidispatch'[T](_type, T, size_t) \
+    _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, size_t) \
         except +translate_exception
     _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T) \
         except +translate_exception
-
-cdef extern from '<functional>' namespace 'std':
-    cdef cppclass reference_wrapper[T]:
-        pass
-
-    reference_wrapper[T] ref[T](T &)

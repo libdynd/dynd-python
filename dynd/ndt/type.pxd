@@ -154,3 +154,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 cdef class type(object):
     cdef _type v
+
+cdef as_numba_type(_type)
+cdef _type from_numba_type(object)

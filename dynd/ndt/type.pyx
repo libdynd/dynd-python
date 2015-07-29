@@ -592,3 +592,33 @@ class struct_factory(__builtins__.type):
 class struct(object):
     __metaclass__ = struct_factory
 """
+
+_to_numba_type = {}
+_from_numba_type = {}
+
+try:
+    import numba
+
+    _to_numba_type[bool_type_id] = numba.boolean
+    _to_numba_type[int8_type_id] = numba.int8
+    _to_numba_type[int16_type_id] = numba.int16
+    _to_numba_type[int32_type_id] = numba.int32
+    _to_numba_type[int64_type_id] = numba.int64
+    _to_numba_type[uint8_type_id] = numba.uint8
+    _to_numba_type[uint16_type_id] = numba.uint16
+    _to_numba_type[uint32_type_id] = numba.uint32
+    _to_numba_type[uint64_type_id] = numba.uint64
+    _to_numba_type[float32_type_id] = numba.float32
+    _to_numba_type[float64_type_id] = numba.float64
+    _to_numba_type[complex_float32_type_id] = numba.complex64
+    _to_numba_type[complex_float64_type_id] = numba.complex128
+
+    _from_numba_type = dict((_to_numba_type[key], key) for key in _to_numba_type)
+except ImportError:
+    pass
+
+cdef as_numba_type(_type tp):
+    return _to_numba_type[tp.get_type_id()]
+
+cdef _type from_numba_type(tp):
+    return _type(<type_id_t> _from_numba_type[tp])

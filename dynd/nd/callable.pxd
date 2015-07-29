@@ -4,6 +4,8 @@ from dynd.ndt.type cimport _type
 
 cdef extern from 'dynd/func/callable.hpp' namespace 'dynd':
     cdef cppclass _callable 'dynd::nd::callable':
+        _callable()
+
         _type get_array_type()
 
 cdef extern from "arrfunc_functions.hpp" namespace "pydynd":

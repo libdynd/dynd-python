@@ -9,6 +9,8 @@
 #include <exception_translation.hpp>
 #include <array_assign_from_py.hpp>
 
+#include "../arrfunc_functions.hpp"
+
 namespace pydynd {
 namespace nd {
   namespace functional {
@@ -20,8 +22,7 @@ namespace nd {
 
       void (*func)(char *dst, char *const *src);
 
-      apply_numba_kernel(void (*func)(char *dst, char *const *src))
-          : func(func)
+      apply_numba_kernel(void (*func)(char *dst, char *const *src)) : func(func)
       {
       }
 
@@ -52,9 +53,41 @@ namespace nd {
                                            intptr_t ptr)
     {
       return dynd::nd::callable::make<apply_numba_kernel>(
-          tp, reinterpret_cast<void (*)(char *dst, char *const *src)>(ptr),
-          0);
+          tp, reinterpret_cast<void (*)(char *dst, char *const *src)>(ptr), 0);
     }
+
+    template <typename T>
+    inline T &dereference(T *ptr)
+    {
+      return *ptr;
+    }
+
+    struct jit_dispatcher {
+      typedef PyObject *(*jit_type)(PyObject *func,
+                                    const dynd::ndt::type &dst_tp,
+                                    intptr_t nsrc,
+                                    const dynd::ndt::type *src_tp);
+
+      PyObject *func;
+      jit_type jit;
+
+      jit_dispatcher(PyObject *func, jit_type jit)
+          : func((Py_INCREF(func), func)), jit(jit)
+      {
+      }
+
+      ~jit_dispatcher() { Py_DECREF(func); }
+
+      dynd::nd::callable &operator()(const dynd::ndt::type &dst_tp,
+                                     intptr_t nsrc,
+                                     const dynd::ndt::type *src_tp)
+      {
+        PyObject *obj = (*jit)(func, dst_tp, nsrc, src_tp);
+        Py_INCREF(obj);
+
+        return reinterpret_cast<DyND_PyCallableObject *>(obj)->v;
+      }
+    };
 
   } // namespace pydynd::nd::functional
 } // namespace pydynd::nd

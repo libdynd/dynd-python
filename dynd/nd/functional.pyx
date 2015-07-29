@@ -35,14 +35,12 @@ dynd_to_numba = {}
 dynd_to_numba[ndt.type('int32').type_id] = numba.int32
 dynd_to_numba[ndt.type('int64').type_id] = numba.int64
 
-def apply_numba(tp, f):
-    import llvmlite.ir as ll
-    import llvmlite.binding as llvm
+import llvmlite.ir as ll
+import llvmlite.binding as llvm
 
-    from numba import types, compiler, njit, cgutils
+from numba import types, compiler, njit, cgutils
 
-    print tp.pos_types
-
+cdef public object jit_func(object f, const _type &dst_tp_x, intptr_t nsrc_x, const _type *src_tp_x):
     res = f.compile(tuple(types.int32 for i in range(2)))
     sig = f.signatures[0]
     cres = f._compileinfos[sig]
@@ -78,7 +76,6 @@ def apply_numba(tp, f):
         src.append(irbuilder.load(irbuilder.bitcast(irbuilder.load(irbuilder.gep(single.args[1],
             [ll.Constant(ll.IntType(64), i)])), src_tp[i].as_pointer())))
 
-
     status, dst = target.call_conv.call_function(irbuilder, inner_func,
                                                     fndesc.restype,
                                                     fndesc.argtypes,
@@ -91,4 +88,8 @@ def apply_numba(tp, f):
     wrapper_library.add_ir_module(mod)
     wrapper_library.finalize()
 
-    return apply_ptr(tp, wrapper_library.get_pointer_to_function('single'))
+    return apply_ptr(ndt.type('(int32, int32) -> int32'),
+            wrapper_library.get_pointer_to_function('single'))
+
+def apply_numba(tp, f):
+    return wrap(_multidispatch2((<type> tp).v, jit_dispatcher(f, jit_func), <size_t> 0))

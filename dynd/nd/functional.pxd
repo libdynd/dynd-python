@@ -18,8 +18,7 @@ cdef extern from "kernels/apply_numba_kernel.hpp" namespace "pydynd::nd::functio
     _callable &dereference "pydynd::nd::functional::dereference"(_callable *)
 
     cdef cppclass jit_dispatcher:
-        jit_dispatcher(object, object (*)(object func,
-            const _type &dst_type, intptr_t nsrc, const _type *src_tp))
+        jit_dispatcher(object, object (*)(object, intptr_t, const _type *))
 
 cdef extern from 'dynd/func/multidispatch.hpp' namespace 'dynd::nd::functional':
     _callable _multidispatch2 'dynd::nd::functional::multidispatch'[T](_type, T, size_t) \

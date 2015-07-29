@@ -8,6 +8,9 @@ from dynd.ndt.type cimport _type
 cdef extern from 'dynd/array.hpp' namespace 'dynd':
     cdef cppclass _array 'dynd::nd::array':
 
+        _array()
+        _array(_type *, int)
+
         _type get_type()
         _type get_dtype()
         _type get_dtype(size_t)

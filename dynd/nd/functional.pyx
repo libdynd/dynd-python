@@ -1,8 +1,9 @@
 from dynd.wrapper cimport wrap, begin, end
 from .. import ndt
 from .callable cimport _callable, callable
+from .array cimport _array
 
-from dynd.ndt.type cimport type
+from dynd.ndt.type cimport type, int32_type_id, int64_type_id, float32_type_id, float64_type_id, make_callable
 
 def apply(tp_or_func, func = None):
     def make(tp, func):
@@ -31,65 +32,73 @@ def apply_ptr(tp, ptr):
 
 import numba
 
-dynd_to_numba = {}
-dynd_to_numba[ndt.type('int32').type_id] = numba.int32
-dynd_to_numba[ndt.type('int64').type_id] = numba.int64
+as_numba_tp = {}
+as_numba_tp[int32_type_id] = numba.int32
+as_numba_tp[int64_type_id] = numba.int64
+as_numba_tp[float64_type_id] = numba.float32
+as_numba_tp[float64_type_id] = numba.float64
 
-import llvmlite.ir as ll
-import llvmlite.binding as llvm
+as_dynd_tp = {}
+as_dynd_tp[numba.int32] = ndt.type(int32_type_id)
+as_dynd_tp[numba.int64] = ndt.type(int64_type_id)
+as_dynd_tp[numba.float32] = ndt.type(float32_type_id)
+as_dynd_tp[numba.float64] = ndt.type(float64_type_id)
+
 
 from numba import types, compiler, njit, cgutils
 
-cdef public object jit_func(object f, const _type &dst_tp_x, intptr_t nsrc_x, const _type *src_tp_x):
-    res = f.compile(tuple(types.int32 for i in range(2)))
+cdef public object jit_func(object f, intptr_t nsrc, const _type *src_tp):
+    from llvmlite import ir
+
+    res = f.compile(tuple(as_numba_tp[src_tp[i].get_type_id()] for i in range(nsrc)))
     sig = f.signatures[0]
-    cres = f._compileinfos[sig]
 
-    fndesc = cres.fndesc
-    library = cres.library
-    target = cres.target_context
+    compile_res = f._compileinfos[sig]
 
-    codegen = target.jit_codegen()
-    wrapper_library = codegen.create_library('dynd_example_library')
-    mod = wrapper_library.create_ir_module(name='dynd_example')
+    cdef _type dst_tp = (<type> as_dynd_tp[compile_res.signature.return_type]).v
+ #   dst_tp = _type(as_numba_tp[compile_res.signature.return_type])
+#    print dst_tp
+ #   if  not in as_numba_tp.values():
+  #      print 'error' # need to sort this out
+   #     raise Exception('no numba type')
 
-    inner_func_type = target.call_conv.get_function_type(fndesc.restype,
-                                                     fndesc.argtypes)
+    fndesc = compile_res.fndesc
+    target_context = compile_res.target_context
 
+    library = target_context.jit_codegen().create_library('dynd_example_library')
+    mod = library.create_ir_module(name='dynd_example')
+
+    inner_func_type = target_context.call_conv.get_function_type(fndesc.restype,
+        fndesc.argtypes)
     inner_func = mod.get_or_insert_function(inner_func_type,
                                             name=fndesc.llvm_func_name)
 
-    CharType = ll.IntType(8)
+    CharType = ir.IntType(8)
 
-    single = ll.Function(mod, ll.FunctionType(ll.VoidType(),
+    single = ir.Function(mod, ir.FunctionType(ir.VoidType(),
         [CharType.as_pointer(), CharType.as_pointer().as_pointer()]),
         name = 'single')
 
     bb_entry = single.append_basic_block('entry')
-    irbuilder = ll.IRBuilder(bb_entry)
-
-    dst_tp = ll.IntType(64)
-    src_tp = [ll.IntType(32), ll.IntType(32)]
+    irbuilder = ir.IRBuilder(bb_entry)
 
     src = []
-    for i in range(2):
+    for i, ir_type in enumerate(inner_func_type.args[-nsrc::]):
         src.append(irbuilder.load(irbuilder.bitcast(irbuilder.load(irbuilder.gep(single.args[1],
-            [ll.Constant(ll.IntType(64), i)])), src_tp[i].as_pointer())))
+            [ir.Constant(ir.IntType(32), i)])), ir_type.as_pointer())))
 
-    status, dst = target.call_conv.call_function(irbuilder, inner_func,
-                                                    fndesc.restype,
-                                                    fndesc.argtypes,
-                                                    src)
-    
+    status, dst = target_context.call_conv.call_function(irbuilder, inner_func,
+        fndesc.restype, fndesc.argtypes, src)
+
     irbuilder.store(dst,
-        irbuilder.bitcast(single.args[0], dst_tp.as_pointer()))
+        irbuilder.bitcast(single.args[0], inner_func_type.args[0]))
     irbuilder.ret_void()
 
-    wrapper_library.add_ir_module(mod)
-    wrapper_library.finalize()
+    library.add_ir_module(mod)
+    library.finalize()
 
-    return apply_ptr(ndt.type('(int32, int32) -> int32'),
-            wrapper_library.get_pointer_to_function('single'))
+    return apply_ptr(wrap(make_callable(dst_tp, _array(src_tp, nsrc))),
+            library.get_pointer_to_function('single'))
 
 def apply_numba(tp, f):
     return wrap(_multidispatch2((<type> tp).v, jit_dispatcher(f, jit_func), <size_t> 0))

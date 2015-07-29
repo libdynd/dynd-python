@@ -63,9 +63,7 @@ namespace nd {
     }
 
     struct jit_dispatcher {
-      typedef PyObject *(*jit_type)(PyObject *func,
-                                    const dynd::ndt::type &dst_tp,
-                                    intptr_t nsrc,
+      typedef PyObject *(*jit_type)(PyObject *func, intptr_t nsrc,
                                     const dynd::ndt::type *src_tp);
 
       PyObject *func;
@@ -78,11 +76,11 @@ namespace nd {
 
       ~jit_dispatcher() { Py_DECREF(func); }
 
-      dynd::nd::callable &operator()(const dynd::ndt::type &dst_tp,
+      dynd::nd::callable &operator()(const dynd::ndt::type &DYND_UNUSED(dst_tp),
                                      intptr_t nsrc,
                                      const dynd::ndt::type *src_tp)
       {
-        PyObject *obj = (*jit)(func, dst_tp, nsrc, src_tp);
+        PyObject *obj = (*jit)(func, nsrc, src_tp);
         Py_INCREF(obj);
 
         return reinterpret_cast<DyND_PyCallableObject *>(obj)->v;

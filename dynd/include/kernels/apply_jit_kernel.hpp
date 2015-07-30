@@ -95,7 +95,14 @@ namespace nd {
 
         PyObject *&obj = children[key];
         if (obj == NULL) {
+
+
           obj = (*jit)(func, nsrc, src_tp);
+          if (obj == NULL) {
+            PyErr_Print();
+            throw std::runtime_error("An exception was raised in Python");
+          }
+
           Py_INCREF(obj);
         }
 

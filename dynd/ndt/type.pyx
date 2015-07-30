@@ -570,8 +570,18 @@ class callable_factory(__builtins__.type):
             ret = ret_or_func
         else:
             func = ret_or_func
-            ret = func.__annotations__['return']
-            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
+            try:
+                ret = func.__annotations__['return']
+            except AttributeError, KeyError:
+                ret = type('Any')
+
+            args = []
+            for name in func.__code__.co_varnames:
+                try:
+                    args.append(func.__annotations__[name])
+                except AttributeError, KeyError:
+                    args.append(type('Any'))
+#            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 
         return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v, (<type> struct(**kwds)).v))
 

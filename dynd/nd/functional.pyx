@@ -6,10 +6,43 @@ from .array cimport _array
 from dynd.ndt.type cimport type, make_callable
 from dynd.ndt.type cimport as_numba_type, from_numba_type
 
-# This takes a Python func passed through the jit decorator, and returns
-# a DyND callable object
-cdef public object jit_func(object func, intptr_t nsrc, const _type *src_tp):
+def _import_numba():
+    try:
+        import numba
+    except ImportError:
+        return False
+
+    return True
+
+cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     from llvmlite import ir
+
+    CharType = ir.IntType(8)
+    CharPointerType = CharType.as_pointer()
+    Int32Type = ir.IntType(32)
+    Int64Type = ir.IntType(64)
+
+    def add_single_ir(ir_module):
+        single = ir.Function(ir_module, ir.FunctionType(ir.VoidType(),
+            [CharPointerType, CharPointerType.as_pointer()]),
+            name = 'single')
+
+        bb_entry = single.append_basic_block('entry')
+        ir_builder = ir.IRBuilder(bb_entry)
+
+        src = []
+        for i, ir_type in enumerate(wrapped_func_ir_tp.args[-nsrc::]):
+            src.append(ir_builder.load(ir_builder.bitcast(ir_builder.load(ir_builder.gep(single.args[1],
+                [ir.Constant(Int32Type, i)])), ir_type.as_pointer())))
+
+        status, dst = target_context.call_conv.call_function(ir_builder, wrapped_func,
+            fndesc.restype, fndesc.argtypes, src)
+
+        ir_builder.store(dst,
+            ir_builder.bitcast(single.args[0], wrapped_func_ir_tp.args[0]))
+        ir_builder.ret_void()
+
+        return single
 
     # This is the Numba signature
     signature = tuple(as_numba_type(src_tp[i]) for i in range(nsrc))
@@ -25,43 +58,17 @@ cdef public object jit_func(object func, intptr_t nsrc, const _type *src_tp):
     fndesc = compile_res.fndesc
     target_context = compile_res.target_context
     library = target_context.jit_codegen().create_library(name = 'library')
+
     ir_module = library.create_ir_module(name = 'module')
+#    memcpy = ir_module.declare_intrinsic('llvm.memcpy',
+ #       [CharPointerType, CharPointerType, Int32Type])
 
     wrapped_func_ir_tp = target_context.call_conv.get_function_type(fndesc.restype,
         fndesc.argtypes)
     wrapped_func = ir_module.get_or_insert_function(wrapped_func_ir_tp,
         name = fndesc.llvm_func_name)
 
-    CharType = ir.IntType(8)
-
-    # DyND needs a function pointer of type void (char *dst, char *const *src)
-    single = ir.Function(ir_module, ir.FunctionType(ir.VoidType(),
-        [CharType.as_pointer(), CharType.as_pointer().as_pointer()]),
-        name = 'single')
-
-    bb_entry = single.append_basic_block('entry')
-    irbuilder = ir.IRBuilder(bb_entry)
-
-
-    # For each argument i, do the following:
-    # 1) Use GEP to get the char ** corresponding to src[i]
-    # 2) Load the char * from that char **
-    # 3) Cast it to its appropriate type expected by Numba.
-    # 4) Load its value
-
-    src = []
-    for i, ir_type in enumerate(wrapped_func_ir_tp.args[-nsrc::]):
-        src.append(irbuilder.load(irbuilder.bitcast(irbuilder.load(irbuilder.gep(single.args[1],
-            [ir.Constant(ir.IntType(32), i)])), ir_type.as_pointer())))
-
-    # Call the wrapped Numba function pointer with the values of src
-    status, dst = target_context.call_conv.call_function(irbuilder, wrapped_func,
-        fndesc.restype, fndesc.argtypes, src)
-
-    # Store the returned value from the Numba function
-    irbuilder.store(dst,
-        irbuilder.bitcast(single.args[0], wrapped_func_ir_tp.args[0]))
-    irbuilder.ret_void()
+    single = add_single_ir(ir_module)
 
     library.add_ir_module(ir_module)
     library.finalize()
@@ -69,16 +76,19 @@ cdef public object jit_func(object func, intptr_t nsrc, const _type *src_tp):
     return wrap(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
             library.get_pointer_to_function('single')))
 
-def apply(tp_or_func, func = None):
+def apply(tp_or_func = None, func = None, jit = _import_numba()):
     def make(tp, func):
-        try:
-            from numba import jit
+        if jit:
+            import numba
             return wrap(_multidispatch((<type> tp).v,
-                jit_dispatcher(jit(func, nopython = True), jit_func), <size_t> 0))
-        except ImportError:
-            return wrap(_apply(func, tp))
+                jit_dispatcher(numba.jit(func, nopython = True, nogil = True), _jit), <size_t> 0))
+
+        return wrap(_apply(func, tp))
 
     if func is None:
+        if tp_or_func is None:
+            return lambda func: apply(func, jit = jit)
+
         if isinstance(tp_or_func, ndt.type):
             return lambda func: make(tp_or_func, func)
 

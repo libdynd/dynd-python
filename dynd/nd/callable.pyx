@@ -1,3 +1,4 @@
+from dynd.nd.array cimport _array
 from dynd.wrapper cimport set_wrapper_type, wrap
 
 cdef class callable(object):
@@ -43,5 +44,11 @@ cdef class callable(object):
 #            msg = "nd.callable call got an unexpected keyword argument '%s'"
 #            raise TypeError(msg % (kwds.keys()[0]))
         return callable_call(self, args, kwds, ectx)
+
+    def __str__(self):
+        return str(wrap(<_array> self.v))
+
+    def __repr__(self):
+        return repr(wrap(<_array> self.v))
 
 set_wrapper_type[_callable](callable)

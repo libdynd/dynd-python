@@ -572,14 +572,14 @@ class callable_factory(__builtins__.type):
             func = ret_or_func
             try:
                 ret = func.__annotations__['return']
-            except AttributeError, KeyError:
+            except (AttributeError, KeyError):
                 ret = type('Any')
 
             args = []
             for name in func.__code__.co_varnames:
                 try:
                     args.append(func.__annotations__[name])
-                except AttributeError, KeyError:
+                except (AttributeError, KeyError):
                     args.append(type('Any'))
 #            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 

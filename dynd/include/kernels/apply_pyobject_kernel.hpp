@@ -170,6 +170,7 @@ namespace nd {
         }
       }
     };
+
   } // namespace pydynd::nd::functional
 } // namespace pydynd::nd
 } // namespace pydynd

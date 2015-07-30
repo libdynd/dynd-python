@@ -75,6 +75,8 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
 
         bint match(_type&) except +translate_exception
 
+        type_id_t get_type_id() const
+
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
 
@@ -103,6 +105,7 @@ cdef extern from "dynd/types/categorical_type.hpp" namespace "dynd":
     _type dynd_factor_categorical_type "dynd::ndt::factor_categorical" (_array&) except +translate_exception
 
 cdef extern from 'dynd/types/callable_type.hpp':
+    _type make_callable 'dynd::ndt::callable_type::make'(_type &, _array &)
     _type make_callable 'dynd::ndt::callable_type::make'(_type &, _type &, _type &)
 
 cdef extern from 'dynd/types/tuple_type.hpp':
@@ -151,3 +154,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 cdef class type(object):
     cdef _type v
+
+cdef as_numba_type(_type)
+cdef _type from_numba_type(object)

@@ -197,7 +197,7 @@ setup(
         'dynd.ndt',
         'dynd.tests',
     ],
-    package_data = {'dynd': ['*.pxd', 'nd/*.pxd', 'ndt/*.pxd', 'include/*.hpp']},
+    package_data = {'dynd': ['*.pxd', 'nd/*.pxd', 'ndt/*.pxd', 'include/*.hpp', 'include/kernels/*.hpp']},
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
     ext_modules = [Extension('config', sources=[])],
@@ -211,4 +211,3 @@ setup(
     ],
     cmdclass = {'build_ext': cmake_build_ext},
 )
-

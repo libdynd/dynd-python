@@ -79,8 +79,14 @@ class cmake_build_ext(build_ext):
         if built_with_cuda:
             cuda_option = '-DDYND_CUDA=ON'
 
+    if sys.platform == 'darwin':
+        osx_deployment_target = '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10'
+    else:
+        osx_deployment_target = ''
+
     if sys.platform != 'win32':
         self.spawn(['cmake', pyexe_option, install_lib_option,
+                    osx_deployment_target,
                     static_lib_option, cuda_option, source])
         self.spawn(['make'])
     else:

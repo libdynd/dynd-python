@@ -35,13 +35,19 @@ void pydynd::array_broadcast_assign_from_py(
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
-  pydynd::nd::copy_from_pyobject(1, &src_tp, &src_arrmeta, &src_data,
-                                 dynd::kwds("dst", tmp_dst, "broadcast", true));
+  const char *kwd_names[1] = {"broadcast"};
+  dynd::nd::array kwd_values[1] = {true};
+  (*pydynd::nd::copy_from_pyobject.get().get())(
+      tmp_dst.get_type(), tmp_dst.get_arrmeta(),
+      tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data,
+      dynd::nd::as_struct(1, kwd_names, kwd_values),
+      std::map<std::string, dynd::ndt::type>());
 }
 
-void pydynd::array_broadcast_assign_from_py(
-    const dynd::nd::array &a, PyObject *value,
-    const dynd::eval::eval_context *ectx)
+void
+pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
+                                       PyObject *value,
+                                       const dynd::eval::eval_context *ectx)
 {
   array_broadcast_assign_from_py(a.get_type(), a.get_arrmeta(),
                                  a.get_readwrite_originptr(), value, ectx);
@@ -65,7 +71,12 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
-  pydynd::nd::copy_from_pyobject(
-      1, &src_tp, &src_arrmeta, &src_data,
-      dynd::kwds("dst", tmp_dst, "broadcast", false));
+  const char *kwd_names[1] = {"broadcast"};
+  dynd::nd::array kwd_values[1] = {false};
+  (*pydynd::nd::copy_from_pyobject.get().get())(
+      tmp_dst.get_type(), tmp_dst.get_arrmeta(),
+      tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data,
+      dynd::nd::as_struct(1, kwd_names, kwd_values),
+      std::map<std::string, dynd::ndt::type>());
+
 }

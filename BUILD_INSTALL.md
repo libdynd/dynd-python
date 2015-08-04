@@ -11,7 +11,7 @@ clang 3.3-svn have been tested.
 2. Get the prerequisites.
   * CMake >= 2.8.11
   * Python 2.6, 2.7, 3.3, or 3.4
-  * Cython >= 0.19
+  * Cython >= 0.21
   * NumPy >= 1.5
   * git (for cloning the github repositories)
   * Nose (Only for generating xunit .xml output when running tests)

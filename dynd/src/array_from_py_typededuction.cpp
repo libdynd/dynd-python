@@ -258,7 +258,7 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
   switch (tp.get_kind()) {
   case kind_kind:
   case pattern_kind:
-    if (!tp.is_dim()) {
+    if (tp.is_scalar()) {
       return 0;
     }
   case dim_kind:

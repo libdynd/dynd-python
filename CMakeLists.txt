@@ -37,15 +37,6 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescriptionDyND)
 
-# Force the default build type to be Release, because a Debug
-# build doesn't work properly with the default Python build
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
-      "Choose the type of build, options are: Debug Release
-RelWithDebInfo MinSizeRel."
-      FORCE)
-endif()
-
 find_package(CUDA 6.5)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)

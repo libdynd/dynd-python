@@ -1,4 +1,5 @@
-et -ex
+#!/bin/bash
+set -ex
 
 cd $RECIPE_DIR
 

@@ -10,7 +10,7 @@ build:
   number: {{environ.get('BINSTAR_BUILD', 1)}}
   rpaths:
     - lib/
-    - python2.7/site-packages/dynd/
+    - lib/python2.7/site-packages/dynd/
 
 requirements:
   build:

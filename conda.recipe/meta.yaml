@@ -8,6 +8,9 @@ build:
     - lib/libstdc++.so.6
     - lib/libstdc++.so.6.0.19
   number: {{environ.get('BINSTAR_BUILD', 1)}}
+  rpaths:
+    - lib/
+    - python2.7/site-packages/dynd/
 
 requirements:
   build:

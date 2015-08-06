@@ -17,5 +17,4 @@ else
 fi
 
 cd ..
-python setup.py install #|| exit 1
-ls
+sudo python setup.py install #|| exit 1

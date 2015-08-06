@@ -1,0 +1,14 @@
+package: pydynd_build_test
+platform:
+    - linux-64
+    - osx-64
+    - win-64
+script:
+    - conda build conda.recipe -c r
+build_targets:
+    files: conda
+    channels: main
+iotimeout: 300
+
+# before_script:
+#     - sudo yum -y install git dos2unix gcc gcc-c++

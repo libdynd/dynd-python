@@ -15,6 +15,7 @@ requirements:
     - gcc >=4.8
     - python
     - setuptools
+    - libdynd
 #    - gcc 4.8.4.99 [linux]
 #  run:
 #    - libstd >=4.8

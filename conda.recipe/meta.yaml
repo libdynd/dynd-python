@@ -19,12 +19,12 @@ requirements:
     - libdynd
   run:
     - python
-    - numpy
+#    - numpy
     - libdynd
 
 test:
   commands:
-    - python -c "import numpy; import dynd; dynd.test(verbosity=2)"
+    - python -c "import dynd; dynd.test(verbosity=2)"
 
 about:
   home: https://github.com/libdynd/dynd-python

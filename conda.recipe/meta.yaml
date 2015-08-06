@@ -24,7 +24,7 @@ requirements:
 
 test:
   commands:
-    - python -c "import dynd; dynd.test()"
+    - python -c "import dynd; dynd.test(verbosity=2)"
 
 about:
   home: https://github.com/libdynd/dynd-python

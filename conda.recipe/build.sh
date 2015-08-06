@@ -16,5 +16,5 @@ else
     EXTRAOPTIONS=
 fi
 
-cd ..
+#cd ..
 python setup.py install || exit 1

@@ -19,7 +19,7 @@ requirements:
     - libdynd
   run:
     - python
-#    - numpy
+    - numpy
     - libdynd
 
 test:

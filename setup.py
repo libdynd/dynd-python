@@ -51,7 +51,7 @@ class cmake_build_ext(build_ext):
     print getcwd()
     print os.listdir(getcwd())
     print self.build_temp
-    print os.listdir(os.path.join(getcwd(), '/build'))
+    print os.listdir(os.path.join(getcwd(), 'build'))
 
     # Change to the build directory
     saved_cwd = getcwd()

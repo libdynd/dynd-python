@@ -75,30 +75,41 @@ class cmake_build_ext(build_ext):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
     else:
-        built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
-        if built_with_cuda:
+        if sys.platform == 'win32':
+            libdynd_config = 'libdynd-config.bat'
+        else:
+            libdynd_config = 'libdynd-config'
+        built_with_cuda = check_output([libdynd_config, '-cuda'])
+        if built_with_cuda == 'ON':
             cuda_option = '-DDYND_CUDA=ON'
 
+    global cmake_generator
     if sys.platform != 'win32':
-        self.spawn(['cmake', pyexe_option, install_lib_option,
-                    static_lib_option, cuda_option, source])
+        command = ['cmake']
+        if 'DYND_INSTALL_LIB' in cmake_extra_args:
+            install_lib_option
+        command = [cmake_executable, pyexe_option, install_lib_option,
+                    static_lib_option, cuda_option, source]
+        if cmake_generator:
+            command = command[:-1] + ['-G', cmake_generator, source]
+        self.spawn(command)
         self.spawn(['make'])
     else:
         import struct
         # User-chosen MSVC (or 2013 by default)
-        if msvc == '2013':
-            cmake_generator = 'Visual Studio 12 2013'
-        elif msvc == '2015':
-            cmake_generator = 'Visual Studio 14 2015'
-        else:
-            raise ValueError('Unrecognized MSVC version %s' % msvc)
-        if is_64_bit: cmake_generator += ' Win64'
+        if not cmake_generator:
+            if msvc == '2013':
+                cmake_generator = 'Visual Studio 12 2013'
+            elif msvc == '2015':
+                cmake_generator = 'Visual Studio 14 2015'
+            else:
+                raise ValueError('Unrecognized MSVC version %s' % msvc)
+            if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        self.spawn(['cmake', source, pyexe_option, install_lib_option,
+        self.spawn([cmake_executable, source, pyexe_option, install_lib_option,
                     static_lib_option, build_tests_option,
                     '-G', cmake_generator])
-        # Do the build
-        self.spawn(['cmake', '--build', '.', '--config', 'Release'])
+        self.spawn([cmake_executable, '--build', '.', '--config', 'Release'])
 
     import glob, shutil
 
@@ -151,9 +162,11 @@ class cmake_build_ext(build_ext):
 if sys.version_info >= (2, 7):
     from subprocess import check_output
 else:
-    def check_output(args):
+    def check_output(args, **kwargs):
         import subprocess
-        return subprocess.Popen(args, stdout = subprocess.PIPE).communicate()[0]
+        if 'stdout' not in kwargs:
+            kwargs['stdout'] = subprocess.PIPE
+        return subprocess.Popen(args, **kwargs).communicate()[0]
 
 # Get the version number to use from git
 ver = check_output(['git', 'describe', '--dirty',
@@ -180,15 +193,24 @@ if '.' in ver:
     else:
         ver = '.'.join(vlst)
 
-# Hack in an extra parameter for specifying the MSVC version
-msvc = '2013'
-if '--msvc' in sys.argv:
-    i = sys.argv.index('--msvc')
-    if i+1 >= len(sys.argv):
-        print('Error: --msvc option requires MSVC version (2013 or 2015)')
-        sys.exit(1)
-    msvc = sys.argv[i+1]
-    del sys.argv[i:i+2]
+# Take extra arguments from the command line.
+allowed_args = ['cmake_executable', 'cmake_generator', 'msvc']
+args = dict([item[2:].split('=', 1) for item in sys.argv
+             if '=' in item and item[:2]=='--'
+             and item.split('=', 1)[0][2:] in allowed_args])
+# Remove any additional arguments from sys.argv
+# before they pass through distutils.
+for key, val in args.items():
+    sys.argv.remove('--%s=%s' % (key, val))
+msvc = args.get('msvc_version', '2013')
+if msvc and msvc not in ['2013', '2015']:
+    print('Error: --msvc option requires MSVC version (2013 or 2015)')
+    sys.exit(1)
+cmake_executable = args.get('cmake_executable', 'cmake')
+cmake_generator = args.get('cmake_generator', '')
+if msvc in args and cmake_generator in args:
+    print('Error: msvc version and cmake generator cannot both be specified.')
+    sys.exit(1)
 
 setup(
     name = 'dynd',

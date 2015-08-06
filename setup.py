@@ -5,7 +5,7 @@ from setuptools import setup, Extension
 
 import os, sys
 from os import chdir, getcwd
-from os.path import abspath, dirname
+from os.path import abspath, dirname, split
 
 import re
 
@@ -106,8 +106,16 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         name, = glob.glob('libpydynd.*')
         shutil.move(name, os.path.join(build_lib, 'dynd', name))
+        if install_lib_option.split('=')[1] == 'OFF':
+            name, = glob.glob('libraries/libdynd/libdynd.*')
+            short_name = split(name)[1]
+            shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
     else:
         shutil.move(os.path.join('Release', 'pydynd.dll'), os.path.join(build_lib, 'dynd', 'pydynd.dll'))
+        if install_lib_option.split('=')[1] == 'OFF':
+            name, = glob.glob('libraries/libdynd/Release/libdynd.*')
+            short_name = split(name)[1]
+            shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
 
     # Move the built C-extension to the place expected by the Python build
     self._found_names = []

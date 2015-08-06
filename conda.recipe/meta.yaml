@@ -13,6 +13,8 @@ requirements:
   build:
     - cmake [unix]
     - gcc >=4.8
+    - python
+    - setuptools
 #    - gcc 4.8.4.99 [linux]
 #  run:
 #    - libstd >=4.8

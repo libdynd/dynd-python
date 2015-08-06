@@ -47,6 +47,11 @@ class cmake_build_ext(build_ext):
     build_temp = os.path.join(os.getcwd(), self.build_temp)
     build_lib = os.path.join(os.getcwd(), self.build_lib)
 
+    print 'Changing to the build directory...'
+    print getcwd()
+    print os.listdir(getcwd())
+    print self.build_temp
+
     # Change to the build directory
     saved_cwd = getcwd()
     if not os.path.isdir(self.build_temp):

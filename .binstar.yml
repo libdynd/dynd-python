@@ -1,8 +1,8 @@
 package: pydynd_build_test
 platform:
     - linux-64
-    - osx-64
-    - win-64
+#    - osx-64
+#    - win-64
 script:
     - conda build conda.recipe -c r -c dynd
 build_targets:

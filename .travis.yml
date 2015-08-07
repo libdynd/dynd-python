@@ -1,3 +1,5 @@
+sudo: false
+
 language: python
 
 python:
@@ -6,30 +8,27 @@ python:
   - "3.3"
   - "3.4"
 
-branches:
-  only:
-    - master
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - kalakris-cmake
+    packages:
+    - gcc-4.7
+    - g++-4.7
+    - cmake
 
 install:
-  # For newer cmake
-  - sudo add-apt-repository -y ppa:kalakris/cmake
-  # For gcc 4.7
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update
-  - sudo apt-get install cmake
-  - sudo apt-get -qq install gcc-4.7; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 90; export CC="gcc-4.7"
-  - sudo apt-get -qq install g++-4.7; sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.7 90; export CXX="g++-4.7"
+  # Make sure the proper C and C++ compilers are used
+  - export CC=gcc-4.7
+  - export CXX=g++-4.7
   # Install dependencies
-  - pip install numpy nose cython==0.21
-#  - pip install scipy
-  # Install libdynd
-  - git clone --depth=1 https://github.com/libdynd/libdynd.git
-  - mkdir libdynd/build
-  - pushd libdynd/build
-  - cmake -DDYND_BUILD_TESTS=OFF ..
-  - make
-  - sudo make install
-  - sudo ldconfig
+  - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
+  - travis_retry pip install numpy
+  # Put libdynd sources in the right place so they are built with dynd-python.
+  - mkdir libraries
+  - pushd libraries
+  - git clone https://github.com/libdynd/libdynd.git
   - popd
   # Build dynd-python
   - python setup.py install
@@ -44,4 +43,3 @@ notifications:
   flowdock: "b08b3ba4fb86fa48121e90b5f67ccb75"
   on_success: "change"
   on_failure: "always" # "change"
-

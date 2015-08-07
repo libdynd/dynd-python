@@ -84,13 +84,13 @@ class cmake_build_ext(build_ext):
     global cmake_generator
     if sys.platform != 'win32':
         command = ['cmake']
-        if 'DYND_INSTALL_LIB' in cmake_extra_args:
-            install_lib_option
         command = [cmake_executable, pyexe_option, install_lib_option,
-                    static_lib_option, cuda_option, source]
+                    static_lib_option, cuda_option]
+        if 'verbose' in setup_args:
+            command.append('-DCMAKE_VERBOSE_MAKEFILE=ON')
         if cmake_generator:
-            command = command[:-1] + ['-G', cmake_generator, source]
-        self.spawn(command)
+            command = command + ['-G', cmake_generator]
+        self.spawn(command + [source])
         self.spawn(['make'])
     else:
         import struct
@@ -104,10 +104,14 @@ class cmake_build_ext(build_ext):
                 raise ValueError('Unrecognized MSVC version %s' % msvc)
             if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        self.spawn([cmake_executable, source, pyexe_option, install_lib_option,
-                    static_lib_option, build_tests_option,
-                    '-G', cmake_generator])
-        self.spawn([cmake_executable, '--build', '.', '--config', 'Release'])
+        cmake_command = [cmake_executable, source, pyexe_option, install_lib_option,
+                         static_lib_option, build_tests_option,
+                         '-G', cmake_generator]
+        if 'verbose' in setup_args:
+            cmake_command.append('-DCMAKE_VERBOSE_MAKEFILE=ON')
+        self.spawn(cmake_command)
+        build_command = [cmake_executable, '--build', '.', '--config', 'Release']
+        self.spawn(build_command)
 
     import glob, shutil
 
@@ -191,24 +195,32 @@ if '.' in ver:
     else:
         ver = '.'.join(vlst)
 
-# Take extra arguments from the command line.
-allowed_args = ['cmake_executable', 'cmake_generator', 'msvc']
-args = dict([item[2:].split('=', 1) for item in sys.argv
-             if '=' in item and item[:2]=='--'
-             and item.split('=', 1)[0][2:] in allowed_args])
+# Take extra keyword arguments from the command line.
+allowed_kwargs = ['cmake_executable', 'cmake_generator', 'msvc']
+setup_kwargs = dict([item[2:].split('=', 1) for item in sys.argv
+             if '=' in item and item[:2] == '--'
+             and item.split('=', 1)[0][2:] in allowed_kwargs])
 # Remove any additional arguments from sys.argv
 # before they pass through distutils.
-for key, val in args.items():
+for key, val in setup_kwargs.items():
     sys.argv.remove('--%s=%s' % (key, val))
-msvc = args.get('msvc_version', '2013')
+# Initialize global variables from keyworkd arguments given
+msvc = setup_kwargs.get('msvc_version', '2013')
 if msvc and msvc not in ['2013', '2015']:
     print('Error: --msvc option requires MSVC version (2013 or 2015)')
     sys.exit(1)
-cmake_executable = args.get('cmake_executable', 'cmake')
-cmake_generator = args.get('cmake_generator', '')
-if msvc in args and cmake_generator in args:
+cmake_executable = setup_kwargs.get('cmake_executable', 'cmake')
+cmake_generator = setup_kwargs.get('cmake_generator', '')
+if msvc in setup_kwargs and cmake_generator in setup_kwargs:
     print('Error: msvc version and cmake generator cannot both be specified.')
     sys.exit(1)
+
+# Take additional flags from the command line.
+allowed_args = ['verbose']
+# Keyword arguments have already been removed from sys.argv.
+setup_args = [item[2:] for item in sys.argv if item[:2] == '--']
+for val in setup_args:
+    sys.argv.remove('--%s' % (val))
 
 setup(
     name = 'dynd',

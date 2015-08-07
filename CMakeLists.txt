@@ -217,6 +217,7 @@ set(pydynd_SRC
     dynd/src/py_lowlevel_api.cpp
     dynd/src/type_functions.cpp
     dynd/src/utility_functions.cpp
+    dynd/src/wrapper.cpp
 )
 
 add_library(pydynd SHARED ${pydynd_SRC})

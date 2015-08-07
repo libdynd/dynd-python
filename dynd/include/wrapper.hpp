@@ -16,11 +16,7 @@ struct DyND_PyWrapperObject {
 };
 
 template <typename T>
-PyTypeObject *&DyND_PyWrapper_Type()
-{
-  static PyTypeObject *type = NULL;
-  return type;
-}
+PyTypeObject *&DyND_PyWrapper_Type();
 
 template <typename T>
 void DyND_PyWrapper_Type(PyObject *obj)

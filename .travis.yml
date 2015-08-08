@@ -18,6 +18,11 @@ addons:
     - g++-4.7
     - cmake
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/dynd-python/build
+
 install:
   # Make sure the proper C and C++ compilers are used
   - export CC=gcc-4.7

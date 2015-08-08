@@ -28,7 +28,7 @@ install:
   # Put libdynd sources in the right place so they are built with dynd-python.
   - mkdir libraries
   - pushd libraries
-  - git clone https://github.com/libdynd/libdynd.git
+  - git clone --depth=1 https://github.com/libdynd/libdynd.git
   - popd
   # Build dynd-python
   - python setup.py install

@@ -8,7 +8,7 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/func/elwise.hpp>
-#include <dynd/func/lift_reduction_callable.hpp>
+#include <dynd/func/reduction.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/func/rolling.hpp>
 #include <dynd/kernels/reduction_kernels.hpp>
@@ -302,7 +302,7 @@ PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
       throw dynd::type_error(ss.str());
     }
 
-    dynd::nd::callable out_af = dynd::lift_reduction_callable(
+    dynd::nd::callable out_af = dynd::nd::functional::reduction(
         dynd::nd::callable(elwise_reduction), lifted_type,
         dynd::nd::callable(dst_initialization), keepdims, reduction_ndim,
         reduction_dimflags.get(), associative, commutative, right_associative,

@@ -5,7 +5,7 @@ from setuptools import setup, Extension
 
 import os, sys
 from os import chdir, getcwd
-from os.path import abspath, dirname, split
+from os.path import abspath, dirname, split, normcase
 
 import re
 
@@ -55,11 +55,9 @@ class cmake_build_ext(build_ext):
 
     # Detect if we built elsewhere
     if os.path.isfile('CMakeCache.txt'):
-        cachefile = open('CMakeCache.txt', 'r')
-        cachedir = re.search('CMAKE_CACHEFILE_DIR:INTERNAL=(.*)', cachefile.read()).group(1)
-        cachefile.close()
-
-        if (cachedir != build_temp):
+        with open('CMakeCache.txt', 'r') as cachefile:
+            cachedir = re.search('CMAKE_CACHEFILE_DIR:INTERNAL=(.*)', cachefile.read()).group(1).replace("\\", '/')
+        if not normcase(cachedir.replace('\\', '/')) == normcase(build_temp.replace('\\', '/')):
             return
 
     pyexe_option = '-DPYTHON_EXECUTABLE=%s' % sys.executable
@@ -75,30 +73,45 @@ class cmake_build_ext(build_ext):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
     else:
-        built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
-        if built_with_cuda:
+        if sys.platform == 'win32':
+            libdynd_config = 'libdynd-config.bat'
+        else:
+            libdynd_config = 'libdynd-config'
+        built_with_cuda = check_output([libdynd_config, '-cuda'])
+        if built_with_cuda == 'ON':
             cuda_option = '-DDYND_CUDA=ON'
 
+    global cmake_generator
     if sys.platform != 'win32':
-        self.spawn(['cmake', pyexe_option, install_lib_option,
-                    static_lib_option, cuda_option, source])
+        command = ['cmake']
+        command = [cmake_executable, pyexe_option, install_lib_option,
+                    static_lib_option, cuda_option]
+        if 'verbose' in setup_args:
+            command.append('-DCMAKE_VERBOSE_MAKEFILE=ON')
+        if cmake_generator:
+            command = command + ['-G', cmake_generator]
+        self.spawn(command + [source])
         self.spawn(['make'])
     else:
         import struct
         # User-chosen MSVC (or 2013 by default)
-        if msvc == '2013':
-            cmake_generator = 'Visual Studio 12 2013'
-        elif msvc == '2015':
-            cmake_generator = 'Visual Studio 14 2015'
-        else:
-            raise ValueError('Unrecognized MSVC version %s' % msvc)
-        if is_64_bit: cmake_generator += ' Win64'
+        if not cmake_generator:
+            if msvc == '2013':
+                cmake_generator = 'Visual Studio 12 2013'
+            elif msvc == '2015':
+                cmake_generator = 'Visual Studio 14 2015'
+            else:
+                raise ValueError('Unrecognized MSVC version %s' % msvc)
+            if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        self.spawn(['cmake', source, pyexe_option, install_lib_option,
-                    static_lib_option, build_tests_option,
-                    '-G', cmake_generator])
-        # Do the build
-        self.spawn(['cmake', '--build', '.', '--config', 'Release'])
+        cmake_command = [cmake_executable, source, pyexe_option, install_lib_option,
+                         static_lib_option, build_tests_option,
+                         '-G', cmake_generator]
+        if 'verbose' in setup_args:
+            cmake_command.append('-DCMAKE_VERBOSE_MAKEFILE=ON')
+        self.spawn(cmake_command)
+        build_command = [cmake_executable, '--build', '.', '--config', 'Release']
+        self.spawn(build_command)
 
     import glob, shutil
 
@@ -151,9 +164,11 @@ class cmake_build_ext(build_ext):
 if sys.version_info >= (2, 7):
     from subprocess import check_output
 else:
-    def check_output(args):
+    def check_output(args, **kwargs):
         import subprocess
-        return subprocess.Popen(args, stdout = subprocess.PIPE).communicate()[0]
+        if 'stdout' not in kwargs:
+            kwargs['stdout'] = subprocess.PIPE
+        return subprocess.Popen(args, **kwargs).communicate()[0]
 
 # Get the version number to use from git
 ver = check_output(['git', 'describe', '--dirty',
@@ -180,15 +195,32 @@ if '.' in ver:
     else:
         ver = '.'.join(vlst)
 
-# Hack in an extra parameter for specifying the MSVC version
-msvc = '2013'
-if '--msvc' in sys.argv:
-    i = sys.argv.index('--msvc')
-    if i+1 >= len(sys.argv):
-        print('Error: --msvc option requires MSVC version (2013 or 2015)')
-        sys.exit(1)
-    msvc = sys.argv[i+1]
-    del sys.argv[i:i+2]
+# Take extra keyword arguments from the command line.
+allowed_kwargs = ['cmake_executable', 'cmake_generator', 'msvc']
+setup_kwargs = dict([item[2:].split('=', 1) for item in sys.argv
+             if '=' in item and item[:2] == '--'
+             and item.split('=', 1)[0][2:] in allowed_kwargs])
+# Remove any additional arguments from sys.argv
+# before they pass through distutils.
+for key, val in setup_kwargs.items():
+    sys.argv.remove('--%s=%s' % (key, val))
+# Initialize global variables from keyworkd arguments given
+msvc = setup_kwargs.get('msvc_version', '2013')
+if msvc and msvc not in ['2013', '2015']:
+    print('Error: --msvc option requires MSVC version (2013 or 2015)')
+    sys.exit(1)
+cmake_executable = setup_kwargs.get('cmake_executable', 'cmake')
+cmake_generator = setup_kwargs.get('cmake_generator', '')
+if msvc in setup_kwargs and cmake_generator in setup_kwargs:
+    print('Error: msvc version and cmake generator cannot both be specified.')
+    sys.exit(1)
+
+# Take additional flags from the command line.
+allowed_args = ['verbose']
+# Keyword arguments have already been removed from sys.argv.
+setup_args = [item[2:] for item in sys.argv if item[:2] == '--']
+for val in setup_args:
+    sys.argv.remove('--%s' % (val))
 
 setup(
     name = 'dynd',

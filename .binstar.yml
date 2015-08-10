@@ -1,4 +1,4 @@
-package: pydynd_build_test
+package: dynd-python
 platform:
     - linux-64
 #    - osx-64

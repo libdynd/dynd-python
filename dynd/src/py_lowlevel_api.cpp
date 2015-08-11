@@ -186,136 +186,6 @@ PyObject *lift_callable(PyObject *af)
   }
 }
 
-PyObject *lift_reduction_callable(PyObject *elwise_reduction_obj,
-                                  PyObject *lifted_type_obj,
-                                  PyObject *dst_initialization_obj,
-                                  PyObject *axis_obj, PyObject *keepdims_obj,
-                                  PyObject *associative_obj,
-                                  PyObject *commutative_obj,
-                                  PyObject *right_associative_obj,
-                                  PyObject *reduction_identity_obj)
-{
-  try {
-    // Convert all the input parameters
-    if (!DyND_PyArray_Check(elwise_reduction_obj) ||
-        ((DyND_PyArrayObject *)elwise_reduction_obj)
-                ->v.get_type()
-                .get_type_id() != dynd::callable_type_id) {
-      stringstream ss;
-      ss << "elwise_reduction must be an nd.array of type callable";
-      throw dynd::type_error(ss.str());
-    }
-    const dynd::nd::array &elwise_reduction =
-        ((DyND_PyArrayObject *)elwise_reduction_obj)->v;
-    const dynd::callable_type_data *elwise_reduction_af =
-        reinterpret_cast<const dynd::callable_type_data *>(
-            elwise_reduction.get_readonly_originptr());
-    const dynd::ndt::callable_type *elwise_reduction_af_tp =
-        elwise_reduction.get_type().extended<dynd::ndt::callable_type>();
-
-    dynd::nd::array dst_initialization;
-    if (DyND_PyArray_Check(dst_initialization_obj) &&
-        ((DyND_PyArrayObject *)dst_initialization_obj)
-                ->v.get_type()
-                .get_type_id() == dynd::callable_type_id) {
-      dst_initialization = ((DyND_PyArrayObject *)dst_initialization_obj)->v;
-      ;
-    } else if (dst_initialization_obj != Py_None) {
-      stringstream ss;
-      ss << "dst_initialization must be None or an nd.array of type "
-            "callable";
-      throw dynd::type_error(ss.str());
-    }
-
-    dynd::ndt::type lifted_type =
-        pydynd::make__type_from_pyobject(lifted_type_obj);
-
-    // This is the number of dimensions being reduced
-    intptr_t reduction_ndim =
-        lifted_type.get_ndim() -
-        elwise_reduction_af_tp->get_pos_type(0).get_ndim();
-
-    dynd::shortvector<bool> reduction_dimflags(reduction_ndim);
-    if (axis_obj == Py_None) {
-      // None means to reduce all axes
-      for (intptr_t i = 0; i < reduction_ndim; ++i) {
-        reduction_dimflags[i] = true;
-      }
-    } else {
-      memset(reduction_dimflags.get(), 0, reduction_ndim * sizeof(bool));
-      vector<intptr_t> axis_vec;
-      pydynd::pyobject_as_vector_intp(axis_obj, axis_vec, true);
-      for (size_t i = 0, i_end = axis_vec.size(); i != i_end; ++i) {
-        intptr_t ax = axis_vec[i];
-        if (ax < -reduction_ndim || ax >= reduction_ndim) {
-          throw dynd::axis_out_of_bounds(ax, reduction_ndim);
-        } else if (ax < 0) {
-          ax += reduction_ndim;
-        }
-        reduction_dimflags[ax] = true;
-      }
-    }
-
-    bool keepdims;
-    if (keepdims_obj == Py_True) {
-      keepdims = true;
-    } else if (keepdims_obj == Py_False) {
-      keepdims = false;
-    } else {
-      throw dynd::type_error("keepdims must be either True or False");
-    }
-
-    bool associative;
-    if (associative_obj == Py_True) {
-      associative = true;
-    } else if (associative_obj == Py_False) {
-      associative = false;
-    } else {
-      throw dynd::type_error("associative must be either True or False");
-    }
-
-    bool commutative;
-    if (commutative_obj == Py_True) {
-      commutative = true;
-    } else if (commutative_obj == Py_False) {
-      commutative = false;
-    } else {
-      throw dynd::type_error("commutative must be either True or False");
-    }
-
-    bool right_associative;
-    if (right_associative_obj == Py_True) {
-      right_associative = true;
-    } else if (right_associative_obj == Py_False) {
-      right_associative = false;
-    } else {
-      throw dynd::type_error("right_associative must be either True or False");
-    }
-
-    dynd::nd::array reduction_identity;
-    if (DyND_PyArray_Check(reduction_identity_obj)) {
-      reduction_identity = ((DyND_PyArrayObject *)reduction_identity_obj)->v;
-      ;
-    } else if (reduction_identity_obj != Py_None) {
-      stringstream ss;
-      ss << "reduction_identity must be None or an nd.array";
-      throw dynd::type_error(ss.str());
-    }
-
-    dynd::nd::callable out_af = dynd::nd::functional::reduction(
-        dynd::nd::callable(elwise_reduction), lifted_type,
-        dynd::nd::callable(dst_initialization), keepdims, reduction_ndim,
-        reduction_dimflags.get(), associative, commutative, right_associative,
-        reduction_identity);
-
-    return DyND_PyWrapper_New(out_af);
-  }
-  catch (...) {
-    pydynd::translate_exception();
-    return NULL;
-  }
-}
-
 PyObject *callable_from_pyfunc(PyObject *pyfunc, PyObject *proto)
 {
   try {
@@ -385,7 +255,7 @@ const pydynd::py_lowlevel_api_t py_lowlevel_api = {
     &pydynd::numpy_typetuples_from_ufunc,
     &pydynd::nd::functional::callable_from_ufunc,
     &lift_callable,
-    &lift_reduction_callable,
+    NULL,
     &callable_from_pyfunc,
     &make_rolling_callable,
     &make_builtin_mean1d_callable,

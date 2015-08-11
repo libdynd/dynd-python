@@ -1,4 +1,17 @@
 from libc.stdint cimport uintptr_t
+from .cpp.eval_context cimport eval_context as _eval_context
+from .config cimport translate_exception
+
+cdef extern from "eval_context_functions.hpp" namespace "pydynd":
+    void init_w_eval_context_typeobject(object)
+
+    _eval_context *new_eval_context(object) except +translate_exception
+    void dynd_modify_default_eval_context "pydynd::modify_default_eval_context" (object) except +translate_exception
+    object get_eval_context_errmode(object) except +translate_exception
+    object get_eval_context_cuda_device_errmode(object) except +translate_exception
+    object get_eval_context_date_parse_order(object) except +translate_exception
+    object get_eval_context_century_window(object) except +translate_exception
+    object get_eval_context_repr(object) except +translate_exception
 
 cdef class eval_context(object):
     """

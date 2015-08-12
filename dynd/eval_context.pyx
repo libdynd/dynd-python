@@ -1,7 +1,5 @@
 from libc.stdint cimport uintptr_t
 
-from .cpp.eval_context cimport eval_context as _eval_context
-
 from .config cimport translate_exception
 
 cdef extern from "eval_context_functions.hpp" namespace "pydynd":

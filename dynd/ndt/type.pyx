@@ -4,19 +4,26 @@ from cpython.object cimport Py_EQ, Py_NE
 from libc.stdint cimport intptr_t
 from libcpp.string cimport string
 
-from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
-                         int8_type_id, int16_type_id, int32_type_id,
-                         int64_type_id, int128_type_id, uint8_type_id,
-                         uint16_type_id, uint32_type_id, uint64_type_id,
-                         uint128_type_id, float16_type_id, float32_type_id,
-                         float64_type_id, float128_type_id,
-                         complex_float32_type_id, complex_float64_type_id,
-                         void_type_id, callable_type_id, dynd_format_datashape,
-                         dynd_make_byteswap_type, dynd_make_categorical_type,
-                         dynd_make_unaligned_type, dynd_make_fixed_bytes_type,
-                         dynd_make_fixed_dim_kind_type, dynd_make_var_dim_type,
-                         make_tuple as _make_tuple, make_struct as _make_struct,
-                         make_callable)
+from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
+                                  bool_type_id, int8_type_id, int16_type_id,
+                                  int32_type_id, int64_type_id, int128_type_id,
+                                  uint8_type_id, uint16_type_id, uint32_type_id,
+                                  uint64_type_id, uint128_type_id,
+                                  float16_type_id, float32_type_id,
+                                  float64_type_id, float128_type_id,
+                                  complex_float32_type_id,
+                                  complex_float64_type_id, void_type_id,
+                                  callable_type_id)
+from ..cpp.types.datashape_formatter cimport dynd_format_datashape
+from ..cpp.types.byteswap_type cimport dynd_make_byteswap_type
+from ..cpp.types.categorical_type cimport dynd_make_categorical_type
+from ..cpp.types.type_alignment cimport dynd_make_unaligned_type
+from ..cpp.types.fixed_bytes_type cimport dynd_make_fixed_bytes_type
+from ..cpp.types.fixed_dim_kind_type cimport dynd_make_fixed_dim_kind_type
+from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
+from ..cpp.types.tuple_type cimport make_tuple as _make_tuple
+from ..cpp.types.struct_type cimport make_struct as _make_struct
+from ..cpp.types.callable_type cimport make_callable
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap

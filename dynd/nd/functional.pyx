@@ -1,9 +1,10 @@
 from cpython.ref cimport PyObject
 from libc.stdint cimport intptr_t
 
-from ..cpp.type cimport type as _type, make_callable
-from ..cpp.callable cimport callable as _callable
-from ..cpp.functional cimport elwise as _elwise
+from ..cpp.type cimport type as _type
+from ..cpp.types.callable_type cimport make_callable
+from ..cpp.func.callable cimport callable as _callable
+from ..cpp.func.elwise cimport elwise as _elwise
 from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception

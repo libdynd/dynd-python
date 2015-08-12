@@ -1,4 +1,4 @@
-from ..cpp.type cimport type
+from ..type cimport type
 
 cdef extern from 'dynd/func/callable.hpp' namespace 'dynd::nd':
     cdef cppclass callable:

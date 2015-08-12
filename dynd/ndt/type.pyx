@@ -4,7 +4,6 @@ from cpython.object cimport Py_EQ, Py_NE
 from libc.stdint cimport intptr_t
 from libcpp.string cimport string
 
-from ..cpp.array cimport array as _array
 from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
                          int8_type_id, int16_type_id, int32_type_id,
                          int64_type_id, int128_type_id, uint8_type_id,
@@ -12,15 +11,7 @@ from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
                          uint128_type_id, float16_type_id, float32_type_id,
                          float64_type_id, float128_type_id,
                          complex_float32_type_id, complex_float64_type_id,
-                         void_type_id, pointer_type_id,
-                         void_pointer_type_id, bytes_type_id,
-                         fixed_bytes_type_id, char_type_id, string_type_id,
-                         fixed_string_type_id, categorical_type_id,
-                         option_type_id, date_type_id, time_type_id,
-                         datetime_type_id, busdate_type_id, json_type_id,
-                         tuple_type_id, struct_type_id, fixed_dim_type_id,
-                         offset_dim_type_id, var_dim_type_id, callable_type_id,
-                         type_type_id, dynd_format_datashape,
+                         void_type_id, callable_type_id, dynd_format_datashape,
                          dynd_make_byteswap_type, dynd_make_categorical_type,
                          dynd_make_unaligned_type, dynd_make_fixed_bytes_type,
                          dynd_make_fixed_dim_kind_type, dynd_make_var_dim_type,
@@ -29,7 +20,7 @@ from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
-from ..nd.array cimport array
+from ..nd.array cimport array, asarray
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
@@ -576,8 +567,6 @@ def make_view(value_type, operand_type):
     cdef type result = type()
     result.v = dynd_make_view_type(type(value_type).v, type(operand_type).v)
     return result
-
-from dynd.nd.array cimport asarray
 
 bool = type(bool_type_id)
 int8 = type(int8_type_id)

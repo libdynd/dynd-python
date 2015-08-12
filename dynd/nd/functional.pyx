@@ -1,20 +1,16 @@
-from dynd.wrapper cimport wrap, begin, end
-from .. import ndt
-from ..cpp.callable cimport callable as _callable
-from ..cpp.functional cimport elwise as _elwise
-from .callable cimport callable
-from ..cpp.array cimport array as _array
-
-from ..ndt.type cimport type, as_numba_type, from_numba_type
-from ..cpp.type cimport make_callable
-
+from cpython.ref cimport PyObject
 from libc.stdint cimport intptr_t
 
-from ..config cimport translate_exception
-from dynd.ndt.type cimport _type
-from .callable cimport _callable
+from ..cpp.type cimport type as _type, make_callable
+from ..cpp.callable cimport callable as _callable
+from ..cpp.functional cimport elwise as _elwise
+from ..cpp.array cimport array as _array
 
-from cpython.ref cimport PyObject
+from ..config cimport translate_exception
+from ..wrapper cimport wrap, begin, end
+from .callable cimport callable
+from .. import ndt
+from ..ndt.type cimport type, as_numba_type, from_numba_type
 
 cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd::nd::functional":
     _callable _apply 'pydynd::nd::functional::apply'(object, object) except +translate_exception

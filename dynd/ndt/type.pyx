@@ -14,11 +14,11 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   complex_float32_type_id,
                                   complex_float64_type_id, void_type_id,
                                   callable_type_id)
-from ..cpp.types.datashape_formatter cimport dynd_format_datashape
+from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.byteswap_type cimport dynd_make_byteswap_type
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
-from ..cpp.types.type_alignment cimport dynd_make_unaligned_type
-from ..cpp.types.fixed_bytes_type cimport dynd_make_fixed_bytes_type
+from ..cpp.types.type_alignment cimport make_unaligned as dynd_make_unaligned_type
+from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
 from ..cpp.types.fixed_dim_kind_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
 from ..cpp.types.tuple_type cimport make_tuple as _make_tuple

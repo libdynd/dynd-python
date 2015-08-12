@@ -6,7 +6,7 @@ from ..config cimport translate_exception
 from .array cimport array
 
 cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
-    cdef cppclass type 'dynd::ndt::type':
+    cdef cppclass type:
         type()
         type(type_id_t) except +translate_exception
         type(string&) except +translate_exception

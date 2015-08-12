@@ -3,16 +3,15 @@
 from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
 from libcpp.string cimport string
 
-from ..cpp.array cimport dynd_groupby
-from ..cpp.type cimport type as _type, dynd_make_categorical_type
+from ..cpp.array cimport groupby as dynd_groupby
+from ..cpp.type cimport type as _type
+from ..cpp.types.categorical_type cimport dynd_make_categorical_type
+from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type
 from ..ndt import Unsupplied
-
-cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
-    string dynd_format_datashape 'dynd::format_datashape' (_array&) except +translate_exception
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void init_w_array_typeobject(object)

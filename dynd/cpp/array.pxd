@@ -23,5 +23,5 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd':
         array operator>=(array &)
         array operator>(array &)
 
-    array dynd_groupby 'dynd::nd::groupby'(array&, array&, type) except +translate_exception
-    array dynd_groupby 'dynd::nd::groupby'(array&, array&) except +translate_exception
+    array groupby(array&, array&, type) except +translate_exception
+    array groupby(array&, array&) except +translate_exception

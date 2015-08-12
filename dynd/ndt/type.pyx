@@ -2,8 +2,8 @@
 
 from cpython.object cimport Py_EQ, Py_NE
 from libc.stdint cimport intptr_t
+from libcpp.string cimport string
 
-from dynd.wrapper cimport set_wrapper_type, wrap
 from ..cpp.array cimport array as _array
 from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
                          int8_type_id, int16_type_id, int32_type_id,
@@ -26,6 +26,9 @@ from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
                          dynd_make_fixed_dim_kind_type, dynd_make_var_dim_type,
                          make_tuple as _make_tuple, make_struct as _make_struct,
                          make_callable)
+
+from ..config cimport translate_exception
+from ..wrapper cimport set_wrapper_type, wrap
 from ..nd.array cimport array
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":

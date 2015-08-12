@@ -1,5 +1,8 @@
-from dynd.nd.array cimport _array
-from dynd.wrapper cimport set_wrapper_type, wrap
+from ..cpp.array cimport array as _array
+
+from ..config cimport translate_exception
+from ..wrapper cimport set_wrapper_type, wrap
+from .array cimport array
 
 cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
     void init_w_callable_typeobject(object)

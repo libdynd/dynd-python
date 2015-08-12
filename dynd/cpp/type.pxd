@@ -1,7 +1,8 @@
-from ..config cimport translate_exception
-from libcpp.string cimport string
-from .array cimport array
 from libc.stdint cimport intptr_t
+from libcpp.string cimport string
+
+from ..config cimport translate_exception
+from .array cimport array
 
 
 cdef extern from 'dynd/types/type_id.hpp' namespace 'dynd':

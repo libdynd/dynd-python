@@ -1,8 +1,15 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from ..cpp.array cimport array as _array, dynd_groupby
-from ..cpp.type cimport type as _type
+from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
+from libcpp.string cimport string
+
+from ..cpp.array cimport dynd_groupby
+from ..cpp.type cimport type as _type, dynd_make_categorical_type
+
 from ..config cimport translate_exception
+from ..wrapper cimport set_wrapper_type, wrap
+from ..ndt.type cimport type
+from ..ndt import Unsupplied
 
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_array&) except +translate_exception
@@ -75,14 +82,6 @@ cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
         pass
     object array_callable_call(array_callable_wrapper&, object, object) except +translate_exception
     void init_w_array_callable_typeobject(object)
-
-from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
-
-from dynd.wrapper cimport set_wrapper_type, wrap
-
-from ..ndt.type cimport type
-from ..cpp.type cimport dynd_make_categorical_type
-from ..ndt import Unsupplied
 
 cdef class array(object):
     """

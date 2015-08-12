@@ -1,7 +1,8 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from ..cpp.array cimport array as _array
+from ..cpp.array cimport array as _array, dynd_groupby
 from ..cpp.type cimport type as _type
+from ..config cimport translate_exception
 
 cdef extern from 'dynd/types/datashape_formatter.hpp' namespace 'dynd':
     string dynd_format_datashape 'dynd::format_datashape' (_array&) except +translate_exception
@@ -79,8 +80,9 @@ from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
 
 from dynd.wrapper cimport set_wrapper_type, wrap
 
-from dynd.ndt.type cimport type, dynd_make_categorical_type
-from dynd.ndt import Unsupplied
+from ..ndt.type cimport type
+from ..cpp.type cimport dynd_make_categorical_type
+from ..ndt import Unsupplied
 
 cdef class array(object):
     """
@@ -141,6 +143,7 @@ cdef class array(object):
     nd.array([2000-02-14, 2012-01-01],
              type="2 * date")
     """
+
     def __init__(self, value=Unsupplied, dtype=None, type=None, access=None):
         if value is not Unsupplied:
             # Get the array data

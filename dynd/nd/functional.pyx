@@ -1,11 +1,12 @@
 from dynd.wrapper cimport wrap, begin, end
 from .. import ndt
 from ..cpp.callable cimport callable as _callable
+from ..cpp.functional cimport elwise as _elwise
 from .callable cimport callable
 from ..cpp.array cimport array as _array
 
-from ..ndt.type cimport type, make_callable
-from dynd.ndt.type cimport as_numba_type, from_numba_type
+from ..ndt.type cimport type, as_numba_type, from_numba_type
+from ..cpp.type cimport make_callable
 
 from libc.stdint cimport intptr_t
 

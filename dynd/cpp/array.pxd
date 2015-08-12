@@ -1,4 +1,5 @@
 from ..config cimport translate_exception
+from libc.stdint cimport intptr_t
 from .type cimport type
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd':
@@ -15,12 +16,12 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd':
 
         array view_scalars(type&) except +translate_exception
 
-    array operator<(const array &, const array &)
-    array operator<=(const array &, const array &)
-    array operator==(const array &, const array &)
-    array operator!=(const array &, const array &)
-    array operator>=(const array &, const array &)
-    array operator>(const array &, const array &)
+        array operator<(array &)
+        array operator<=(array &)
+        array operator==(array &)
+        array operator!=(array &)
+        array operator>=(array &)
+        array operator>(array &)
 
-    array dynd_groupby(array&, array&, type) except +translate_exception
-    array dynd_groupby(array&, array&) except +translate_exception
+    array dynd_groupby 'dynd::nd::groupby'(array&, array&, type) except +translate_exception
+    array dynd_groupby 'dynd::nd::groupby'(array&, array&) except +translate_exception

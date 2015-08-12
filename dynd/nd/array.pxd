@@ -1,9 +1,8 @@
-from libc.stdint cimport intptr_t
 from libcpp.string cimport string
 
 from ..config cimport translate_exception
-
-from dynd.ndt.type cimport _type
+from ..cpp.array cimport array as _array
+from ..cpp.type cimport type as _type
 
 cdef class array(object):
     cdef _array v

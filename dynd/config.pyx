@@ -1,6 +1,11 @@
 cdef extern from 'exception_translation.hpp' namespace 'pydynd':
-    void translate_exception()
-    void set_broadcast_exception(object)
+    void _translate_exception "pydynd::translate_exception"()
+    void _set_broadcast_exception "pydynd::set_broadcast_exception"(object)
+
+cdef void translate_exception():
+    _translate_exception()
+cdef void set_broadcast_exception(object e):
+    _set_broadcast_exception(e)
 
 cdef extern from 'do_import_array.hpp':
     pass
@@ -20,8 +25,14 @@ cdef extern from 'git_version.hpp' namespace 'pydynd':
     extern char[] dynd_python_git_sha1
 
 cdef extern from "py_lowlevel_api.hpp":
-    void *dynd_get_lowlevel_api()
-    void *dynd_get_py_lowlevel_api()
+    void *_dynd_get_lowlevel_api "dynd_get_lowlevel_api"()
+    void *_dynd_get_py_lowlevel_api "dynd_get_py_lowlevel_api"()
+
+cdef const void *dynd_get_lowlevel_api():
+    return _dynd_get_lowlevel_api()
+
+cdef const void *dynd_get_py_lowlevel_api():
+    return _dynd_get_py_lowlevel_api()
 
 # Expose the git hashes and version numbers of this build
 # NOTE: Cython generates code which is not const-correct, so

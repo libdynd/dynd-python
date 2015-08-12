@@ -1,9 +1,67 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
 from cpython.object cimport Py_EQ, Py_NE
+from libc.stdint cimport intptr_t
 
 from dynd.wrapper cimport set_wrapper_type, wrap
-from dynd.nd.array cimport _array, array
+from ..cpp.array cimport array as _array
+from ..cpp.type cimport (type_id_t, uninitialized_type_id, bool_type_id,
+                         int8_type_id, int16_type_id, int32_type_id,
+                         int64_type_id, int128_type_id, uint8_type_id,
+                         uint16_type_id, uint32_type_id, uint64_type_id,
+                         uint128_type_id, float16_type_id, float32_type_id,
+                         float64_type_id, float128_type_id,
+                         complex_float32_type_id, complex_float64_type_id,
+                         void_type_id, pointer_type_id,
+                         void_pointer_type_id, bytes_type_id,
+                         fixed_bytes_type_id, char_type_id, string_type_id,
+                         fixed_string_type_id, categorical_type_id,
+                         option_type_id, date_type_id, time_type_id,
+                         datetime_type_id, busdate_type_id, json_type_id,
+                         tuple_type_id, struct_type_id, fixed_dim_type_id,
+                         offset_dim_type_id, var_dim_type_id, callable_type_id,
+                         type_type_id, dynd_format_datashape,
+                         dynd_make_byteswap_type, dynd_make_categorical_type,
+                         dynd_make_unaligned_type, dynd_make_fixed_bytes_type,
+                         dynd_make_fixed_dim_kind_type, dynd_make_var_dim_type,
+                         make_tuple as _make_tuple, make_struct as _make_struct,
+                         make_callable)
+from ..nd.array cimport array
+
+cdef extern from "numpy_interop.hpp" namespace "pydynd":
+    object numpy_dtype_obj_from__type(_type&) except +translate_exception
+
+cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
+    void add_type_names_to_dir_dict(_type&, object) except +translate_exception
+    object get__type_dynamic_property(_type&, object) except +translate_exception
+
+    # Function properties
+    cdef cppclass _type_callable_wrapper:
+        pass
+    object _type_callable_call(_type_callable_wrapper&, object, object) except +translate_exception
+
+    void init_w__type_callable_typeobject(object)
+
+cdef extern from 'type_functions.hpp' namespace 'pydynd':
+    void init_w_type_typeobject(object)
+
+    _type make__type_from_pyobject(object) except +translate_exception
+
+    object _type_get_shape(_type&) except +translate_exception
+    object _type_get_kind(_type&) except +translate_exception
+    object _type_get_type_id(_type&) except +translate_exception
+    string _type_str(_type &)
+    string _type_repr(_type &)
+
+    _type dynd_make_convert_type(_type&, _type&) except +translate_exception
+    _type dynd_make_view_type(_type&, _type&) except +translate_exception
+    _type dynd_make_fixed_string_type(int, object) except +translate_exception
+    _type dynd_make_string_type(object) except +translate_exception
+    _type dynd_make_pointer_type(_type&) except +translate_exception
+    _type dynd_make_struct_type(object, object) except +translate_exception
+    _type dynd_make_cstruct_type(object, object) except +translate_exception
+    _type dynd_make_fixed_dim_type(object, _type&) except +translate_exception
+    _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
 
 __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
     'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
@@ -326,7 +384,7 @@ def make_unaligned(aligned_tp):
     result.v = dynd_make_unaligned_type(type(aligned_tp).v)
     return result
 
-def make_fixed_bytes(int data_size, int data_alignment=1):
+def make_fixed_bytes(intptr_t data_size, intptr_t data_alignment=1):
     """
     ndt.make_fixed_bytes(data_size, data_alignment=1)
     Constructs a bytes type with the specified data size and alignment.
@@ -540,9 +598,9 @@ void = type(void_type_id)
 class tuple_factory(__builtins__.type):
     def __call__(self, *args):
         if args:
-            return wrap(_tuple(asarray(args).v))
+            return wrap(_make_tuple(asarray(args).v))
 
-        return wrap(_tuple())
+        return wrap(_make_tuple())
 
 class tuple(object):
     __metaclass__ = tuple_factory
@@ -550,9 +608,9 @@ class tuple(object):
 class struct_factory(__builtins__.type):
     def __call__(self, **kwds):
         if kwds:
-            return wrap(_struct(asarray(list(kwds.keys())).v, asarray(list(kwds.values())).v))
+            return wrap(_make_struct(asarray(list(kwds.keys())).v, asarray(list(kwds.values())).v))
 
-        return wrap(_struct())
+        return wrap(_make_struct())
 
 class struct(object):
     __metaclass__ = struct_factory

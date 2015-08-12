@@ -1,6 +1,10 @@
 from dynd.nd.array cimport _array
 from dynd.wrapper cimport set_wrapper_type, wrap
 
+cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
+    void init_w_callable_typeobject(object)
+    object callable_call(object, object, object, object) except +translate_exception
+
 cdef class callable(object):
     """
     nd.callable(func, proto)

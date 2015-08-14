@@ -37,8 +37,8 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   char *src_data_nonconst = const_cast<char *>(a.get_readonly_originptr());
   (*nd::copy_to_pyobject.get().get())(
       dst_tp, tmp_dst.get_arrmeta(), tmp_dst.get_readwrite_originptr(), 1,
-      &a.get_type(), &src_arrmeta, &src_data_nonconst, dynd::nd::as_struct(),
-      std::map<std::string, dynd::ndt::type>());
+      &a.get_type(), &src_arrmeta, &src_data_nonconst, dynd::nd::as_struct(), 0,
+      NULL, std::map<std::string, dynd::ndt::type>());
   if (PyErr_Occurred()) {
     throw exception();
   }

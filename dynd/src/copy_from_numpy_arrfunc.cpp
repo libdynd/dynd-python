@@ -206,8 +206,8 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
   dynd::nd::array kwd_values[1] = {true};
   (*pydynd::nd::copy_from_numpy::get().get())(
       tmp_dst.get_type(), tmp_dst.get_arrmeta(), tmp_dst.get_data(), 1, &src_tp,
-      &src_am, &src_data, dynd::nd::as_struct(1, kwd_names, kwd_values),
-      std::map<std::string, dynd::ndt::type>());
+      &src_am, &src_data, dynd::nd::as_struct(1, kwd_names, kwd_values), 1,
+      kwd_values, std::map<std::string, dynd::ndt::type>());
 }
 
 #endif // DYND_NUMPY_INTEROP

@@ -167,8 +167,9 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
 
 dynd::nd::callable pydynd::copy_to_numpy::make()
 {
-  return dynd::nd::functional::elwise(dynd::nd::callable::make<copy_to_numpy_ck>(
-      dynd::ndt::type("(Any) -> void"), 0));
+  return dynd::nd::functional::elwise(
+      dynd::nd::callable::make<copy_to_numpy_ck>(
+          dynd::ndt::type("(Any) -> void"), 0));
 }
 
 struct pydynd::copy_to_numpy pydynd::copy_to_numpy;
@@ -213,9 +214,10 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
   }
   tmp_dst.get_ndo()->m_data_pointer = (char *)PyArray_DATA(dst_arr);
   char *src_data_nonconst = const_cast<char *>(src_data);
-  (*copy_to_numpy::get().get())(tmp_dst.get_type(), tmp_dst.get_arrmeta(), tmp_dst.get_data(),
-    1, &src_tp, &src_arrmeta, &src_data_nonconst,
-                dynd::nd::as_struct(), std::map<std::string, dynd::ndt::type>());
+  (*copy_to_numpy::get().get())(tmp_dst.get_type(), tmp_dst.get_arrmeta(),
+                                tmp_dst.get_data(), 1, &src_tp, &src_arrmeta,
+                                &src_data_nonconst, dynd::nd::as_struct(), 1,
+                                NULL, std::map<std::string, dynd::ndt::type>());
 }
 
 #endif // DYND_NUMPY_INTEROP

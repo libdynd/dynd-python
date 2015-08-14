@@ -5,7 +5,7 @@ from .types.type_id cimport type_id_t
 from ..config cimport translate_exception
 from .array cimport array
 
-cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt':
+cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
     cdef cppclass type:
         type()
         type(type_id_t) except +translate_exception

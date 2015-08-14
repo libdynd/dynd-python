@@ -2,7 +2,7 @@ from ..config cimport translate_exception
 from libc.stdint cimport intptr_t
 from .type cimport type
 
-cdef extern from 'dynd/array.hpp' namespace 'dynd::nd':
+cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
     cdef cppclass array:
 
         array()

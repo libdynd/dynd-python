@@ -27,14 +27,16 @@ namespace nd {
     struct scalar_ufunc_ck;
 
     template <>
-    struct scalar_ufunc_ck<false>
-        : dynd::nd::base_kernel<scalar_ufunc_ck<false>,
-                                dynd::kernel_request_host, 1> {
+    struct scalar_ufunc_ck<false> : dynd::nd::base_kernel<
+                                        scalar_ufunc_ck<false>,
+                                        dynd::kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
 
-      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data) {}
+      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data)
+      {
+      }
 
       void single(char *dst, char *const *src)
       {
@@ -74,7 +76,7 @@ namespace nd {
                   const char *const *DYND_UNUSED(src_arrmeta),
                   dynd::kernel_request_t kernreq,
                   const dynd::eval::eval_context *DYND_UNUSED(ectx),
-                  const dynd::nd::array &kwds,
+                  intptr_t nkwd, const dynd::nd::array *kwds,
                   const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
         // Acquire the GIL for creating the ckernel
@@ -87,14 +89,16 @@ namespace nd {
     };
 
     template <>
-    struct scalar_ufunc_ck<true>
-        : dynd::nd::base_kernel<scalar_ufunc_ck<true>,
-                                dynd::kernel_request_host, 1> {
+    struct scalar_ufunc_ck<true> : dynd::nd::base_kernel<
+                                       scalar_ufunc_ck<true>,
+                                       dynd::kernel_request_host, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
 
-      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data) {}
+      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data)
+      {
+      }
 
       void single(char *dst, char *const *src)
       {
@@ -140,7 +144,7 @@ namespace nd {
                   const char *const *DYND_UNUSED(src_arrmeta),
                   dynd::kernel_request_t kernreq,
                   const dynd::eval::eval_context *DYND_UNUSED(ectx),
-                  const dynd::nd::array &kwds,
+                  intptr_t nkwd, const dynd::nd::array *kwds,
                   const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
         // Acquire the GIL for creating the ckernel

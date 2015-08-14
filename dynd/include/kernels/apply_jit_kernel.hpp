@@ -27,7 +27,10 @@ namespace nd {
       {
       }
 
-      void single(char *dst, char *const *src) { func(dst, src); }
+      void single(char *dst, char *const *src)
+      {
+        func(dst, src);
+      }
 
       void strided(char *dst, intptr_t dst_stride, char *const *src,
                    const intptr_t *src_stride, size_t count)
@@ -49,7 +52,7 @@ namespace nd {
           const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
           const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
           dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-          const dynd::nd::array &kwds,
+          intptr_t nkwd, const dynd::nd::array *kwds,
           const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
         apply_jit_kernel::make(ckb, kernreq, ckb_offset, nsrc,
@@ -95,7 +98,6 @@ namespace nd {
 
         PyObject *&obj = children[key];
         if (obj == NULL) {
-
 
           obj = (*jit)(func, nsrc, src_tp);
           if (obj == NULL) {

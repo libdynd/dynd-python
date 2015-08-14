@@ -39,9 +39,8 @@ void pydynd::array_broadcast_assign_from_py(
   dynd::nd::array kwd_values[1] = {true};
   (*pydynd::nd::copy_from_pyobject.get().get())(
       tmp_dst.get_type(), tmp_dst.get_arrmeta(),
-      tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data,
-      dynd::nd::as_struct(1, kwd_names, kwd_values), 1, kwd_values,
-      std::map<std::string, dynd::ndt::type>());
+      tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data, 1,
+      kwd_values, std::map<std::string, dynd::ndt::type>());
 }
 
 void
@@ -75,7 +74,6 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   dynd::nd::array kwd_values[1] = {false};
   (*pydynd::nd::copy_from_pyobject.get().get())(
       tmp_dst.get_type(), tmp_dst.get_arrmeta(),
-      tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data,
-      dynd::nd::as_struct(1, kwd_names, kwd_values), 1, kwd_values,
-      std::map<std::string, dynd::ndt::type>());
+      tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data, 1,
+      kwd_values, std::map<std::string, dynd::ndt::type>());
 }

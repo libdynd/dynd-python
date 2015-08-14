@@ -40,7 +40,8 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
     const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-    const dynd::eval::eval_context *ectx, const dynd::nd::array &kwds,
+    const dynd::eval::eval_context *ectx, intptr_t nkwd,
+    const dynd::nd::array *kwds,
     const std::map<std::string, dynd::ndt::type> &tp_vars)
 {
   if (src_tp[0].get_type_id() != dynd::void_type_id) {
@@ -66,7 +67,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     dynd::callable_type_data *af = copy_from_pyobject::get().get();
     return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
-                           kwds, tp_vars);
+                           nkwd, kwds, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {
     if (dst_tp.get_kind() != dynd::struct_kind &&
         dst_tp.get_kind() != dynd::tuple_kind) {
@@ -206,8 +207,8 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
   dynd::nd::array kwd_values[1] = {true};
   (*pydynd::nd::copy_from_numpy::get().get())(
       tmp_dst.get_type(), tmp_dst.get_arrmeta(), tmp_dst.get_data(), 1, &src_tp,
-      &src_am, &src_data, dynd::nd::as_struct(1, kwd_names, kwd_values), 1,
-      kwd_values, std::map<std::string, dynd::ndt::type>());
+      &src_am, &src_data, 1, kwd_values,
+      std::map<std::string, dynd::ndt::type>());
 }
 
 #endif // DYND_NUMPY_INTEROP

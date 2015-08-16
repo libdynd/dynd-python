@@ -5,6 +5,7 @@ from ..cpp.type cimport type as _type
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.func.elwise cimport elwise as _elwise
+from ..cpp.func.reduction cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception
@@ -123,6 +124,12 @@ def elwise(func):
         func = apply(func)
 
     return wrap(_elwise((<callable> func).v))
+
+def reduction(child):
+    if not isinstance(child, callable):
+        child = apply(child)
+
+    return wrap(_reduction((<callable> child).v))
 
 def multidispatch(type tp, iterable = None):
     return wrap(_multidispatch(tp.v, begin[_callable](iterable),

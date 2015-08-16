@@ -237,7 +237,7 @@ else()
     target_link_libraries(pydynd libdynd)
 endif()
 
-foreach(module config eval_context ndt.type nd.array nd.callable nd.functional)
+foreach(module config eval_context ndt.type nd.array nd.callable nd.functional nd.registry)
     string(REPLACE "." ";" directories ${module})
     list(GET directories -1 module_name)
     list(REMOVE_AT directories -1)

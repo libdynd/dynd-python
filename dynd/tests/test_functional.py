@@ -57,6 +57,17 @@ class TestElwise(unittest.TestCase):
         def f(x):
             return 2 * x
 
+#        self.assertEqual(nd.array([2, 4, 6]), f([1, 2, 3]))
+
+class TestReduction(unittest.TestCase):
+    def test_unary(self):
+        @nd.functional.reduction
+        @annotate(ndt.int32, ndt.int32, ndt.int32)
+        def f(x, y):
+            return max(x, y)
+
+        self.assertEqual(3, f([1, 2, 3]))
+
 """
 def multigen(func):
     return lambda x: x

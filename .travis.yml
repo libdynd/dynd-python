@@ -34,6 +34,7 @@ install:
   - if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi
   - travis_retry pip install enum34 # Dependency of numba
   - export LLVM_CONFIG=llvm-config-3.6
+  - llvm-config-3.6 --includedir
   - travis_retry pip install numba==0.20
   # Put libdynd sources in the right place so they are built with dynd-python.
   - mkdir libraries

@@ -11,9 +11,9 @@ python:
 addons:
   apt:
     sources:
-    - ubuntu-precise
     - ubuntu-toolchain-r-test
     - kalakris-cmake
+    - llvm-toolchain-precise
     packages:
     - gcc-4.7
     - g++-4.7

@@ -4,6 +4,35 @@ from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_git_sha1 as __libdynd_git_sha1__, \
                 _dynd_python_git_sha1 as __git_sha1__
 
+def annotate(*args, **kwds):
+    def wrap(func):
+        func.__annotations__ = {}
+
+        try:
+            func.__annotations__['return'] = args[0]
+        except IndexError:
+            pass
+
+        varnames = func.__code__.co_varnames
+        if len(args[1:]) > len(varnames):
+            raise TypeError('takes {} positional arguments but {} positional annotations were given'.format(len(argspec.args),
+                len(args) - 1))
+
+        for key, value in zip(varnames, args[1:]):
+            func.__annotations__[key] = value
+
+        for key, value in kwds.items():
+            if key not in varnames:
+                raise TypeError("{} got an unexpected keyword annotation '{}'".format(func, key))
+            if key in func.__annotations__:
+                raise TypeError("{} got multiple values for annotation '{}'".format(func, key))
+
+            func.__annotations__[key] = value
+
+        return func
+
+    return wrap
+
 def test(verbosity=1, xunitfile=None, exit=False):
     """
     Runs the full DyND test suite, outputing

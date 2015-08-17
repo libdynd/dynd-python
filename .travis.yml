@@ -29,7 +29,7 @@ install:
   - export CXX=g++-4.7
   # Install dependencies
   - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
-  - travis_retry pip install unittest2
+  - if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi
   # Put libdynd sources in the right place so they are built with dynd-python.
   - mkdir libraries
   - pushd libraries

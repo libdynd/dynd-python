@@ -50,5 +50,25 @@ class TestApply(unittest.TestCase):
         self.assertEqual(f.type, ndt.callable(ndt.scalar, ndt.scalar))
         self.assertEqual(0, f(0))
 
+class TestElwise(unittest.TestCase):
+    def test_unary(self):
+        @nd.functional.elwise
+        @annotate(ndt.int32)
+        def f(x):
+            return 2 * x
+
+"""
+def multigen(func):
+    return lambda x: x
+
+class TestMultidispatch(unittest.TestCase):
+    def test_unary(self):
+        @nd.functional.multidispatch()
+        def callables():
+            yield 5
+
+        print callables(3)
+"""
+
 if __name__ == '__main__':
     unittest.main()

@@ -14,7 +14,7 @@ def annotate(*args, **kwds):
             pass
 
         if len(args[1:]) > func.__code__.co_argcount:
-            raise TypeError('{} takes {} positional arguments but {} positional annotations were given'.format(func,
+            raise TypeError('{0} takes {1} positional arguments but {2} positional annotations were given'.format(func,
                 func.__code__.co_argcount, len(args) - 1))
 
         for key, value in zip(func.__code__.co_varnames, args[1:]):
@@ -22,9 +22,9 @@ def annotate(*args, **kwds):
 
         for key, value in kwds.items():
             if key not in func.__code__.co_varnames:
-                raise TypeError("{} got an unexpected keyword annotation '{}'".format(func, key))
+                raise TypeError("{0} got an unexpected keyword annotation '{1}'".format(func, key))
             if key in func.__annotations__:
-                raise TypeError("{} got multiple values for annotation '{}'".format(func, key))
+                raise TypeError("{0} got multiple values for annotation '{1}'".format(func, key))
 
             func.__annotations__[key] = value
 

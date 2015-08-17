@@ -34,7 +34,7 @@ class TestApply(unittest.TestCase):
         try:
             import numba
         except ImportError as error:
-            raise unittest.SkipTest(error.message)
+            raise unittest.SkipTest(error)
 
         @nd.functional.apply(jit = True)
         def f(x):

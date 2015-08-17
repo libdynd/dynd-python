@@ -18,7 +18,8 @@ addons:
     - gcc-4.7
     - g++-4.7
     - cmake
-    - llvm-3.6-dev
+    - llvm-3.6-dev # Required by numba
+    - libedit-dev # Required by numba
 
 cache:
   directories:
@@ -32,10 +33,8 @@ install:
   # Install dependencies
   - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
   - if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi
-  - travis_retry pip install enum34 # Dependency of numba
+  - travis_retry pip install enum34 # Required by numba
   - export LLVM_CONFIG=llvm-config-3.6
-  - llvm-config-3.6 --includedir
-  - ls /usr/lib/llvm-3.6/include/
   - travis_retry pip install numba==0.20
   # Put libdynd sources in the right place so they are built with dynd-python.
   - mkdir libraries

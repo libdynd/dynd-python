@@ -13,6 +13,9 @@ class TestAnnotate(unittest.TestCase):
             pass
 
         self.assertFalse(f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(): pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         with self.assertRaises(TypeError):
             @annotate(x = float)
@@ -25,12 +28,18 @@ class TestAnnotate(unittest.TestCase):
             pass
 
         self.assertEqual({'return': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3() -> int: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(float)
         def f():
             pass
 
         self.assertEqual({'return': float}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3() -> float: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         with self.assertRaises(TypeError):
             @annotate(int, float)
@@ -53,18 +62,27 @@ class TestAnnotate(unittest.TestCase):
             return x
 
         self.assertFalse(f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x): pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(x = int)
         def f(x):
             return x
 
         self.assertEqual({'x': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: int): pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(x = float)
         def f(x):
             return x
 
         self.assertEqual({'x': float}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: float): pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         with self.assertRaises(TypeError):
             @annotate(x = int, y = str)
@@ -77,48 +95,72 @@ class TestAnnotate(unittest.TestCase):
             return x
 
         self.assertEqual({'return': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x) -> int: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(float)
         def f(x):
             return x
 
         self.assertEqual({'return': float}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x) -> float: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(int, int)
         def f(x):
             return x
 
         self.assertEqual({'return': int, 'x': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: int) -> int: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(int, x = int)
         def f(x):
             return x
 
         self.assertEqual({'return': int, 'x': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: int) -> int: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(int, float)
         def f(x):
             return x
 
         self.assertEqual({'return': int, 'x': float}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: float) -> int: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(int, x = float)
         def f(x):
             return x
 
         self.assertEqual({'return': int, 'x': float}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: float) -> int: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(float, int)
         def f(x):
             return x
 
         self.assertEqual({'return': float, 'x': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: int) -> float: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         @annotate(float, x = int)
         def f(x):
             return x
 
         self.assertEqual({'return': float, 'x': int}, f.__annotations__)
+        if sys.version_info >= (3, 0):
+            exec('''def f3(x: int) -> float: pass''', globals())
+            self.assertEqual(f3.__annotations__, f.__annotations__)
 
         with self.assertRaises(TypeError):
             @annotate(float, int, str)
@@ -134,18 +176,6 @@ class TestAnnotate(unittest.TestCase):
             @annotate(float, int, x = str)
             def f(x):
                 return x
-
-"""
-    def test_python3(self):
-        @annotate(int, x = int)
-        def f(x):
-            return x
-
-        def g(x: int) -> int:
-            return x
-
-        self.assertEqual(g.__annotations__, f.__annotations__)
-"""
 
 if __name__ == '__main__':
     unittest.main()

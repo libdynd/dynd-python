@@ -18,7 +18,7 @@ addons:
     - gcc-4.7
     - g++-4.7
     - cmake
-    - llvm-3.6
+    - llvm-3.6-dev
 
 cache:
   directories:

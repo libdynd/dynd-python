@@ -10,4 +10,8 @@ from .callable import callable
 inf = float('inf')
 nan = float('nan')
 
+from .registry import get_published_callables
 from . import functional
+
+for key in get_published_callables():
+    globals()[key] = get_published_callables()[key]

@@ -13,16 +13,15 @@ def annotate(*args, **kwds):
         except IndexError:
             pass
 
-        varnames = func.__code__.co_varnames
-        if len(args[1:]) > len(varnames):
-            raise TypeError('takes {} positional arguments but {} positional annotations were given'.format(len(argspec.args),
-                len(args) - 1))
+        if len(args[1:]) > func.__code__.co_argcount:
+            raise TypeError('{} takes {} positional arguments but {} positional annotations were given'.format(func,
+                func.__code__.co_argcount, len(args) - 1))
 
-        for key, value in zip(varnames, args[1:]):
+        for key, value in zip(func.__code__.co_varnames, args[1:]):
             func.__annotations__[key] = value
 
         for key, value in kwds.items():
-            if key not in varnames:
+            if key not in func.__code__.co_varnames:
                 raise TypeError("{} got an unexpected keyword annotation '{}'".format(func, key))
             if key in func.__annotations__:
                 raise TypeError("{} got multiple values for annotation '{}'".format(func, key))

@@ -71,6 +71,7 @@ class TestReduction(unittest.TestCase):
             return max(x, y)
 
         self.assertEqual(3, f([1, 2, 3]))
+        self.assertEqual(6, f([[1, 2, 3], [4, 5, 6]]))
 
 """
 def multigen(func):

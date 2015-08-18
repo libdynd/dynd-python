@@ -80,7 +80,7 @@ class cmake_build_ext(build_ext):
             cuda_option = '-DDYND_CUDA=ON'
 
     if sys.platform != 'win32':
-        self.spawn(['cmake', pyexe_option, install_lib_option,
+        self.spawn(['cmake', pyexe_option, install_lib_option, build_tests_option,
                     static_lib_option, cuda_option, source])
         self.spawn(['make'])
     else:
@@ -200,7 +200,6 @@ setup(
     url = 'https://github.com/libdynd/dynd-python',
     packages = [
         'dynd',
-        'dynd._lowlevel',
         'dynd.nd',
         'dynd.ndt',
         'dynd.tests',

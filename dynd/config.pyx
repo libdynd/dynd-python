@@ -24,16 +24,6 @@ cdef extern from 'git_version.hpp' namespace 'pydynd':
     extern char[] dynd_python_version_string
     extern char[] dynd_python_git_sha1
 
-cdef extern from "py_lowlevel_api.hpp":
-    void *_dynd_get_lowlevel_api "dynd_get_lowlevel_api"()
-    void *_dynd_get_py_lowlevel_api "dynd_get_py_lowlevel_api"()
-
-cdef const void *dynd_get_lowlevel_api():
-    return _dynd_get_lowlevel_api()
-
-cdef const void *dynd_get_py_lowlevel_api():
-    return _dynd_get_py_lowlevel_api()
-
 # Expose the git hashes and version numbers of this build
 # NOTE: Cython generates code which is not const-correct, so
 #       have to cast it away.
@@ -54,9 +44,3 @@ pydynd_init()
 
 # Register all the exception objects with the exception translator
 set_broadcast_exception(BroadcastError)
-
-def _get_lowlevel_api():
-    return <size_t>dynd_get_lowlevel_api()
-
-def _get_py_lowlevel_api():
-    return <size_t>dynd_get_py_lowlevel_api()

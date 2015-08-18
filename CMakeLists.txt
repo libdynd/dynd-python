@@ -187,7 +187,6 @@ set(pydynd_SRC
     dynd/include/init.hpp
     dynd/include/numpy_interop.hpp
     dynd/include/numpy_ufunc_kernel.hpp
-    dynd/include/py_lowlevel_api.hpp
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/wrapper.hpp
@@ -214,7 +213,6 @@ set(pydynd_SRC
     dynd/src/init.cpp
     dynd/src/numpy_interop.cpp
     dynd/src/numpy_ufunc_kernel.cpp
-    dynd/src/py_lowlevel_api.cpp
     dynd/src/type_functions.cpp
     dynd/src/utility_functions.cpp
     dynd/src/wrapper.cpp

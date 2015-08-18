@@ -66,7 +66,7 @@ class TestElwise(unittest.TestCase):
 class TestReduction(unittest.TestCase):
     def test_unary(self):
         @nd.functional.reduction
-        @annotate(ndt.int32, ndt.int32, ndt.int32)
+        @annotate(ndt.int32)
         def f(x, y):
             return max(x, y)
 

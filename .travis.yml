@@ -15,8 +15,8 @@ addons:
     - kalakris-cmake
     - llvm-toolchain-precise-3.6
     packages:
-    - gcc-4.8
-    - g++-4.8
+    - gcc-4.7
+    - g++-4.7
     - cmake
     - llvm-3.6-dev # Required by numba
     - libedit-dev # Required by numba
@@ -28,8 +28,8 @@ cache:
 
 install:
   # Make sure the proper C and C++ compilers are used
-  - export CC=gcc-4.8
-  - export CXX=g++-4.8
+  - export CC=gcc-4.7
+  - export CXX=g++-4.7
   # Install dependencies
   - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
   - if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi

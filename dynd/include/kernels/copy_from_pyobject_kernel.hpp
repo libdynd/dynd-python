@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dynd/parser_util.hpp>
-#include <dynd/func/chain.hpp>
+#include <dynd/func/compose.hpp>
 #include <dynd/func/copy.hpp>
 #include <dynd/kernels/base_kernel.hpp>
 #include <dynd/kernels/base_virtual_kernel.hpp>
@@ -846,7 +846,7 @@ namespace nd {
       dynd::nd::callable copy_af = make_callable_from_assignment(
           dst_tp, buf_tp, dynd::assign_error_default);
       dynd::nd::callable child =
-          dynd::nd::functional::chain(copy_from_pyobject, copy_af, buf_tp);
+          dynd::nd::functional::compose(copy_from_pyobject, copy_af, buf_tp);
       return child.get()->instantiate(child.get()->static_data, 0, NULL, ckb,
                                       ckb_offset, dst_tp, dst_arrmeta, nsrc,
                                       src_tp, src_arrmeta, kernreq, ectx, 0,
@@ -1437,7 +1437,7 @@ namespace nd {
                 const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       if (dst_tp.get_kind() == dynd::expr_kind) {
-        dynd::nd::callable af = dynd::nd::functional::chain(
+        dynd::nd::callable af = dynd::nd::functional::compose(
             copy_from_pyobject, dynd::nd::copy, dst_tp.value_type());
         return af.get()->instantiate(af.get()->static_data, 0, NULL, ckb,
                                      ckb_offset, dst_tp, dst_arrmeta, nsrc,

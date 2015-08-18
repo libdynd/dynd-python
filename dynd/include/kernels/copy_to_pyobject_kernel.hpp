@@ -1205,7 +1205,7 @@ namespace nd {
           src_tp[0]
               .extended<dynd::ndt::categorical_type>()
               ->get_category_type();
-      dynd::nd::callable child = dynd::nd::functional::chain(
+      dynd::nd::callable child = dynd::nd::functional::compose(
           make_callable_from_assignment(buffer_tp, src_tp[0],
                                         dynd::assign_error_default),
           copy_to_pyobject, buffer_tp);
@@ -1240,7 +1240,7 @@ namespace nd {
                 const dynd::nd::array *kwds,
                 const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      dynd::nd::callable af = dynd::nd::functional::chain(
+      dynd::nd::callable af = dynd::nd::functional::compose(
           dynd::nd::copy, copy_to_pyobject, src_tp[0].value_type());
       return af.get()->instantiate(
           af.get()->static_data, 0, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,

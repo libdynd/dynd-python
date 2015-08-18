@@ -26,8 +26,7 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/copy.hpp>
 #include <dynd/func/multidispatch.hpp>
-#include <dynd/kernels/chain_kernel.hpp>
-#include <dynd/func/chain.hpp>
+#include <dynd/func/compose.hpp>
 
 #include "kernels/copy_to_pyobject_kernel.hpp"
 

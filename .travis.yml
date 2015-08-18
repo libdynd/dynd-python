@@ -20,6 +20,7 @@ addons:
     - cmake
     - llvm-3.6-dev # Required by numba
     - libedit-dev # Required by numba
+    - libstdc++6
 
 cache:
   directories:

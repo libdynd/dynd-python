@@ -99,25 +99,19 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     return wrap(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
             library.get_pointer_to_function('single')))
 
-def apply(tp_or_func = None, func = None, jit = _import_numba()):
+def apply(func = None, jit = _import_numba(), *args, **kwds):
     def make(tp, func):
         if jit:
             import numba
             return wrap(_multidispatch((<type> tp).v,
-                jit_dispatcher(numba.jit(func, nopython = True, nogil = True), _jit), <size_t> 0))
+                jit_dispatcher(numba.jit(func, *args, **kwds), _jit), <size_t> 0))
 
         return wrap(_apply(func, tp))
 
     if func is None:
-        if tp_or_func is None:
-            return lambda func: apply(func, jit = jit)
+        return lambda func: make(ndt.callable(func), func)
 
-        if isinstance(tp_or_func, ndt.type):
-            return lambda func: make(tp_or_func, func)
-
-        return make(ndt.callable(tp_or_func), tp_or_func)
-
-    return make(tp_or_func, func)
+    return make(ndt.callable(func), func)
 
 def elwise(func):
     if not isinstance(func, callable):

@@ -67,7 +67,7 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
     'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
     'float64', 'float128', 'complex_float32', 'complex_float64', 'void', \
-    'tuple', 'struct', 'callable']
+    'tuple', 'struct', 'callable', 'scalar']
 
 type_ids = {}
 type_ids['UNINITIALIZED'] = uninitialized_type_id
@@ -630,14 +630,14 @@ class callable_factory(__builtins__.type):
             try:
                 ret = func.__annotations__['return']
             except (AttributeError, KeyError):
-                ret = type('Any')
+                ret = type('Scalar')
 
             args = []
             for name in func.__code__.co_varnames:
                 try:
                     args.append(func.__annotations__[name])
                 except (AttributeError, KeyError):
-                    args.append(type('Any'))
+                    args.append(type('Scalar'))
 #            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 
         return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v, (<type> struct(**kwds)).v))
@@ -659,6 +659,8 @@ class struct_factory(__builtins__.type):
 class struct(object):
     __metaclass__ = struct_factory
 """
+
+scalar = type('Scalar')
 
 _to_numba_type = {}
 _from_numba_type = {}

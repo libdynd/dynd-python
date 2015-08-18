@@ -200,7 +200,6 @@ setup(
     url = 'https://github.com/libdynd/dynd-python',
     packages = [
         'dynd',
-        'dynd._lowlevel',
         'dynd.nd',
         'dynd.ndt',
         'dynd.tests',

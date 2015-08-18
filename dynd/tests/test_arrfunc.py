@@ -3,7 +3,6 @@ import sys
 import ctypes
 import unittest
 from dynd import nd, ndt
-from dynd import _lowlevel
 import numpy as np
 
 if sys.version_info >= (2, 7):

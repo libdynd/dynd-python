@@ -11,7 +11,6 @@
 #include <dynd/func/reduction.hpp>
 #include <dynd/kernels/ckernel_common_functions.hpp>
 #include <dynd/func/rolling.hpp>
-#include <dynd/kernels/reduction_kernels.hpp>
 #include <dynd/func/take.hpp>
 
 #include "py_lowlevel_api.hpp"
@@ -218,20 +217,6 @@ static PyObject *make_rolling_callable(PyObject *window_op_obj,
   }
 }
 
-PyObject *make_builtin_mean1d_callable(PyObject *tp_obj, PyObject *minp_obj)
-{
-  try {
-    dynd::ndt::type tp = pydynd::make__type_from_pyobject(tp_obj);
-    intptr_t minp = pydynd::pyobject_as_index(minp_obj);
-    return DyND_PyWrapper_New(
-        dynd::kernels::make_builtin_mean1d_callable(tp.get_type_id(), minp));
-  }
-  catch (...) {
-    pydynd::translate_exception();
-    return NULL;
-  }
-}
-
 PyObject *make_take_callable()
 {
   try {
@@ -258,7 +243,7 @@ const pydynd::py_lowlevel_api_t py_lowlevel_api = {
     NULL,
     &callable_from_pyfunc,
     &make_rolling_callable,
-    &make_builtin_mean1d_callable,
+    NULL,
     &make_take_callable};
 } // anonymous namespace
 

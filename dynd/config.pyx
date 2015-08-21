@@ -1,3 +1,5 @@
+from .cpp.config cimport dynd_version_string, dynd_git_sha1
+
 cdef extern from 'exception_translation.hpp' namespace 'pydynd':
     void _translate_exception "pydynd::translate_exception"()
     void _set_broadcast_exception "pydynd::set_broadcast_exception"(object)
@@ -15,10 +17,6 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
 
 cdef extern from 'init.hpp' namespace 'pydynd':
     void pydynd_init() except +translate_exception
-
-cdef extern from 'dynd/config.hpp' namespace 'dynd':
-    extern char[] dynd_version_string
-    extern char[] dynd_git_sha1
 
 cdef extern from 'git_version.hpp' namespace 'pydynd':
     extern char[] dynd_python_version_string

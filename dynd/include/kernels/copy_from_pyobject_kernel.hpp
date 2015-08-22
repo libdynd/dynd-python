@@ -27,7 +27,7 @@ namespace nd {
       dynd::bool_type_id> : dynd::nd::
                                 base_kernel<copy_from_pyobject_kernel<
                                                 dynd::bool_type_id>,
-                                            dynd::kernel_request_host, 1> {
+                                            1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -202,8 +202,7 @@ namespace nd {
 
   template <typename T>
   struct copy_int_from_pyobject_kernel
-      : dynd::nd::base_kernel<copy_int_from_pyobject_kernel<T>,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<copy_int_from_pyobject_kernel<T>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -272,8 +271,7 @@ namespace nd {
 
   template <typename T>
   struct float_copy_from_pyobject_kernel
-      : dynd::nd::base_kernel<float_copy_from_pyobject_kernel<T>,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<float_copy_from_pyobject_kernel<T>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -307,8 +305,7 @@ namespace nd {
 
   template <typename T>
   struct complex_float_copy_from_pyobject_kernel
-      : dynd::nd::base_kernel<complex_float_copy_from_pyobject_kernel<T>,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<complex_float_copy_from_pyobject_kernel<T>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -346,7 +343,7 @@ namespace nd {
       dynd::bytes_type_id> : dynd::nd::
                                  base_kernel<copy_from_pyobject_kernel<
                                                  dynd::bytes_type_id>,
-                                             dynd::kernel_request_host, 1> {
+                                             1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
@@ -417,7 +414,7 @@ namespace nd {
       dynd::string_type_id> : dynd::nd::
                                   base_kernel<copy_from_pyobject_kernel<
                                                   dynd::string_type_id>,
-                                              dynd::kernel_request_host, 1> {
+                                              1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
@@ -511,7 +508,7 @@ namespace nd {
       dynd::date_type_id> : dynd::nd::
                                 base_kernel<copy_from_pyobject_kernel<
                                                 dynd::date_type_id>,
-                                            dynd::kernel_request_host, 1> {
+                                            1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
@@ -582,7 +579,7 @@ namespace nd {
       dynd::time_type_id> : dynd::nd::
                                 base_kernel<copy_from_pyobject_kernel<
                                                 dynd::time_type_id>,
-                                            dynd::kernel_request_host, 1> {
+                                            1> {
 
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
@@ -636,7 +633,7 @@ namespace nd {
       dynd::datetime_type_id> : dynd::nd::
                                     base_kernel<copy_from_pyobject_kernel<
                                                     dynd::datetime_type_id>,
-                                                dynd::kernel_request_host, 1> {
+                                                1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
 
@@ -696,7 +693,7 @@ namespace nd {
       dynd::type_type_id> : dynd::nd::
                                 base_kernel<copy_from_pyobject_kernel<
                                                 dynd::type_type_id>,
-                                            dynd::kernel_request_host, 1> {
+                                            1> {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -711,7 +708,7 @@ namespace nd {
       dynd::option_type_id> : dynd::nd::
                                   base_kernel<copy_from_pyobject_kernel<
                                                   dynd::option_type_id>,
-                                              dynd::kernel_request_host, 1> {
+                                              1> {
     dynd::ndt::type dst_tp;
     const char *dst_arrmeta;
     intptr_t copy_value_offset;
@@ -861,7 +858,7 @@ namespace nd {
       dynd::fixed_dim_type_id> : dynd::nd::
                                      base_kernel<copy_from_pyobject_kernel<
                                                      dynd::fixed_dim_type_id>,
-                                                 dynd::kernel_request_host, 1> {
+                                                 1> {
     intptr_t m_dim_size, m_stride;
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
@@ -988,7 +985,7 @@ namespace nd {
       dynd::var_dim_type_id> : dynd::nd::
                                    base_kernel<copy_from_pyobject_kernel<
                                                    dynd::var_dim_type_id>,
-                                               dynd::kernel_request_host, 1> {
+                                               1> {
     intptr_t m_offset, m_stride;
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
@@ -1128,7 +1125,7 @@ namespace nd {
       dynd::tuple_type_id> : dynd::nd::
                                  base_kernel<copy_from_pyobject_kernel<
                                                  dynd::tuple_type_id>,
-                                             dynd::kernel_request_host, 1> {
+                                             1> {
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;
@@ -1256,7 +1253,7 @@ namespace nd {
       dynd::struct_type_id> : dynd::nd::
                                   base_kernel<copy_from_pyobject_kernel<
                                                   dynd::struct_type_id>,
-                                              dynd::kernel_request_host, 1> {
+                                              1> {
     dynd::ndt::type m_dst_tp;
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;

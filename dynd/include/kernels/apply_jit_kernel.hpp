@@ -15,9 +15,7 @@ namespace pydynd {
 namespace nd {
   namespace functional {
 
-    struct apply_jit_kernel
-        : dynd::nd::base_kernel<apply_jit_kernel, dynd::kernel_request_host,
-                                -1> {
+    struct apply_jit_kernel : dynd::nd::base_kernel<apply_jit_kernel, -1> {
       typedef void (*func_type)(char *dst, char *const *src);
 
       intptr_t nsrc;

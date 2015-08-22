@@ -8,8 +8,7 @@ namespace nd {
   namespace functional {
 
     struct apply_pyobject_kernel
-        : dynd::nd::base_kernel<apply_pyobject_kernel,
-                                dynd::kernel_request_host, -1> {
+        : dynd::nd::base_kernel<apply_pyobject_kernel, -1> {
       typedef apply_pyobject_kernel self_type;
 
       // Reference to the python function object

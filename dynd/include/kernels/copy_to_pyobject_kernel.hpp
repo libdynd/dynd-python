@@ -16,7 +16,7 @@ namespace nd {
       dynd::bool_type_id> : dynd::nd::
                                 base_kernel<
                                     copy_to_pyobject_kernel<dynd::bool_type_id>,
-                                    dynd::kernel_request_host, 1> {
+                                    1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -130,8 +130,7 @@ namespace nd {
   }
 
   template <typename T>
-  struct copy_int_kernel : dynd::nd::base_kernel<copy_int_kernel<T>,
-                                                 dynd::kernel_request_host, 1> {
+  struct copy_int_kernel : dynd::nd::base_kernel<copy_int_kernel<T>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -191,9 +190,7 @@ namespace nd {
   };
 
   template <typename T>
-  struct float_copy_kernel
-      : dynd::nd::base_kernel<float_copy_kernel<T>, dynd::kernel_request_host,
-                              1> {
+  struct float_copy_kernel : dynd::nd::base_kernel<float_copy_kernel<T>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -220,8 +217,7 @@ namespace nd {
 
   template <class T>
   struct complex_float_copy_kernel
-      : dynd::nd::base_kernel<complex_float_copy_kernel<T>,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<complex_float_copy_kernel<T>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -248,7 +244,7 @@ namespace nd {
       dynd::bytes_type_id> : dynd::nd::
                                  base_kernel<copy_to_pyobject_kernel<
                                                  dynd::bytes_type_id>,
-                                             dynd::kernel_request_host, 1> {
+                                             1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -266,7 +262,7 @@ namespace nd {
                                        base_kernel<
                                            copy_to_pyobject_kernel<
                                                dynd::fixed_bytes_type_id>,
-                                           dynd::kernel_request_host, 1> {
+                                           1> {
     intptr_t data_size;
 
     copy_to_pyobject_kernel(intptr_t data_size) : data_size(data_size)
@@ -305,7 +301,7 @@ namespace nd {
       dynd::char_type_id> : dynd::nd::
                                 base_kernel<
                                     copy_to_pyobject_kernel<dynd::char_type_id>,
-                                    dynd::kernel_request_host, 1> {
+                                    1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -316,8 +312,7 @@ namespace nd {
   };
 
   struct string_ascii_copy_kernel
-      : dynd::nd::base_kernel<string_ascii_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<string_ascii_copy_kernel, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -330,8 +325,7 @@ namespace nd {
   };
 
   struct string_utf8_copy_kernel
-      : dynd::nd::base_kernel<string_utf8_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<string_utf8_copy_kernel, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -344,8 +338,7 @@ namespace nd {
   };
 
   struct string_utf16_copy_kernel
-      : dynd::nd::base_kernel<string_utf16_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<string_utf16_copy_kernel, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -359,8 +352,7 @@ namespace nd {
   };
 
   struct string_utf32_copy_kernel
-      : dynd::nd::base_kernel<string_utf32_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<string_utf32_copy_kernel, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -414,8 +406,7 @@ namespace nd {
   };
 
   struct fixed_string_ascii_copy_kernel
-      : dynd::nd::base_kernel<fixed_string_ascii_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<fixed_string_ascii_copy_kernel, 1> {
     intptr_t data_size;
 
     fixed_string_ascii_copy_kernel(intptr_t data_size) : data_size(data_size)
@@ -450,8 +441,7 @@ namespace nd {
   };
 
   struct fixed_string_utf8_copy_kernel
-      : dynd::nd::base_kernel<fixed_string_utf8_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<fixed_string_utf8_copy_kernel, 1> {
     intptr_t data_size;
 
     fixed_string_utf8_copy_kernel(intptr_t data_size) : data_size(data_size)
@@ -486,8 +476,7 @@ namespace nd {
   };
 
   struct fixed_string_utf16_copy_kernel
-      : dynd::nd::base_kernel<fixed_string_utf16_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<fixed_string_utf16_copy_kernel, 1> {
     intptr_t data_size;
 
     fixed_string_utf16_copy_kernel(intptr_t data_size) : data_size(data_size)
@@ -524,8 +513,7 @@ namespace nd {
   };
 
   struct fixed_string_utf32_copy_kernel
-      : dynd::nd::base_kernel<fixed_string_utf32_copy_kernel,
-                              dynd::kernel_request_host, 1> {
+      : dynd::nd::base_kernel<fixed_string_utf32_copy_kernel, 1> {
     intptr_t data_size;
 
     fixed_string_utf32_copy_kernel(intptr_t data_size) : data_size(data_size)
@@ -607,7 +595,7 @@ namespace nd {
       dynd::date_type_id> : dynd::nd::
                                 base_kernel<
                                     copy_to_pyobject_kernel<dynd::date_type_id>,
-                                    dynd::kernel_request_host, 1> {
+                                    1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
 
@@ -648,7 +636,7 @@ namespace nd {
       dynd::time_type_id> : dynd::nd::
                                 base_kernel<
                                     copy_to_pyobject_kernel<dynd::time_type_id>,
-                                    dynd::kernel_request_host, 1> {
+                                    1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
 
@@ -690,7 +678,7 @@ namespace nd {
       dynd::datetime_type_id> : dynd::nd::
                                     base_kernel<copy_to_pyobject_kernel<
                                                     dynd::datetime_type_id>,
-                                                dynd::kernel_request_host, 1> {
+                                                1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
 
@@ -736,7 +724,7 @@ namespace nd {
       dynd::type_type_id> : dynd::nd::
                                 base_kernel<
                                     copy_to_pyobject_kernel<dynd::type_type_id>,
-                                    dynd::kernel_request_host, 1> {
+                                    1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -754,7 +742,7 @@ namespace nd {
       dynd::option_type_id> : dynd::nd::
                                   base_kernel<copy_to_pyobject_kernel<
                                                   dynd::option_type_id>,
-                                              dynd::kernel_request_host, 1> {
+                                              1> {
     intptr_t m_copy_value_offset;
 
     void single(char *dst, char *const *src)
@@ -824,7 +812,7 @@ namespace nd {
       dynd::fixed_dim_type_id> : dynd::nd::
                                      base_kernel<copy_to_pyobject_kernel<
                                                      dynd::fixed_dim_type_id>,
-                                                 dynd::kernel_request_host, 1> {
+                                                 1> {
     intptr_t dim_size, stride;
 
     copy_to_pyobject_kernel(intptr_t dim_size, intptr_t stride)
@@ -887,7 +875,7 @@ namespace nd {
       dynd::var_dim_type_id> : dynd::nd::
                                    base_kernel<copy_to_pyobject_kernel<
                                                    dynd::var_dim_type_id>,
-                                               dynd::kernel_request_host, 1> {
+                                               1> {
     intptr_t offset, stride;
 
     copy_to_pyobject_kernel(intptr_t offset, intptr_t stride)
@@ -954,7 +942,7 @@ namespace nd {
       dynd::struct_type_id> : dynd::nd::
                                   base_kernel<copy_to_pyobject_kernel<
                                                   dynd::struct_type_id>,
-                                              dynd::kernel_request_host, 1> {
+                                              1> {
     dynd::ndt::type m_src_tp;
     const char *m_src_arrmeta;
     std::vector<intptr_t> m_copy_el_offsets;
@@ -1054,7 +1042,7 @@ namespace nd {
       dynd::tuple_type_id> : dynd::nd::
                                  base_kernel<copy_to_pyobject_kernel<
                                                  dynd::tuple_type_id>,
-                                             dynd::kernel_request_host, 1> {
+                                             1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
     std::vector<intptr_t> m_copy_el_offsets;
@@ -1144,7 +1132,7 @@ namespace nd {
       dynd::pointer_type_id> : dynd::nd::
                                    base_kernel<copy_to_pyobject_kernel<
                                                    dynd::pointer_type_id>,
-                                               dynd::kernel_request_host, 1> {
+                                               1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);

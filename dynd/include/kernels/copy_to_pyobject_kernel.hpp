@@ -745,6 +745,12 @@ namespace nd {
                                               1> {
     intptr_t m_copy_value_offset;
 
+    ~copy_to_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+      get_child_ckernel(m_copy_value_offset)->destroy();
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -764,12 +770,6 @@ namespace nd {
         *dst_obj = Py_None;
         Py_INCREF(*dst_obj);
       }
-    }
-
-    void destruct_children()
-    {
-      get_child_ckernel()->destroy();
-      destroy_child_ckernel(m_copy_value_offset);
     }
 
     static intptr_t
@@ -820,6 +820,11 @@ namespace nd {
     {
     }
 
+    ~copy_to_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -836,11 +841,6 @@ namespace nd {
         throw std::exception();
       }
       *dst_obj = lst.release();
-    }
-
-    void destruct_children()
-    {
-      get_child_ckernel()->destroy();
     }
 
     static intptr_t
@@ -883,6 +883,11 @@ namespace nd {
     {
     }
 
+    ~copy_to_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -902,11 +907,6 @@ namespace nd {
         throw std::exception();
       }
       *dst_obj = lst.release();
-    }
-
-    void destruct_children()
-    {
-      get_child_ckernel()->destroy();
     }
 
     static intptr_t
@@ -948,6 +948,13 @@ namespace nd {
     std::vector<intptr_t> m_copy_el_offsets;
     pyobject_ownref m_field_names;
 
+    ~copy_to_pyobject_kernel()
+    {
+      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+      }
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -973,13 +980,6 @@ namespace nd {
         throw std::exception();
       }
       *dst_obj = dct.release();
-    }
-
-    void destruct_children()
-    {
-      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        destroy_child_ckernel(m_copy_el_offsets[i]);
-      }
     }
 
     static intptr_t
@@ -1052,6 +1052,13 @@ namespace nd {
     {
     }
 
+    ~copy_to_pyobject_kernel()
+    {
+      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+      }
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -1076,13 +1083,6 @@ namespace nd {
         throw std::exception();
       }
       *dst_obj = tup.release();
-    }
-
-    void destruct_children()
-    {
-      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        destroy_child_ckernel(m_copy_el_offsets[i]);
-      }
     }
 
     static intptr_t
@@ -1133,6 +1133,12 @@ namespace nd {
                                    base_kernel<copy_to_pyobject_kernel<
                                                    dynd::pointer_type_id>,
                                                1> {
+
+    ~copy_to_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -1145,11 +1151,6 @@ namespace nd {
       // to that pointer
       char **src_ptr = reinterpret_cast<char **>(src[0]);
       copy_value_fn(copy_value, dst, src_ptr);
-    }
-
-    void destruct_children()
-    {
-      get_child_ckernel()->destroy();
     }
 
     static intptr_t

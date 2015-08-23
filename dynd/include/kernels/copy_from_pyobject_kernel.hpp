@@ -719,6 +719,12 @@ namespace nd {
     {
     }
 
+    ~copy_from_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+      get_child_ckernel(copy_value_offset)->destroy();
+    }
+
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -779,12 +785,6 @@ namespace nd {
             copy_value->get_function<dynd::expr_single_t>();
         copy_value_fn(copy_value, dst, src);
       }
-    }
-
-    void destruct_children()
-    {
-      get_child_ckernel()->destroy();
-      destroy_child_ckernel(copy_value_offset);
     }
 
     static intptr_t
@@ -866,6 +866,11 @@ namespace nd {
     // Offset to ckernel which copies from dst to dst, for broadcasting case
     intptr_t m_copy_dst_offset;
 
+    ~copy_from_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+    }
+
     inline void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -929,11 +934,6 @@ namespace nd {
       }
     }
 
-    inline void destruct_children()
-    {
-      get_child_ckernel()->destroy();
-    }
-
     static intptr_t
     instantiate(char *static_data, size_t data_size, char *data, void *ckb,
                 intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
@@ -992,6 +992,11 @@ namespace nd {
     bool m_dim_broadcast;
     // Offset to ckernel which copies from dst to dst, for broadcasting case
     intptr_t m_copy_dst_offset;
+
+    ~copy_from_pyobject_kernel()
+    {
+      get_child_ckernel()->destroy();
+    }
 
     inline void single(char *dst, char *const *src)
     {
@@ -1071,11 +1076,6 @@ namespace nd {
       }
     }
 
-    void destruct_children()
-    {
-      get_child_ckernel()->destroy();
-    }
-
     static intptr_t
     instantiate(char *static_data, size_t data_size, char *data, void *ckb,
                 intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
@@ -1130,6 +1130,13 @@ namespace nd {
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;
     std::vector<intptr_t> m_copy_el_offsets;
+
+    ~copy_from_pyobject_kernel()
+    {
+      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+      }
+    }
 
     void single(char *dst, char *const *src)
     {
@@ -1194,13 +1201,6 @@ namespace nd {
       }
     }
 
-    void destruct_children()
-    {
-      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        destroy_child_ckernel(m_copy_el_offsets[i]);
-      }
-    }
-
     static intptr_t
     instantiate(char *static_data, size_t data_size, char *data, void *ckb,
                 intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
@@ -1258,6 +1258,13 @@ namespace nd {
     const char *m_dst_arrmeta;
     bool m_dim_broadcast;
     std::vector<intptr_t> m_copy_el_offsets;
+
+    ~copy_from_pyobject_kernel()
+    {
+      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+      }
+    }
 
     void single(char *dst, char *const *src)
     {
@@ -1365,13 +1372,6 @@ namespace nd {
       }
       if (PyErr_Occurred()) {
         throw std::exception();
-      }
-    }
-
-    inline void destruct_children()
-    {
-      for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        destroy_child_ckernel(m_copy_el_offsets[i]);
       }
     }
 

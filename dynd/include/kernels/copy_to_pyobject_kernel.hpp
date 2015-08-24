@@ -747,8 +747,8 @@ namespace nd {
 
     ~copy_to_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
-      get_child_ckernel(m_copy_value_offset)->destroy();
+      get_child()->destroy();
+      get_child(m_copy_value_offset)->destroy();
     }
 
     void single(char *dst, char *const *src)
@@ -756,10 +756,10 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      dynd::ckernel_prefix *is_avail = get_child_ckernel();
+      dynd::ckernel_prefix *is_avail = get_child();
       dynd::expr_single_t is_avail_fn =
           is_avail->get_function<dynd::expr_single_t>();
-      dynd::ckernel_prefix *copy_value = get_child_ckernel(m_copy_value_offset);
+      dynd::ckernel_prefix *copy_value = get_child(m_copy_value_offset);
       dynd::expr_single_t copy_value_fn =
           copy_value->get_function<dynd::expr_single_t>();
       char value_is_avail = 0;
@@ -822,7 +822,7 @@ namespace nd {
 
     ~copy_to_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
+      get_child()->destroy();
     }
 
     void single(char *dst, char *const *src)
@@ -831,7 +831,7 @@ namespace nd {
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
       pyobject_ownref lst(PyList_New(dim_size));
-      ckernel_prefix *copy_el = get_child_ckernel();
+      ckernel_prefix *copy_el = get_child();
       dynd::expr_strided_t copy_el_fn =
           copy_el->get_function<dynd::expr_strided_t>();
       copy_el_fn(copy_el,
@@ -885,7 +885,7 @@ namespace nd {
 
     ~copy_to_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
+      get_child()->destroy();
     }
 
     void single(char *dst, char *const *src)
@@ -896,7 +896,7 @@ namespace nd {
       const dynd::var_dim_type_data *vd =
           reinterpret_cast<const dynd::var_dim_type_data *>(src[0]);
       pyobject_ownref lst(PyList_New(vd->size));
-      dynd::ckernel_prefix *copy_el = get_child_ckernel();
+      dynd::ckernel_prefix *copy_el = get_child();
       dynd::expr_strided_t copy_el_fn =
           copy_el->get_function<dynd::expr_strided_t>();
       char *el_src = vd->begin + offset;
@@ -951,7 +951,7 @@ namespace nd {
     ~copy_to_pyobject_kernel()
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+        get_child(m_copy_el_offsets[i])->destroy();
       }
     }
 
@@ -967,7 +967,7 @@ namespace nd {
               m_src_arrmeta);
       pyobject_ownref dct(PyDict_New());
       for (intptr_t i = 0; i < field_count; ++i) {
-        dynd::ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+        dynd::ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
         dynd::expr_single_t copy_el_fn =
             copy_el->get_function<dynd::expr_single_t>();
         char *el_src = src[0] + field_offsets[i];
@@ -1055,7 +1055,7 @@ namespace nd {
     ~copy_to_pyobject_kernel()
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+        get_child(m_copy_el_offsets[i])->destroy();
       }
     }
 
@@ -1071,7 +1071,7 @@ namespace nd {
               src_arrmeta);
       pyobject_ownref tup(PyTuple_New(field_count));
       for (intptr_t i = 0; i < field_count; ++i) {
-        ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+        ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
         dynd::expr_single_t copy_el_fn =
             copy_el->get_function<dynd::expr_single_t>();
         char *el_src = src[0] + field_offsets[i];
@@ -1136,7 +1136,7 @@ namespace nd {
 
     ~copy_to_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
+      get_child()->destroy();
     }
 
     void single(char *dst, char *const *src)
@@ -1144,7 +1144,7 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      ckernel_prefix *copy_value = get_child_ckernel();
+      ckernel_prefix *copy_value = get_child();
       dynd::expr_single_t copy_value_fn =
           copy_value->get_function<dynd::expr_single_t>();
       // The src value is a pointer, and copy_value_fn expects a pointer

@@ -721,15 +721,15 @@ namespace nd {
 
     ~copy_from_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
-      get_child_ckernel(copy_value_offset)->destroy();
+      get_child()->destroy();
+      get_child(copy_value_offset)->destroy();
     }
 
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
       if (src_obj == Py_None) {
-        ckernel_prefix *assign_na = get_child_ckernel();
+        ckernel_prefix *assign_na = get_child();
         dynd::expr_single_t assign_na_fn =
             assign_na->get_function<dynd::expr_single_t>();
         assign_na_fn(assign_na, dst, NULL);
@@ -780,7 +780,7 @@ namespace nd {
                                 reinterpret_cast<const char *>(&str_d));
 #endif
       } else {
-        ckernel_prefix *copy_value = get_child_ckernel(copy_value_offset);
+        ckernel_prefix *copy_value = get_child(copy_value_offset);
         dynd::expr_single_t copy_value_fn =
             copy_value->get_function<dynd::expr_single_t>();
         copy_value_fn(copy_value, dst, src);
@@ -868,7 +868,7 @@ namespace nd {
 
     ~copy_from_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
+      get_child()->destroy();
     }
 
     inline void single(char *dst, char *const *src)
@@ -890,7 +890,7 @@ namespace nd {
 #endif
       // TODO: PEP 3118 support here
 
-      ckernel_prefix *copy_el = get_child_ckernel();
+      ckernel_prefix *copy_el = get_child();
       dynd::expr_strided_t copy_el_fn =
           copy_el->get_function<dynd::expr_strided_t>();
 
@@ -919,7 +919,7 @@ namespace nd {
       if (src_dim_size == 1 && m_dim_size > 1) {
         // Copy once from Python, then duplicate that element
         copy_el_fn(copy_el, dst, 0, &child_src, &child_stride, 1);
-        ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
+        ckernel_prefix *copy_dst = get_child(m_copy_dst_offset);
         dynd::expr_strided_t copy_dst_fn =
             copy_dst->get_function<dynd::expr_strided_t>();
         intptr_t zero = 0;
@@ -995,7 +995,7 @@ namespace nd {
 
     ~copy_from_pyobject_kernel()
     {
-      get_child_ckernel()->destroy();
+      get_child()->destroy();
     }
 
     inline void single(char *dst, char *const *src)
@@ -1017,7 +1017,7 @@ namespace nd {
 #endif
       // TODO: PEP 3118 support here
 
-      ckernel_prefix *copy_el = get_child_ckernel();
+      ckernel_prefix *copy_el = get_child();
       dynd::expr_strided_t copy_el_fn =
           copy_el->get_function<dynd::expr_strided_t>();
 
@@ -1060,7 +1060,7 @@ namespace nd {
         // Copy once from Python, then duplicate that element
         copy_el_fn(copy_el, vdd->begin + m_offset, 0, &child_src, &child_stride,
                    1);
-        ckernel_prefix *copy_dst = get_child_ckernel(m_copy_dst_offset);
+        ckernel_prefix *copy_dst = get_child(m_copy_dst_offset);
         dynd::expr_strided_t copy_dst_fn =
             copy_dst->get_function<dynd::expr_strided_t>();
         intptr_t zero = 0;
@@ -1134,7 +1134,7 @@ namespace nd {
     ~copy_from_pyobject_kernel()
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+        get_child(m_copy_el_offsets[i])->destroy();
       }
     }
 
@@ -1189,7 +1189,7 @@ namespace nd {
         child_stride = 0;
       }
       for (intptr_t i = 0; i < field_count; ++i) {
-        ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+        ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
         dynd::expr_single_t copy_el_fn =
             copy_el->get_function<dynd::expr_single_t>();
         char *el_dst = dst + field_offsets[i];
@@ -1262,7 +1262,7 @@ namespace nd {
     ~copy_from_pyobject_kernel()
     {
       for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
-        get_child_ckernel(m_copy_el_offsets[i])->destroy();
+        get_child(m_copy_el_offsets[i])->destroy();
       }
     }
 
@@ -1307,7 +1307,7 @@ namespace nd {
           // TODO: Add an error policy of whether to throw an error
           //       or not. For now, just raise an error
           if (i >= 0) {
-            ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+            ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
             dynd::expr_single_t copy_el_fn =
                 copy_el->get_function<dynd::expr_single_t>();
             char *el_dst = dst + field_offsets[i];
@@ -1362,7 +1362,7 @@ namespace nd {
           child_stride = 0;
         }
         for (intptr_t i = 0; i < field_count; ++i) {
-          ckernel_prefix *copy_el = get_child_ckernel(m_copy_el_offsets[i]);
+          ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
           dynd::expr_single_t copy_el_fn =
               copy_el->get_function<dynd::expr_single_t>();
           char *el_dst = dst + field_offsets[i];

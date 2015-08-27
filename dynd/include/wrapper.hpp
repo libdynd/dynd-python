@@ -16,7 +16,7 @@ struct DyND_PyWrapperObject {
 };
 
 template <typename T>
-inline PyTypeObject *&DyND_PyWrapper_Type();
+extern PyTypeObject *&DyND_PyWrapper_Type();
 
 template <typename T>
 inline void DyND_PyWrapper_Type(PyObject *obj)

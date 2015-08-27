@@ -17,8 +17,6 @@
 
 typedef DyND_PyWrapperObject<dynd::ndt::type> DyND_PyTypeObject;
 
-template PYDYND_API void DyND_PyWrapper_Type<dynd::ndt::type>(PyObject *obj);
-
 inline int DyND_PyType_Check(PyObject *obj)
 {
   return DyND_PyWrapper_Check<dynd::ndt::type>(obj);

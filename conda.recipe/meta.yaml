@@ -1,5 +1,5 @@
 package:
-  name: dynd-python
+  name: dynd_python
   version: 0.7.0
 
 build:

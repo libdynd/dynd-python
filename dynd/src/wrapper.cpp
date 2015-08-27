@@ -8,7 +8,7 @@
 using namespace std;
 
 template <typename T>
-PyTypeObject *&DyND_PyWrapper_Type()
+inline PyTypeObject *&DyND_PyWrapper_Type()
 {
   static PyTypeObject *type = NULL;
   return type;

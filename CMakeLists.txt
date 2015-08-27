@@ -260,7 +260,9 @@ foreach(module config eval_context ndt.type nd.array nd.callable nd.functional n
         set(module_install_rpath "${module_install_rpath}/..")
         math(EXPR i "${i} - 1" )
     endwhile(${i} GREATER 0)
+    set(module_install_rpath "../../../${module_install_rpath}")
     set_target_properties(${module_name} PROPERTIES INSTALL_RPATH ${module_install_rpath})
 
     target_link_libraries(${module_name} pydynd)
 endforeach(module)
+

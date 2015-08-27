@@ -16,10 +16,10 @@ struct DyND_PyWrapperObject {
 };
 
 template <typename T>
-PyTypeObject *&DyND_PyWrapper_Type();
+inline PyTypeObject *&DyND_PyWrapper_Type();
 
 template <typename T>
-void DyND_PyWrapper_Type(PyObject *obj)
+inline void DyND_PyWrapper_Type(PyObject *obj)
 {
   DyND_PyWrapper_Type<T>() = reinterpret_cast<PyTypeObject *>(obj);
 }

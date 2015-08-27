@@ -1,4 +1,4 @@
-package: dynd-python
+package: dynd_python
 platform:
     - linux-64
 #    - osx-64

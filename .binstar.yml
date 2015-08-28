@@ -1,5 +1,5 @@
-user: dynd
 package: dynd-python
+user: dynd
 platform:
     - linux-64
     - osx-64

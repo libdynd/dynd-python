@@ -1,3 +1,4 @@
+user: dynd
 package: dynd-python
 platform:
     - linux-64

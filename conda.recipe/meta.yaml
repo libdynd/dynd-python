@@ -8,8 +8,8 @@ build:
     - lib/
     - lib/python2.7/site-packages/dynd/
   script_env:
-    - CC
-    - CXX
+    - CC [linux]
+    - CXX [linux]
 
 requirements:
   build:

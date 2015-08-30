@@ -9,6 +9,7 @@ python:
 
 matrix:
   include:
+    language: python
       cache:
         directories:
           - $HOME/.cache/pip

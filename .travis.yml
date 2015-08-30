@@ -1,10 +1,8 @@
 sudo: false
+
 matrix:
   include:
   - language: python
-    before_install:
-    - export CC=gcc-4.7
-    - export CXX=g++-4.7
     install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash Miniconda-latest-Linux-x86_64.sh -b
@@ -54,6 +52,9 @@ cache:
   directories:
   - $HOME/.cache/pip
   - $HOME/dynd-python/build
+before_install:
+- export CC=gcc-4.7
+- export CXX=g++-4.7
 install:
 - export CC=gcc-4.7
 - export CXX=g++-4.7

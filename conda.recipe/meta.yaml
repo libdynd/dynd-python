@@ -3,22 +3,22 @@ package:
   version: 0.7.0
 
 build:
-  number: {{environ.get('BINSTAR_BUILD', 1)}}
+  number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}
   rpaths:
     - lib/
     - lib/python2.7/site-packages/dynd/
 
 requirements:
   build:
-    - cmake [unix]
-    - gcc >=4.8
+#    - cmake [unix]
+ #   - gcc >=4.8
     - python
     - setuptools
     - cython
     - numpy
     - libdynd
   run:
-    - libgcc >=4.8
+#    - libgcc >=4.8
     - python
     - numpy
     - libdynd

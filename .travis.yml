@@ -1,12 +1,36 @@
 sudo: false
 
-language: python
 
-python:
-  - "2.6"
-  - "2.7"
-  - "3.3"
-  - "3.4"
+matrix:
+  include:
+    - language: objective-c
+      python: 2.7
+      osx_image: xcode6.4
+      addons:
+      before_install:
+        - export CC=clang
+        - export CXX=clang++
+      install:
+        - wget https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
+        - bash Miniconda-latest-MacOSX-x86_64.sh -b
+        - export PATH=$HOME/miniconda/bin:$PATH
+        - conda install --yes conda-build jinja2
+        - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
+      before_script:
+        - export TOKEN=iz-20d586ab-7ed7-4b11-b0c6-d63ac91288b4
+      script:
+        - conda build conda.recipe -c dynd
+      after_success:
+        - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda -t ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
+    - language: python
+      python: "2.6"
+#    - language: python
+ #     python: "2.7"
+  #  - language: python
+   #   python: "3.3"
+#    - language: python
+ #     python: "3.4"
+
 
 addons:
   apt:

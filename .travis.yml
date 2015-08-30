@@ -10,7 +10,7 @@ matrix:
 
    #     - "3.3"
     #    - "3.4"
-      language: python
+      - language: python
       cache:
         directories:
           - $HOME/.cache/pip

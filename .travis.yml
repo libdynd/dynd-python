@@ -21,7 +21,9 @@ matrix:
       after_success:
         - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda -t ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
     - language: python
-      python: "2.6" "2.7"
+      python:
+        - "2.6"
+        - "2.7"
 #    - language: python
  #     python: "2.7"
   #  - language: python

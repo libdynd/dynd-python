@@ -8,7 +8,7 @@ sudo: false
 
 matrix:
   include:
-    language: python
+   - language: python
       cache:
         directories:
           - $HOME/.cache/pip

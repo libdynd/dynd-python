@@ -3,12 +3,12 @@ sudo: false
 
 matrix:
   include:
-    - python: "2.6"
+    python: "2.6"
 
-python:
-  - "2.6"
-  - "2.7"
-  - "3.3"
+#python:
+ # - "2.6"
+  #- "2.7"
+#  - "3.3"
 
 
 addons:

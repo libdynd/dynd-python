@@ -18,7 +18,7 @@ matrix:
       script:
         - conda build conda.recipe --channel dynd/channel/dev
       after_success:
-        - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda -t ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
+        - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
     - language: objective-c
       osx_image: xcode6.4
       addons:
@@ -33,7 +33,7 @@ matrix:
       script:
         - conda build conda.recipe --channel dynd/channel/dev
       after_success:
-        - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda -t ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
+        - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
     - language: python
       python: "2.6"
     - language: python

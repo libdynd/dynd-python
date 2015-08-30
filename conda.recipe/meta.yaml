@@ -10,6 +10,7 @@ build:
   script_env:
     - CC [linux]
     - CXX [linux]
+    - MACOSX_DEPLOYMENT_TARGET [osx]
 
 requirements:
   build:

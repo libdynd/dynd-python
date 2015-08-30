@@ -19,7 +19,7 @@ matrix:
       before_script:
         - export TOKEN=iz-20d586ab-7ed7-4b11-b0c6-d63ac91288b4
       script:
-        - conda build conda.recipe
+        - conda build conda.recipe -c dynd
       after_success:
         - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda -t ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
     - language: python

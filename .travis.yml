@@ -40,6 +40,14 @@ script:
 matrix:
   include:
   - language: python
+    python: 2.6
+  - language: python
+    python: 2.7
+  - language: python
+    python: 3.3
+  - language: python
+    python: 3.4
+  - language: python
     install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash Miniconda-latest-Linux-x86_64.sh -b
@@ -64,14 +72,6 @@ matrix:
     - conda build conda.recipe --channel dynd/channel/dev
     after_success:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
-  - language: python
-    python: 2.6
-  - language: python
-    python: 2.7
-  - language: python
-    python: 3.3
-  - language: python
-    python: 3.4
 
 notifications:
   email: false

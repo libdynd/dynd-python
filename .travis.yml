@@ -5,8 +5,8 @@ matrix:
   include:
     - language: python
       install:
-        - wget https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh
-        - bash Miniconda-latest-MacOSX-x86_64.sh -b
+        - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
+        - bash Miniconda-latest-Linux-x86_64.sh -b
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda install --yes conda-build jinja2
         - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi

@@ -7,11 +7,8 @@ sudo: false
 
 matrix:
   include:
-
-   #     - "3.3"
-    #    - "3.4"
-      - language: python
-      cache:
+   - language: python
+     cache:
         directories:
           - $HOME/.cache/pip
           - $HOME/dynd-python/build

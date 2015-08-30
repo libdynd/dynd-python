@@ -4,6 +4,39 @@ env:
   global:
     secure: UimNDqpXAvtGTLBKAKdq3SPFT8615R/7M7wxtgfyvUOC7LXoqRIcXSXryiXD5CCmRsgATG13qAlu6UY8ve5xCU5xFtLIK0gy8ANyc+ZRZjO9UGVZU9UVswbADvEC+K5RwZTGjCnmfe72dv47NtWW1ZYsH/87WK4dwvGP3fIWNR8=
 
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - kalakris-cmake
+    packages:
+    - gcc-4.7
+    - g++-4.7
+    - cmake
+
+cache:
+  directories:
+  - $HOME/.cache/pip
+  - $HOME/dynd-python/build
+
+before_install:
+- export CC=gcc-4.7
+- export CXX=g++-4.7
+
+install:
+- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
+- if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi
+- mkdir libraries
+- pushd libraries
+- git clone --depth=1 https://github.com/libdynd/libdynd.git
+- popd
+- python setup.py install
+
+script:
+- pushd ~
+- python -c 'import dynd; dynd.test(verbosity=2, exit=True)'
+- popd
+
 matrix:
   include:
   - language: python
@@ -39,35 +72,7 @@ matrix:
     python: 3.3
   - language: python
     python: 3.4
-    
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    - kalakris-cmake
-    packages:
-    - gcc-4.7
-    - g++-4.7
-    - cmake
-cache:
-  directories:
-  - $HOME/.cache/pip
-  - $HOME/dynd-python/build
-before_install:
-- export CC=gcc-4.7
-- export CXX=g++-4.7
-install:
-- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
-- if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi
-- mkdir libraries
-- pushd libraries
-- git clone --depth=1 https://github.com/libdynd/libdynd.git
-- popd
-- python setup.py install
-script:
-- pushd ~
-- python -c 'import dynd; dynd.test(verbosity=2, exit=True)'
-- popd
+
 notifications:
   email: false
   flowdock: b08b3ba4fb86fa48121e90b5f67ccb75

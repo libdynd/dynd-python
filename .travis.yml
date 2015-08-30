@@ -4,16 +4,6 @@ sudo: false
 matrix:
   include:
     - language: python
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - kalakris-cmake
-            - llvm-toolchain-precise-3.6
-          packages:
-            - gcc-4.7
-            - g++-4.7
-            - cmake
       before_install:
         - export CC=gcc-4.7
         - export CXX=g++-4.7

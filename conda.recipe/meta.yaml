@@ -10,15 +10,15 @@ build:
 
 requirements:
   build:
-    - cmake [unix]
-    - gcc >=4.8
+#    - cmake [unix]
+ #   - gcc >=4.8
     - python
     - setuptools
     - cython
     - numpy
     - libdynd
   run:
-    - libgcc >=4.8
+#    - libgcc >=4.8
     - python
     - numpy
     - libdynd

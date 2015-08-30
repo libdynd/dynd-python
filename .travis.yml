@@ -40,9 +40,6 @@ script:
 matrix:
   include:
   - language: python
-    cache:
-      directories:
-      - $HOME/miniconda
     install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh
     - bash Miniconda-latest-Linux-x86_64.sh -b
@@ -56,9 +53,6 @@ matrix:
   - language: objective-c
     osx_image: xcode6.4
     addons: 
-    cache:
-      directories:
-      - $HOME/miniconda
     before_install:
     install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh

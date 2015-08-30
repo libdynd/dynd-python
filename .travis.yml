@@ -14,11 +14,12 @@ matrix:
         - bash Miniconda-latest-MacOSX-x86_64.sh -b
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda install --yes conda-build jinja2
+        - conda install -c https://conda.anaconda.org/dynd/channel/dev libdynd
         - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
       before_script:
         - export TOKEN=iz-20d586ab-7ed7-4b11-b0c6-d63ac91288b4
       script:
-        - conda build conda.recipe -c dynd
+        - conda build conda.recipe
       after_success:
         - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda -t ${TOKEN} upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
     - language: python

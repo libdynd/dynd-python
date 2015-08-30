@@ -1,9 +1,10 @@
 sudo: false
 
+python:
+  - "2.6"
+  - "2.7"
+
 matrix:
-  python:
-    - "2.6"
-    - "2.7"
   include:
     - language: python
    #     - "3.3"

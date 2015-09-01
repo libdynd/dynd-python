@@ -27,7 +27,6 @@ from ..cpp.types.callable_type cimport make_callable
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
-from ..nd.array cimport array, asarray
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
@@ -596,8 +595,10 @@ void = type(void_type_id)
 
 class tuple_factory(__builtins__.type):
     def __call__(self, *args):
+        from ..nd.array import asarray
+
         if args:
-            return wrap(_make_tuple(asarray(args).v))
+            return wrap(_make_tuple((<array> asarray(args)).v))
 
         return wrap(_make_tuple())
 
@@ -606,8 +607,10 @@ class tuple(object):
 
 class struct_factory(__builtins__.type):
     def __call__(self, **kwds):
+        from ..nd.array import asarray
+
         if kwds:
-            return wrap(_make_struct(asarray(list(kwds.keys())).v, asarray(list(kwds.values())).v))
+            return wrap(_make_struct((<array> asarray(list(kwds.keys()))).v, (<array> asarray(list(kwds.values()))).v))
 
         return wrap(_make_struct())
 

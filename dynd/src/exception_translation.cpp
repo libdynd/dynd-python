@@ -104,6 +104,9 @@ void pydynd::translate_exception()
     // redundantly also catch runtime_error.
     PyErr_SetString(PyExc_RuntimeError, exn.what());
   }
+  catch (const dynd::dynd_exception &exn) {
+    PyErr_SetString(PyExc_RuntimeError, exn.what());
+  }
   catch (const std::exception &exn) {
     PyErr_SetString(PyExc_RuntimeError, exn.what());
   }

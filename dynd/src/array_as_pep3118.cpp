@@ -419,6 +419,19 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     PyErr_SetString(PyExc_BufferError, e.what());
     return -1;
   }
+  catch (const dynd::dynd_exception &e) {
+    // Numpy likes to hide these errors and repeatedly try again, so it's useful
+    // to see what's happening
+    // cout << "ERROR " << e.what() << endl;
+    Py_DECREF(ndo);
+    buffer->obj = NULL;
+    if (buffer->internal != NULL) {
+      free(buffer->internal);
+      buffer->internal = NULL;
+    }
+    PyErr_SetString(PyExc_BufferError, e.what());
+    return -1;
+  }
 }
 
 int pydynd::array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer)
@@ -431,6 +444,10 @@ int pydynd::array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer)
     return 0;
   }
   catch (const std::exception &e) {
+    PyErr_SetString(PyExc_BufferError, e.what());
+    return -1;
+  }
+  catch (const dynd::dynd_exception &e) {
     PyErr_SetString(PyExc_BufferError, e.what());
     return -1;
   }

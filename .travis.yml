@@ -25,7 +25,6 @@ before_install:
 
 install:
 - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
-- if [ $TRAVIS_PYTHON_VERSION == 2.6 ]; then travis_retry pip install unittest2; fi
 - mkdir libraries
 - pushd libraries
 - git clone --depth=1 https://github.com/libdynd/libdynd.git
@@ -42,6 +41,16 @@ matrix:
   - language: python
     python: 2.6
     compiler: gcc
+    install:
+    - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
+    - travis_retry pip install -I numpy==1.7.2
+    - travis_retry pip install unittest2
+    - python -c "import numpy; print numpy.__version__"
+    - mkdir libraries
+    - pushd libraries
+    - git clone --depth=1 https://github.com/libdynd/libdynd.git
+    - popd
+    - python setup.py install
   - language: python
     python: 2.7
     compiler: gcc
@@ -68,7 +77,7 @@ matrix:
     compiler: clang
     osx_image: xcode6.4
     env: OSX CONDA
-    addons: 
+    addons:
     before_install:
     install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh

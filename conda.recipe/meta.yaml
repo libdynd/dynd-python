@@ -7,7 +7,7 @@ build:
   rpaths:
     - lib/
 #    - lib/python2.7/site-packages/dynd/ [py2k]
-    - {{site.getsitepackages()[0]}}
+    - {{import site; site.getsitepackages()[0]}}
   script_env:
     - CC [linux]
     - CXX [linux]

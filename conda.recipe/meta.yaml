@@ -6,10 +6,9 @@ build:
   number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}
   rpaths:
     - lib/
-    - {{environ.get('SP_DIR')}}/dynd
+    - {{environ.get('SP_DIR')}}/dynd/
 #    - lib/python2.7/site-packages/dynd/ [py2k]
  #   - lib/python3.4/site-packages/dynd/ [py3k]
-#    - {{os.path.join(site.getsitepackages()[0], 'dynd')}}
   script_env:
     - CC [linux]
     - CXX [linux]

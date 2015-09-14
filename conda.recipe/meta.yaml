@@ -6,7 +6,7 @@ build:
   number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}
   rpaths:
     - lib
-    - lib/{{environ.get('PY_VER')}}/site-packages/dynd
+    - lib/python{{environ.get('PY_VER')}}/site-packages/dynd
 #    - lib/python2.7/site-packages/dynd/ [py2k]
 #   - lib/python3.4/site-packages/dynd/ [py3k]
   script_env:

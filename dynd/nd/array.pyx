@@ -218,6 +218,9 @@ cdef class array(object):
           idx = asarray(x)
           if (idx.dtype == ndt.bool):
             return nd.take(self, idx)
+        elif isinstance(x, array):
+          if (x.dtype == ndt.bool):
+            return nd.take(self, x)
 
         cdef array result = array()
         result.v = array_getitem(self.v, x)

@@ -10,8 +10,7 @@ from os.path import abspath, dirname, split
 import re
 
 # Check if we're running 64-bit Python
-import struct
-is_64_bit = struct.calcsize('@P') == 8
+is_64_bit = sys.maxsize > 2**32
 
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"

@@ -213,9 +213,11 @@ cdef class array(object):
     def __getitem__(self, x):
         from .. import ndt, nd
 
-        cdef array idx = asarray(x)
-        if (idx.dtype == ndt.bool):
-          return nd.take(self, idx)
+        cdef array idx
+        if isinstance(x, list):
+          idx = asarray(x)
+          if (idx.dtype == ndt.bool):
+            return nd.take(self, idx)
 
         cdef array result = array()
         result.v = array_getitem(self.v, x)

@@ -75,8 +75,19 @@ class cmake_build_ext(build_ext):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
     else:
-        built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
-        if built_with_cuda:
+        # Detecting and setting options to parallel libdynd should be done at
+        # the cmake level so that the directories detected for libdynd can be
+        # used to call the right libdynd-config.
+        # This is good enough for now though.
+        if sys.platform == 'win32':
+            config_dir = 'C:/Program Files%s/libdynd/bin' % (
+                '' if is_64_bit else ' (x86)')
+            built_with_cuda = eval(check_output(
+                ['/'.join([config_dir, 'libdynd-config.bat']),
+                 '-cuda'], cwd=config_dir))
+        else:
+            built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
+        if built_with_cuda == 'ON':
             cuda_option = '-DDYND_CUDA=ON'
 
     if sys.platform != 'win32':

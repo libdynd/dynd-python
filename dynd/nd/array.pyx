@@ -211,6 +211,12 @@ cdef class array(object):
         set_array_dynamic_property(self.v, name, value)
 
     def __getitem__(self, x):
+        from .. import ndt, nd
+
+        cdef array idx = asarray(x)
+        if (idx.dtype == ndt.bool):
+          return nd.take(self, idx)
+
         cdef array result = array()
         result.v = array_getitem(self.v, x)
         return result
@@ -338,6 +344,14 @@ cdef class array(object):
         cdef array result = array()
         result.v = array_eval(self.v, ectx)
         return result
+
+    def sum(self, axis = None):
+      from .. import nd
+
+      if (axis is None):
+        return nd.sum(self)
+
+      return nd.sum(self, axes = [axis])
 
     def ucast(self, dtype, int replace_ndim=0):
         """

@@ -24,7 +24,7 @@ before_install:
 - export CXX=g++-4.8
 
 install:
-- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
+- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21 
 - mkdir libraries
 - pushd libraries
 - git clone --depth=1 https://github.com/libdynd/libdynd.git

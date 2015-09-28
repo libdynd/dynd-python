@@ -55,7 +55,8 @@ to the cmake command.
   <...>
   ~/dynd-python/build $ make
   <...>
-  ~/dynd-python/build $ sudo make install
+  ~/dynd-python/build $ cd ..
+  ~/dynd-python $ python setup.py install
   ```
 
   If you want to control where the Python module goes, add

@@ -201,7 +201,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
                                               dst_arrmeta, NULL);
   }
-  tmp_dst.get_ndo()->m_data_pointer = dst_data;
+  tmp_dst.get_ndo()->data.ptr = dst_data;
   char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {true};

@@ -857,12 +857,12 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   nd::array result(make_array_memory_block(arrmeta_size));
 
   // Clone the data pointer
-  result.get_ndo()->m_data_pointer = n.get_ndo()->m_data_pointer;
-  result.get_ndo()->m_data_reference = n.get_ndo()->m_data_reference;
-  if (result.get_ndo()->m_data_reference == NULL) {
-    result.get_ndo()->m_data_reference = n.get_memblock().get();
+  result.get_ndo()->data.ptr = n.get_ndo()->data.ptr;
+  result.get_ndo()->data.ref = n.get_ndo()->data.ref;
+  if (result.get_ndo()->data.ref == NULL) {
+    result.get_ndo()->data.ref = n.get_memblock().get();
   }
-  memory_block_incref(result.get_ndo()->m_data_reference);
+  memory_block_incref(result.get_ndo()->data.ref);
 
   // Copy the flags
   result.get_ndo()->m_flags = n.get_ndo()->m_flags;

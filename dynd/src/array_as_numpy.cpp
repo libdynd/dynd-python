@@ -737,7 +737,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     // Create a view directly to the dynd array
     pyobject_ownref result(PyArray_NewFromDescr(
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
-        shape.get(), strides.get(), a.get_ndo()->m_data_pointer,
+        shape.get(), strides.get(), a.get_ndo()->data.ptr,
         ((a.get_flags() & nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) |
             NPY_ARRAY_ALIGNED,
         NULL));

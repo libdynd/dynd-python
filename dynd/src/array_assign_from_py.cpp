@@ -31,7 +31,7 @@ void pydynd::array_broadcast_assign_from_py(
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
                                               dst_arrmeta, NULL);
   }
-  tmp_dst.get_ndo()->m_data_pointer = dst_data;
+  tmp_dst.get_ndo()->data.ptr = dst_data;
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
@@ -66,7 +66,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
                                               dst_arrmeta, NULL);
   }
-  tmp_dst.get_ndo()->m_data_pointer = dst_data;
+  tmp_dst.get_ndo()->data.ptr = dst_data;
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);

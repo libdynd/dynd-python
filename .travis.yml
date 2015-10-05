@@ -10,8 +10,8 @@ addons:
     - ubuntu-toolchain-r-test
     - kalakris-cmake
     packages:
-    - gcc-4.8
-    - g++-4.8
+    - gcc-4.9
+    - g++-4.9
     - cmake
 
 cache:
@@ -20,11 +20,11 @@ cache:
   - $HOME/dynd-python/build
 
 before_install:
-- export CC=gcc-4.8
-- export CXX=g++-4.8
+- export CC=gcc-4.9
+- export CXX=g++-4.9
 
 install:
-- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21 
+- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
 - mkdir libraries
 - pushd libraries
 - git clone --depth=1 https://github.com/libdynd/libdynd.git

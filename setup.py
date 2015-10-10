@@ -119,7 +119,10 @@ class cmake_build_ext(build_ext):
     # Move the built libpydynd library to the place expected by the Python build
     if sys.platform != 'win32':
         name, = glob.glob('libpydynd.*')
-        os.makedirs(os.path.join(build_lib, 'dynd'))
+        try:
+            os.makedirs(os.path.join(build_lib, 'dynd'))
+        except OSError:
+            pass
         shutil.move(name, os.path.join(build_lib, 'dynd', name))
         if install_lib_option.split('=')[1] == 'OFF':
             name, = glob.glob('libraries/libdynd/libdynd.*')

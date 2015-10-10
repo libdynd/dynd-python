@@ -14,6 +14,7 @@ is_64_bit = sys.maxsize > 2**32
 
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"
+  user_options = [('extra-cmake-args=', None, 'extra arguments for CMake')]
 
   def get_ext_path(self, name):
     # Get the package directory from build_py
@@ -34,6 +35,9 @@ class cmake_build_ext(build_ext):
         suffix = sysconfig.get_config_var('SO')
         return name + suffix
 
+  def initialize_options(self):
+    build_ext.initialize_options(self)
+    self.extra_cmake_args = ''
 
   def run(self):
     # We don't call the origin build_ext, instead ignore that
@@ -90,7 +94,7 @@ class cmake_build_ext(build_ext):
             cuda_option = '-DDYND_CUDA=ON'
 
     if sys.platform != 'win32':
-        self.spawn(['cmake', pyexe_option, install_lib_option, build_tests_option,
+        self.spawn(['cmake', self.extra_cmake_args, pyexe_option, install_lib_option, build_tests_option,
                     static_lib_option, cuda_option, source])
         self.spawn(['make'])
     else:
@@ -104,7 +108,7 @@ class cmake_build_ext(build_ext):
             raise ValueError('Unrecognized MSVC version %s' % msvc)
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        self.spawn(['cmake', source, pyexe_option, install_lib_option,
+        self.spawn(['cmake', self.extra_cmake_args, source, pyexe_option, install_lib_option,
                     static_lib_option, build_tests_option,
                     '-G', cmake_generator])
         # Do the build
@@ -115,6 +119,10 @@ class cmake_build_ext(build_ext):
     # Move the built libpydynd library to the place expected by the Python build
     if sys.platform != 'win32':
         name, = glob.glob('libpydynd.*')
+        try:
+            os.makedirs(os.path.join(build_lib, 'dynd'))
+        except OSError:
+            pass
         shutil.move(name, os.path.join(build_lib, 'dynd', name))
         if install_lib_option.split('=')[1] == 'OFF':
             name, = glob.glob('libraries/libdynd/libdynd.*')

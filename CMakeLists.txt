@@ -8,6 +8,7 @@ project(dynd-python)
 
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+set(CMAKE_VERBOSE_MAKEFILE 1)
 
 ################################################
 # Some options configurable from the CMAKE command execution

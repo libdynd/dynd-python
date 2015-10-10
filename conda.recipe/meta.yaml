@@ -26,7 +26,6 @@ requirements:
 
 test:
   commands:
-#    - otool -l /opt/anaconda/envs/_test/lib/python2.7/site-packages/dynd/config.so
     - python -c "import dynd; dynd.test(verbosity=2)"
 
 about:

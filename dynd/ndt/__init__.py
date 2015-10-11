@@ -14,10 +14,12 @@ date = type('date')
 time = type('time')
 datetime = type('datetime')
 datetimeutc = type('datetime[tz="UTC"]')
-json = type('json')
+#json = type('json')
 bytes = type('bytes')
 
 # Some classes making dimension construction easier
 from .dim_helpers import *
 
 from . import dynd_ctypes as ctypes
+
+from . import json

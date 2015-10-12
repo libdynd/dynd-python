@@ -111,12 +111,10 @@ PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
 PyObject *pydynd::get_published_callables()
 {
   pyobject_ownref res(PyDict_New());
-  const map<dynd::nd::string, dynd::nd::callable> &reg =
-      func::get_regfunctions();
-  for (map<dynd::nd::string, dynd::nd::callable>::const_iterator it =
-           reg.begin();
+  const map<std::string, dynd::nd::callable> &reg = func::get_regfunctions();
+  for (map<std::string, dynd::nd::callable>::const_iterator it = reg.begin();
        it != reg.end(); ++it) {
-    PyDict_SetItem(res.get(), pystring_from_string(it->first.str()),
+    PyDict_SetItem(res.get(), pystring_from_string(it->first),
                    DyND_PyWrapper_New(it->second));
   }
   return res.release();

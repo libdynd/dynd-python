@@ -66,7 +66,7 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
     // TODO: We probably want to make some kind of acceleration structure for
     // the name lookup
     if (count > 0) {
-      string nstr = pystring_as_string(name);
+      std::string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == nstr) {
           return DyND_PyWrapper_New(const_cast<dynd::nd::callable &>(
@@ -79,7 +79,7 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
     // Search for a function
     dt.extended()->get_dynamic_type_functions(&properties, &count);
     if (count > 0) {
-      string nstr = pystring_as_string(name);
+      std::string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
         if (properties[i].first == nstr) {
           return wrap__type_callable(nstr, properties[i].second, dt);
@@ -151,7 +151,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
   // TODO: We probably want to make some kind of acceleration structure for the
   // name lookup
   if (count > 0) {
-    string nstr = pystring_as_string(name);
+    std::string nstr = pystring_as_string(name);
     for (size_t i = 0; i < count; ++i) {
       if (properties[i].first == nstr) {
         return DyND_PyWrapper_New(
@@ -166,7 +166,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
     count = 0;
   }
   if (count > 0) {
-    string nstr = pystring_as_string(name);
+    std::string nstr = pystring_as_string(name);
     for (size_t i = 0; i < count; ++i) {
       if (properties[i].first == nstr) {
         return wrap_array_callable(nstr, properties[i].second, n);
@@ -194,7 +194,7 @@ void pydynd::set_array_dynamic_property(const dynd::nd::array &n,
   // TODO: We probably want to make some kind of acceleration structure for
   // the name lookup
   if (count > 0) {
-    string nstr = pystring_as_string(name);
+    std::string nstr = pystring_as_string(name);
     for (size_t i = 0; i < count; ++i) {
       if (properties[i].first == nstr) {
         nd::array p = call_gfunc_callable(nstr, properties[i].second, n);
@@ -318,7 +318,7 @@ nd::array pydynd::call_gfunc_callable(const std::string &funcname,
  * \param out_storage  This is a hack because dynd doesn't support object
  * lifetime management
  */
-static void fill_thiscall_parameters_array(const string &funcname,
+static void fill_thiscall_parameters_array(const std::string &funcname,
                                            const gfunc::callable &c,
                                            PyObject *args, PyObject *kwargs,
                                            nd::array &out_params,
@@ -362,7 +362,7 @@ static void fill_thiscall_parameters_array(const string &funcname,
     PyObject *key, *value;
     Py_ssize_t pos = 0;
     while (PyDict_Next(kwargs, &pos, &key, &value)) {
-      string s = pystring_as_string(key);
+      std::string s = pystring_as_string(key);
       size_t i;
       // Search for the parameter in the struct, and fill it if found
       for (i = args_count; i < param_count; ++i) {
@@ -519,7 +519,7 @@ static PyObject *_type_callable_call(const std::string &funcname,
 
   // Convert kwds into nd::arrays
   intptr_t nkwd = PyDict_Size(kwargs);
-  vector<string> kwd_names_strings(nkwd);
+  vector<std::string> kwd_names_strings(nkwd);
   std::vector<const char *> kwd_names(nkwd);
   std::vector<dynd::nd::array> kwd_values(nkwd);
   PyObject *key, *value;

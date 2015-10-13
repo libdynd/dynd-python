@@ -125,7 +125,7 @@ dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
   // The simple C data types
   if (PyObject_IsSubclass(d, ctypes.PyCSimpleType_Type)) {
     pyobject_ownref proto(PyObject_GetAttrString(d, "_type_"));
-    string proto_str = pystring_as_string(proto);
+    std::string proto_str = pystring_as_string(proto);
     if (proto_str.size() != 1) {
       throw std::runtime_error(
           "invalid ctypes type, its _type_ value is incorrect");
@@ -180,7 +180,7 @@ dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
           "The _fields_ member of the ctypes C struct is not a list");
     }
     vector<ndt::type> field_types;
-    vector<string> field_names;
+    vector<std::string> field_names;
     vector<size_t> field_offsets;
     Py_ssize_t field_count = PyList_GET_SIZE(fields_list_obj.get());
     for (Py_ssize_t i = 0; i < field_count; ++i) {

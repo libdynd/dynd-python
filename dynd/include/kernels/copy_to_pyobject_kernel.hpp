@@ -318,8 +318,8 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string_type_data *sd =
-          reinterpret_cast<const dynd::string_type_data *>(src[0]);
+      const dynd::string *sd =
+          reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj = PyUnicode_DecodeASCII(sd->begin, sd->end - sd->begin, NULL);
     }
   };
@@ -331,8 +331,8 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string_type_data *sd =
-          reinterpret_cast<const dynd::string_type_data *>(src[0]);
+      const dynd::string *sd =
+          reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj = PyUnicode_DecodeUTF8(sd->begin, sd->end - sd->begin, NULL);
     }
   };
@@ -344,8 +344,8 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string_type_data *sd =
-          reinterpret_cast<const dynd::string_type_data *>(src[0]);
+      const dynd::string *sd =
+          reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj =
           PyUnicode_DecodeUTF16(sd->begin, sd->end - sd->begin, NULL, NULL);
     }
@@ -358,8 +358,8 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string_type_data *sd =
-          reinterpret_cast<const dynd::string_type_data *>(src[0]);
+      const dynd::string *sd =
+          reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj =
           PyUnicode_DecodeUTF32(sd->begin, sd->end - sd->begin, NULL, NULL);
     }
@@ -1009,7 +1009,7 @@ namespace nd {
               ->get_arrmeta_offsets_raw();
       self_ck->m_field_names.reset(PyTuple_New(field_count));
       for (intptr_t i = 0; i < field_count; ++i) {
-        const dynd::string_type_data &rawname =
+        const dynd::string &rawname =
             src_tp[0]
                 .extended<dynd::ndt::base_struct_type>()
                 ->get_field_name_raw(i);

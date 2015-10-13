@@ -209,7 +209,7 @@ dynd::ndt::type pydynd::_type_from_numpy_dtype(PyArray_Descr *d,
     if (unit == NULL) {
       throw runtime_error("");
     }
-    string s = pydynd::pystring_as_string(unit);
+    std::string s = pydynd::pystring_as_string(unit);
     if (s == "D") {
       // If it's 'datetime64[D]', then use an adapter type with appropriate
       // metadata
@@ -607,7 +607,7 @@ PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp,
 
     pyobject_ownref names_obj(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      const dynd::string_type_data &fname = stp->get_field_name_raw(i);
+      const dynd::string &fname = stp->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
           PyUnicode_FromStringAndSize(fname.begin, fname.end - fname.begin));

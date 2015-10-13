@@ -120,18 +120,18 @@ std::string pydynd::pystring_as_string(PyObject *str)
 #endif
       throw runtime_error("Error getting string data");
     }
-    return string(data, len);
+    return std::string(data, len);
 #if PY_VERSION_HEX < 0x03000000
   } else if (PyString_Check(str)) {
     if (PyString_AsStringAndSize(str, &data, &len) < 0) {
       throw runtime_error("Error getting string data");
     }
-    return string(data, len);
+    return std::string(data, len);
 #endif
   } else if (DyND_PyArray_Check(str)) {
     const nd::array &n = ((DyND_PyArrayObject *)str)->v;
     if (n.get_type().value_type().get_kind() == string_kind) {
-      return n.as<string>();
+      return n.as<std::string>();
     } else {
       stringstream ss;
       ss << "Cannot implicitly convert object of type ";
@@ -348,7 +348,7 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
     return default_value;
   }
 
-  string s = pystring_as_string(obj);
+  std::string s = pystring_as_string(obj);
 
   if (s == string0) {
     return value0;
@@ -368,7 +368,7 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
     return default_value;
   }
 
-  string s = pystring_as_string(obj);
+  std::string s = pystring_as_string(obj);
 
   if (s == string0) {
     return value0;
@@ -391,7 +391,7 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
     return default_value;
   }
 
-  string s = pystring_as_string(obj);
+  std::string s = pystring_as_string(obj);
 
   if (s == string0) {
     return value0;
@@ -417,7 +417,7 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
     return default_value;
   }
 
-  string s = pystring_as_string(obj);
+  std::string s = pystring_as_string(obj);
 
   if (s == string0) {
     return value0;
@@ -446,7 +446,7 @@ int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
     return default_value;
   }
 
-  string s = pystring_as_string(obj);
+  std::string s = pystring_as_string(obj);
 
   if (s == string0) {
     return value0;

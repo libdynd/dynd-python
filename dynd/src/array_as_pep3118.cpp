@@ -321,7 +321,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     if ((flags & PyBUF_FORMAT) || uniform_tp.get_data_size() == 0) {
       // If the array data type doesn't have a fixed size, make_pep3118 fills
       // buffer->itemsize as a side effect
-      string format =
+      std::string format =
           make_pep3118_format(buffer->itemsize, uniform_tp, uniform_arrmeta);
       if (flags & PyBUF_FORMAT) {
         buffer->internal =

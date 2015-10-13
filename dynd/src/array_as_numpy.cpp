@@ -174,7 +174,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
     pyobject_ownref names_obj(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      const string_type_data &fn = bs->get_field_name_raw(i);
+      const dynd::string &fn = bs->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
           PyUnicode_FromStringAndSize(fn.begin, fn.end - fn.begin));
@@ -435,7 +435,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 
     pyobject_ownref names_obj(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      const string_type_data &fn = bs->get_field_name_raw(i);
+      const dynd::string &fn = bs->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
           PyUnicode_FromStringAndSize(fn.begin, fn.end - fn.begin));

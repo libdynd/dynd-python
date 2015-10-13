@@ -68,7 +68,7 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
 
   // Convert kwds into nd::arrays
   intptr_t nkwd = PyDict_Size(kwds_obj);
-  vector<string> kwd_names_strings(nkwd);
+  vector<std::string> kwd_names_strings(nkwd);
   std::vector<const char *> kwd_names(nkwd);
   std::vector<dynd::nd::array> kwd_values(nkwd);
   PyObject *key, *value;

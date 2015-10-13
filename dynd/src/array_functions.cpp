@@ -536,7 +536,7 @@ dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type &d,
 dynd::nd::array pydynd::array_memmap(PyObject *filename, PyObject *begin,
                                      PyObject *end, PyObject *access)
 {
-  string filename_ = pystring_as_string(filename);
+  std::string filename_ = pystring_as_string(filename);
   intptr_t begin_ = (begin == Py_None) ? 0 : pyobject_as_index(begin);
   intptr_t end_ = (end == Py_None) ? std::numeric_limits<intptr_t>::max()
                                    : pyobject_as_index(end);
@@ -815,7 +815,7 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
 
 dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
 {
-  vector<string> selected_fields;
+  vector<std::string> selected_fields;
   pyobject_as_vector_string(field_list, selected_fields);
 
   // TODO: Move this implementation into dynd

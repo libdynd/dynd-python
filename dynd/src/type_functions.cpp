@@ -125,7 +125,7 @@ PyObject *pydynd::_type_get_kind(const dynd::ndt::type &d)
 {
   stringstream ss;
   ss << d.get_kind();
-  string s = ss.str();
+  std::string s = ss.str();
 #if PY_VERSION_HEX >= 0x03000000
   return PyUnicode_FromStringAndSize(s.data(), s.size());
 #else
@@ -137,7 +137,7 @@ PyObject *pydynd::_type_get_type_id(const dynd::ndt::type &d)
 {
   stringstream ss;
   ss << d.get_type_id();
-  string s = ss.str();
+  std::string s = ss.str();
 #if PY_VERSION_HEX >= 0x03000000
   return PyUnicode_FromStringAndSize(s.data(), s.size());
 #else
@@ -240,7 +240,7 @@ static string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
   }
 
   string_encoding_t encoding = string_encoding_invalid;
-  string encoding_str = pystring_as_string(encoding_obj);
+  std::string encoding_str = pystring_as_string(encoding_obj);
   switch (encoding_str.size()) {
   case 4:
     switch (encoding_str[3]) {
@@ -338,7 +338,7 @@ dynd::ndt::type pydynd::dynd_make_struct_type(PyObject *field_types,
                                               PyObject *field_names)
 {
   vector<ndt::type> field_types_vec;
-  vector<string> field_names_vec;
+  vector<std::string> field_names_vec;
   pyobject_as_vector__type(field_types, field_types_vec);
   pyobject_as_vector_string(field_names, field_names_vec);
   if (field_types_vec.size() != field_names_vec.size()) {
@@ -396,7 +396,7 @@ PyObject *pydynd::_type_array_property_names(const ndt::type &d)
   }
   pyobject_ownref result(PyList_New(count));
   for (size_t i = 0; i != count; ++i) {
-    const string &s = properties[i].first;
+    const std::string &s = properties[i].first;
 #if PY_VERSION_HEX >= 0x03000000
     pyobject_ownref str_obj(PyUnicode_FromStringAndSize(s.data(), s.size()));
 #else

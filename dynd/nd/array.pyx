@@ -251,7 +251,10 @@ cdef class array(object):
         array_setitem(self.v, x, y)
 
     def __str__(self):
-        return array_str(self.v)
+        try:
+            return array_str(self.v)
+        except TypeError:
+            return self.__repr__()
 
     def __unicode__(self):
         return array_unicode(self.v)
@@ -1012,3 +1015,8 @@ def fields(array struct_array, *fields_list):
     cdef array result = array()
     result.v = nd_fields(struct_array.v, fields_list)
     return result
+
+from ..cpp.json_parser cimport parse as _parse
+
+def parse(tp, obj):
+    return wrap(_parse((<type> tp).v, str(obj)))

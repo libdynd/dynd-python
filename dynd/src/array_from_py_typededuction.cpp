@@ -226,7 +226,7 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
     ndt::type obj_tp;
 #if PY_VERSION_HEX >= 0x03000000
     if (PyUnicode_Check(obj)) {
-      obj_tp = ndt::string_type::make(string_encoding_utf_8);
+      obj_tp = ndt::string_type::make();
     }
     else {
       obj_tp = pydynd::deduce__type_from_pyobject(obj, false);

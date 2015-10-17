@@ -326,7 +326,7 @@ dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
 {
   string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-  return ndt::string_type::make(encoding);
+  return ndt::string_type::make();
 }
 
 dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type &target_tp)

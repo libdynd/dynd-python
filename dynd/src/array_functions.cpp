@@ -45,7 +45,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
     n_str = n;
   } else {
     // Otherwise, convert to an ASCII string
-    n_str = nd::empty(ndt::string_type::make(string_encoding_ascii));
+    n_str = nd::empty(ndt::string_type::make());
     n_str.vals() = n;
   }
   const ndt::base_string_type *bsd =
@@ -77,7 +77,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array &n)
     n_str = n;
   } else {
     // Otherwise, convert to a unicode string
-    n_str = nd::empty(ndt::string_type::make(DYND_PY_ENCODING));
+    n_str = nd::empty(ndt::string_type::make());
     n_str.vals() = n;
   }
   const ndt::base_string_type *bsd =

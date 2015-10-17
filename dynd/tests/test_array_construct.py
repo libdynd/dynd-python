@@ -464,20 +464,10 @@ class TestStringConstruct(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('4 * string'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
-        a = nd.array(['this', 'is', 'a', 'test'],
-                        dtype='string["U16"]')
-        self.assertEqual(nd.type_of(a), ndt.type('4 * string["U16"]'))
-        self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
-
     def test_unicode_array(self):
         a = nd.array([u'this', 'is', u'a', 'test'],
                         dtype=ndt.string)
         self.assertEqual(nd.type_of(a), ndt.type('4 * string'))
-        self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
-
-        a = nd.array([u'this', 'is', u'a', 'test'],
-                        dtype='string["U16"]')
-        self.assertEqual(nd.type_of(a), ndt.type('4 * string["U16"]'))
         self.assertEqual(nd.as_py(a), ['this', 'is', 'a', 'test'])
 
     def test_fixed_string_array(self):

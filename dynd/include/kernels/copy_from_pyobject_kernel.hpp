@@ -458,7 +458,7 @@ namespace nd {
         }
 
         dynd::ndt::type str_dt =
-            dynd::ndt::string_type::make(dynd::string_encoding_ascii);
+            dynd::ndt::string_type::make();
         dynd::string str_d;
         dynd::string_type_arrmeta str_md;
         str_d.begin = pystr_data;

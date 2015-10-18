@@ -741,6 +741,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
         ((a.get_flags() & nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) |
             NPY_ARRAY_ALIGNED,
         NULL));
+
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
     Py_INCREF(a_obj);
     if (PyArray_SetBaseObject((PyArrayObject *)result.get(), a_obj) < 0) {

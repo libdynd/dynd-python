@@ -334,6 +334,7 @@ namespace nd {
       const dynd::string *sd =
           reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj = PyUnicode_DecodeUTF8(sd->begin(), sd->end() - sd->begin(), NULL);
+
     }
   };
 

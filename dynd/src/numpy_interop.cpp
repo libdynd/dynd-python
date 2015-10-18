@@ -610,10 +610,10 @@ PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp,
       const dynd::string &fname = stp->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
-          PyUnicode_FromStringAndSize(fname.begin, fname.end - fname.begin));
+          PyUnicode_FromStringAndSize(fname.begin(), fname.end() - fname.begin()));
 #else
       pyobject_ownref name_str(
-          PyString_FromStringAndSize(fname.begin, fname.end - fname.begin));
+          PyString_FromStringAndSize(fname.begin(), fname.end() - fname.begin()));
 #endif
       PyList_SET_ITEM((PyObject *)names_obj, i, name_str.release());
     }

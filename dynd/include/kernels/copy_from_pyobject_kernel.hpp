@@ -376,8 +376,8 @@ namespace nd {
       dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
       dynd::string bytes_d;
       dynd::string_type_arrmeta bytes_md;
-      bytes_d.begin = pybytes_data;
-      bytes_d.end = pybytes_data + pybytes_len;
+      bytes_d.m_begin = pybytes_data;
+      bytes_d.m_end = pybytes_data + pybytes_len;
       bytes_md.blockref = NULL;
 
       dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp,
@@ -442,8 +442,8 @@ namespace nd {
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string str_d;
         dynd::string_type_arrmeta str_md;
-        str_d.begin = s;
-        str_d.end = s + len;
+        str_d.m_begin = s;
+        str_d.m_end = s + len;
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
@@ -461,8 +461,8 @@ namespace nd {
             dynd::ndt::string_type::make();
         dynd::string str_d;
         dynd::string_type_arrmeta str_md;
-        str_d.begin = pystr_data;
-        str_d.end = pystr_data + pystr_len;
+        str_d.m_begin = pystr_data;
+        str_d.m_end = pystr_data + pystr_len;
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt,
@@ -749,8 +749,8 @@ namespace nd {
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
         dynd::string str_d;
-        str_d.begin = s;
-        str_d.end = s + len;
+        str_d.m_begin = s;
+        str_d.m_end = s + len;
         const char *src_str = reinterpret_cast<const char *>(&str_d);
         str_md.blockref = NULL;
 
@@ -770,8 +770,8 @@ namespace nd {
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
         dynd::string str_d;
-        str_d.begin = s;
-        str_d.end = s + len;
+        str_d.m_begin = s;
+        str_d.m_end = s + len;
         const char *src_str = reinterpret_cast<const char *>(&str_d);
         str_md.blockref = NULL;
 

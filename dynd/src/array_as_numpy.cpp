@@ -177,10 +177,10 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
       const dynd::string &fn = bs->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
-          PyUnicode_FromStringAndSize(fn.begin, fn.end - fn.begin));
+          PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #else
       pyobject_ownref name_str(
-          PyString_FromStringAndSize(fn.begin, fn.end - fn.begin));
+          PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #endif
       PyList_SET_ITEM(names_obj.get(), i, name_str.release());
     }
@@ -438,10 +438,10 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       const dynd::string &fn = bs->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
-          PyUnicode_FromStringAndSize(fn.begin, fn.end - fn.begin));
+          PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #else
       pyobject_ownref name_str(
-          PyString_FromStringAndSize(fn.begin, fn.end - fn.begin));
+          PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #endif
       PyList_SET_ITEM(names_obj.get(), i, name_str.release());
     }

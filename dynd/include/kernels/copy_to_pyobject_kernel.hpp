@@ -320,7 +320,7 @@ namespace nd {
       *dst_obj = NULL;
       const dynd::string *sd =
           reinterpret_cast<const dynd::string *>(src[0]);
-      *dst_obj = PyUnicode_DecodeASCII(sd->begin, sd->end - sd->begin, NULL);
+      *dst_obj = PyUnicode_DecodeASCII(sd->begin(), sd->end() - sd->begin(), NULL);
     }
   };
 
@@ -333,7 +333,7 @@ namespace nd {
       *dst_obj = NULL;
       const dynd::string *sd =
           reinterpret_cast<const dynd::string *>(src[0]);
-      *dst_obj = PyUnicode_DecodeUTF8(sd->begin, sd->end - sd->begin, NULL);
+      *dst_obj = PyUnicode_DecodeUTF8(sd->begin(), sd->end() - sd->begin(), NULL);
     }
   };
 
@@ -347,7 +347,7 @@ namespace nd {
       const dynd::string *sd =
           reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj =
-          PyUnicode_DecodeUTF16(sd->begin, sd->end - sd->begin, NULL, NULL);
+          PyUnicode_DecodeUTF16(sd->begin(), sd->end() - sd->begin(), NULL, NULL);
     }
   };
 
@@ -361,7 +361,7 @@ namespace nd {
       const dynd::string *sd =
           reinterpret_cast<const dynd::string *>(src[0]);
       *dst_obj =
-          PyUnicode_DecodeUTF32(sd->begin, sd->end - sd->begin, NULL, NULL);
+          PyUnicode_DecodeUTF32(sd->begin(), sd->end() - sd->begin(), NULL, NULL);
     }
   };
 
@@ -1014,7 +1014,7 @@ namespace nd {
                 .extended<dynd::ndt::base_struct_type>()
                 ->get_field_name_raw(i);
         pyobject_ownref name(PyUnicode_DecodeUTF8(
-            rawname.begin, rawname.end - rawname.begin, NULL));
+            rawname.begin(), rawname.end() - rawname.begin(), NULL));
         PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
       }
       self_ck->m_copy_el_offsets.resize(field_count);

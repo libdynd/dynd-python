@@ -439,9 +439,8 @@ namespace nd {
         }
 
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
-        dynd::string str_d;
         dynd::string_type_arrmeta str_md;
-        str_d.assign(s, len);
+        dynd::string str_d(s, len);
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
@@ -456,9 +455,8 @@ namespace nd {
         }
 
         dynd::ndt::type str_dt = dynd::ndt::string_type::make();
-        dynd::string str_d;
         dynd::string_type_arrmeta str_md;
-        str_d.assign(pystr_data, pystr_len);
+        dynd::string str_d(pystr_data, pystr_len);
         str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt,

@@ -581,7 +581,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     result.get_ndo()->m_type = d.extended();
     base_type_incref(result.get_ndo()->m_type);
     // The scalar consists of pointers to the byte string data
-    reinterpret_cast<string *>(data_ptr)->assign(data, len);
+    reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
     // The arrmeta
     string_type_arrmeta *md =
         reinterpret_cast<string_type_arrmeta *>(result.get_arrmeta());

@@ -30,10 +30,7 @@ environment:
       MSVC: 2015
     - PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "x86"
-      MSVC: 2013
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "x86_64"
-      MSVC: 2013
+      MSVC: 2015
 
 install:
   - md libraries
@@ -54,7 +51,7 @@ install:
   - SET PATH=C:\Py;C:\Py\Scripts;%PATH%
 
 build_script:
-  - C:\Py\python setup.py bdist_wheel --msvc %MSVC%
+  - C:\Py\python setup.py bdist_wheel
 
 test_script:
   - cd dist
@@ -65,5 +62,3 @@ test_script:
 
 artifacts:
   - path: dist\*
-
-

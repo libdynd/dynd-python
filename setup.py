@@ -99,13 +99,7 @@ class cmake_build_ext(build_ext):
         self.spawn(['make'])
     else:
         import struct
-        # User-chosen MSVC (or 2013 by default)
-        if msvc == '2013':
-            cmake_generator = 'Visual Studio 12 2013'
-        elif msvc == '2015':
-            cmake_generator = 'Visual Studio 14 2015'
-        else:
-            raise ValueError('Unrecognized MSVC version %s' % msvc)
+        cmake_generator = 'Visual Studio 14 2015'
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
         self.spawn(['cmake', self.extra_cmake_args, source, pyexe_option, install_lib_option,
@@ -197,16 +191,6 @@ if '.' in ver:
         # + '+' + '.'.join(vlst[4:])
     else:
         ver = '.'.join(vlst)
-
-# Hack in an extra parameter for specifying the MSVC version
-msvc = '2013'
-if '--msvc' in sys.argv:
-    i = sys.argv.index('--msvc')
-    if i+1 >= len(sys.argv):
-        print('Error: --msvc option requires MSVC version (2013 or 2015)')
-        sys.exit(1)
-    msvc = sys.argv[i+1]
-    del sys.argv[i:i+2]
 
 setup(
     name = 'dynd',

@@ -108,9 +108,11 @@ class cmake_build_ext(build_ext):
             raise ValueError('Unrecognized MSVC version %s' % msvc)
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        self.spawn(['cmake', self.extra_cmake_args, source, pyexe_option, install_lib_option,
-                    static_lib_option, build_tests_option,
-                    '-G', cmake_generator])
+        cmake_command = ['cmake', self.extra_cmake_args, source, pyexe_option, install_lib_option,
+                         static_lib_option, build_tests_option, '-G', cmake_generator]
+        if "-G" in self.extra_cmake_args:
+            cmake_command = cmake_command[:-2]
+        self.spawn()
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 

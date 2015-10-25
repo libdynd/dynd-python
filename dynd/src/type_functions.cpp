@@ -83,9 +83,6 @@ std::string pydynd::_type_repr(const dynd::ndt::type &d)
         print_generic_type_repr(ss, d);
       }
       break;
-    case json_type_id:
-      ss << "ndt.json";
-      break;
     case bytes_type_id:
       if (d.extended<ndt::bytes_type>()->get_target_alignment() == 1) {
         ss << "ndt.bytes";

@@ -2,6 +2,9 @@ import sys
 import unittest
 from dynd import nd, ndt
 
+"""
+ToDo: Reenable when nd.contains is implemented in C++.
+
 class TestNDObjectIn(unittest.TestCase):
     def test_integers(self):
         a = nd.array([1,2,3,5,6])
@@ -47,6 +50,7 @@ class TestNDObjectIn(unittest.TestCase):
         self.assertTrue(u'a' in a)
         self.assertTrue(u'test' in a)
         self.assertFalse(u'' in a)
+"""
 
 if __name__ == '__main__':
     unittest.main()

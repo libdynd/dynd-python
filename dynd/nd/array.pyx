@@ -38,7 +38,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array array_empty(_type&, object) except +translate_exception
     _array array_empty(object, _type&, object) except +translate_exception
     object array_index(_array&) except +translate_exception
-    bint array_contains(_array&, object) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
     _array array_eval(_array&, object) except +translate_exception
@@ -194,7 +193,7 @@ cdef class array(object):
             return result
 
     def __contains__(self, x):
-        return array_contains(self.v, x)
+        raise NotImplementedError('__contains__ is not yet implemented for nd.array')
 
     def __dir__(self):
         # Customize dir() so that additional properties of various types

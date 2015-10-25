@@ -157,8 +157,6 @@ inline std::string array_debug_print(const dynd::nd::array &n)
   return ss.str();
 }
 
-PYDYND_API bool array_contains(const dynd::nd::array &n, PyObject *x);
-
 PYDYND_API dynd::nd::array array_cast(const dynd::nd::array &n,
                                       const dynd::ndt::type &dt);
 

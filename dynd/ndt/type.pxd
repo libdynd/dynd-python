@@ -2,7 +2,8 @@ from ..cpp.type cimport type as _type
 
 cdef class type(object):
     cdef _type v
-    cdef _type to_cpp(type self)
+    cdef inline _type to_cpp(type self):
+        return self.v
     @staticmethod
     cdef type from_cpp(_type v)
 

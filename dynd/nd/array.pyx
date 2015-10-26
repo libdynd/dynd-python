@@ -163,9 +163,6 @@ cdef class array(object):
         a.v = v
         return a
 
-    cdef _array as_cpp(array self):
-        return self.v
-
     property access_flags:
         """
         a.access_flags

@@ -90,6 +90,9 @@ type_ids['COMPLEX128'] = complex_float64_type_id
 type_ids['VOID'] = void_type_id
 type_ids['CALLABLE'] = callable_type_id
 
+cimport cython
+
+@cython.freelist(10)
 cdef class type(object):
     """
     ndt.type(obj=None)

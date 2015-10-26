@@ -117,7 +117,7 @@ cdef class type(object):
     ndt.type("{x : float32, y : float32, z : float32}")
     """
 
-    def __cinit__(self, rep=None):
+    def __init__(self, rep=None):
         if rep is not None:
             self.v = make__type_from_pyobject(rep)
 

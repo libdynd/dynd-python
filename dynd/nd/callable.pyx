@@ -44,6 +44,15 @@ cdef class callable(object):
     ValueError: parameter 2 to callable does not match, expected int32, received string
     """
 
+    cdef _callable as_cpp(callable self):
+        return self.v
+
+    @staticmethod
+    cdef callable from_cpp(_callable v):
+        cdef callable c = callable.__new__()
+        c.v = v
+        return c
+
     property type:
         def __get__(self):
             return wrap(self.v.get_array_type())

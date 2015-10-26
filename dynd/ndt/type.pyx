@@ -121,6 +121,15 @@ cdef class type(object):
         if rep is not None:
             self.v = make__type_from_pyobject(rep)
 
+    cdef _type to_cpp(type self):
+        return self.v
+
+    @staticmethod
+    cdef type from_cpp(_type v):
+        cdef type t = type.__new__()
+        t.v = v
+        return t
+
     property shape:
         """
         tp.shape

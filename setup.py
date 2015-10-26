@@ -106,7 +106,7 @@ class cmake_build_ext(build_ext):
                          static_lib_option, build_tests_option, '-G', cmake_generator]
         if "-G" in self.extra_cmake_args:
             cmake_command = cmake_command[:-2]
-        self.spawn()
+        self.spawn(cmake_command)
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', 'Release'])
 

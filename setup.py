@@ -12,6 +12,12 @@ import re
 # Check if we're running 64-bit Python
 is_64_bit = sys.maxsize > 2**32
 
+# Check if this is a debug build of Python.
+if hasattr(sys, 'gettotalrefcount'):
+    build_type = 'Debug'
+else:
+    build_type = 'Release'
+
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"
   user_options = [('extra-cmake-args=', None, 'extra arguments for CMake')]
@@ -30,7 +36,7 @@ class cmake_build_ext(build_ext):
   def get_ext_built(self, name):
     if sys.platform == 'win32':
         head, tail = os.path.split(name)
-        return os.path.join(head, 'Release', tail + '.pyd')
+        return os.path.join(head, build_type, tail + '.pyd')
     else:
         suffix = sysconfig.get_config_var('SO')
         return name + suffix
@@ -94,21 +100,27 @@ class cmake_build_ext(build_ext):
             cuda_option = '-DDYND_CUDA=ON'
 
     if sys.platform != 'win32':
-        self.spawn(['cmake', self.extra_cmake_args, pyexe_option, install_lib_option, build_tests_option,
-                    static_lib_option, cuda_option, source])
+        cmake_command = ['cmake', self.extra_cmake_args, pyexe_option,
+                         install_lib_option, build_tests_option,
+                         static_lib_option, cuda_option, source]
+
+        self.spawn(cmake_command)
         self.spawn(['make'])
     else:
         import struct
         cmake_generator = 'Visual Studio 14 2015'
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        cmake_command = ['cmake', self.extra_cmake_args, source, pyexe_option, install_lib_option,
-                         static_lib_option, build_tests_option, '-G', cmake_generator]
+        cmake_command = ['cmake', self.extra_cmake_args, source, pyexe_option,
+                         install_lib_option, static_lib_option,
+                         build_tests_option,
+                         '-G', cmake_generator]
         if "-G" in self.extra_cmake_args:
             cmake_command = cmake_command[:-2]
+
         self.spawn(cmake_command)
         # Do the build
-        self.spawn(['cmake', '--build', '.', '--config', 'Release'])
+        self.spawn(['cmake', '--build', '.', '--config', build_type])
 
     import glob, shutil
 
@@ -125,9 +137,9 @@ class cmake_build_ext(build_ext):
             short_name = split(name)[1]
             shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
     else:
-        shutil.move(os.path.join('Release', 'pydynd.dll'), os.path.join(build_lib, 'dynd', 'pydynd.dll'))
+        shutil.move(os.path.join(build_type, 'pydynd.dll'), os.path.join(build_lib, 'dynd', 'pydynd.dll'))
         if install_lib_option.split('=')[1] == 'OFF':
-            name, = glob.glob('libraries/libdynd/Release/libdynd.*')
+            name, = glob.glob('libraries/libdynd/%s/libdynd.*' % build_type)
             short_name = split(name)[1]
             shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
 

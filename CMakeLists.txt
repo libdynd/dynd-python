@@ -20,9 +20,9 @@ option(DYND_INSTALL_LIB
     "Use a libdynd built and installed somewhere."
     ON)
 # -DDYND_CUDA=ON/OFF, use a libdynd which has been built with the CUDA Toolkit.
-    option(DYND_CUDA
-        "Use a libdynd built with CUDA."
-        OFF)
+option(DYND_CUDA
+    "Use a libdynd built with CUDA."
+    OFF)
 # -DUSE_RELATIVE_RPATH=ON/OFF, For Linux and OSX, to use the @rpath mechanism
 #   for creating a build which is linked with relative paths. The
 #   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
@@ -246,6 +246,7 @@ foreach(module config eval_context ndt.type ndt.json nd.array nd.callable nd.fun
     set_source_files_properties(${module_SRC} PROPERTIES CYTHON_IS_CXX 1)
 
     cython_add_module(${module_name} ${module_SRC})
+
     if (directories)
         string(REPLACE ";" "/" module_output_directory ${directories})
         set_target_properties(${module_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${module_output_directory})

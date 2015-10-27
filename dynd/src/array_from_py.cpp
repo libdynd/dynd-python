@@ -143,7 +143,7 @@ convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta, char *out,
     memory_block_pod_allocator_api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     char *begin, *end;
-    allocator->allocate(md->blockref, len, 1, &begin, &end);
+    allocator->allocate(md->blockref, len, &begin, &end);
     memcpy(begin, data, len);
     out_asp->assign(begin, end - begin);
   } else {
@@ -171,7 +171,7 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
     memory_block_pod_allocator_api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     char *begin, *end;
-    allocator->allocate(md->blockref, len, 1, &begin, &end);
+    allocator->allocate(md->blockref, len, &begin, &end);
     memcpy(begin, s, len);
     out_usp->assign(begin, end - begin);
 #if PY_VERSION_HEX < 0x03000000
@@ -185,7 +185,7 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
     memory_block_pod_allocator_api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     char *begin, *end;
-    allocator->allocate(md->blockref, len, 1, &begin, &end);
+    allocator->allocate(md->blockref, len, &begin, &end);
     out_usp->assign(begin, end - begin);
     for (Py_ssize_t i = 0; i < len; ++i) {
       // Only let valid ascii get through
@@ -313,8 +313,7 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
 
     memory_block_pod_allocator_api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
-    allocator->allocate(md->blockref, size * stride,
-                        element_tp.get_data_alignment(), &out->begin, &out_end);
+    allocator->allocate(md->blockref, size * stride, &out->begin, &out_end);
     out->size = size;
     char *element_data = out->begin;
     if (element_tp.is_scalar()) {

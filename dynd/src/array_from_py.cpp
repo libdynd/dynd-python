@@ -140,7 +140,7 @@ convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta, char *out,
       throw runtime_error("Error getting byte string data");
     }
 
-    memory_block_pod_allocator_api *allocator =
+    memory_block_data::api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     char *begin = allocator->allocate(md->blockref, len);
     char *end = begin + len;
@@ -168,7 +168,7 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
     if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
       throw exception();
     }
-    memory_block_pod_allocator_api *allocator =
+    memory_block_data::api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     char *begin = allocator->allocate(md->blockref, len);
     char *end = begin + len;
@@ -182,7 +182,7 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
       throw runtime_error("Error getting string data");
     }
 
-    memory_block_pod_allocator_api *allocator =
+    memory_block_data::api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     char *begin = allocator->allocate(md->blockref, len);
     char *end = begin + len;
@@ -311,7 +311,7 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
     var_dim_type_data *out = reinterpret_cast<var_dim_type_data *>(data);
     char *out_end = NULL;
 
-    memory_block_pod_allocator_api *allocator =
+    memory_block_data::api *allocator =
         get_memory_block_pod_allocator_api(md->blockref);
     out->begin = allocator->allocate(md->blockref, size);
     out_end = out->begin + size * stride;

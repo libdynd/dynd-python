@@ -957,10 +957,10 @@ class TestOptionArrayConstruct(unittest.TestCase):
                                      ('12354', 12354),
                                      (1.25, 1.25),
                                      ('125e20', 125e20)])
-        self.check_scalars('?string', [(None, None),
-                                       ('', ''),
-                                       ('NA', 'NA'),
-                                       (u'\uc548\ub155', u'\uc548\ub155')])
+#        self.check_scalars('?string', [(None, None),
+#                                       ('', ''),
+#                                       ('NA', 'NA'),
+#                                       (u'\uc548\ub155', u'\uc548\ub155')])
 
 if __name__ == '__main__':
     unittest.main()

@@ -140,11 +140,7 @@ convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta, char *out,
       throw runtime_error("Error getting byte string data");
     }
 
-    memory_block_data::api *allocator = md->blockref->get_api();
-    char *begin = allocator->allocate(md->blockref, len);
-    char *end = begin + len;
-    memcpy(begin, data, len);
-    out_asp->assign(begin, end - begin);
+    out_asp->assign(data, len);
   } else {
     throw dynd::type_error("wrong kind of string provided (require byte string "
                            "for dynd bytes type)");
@@ -167,11 +163,7 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
     if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
       throw exception();
     }
-    memory_block_data::api *allocator = md->blockref->get_api();
-    char *begin = allocator->allocate(md->blockref, len);
-    char *end = begin + len;
-    memcpy(begin, s, len);
-    out_usp->assign(begin, end - begin);
+    out_usp->assign(s, len);
 #if PY_VERSION_HEX < 0x03000000
   } else if (PyString_Check(obj)) {
     char *data = NULL;
@@ -180,10 +172,7 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
       throw runtime_error("Error getting string data");
     }
 
-    memory_block_data::api *allocator = md->blockref->get_api();
-    char *begin = allocator->allocate(md->blockref, len);
-    char *end = begin + len;
-    out_usp->assign(begin, end - begin);
+    out_usp->resize(len);
     for (Py_ssize_t i = 0; i < len; ++i) {
       // Only let valid ascii get through
       if ((unsigned char)data[i] >= 128) {

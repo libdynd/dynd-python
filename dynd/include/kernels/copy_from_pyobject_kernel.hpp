@@ -375,10 +375,8 @@ namespace nd {
 
       dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
       dynd::string bytes_d(pybytes_data, pybytes_len);
-      dynd::string_type_arrmeta bytes_md;
 
-      dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp,
-                              reinterpret_cast<const char *>(&bytes_md),
+      dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp, NULL,
                               reinterpret_cast<const char *>(&bytes_d));
     }
 
@@ -438,11 +436,9 @@ namespace nd {
         }
 
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
-        dynd::string_type_arrmeta str_md;
         dynd::string str_d(s, len);
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
-                                reinterpret_cast<const char *>(&str_md),
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
                                 reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
       } else if (PyString_Check(src_obj)) {
@@ -454,11 +450,9 @@ namespace nd {
         }
 
         dynd::ndt::type str_dt = dynd::ndt::string_type::make();
-        dynd::string_type_arrmeta str_md;
         dynd::string str_d(pystr_data, pystr_len);
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt,
-                                reinterpret_cast<const char *>(&str_md),
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt, NULL,
                                 reinterpret_cast<const char *>(&str_d));
 #endif
       } else if (DyND_PyArray_Check(src_obj)) {
@@ -739,13 +733,10 @@ namespace nd {
         }
 
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
-        dynd::string_type_arrmeta str_md;
         dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
-        str_md.blockref = NULL;
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
-                                reinterpret_cast<const char *>(&str_md),
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
                                 reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
       } else if (dst_tp.get_kind() != dynd::string_kind &&
@@ -758,13 +749,10 @@ namespace nd {
         }
 
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
-        dynd::string_type_arrmeta str_md;
         dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
-        str_md.blockref = NULL;
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
-                                reinterpret_cast<const char *>(&str_md),
+        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
                                 reinterpret_cast<const char *>(&str_d));
 #endif
       } else {

@@ -376,7 +376,6 @@ namespace nd {
       dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
       dynd::string bytes_d(pybytes_data, pybytes_len);
       dynd::string_type_arrmeta bytes_md;
-      bytes_md.blockref = NULL;
 
       dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp,
                               reinterpret_cast<const char *>(&bytes_md),
@@ -441,7 +440,6 @@ namespace nd {
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
         dynd::string str_d(s, len);
-        str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp,
                                 reinterpret_cast<const char *>(&str_md),
@@ -458,7 +456,6 @@ namespace nd {
         dynd::ndt::type str_dt = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
         dynd::string str_d(pystr_data, pystr_len);
-        str_md.blockref = NULL;
 
         dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt,
                                 reinterpret_cast<const char *>(&str_md),

@@ -126,8 +126,6 @@ convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta, char *out,
                            const eval::eval_context *DYND_UNUSED(ectx))
 {
   dynd::bytes *out_asp = reinterpret_cast<dynd::bytes *>(out);
-  const string_type_arrmeta *md =
-      reinterpret_cast<const string_type_arrmeta *>(arrmeta);
   char *data = NULL;
   intptr_t len = 0;
 #if PY_VERSION_HEX >= 0x03000000
@@ -153,8 +151,6 @@ convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta,
                              const eval::eval_context *DYND_UNUSED(ectx))
 {
   dynd::string *out_usp = reinterpret_cast<dynd::string *>(out);
-  const string_type_arrmeta *md =
-      reinterpret_cast<const string_type_arrmeta *>(arrmeta);
   if (PyUnicode_Check(obj)) {
     // Get it as UTF8
     pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
@@ -568,9 +564,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
     // The arrmeta
-    string_type_arrmeta *md =
-        reinterpret_cast<string_type_arrmeta *>(result.get_arrmeta());
-    md->blockref = bytesref.release();
     result.get_ndo()->m_flags =
         nd::immutable_access_flag | nd::read_access_flag;
     // Because this is a view into another object's memory, skip the later

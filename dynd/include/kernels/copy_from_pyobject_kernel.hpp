@@ -374,9 +374,8 @@ namespace nd {
       }
 
       dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
-      dynd::string bytes_d;
+      dynd::string bytes_d(pybytes_data, pybytes_len);
       dynd::string_type_arrmeta bytes_md;
-      bytes_d.assign(pybytes_data, pybytes_len);
       bytes_md.blockref = NULL;
 
       dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp,
@@ -426,6 +425,7 @@ namespace nd {
     void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
+
       char *pybytes_data = NULL;
       intptr_t pybytes_len = 0;
       if (PyUnicode_Check(src_obj)) {
@@ -450,6 +450,7 @@ namespace nd {
       } else if (PyString_Check(src_obj)) {
         char *pystr_data = NULL;
         intptr_t pystr_len = 0;
+
         if (PyString_AsStringAndSize(src_obj, &pystr_data, &pystr_len) < 0) {
           throw std::runtime_error("Error getting string data");
         }
@@ -742,8 +743,7 @@ namespace nd {
 
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
-        dynd::string str_d;
-        str_d.assign(s, len);
+        dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
         str_md.blockref = NULL;
 
@@ -762,8 +762,7 @@ namespace nd {
 
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string_type_arrmeta str_md;
-        dynd::string str_d;
-        str_d.assign(s, len);
+        dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
         str_md.blockref = NULL;
 

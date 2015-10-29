@@ -435,8 +435,7 @@ static void fill_thiscall_parameters_array(const std::string &funcname,
                           out_params.get_arrmeta() + arrmeta_offset,
                           out_params.get_ndo()->data.ptr + data_offset,
                           default_parameters.get_arrmeta() + arrmeta_offset,
-                          default_parameters.get_ndo()->data.ptr +
-                              data_offset);
+                          default_parameters.get_ndo()->data.ptr + data_offset);
         }
       } else {
         stringstream ss;

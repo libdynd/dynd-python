@@ -294,7 +294,7 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
     char *out_end = NULL;
 
     memory_block_data::api *allocator = md->blockref->get_api();
-    out->begin = allocator->allocate(md->blockref, size);
+    out->begin = allocator->allocate(md->blockref.get(), size);
     out_end = out->begin + size * stride;
     out->size = size;
     char *element_data = out->begin;

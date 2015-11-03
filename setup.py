@@ -6,6 +6,7 @@ from setuptools import setup, Extension
 import os, sys
 from os import chdir, getcwd
 from os.path import abspath, dirname, split
+import shlex
 
 import re
 
@@ -111,7 +112,8 @@ class cmake_build_ext(build_ext):
         cmake_generator = 'Visual Studio 14 2015'
         if is_64_bit: cmake_generator += ' Win64'
         # Generate the build files
-        cmake_command = ['cmake', self.extra_cmake_args, source, pyexe_option,
+        extra_cmake_args = shlex.split(self.extra_cmake_args)
+        cmake_command = ['cmake'] + extra_cmake_args + [source, pyexe_option,
                          install_lib_option, static_lib_option,
                          build_tests_option,
                          '-G', cmake_generator]

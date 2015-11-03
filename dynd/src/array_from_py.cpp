@@ -551,7 +551,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     // Python bytes are immutable, so simply use the existing memory with an
     // external memory
     Py_INCREF(obj);
-    memory_block_ptr bytesref = make_external_memory_block(
+    intrusive_ptr<memory_block_data> bytesref = make_external_memory_block(
         reinterpret_cast<void *>(obj), &py_decref_function);
     char *data_ptr;
     result = nd::array(make_array_memory_block(

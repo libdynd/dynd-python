@@ -805,7 +805,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
 
     // Get a shared pointer that tracks buffer ownership
     PyObject *base = PyArray_BASE(obj);
-    dynd::memory_block_ptr memblock;
+    dynd::intrusive_ptr<dynd::memory_block_data> memblock;
     if (base == NULL || (PyArray_FLAGS(obj) & NPY_ARRAY_UPDATEIFCOPY) != 0) {
       Py_INCREF(obj);
       memblock = dynd::make_external_memory_block(obj, py_decref_function);

@@ -779,10 +779,9 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   // Clone the data pointer
   result.get_ndo()->data.ptr = n.get_ndo()->data.ptr;
   result.get_ndo()->data.ref = n.get_ndo()->data.ref;
-  if (result.get_ndo()->data.ref == NULL) {
-    result.get_ndo()->data.ref = n.get_memblock().get();
+  if (!result.get_ndo()->data.ref) {
+    result.get_ndo()->data.ref = n.get_memblock();
   }
-  memory_block_incref(result.get_ndo()->data.ref);
 
   // Copy the flags
   result.get_ndo()->m_flags = n.get_ndo()->m_flags;

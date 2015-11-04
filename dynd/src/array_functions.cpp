@@ -799,7 +799,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
     }
     const ndt::base_dim_type *budd = tmp_dt.extended<ndt::base_dim_type>();
     size_t offset = budd->arrmeta_copy_construct_onedim(
-        dst_arrmeta, src_arrmeta, n.get_memblock().get());
+        dst_arrmeta, src_arrmeta, n.get_memblock());
     dst_arrmeta += offset;
     src_arrmeta += offset;
     tmp_dt = budd->get_element_type();
@@ -818,7 +818,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
       dt.extended()->arrmeta_copy_construct(
           dst_arrmeta + result_arrmeta_offsets[i],
           src_arrmeta + arrmeta_offsets[selected_index[i]],
-          n.get_memblock().get());
+          n.get_memblock());
     }
   }
 

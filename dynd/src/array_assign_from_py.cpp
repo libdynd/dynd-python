@@ -29,7 +29,7 @@ void pydynd::array_broadcast_assign_from_py(
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
-                                              dst_arrmeta, NULL);
+                                              dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
   tmp_dst.get_ndo()->data.ptr = dst_data;
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
@@ -66,7 +66,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
-                                              dst_arrmeta, NULL);
+                                              dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
   tmp_dst.get_ndo()->data.ptr = dst_data;
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();

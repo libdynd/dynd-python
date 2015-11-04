@@ -199,7 +199,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
-                                              dst_arrmeta, NULL);
+                                              dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
   tmp_dst.get_ndo()->data.ptr = dst_data;
   char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));

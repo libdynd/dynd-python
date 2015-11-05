@@ -39,9 +39,7 @@ namespace nd {
         for (intptr_t i = 0; i != nsrc; ++i) {
           PyObject *item = PyTuple_GET_ITEM(args, i);
           if (Py_REFCNT(item) != 1 ||
-              ((DyND_PyArrayObject *)item)
-                      ->v.get_ndo()
-                      ->m_memblockdata.m_use_count != 1) {
+              ((DyND_PyArrayObject *)item)->v.get_ndo()->m_use_count != 1) {
             std::stringstream ss;
             ss << "Python callback function ";
             pyobject_ownref pyfunc_repr(PyObject_Repr(m_pyfunc));
@@ -78,7 +76,8 @@ namespace nd {
           n.get_ndo()->data.ptr = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
             src_tp[i].extended()->arrmeta_copy_construct(
-                n.get_arrmeta(), m_src_arrmeta[i], dynd::intrusive_ptr<dynd::memory_block_data>());
+                n.get_arrmeta(), m_src_arrmeta[i],
+                dynd::intrusive_ptr<dynd::memory_block_data>());
           }
           PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
         }
@@ -113,7 +112,8 @@ namespace nd {
           n.get_ndo()->data.ptr = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
             src_tp[i].extended()->arrmeta_copy_construct(
-                n.get_arrmeta(), m_src_arrmeta[i], dynd::intrusive_ptr<dynd::memory_block_data>());
+                n.get_arrmeta(), m_src_arrmeta[i],
+                dynd::intrusive_ptr<dynd::memory_block_data>());
           }
           PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
         }

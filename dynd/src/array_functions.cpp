@@ -303,7 +303,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
         // Convert it to a readonly view
         nd::array result(
             shallow_copy_array_memory_block(obj_dynd.get_memblock()));
-        result.get_ndo()->flags = access_flags;
+        result.get()->flags = access_flags;
         return result;
       }
     }
@@ -364,7 +364,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
         // Convert it to a readonly view
         nd::array result(
             shallow_copy_array_memory_block(obj_dynd.get_memblock()));
-        result.get_ndo()->flags = access_flags;
+        result.get()->flags = access_flags;
         return result;
       }
       if ((access_flags & nd::write_access_flag) != 0 &&
@@ -402,7 +402,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
         // Convert it to a readonly view
         nd::array ro_view(
             shallow_copy_array_memory_block(result.get_memblock()));
-        ro_view.get_ndo()->flags = access_flags;
+        ro_view.get()->flags = access_flags;
         return ro_view;
       }
       if (ok) {
@@ -777,17 +777,17 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   nd::array result(make_array_memory_block(arrmeta_size));
 
   // Clone the data pointer
-  result.get_ndo()->ptr = n.get_ndo()->ptr;
-  result.get_ndo()->ref = n.get_ndo()->ref;
-  if (!result.get_ndo()->ref) {
-    result.get_ndo()->ref = n.get_memblock();
+  result.get()->ptr = n.get()->ptr;
+  result.get()->ref = n.get()->ref;
+  if (!result.get()->ref) {
+    result.get()->ref = n.get_memblock();
   }
 
   // Copy the flags
-  result.get_ndo()->flags = n.get_ndo()->flags;
+  result.get()->flags = n.get()->flags;
 
   // Set the type and transform the arrmeta
-  result.get_ndo()->type = ndt::type(result_tp).release();
+  result.get()->type = ndt::type(result_tp).release();
   // First copy all the array data type arrmeta
   ndt::type tmp_dt = result_tp;
   char *dst_arrmeta = result.get_arrmeta();

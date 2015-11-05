@@ -285,7 +285,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
       throw runtime_error("array_getbuffer_pep3118 called on a non-array");
     }
     nd::array &n = ((DyND_PyArrayObject *)ndo)->v;
-    array_preamble *preamble = n.get_ndo();
+    array_preamble *preamble = n.get();
     ndt::type tp = n.get_type();
 
     // Check if a writable buffer is requested
@@ -298,7 +298,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 
     if (tp.get_type_id() == bytes_type_id ||
         tp.get_type_id() == fixed_bytes_type_id) {
-      array_getbuffer_pep3118_bytes(tp, n.get_arrmeta(), n.get_ndo()->ptr,
+      array_getbuffer_pep3118_bytes(tp, n.get_arrmeta(), n.get()->ptr,
                                     buffer, flags);
       return 0;
     }

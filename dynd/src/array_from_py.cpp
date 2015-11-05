@@ -534,7 +534,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
           throw runtime_error("Error getting byte string data");
         }
         result = nd::make_bytes_array(data, len);
-        result.get_ndo()->m_flags = access_flags;
+        result.get_ndo()->flags = access_flags;
         return result;
       } else {
         throw runtime_error(
@@ -557,14 +557,14 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     result = nd::array(make_array_memory_block(
         d.extended()->get_arrmeta_size(), d.get_data_size(),
         d.get_data_alignment(), &data_ptr));
-    result.get_ndo()->data.ptr = data_ptr;
-    result.get_ndo()->data.ref = NULL;
-    result.get_ndo()->m_type = d.extended();
-    base_type_incref(result.get_ndo()->m_type);
+    result.get_ndo()->ptr = data_ptr;
+    result.get_ndo()->ref = NULL;
+    result.get_ndo()->type = d.extended();
+    base_type_incref(result.get_ndo()->type);
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
     // The arrmeta
-    result.get_ndo()->m_flags =
+    result.get_ndo()->flags =
         nd::immutable_access_flag | nd::read_access_flag;
     // Because this is a view into another object's memory, skip the later
     // processing
@@ -588,7 +588,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::datetime_type::make();
     const ndt::datetime_type *dd = d.extended<ndt::datetime_type>();
     result = nd::empty(d);
-    dd->set_cal(result.get_arrmeta(), result.get_ndo()->data.ptr,
+    dd->set_cal(result.get_arrmeta(), result.get_ndo()->ptr,
                 assign_error_fractional, PyDateTime_GET_YEAR(obj),
                 PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj),
                 PyDateTime_DATE_GET_HOUR(obj), PyDateTime_DATE_GET_MINUTE(obj),
@@ -598,7 +598,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::date_type::make();
     const ndt::date_type *dd = d.extended<ndt::date_type>();
     result = nd::empty(d);
-    dd->set_ymd(result.get_arrmeta(), result.get_ndo()->data.ptr,
+    dd->set_ymd(result.get_arrmeta(), result.get_ndo()->ptr,
                 assign_error_fractional, PyDateTime_GET_YEAR(obj),
                 PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
   } else if (PyTime_Check(obj)) {
@@ -610,7 +610,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::time_type::make(tz_abstract);
     const ndt::time_type *tt = d.extended<ndt::time_type>();
     result = nd::empty(d);
-    tt->set_time(result.get_arrmeta(), result.get_ndo()->data.ptr,
+    tt->set_time(result.get_arrmeta(), result.get_ndo()->ptr,
                  assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
                  PyDateTime_TIME_GET_MINUTE(obj),
                  PyDateTime_TIME_GET_SECOND(obj),

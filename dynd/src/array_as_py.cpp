@@ -28,10 +28,10 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   dynd::ndt::type dst_tp = dynd::ndt::type::make<void>();
   dynd::nd::array tmp_dst(
       dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
-  tmp_dst.get_ndo()->m_type = dynd::ndt::type(dst_tp).release();
-  tmp_dst.get_ndo()->m_flags =
+  tmp_dst.get_ndo()->type = dynd::ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
-  tmp_dst.get_ndo()->data.ptr =
+  tmp_dst.get_ndo()->ptr =
       reinterpret_cast<char *>(result.obj_addr());
   const char *src_arrmeta = a.get_arrmeta();
   char *src_data_nonconst = const_cast<char *>(a.get_readonly_originptr());

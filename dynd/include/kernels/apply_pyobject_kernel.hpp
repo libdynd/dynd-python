@@ -51,7 +51,7 @@ namespace nd {
             ((DyND_PyArrayObject *)item)->v.debug_print(ss);
             // Set all the args' data pointers to NULL as a precaution
             for (i = 0; i != nsrc; ++i) {
-              ((DyND_PyArrayObject *)item)->v.get_ndo()->data.ptr = NULL;
+              ((DyND_PyArrayObject *)item)->v.get_ndo()->ptr = NULL;
             }
             throw std::runtime_error(ss.str());
           }
@@ -71,9 +71,9 @@ namespace nd {
           dynd::ndt::type tp = src_tp[i];
           dynd::nd::array n(
               dynd::make_array_memory_block(tp.get_arrmeta_size()));
-          n.get_ndo()->m_type = tp.release();
-          n.get_ndo()->m_flags = dynd::nd::read_access_flag;
-          n.get_ndo()->data.ptr = const_cast<char *>(src[i]);
+          n.get_ndo()->type = tp.release();
+          n.get_ndo()->flags = dynd::nd::read_access_flag;
+          n.get_ndo()->ptr = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
             src_tp[i].extended()->arrmeta_copy_construct(
                 n.get_arrmeta(), m_src_arrmeta[i],
@@ -107,9 +107,9 @@ namespace nd {
           dynd::ndt::type tp = src_tp[i];
           dynd::nd::array n(
               dynd::make_array_memory_block(tp.get_arrmeta_size()));
-          n.get_ndo()->m_type = tp.release();
-          n.get_ndo()->m_flags = dynd::nd::read_access_flag;
-          n.get_ndo()->data.ptr = const_cast<char *>(src[i]);
+          n.get_ndo()->type = tp.release();
+          n.get_ndo()->flags = dynd::nd::read_access_flag;
+          n.get_ndo()->ptr = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
             src_tp[i].extended()->arrmeta_copy_construct(
                 n.get_arrmeta(), m_src_arrmeta[i],
@@ -134,7 +134,7 @@ namespace nd {
           for (intptr_t i = 0; i != nsrc; ++i) {
             const dynd::nd::array &n =
                 ((DyND_PyArrayObject *)PyTuple_GET_ITEM(args.get(), i))->v;
-            n.get_ndo()->data.ptr += src_stride[i];
+            n.get_ndo()->ptr += src_stride[i];
           }
         }
       }

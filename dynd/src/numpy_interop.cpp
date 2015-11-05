@@ -793,9 +793,9 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
                                       &dynd::eval::default_eval_context);
     if (access_flags != 0) {
       // Use the requested access flags
-      result.get_ndo()->m_flags = access_flags;
+      result.get_ndo()->flags = access_flags;
     } else {
-      result.get_ndo()->m_flags = dynd::nd::default_access_flags;
+      result.get_ndo()->flags = dynd::nd::default_access_flags;
     }
     return result;
   } else {
@@ -834,7 +834,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
 
     if (access_flags != 0) {
       // Use the requested access flags
-      result.get_ndo()->m_flags = access_flags;
+      result.get_ndo()->flags = access_flags;
     }
     return result;
   }
@@ -960,7 +960,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
     throw dynd::type_error(ss.str());
   }
 
-  result.get_ndo()->m_flags =
+  result.get_ndo()->flags =
       access_flags ? access_flags : dynd::nd::default_access_flags;
 
   return result;

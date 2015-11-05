@@ -194,14 +194,14 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
       dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
-  tmp_dst.get_ndo()->m_type = dynd::ndt::type(dst_tp).release();
-  tmp_dst.get_ndo()->m_flags =
+  tmp_dst.get_ndo()->type = dynd::ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
                                               dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
-  tmp_dst.get_ndo()->data.ptr = dst_data;
+  tmp_dst.get_ndo()->ptr = dst_data;
   char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {true};
@@ -210,7 +210,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
       &src_am, &src_data, 1, kwd_values,
       std::map<std::string, dynd::ndt::type>());
 
-  tmp_dst.get_ndo()->m_type = reinterpret_cast<dynd::ndt::base_type *>(dynd::uninitialized_type_id);
+  tmp_dst.get_ndo()->type = reinterpret_cast<dynd::ndt::base_type *>(dynd::uninitialized_type_id);
 }
 
 #endif // DYND_NUMPY_INTEROP

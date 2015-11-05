@@ -24,14 +24,14 @@ void pydynd::array_broadcast_assign_from_py(
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
       dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
-  tmp_dst.get_ndo()->m_type = dynd::ndt::type(dst_tp).release();
-  tmp_dst.get_ndo()->m_flags =
+  tmp_dst.get_ndo()->type = dynd::ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
                                               dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
-  tmp_dst.get_ndo()->data.ptr = dst_data;
+  tmp_dst.get_ndo()->ptr = dst_data;
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
@@ -42,7 +42,7 @@ void pydynd::array_broadcast_assign_from_py(
       tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data, 1,
       kwd_values, std::map<std::string, dynd::ndt::type>());
 
-  tmp_dst.get_ndo()->m_type = reinterpret_cast<dynd::ndt::base_type *>(dynd::uninitialized_type_id);
+  tmp_dst.get_ndo()->type = reinterpret_cast<dynd::ndt::base_type *>(dynd::uninitialized_type_id);
 }
 
 void
@@ -61,14 +61,14 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
       dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
-  tmp_dst.get_ndo()->m_type = dynd::ndt::type(dst_tp).release();
-  tmp_dst.get_ndo()->m_flags =
+  tmp_dst.get_ndo()->type = dynd::ndt::type(dst_tp).release();
+  tmp_dst.get_ndo()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
                                               dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
-  tmp_dst.get_ndo()->data.ptr = dst_data;
+  tmp_dst.get_ndo()->ptr = dst_data;
   dynd::ndt::type src_tp = dynd::ndt::type::make<void>();
   const char *src_arrmeta = NULL;
   char *src_data = reinterpret_cast<char *>(&value);
@@ -79,5 +79,5 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
       tmp_dst.get_readwrite_originptr(), 1, &src_tp, &src_arrmeta, &src_data, 1,
       kwd_values, std::map<std::string, dynd::ndt::type>());
 
-  tmp_dst.get_ndo()->m_type = reinterpret_cast<dynd::ndt::base_type *>(dynd::uninitialized_type_id);
+  tmp_dst.get_ndo()->type = reinterpret_cast<dynd::ndt::base_type *>(dynd::uninitialized_type_id);
 }

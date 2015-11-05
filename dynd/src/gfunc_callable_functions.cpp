@@ -238,7 +238,7 @@ static void set_single_parameter(const std::string &funcname,
     ss << " cannot accept an array as its value";
     throw runtime_error(ss.str());
   }
-  *(const void **)data = value.get_ndo();
+  *(const void **)data = value.get();
 }
 
 /**
@@ -256,7 +256,7 @@ static void set_single_parameter(const ndt::type &paramtype, char *arrmeta,
   if (paramtype.get_type_id() == ndarrayarg_type_id) {
     out_storage.push_back(
         array_from_py(value, 0, false, &eval::default_eval_context));
-    *(const void **)data = out_storage.back().get_ndo();
+    *(const void **)data = out_storage.back().get();
   } else {
     array_no_dim_broadcast_assign_from_py(paramtype, arrmeta, data, value,
                                           &eval::default_eval_context);
@@ -279,7 +279,7 @@ PyObject *pydynd::call_gfunc_callable(const std::string &funcname,
   set_single_parameter(funcname, fsdt->get_field_name(0),
                        fsdt->get_field_type(0),
                        params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
-                       params.get_ndo()->ptr +
+                       params.get()->ptr +
                            fsdt->get_data_offsets(params.get_arrmeta())[0],
                        dt);
   nd::array result = c.call_generic(params);
@@ -306,7 +306,7 @@ nd::array pydynd::call_gfunc_callable(const std::string &funcname,
   set_single_parameter(funcname, fsdt->get_field_name(0),
                        fsdt->get_field_type(0),
                        params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
-                       params.get_ndo()->ptr +
+                       params.get()->ptr +
                            fsdt->get_data_offsets(params.get_arrmeta())[0],
                        n);
   return c.call_generic(params);
@@ -341,7 +341,7 @@ static void fill_thiscall_parameters_array(const std::string &funcname,
     set_single_parameter(
         fsdt->get_field_type(i + 1),
         out_params.get_arrmeta() + fsdt->get_arrmeta_offset(i + 1),
-        out_params.get_ndo()->ptr +
+        out_params.get()->ptr +
             fsdt->get_data_offsets(params.get_arrmeta())[i + 1],
         PyTuple_GET_ITEM(args, i), out_storage);
   }
@@ -370,7 +370,7 @@ static void fill_thiscall_parameters_array(const std::string &funcname,
           set_single_parameter(
               fsdt->get_field_type(i + 1),
               out_params.get_arrmeta() + fsdt->get_arrmeta_offset(i + 1),
-              out_params.get_ndo()->ptr +
+              out_params.get()->ptr +
                   fsdt->get_data_offsets(params.get_arrmeta())[i + 1],
               value, out_storage);
           filled[i - args_count] = 1;
@@ -401,9 +401,9 @@ static void fill_thiscall_parameters_array(const std::string &funcname,
                 fsdt->get_data_offsets(params.get_arrmeta())[i + 1];
             typed_data_copy(fsdt->get_field_type(i + 1),
                             out_params.get_arrmeta() + arrmeta_offset,
-                            out_params.get_ndo()->ptr + data_offset,
+                            out_params.get()->ptr + data_offset,
                             default_parameters.get_arrmeta() + arrmeta_offset,
-                            default_parameters.get_ndo()->ptr +
+                            default_parameters.get()->ptr +
                                 data_offset);
             filled[i - args_count] = 1;
           }
@@ -433,9 +433,9 @@ static void fill_thiscall_parameters_array(const std::string &funcname,
               fsdt->get_data_offsets(params.get_arrmeta())[i + 1];
           typed_data_copy(fsdt->get_field_type(i + 1),
                           out_params.get_arrmeta() + arrmeta_offset,
-                          out_params.get_ndo()->ptr + data_offset,
+                          out_params.get()->ptr + data_offset,
                           default_parameters.get_arrmeta() + arrmeta_offset,
-                          default_parameters.get_ndo()->ptr + data_offset);
+                          default_parameters.get()->ptr + data_offset);
         }
       } else {
         stringstream ss;
@@ -481,7 +481,7 @@ PyObject *pydynd::array_callable_call(const array_callable_wrapper &ncw,
   set_single_parameter(ncw.funcname, fsdt->get_field_name(0),
                        fsdt->get_field_type(0),
                        params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
-                       params.get_ndo()->ptr +
+                       params.get()->ptr +
                            fsdt->get_data_offsets(params.get_arrmeta())[0],
                        ncw.n);
 
@@ -548,7 +548,7 @@ static PyObject *_type_callable_call(const std::string &funcname,
     set_single_parameter(funcname, fsdt->get_field_name(0),
                          fsdt->get_field_type(0),
                          params.get_arrmeta() + fsdt->get_arrmeta_offset(0),
-                         params.get_ndo()->ptr +
+                         params.get()->ptr +
                              fsdt->get_data_offsets(params.get_arrmeta())[0],
                          d);
 

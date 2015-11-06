@@ -209,12 +209,12 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
   tmp_dst.get()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
-    memcpy(tmp_dst.get_arrmeta(), dst_am, tmp_dst_arrmeta_size);
+    memcpy(tmp_dst.metadata(), dst_am, tmp_dst_arrmeta_size);
   }
   tmp_dst.get()->ptr = (char *)PyArray_DATA(dst_arr);
   char *src_data_nonconst = const_cast<char *>(src_data);
-  (*copy_to_numpy::get().get())(tmp_dst.get_type(), tmp_dst.get_arrmeta(),
-                                tmp_dst.get_data(), 1, &src_tp, &src_arrmeta,
+  (*copy_to_numpy::get().get())(tmp_dst.get_type(), tmp_dst.metadata(),
+                                tmp_dst.data(), 1, &src_tp, &src_arrmeta,
                                 &src_data_nonconst, 1, NULL,
                                 std::map<std::string, dynd::ndt::type>());
 }

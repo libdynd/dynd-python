@@ -788,7 +788,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
         dynd::nd::dtyped_empty(PyArray_NDIM(obj), PyArray_SHAPE(obj),
                                pydynd::_type_from_numpy_dtype(
                                    PyArray_DESCR(obj)).get_canonical_type());
-    pydynd::nd::array_copy_from_numpy(result.get_type(), result.get_arrmeta(),
+    pydynd::nd::array_copy_from_numpy(result.get_type(), result.metadata(),
                                       result.get_readwrite_originptr(), obj,
                                       &dynd::eval::default_eval_context);
     if (access_flags != 0) {

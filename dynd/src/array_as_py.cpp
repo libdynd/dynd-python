@@ -33,10 +33,10 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   tmp_dst.get()->ptr =
       reinterpret_cast<char *>(result.obj_addr());
-  const char *src_arrmeta = a.get_arrmeta();
+  const char *src_arrmeta = a.metadata();
   char *src_data_nonconst = const_cast<char *>(a.get_readonly_originptr());
   (*nd::copy_to_pyobject.get().get())(
-      dst_tp, tmp_dst.get_arrmeta(), tmp_dst.get_readwrite_originptr(), 1,
+      dst_tp, tmp_dst.metadata(), tmp_dst.get_readwrite_originptr(), 1,
       &a.get_type(), &src_arrmeta, &src_data_nonconst, 0, NULL,
       std::map<std::string, dynd::ndt::type>());
   if (PyErr_Occurred()) {

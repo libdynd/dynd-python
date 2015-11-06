@@ -76,7 +76,7 @@ namespace nd {
           n.get()->ptr = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
             src_tp[i].extended()->arrmeta_copy_construct(
-                n.get_arrmeta(), m_src_arrmeta[i],
+                n.metadata(), m_src_arrmeta[i],
                 dynd::intrusive_ptr<dynd::memory_block_data>());
           }
           PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
@@ -112,7 +112,7 @@ namespace nd {
           n.get()->ptr = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
             src_tp[i].extended()->arrmeta_copy_construct(
-                n.get_arrmeta(), m_src_arrmeta[i],
+                n.metadata(), m_src_arrmeta[i],
                 dynd::intrusive_ptr<dynd::memory_block_data>());
           }
           PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));

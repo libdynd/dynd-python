@@ -301,8 +301,7 @@ dynd::nd::array pydynd::array_view(PyObject *obj, PyObject *type,
       if ((access_flags & nd::write_access_flag) == 0 &&
           (raf & nd::write_access_flag) != 0) {
         // Convert it to a readonly view
-        nd::array result(
-            shallow_copy_array_memory_block(obj_dynd.get_memblock()));
+        nd::array result(shallow_copy_array_memory_block(obj_dynd));
         result.get()->flags = access_flags;
         return result;
       }
@@ -362,8 +361,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
       } else if ((access_flags & nd::write_access_flag) == 0 &&
                  (raf & nd::write_access_flag) != 0) {
         // Convert it to a readonly view
-        nd::array result(
-            shallow_copy_array_memory_block(obj_dynd.get_memblock()));
+        nd::array result(shallow_copy_array_memory_block(obj_dynd));
         result.get()->flags = access_flags;
         return result;
       }
@@ -400,8 +398,7 @@ dynd::nd::array pydynd::array_asarray(PyObject *obj, PyObject *access)
       if ((access_flags & nd::write_access_flag) == 0 &&
           (raf & nd::write_access_flag) != 0) {
         // Convert it to a readonly view
-        nd::array ro_view(
-            shallow_copy_array_memory_block(result.get_memblock()));
+        nd::array ro_view(shallow_copy_array_memory_block(result));
         ro_view.get()->flags = access_flags;
         return ro_view;
       }
@@ -780,7 +777,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   result.get()->ptr = n.get()->ptr;
   result.get()->ref = n.get()->ref;
   if (!result.get()->ref) {
-    result.get()->ref = n.get_memblock();
+    result.get()->ref = n;
   }
 
   // Copy the flags
@@ -798,8 +795,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
           "nd.fields doesn't support dimensions with pointers yet");
     }
     const ndt::base_dim_type *budd = tmp_dt.extended<ndt::base_dim_type>();
-    size_t offset = budd->arrmeta_copy_construct_onedim(
-        dst_arrmeta, src_arrmeta, n.get_memblock());
+    size_t offset =
+        budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta, n);
     dst_arrmeta += offset;
     src_arrmeta += offset;
     tmp_dt = budd->get_element_type();
@@ -817,8 +814,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
     if (dt.get_arrmeta_size() > 0) {
       dt.extended()->arrmeta_copy_construct(
           dst_arrmeta + result_arrmeta_offsets[i],
-          src_arrmeta + arrmeta_offsets[selected_index[i]],
-          n.get_memblock());
+          src_arrmeta + arrmeta_offsets[selected_index[i]], n);
     }
   }
 

@@ -198,7 +198,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
   tmp_dst.get()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
-    dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get_arrmeta(),
+    dst_tp.extended()->arrmeta_copy_construct(tmp_dst.metadata(),
                                               dst_arrmeta, dynd::intrusive_ptr<dynd::memory_block_data>());
   }
   tmp_dst.get()->ptr = dst_data;
@@ -206,7 +206,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {true};
   (*pydynd::nd::copy_from_numpy::get().get())(
-      tmp_dst.get_type(), tmp_dst.get_arrmeta(), tmp_dst.get_data(), 1, &src_tp,
+      tmp_dst.get_type(), tmp_dst.metadata(), tmp_dst.data(), 1, &src_tp,
       &src_am, &src_data, 1, kwd_values,
       std::map<std::string, dynd::ndt::type>());
 

@@ -649,7 +649,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
   } else if (PyInt_Check(subscript)) {
     long i = PyInt_AS_LONG(subscript);
     const char *arrmeta = n.metadata();
-    char *data = n.get_readwrite_originptr();
+    char *data = n.data();
     ndt::type d =
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
     array_broadcast_assign_from_py(d, arrmeta, data, value,
@@ -661,7 +661,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
       throw runtime_error("error converting int value");
     }
     const char *arrmeta = n.metadata();
-    char *data = n.get_readwrite_originptr();
+    char *data = n.data();
     ndt::type d =
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
     array_broadcast_assign_from_py(d, arrmeta, data, value,

@@ -609,11 +609,11 @@ PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp,
     for (size_t i = 0; i < field_count; ++i) {
       const dynd::string &fname = stp->get_field_name_raw(i);
 #if PY_VERSION_HEX >= 0x03000000
-      pyobject_ownref name_str(
-          PyUnicode_FromStringAndSize(fname.begin(), fname.end() - fname.begin()));
+      pyobject_ownref name_str(PyUnicode_FromStringAndSize(
+          fname.begin(), fname.end() - fname.begin()));
 #else
-      pyobject_ownref name_str(
-          PyString_FromStringAndSize(fname.begin(), fname.end() - fname.begin()));
+      pyobject_ownref name_str(PyString_FromStringAndSize(
+          fname.begin(), fname.end() - fname.begin()));
 #endif
       PyList_SET_ITEM((PyObject *)names_obj, i, name_str.release());
     }
@@ -789,7 +789,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
                                pydynd::_type_from_numpy_dtype(
                                    PyArray_DESCR(obj)).get_canonical_type());
     pydynd::nd::array_copy_from_numpy(result.get_type(), result.metadata(),
-                                      result.get_readwrite_originptr(), obj,
+                                      result.data(), obj,
                                       &dynd::eval::default_eval_context);
     if (access_flags != 0) {
       // Use the requested access flags
@@ -912,8 +912,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
           throw dynd::type_error("Unsupported NumPy date unit");
         }
       }
-      *reinterpret_cast<int32_t *>(result.get_readwrite_originptr()) =
-          result_val;
+      *reinterpret_cast<int32_t *>(result.data()) = result_val;
     } else {
       result = dynd::nd::empty(dynd::ndt::datetime_type::make(dynd::tz_utc));
       int64_t result_val;
@@ -944,8 +943,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
       default:
         throw dynd::type_error("Unsupported NumPy datetime unit");
       }
-      *reinterpret_cast<int64_t *>(result.get_readwrite_originptr()) =
-          result_val;
+      *reinterpret_cast<int64_t *>(result.data()) = result_val;
     }
 #endif
   } else if (PyArray_IsScalar(obj, Void)) {

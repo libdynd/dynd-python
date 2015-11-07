@@ -99,7 +99,7 @@ static nd::array allocate_nd_arr(const std::vector<intptr_t> &shape,
   coord.resize(ndim);
   ndt::type tp = result.get_type();
   const char *arrmeta_ptr = result.metadata();
-  char *data_ptr = result.get_readwrite_originptr();
+  char *data_ptr = result.data();
   for (intptr_t i = 0; i < ndim; ++i) {
     afpd_coordentry &c = coord[i];
     c.coord = 0;
@@ -353,9 +353,9 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
                            ndt::type::make<char>(), NULL,
                            kernel_request_strided, &eval::default_eval_context);
   }
-  copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
-                          newelem, arr.get_readonly_originptr(), coord, elem, k,
-                          0, ndim, false, true);
+  copy_to_promoted_nd_arr(shape, newarr.data(), newcoord, newelem,
+                          arr.get_readonly_originptr(), coord, elem, k, 0, ndim,
+                          false, true);
   arr.swap(newarr);
   coord.swap(newcoord);
   elem.swap(newelem);
@@ -389,9 +389,9 @@ static void promote_nd_arr_dim(std::vector<intptr_t> &shape,
                            coord[axis].tp, coord[axis].arrmeta_ptr,
                            kernel_request_strided, &eval::default_eval_context);
   }
-  copy_to_promoted_nd_arr(shape, newarr.get_readwrite_originptr(), newcoord,
-                          newelem, arr.get_readonly_originptr(), coord, elem, k,
-                          0, axis, copy_final_coord, true);
+  copy_to_promoted_nd_arr(shape, newarr.data(), newcoord, newelem,
+                          arr.get_readonly_originptr(), coord, elem, k, 0, axis,
+                          copy_final_coord, true);
   arr.swap(newarr);
   coord.swap(newcoord);
   elem.swap(newelem);
@@ -777,7 +777,7 @@ static void array_from_py_dynamic_first_alloc(
             coord[current_axis].coord = i;
             char *data_ptr = (current_axis > 0)
                                  ? coord[current_axis - 1].data_ptr
-                                 : arr.get_readwrite_originptr();
+                                 : arr.data();
             if (coord[current_axis].coord >=
                 coord[current_axis].reserved_size) {
               // Increase the reserved capacity if needed
@@ -806,8 +806,8 @@ static void array_from_py_dynamic_first_alloc(
           throw exception();
         }
         // Shrink the var element to fit
-        char *data_ptr = (current_axis > 0) ? coord[current_axis - 1].data_ptr
-                                            : arr.get_readwrite_originptr();
+        char *data_ptr =
+            (current_axis > 0) ? coord[current_axis - 1].data_ptr : arr.data();
         ndt::var_dim_element_resize(coord[current_axis].tp,
                                     coord[current_axis].arrmeta_ptr, data_ptr,
                                     i);
@@ -823,8 +823,8 @@ static void array_from_py_dynamic_first_alloc(
         // deduced anything yet.
         elem.dtp = ndt::type();
         // Set it to a zero-sized var element
-        char *data_ptr = (current_axis > 0) ? coord[current_axis - 1].data_ptr
-                                            : arr.get_readwrite_originptr();
+        char *data_ptr =
+            (current_axis > 0) ? coord[current_axis - 1].data_ptr : arr.data();
         ndt::var_dim_element_resize(coord[current_axis].tp,
                                     coord[current_axis].arrmeta_ptr, data_ptr,
                                     0);

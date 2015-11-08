@@ -252,7 +252,8 @@ namespace nd {
       *dst_obj = NULL;
       const dynd::bytes_type_data *bd =
           reinterpret_cast<const dynd::bytes_type_data *>(src[0]);
-      *dst_obj = PyBytes_FromStringAndSize(bd->begin(), bd->end() - bd->begin());
+      *dst_obj =
+          PyBytes_FromStringAndSize(bd->begin(), bd->end() - bd->begin());
     }
   };
 
@@ -318,9 +319,9 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string *sd =
-          reinterpret_cast<const dynd::string *>(src[0]);
-      *dst_obj = PyUnicode_DecodeASCII(sd->begin(), sd->end() - sd->begin(), NULL);
+      const dynd::string *sd = reinterpret_cast<const dynd::string *>(src[0]);
+      *dst_obj =
+          PyUnicode_DecodeASCII(sd->begin(), sd->end() - sd->begin(), NULL);
     }
   };
 
@@ -331,10 +332,9 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string *sd =
-          reinterpret_cast<const dynd::string *>(src[0]);
-      *dst_obj = PyUnicode_DecodeUTF8(sd->begin(), sd->end() - sd->begin(), NULL);
-
+      const dynd::string *sd = reinterpret_cast<const dynd::string *>(src[0]);
+      *dst_obj =
+          PyUnicode_DecodeUTF8(sd->begin(), sd->end() - sd->begin(), NULL);
     }
   };
 
@@ -345,10 +345,9 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string *sd =
-          reinterpret_cast<const dynd::string *>(src[0]);
-      *dst_obj =
-          PyUnicode_DecodeUTF16(sd->begin(), sd->end() - sd->begin(), NULL, NULL);
+      const dynd::string *sd = reinterpret_cast<const dynd::string *>(src[0]);
+      *dst_obj = PyUnicode_DecodeUTF16(sd->begin(), sd->end() - sd->begin(),
+                                       NULL, NULL);
     }
   };
 
@@ -359,10 +358,9 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::string *sd =
-          reinterpret_cast<const dynd::string *>(src[0]);
-      *dst_obj =
-          PyUnicode_DecodeUTF32(sd->begin(), sd->end() - sd->begin(), NULL, NULL);
+      const dynd::string *sd = reinterpret_cast<const dynd::string *>(src[0]);
+      *dst_obj = PyUnicode_DecodeUTF32(sd->begin(), sd->end() - sd->begin(),
+                                       NULL, NULL);
     }
   };
 
@@ -731,8 +729,7 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      dynd::ndt::type tp(
-          reinterpret_cast<const dynd::type_type_data *>(src[0])->tp, true);
+      dynd::ndt::type tp = *reinterpret_cast<const dynd::ndt::type *>(src[0]);
       *dst_obj = DyND_PyWrapper_New(std::move(tp));
     }
   };

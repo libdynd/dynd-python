@@ -237,7 +237,7 @@ inline void convert_one_pyscalar__type(
     char *out, PyObject *obj, const eval::eval_context *DYND_UNUSED(ectx))
 {
   ndt::type obj_as_tp = make__type_from_pyobject(obj);
-  obj_as_tp.swap(reinterpret_cast<type_type_data *>(out)->tp);
+  obj_as_tp.swap(*reinterpret_cast<ndt::type *>(out));
 }
 
 inline void convert_one_pyscalar_option(const ndt::type &tp,

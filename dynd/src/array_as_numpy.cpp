@@ -520,7 +520,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     case void_type_id:
       throw runtime_error("cannot convert void dynd array to numpy");
     case bool_type_id:
-      if (*a.get_readonly_originptr()) {
+      if (*a.cdata()) {
         Py_INCREF(PyArrayScalar_True);
         result.reset(PyArrayScalar_True);
       } else {
@@ -530,82 +530,71 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       break;
     case int8_type_id:
       result.reset(PyArrayScalar_New(Int8));
-      PyArrayScalar_ASSIGN(
-          result.get(), Int8,
-          *reinterpret_cast<const int8_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), Int8,
+                           *reinterpret_cast<const int8_t *>(a.cdata()));
       break;
     case int16_type_id:
       result.reset(PyArrayScalar_New(Int16));
-      PyArrayScalar_ASSIGN(
-          result.get(), Int16,
-          *reinterpret_cast<const int16_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), Int16,
+                           *reinterpret_cast<const int16_t *>(a.cdata()));
       break;
     case int32_type_id:
       result.reset(PyArrayScalar_New(Int32));
-      PyArrayScalar_ASSIGN(
-          result.get(), Int32,
-          *reinterpret_cast<const int32_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), Int32,
+                           *reinterpret_cast<const int32_t *>(a.cdata()));
       break;
     case int64_type_id:
       result.reset(PyArrayScalar_New(Int64));
-      PyArrayScalar_ASSIGN(
-          result.get(), Int64,
-          *reinterpret_cast<const int64_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), Int64,
+                           *reinterpret_cast<const int64_t *>(a.cdata()));
       break;
     case uint8_type_id:
       result.reset(PyArrayScalar_New(UInt8));
-      PyArrayScalar_ASSIGN(
-          result.get(), UInt8,
-          *reinterpret_cast<const uint8_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), UInt8,
+                           *reinterpret_cast<const uint8_t *>(a.cdata()));
       break;
     case uint16_type_id:
       result.reset(PyArrayScalar_New(UInt16));
-      PyArrayScalar_ASSIGN(
-          result.get(), UInt16,
-          *reinterpret_cast<const uint16_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), UInt16,
+                           *reinterpret_cast<const uint16_t *>(a.cdata()));
       break;
     case uint32_type_id:
       result.reset(PyArrayScalar_New(UInt32));
-      PyArrayScalar_ASSIGN(
-          result.get(), UInt32,
-          *reinterpret_cast<const uint32_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), UInt32,
+                           *reinterpret_cast<const uint32_t *>(a.cdata()));
       break;
     case uint64_type_id:
       result.reset(PyArrayScalar_New(UInt64));
-      PyArrayScalar_ASSIGN(
-          result.get(), UInt64,
-          *reinterpret_cast<const uint64_t *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), UInt64,
+                           *reinterpret_cast<const uint64_t *>(a.cdata()));
       break;
     case float32_type_id:
       result.reset(PyArrayScalar_New(Float32));
-      PyArrayScalar_ASSIGN(
-          result.get(), Float32,
-          *reinterpret_cast<const float *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), Float32,
+                           *reinterpret_cast<const float *>(a.cdata()));
       break;
     case float64_type_id:
       result.reset(PyArrayScalar_New(Float64));
-      PyArrayScalar_ASSIGN(
-          result.get(), Float64,
-          *reinterpret_cast<const double *>(a.get_readonly_originptr()));
+      PyArrayScalar_ASSIGN(result.get(), Float64,
+                           *reinterpret_cast<const double *>(a.cdata()));
       break;
     case complex_float32_type_id:
       result.reset(PyArrayScalar_New(Complex64));
       PyArrayScalar_VAL(result.get(), Complex64).real =
-          reinterpret_cast<const float *>(a.get_readonly_originptr())[0];
+          reinterpret_cast<const float *>(a.cdata())[0];
       PyArrayScalar_VAL(result.get(), Complex64).imag =
-          reinterpret_cast<const float *>(a.get_readonly_originptr())[1];
+          reinterpret_cast<const float *>(a.cdata())[1];
       break;
     case complex_float64_type_id:
       result.reset(PyArrayScalar_New(Complex128));
       PyArrayScalar_VAL(result.get(), Complex128).real =
-          reinterpret_cast<const double *>(a.get_readonly_originptr())[0];
+          reinterpret_cast<const double *>(a.cdata())[0];
       PyArrayScalar_VAL(result.get(), Complex128).imag =
-          reinterpret_cast<const double *>(a.get_readonly_originptr())[1];
+          reinterpret_cast<const double *>(a.cdata())[1];
       break;
     case date_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
-      int32_t dateval =
-          *reinterpret_cast<const int32_t *>(a.get_readonly_originptr());
+      int32_t dateval = *reinterpret_cast<const int32_t *>(a.cdata());
       result.reset(PyArrayScalar_New(Datetime));
 
       PyArrayScalar_VAL(result.get(), Datetime) =
@@ -626,8 +615,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     }
     case datetime_type_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
-      int64_t datetimeval =
-          *reinterpret_cast<const int64_t *>(a.get_readonly_originptr());
+      int64_t datetimeval = *reinterpret_cast<const int64_t *>(a.cdata());
       if (datetimeval < 0) {
         datetimeval -= DYND_TICKS_PER_MICROSECOND - 1;
       }
@@ -718,8 +706,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
         shape.get(), strides.get(), NULL, 0, NULL));
     array_copy_to_numpy((PyArrayObject *)result.get(), a.get_type(),
-                        a.metadata(), a.get_readonly_originptr(),
-                        &eval::default_eval_context);
+                        a.metadata(), a.cdata(), &eval::default_eval_context);
 
     // Return the NumPy array
     return result.release();

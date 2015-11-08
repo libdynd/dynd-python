@@ -222,7 +222,7 @@ static void set_single_parameter(const std::string &funcname,
   }
   // The type is encoded as either a raw type id, or a pointer to a base_type,
   // just as the gfunc object is expecting.
-  ndt::type(value).swap(reinterpret_cast<type_type_data *>(data)->tp);
+  ndt::type(value).swap(*reinterpret_cast<dynd::ndt::type *>(data));
 }
 
 static void set_single_parameter(const std::string &funcname,

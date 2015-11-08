@@ -354,7 +354,7 @@ static void promote_nd_arr_dtype(const std::vector<intptr_t> &shape,
                            kernel_request_strided, &eval::default_eval_context);
   }
   copy_to_promoted_nd_arr(shape, newarr.data(), newcoord, newelem,
-                          arr.get_readonly_originptr(), coord, elem, k, 0, ndim,
+                          arr.cdata(), coord, elem, k, 0, ndim,
                           false, true);
   arr.swap(newarr);
   coord.swap(newcoord);
@@ -390,7 +390,7 @@ static void promote_nd_arr_dim(std::vector<intptr_t> &shape,
                            kernel_request_strided, &eval::default_eval_context);
   }
   copy_to_promoted_nd_arr(shape, newarr.data(), newcoord, newelem,
-                          arr.get_readonly_originptr(), coord, elem, k, 0, axis,
+                          arr.cdata(), coord, elem, k, 0, axis,
                           copy_final_coord, true);
   arr.swap(newarr);
   coord.swap(newcoord);

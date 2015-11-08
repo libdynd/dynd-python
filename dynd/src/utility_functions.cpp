@@ -525,7 +525,7 @@ const dynd::callable_type_data *pydynd::pyarg_callable_ro(PyObject *af,
     throw runtime_error(ss.str());
   }
   return reinterpret_cast<const callable_type_data *>(
-      ((DyND_PyArrayObject *)af)->v.get_readonly_originptr());
+      ((DyND_PyArrayObject *)af)->v.cdata());
 }
 
 dynd::callable_type_data *pydynd::pyarg_callable_rw(PyObject *af,

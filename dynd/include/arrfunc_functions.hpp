@@ -22,6 +22,7 @@
 #include "eval_context_functions.hpp"
 #include "array_functions.hpp"
 
+#include "visibility.hpp"
 #include "wrapper.hpp"
 
 typedef DyND_PyWrapperObject<dynd::nd::callable> DyND_PyCallableObject;
@@ -49,6 +50,6 @@ PyObject *callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
 /**
  * Returns a dictionary of all the published callables.
  */
-PyObject *get_published_callables();
+PYDYND_API PyObject *get_published_callables();
 
 } // namespace pydynd

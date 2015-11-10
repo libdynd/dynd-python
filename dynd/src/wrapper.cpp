@@ -14,6 +14,6 @@ PyTypeObject *&DyND_PyWrapper_Type()
   return type;
 }
 
-template PyTypeObject *&DyND_PyWrapper_Type<dynd::nd::array>();
-template PyTypeObject *&DyND_PyWrapper_Type<dynd::nd::callable>();
-template PyTypeObject *&DyND_PyWrapper_Type<dynd::ndt::type>();
+template PYDYND_API PyTypeObject *&DyND_PyWrapper_Type<dynd::nd::array>();
+template PYDYND_API PyTypeObject *&DyND_PyWrapper_Type<dynd::nd::callable>();
+template PYDYND_API PyTypeObject *&DyND_PyWrapper_Type<dynd::ndt::type>();

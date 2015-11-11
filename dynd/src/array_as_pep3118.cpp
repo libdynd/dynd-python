@@ -294,12 +294,12 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
       throw runtime_error("dynd array is not writable");
     }
     buffer->readonly = ((n.get_access_flags() & nd::write_access_flag) == 0);
-    buffer->buf = preamble->ptr;
+    buffer->buf = preamble->data;
 
     if (tp.get_type_id() == bytes_type_id ||
         tp.get_type_id() == fixed_bytes_type_id) {
-      array_getbuffer_pep3118_bytes(tp, n.metadata(), n.get()->ptr,
-                                    buffer, flags);
+      array_getbuffer_pep3118_bytes(tp, n.metadata(), n.get()->data, buffer,
+                                    flags);
       return 0;
     }
 

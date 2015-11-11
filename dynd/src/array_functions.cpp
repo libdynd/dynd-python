@@ -51,8 +51,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
   const ndt::base_string_type *bsd =
       n_str.get_type().extended<ndt::base_string_type>();
   const char *begin = NULL, *end = NULL;
-  bsd->get_string_range(&begin, &end, n_str.metadata(),
-                        n_str.cdata());
+  bsd->get_string_range(&begin, &end, n_str.metadata(), n_str.cdata());
   return PyString_FromStringAndSize(begin, end - begin);
 #endif
 }
@@ -83,8 +82,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array &n)
   const ndt::base_string_type *bsd =
       static_cast<const ndt::base_string_type *>(n_str.get_type().extended());
   const char *begin = NULL, *end = NULL;
-  bsd->get_string_range(&begin, &end, n_str.metadata(),
-                        n_str.cdata());
+  bsd->get_string_range(&begin, &end, n_str.metadata(), n_str.cdata());
 #if PY_VERSION_HEX >= 0x03030000
   // TODO: Might be more efficient to use a different Python 3 API,
   //       avoiding the creation of intermediate UTF-8
@@ -134,8 +132,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
     const ndt::base_string_type *bsd =
         n_eval.get_type().extended<ndt::base_string_type>();
     const char *begin = NULL, *end = NULL;
-    bsd->get_string_range(&begin, &end, n_eval.metadata(),
-                          n_eval.cdata());
+    bsd->get_string_range(&begin, &end, n_eval.metadata(), n_eval.cdata());
     if (begin != end) {
       Py_INCREF(Py_True);
       return Py_True;
@@ -150,8 +147,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
     const ndt::base_bytes_type *bbd =
         n_eval.get_type().extended<ndt::base_bytes_type>();
     const char *begin = NULL, *end = NULL;
-    bbd->get_bytes_range(&begin, &end, n_eval.metadata(),
-                         n_eval.cdata());
+    bbd->get_bytes_range(&begin, &end, n_eval.metadata(), n_eval.cdata());
     while (begin != end) {
       if (*begin != 0) {
         Py_INCREF(Py_True);
@@ -710,9 +706,7 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step,
         "nd::range should only be called with scalar parameters");
   }
 
-  return nd::range(dt_nd, start_nd.cdata(),
-                   stop_nd.cdata(),
-                   step_nd.cdata());
+  return nd::range(dt_nd, start_nd.cdata(), stop_nd.cdata(), step_nd.cdata());
 }
 
 dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
@@ -774,7 +768,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   nd::array result(make_array_memory_block(arrmeta_size));
 
   // Clone the data pointer
-  result.get()->ptr = n.get()->ptr;
+  result.get()->data = n.get()->data;
   result.get()->ref = n.get()->ref;
   if (!result.get()->ref) {
     result.get()->ref = n;

@@ -31,14 +31,13 @@ PyObject *pydynd::array_as_py(const dynd::nd::array &a, bool struct_as_pytuple)
   tmp_dst.get()->type = dynd::ndt::type(dst_tp).release();
   tmp_dst.get()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
-  tmp_dst.get()->ptr =
-      reinterpret_cast<char *>(result.obj_addr());
+  tmp_dst.get()->data = reinterpret_cast<char *>(result.obj_addr());
   const char *src_arrmeta = a.metadata();
   char *src_data_nonconst = const_cast<char *>(a.cdata());
-  (*nd::copy_to_pyobject.get().get())(
-      dst_tp, tmp_dst.metadata(), tmp_dst.data(), 1,
-      &a.get_type(), &src_arrmeta, &src_data_nonconst, 0, NULL,
-      std::map<std::string, dynd::ndt::type>());
+  (*nd::copy_to_pyobject.get().get())(dst_tp, tmp_dst.metadata(),
+                                      tmp_dst.data(), 1, &a.get_type(),
+                                      &src_arrmeta, &src_data_nonconst, 0, NULL,
+                                      std::map<std::string, dynd::ndt::type>());
   if (PyErr_Occurred()) {
     throw exception();
   }

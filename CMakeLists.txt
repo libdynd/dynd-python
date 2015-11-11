@@ -59,12 +59,7 @@ endif()
 if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
 else()
-    # Set some options used by the libdynd CMakeLists.txt
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        set(DYND_SHARED_LIB OFF)
-    else()
-        set(DYND_SHARED_LIB ON)
-    endif()
+    set(DYND_SHARED_LIB ON)
     # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 
@@ -159,10 +154,6 @@ else()
     set(DYND_CUDA_01 0)
 endif()
 
-# Configure cmake defines
-#configure_file("dynd/config.pxi.in"
- #              "${CMAKE_CURRENT_BINARY_DIR}/dynd/config.pxi")
-
 set(pydynd_SRC
     dynd/include/array_as_numpy.hpp
     dynd/include/array_as_pep3118.hpp
@@ -190,6 +181,7 @@ set(pydynd_SRC
     dynd/include/numpy_ufunc_kernel.hpp
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
+    dynd/include/visibility.hpp
     dynd/include/wrapper.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp

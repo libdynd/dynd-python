@@ -7,6 +7,10 @@
 
 #include <Python.h>
 
+#include <dynd/array.hpp>
+#include <dynd/type.hpp>
+#include <dynd/func/callable.hpp>
+
 #include "config.hpp"
 
 template <typename T>
@@ -17,6 +21,10 @@ struct DyND_PyWrapperObject {
 
 template <typename T>
 PyTypeObject *&DyND_PyWrapper_Type();
+
+//template<> PYDYND_API PyTypeObject *&DyND_PyWrapper_Type<dynd::ndt::type>();
+//template<> PYDYND_API PyTypeObject *&DyND_PyWrapper_Type<dynd::nd::array>();
+//template<> PYDYND_API PyTypeObject *&DyND_PyWrapper_Type<dynd::nd::callable>();
 
 template <typename T>
 inline void DyND_PyWrapper_Type(PyObject *obj)

@@ -1,3 +1,27 @@
+import os
+if os.name == 'nt':
+    # Manually load dlls before loading the extension modules.
+    # TODO: template a file using cmake that stores the location of the
+    # libdynd library used during compilation.
+    import os.path
+    import sys
+    from ctypes import cdll
+    is_64_bit = sys.maxsize > 2**32
+    pydynd_dir = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isfile(os.path.join(pydynd_dir, 'libdynd.dll')):
+        if is_64_bit:
+            libdynd_path = os.path.join(os.environ['ProgramFiles'], 'libdynd',
+                                        'lib', 'libdynd.dll')
+            if os.path.isfile(libdynd_path):
+                cdll.LoadLibrary(libdynd_path)
+        else:
+            libdynd_path = os.path.join(os.environ['ProgramFiles(x86)'],
+                                        'libdynd', 'lib', 'libdynd.dll')
+            if os.path.isfile(libdynd_path):
+                cdll.LoadLibrary(libdynd_path)
+    else:
+        cdll.LoadLibrary(os.path.join(pydynd_dir, 'libdynd.dll'))
+    cdll.LoadLibrary(os.path.join(pydynd_dir, 'pydynd.dll'))
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \

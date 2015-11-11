@@ -769,9 +769,9 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
 
   // Clone the data pointer
   result.get()->data = n.get()->data;
-  result.get()->ref = n.get()->ref;
-  if (!result.get()->ref) {
-    result.get()->ref = n;
+  result.get()->owner = n.get()->owner;
+  if (!result.get()->owner) {
+    result.get()->owner = n;
   }
 
   // Copy the flags

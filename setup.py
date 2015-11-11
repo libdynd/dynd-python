@@ -37,7 +37,8 @@ class cmake_build_ext(build_ext):
   def get_ext_built(self, name):
     if sys.platform == 'win32':
         head, tail = os.path.split(name)
-        return os.path.join(head, build_type, tail + '.pyd')
+        suffix = sysconfig.get_config_var('SO')
+        return os.path.join(head, build_type, tail + suffix)
     else:
         suffix = sysconfig.get_config_var('SO')
         return name + suffix

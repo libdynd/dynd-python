@@ -680,7 +680,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
   a.get_shape(shape.get());
   a.get_strides(strides.get());
   as_numpy_analysis(&numpy_dtype, &requires_copy, ndim, a.get_type(),
-                    a.metadata());
+                    a.get()->metadata());
   if (requires_copy) {
     if (!allow_copy) {
       stringstream ss;
@@ -688,7 +688,8 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       ss << " as numpy without making a copy";
       throw dynd::type_error(ss.str());
     }
-    make_numpy_dtype_for_copy(&numpy_dtype, ndim, a.get_type(), a.metadata());
+    make_numpy_dtype_for_copy(&numpy_dtype, ndim, a.get_type(),
+                              a.get()->metadata());
 
     // Rebuild the strides so that the copy follows 'KEEPORDER'
     intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;
@@ -706,7 +707,8 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
         shape.get(), strides.get(), NULL, 0, NULL));
     array_copy_to_numpy((PyArrayObject *)result.get(), a.get_type(),
-                        a.metadata(), a.cdata(), &eval::default_eval_context);
+                        a.get()->metadata(), a.cdata(),
+                        &eval::default_eval_context);
 
     // Return the NumPy array
     return result.release();

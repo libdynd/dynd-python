@@ -29,7 +29,7 @@ void pydynd::array_broadcast_assign_from_py(
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(
-        tmp_dst.metadata(), dst_arrmeta,
+        tmp_dst.get()->metadata(), dst_arrmeta,
         dynd::intrusive_ptr<dynd::memory_block_data>());
   }
   tmp_dst.get()->data = dst_data;
@@ -39,7 +39,7 @@ void pydynd::array_broadcast_assign_from_py(
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {true};
   (*pydynd::nd::copy_from_pyobject.get().get())(
-      tmp_dst.get_type(), tmp_dst.metadata(), tmp_dst.data(), 1, &src_tp,
+      tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp,
       &src_arrmeta, &src_data, 1, kwd_values,
       std::map<std::string, dynd::ndt::type>());
 
@@ -52,8 +52,8 @@ pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
                                        PyObject *value,
                                        const dynd::eval::eval_context *ectx)
 {
-  array_broadcast_assign_from_py(a.get_type(), a.metadata(), a.data(), value,
-                                 ectx);
+  array_broadcast_assign_from_py(a.get_type(), a.get()->metadata(), a.data(),
+                                 value, ectx);
 }
 
 void pydynd::array_no_dim_broadcast_assign_from_py(
@@ -68,7 +68,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(
-        tmp_dst.metadata(), dst_arrmeta,
+        tmp_dst.get()->metadata(), dst_arrmeta,
         dynd::intrusive_ptr<dynd::memory_block_data>());
   }
   tmp_dst.get()->data = dst_data;
@@ -78,7 +78,7 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {false};
   (*pydynd::nd::copy_from_pyobject.get().get())(
-      tmp_dst.get_type(), tmp_dst.metadata(), tmp_dst.data(), 1, &src_tp,
+      tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp,
       &src_arrmeta, &src_data, 1, kwd_values,
       std::map<std::string, dynd::ndt::type>());
 

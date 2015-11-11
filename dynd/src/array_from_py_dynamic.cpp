@@ -98,7 +98,7 @@ static nd::array allocate_nd_arr(const std::vector<intptr_t> &shape,
   // reserving some data for any var dimensions.
   coord.resize(ndim);
   ndt::type tp = result.get_type();
-  const char *arrmeta_ptr = result.metadata();
+  const char *arrmeta_ptr = result.get()->metadata();
   char *data_ptr = result.data();
   for (intptr_t i = 0; i < ndim; ++i) {
     afpd_coordentry &c = coord[i];
@@ -1247,7 +1247,7 @@ dynd::nd::array pydynd::array_from_py_dynamic(PyObject *obj,
   array_from_py_dynamic(obj, shape, coord, elem, arr, 0, ectx);
   // Finalize any variable-sized buffers, etc
   if (!arr.get_type().is_builtin()) {
-    arr.get_type().extended()->arrmeta_finalize_buffers(arr.metadata());
+    arr.get_type().extended()->arrmeta_finalize_buffers(arr.get()->metadata());
   }
   // As a special case, convert the outer dimension from var to strided
   if (arr.get_type().get_type_id() == var_dim_type_id) {

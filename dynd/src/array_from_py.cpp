@@ -343,44 +343,44 @@ static dynd::nd::array array_from_pylist(PyObject *obj,
   switch (tp.get_type_id()) {
   case bool_type_id:
     fill_array_from_pylist<convert_one_pyscalar_bool>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case int32_type_id:
     fill_array_from_pylist<convert_one_pyscalar_int32>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case int64_type_id:
     fill_array_from_pylist<convert_one_pyscalar_int64>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case float32_type_id:
     fill_array_from_pylist<convert_one_pyscalar_float32>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case float64_type_id:
     fill_array_from_pylist<convert_one_pyscalar_float64>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case complex_float64_type_id:
     fill_array_from_pylist<convert_one_pyscalar_cdouble>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case bytes_type_id:
     fill_array_from_pylist<convert_one_pyscalar_bytes>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   case string_type_id: {
     const ndt::base_string_type *ext = tp.extended<ndt::base_string_type>();
     if (ext->get_encoding() == string_encoding_utf_8) {
       fill_array_from_pylist<convert_one_pyscalar_ustring>(
-          result.get_type(), result.metadata(), result.data(), obj, &shape[0],
+          result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0],
           0, ectx);
     } else {
       stringstream ss;
@@ -392,31 +392,31 @@ static dynd::nd::array array_from_pylist(PyObject *obj,
   }
   case date_type_id: {
     fill_array_from_pylist<convert_one_pyscalar_date>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   }
   case time_type_id: {
     fill_array_from_pylist<convert_one_pyscalar_time>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   }
   case datetime_type_id: {
     fill_array_from_pylist<convert_one_pyscalar_datetime>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   }
   case type_type_id: {
     fill_array_from_pylist<convert_one_pyscalar__type>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   }
   case option_type_id: {
     fill_array_from_pylist<convert_one_pyscalar_option>(
-        result.get_type(), result.metadata(), result.data(), obj, &shape[0], 0,
+        result.get_type(), result.get()->metadata(), result.data(), obj, &shape[0], 0,
         ectx);
     break;
   }
@@ -427,7 +427,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj,
     throw runtime_error(ss.str());
   }
   }
-  result.get_type().extended()->arrmeta_finalize_buffers(result.metadata());
+  result.get_type().extended()->arrmeta_finalize_buffers(result.get()->metadata());
   return result;
 }
 
@@ -587,7 +587,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::datetime_type::make();
     const ndt::datetime_type *dd = d.extended<ndt::datetime_type>();
     result = nd::empty(d);
-    dd->set_cal(result.metadata(), result.get()->data, assign_error_fractional,
+    dd->set_cal(result.get()->metadata(), result.get()->data, assign_error_fractional,
                 PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj),
                 PyDateTime_GET_DAY(obj), PyDateTime_DATE_GET_HOUR(obj),
                 PyDateTime_DATE_GET_MINUTE(obj),
@@ -597,7 +597,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::date_type::make();
     const ndt::date_type *dd = d.extended<ndt::date_type>();
     result = nd::empty(d);
-    dd->set_ymd(result.metadata(), result.get()->data, assign_error_fractional,
+    dd->set_ymd(result.get()->metadata(), result.get()->data, assign_error_fractional,
                 PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj),
                 PyDateTime_GET_DAY(obj));
   } else if (PyTime_Check(obj)) {
@@ -609,7 +609,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::time_type::make(tz_abstract);
     const ndt::time_type *tt = d.extended<ndt::time_type>();
     result = nd::empty(d);
-    tt->set_time(result.metadata(), result.get()->data, assign_error_fractional,
+    tt->set_time(result.get()->metadata(), result.get()->data, assign_error_fractional,
                  PyDateTime_TIME_GET_HOUR(obj), PyDateTime_TIME_GET_MINUTE(obj),
                  PyDateTime_TIME_GET_SECOND(obj),
                  PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
@@ -782,7 +782,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
   }
   result = nd::empty(tpfull);
 
-  array_no_dim_broadcast_assign_from_py(result.get_type(), result.metadata(),
+  array_no_dim_broadcast_assign_from_py(result.get_type(), result.get()->metadata(),
                                         result.data(), obj, ectx);
 
   // If write access wasn't requested, flag it as immutable

@@ -298,8 +298,8 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 
     if (tp.get_type_id() == bytes_type_id ||
         tp.get_type_id() == fixed_bytes_type_id) {
-      array_getbuffer_pep3118_bytes(tp, n.metadata(), n.get()->data, buffer,
-                                    flags);
+      array_getbuffer_pep3118_bytes(tp, n.get()->metadata(), n.get()->data,
+                                    buffer, flags);
       return 0;
     }
 
@@ -312,7 +312,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     }
 
     // Create the format, and allocate the dynamic memory but Py_buffer needs
-    char *uniform_arrmeta = n.metadata();
+    char *uniform_arrmeta = n.get()->metadata();
     ndt::type uniform_tp =
         tp.get_type_at_dimension(&uniform_arrmeta, buffer->ndim);
     if ((flags & PyBUF_FORMAT) || uniform_tp.get_data_size() == 0) {
@@ -343,7 +343,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     }
 
     // Fill in the shape and strides
-    const char *arrmeta = n.metadata();
+    const char *arrmeta = n.get()->metadata();
     for (int i = 0; i < buffer->ndim; ++i) {
       switch (tp.get_type_id()) {
       case fixed_dim_type_id: {

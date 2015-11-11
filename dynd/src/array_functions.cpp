@@ -51,7 +51,7 @@ PyObject *pydynd::array_str(const dynd::nd::array &n)
   const ndt::base_string_type *bsd =
       n_str.get_type().extended<ndt::base_string_type>();
   const char *begin = NULL, *end = NULL;
-  bsd->get_string_range(&begin, &end, n_str.metadata(), n_str.cdata());
+  bsd->get_string_range(&begin, &end, n_str.get()->metadata(), n_str.cdata());
   return PyString_FromStringAndSize(begin, end - begin);
 #endif
 }
@@ -82,7 +82,7 @@ PyObject *pydynd::array_unicode(const dynd::nd::array &n)
   const ndt::base_string_type *bsd =
       static_cast<const ndt::base_string_type *>(n_str.get_type().extended());
   const char *begin = NULL, *end = NULL;
-  bsd->get_string_range(&begin, &end, n_str.metadata(), n_str.cdata());
+  bsd->get_string_range(&begin, &end, n_str.get()->metadata(), n_str.cdata());
 #if PY_VERSION_HEX >= 0x03030000
   // TODO: Might be more efficient to use a different Python 3 API,
   //       avoiding the creation of intermediate UTF-8
@@ -132,7 +132,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
     const ndt::base_string_type *bsd =
         n_eval.get_type().extended<ndt::base_string_type>();
     const char *begin = NULL, *end = NULL;
-    bsd->get_string_range(&begin, &end, n_eval.metadata(), n_eval.cdata());
+    bsd->get_string_range(&begin, &end, n_eval.get()->metadata(), n_eval.cdata());
     if (begin != end) {
       Py_INCREF(Py_True);
       return Py_True;
@@ -147,7 +147,7 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
     const ndt::base_bytes_type *bbd =
         n_eval.get_type().extended<ndt::base_bytes_type>();
     const char *begin = NULL, *end = NULL;
-    bbd->get_bytes_range(&begin, &end, n_eval.metadata(), n_eval.cdata());
+    bbd->get_bytes_range(&begin, &end, n_eval.get()->metadata(), n_eval.cdata());
     while (begin != end) {
       if (*begin != 0) {
         Py_INCREF(Py_True);
@@ -644,7 +644,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
 #if PY_VERSION_HEX < 0x03000000
   } else if (PyInt_Check(subscript)) {
     long i = PyInt_AS_LONG(subscript);
-    const char *arrmeta = n.metadata();
+    const char *arrmeta = n.get()->metadata();
     char *data = n.data();
     ndt::type d =
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
@@ -656,7 +656,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
     if (i == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");
     }
-    const char *arrmeta = n.metadata();
+    const char *arrmeta = n.get()->metadata();
     char *data = n.data();
     ndt::type d =
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
@@ -781,8 +781,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   result.get()->type = ndt::type(result_tp).release();
   // First copy all the array data type arrmeta
   ndt::type tmp_dt = result_tp;
-  char *dst_arrmeta = result.metadata();
-  const char *src_arrmeta = n.metadata();
+  char *dst_arrmeta = result.get()->metadata();
+  const char *src_arrmeta = n.get()->metadata();
   while (tmp_dt.get_ndim() > 0) {
     if (tmp_dt.get_kind() != dim_kind) {
       throw runtime_error(

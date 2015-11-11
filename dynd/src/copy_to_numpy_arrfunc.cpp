@@ -211,7 +211,7 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
   if (dst_tp.get_arrmeta_size() > 0) {
     memcpy(tmp_dst.metadata(), dst_am, tmp_dst_arrmeta_size);
   }
-  tmp_dst.get()->ptr = (char *)PyArray_DATA(dst_arr);
+  tmp_dst.get()->data = (char *)PyArray_DATA(dst_arr);
   char *src_data_nonconst = const_cast<char *>(src_data);
   (*copy_to_numpy::get().get())(tmp_dst.get_type(), tmp_dst.metadata(),
                                 tmp_dst.data(), 1, &src_tp, &src_arrmeta,

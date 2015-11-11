@@ -557,7 +557,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     result = nd::array(make_array_memory_block(
         d.extended()->get_arrmeta_size(), d.get_data_size(),
         d.get_data_alignment(), &data_ptr));
-    result.get()->ptr = data_ptr;
+    result.get()->data = data_ptr;
     result.get()->ref = NULL;
     result.get()->type = d.extended();
     base_type_incref(result.get()->type);
@@ -587,7 +587,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::datetime_type::make();
     const ndt::datetime_type *dd = d.extended<ndt::datetime_type>();
     result = nd::empty(d);
-    dd->set_cal(result.metadata(), result.get()->ptr, assign_error_fractional,
+    dd->set_cal(result.metadata(), result.get()->data, assign_error_fractional,
                 PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj),
                 PyDateTime_GET_DAY(obj), PyDateTime_DATE_GET_HOUR(obj),
                 PyDateTime_DATE_GET_MINUTE(obj),
@@ -597,7 +597,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::date_type::make();
     const ndt::date_type *dd = d.extended<ndt::date_type>();
     result = nd::empty(d);
-    dd->set_ymd(result.metadata(), result.get()->ptr, assign_error_fractional,
+    dd->set_ymd(result.metadata(), result.get()->data, assign_error_fractional,
                 PyDateTime_GET_YEAR(obj), PyDateTime_GET_MONTH(obj),
                 PyDateTime_GET_DAY(obj));
   } else if (PyTime_Check(obj)) {
@@ -609,7 +609,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     ndt::type d = ndt::time_type::make(tz_abstract);
     const ndt::time_type *tt = d.extended<ndt::time_type>();
     result = nd::empty(d);
-    tt->set_time(result.metadata(), result.get()->ptr, assign_error_fractional,
+    tt->set_time(result.metadata(), result.get()->data, assign_error_fractional,
                  PyDateTime_TIME_GET_HOUR(obj), PyDateTime_TIME_GET_MINUTE(obj),
                  PyDateTime_TIME_GET_SECOND(obj),
                  PyDateTime_TIME_GET_MICROSECOND(obj) * 10);

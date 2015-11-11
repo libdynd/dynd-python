@@ -9,11 +9,15 @@ if os.name == 'nt':
     is_64_bit = sys.maxsize > 2**32
     if not os.path.isfile("libdynd.dll"):
         if is_64_bit:
-            if os.path.isfile("c:/Program Files/libdynd/lib/libdynd.dll"):
-                cdll.LoadLibrary("c:/Program Files/libdynd/lib/libdynd.dll")
+            libdynd_path = os.path.join(os.environ['ProgramFiles'], 'libdynd',
+                                        'lib', 'libdynd.dll')
+            if os.path.isfile(libdynd_path):
+                cdll.LoadLibrary(libdynd_path)
         else:
-            if os.path.isfile("c:/Program Files (x86)/libdynd/lib/libdynd.dll"):
-                cdll.LoadLibrary("c:/Program Files (x86)/libdynd/lib/libdynd.dll")
+            libdynd_path = os.path.join(os.environ['ProgramFiles(x86)'],
+                                        'libdynd', 'lib', 'libdynd.dll')
+            if os.path.isfile(libdynd_path):
+                cdll.LoadLibrary(libdynd_path)
     else:
         cdll.LoadLibrary("./pydynd.dll")
 

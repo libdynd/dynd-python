@@ -205,7 +205,7 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
       dst_ndim * sizeof(dynd::fixed_dim_type_arrmeta) +
       sizeof(copy_to_numpy_arrmeta);
   dynd::nd::array tmp_dst(dynd::make_array_memory_block(tmp_dst_arrmeta_size));
-  tmp_dst.get()->type = dynd::ndt::type(dst_tp).release();
+  tmp_dst.get()->tp = dynd::ndt::type(dst_tp).release();
   tmp_dst.get()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {

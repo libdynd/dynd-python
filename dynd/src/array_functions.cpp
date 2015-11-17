@@ -778,7 +778,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   result.get()->flags = n.get()->flags;
 
   // Set the type and transform the arrmeta
-  result.get()->type = ndt::type(result_tp).release();
+  result.get()->tp = ndt::type(result_tp).release();
   // First copy all the array data type arrmeta
   ndt::type tmp_dt = result_tp;
   char *dst_arrmeta = result.get()->metadata();

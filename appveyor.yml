@@ -15,7 +15,7 @@ environment:
       PYTHON_ARCH: "x86"
       MSVC: 2015
 
-install:
+build_script:
   - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
   - cmd: C:\Miniconda.exe /S /D=C:\Py
   - SET PATH=C:\Py;C:\Py\Scripts;C:\Py\Library\bin;%PATH%

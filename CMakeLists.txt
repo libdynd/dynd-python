@@ -19,10 +19,6 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 option(DYND_INSTALL_LIB
     "Use a libdynd built and installed somewhere."
     ON)
-# -DDYND_CUDA=ON/OFF, use a libdynd which has been built with the CUDA Toolkit.
-option(DYND_CUDA
-    "Use a libdynd built with CUDA."
-    OFF)
 # -DUSE_RELATIVE_RPATH=ON/OFF, For Linux and OSX, to use the @rpath mechanism
 #   for creating a build which is linked with relative paths. The
 #   libdynd should have been built with -DUSE_RELATIVE_RPATH=ON as well.
@@ -58,10 +54,22 @@ endif()
 
 if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
+    if(LIBDYND_CUDA)
+        option(DYND_CUDA
+            "Use a libdynd built with CUDA. If DYND_INSTALL_LIB is ON, this defaults to the DYND_CUDA option used when building libdynd. Otherwise it defaults to OFF."
+            ON)
+    else()
+        option(DYND_CUDA
+            "Use a libdynd built with CUDA. If DYND_INSTALL_LIB is ON, this defaults to the DYND_CUDA option used when building libdynd. Otherwise it defaults to OFF."
+            OFF)
+    endif()
 else()
     set(DYND_SHARED_LIB ON)
     # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
+    option(DYND_CUDA
+        "Use a libdynd built with CUDA. If DYND_INSTALL_LIB is ON, this defaults to the DYND_CUDA option used building that library. Otherwise it defaults to OFF."
+        OFF)
 
     if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/array.hpp")
         message(FATAL_ERROR

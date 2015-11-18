@@ -77,7 +77,7 @@ class cmake_build_ext(build_ext):
     install_lib_option = '-DDYND_INSTALL_LIB=ON'
     static_lib_option = ''
     build_tests_option = ''
-    cuda_option = ''
+
     # If libdynd is checked out into the libraries subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
@@ -85,26 +85,11 @@ class cmake_build_ext(build_ext):
                           'libraries/libdynd/include/dynd/array.hpp')):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
-    else:
-        # Detecting and setting options to parallel libdynd should be done at
-        # the cmake level so that the directories detected for libdynd can be
-        # used to call the right libdynd-config.
-        # This is good enough for now though.
-        if sys.platform == 'win32':
-            config_dir = 'C:/Program Files%s/libdynd/bin' % (
-                '' if is_64_bit else ' (x86)')
-            built_with_cuda = eval(check_output(
-                ['/'.join([config_dir, 'libdynd-config.bat']),
-                 '-cuda'], cwd=config_dir))
-        else:
-            built_with_cuda = eval(check_output(['libdynd-config', '-cuda']))
-        if built_with_cuda == 'ON':
-            cuda_option = '-DDYND_CUDA=ON'
 
     if sys.platform != 'win32':
         cmake_command = ['cmake', self.extra_cmake_args, pyexe_option,
                          install_lib_option, build_tests_option,
-                         static_lib_option, cuda_option, source]
+                         static_lib_option, source]
 
         self.spawn(cmake_command)
         self.spawn(['make'])

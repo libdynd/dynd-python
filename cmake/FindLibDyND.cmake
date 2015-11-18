@@ -6,6 +6,7 @@
 #  LIBDYND_VERSION             - the version of LibDyND found as a string
 #  LIBDYND_LIBRARIES           - path to the LibDyND library
 #  LIBDYND_INCLUDE_DIRS        - path to the LibDyND include files
+#  LIBDYND_CUDA                - if LibDyND was built with cuda support
 
 #============================================================================
 # Copyright 2013 Continuum Analytics, Inc.
@@ -35,6 +36,7 @@
 
 # Try to find a libdynd-config program
 if(WIN32)
+    # Aside from the system path, search some other locations.
     find_program(_LIBDYND_CONFIG "libdynd-config.bat"
         PATHS
             "C:\\Program Files\\LibDyND\\bin"
@@ -88,6 +90,20 @@ if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
         "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
 endif()
 
+# Get whether or not libdynd was built with cuda support
+execute_process(COMMAND "${_LIBDYND_CONFIG}" "-cuda"
+    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+    OUTPUT_VARIABLE LIBDYND_CUDA
+    ERROR_VARIABLE _DYND_ERROR_VALUE
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+    message(FATAL_ERROR
+        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
+endif()
+# Verify that the value in LIBDYND_CUDA is either "ON" or "OFF"
+if(NOT ("${LIBDYND_CUDA}" STREQUAL "ON" OR "${LIBDYND_CUDA}" STREQUAL "OFF"))
+    message(FATAL_ERROR "Unrecognized cuda option returned from libdynd-config.")
+endif()
 
 find_package_message(LIBDYND
     "Found LibDyND: version \"${LIBDYND_VERSION}\",  ${LIBDYND_LIBRARIES}"

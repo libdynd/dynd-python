@@ -71,7 +71,7 @@ namespace nd {
           dynd::ndt::type tp = src_tp[i];
           dynd::nd::array n(
               dynd::make_array_memory_block(tp.get_arrmeta_size()));
-          n.get()->tp = tp.release();
+          n.get()->tp = tp;
           n.get()->flags = dynd::nd::read_access_flag;
           n.get()->data = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {
@@ -107,7 +107,7 @@ namespace nd {
           dynd::ndt::type tp = src_tp[i];
           dynd::nd::array n(
               dynd::make_array_memory_block(tp.get_arrmeta_size()));
-          n.get()->tp = tp.release();
+          n.get()->tp = tp;
           n.get()->flags = dynd::nd::read_access_flag;
           n.get()->data = const_cast<char *>(src[i]);
           if (src_tp[i].get_arrmeta_size() > 0) {

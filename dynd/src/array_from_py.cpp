@@ -559,8 +559,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
         d.get_data_alignment(), &data_ptr));
     result.get()->data = data_ptr;
     result.get()->owner = NULL;
-    result.get()->tp = d.extended();
-    base_type_incref(result.get()->tp);
+    result.get()->tp = d;
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
     // The arrmeta

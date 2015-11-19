@@ -8,12 +8,8 @@ matrix:
 
 environment:
   matrix:
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "x86_64"
-      MSVC: 2015
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "x86"
-      MSVC: 2015
+    - PYTHON_ARCH: "x86_64"
+    - PYTHON_ARCH: "x86"
 
 build_script:
   - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"

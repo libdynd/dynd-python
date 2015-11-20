@@ -24,7 +24,7 @@ before_install:
 - export CXX=g++-4.9
 
 install:
-- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21 
+- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
 - mkdir libraries
 - pushd libraries
 - git clone --depth=1 https://github.com/libdynd/libdynd.git
@@ -71,6 +71,11 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
+    - conda install $(conda build --output conda.recipe)
+    - pushd ..
+    - python -c "import dynd; dynd.test(verbosity=2)"
+    - popd
     after_success:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
   - language: python
@@ -84,6 +89,11 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
+    - conda install $(conda build --output conda.recipe)
+    - pushd ..
+    - python -c "import dynd; dynd.test(verbosity=2)"
+    - popd
     after_success:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
   - language: objective-c
@@ -100,6 +110,11 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
+    - conda install $(conda build --output conda.recipe)
+    - pushd ..
+    - python -c "import dynd; dynd.test(verbosity=2)"
+    - popd
     after_success:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
   - language: objective-c
@@ -116,6 +131,11 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
+    - conda install $(conda build --output conda.recipe)
+    - pushd ..
+    - python -c "import dynd; dynd.test(verbosity=2)"
+    - popd
     after_success:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
 

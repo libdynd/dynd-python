@@ -1,64 +1,40 @@
-# TODO: How to automatically use the version string
-#       produced by the build?
-version: 0.6.6.{build}
-
-# branches to build
-branches:
-  only:
-    - master
-
 # Do not build on tags (GitHub only)
 skip_tags: true
 
-# Operating system (Using default OSS config which includes MSVC 2015)
-#os: Visual Studio 2015
+clone_depth: 1
 
 matrix:
   fast_finish: true     # immediately finish build once one of the jobs fails.
 
 environment:
-
   global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-    # See: http://stackoverflow.com/a/13751649/163740
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
-
+    appveyor_token:
+      secure: GvR4dCHoeYM712VDQYvSuNzFu+rZfo/zdns7xGlFPGOKfFvBmVCXTX6iuHmMpUeP
   matrix:
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "x86_64"
-      MSVC: 2015
-    - PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "x86"
-      MSVC: 2015
-
-install:
-  - md libraries
-  - cd libraries
-  - git clone https://github.com/libdynd/libdynd.git
-  - cd ..
-  - dir C:\
-  - dir "C:\Program Files\Microsoft SDKs\Windows"
-  - dir "C:\Program Files (x86)\Microsoft Visual*"
-  - cmake --version
-  - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
-  - cmd: C:\Miniconda.exe /S /D=C:\Py
-  - C:\Py\Scripts\conda config --set always_yes yes
-  - C:\Py\Scripts\conda update conda
-  - C:\Py\Scripts\conda install pip numpy cython setuptools
-  - C:\Py\Scripts\pip install wheel
-  - C:\Py\python -c "import struct; print(struct.calcsize('P') * 8)"
-  - SET PATH=C:\Py;C:\Py\Scripts;%PATH%
+    - PYTHON_ARCH: "x86_64"
+    - PYTHON_ARCH: "x86"
 
 build_script:
-  - C:\Py\python setup.py bdist_wheel
-
-test_script:
-  - cd dist
-  - FOR /F "delims=" %%i IN ('dir /b *.whl') DO set WHL=%%i
-  - pip install %WHL%
-  - python -c "import dynd;dynd.test(exit=True)"
+  - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
+  - cmd: C:\Miniconda.exe /S /D=C:\Py
+  - SET PATH=C:\Py;C:\Py\Scripts;C:\Py\Library\bin;%PATH%
+  - conda config --set always_yes yes
+  - conda update conda
+  - conda install conda-build
+  - ps: if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) { conda install anaconda-client }
+  - conda build conda.recipe --channel dynd/channel/dev
+  - conda install numpy libdynd --channel dynd/channel/dev
+  - ps: conda install (conda build --output conda.recipe)
   - cd ..
+  - python -c "import dynd; dynd.test(verbosity=2)"
+  - cd dynd-python
 
-artifacts:
-  - path: dist\*
+on_success:
+  # Redirect output from stderr to stdout to avoid having the command for uploading
+  # the conda package fail in powershell in spite of a successful upload.
+  # This happens when an executable writes to stderr while still executing successfully.
+  # See http://stackoverflow.com/a/22615314/1935144
+  # See also http://stackoverflow.com/a/2095623/1935144
+  # Route command back through cmd to avoid the powershell bug entirely.
+  # See https://connect.microsoft.com/PowerShell/feedback/details/645954
+  - ps: if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) { cmd /C anaconda --token $env:appveyor_token upload (conda build --output conda.recipe) --user dynd --channel dev "2>&1" }

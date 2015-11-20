@@ -71,6 +71,7 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
     - conda install $(conda build --output conda.recipe)
     - python -c "import dynd; dynd.test(verbosity=2)"
     after_success:
@@ -86,6 +87,7 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
     - conda install $(conda build --output conda.recipe)
     - python -c "import dynd; dynd.test(verbosity=2)"
     after_success:
@@ -104,6 +106,7 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
     - conda install $(conda build --output conda.recipe)
     - python -c "import dynd; dynd.test(verbosity=2)"
     after_success:
@@ -122,6 +125,7 @@ matrix:
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     script:
     - conda build conda.recipe --channel dynd/channel/dev
+    - conda install --yes numpy libdynd --channel dynd/channel/dev
     - conda install $(conda build --output conda.recipe)
     - python -c "import dynd; dynd.test(verbosity=2)"
     after_success:

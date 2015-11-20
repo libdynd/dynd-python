@@ -30,5 +30,5 @@ test:
     - python -c "import dynd; dynd.test(verbosity=2)"
 
 about:
-  home: https://github.com/libdynd/dynd-python
+  home: http://libdynd.org
   license: BSD

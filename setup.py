@@ -202,7 +202,7 @@ setup(
     author = 'DyND Developers',
     author_email = 'libdynd-dev@googlegroups.com',
     license = 'BSD',
-    url = 'https://github.com/libdynd/dynd-python',
+    url = 'http://libdynd.org',
     packages = [
         'dynd',
         'dynd.nd',

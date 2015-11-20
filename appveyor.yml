@@ -22,4 +22,6 @@ build_script:
   - conda build conda.recipe --channel dynd/channel/dev
   - conda install numpy libdynd --channel dynd/channel/dev
   - ps: conda install (conda build --output conda.recipe)
+  - cd ..
   - python -c "import dynd; dynd.test(verbosity=2)"
+  - cd dynd-python

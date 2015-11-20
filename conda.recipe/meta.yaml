@@ -25,9 +25,10 @@ requirements:
     - numpy
     - libdynd
 
-test:
-  commands:
-    - python -c "import dynd; dynd.test(verbosity=2)"
+# Test separately to avoid unsatisfiable package dependencies bug on Win32.
+#test:
+#  commands:
+#    - python -c "import dynd; dynd.test(verbosity=2)"
 
 about:
   home: https://github.com/libdynd/dynd-python

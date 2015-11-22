@@ -66,7 +66,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
                                         src_tp[0], src_arrmeta[0], kernreq,
                                         ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::callable_type_data *af = const_cast<dynd::callable_type_data *>(
+    dynd::ndt::callable_type::data_type *af = const_cast<dynd::ndt::callable_type::data_type *>(
         static_cast<dynd::nd::callable>(nd::copy_to_pyobject).get());
     return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset,
                            dynd::ndt::type::make<void>(), NULL, nsrc, src_tp,

@@ -162,7 +162,7 @@ namespace nd {
         return ckb_offset;
       }
 
-      static void free(dynd::callable_type_data *self_af)
+      static void free(dynd::ndt::callable_type::data_type *self_af)
       {
         PyObject *pyfunc = *reinterpret_cast<PyObject **>(self_af->static_data);
         if (pyfunc) {

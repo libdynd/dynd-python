@@ -52,4 +52,6 @@ PyObject *callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
  */
 PYDYND_API PyObject *get_published_callables();
 
+PYDYND_API PyObject *callable_str(const dynd::nd::callable &f);
+
 } // namespace pydynd

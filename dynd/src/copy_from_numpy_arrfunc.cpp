@@ -35,9 +35,8 @@ struct strided_of_numpy_arrmeta {
 } // anonymous namespace
 
 intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
-    char *DYND_UNUSED(static_data), size_t DYND_UNUSED(data_size),
-    char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-    const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+    char *DYND_UNUSED(static_data), char *DYND_UNUSED(data), void *ckb,
+    intptr_t ckb_offset, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
     intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
     const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
     const dynd::eval::eval_context *ectx, intptr_t nkwd,
@@ -65,7 +64,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
                                         src_view_tp, NULL, kernreq, ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
     dynd::ndt::callable_type::data_type *af = copy_from_pyobject::get().get();
-    return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset, dst_tp,
+    return af->instantiate(af->static_data, NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
                            nkwd, kwds, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {

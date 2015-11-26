@@ -29,11 +29,10 @@ struct copy_to_numpy_arrmeta {
 
 struct copy_to_numpy_ck : dynd::nd::base_virtual_kernel<copy_to_numpy_ck> {
   static intptr_t
-  instantiate(char *static_data, size_t data_size, char *data, void *ckb,
-              intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
-              const char *dst_arrmeta, intptr_t nsrc,
-              const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-              dynd::kernel_request_t kernreq,
+  instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
+              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+              intptr_t nsrc, const dynd::ndt::type *src_tp,
+              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
               const dynd::eval::eval_context *ectx, intptr_t nkwd,
               const dynd::nd::array *kwds,
               const std::map<std::string, dynd::ndt::type> &tp_vars);

@@ -39,12 +39,12 @@ struct strided_of_numpy_arrmeta {
  * being a pointer to the ``PyArray_Descr *`` of the type for the destination.
  */
 intptr_t pydynd::copy_to_numpy_ck::instantiate(
-    char *DYND_UNUSED(static_data), size_t DYND_UNUSED(data_size),
-    char *DYND_UNUSED(data), void *ckb, intptr_t ckb_offset,
-    const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
-    const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-    dynd::kernel_request_t kernreq, const dynd::eval::eval_context *ectx,
-    intptr_t nkwd, const dynd::nd::array *kwds,
+    char *DYND_UNUSED(static_data), char *DYND_UNUSED(data), void *ckb,
+    intptr_t ckb_offset, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+    intptr_t nsrc, const dynd::ndt::type *src_tp,
+    const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+    const dynd::eval::eval_context *ectx, intptr_t nkwd,
+    const dynd::nd::array *kwds,
     const std::map<std::string, dynd::ndt::type> &tp_vars)
 {
   if (dst_tp.get_type_id() != dynd::void_type_id) {
@@ -66,9 +66,10 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
                                         src_tp[0], src_arrmeta[0], kernreq,
                                         ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::ndt::callable_type::data_type *af = const_cast<dynd::ndt::callable_type::data_type *>(
-        static_cast<dynd::nd::callable>(nd::copy_to_pyobject).get());
-    return af->instantiate(af->static_data, 0, NULL, ckb, ckb_offset,
+    dynd::ndt::callable_type::data_type *af =
+        const_cast<dynd::ndt::callable_type::data_type *>(
+            static_cast<dynd::nd::callable>(nd::copy_to_pyobject).get());
+    return af->instantiate(af->static_data, NULL, ckb, ckb_offset,
                            dynd::ndt::type::make<void>(), NULL, nsrc, src_tp,
                            src_arrmeta, kernreq, ectx, 0, NULL, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {

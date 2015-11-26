@@ -64,7 +64,7 @@ namespace nd {
                                         intptr_t func)
     {
       return dynd::nd::callable::make<apply_jit_kernel>(
-          tp, reinterpret_cast<apply_jit_kernel::func_type *>(func), 0);
+          tp, reinterpret_cast<apply_jit_kernel::func_type *>(func));
     }
 
     struct jit_dispatcher {

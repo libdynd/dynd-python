@@ -28,11 +28,12 @@ dynd::nd::callable pydynd::nd::functional::apply(PyObject *instantiate_pyfunc,
     stringstream ss;
     ss << "creating a dynd dynd::nd::callable from a python func requires a "
           "function "
-          "prototype, was given type " << proto;
+          "prototype, was given type "
+       << proto;
     throw dynd::type_error(ss.str());
   }
 
   Py_INCREF(instantiate_pyfunc);
   return dynd::nd::callable::make<apply_pyobject_kernel>(proto,
-                                                         instantiate_pyfunc, 0);
+                                                         instantiate_pyfunc);
 }

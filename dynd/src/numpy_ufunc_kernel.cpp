@@ -200,14 +200,15 @@ PyObject *pydynd::nd::functional::callable_from_ufunc(PyObject *ufunc,
           data->ufunc_data = uf->data[i];
           if (ckernel_acquires_gil) {
             return DyND_PyWrapper_New(
-                dynd::nd::callable::make<scalar_ufunc_ck<true>>(self_tp, data,
-                                                                0));
-          } else {
-            return DyND_PyWrapper_New(
-                dynd::nd::callable::make<scalar_ufunc_ck<false>>(self_tp, data,
-                                                                 0));
+                dynd::nd::callable::make<scalar_ufunc_ck<true>>(self_tp, data));
           }
-        } else {
+          else {
+            return DyND_PyWrapper_New(
+                dynd::nd::callable::make<scalar_ufunc_ck<false>>(self_tp,
+                                                                 data));
+          }
+        }
+        else {
           // TODO: support gufunc
           PyErr_SetString(PyExc_ValueError, "gufunc isn't implemented yet");
           return NULL;

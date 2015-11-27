@@ -64,7 +64,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
                                         src_view_tp, NULL, kernreq, ectx);
   } else if (PyDataType_ISOBJECT(dtype)) {
     dynd::ndt::callable_type::data_type *af = copy_from_pyobject::get().get();
-    return af->instantiate(af->static_data, NULL, ckb, ckb_offset, dst_tp,
+    return af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
                            nkwd, kwds, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {

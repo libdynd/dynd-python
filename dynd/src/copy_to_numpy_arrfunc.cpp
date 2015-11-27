@@ -69,7 +69,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     dynd::ndt::callable_type::data_type *af =
         const_cast<dynd::ndt::callable_type::data_type *>(
             static_cast<dynd::nd::callable>(nd::copy_to_pyobject).get());
-    return af->instantiate(af->static_data, NULL, ckb, ckb_offset,
+    return af->instantiate(af->static_data(), NULL, ckb, ckb_offset,
                            dynd::ndt::type::make<void>(), NULL, nsrc, src_tp,
                            src_arrmeta, kernreq, ectx, 0, NULL, tp_vars);
   } else if (PyDataType_HASFIELDS(dtype)) {

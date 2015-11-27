@@ -165,7 +165,7 @@ namespace nd {
 
       static void free(dynd::ndt::callable_type::data_type *self_af)
       {
-        PyObject *pyfunc = *reinterpret_cast<PyObject **>(self_af->static_data);
+        PyObject *pyfunc = *reinterpret_cast<PyObject **>(self_af->static_data());
         if (pyfunc) {
           PyGILState_RAII pgs;
           Py_DECREF(pyfunc);

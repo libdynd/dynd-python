@@ -775,7 +775,7 @@ namespace nd {
       dynd::nd::callable &is_avail =
           src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail();
       ckb_offset = is_avail.get()->instantiate(
-          is_avail.get()->static_data, NULL, ckb, ckb_offset,
+          is_avail.get()->static_data(), NULL, ckb, ckb_offset,
           dynd::ndt::type::make<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, 0, NULL, tp_vars);
       reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
@@ -787,7 +787,7 @@ namespace nd {
       dynd::ndt::type src_value_tp =
           src_tp[0].extended<dynd::ndt::option_type>()->get_value_type();
       ckb_offset = copy_to_pyobject::get().get()->instantiate(
-          copy_to_pyobject::get().get()->static_data, NULL, ckb, ckb_offset,
+          copy_to_pyobject::get().get()->static_data(), NULL, ckb, ckb_offset,
           dst_tp, dst_arrmeta, nsrc, &src_value_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, 0, NULL, tp_vars);
       return ckb_offset;
@@ -847,7 +847,7 @@ namespace nd {
         copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, dim_size,
                                       stride);
         return copy_to_pyobject::get().get()->instantiate(
-            copy_to_pyobject::get().get()->static_data, data, ckb, ckb_offset,
+            copy_to_pyobject::get().get()->static_data(), data, ckb, ckb_offset,
             dst_tp, dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
             dynd::kernel_request_strided, ectx, nkwd, kwds, tp_vars);
       }
@@ -915,7 +915,7 @@ namespace nd {
       const char *el_arrmeta =
           src_arrmeta[0] + sizeof(dynd::var_dim_type_arrmeta);
       return copy_to_pyobject::get().get()->instantiate(
-          copy_to_pyobject::get().get()->static_data, data, ckb, ckb_offset,
+          copy_to_pyobject::get().get()->static_data(), data, ckb, ckb_offset,
           dst_tp, dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
           dynd::kernel_request_strided, ectx, nkwd, kwds, tp_vars);
     }
@@ -1011,7 +1011,7 @@ namespace nd {
         self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
         ckb_offset = copy_to_pyobject::get().get()->instantiate(
-            copy_to_pyobject::get().get()->static_data, NULL, ckb, ckb_offset,
+            copy_to_pyobject::get().get()->static_data(), NULL, ckb, ckb_offset,
             dst_tp, dst_arrmeta, nsrc, &field_types[i], &field_arrmeta,
             dynd::kernel_request_single, ectx, 0, NULL, tp_vars);
       }
@@ -1100,7 +1100,7 @@ namespace nd {
         self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
         ckb_offset = copy_to_pyobject::get().get()->instantiate(
-            copy_to_pyobject::get().get()->static_data, data, ckb, ckb_offset,
+            copy_to_pyobject::get().get()->static_data(), data, ckb, ckb_offset,
             dst_tp, dst_arrmeta, nsrc, &field_types[i], &field_arrmeta,
             dynd::kernel_request_single, ectx, nkwd, kwds, tp_vars);
       }
@@ -1148,7 +1148,7 @@ namespace nd {
       dynd::ndt::type src_value_tp =
           src_tp[0].extended<dynd::ndt::pointer_type>()->get_target_type();
       return copy_to_pyobject::get().get()->instantiate(
-          copy_to_pyobject::get().get()->static_data, NULL, ckb, ckb_offset,
+          copy_to_pyobject::get().get()->static_data(), NULL, ckb, ckb_offset,
           dst_tp, dst_arrmeta, nsrc, &src_value_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, 0, NULL, tp_vars);
     }
@@ -1180,7 +1180,7 @@ namespace nd {
                                         dynd::assign_error_default),
           copy_to_pyobject, buffer_tp);
       return child.get()->instantiate(
-          child.get()->static_data, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
+          child.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
           nsrc, src_tp, src_arrmeta, kernreq, ectx, nkwd, kwds, tp_vars);
     }
   };
@@ -1211,7 +1211,7 @@ namespace nd {
       dynd::nd::callable af = dynd::nd::functional::compose(
           dynd::nd::copy, copy_to_pyobject, src_tp[0].value_type());
       return af.get()->instantiate(
-          af.get()->static_data, NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
+          af.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
           nsrc, src_tp, src_arrmeta, kernreq, ectx, nkwd, kwds, tp_vars);
     }
   };

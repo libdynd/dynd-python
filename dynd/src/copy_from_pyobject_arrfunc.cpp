@@ -56,8 +56,7 @@ dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
           return default_child;
         }
         return child;
-      },
-      0);
+      });
 }
 
 struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;

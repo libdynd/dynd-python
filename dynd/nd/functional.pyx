@@ -24,7 +24,7 @@ cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functiona
         jit_dispatcher(object, object (*)(object, intptr_t, const _type *))
 
 cdef extern from 'dynd/func/multidispatch.hpp' namespace 'dynd::nd::functional':
-    _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, size_t) \
+    _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T) \
         except +translate_exception
     _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T) \
         except +translate_exception
@@ -104,7 +104,7 @@ def apply(func = None, jit = _import_numba(), *args, **kwds):
         if jit:
             import numba
             return wrap(_multidispatch((<type> tp).v,
-                jit_dispatcher(numba.jit(func, *args, **kwds), _jit), <size_t> 0))
+                jit_dispatcher(numba.jit(func, *args, **kwds), _jit)))
 
         return wrap(_apply(func, tp))
 

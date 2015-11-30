@@ -13,8 +13,8 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 ################################################
 # Some options configurable from the CMAKE command execution
 #
-# -DDYND_INSTALL_LIB=ON/OFF, Use a libdynd which has been built
-#   and installed separately. To build with this option off, libdynd
+# -DDYND_INSTALL_LIB=ON/OFF, Use a libdynd which has been built and
+#   installed separately. To build with this option off, libdynd
 #   must be checked out into the libraries/libdynd subdirectory.
 option(DYND_INSTALL_LIB
     "Use a libdynd built and installed somewhere."

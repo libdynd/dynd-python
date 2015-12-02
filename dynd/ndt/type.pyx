@@ -90,6 +90,9 @@ type_ids['COMPLEX128'] = complex_float64_type_id
 type_ids['VOID'] = void_type_id
 type_ids['CALLABLE'] = callable_type_id
 
+cimport cython
+
+@cython.freelist(10)
 cdef class type(object):
     """
     ndt.type(obj=None)
@@ -117,9 +120,15 @@ cdef class type(object):
     ndt.type("{x : float32, y : float32, z : float32}")
     """
 
-    def __cinit__(self, rep=None):
+    def __init__(self, rep=None):
         if rep is not None:
             self.v = make__type_from_pyobject(rep)
+
+    @staticmethod
+    cdef type from_cpp(_type v):
+        cdef type t = type.__new__(type)
+        t.v = v
+        return t
 
     property shape:
         """

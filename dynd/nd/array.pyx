@@ -157,6 +157,12 @@ cdef class array(object):
             raise ValueError('a value for the array construction must ' +
                             'be provided when another keyword parameter is used')
 
+    @staticmethod
+    cdef array from_cpp(_array v):
+        cdef array a = array.__new__(array)
+        a.v = v
+        return a
+
     property access_flags:
         """
         a.access_flags

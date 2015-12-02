@@ -126,7 +126,7 @@ cdef class type(object):
 
     @staticmethod
     cdef type from_cpp(_type v):
-        cdef type t = type.__new__()
+        cdef type t = type.__new__(type)
         t.v = v
         return t
 

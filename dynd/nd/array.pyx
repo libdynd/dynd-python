@@ -159,7 +159,7 @@ cdef class array(object):
 
     @staticmethod
     cdef array from_cpp(_array v):
-        cdef array a = array.__new__()
+        cdef array a = array.__new__(array)
         a.v = v
         return a
 

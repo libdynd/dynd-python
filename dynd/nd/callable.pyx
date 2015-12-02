@@ -46,7 +46,7 @@ cdef class callable(object):
 
     @staticmethod
     cdef callable from_cpp(_callable v):
-        cdef callable c = callable.__new__()
+        cdef callable c = callable.__new__(callable)
         c.v = v
         return c
 

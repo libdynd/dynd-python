@@ -1,6 +1,7 @@
 from ..cpp.array cimport array as _array
 
-cdef api class array(object)[object dynd_nd_array_pywrapper, type dynd_nd_array_pywrapper_type]:
+cdef api class array(object)[object dynd_nd_array_pywrapper,
+                             type dynd_nd_array_pywrapper_type]:
     cdef _array v
 
 cpdef array asarray(obj, access=*)

@@ -56,7 +56,7 @@ cdef class callable(object):
 #            raise TypeError(msg % (kwds.keys()[0]))
         return callable_call(self, args, kwds, ectx)
 
-cdef _callable callable_to_cpp(callable c) except *:
+cdef _callable dynd_nd_callable_to_cpp(callable c) except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
@@ -65,7 +65,7 @@ cdef _callable callable_to_cpp(callable c) except *:
     return c.v
 
 # returns a Python object, so no exception specifier is needed.
-cdef callable callable_from_cpp(_callable c):
+cdef callable dynd_nd_callable_from_cpp(_callable c):
     cdef callable cl = callable.__new__(callable)
     cl.v = c
     return cl

@@ -3,8 +3,8 @@ from ..cpp.type cimport type as _type
 cdef api class type(object)[object dynd_ndt_type_pywrapper, type dynd_ndt_type_pywrapper_type]:
     cdef _type v
 
-cdef api _type type_to_cpp(type) except *
-cdef api type type_from_cpp(_type)
+cdef api _type dynd_ndt_type_to_cpp(type) except *
+cdef api type dynd_ndt_type_from_cpp(_type)
 
 cdef object as_numba_type(_type)
 cdef _type from_numba_type(object)

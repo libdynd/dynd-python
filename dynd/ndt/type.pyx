@@ -272,6 +272,20 @@ cdef class type(object):
         """
         return self.v.match(type(rhs).v)
 
+cdef _type type_to_cpp(type t) except *:
+    # Once this becomes a method of the type wrapper class, this check and
+    # its corresponding exception handler declaration are no longer necessary
+    # since the self parameter is guaranteed to never be None.
+    if t is None:
+        raise TypeError("Cannot extract DyND C++ type from None.")
+    return t.v
+
+# returns a Python object, so no exception specifier is needed.
+cdef type type_from_cpp(_type t):
+    cdef type tp = type.__new__(type)
+    tp.v = t
+    return tp
+
 set_wrapper_type[_type](type)
 
 cdef class type_callable:

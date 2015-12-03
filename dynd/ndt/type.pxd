@@ -3,6 +3,9 @@ from ..cpp.type cimport type as _type
 cdef class type(object):
     cdef _type v
 
+cdef _type type_to_cpp(type) except *
+cdef type type_from_cpp(_type)
+
 cdef object as_numba_type(_type)
 cdef _type from_numba_type(object)
 

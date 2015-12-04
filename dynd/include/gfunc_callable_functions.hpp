@@ -19,7 +19,7 @@ namespace pydynd {
 
 struct array_callable_wrapper {
   dynd::nd::array n;
-  dynd::gfunc::callable c;
+  dynd::nd::callable c;
   std::string funcname;
 };
 
@@ -27,6 +27,7 @@ struct array_callable_wrapper {
  * This is the typeobject and struct of w_array_callable from Cython.
  */
 extern PyTypeObject *WArrayCallable_Type;
+
 inline bool WArrayCallable_CheckExact(PyObject *obj)
 {
   return Py_TYPE(obj) == WArrayCallable_Type;
@@ -111,39 +112,6 @@ PYDYND_API PyObject *get_array_dynamic_property(const dynd::nd::array &n,
  */
 PYDYND_API void set_array_dynamic_property(const dynd::nd::array &n,
                                            PyObject *name, PyObject *value);
-
-/**
- * Calls the callable with the single dynd type parameter
- *
- * \param funcname  The callable name.
- * \param c  The callable.
- * \param dt  The first parameter for the callable.
- */
-PyObject *call_gfunc_callable(const std::string &funcname,
-                              const dynd::gfunc::callable &c,
-                              const dynd::ndt::type &dt);
-
-/**
- * Calls the callable with the single nd::array parameter
- *
- * \param funcname  The callable name.
- * \param c  The callable.
- * \param n  The first parameter for the callable.
- */
-dynd::nd::array call_gfunc_callable(const std::string &funcname,
-                                    const dynd::gfunc::callable &c,
-                                    const dynd::nd::array &n);
-
-/**
- * Returns a wrapper for the callable with the nd::array as the first parameter.
- *
- * \param funcname  The callable name.
- * \param c  The callable.
- * \param n  The first parameter for the callable.
- */
-PyObject *wrap_array_callable(const std::string &funcname,
-                              const dynd::gfunc::callable &c,
-                              const dynd::nd::array &n);
 
 /**
  * Returns a wrapper for the callable with the dynd type as the first parameter.

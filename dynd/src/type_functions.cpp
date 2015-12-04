@@ -383,7 +383,7 @@ dynd::ndt::type pydynd::_type_getitem(const dynd::ndt::type &d,
 
 PyObject *pydynd::_type_array_property_names(const ndt::type &d)
 {
-  const std::pair<std::string, gfunc::callable> *properties;
+  const std::pair<std::string, nd::callable> *properties;
   size_t count;
   if (!d.is_builtin()) {
     d.extended()->get_dynamic_array_properties(&properties, &count);

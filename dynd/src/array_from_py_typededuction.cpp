@@ -133,14 +133,14 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     return ndt::time_type::make(tz_abstract);
   }
   else if (DyND_PyType_Check(obj)) {
-    return ndt::make_type();
+    return ndt::make_type<ndt::type_type>();
   }
   else if (PyType_Check(obj)) {
-    return ndt::make_type();
+    return ndt::make_type<ndt::type_type>();
 #if DYND_NUMPY_INTEROP
   }
   else if (PyArray_DescrCheck(obj)) {
-    return ndt::make_type();
+    return ndt::make_type<ndt::type_type>();
 #endif // DYND_NUMPY_INTEROP
   }
   else if (obj == Py_None) {

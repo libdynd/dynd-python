@@ -9,7 +9,6 @@
 
 #include <dynd/type.hpp>
 #include <dynd/func/callable.hpp>
-#include <dynd/gfunc/gcallable.hpp>
 
 #include <sstream>
 

@@ -9,7 +9,8 @@ class TestUnicode(unittest.TestCase):
     def test_array_string(self):
         a = nd.array("Testing 1 2 3")
         self.assertEqual(nd.type_of(a), ndt.string)
-        self.assertEqual(str(a), "Testing 1 2 3")
+        self.assertEqual(str(a),
+            'nd.array("Testing 1 2 3",\n         type="string")')
 #        self.assertEqual(unicode(a), u"Testing 1 2 3")
 
     def test_bytes_string(self):

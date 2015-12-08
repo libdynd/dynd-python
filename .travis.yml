@@ -24,7 +24,7 @@ before_install:
 - export CXX=g++-4.9
 
 install:
-- travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
+- travis_retry pip install --install-option="--no-cython-compile" Cython==0.22
 - mkdir libraries
 - pushd libraries
 - git clone --depth=1 https://github.com/libdynd/libdynd.git
@@ -42,7 +42,7 @@ matrix:
     python: 2.6
     compiler: gcc
     install:
-    - travis_retry pip install --install-option="--no-cython-compile" Cython==0.21
+    - travis_retry pip install --install-option="--no-cython-compile" Cython==0.22
     - travis_retry pip install -I numpy==1.7.2
     - travis_retry pip install unittest2
     - python -c "import numpy; print numpy.__version__"

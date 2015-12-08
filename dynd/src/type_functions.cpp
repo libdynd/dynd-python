@@ -413,14 +413,13 @@ dynd::ndt::type pydynd::_type_getitem(const dynd::ndt::type &d,
 PyObject *pydynd::_type_array_property_names(const ndt::type &d)
 {
   std::map<std::string, nd::callable> properties;
-  size_t count;
   if (!d.is_builtin()) {
     d.extended()->get_dynamic_array_properties(properties);
   }
   else {
     get_builtin_type_dynamic_array_properties(d.get_type_id(), properties);
   }
-  pyobject_ownref result(PyList_New(count));
+  pyobject_ownref result(PyList_New(properties.size()));
   int i = 0;
   for (const auto &pair : properties) {
     const std::string &s = pair.first;

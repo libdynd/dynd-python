@@ -1,5 +1,6 @@
 from ..config cimport translate_exception
 from libc.stdint cimport intptr_t
+from libcpp cimport bool
 from .type cimport type
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
@@ -15,6 +16,8 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         intptr_t get_dim_size() except +translate_exception
 
         array view_scalars(type&) except +translate_exception
+
+        bool is_null()
 
         array operator<(array &)
         array operator<=(array &)

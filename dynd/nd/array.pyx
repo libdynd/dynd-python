@@ -2,9 +2,12 @@
 
 from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
 from libcpp.string cimport string
+from libcpp.map cimport map
+from cython.operator import dereference
 
 from ..cpp.array cimport groupby as dynd_groupby
-from ..cpp.type cimport type as _type
+from ..cpp.func.callable cimport callable as _callable
+from ..cpp.type cimport type as _type, get_builtin_type_dynamic_array_properties
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 
@@ -72,7 +75,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
 cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
-    object get_array_dynamic_property(_array&, object) except +translate_exception
     void add_array_names_to_dir_dict(_array&, object) except +translate_exception
     void set_array_dynamic_property(_array&, object, object) except +translate_exception
 
@@ -201,7 +203,30 @@ cdef class array(object):
         return result.keys()
 
     def __getattr__(self, name):
-        return get_array_dynamic_property(self.v, name)
+        if self.v.is_null():
+            raise AttributeError(name)
+
+        cdef map[string, _callable] properties
+
+        cdef _type dt = self.v.get_type()
+        if (not dt.is_builtin()):
+            dt.get().get_dynamic_array_properties(properties)
+        else:
+            get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
+
+        cdef _callable p = properties[name]
+        if (not p.is_null()):
+            return wrap(p(self.v))
+
+        cdef map[string, _callable] functions
+        if (not dt.is_builtin()):
+            dt.get().get_dynamic_array_functions(functions)
+
+        cdef _callable f = functions[name]
+        if (not f.is_null()):
+            return wrap(f(self.v))
+
+        raise AttributeError(name)
 
     def __setattr__(self, name, value):
         set_array_dynamic_property(self.v, name, value)

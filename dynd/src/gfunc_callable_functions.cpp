@@ -126,45 +126,6 @@ void pydynd::add_array_names_to_dir_dict(const dynd::nd::array &n,
   }
 }
 
-PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
-                                             PyObject *name)
-{
-  if (n.is_null()) {
-    PyErr_SetObject(PyExc_AttributeError, name);
-    return NULL;
-  }
-  ndt::type dt = n.get_type();
-  std::map<std::string, nd::callable> properties;
-  // Search for a property
-  if (!dt.is_builtin()) {
-    dt.extended()->get_dynamic_array_properties(properties);
-  }
-  else {
-    get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
-  }
-
-  // TODO: We probably want to make some kind of acceleration structure for the
-  // name lookup
-  std::string nstr = pystring_as_string(name);
-  nd::callable p = properties[nstr];
-  if (!p.is_null()) {
-    return DyND_PyWrapper_New(p(n));
-  }
-
-  // Search for a function
-  std::map<std::string, nd::callable> functions;
-  if (!dt.is_builtin()) {
-    dt.extended()->get_dynamic_array_functions(functions);
-  }
-  nd::callable c = functions[nstr];
-  if (!c.is_null()) {
-    return DyND_PyWrapper_New(c(n));
-  }
-
-  PyErr_SetObject(PyExc_AttributeError, name);
-  return NULL;
-}
-
 void pydynd::set_array_dynamic_property(const dynd::nd::array &n,
                                         PyObject *name, PyObject *value)
 {

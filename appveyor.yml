@@ -3,6 +3,8 @@ skip_tags: true
 
 clone_depth: 1
 
+os: Visual Studio 2015
+
 matrix:
   fast_finish: true     # immediately finish build once one of the jobs fails.
 

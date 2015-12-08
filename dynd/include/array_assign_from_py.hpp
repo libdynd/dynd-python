@@ -21,8 +21,9 @@ namespace pydynd {
  * \param a  The array which is being assigned to.
  * \param value  value PyObject for the source data.
  */
-void array_broadcast_assign_from_py(const dynd::nd::array &a, PyObject *value,
-                                    const dynd::eval::eval_context *ectx);
+PYDYND_API void array_broadcast_assign_from_py(
+    const dynd::nd::array &a, PyObject *value,
+    const dynd::eval::eval_context *ectx = &dynd::eval::default_eval_context);
 
 /**
  * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array,

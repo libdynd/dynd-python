@@ -17,8 +17,6 @@ from ..ndt.type cimport type
 from ..ndt import Unsupplied
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
-    void init_w_array_typeobject(object)
-
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
 
@@ -74,11 +72,8 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     int array_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
-cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
-    void add_array_names_to_dir_dict(_array&, object) except +translate_exception
-    void set_array_dynamic_property(_array&, object, object) except +translate_exception
-
-    void init_w_array_callable_typeobject(object)
+cdef extern from 'array_assign_from_py.hpp' namespace 'pydynd':
+    void array_broadcast_assign_from_py(_array &, object)
 
 cdef class array(object):
     """
@@ -199,7 +194,22 @@ cdef class array(object):
         # will show up in IPython tab-complete, for example.
         result = dict(array.__dict__)
         result.update(object.__dict__)
-        add_array_names_to_dir_dict(self.v, result)
+
+        cdef map[string, _callable] properties
+
+        cdef _type dt = self.v.get_type()
+        if (not dt.is_builtin()):
+            dt.get().get_dynamic_array_properties(properties)
+        else:
+            get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
+        for pair in properties:
+            result[pair.first] = wrap(pair.second)
+
+        if (not dt.is_builtin()):
+            dt.get().get_dynamic_array_functions(properties)
+        for pair in properties:
+            result[pair.first] = wrap(pair.second)
+
         return result.keys()
 
     def __getattr__(self, name):
@@ -229,7 +239,23 @@ cdef class array(object):
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        set_array_dynamic_property(self.v, name, value)
+        if self.v.is_null():
+            raise AttributeError(name)
+
+        cdef map[string, _callable] properties
+
+        cdef _type dt = self.v.get_type()
+        if (not dt.is_builtin()):
+            dt.get().get_dynamic_array_properties(properties)
+        else:
+            get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
+
+        cdef _callable p = properties[name]
+        if (not p.is_null()):
+            array_broadcast_assign_from_py(p(self.v), value)
+            return
+
+        raise AttributeError(name)
 
     def __getitem__(self, x):
         from .. import ndt, nd
@@ -446,12 +472,6 @@ cdef array dynd_nd_array_from_cpp(_array a):
     return arr
 
 set_wrapper_type[_array](array)
-
-cdef class array_callable:
-    def __call__(self, *args, **kwargs):
-        raise NotImplemented("array callable is not implemented")
-
-init_w_array_callable_typeobject(array_callable)
 
 cpdef array asarray(obj, access=None):
     """

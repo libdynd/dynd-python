@@ -17,13 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyTypeObject *pydynd::WArrayCallable_Type;
-
-void pydynd::init_w_array_callable_typeobject(PyObject *type)
-{
-  WArrayCallable_Type = (PyTypeObject *)type;
-}
-
 PyTypeObject *pydynd::WTypeCallable_Type;
 
 void pydynd::init_w__type_callable_typeobject(PyObject *type)
@@ -90,65 +83,6 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
 
   PyErr_SetObject(PyExc_AttributeError, name);
   return NULL;
-}
-
-void pydynd::add_array_names_to_dir_dict(const dynd::nd::array &n,
-                                         PyObject *dict)
-{
-  ndt::type dt = n.get_type();
-  if (!dt.is_builtin()) {
-    std::map<std::string, nd::callable> properties;
-    // Add the array properties
-    dt.extended()->get_dynamic_array_properties(properties);
-    for (const auto &pair : properties) {
-      if (PyDict_SetItemString(dict, pair.first.c_str(), Py_None) < 0) {
-        throw runtime_error("");
-      }
-    }
-    // Add the array functions
-    std::map<std::string, nd::callable> functions;
-    dt.extended()->get_dynamic_array_functions(functions);
-    for (const auto &pair : functions)
-      if (PyDict_SetItemString(dict, pair.first.c_str(), Py_None) < 0) {
-        throw runtime_error("");
-      }
-  }
-  else {
-    std::map<std::string, nd::callable> properties;
-    // Add the array properties
-    get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
-    for (const auto &pair : properties) {
-      if (PyDict_SetItemString(dict, pair.first.c_str(), Py_None) < 0) {
-        throw runtime_error("");
-      }
-    }
-    // TODO: Add the array functions
-  }
-}
-
-void pydynd::set_array_dynamic_property(const dynd::nd::array &n,
-                                        PyObject *name, PyObject *value)
-{
-  ndt::type dt = n.get_type();
-  std::map<std::string, nd::callable> properties;
-  // Search for a property
-  if (!dt.is_builtin()) {
-    dt.extended()->get_dynamic_array_properties(properties);
-  }
-  else {
-    get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
-  }
-
-  // TODO: We probably want to make some kind of acceleration structure for
-  // the name lookup
-  std::string nstr = pystring_as_string(name);
-  nd::callable p = properties[nstr];
-  if (!p.is_null()) {
-    array_broadcast_assign_from_py(p(n), value, &eval::default_eval_context);
-  }
-
-  PyErr_SetObject(PyExc_AttributeError, name);
-  throw exception();
 }
 
 static void set_single_parameter(const std::string &funcname,

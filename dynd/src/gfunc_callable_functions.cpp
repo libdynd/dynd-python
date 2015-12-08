@@ -108,13 +108,12 @@ void pydynd::add_array_names_to_dir_dict(const dynd::nd::array &n,
       }
     }
     // Add the array functions
-    dt.extended()->get_dynamic_array_functions(&properties, &count);
-    for (size_t i = 0; i < count; ++i) {
-      if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) <
-          0) {
+    std::map<std::string, nd::callable> functions;
+    dt.extended()->get_dynamic_array_functions(functions);
+    for (const auto &pair : functions)
+      if (PyDict_SetItemString(dict, pair.first.c_str(), Py_None) < 0) {
         throw runtime_error("");
       }
-    }
   }
   else {
     const std::pair<std::string, nd::callable> *properties;
@@ -150,6 +149,7 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
     get_builtin_type_dynamic_array_properties(dt.get_type_id(), &properties,
                                               &count);
   }
+
   // TODO: We probably want to make some kind of acceleration structure for the
   // name lookup
   if (count > 0) {
@@ -157,24 +157,23 @@ PyObject *pydynd::get_array_dynamic_property(const dynd::nd::array &n,
     for (size_t i = 0; i < count; ++i) {
       if (properties[i].first == nstr) {
         return DyND_PyWrapper_New(const_cast<dynd::nd::callable &>(
-            properties[i].second)(dynd::kwds("self", dt)));
+            properties[i].second)(dynd::kwds("self", n)));
       }
     }
   }
+
   // Search for a function
+  std::map<std::string, nd::callable> functions;
   if (!dt.is_builtin()) {
-    dt.extended()->get_dynamic_array_functions(&properties, &count);
+    dt.extended()->get_dynamic_array_functions(functions);
   }
   else {
     count = 0;
   }
-  if (count > 0) {
-    std::string nstr = pystring_as_string(name);
-    for (size_t i = 0; i < count; ++i) {
-      if (properties[i].first == nstr) {
-        throw runtime_error("");
-      }
-    }
+  std::string nstr = pystring_as_string(name);
+  nd::callable c = functions[nstr];
+  if (!c.is_null()) {
+    return DyND_PyWrapper_New(c(n));
   }
 
   PyErr_SetObject(PyExc_AttributeError, name);

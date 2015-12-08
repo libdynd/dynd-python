@@ -549,7 +549,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
     """
 
     def test_expr_struct_conversion(self):
-        a = nd.array([date(2000, 12, 13), date(1995, 5, 2)]).to_struct()
+        a = nd.array([date(2000, 12, 13), date(1995, 5, 2)]).to_struct
         b = nd.as_numpy(a, allow_copy=True)
         self.assertTrue(isinstance(b, np.ndarray))
         # Use the NumPy assertions which support arrays

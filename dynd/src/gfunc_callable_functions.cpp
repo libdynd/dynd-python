@@ -27,21 +27,20 @@ void pydynd::init_w__type_callable_typeobject(PyObject *type)
 void pydynd::add__type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
 {
   if (!dt.is_builtin()) {
-    const std::pair<std::string, nd::callable> *properties;
-    size_t count;
     // Add the type properties
-    dt.extended()->get_dynamic_type_properties(&properties, &count);
-    for (size_t i = 0; i < count; ++i) {
-      if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) <
-          0) {
+    std::map<std::string, nd::callable> properties;
+    dt.extended()->get_dynamic_type_properties(properties);
+    for (const auto &pair : properties) {
+      if (PyDict_SetItemString(dict, pair.first.c_str(), Py_None) < 0) {
         throw runtime_error("");
       }
     }
     // Add the type functions
-    dt.extended()->get_dynamic_type_functions(&properties, &count);
+    const std::pair<std::string, nd::callable> *functions;
+    size_t count;
+    dt.extended()->get_dynamic_type_functions(&functions, &count);
     for (size_t i = 0; i < count; ++i) {
-      if (PyDict_SetItemString(dict, properties[i].first.c_str(), Py_None) <
-          0) {
+      if (PyDict_SetItemString(dict, functions[i].first.c_str(), Py_None) < 0) {
         throw runtime_error("");
       }
     }
@@ -52,30 +51,25 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
                                              PyObject *name)
 {
   if (!dt.is_builtin()) {
-    const std::pair<std::string, nd::callable> *properties;
-    size_t count;
     // Search for a property
-    dt.extended()->get_dynamic_type_properties(&properties, &count);
+    std::map<std::string, nd::callable> properties;
+    dt.extended()->get_dynamic_type_properties(properties);
     // TODO: We probably want to make some kind of acceleration structure for
     // the name lookup
-    if (count > 0) {
-      std::string nstr = pystring_as_string(name);
-      for (size_t i = 0; i < count; ++i) {
-        if (properties[i].first == nstr) {
-          return DyND_PyWrapper_New(const_cast<dynd::nd::callable &>(
-              properties[i].second)(dynd::kwds("self", dt)));
-          //          return call_gfunc_callable(nstr, properties[i].second,
-          //          dt);
-        }
-      }
+    std::string nstr = pystring_as_string(name);
+    nd::callable p = properties[nstr];
+    if (!p.is_null()) {
+      return DyND_PyWrapper_New(p(dt));
     }
     // Search for a function
-    dt.extended()->get_dynamic_type_functions(&properties, &count);
+    const std::pair<std::string, nd::callable> *functions;
+    size_t count;
+    dt.extended()->get_dynamic_type_functions(&functions, &count);
     if (count > 0) {
       std::string nstr = pystring_as_string(name);
       for (size_t i = 0; i < count; ++i) {
-        if (properties[i].first == nstr) {
-          return wrap__type_callable(nstr, properties[i].second, dt);
+        if (functions[i].first == nstr) {
+          return wrap__type_callable(nstr, functions[i].second, dt);
         }
       }
     }

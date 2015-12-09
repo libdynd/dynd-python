@@ -2,6 +2,7 @@
 
 from cpython.object cimport Py_EQ, Py_NE
 from libc.stdint cimport intptr_t
+from libcpp.map cimport map
 from libcpp.string cimport string
 
 from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
@@ -24,23 +25,13 @@ from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
 from ..cpp.types.tuple_type cimport make_tuple as _make_tuple
 from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
+from ..cpp.func.callable cimport callable as _callable
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
-
-cdef extern from 'gfunc_callable_functions.hpp' namespace 'pydynd':
-    void add_type_names_to_dir_dict(_type&, object) except +translate_exception
-    object get__type_dynamic_property(_type&, object) except +translate_exception
-
-    # Function properties
-    cdef cppclass _type_callable_wrapper:
-        pass
-    object _type_callable_call(_type_callable_wrapper&, object, object) except +translate_exception
-
-    void init_w__type_callable_typeobject(object)
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     void init_w_type_typeobject(object)
@@ -219,7 +210,24 @@ cdef class type(object):
             return _type_get_type_id(self.v)
 
     def __getattr__(self, name):
-        return get__type_dynamic_property(self.v, name)
+        if self.v.is_null():
+            raise AttributeError(name)
+
+        cdef _callable p
+        cdef map[string, _callable] properties
+        cdef map[string, _callable] functions
+        cdef _callable f
+        if (not self.v.is_builtin()):
+            self.v.get().get_dynamic_type_properties(properties)
+            p = properties[name]
+            if (not p.is_null()):
+                return wrap(p(self.v))
+            self.v.get().get_dynamic_type_functions(functions)
+            f = functions[name]
+            if (not f.is_null()):
+                return wrap(f(self.v))
+
+        raise AttributeError(name)
 
     def __str__(self):
         return str(<char *>_type_str(self.v).c_str())
@@ -287,14 +295,6 @@ cdef type dynd_ndt_type_from_cpp(_type t):
     return tp
 
 set_wrapper_type[_type](type)
-
-cdef class type_callable:
-    cdef _type_callable_wrapper v
-
-    def __call__(self, *args, **kwargs):
-        return _type_callable_call(self.v, args, kwargs)
-
-init_w__type_callable_typeobject(type_callable)
 
 class UnsuppliedType(object):
     pass

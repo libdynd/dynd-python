@@ -182,7 +182,6 @@ set(pydynd_SRC
     dynd/include/do_import_array.hpp
     dynd/include/eval_context_functions.hpp
     dynd/include/exception_translation.hpp
-    dynd/include/gfunc_callable_functions.hpp
     dynd/include/git_version.hpp
     dynd/include/init.hpp
     dynd/include/numpy_interop.hpp
@@ -208,7 +207,6 @@ set(pydynd_SRC
     dynd/src/ctypes_interop.cpp
     dynd/src/eval_context_functions.cpp
     dynd/src/exception_translation.cpp
-    dynd/src/gfunc_callable_functions.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp

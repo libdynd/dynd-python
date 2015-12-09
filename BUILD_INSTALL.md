@@ -3,16 +3,16 @@ STEP BY STEP BUILD AND INSTALL
 
 1. Check the C++ compiler version.
 
-  Ensure you have a suitable C++98 or C++11 compiler. On Windows, Visual
-Studio 2010 is the minimum supported compiler. On Mac OS X, clang is the
-recommended compiler. On Linux, gcc 4.6.1, gcc 4.7.0, and
-clang 3.3-svn have been tested.
+  Ensure you have a suitable C++14 compiler. On Windows, Visual
+Studio 2015 is the minimum supported compiler. On Mac OS X, clang is the
+recommended compiler. On Linux, gcc 4.9 and later, and
+clang 3.4 and later have been tested.
 
 2. Get the prerequisites.
   * CMake >= 2.8.11
-  * Python 2.6, 2.7, 3.3, or 3.4
-  * Cython >= 0.21
-  * NumPy >= 1.5
+  * Python 2.7, 3.4, or 3.5
+  * Cython >= 0.23
+  * NumPy >= 1.71
   * git (for cloning the github repositories)
   * Nose (Only for generating xunit .xml output when running tests)
 
@@ -49,13 +49,6 @@ to the cmake command.
 
   ```
   ~ $ cd dynd-python
-  ~/dynd-python $ mkdir build
-  ~/dynd-python $ cd build
-  ~/dynd-python/build $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-  <...>
-  ~/dynd-python/build $ make
-  <...>
-  ~/dynd-python/build $ cd ..
   ~/dynd-python $ python setup.py install
   ```
 
@@ -89,16 +82,7 @@ For example, to set this up on Windows with MSVC 2013, do:
 
   D:\dynd-python\libraries>cd ..
 
-  D:\dynd-python>mkdir build
-
-  D:\dynd-python>cd build
-
-  D:\dynd-python\build>cmake -DDYND_INSTALL_LIB=OFF -G"Visual Studio 12 Win64" ..
-  -- The C compiler identification is MSVC 18.0.21005.1
-  <...>
-
-  D:\dynd-python\build>start dynd-python.sln
-  <launches MSVC>
+  D:\dynd-python>python setup.py install
 
   ```
 
@@ -125,8 +109,6 @@ CMake with an argument like "-DCMAKE_BUILD_TYPE=Release".
 
 CMAKE_BUILD_TYPE
     Which kind of build, such as Release, RelWithDebInfo, Debug.
-PYTHON_PACKAGE_INSTALL_PREFIX
-    Where the Python module should be installed.
 CMAKE_INSTALL_PREFIX
     The prefix for installing shared libraries such as
     libdynd.so.

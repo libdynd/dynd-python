@@ -31,6 +31,19 @@ matrix:
   - language: C++
     compiler: gcc
     env: Miniconda_OS=Linux
+  - language: python
+    python: 3.5
+    compiler: gcc
+    install:
+      # Use the version of numpy that comes preinstalled.
+      - travis_retry pip install --install-option="--no-cython-compile" Cython==0.23
+      - travis_retry pip install unittest2
+      - python -c "import numpy; print numpy.__version__"
+      - mkdir libraries
+      - pushd libraries
+      - git clone --depth=1 https://github.com/libdynd/libdynd.git
+      - popd
+      - python setup.py install
   - language: objective-c
     compiler: clang
     osx_image: xcode6.4
@@ -50,14 +63,15 @@ install:
   - export PATH=$HOME/miniconda3/bin:$PATH
   - conda install --yes conda-build jinja2
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
-
-script:
   - conda build conda.recipe --channel dynd/channel/dev
   - conda install --yes numpy libdynd --channel dynd/channel/dev
   - conda install $(conda build --output conda.recipe)
+
+script:
   - pushd ..
   - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
   - popd
+
 after_success:
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
 

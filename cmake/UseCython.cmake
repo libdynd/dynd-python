@@ -31,6 +31,8 @@
 # Source file properties that effect the build process are
 #
 #  CYTHON_IS_CXX
+#  CYTHON_IS_PUBLIC
+#  CYTHON_IS_API
 #
 # If this is set of a *.pyx file with CMake set_source_files_properties()
 # command, the file will be compiled as a C++ file.
@@ -210,8 +212,10 @@ function( compile_pyx _name pyx_target_name generated_files )
     COMMAND ${CYTHON_EXECUTABLE} ${cxx_arg} ${include_directory_arg}
     ${annotate_arg} ${no_docstrings_arg} ${cython_debug_arg} ${CYTHON_FLAGS}
     --output-file ${_generated_files} ${pyx_locations}
-    DEPENDS ${pyx_locations} ${pxd_dependencies} ${pyx_lang} ${c_header_dependencies}
-    BYPRODUCTS ${_generated_files}
+    DEPENDS ${pyx_locations} ${pxd_dependencies} ${c_header_dependencies}
+    # do not specify byproducts for now since they don't work with the older
+    # version of cmake available in the apt repositories.
+    #BYPRODUCTS ${_generated_files}
     COMMENT ${comment}
     )
 

@@ -245,7 +245,7 @@ foreach(module config eval_context ndt.type ndt.json nd.array nd.callable nd.fun
     set(module_SRC dynd/${module_root}.pyx)
     set_source_files_properties(${module_SRC} PROPERTIES CYTHON_IS_CXX 1)
 
-    cython_add_module(${module_name} ${module_SRC})
+    cython_add_module(${module_name} ${module_name}_pyx ${module_name}_output ${module_SRC})
 
     if (directories)
         string(REPLACE ";" "/" module_output_directory ${directories})
@@ -267,3 +267,5 @@ foreach(module config eval_context ndt.type ndt.json nd.array nd.callable nd.fun
 
     target_link_libraries(${module_name} pydynd)
 endforeach(module)
+
+add_dependencies(pydynd array_pyx callable_pyx type_pyx)

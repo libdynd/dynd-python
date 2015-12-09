@@ -36,11 +36,10 @@ void pydynd::add__type_names_to_dir_dict(const ndt::type &dt, PyObject *dict)
       }
     }
     // Add the type functions
-    const std::pair<std::string, nd::callable> *functions;
-    size_t count;
-    dt.extended()->get_dynamic_type_functions(&functions, &count);
-    for (size_t i = 0; i < count; ++i) {
-      if (PyDict_SetItemString(dict, functions[i].first.c_str(), Py_None) < 0) {
+    std::map<std::string, nd::callable> functions;
+    dt.extended()->get_dynamic_type_functions(functions);
+    for (const auto &pair : functions) {
+      if (PyDict_SetItemString(dict, pair.first.c_str(), Py_None) < 0) {
         throw runtime_error("");
       }
     }
@@ -62,16 +61,11 @@ PyObject *pydynd::get__type_dynamic_property(const dynd::ndt::type &dt,
       return DyND_PyWrapper_New(p(dt));
     }
     // Search for a function
-    const std::pair<std::string, nd::callable> *functions;
-    size_t count;
-    dt.extended()->get_dynamic_type_functions(&functions, &count);
-    if (count > 0) {
-      std::string nstr = pystring_as_string(name);
-      for (size_t i = 0; i < count; ++i) {
-        if (functions[i].first == nstr) {
-          return wrap__type_callable(nstr, functions[i].second, dt);
-        }
-      }
+    std::map<std::string, nd::callable> functions;
+    dt.extended()->get_dynamic_type_functions(functions);
+    nd::callable f = functions[nstr];
+    if (!f.is_null()) {
+      return wrap__type_callable(nstr, f, dt);
     }
   }
 
@@ -216,16 +210,9 @@ PyObject *pydynd::call__type_constructor_function(const dynd::ndt::type &dt,
 {
   // First find the __construct__ callable
   if (!dt.is_builtin()) {
-    const std::pair<std::string, nd::callable> *properties;
-    size_t count;
+    std::map<std::string, nd::callable> functions;
     // Search for a function
-    dt.extended()->get_dynamic_type_functions(&properties, &count);
-    if (count > 0) {
-      for (size_t i = 0; i < count; ++i) {
-        return _type_callable_call("self", properties[i].second, dt, args,
-                                   kwargs);
-      }
-    }
+    dt.extended()->get_dynamic_type_functions(functions);
   }
 
   stringstream ss;

@@ -7,9 +7,11 @@ if os.name == 'nt':
     import sys
     from ctypes import cdll
     is_64_bit = sys.maxsize > 2**32
+    is_32_on_64_bit = (is_64_bit and not
+                       os.environ['PROCESSOR_ARCHITECTURE'].endswith('64'))
     pydynd_dir = os.path.dirname(os.path.realpath(__file__))
     if not os.path.isfile(os.path.join(pydynd_dir, 'libdynd.dll')):
-        if is_64_bit:
+        if not is_32_on_64_bit:
             libdynd_path = os.path.join(os.environ['ProgramFiles'], 'libdynd',
                                         'lib', 'libdynd.dll')
             if os.path.isfile(libdynd_path):

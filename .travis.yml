@@ -37,8 +37,7 @@ matrix:
     install:
       # Use the version of numpy that comes preinstalled.
       - travis_retry pip install --install-option="--no-cython-compile" Cython==0.23
-      - travis_retry pip install unittest2
-      - python -c "import numpy; print numpy.__version__"
+      - python -c "from __future__ import print_function; import numpy; print(numpy.__version__)"
       - mkdir libraries
       - pushd libraries
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
@@ -61,7 +60,7 @@ matrix:
 
 install:
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh
-  - bash Miniconda3-latest-Linux-x86_64.sh -b
+  - bash Miniconda3-latest-${Miniconda_OS}-x86_64.sh -b
   - export PATH=$HOME/miniconda3/bin:$PATH
   - conda install --yes conda-build jinja2
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi

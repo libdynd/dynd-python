@@ -56,6 +56,8 @@ matrix:
     env: Miniconda_OS=MacOSX
     addons:
     before_install:
+  allow_failures:
+    - language: objective-c
 
 install:
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh

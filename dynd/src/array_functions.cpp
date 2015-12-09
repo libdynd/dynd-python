@@ -416,13 +416,6 @@ dynd::nd::array pydynd::array_eval(const dynd::nd::array &n, PyObject *ectx_obj)
   return n.eval(eval_context_from_pyobj(ectx_obj));
 }
 
-dynd::nd::array pydynd::array_eval_copy(const dynd::nd::array &n,
-                                        PyObject *access, PyObject *ectx_obj)
-{
-  uint32_t access_flags = pyarg_creation_access_flags(access);
-  return n.eval_copy(access_flags, eval_context_from_pyobj(ectx_obj));
-}
-
 dynd::nd::array pydynd::array_zeros(const dynd::ndt::type &d, PyObject *access)
 {
   uint32_t access_flags = pyarg_creation_access_flags(access);
@@ -526,25 +519,6 @@ dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type &d,
                                 shape_vec.empty() ? NULL : &shape_vec[0]);
 }
 
-dynd::nd::array pydynd::array_memmap(PyObject *filename, PyObject *begin,
-                                     PyObject *end, PyObject *access)
-{
-  std::string filename_ = pystring_as_string(filename);
-  intptr_t begin_ = (begin == Py_None) ? 0 : pyobject_as_index(begin);
-  intptr_t end_ = (end == Py_None) ? std::numeric_limits<intptr_t>::max()
-                                   : pyobject_as_index(end);
-  uint32_t access_flags = 0;
-  if (access != Py_None) {
-    access_flags = pyarg_strings_to_int(
-        access, "access", 0, "readwrite",
-        nd::read_access_flag | nd::write_access_flag, "rw",
-        nd::read_access_flag | nd::write_access_flag, "readonly",
-        nd::read_access_flag, "r", nd::read_access_flag, "immutable",
-        nd::read_access_flag | nd::immutable_access_flag);
-  }
-  return nd::memmap(filename_, begin_, end_, access_flags);
-}
-
 dynd::nd::array pydynd::array_cast(const dynd::nd::array &n,
                                    const ndt::type &dt)
 {
@@ -555,13 +529,6 @@ dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
                                     const ndt::type &dt, intptr_t replace_ndim)
 {
   return n.ucast(dt, replace_ndim);
-}
-
-PyObject *pydynd::array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op)
-{
-  return DyND_PyWrapper_New(
-      array_from_py(a, 0, false, &eval::default_eval_context).adapt(
-          make__type_from_pyobject(tp_obj), pystring_as_string(adapt_op)));
 }
 
 PyObject *pydynd::array_get_shape(const dynd::nd::array &n)
@@ -588,17 +555,6 @@ PyObject *pydynd::array_get_strides(const dynd::nd::array &n)
   dimvector result(ndim);
   n.get_strides(result.get());
   return intptr_array_as_tuple(ndim, result.get());
-}
-
-bool pydynd::array_is_scalar(const dynd::nd::array &n)
-{
-  if (n.is_null()) {
-    PyErr_SetString(PyExc_AttributeError,
-                    "Cannot access attribute of null dynd array");
-    throw std::exception();
-  }
-
-  return n.is_scalar();
 }
 
 static void pyobject_as_irange_array(intptr_t &out_size,

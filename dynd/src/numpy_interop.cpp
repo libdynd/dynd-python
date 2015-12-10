@@ -7,7 +7,6 @@
 
 #if DYND_NUMPY_INTEROP
 
-#include <dynd/types/byteswap_type.hpp>
 #include <dynd/types/view_type.hpp>
 #include <dynd/types/type_alignment.hpp>
 #include <dynd/types/fixed_string_type.hpp>
@@ -257,9 +256,11 @@ dynd::ndt::type pydynd::_type_from_numpy_dtype(PyArray_Descr *d,
     throw dynd::type_error(ss.str());
   }
 
+/*
   if (!PyArray_ISNBO(d->byteorder)) {
-    dt = dynd::ndt::byteswap_type::make(dt);
+    dt = dynd::ndt::new_adapt_type::make(dt);
   }
+*/
 
   // If the data this dtype is for isn't aligned enough,
   // make an unaligned version.

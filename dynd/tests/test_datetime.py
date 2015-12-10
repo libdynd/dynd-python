@@ -23,6 +23,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.day), 13)
         self.assertEqual(nd.as_py(a), date(1955, 3, 13))
 
+    """
     def test_struct_casting(self):
         a = nd.array([date(1912,3,4), date(2002,1,30)])
         # cast from date to struct
@@ -36,6 +37,7 @@ class TestDate(unittest.TestCase):
         d = s.ucast(ndt.date)
         d = d.eval()
         self.assertEqual(nd.as_py(d), [date(1912,3,4), date(2002,1,30)])
+    """
 
     def test_struct_function(self):
         import os
@@ -141,6 +143,7 @@ class TestTime(unittest.TestCase):
         self.assertEqual(nd.as_py(a.tick), 1234560)
         self.assertEqual(nd.as_py(a), time(14, 25, 59, 123456))
 
+    """
     def test_struct_casting(self):
         a = nd.array([time(13, 25, 8, 765432), time(23, 52)])
         # cast from time to struct
@@ -155,6 +158,7 @@ class TestTime(unittest.TestCase):
         t = s.ucast(ndt.time)
         t = t.eval()
         self.assertEqual(nd.as_py(t), [time(13, 25, 8, 765432), time(23, 52)])
+    """
 
     def test_struct_function(self):
         a = nd.array(time(13, 25, 8, 765432))

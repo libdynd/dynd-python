@@ -22,7 +22,6 @@
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/property_type.hpp>
 #include <dynd/shape_tools.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 
@@ -301,27 +300,6 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 #else
     throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
-  }
-  case property_type_id: {
-    const ndt::property_type *pd = dt.extended<ndt::property_type>();
-    // Special-case of 'int64 as date' property type, which is binary
-    // compatible with NumPy's "M8[D]"
-    if (pd->is_reversed_property() &&
-        pd->get_value_type().get_type_id() == date_type_id &&
-        pd->get_operand_type().get_type_id() == int64_type_id) {
-      PyArray_Descr *datedt = NULL;
-#if PY_VERSION_HEX >= 0x03000000
-      pyobject_ownref M8str(PyUnicode_FromString("M8[D]"));
-#else
-      pyobject_ownref M8str(PyString_FromString("M8[D]"));
-#endif
-      if (!PyArray_DescrConverter(M8str.get(), &datedt)) {
-        throw dynd::type_error("Failed to create NumPy datetime64[D] dtype");
-      }
-      out_numpy_dtype->reset((PyObject *)datedt);
-      return;
-    }
-    break;
   }
   case byteswap_type_id: {
     const ndt::base_expr_type *bed = dt.extended<ndt::base_expr_type>();

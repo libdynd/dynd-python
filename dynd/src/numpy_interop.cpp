@@ -14,7 +14,6 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
-#include <dynd/types/property_type.hpp>
 #include <dynd/types/adapt_type.hpp>
 
 #include "type_functions.hpp"

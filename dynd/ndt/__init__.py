@@ -1,5 +1,5 @@
 from .type import Unsupplied, make_fixed_bytes, make_fixed_string, make_struct, \
-    make_fixed_dim, make_string, make_var_dim, make_fixed_dim_kind, make_byteswap, \
+    make_fixed_dim, make_string, make_var_dim, make_fixed_dim_kind, \
     make_unaligned, make_convert, make_categorical, make_view
 from .type import *
 

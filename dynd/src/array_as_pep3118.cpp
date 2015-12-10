@@ -7,7 +7,6 @@
 
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/byteswap_type.hpp>
 #include <dynd/types/view_type.hpp>
 #include <dynd/shape_tools.hpp>
 
@@ -192,6 +191,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     o << "}";
     return;
   }
+/*
   case byteswap_type_id: {
     union {
       char s[2];
@@ -203,6 +203,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     append_pep3118_format(out_itemsize, bd->get_value_type(), arrmeta, o);
     return;
   }
+*/
   case view_type_id: {
     const ndt::view_type *vd = tp.extended<ndt::view_type>();
     // If it's a view of bytes, usually to view unaligned data, can ignore it

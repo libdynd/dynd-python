@@ -16,7 +16,6 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   complex_float64_type_id, void_type_id,
                                   callable_type_id)
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
-from ..cpp.types.byteswap_type cimport dynd_make_byteswap_type
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.type_alignment cimport make_unaligned as dynd_make_unaligned_type
 from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
@@ -204,7 +203,7 @@ cdef class type(object):
         tp.type_id
         The type id of this dynd type, as a string.
         Example type ids are 'bool', 'int8', 'uint32',
-        'float64', 'complex_float32', 'string', 'byteswap'.
+        'float64', 'complex_float32', 'string'.
         """
         def __get__(self):
             return _type_get_type_id(self.v)
@@ -300,33 +299,6 @@ class UnsuppliedType(object):
     pass
 
 Unsupplied = UnsuppliedType()
-
-def make_byteswap(builtin_type, operand_type=None):
-    """
-    ndt.make_byteswap(builtin_type, operand_type=None)
-    Constructs a byteswap type from a builtin one, with an
-    optional expression type to chain in as the operand.
-    Parameters
-    ----------
-    builtin_type : dynd type
-        The builtin dynd type (like ndt.int16, ndt.float64) to
-        which to apply the byte swap operation.
-    operand_type: dynd type, optional
-        An expression dynd type whose value type is a fixed bytes
-        dynd type with the same data size and alignment as
-        'builtin_type'.
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-    >>> ndt.make_byteswap(ndt.int16)
-    ndt.type("byteswap[int16]")
-    """
-    cdef type result = type()
-    if operand_type is None:
-        result.v = dynd_make_byteswap_type(type(builtin_type).v)
-    else:
-        result.v = dynd_make_byteswap_type(type(builtin_type).v, type(operand_type).v)
-    return result
 
 def make_categorical(values):
     """

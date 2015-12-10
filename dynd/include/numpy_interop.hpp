@@ -93,7 +93,51 @@ dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
  *
  * \returns  The dynd equivalent of the numpy dtype.
  */
-dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num);
+ inline dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num)
+ {
+   switch (numpy_type_num) {
+   case NPY_BOOL:
+     return dynd::ndt::type::make<dynd::bool1>();
+   case NPY_BYTE:
+     return dynd::ndt::type::make<npy_byte>();
+   case NPY_UBYTE:
+     return dynd::ndt::type::make<npy_ubyte>();
+   case NPY_SHORT:
+     return dynd::ndt::type::make<npy_short>();
+   case NPY_USHORT:
+     return dynd::ndt::type::make<npy_ushort>();
+   case NPY_INT:
+     return dynd::ndt::type::make<npy_int>();
+   case NPY_UINT:
+     return dynd::ndt::type::make<npy_uint>();
+   case NPY_LONG:
+     return dynd::ndt::type::make<npy_long>();
+   case NPY_ULONG:
+     return dynd::ndt::type::make<npy_ulong>();
+   case NPY_LONGLONG:
+     return dynd::ndt::type::make<npy_longlong>();
+   case NPY_ULONGLONG:
+     return dynd::ndt::type::make<npy_ulonglong>();
+ #if NPY_API_VERSION >= 6 // At least NumPy 1.6
+   case NPY_HALF:
+     return dynd::ndt::type::make<dynd::float16>();
+ #endif
+   case NPY_FLOAT:
+     return dynd::ndt::type::make<float>();
+   case NPY_DOUBLE:
+     return dynd::ndt::type::make<double>();
+   case NPY_CFLOAT:
+     return dynd::ndt::type::make<dynd::complex<float>>();
+   case NPY_CDOUBLE:
+     return dynd::ndt::type::make<dynd::complex<double>>();
+   default: {
+     std::stringstream ss;
+     ss << "Cannot convert numpy type num " << numpy_type_num
+        << " to a dynd type";
+     throw dynd::type_error(ss.str());
+   }
+   }
+ }
 
 /**
  * Given a NumPy struct/record dtype, extracts the field types, names,
@@ -181,7 +225,41 @@ dynd::nd::array array_from_numpy_scalar(PyObject *obj, uint32_t access_flags);
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
-char numpy_kindchar_of(const dynd::ndt::type &tp);
+ inline char numpy_kindchar_of(const dynd::ndt::type &d)
+ {
+   switch (d.get_kind()) {
+   case dynd::bool_kind:
+     return 'b';
+   case dynd::sint_kind:
+     return 'i';
+   case dynd::uint_kind:
+     return 'u';
+   case dynd::real_kind:
+     return 'f';
+   case dynd::complex_kind:
+     return 'c';
+   case dynd::string_kind:
+     if (d.get_type_id() == dynd::fixed_string_type_id) {
+       const dynd::ndt::base_string_type *esd =
+           d.extended<dynd::ndt::base_string_type>();
+       switch (esd->get_encoding()) {
+       case dynd::string_encoding_ascii:
+         return 'S';
+       case dynd::string_encoding_utf_32:
+         return 'U';
+       default:
+         break;
+       }
+     }
+     break;
+   default:
+     break;
+   }
+
+   std::stringstream ss;
+   ss << "dynd type \"" << d << "\" does not have an equivalent numpy kind";
+   throw dynd::type_error(ss.str());
+ }
 
 } // namespace pydynd
 

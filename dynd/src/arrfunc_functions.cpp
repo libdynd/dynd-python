@@ -29,11 +29,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-void pydynd::init_w_callable_typeobject(PyObject *type)
-{
-  DyND_PyWrapper_Type<dynd::nd::callable>() = (PyTypeObject *)type;
-}
-
 PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
                                 PyObject *kwds_obj, PyObject *ectx_obj)
 {
@@ -82,29 +77,6 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
       af(narg, arg_values.empty() ? NULL : arg_values.data(),
          kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
               kwd_values.empty() ? NULL : kwd_values.data()));
-  return DyND_PyWrapper_New(result);
-}
-
-PyObject *pydynd::callable_rolling_apply(PyObject *func_obj, PyObject *arr_obj,
-                                         PyObject *window_size_obj,
-                                         PyObject *ectx_obj)
-{
-  eval::eval_context *ectx =
-      const_cast<eval::eval_context *>(eval_context_from_pyobj(ectx_obj));
-  dynd::nd::array arr = array_from_py(arr_obj, 0, false, ectx);
-  intptr_t window_size = pyobject_as_index(window_size_obj);
-  dynd::nd::callable func;
-  if (DyND_PyCallable_Check(func_obj)) {
-    func = ((DyND_PyCallableObject *)func_obj)->v;
-  } else {
-    ndt::type el_tp = arr.get_type().get_type_at_dimension(NULL, 1);
-    ndt::type proto = ndt::callable_type::make(
-        el_tp, ndt::tuple_type::make(ndt::make_fixed_dim_kind(el_tp)));
-
-    func = pydynd::nd::functional::apply(func_obj, proto);
-  }
-  dynd::nd::callable roll = dynd::nd::functional::rolling(func, window_size);
-  dynd::nd::array result = roll(arr);
   return DyND_PyWrapper_New(result);
 }
 

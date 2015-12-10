@@ -185,7 +185,6 @@ set(pydynd_SRC
     dynd/include/git_version.hpp
     dynd/include/init.hpp
     dynd/include/numpy_interop.hpp
-    dynd/include/numpy_ufunc_kernel.hpp
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/visibility.hpp
@@ -211,7 +210,6 @@ set(pydynd_SRC
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
     dynd/src/numpy_interop.cpp
-    dynd/src/numpy_ufunc_kernel.cpp
     dynd/src/type_functions.cpp
     dynd/src/utility_functions.cpp
     dynd/src/wrapper.cpp

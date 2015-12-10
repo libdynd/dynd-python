@@ -51,8 +51,6 @@ PYDYND_API dynd::nd::array array_view(PyObject *obj, PyObject *type,
 PYDYND_API dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
 
 PYDYND_API dynd::nd::array array_eval(const dynd::nd::array &n, PyObject *ectx);
-dynd::nd::array array_eval_copy(const dynd::nd::array &n, PyObject *access,
-                                PyObject *ectx);
 
 PYDYND_API dynd::nd::array array_zeros(const dynd::ndt::type &d,
                                        PyObject *access);
@@ -73,20 +71,6 @@ PYDYND_API dynd::nd::array array_empty(const dynd::ndt::type &d,
                                        PyObject *access);
 PYDYND_API dynd::nd::array
 array_empty(PyObject *shape, const dynd::ndt::type &d, PyObject *access);
-
-inline dynd::nd::array array_empty_like(const dynd::nd::array &n)
-{
-  return dynd::nd::empty_like(n);
-}
-
-inline dynd::nd::array array_empty_like(const dynd::nd::array &n,
-                                        const dynd::ndt::type &d)
-{
-  return dynd::nd::empty_like(n, d);
-}
-
-PYDYND_API dynd::nd::array array_memmap(PyObject *filename, PyObject *begin,
-                                        PyObject *end, PyObject *access);
 
 inline bool array_is_c_contiguous(const dynd::nd::array &n)
 {
@@ -150,13 +134,6 @@ PYDYND_API PyObject *array_int(const dynd::nd::array &n);
 PYDYND_API PyObject *array_float(const dynd::nd::array &n);
 PYDYND_API PyObject *array_complex(const dynd::nd::array &n);
 
-inline std::string array_debug_print(const dynd::nd::array &n)
-{
-  std::stringstream ss;
-  n.debug_print(ss);
-  return ss.str();
-}
-
 PYDYND_API dynd::nd::array array_cast(const dynd::nd::array &n,
                                       const dynd::ndt::type &dt);
 
@@ -164,13 +141,9 @@ PYDYND_API dynd::nd::array array_ucast(const dynd::nd::array &n,
                                        const dynd::ndt::type &dt,
                                        intptr_t replace_ndim);
 
-PyObject *array_adapt(PyObject *a, PyObject *tp_obj, PyObject *adapt_op);
-
 PYDYND_API PyObject *array_get_shape(const dynd::nd::array &n);
 
 PYDYND_API PyObject *array_get_strides(const dynd::nd::array &n);
-
-bool array_is_scalar(const dynd::nd::array &n);
 
 /**
  * Implementation of __getitem__ for the wrapped array object.

@@ -427,13 +427,6 @@ class TestAsNumpy(unittest.TestCase):
                     np.dtype([('x', np.int32), ('y', np.int64)], align=True))
         self.assertEqual(nd.as_py(a.x), b['x'].tolist())
         self.assertEqual(nd.as_py(a.y), b['y'].tolist())
-        # Unaligned struct
-        a = nd.array([[1, 2], [3, 4]],
-                    dtype='{x : unaligned[int32], y: unaligned[int64]}')
-        b = np.asarray(a)
-        self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
-        self.assertEqual(nd.as_py(a.x), b['x'].tolist())
-        self.assertEqual(nd.as_py(a.y), b['y'].tolist())
 
     def test_fixed_dim(self):
         a = nd.array([1, 3, 5], type='3 * int32')

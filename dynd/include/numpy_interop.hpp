@@ -225,7 +225,41 @@ dynd::nd::array array_from_numpy_scalar(PyObject *obj, uint32_t access_flags);
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
-char numpy_kindchar_of(const dynd::ndt::type &tp);
+ inline char numpy_kindchar_of(const dynd::ndt::type &d)
+ {
+   switch (d.get_kind()) {
+   case dynd::bool_kind:
+     return 'b';
+   case dynd::sint_kind:
+     return 'i';
+   case dynd::uint_kind:
+     return 'u';
+   case dynd::real_kind:
+     return 'f';
+   case dynd::complex_kind:
+     return 'c';
+   case dynd::string_kind:
+     if (d.get_type_id() == dynd::fixed_string_type_id) {
+       const dynd::ndt::base_string_type *esd =
+           d.extended<dynd::ndt::base_string_type>();
+       switch (esd->get_encoding()) {
+       case dynd::string_encoding_ascii:
+         return 'S';
+       case dynd::string_encoding_utf_32:
+         return 'U';
+       default:
+         break;
+       }
+     }
+     break;
+   default:
+     break;
+   }
+
+   std::stringstream ss;
+   ss << "dynd type \"" << d << "\" does not have an equivalent numpy kind";
+   throw dynd::type_error(ss.str());
+ }
 
 } // namespace pydynd
 

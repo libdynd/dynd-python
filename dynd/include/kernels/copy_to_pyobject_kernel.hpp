@@ -946,9 +946,9 @@ namespace nd {
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
       intptr_t field_count =
-          m_src_tp.extended<dynd::ndt::base_tuple_type>()->get_field_count();
+          m_src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
       const uintptr_t *field_offsets =
-          m_src_tp.extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
+          m_src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(
               m_src_arrmeta);
       pyobject_ownref dct(PyDict_New());
       for (intptr_t i = 0; i < field_count; ++i) {
@@ -1048,9 +1048,9 @@ namespace nd {
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
       intptr_t field_count =
-          src_tp.extended<dynd::ndt::base_tuple_type>()->get_field_count();
+          src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
       const uintptr_t *field_offsets =
-          src_tp.extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
+          src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(
               src_arrmeta);
       pyobject_ownref tup(PyTuple_New(field_count));
       for (intptr_t i = 0; i < field_count; ++i) {
@@ -1081,14 +1081,14 @@ namespace nd {
       copy_to_pyobject_kernel *self_ck = copy_to_pyobject_kernel::make(
           ckb, kernreq, ckb_offset, src_tp[0], src_arrmeta[0]);
       intptr_t field_count =
-          src_tp[0].extended<dynd::ndt::base_tuple_type>()->get_field_count();
+          src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_count();
       const dynd::ndt::type *field_types =
           src_tp[0]
-              .extended<dynd::ndt::base_tuple_type>()
+              .extended<dynd::ndt::tuple_type>()
               ->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
           src_tp[0]
-              .extended<dynd::ndt::base_tuple_type>()
+              .extended<dynd::ndt::tuple_type>()
               ->get_arrmeta_offsets_raw();
       self_ck->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {

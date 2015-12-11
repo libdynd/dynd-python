@@ -90,7 +90,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
         dtype, field_dtypes_orig, field_names_orig, field_offsets_orig);
     intptr_t field_count = field_dtypes_orig.size();
     if (field_count !=
-        src_tp[0].extended<dynd::ndt::base_tuple_type>()->get_field_count()) {
+        src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_count()) {
       stringstream ss;
       pyobject_ownref dtype_str(PyObject_Str((PyObject *)dtype));
       ss << "Cannot assign from source dynd type " << src_tp[0]
@@ -139,7 +139,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
 
     const uintptr_t *src_arrmeta_offsets =
         src_tp[0]
-            .extended<dynd::ndt::base_tuple_type>()
+            .extended<dynd::ndt::tuple_type>()
             ->get_arrmeta_offsets_raw();
     dynd::shortvector<const char *> src_fields_arrmeta(field_count);
     for (intptr_t i = 0; i != field_count; ++i) {
@@ -153,9 +153,9 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
     return make_tuple_unary_op_ckernel(
         af.get(), af.get_type(), ckb, ckb_offset, field_count,
         &field_offsets[0], &dst_fields_tp[0], &dst_fields_arrmeta[0],
-        src_tp[0].extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
+        src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(
             src_arrmeta[0]),
-        src_tp[0].extended<dynd::ndt::base_tuple_type>()->get_field_types_raw(),
+        src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
         src_fields_arrmeta.get(), kernreq, ectx);
   } else {
     stringstream ss;

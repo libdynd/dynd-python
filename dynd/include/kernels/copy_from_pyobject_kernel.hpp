@@ -1123,9 +1123,9 @@ namespace nd {
       // TODO: PEP 3118 support here
 
       intptr_t field_count =
-          m_dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_count();
+          m_dst_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
       const uintptr_t *field_offsets =
-          m_dst_tp.extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
+          m_dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(
               m_dst_arrmeta);
 
       // Get the input as an array of PyObject *
@@ -1184,11 +1184,11 @@ namespace nd {
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
       intptr_t field_count =
-          dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_count();
+          dst_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
       const dynd::ndt::type *field_types =
-          dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_types_raw();
+          dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          dst_tp.extended<dynd::ndt::base_tuple_type>()
+          dst_tp.extended<dynd::ndt::tuple_type>()
               ->get_arrmeta_offsets_raw();
       self->m_dim_broadcast = dim_broadcast;
       self->m_copy_el_offsets.resize(field_count);
@@ -1249,9 +1249,9 @@ namespace nd {
       // TODO: PEP 3118 support here
 
       intptr_t field_count =
-          m_dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_count();
+          m_dst_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
       const uintptr_t *field_offsets =
-          m_dst_tp.extended<dynd::ndt::base_tuple_type>()->get_data_offsets(
+          m_dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(
               m_dst_arrmeta);
 
       if (PyDict_Check(src_obj)) {

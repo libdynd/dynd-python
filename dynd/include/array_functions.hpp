@@ -92,30 +92,6 @@ inline bool array_is_f_contiguous(const dynd::nd::array &n)
                                         shape.get(), strides.get());
 }
 
-inline dynd::nd::array array_add(const dynd::nd::array &lhs,
-                                 const dynd::nd::array &rhs)
-{
-  return lhs + rhs;
-}
-
-inline dynd::nd::array array_subtract(const dynd::nd::array &lhs,
-                                      const dynd::nd::array &rhs)
-{
-  return lhs - rhs;
-}
-
-inline dynd::nd::array array_multiply(const dynd::nd::array &lhs,
-                                      const dynd::nd::array &rhs)
-{
-  return lhs * rhs;
-}
-
-inline dynd::nd::array array_divide(const dynd::nd::array &lhs,
-                                    const dynd::nd::array &rhs)
-{
-  return lhs / rhs;
-}
-
 inline std::string array_repr(const dynd::nd::array &n)
 {
   std::stringstream n_ss;

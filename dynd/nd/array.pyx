@@ -5,7 +5,8 @@ from libcpp.string cimport string
 from libcpp.map cimport map
 from cython.operator import dereference
 
-from ..cpp.array cimport groupby as dynd_groupby
+from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
+                          array_multiply, array_divide)
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport type as _type, get_builtin_type_dynamic_array_properties
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
@@ -58,11 +59,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     string array_repr(_array&) except +translate_exception
     object array_str(_array&) except +translate_exception
     object array_unicode(_array&) except +translate_exception
-
-    _array array_add(_array&, _array&) except +translate_exception
-    _array array_subtract(_array&, _array&) except +translate_exception
-    _array array_multiply(_array&, _array&) except +translate_exception
-    _array array_divide(_array&, _array&) except +translate_exception
 
     _array dynd_parse_json_type(_type&, _array&, object) except +translate_exception
     void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
@@ -307,29 +303,29 @@ cdef class array(object):
         return array_unicode(self.v)
 
     def __add__(lhs, rhs):
-        cdef array res = array()
-        res.v = array_add(asarray(lhs).v, asarray(rhs).v)
-        return res
+        return dynd_nd_array_from_cpp(array_add(
+            dynd_nd_array_to_cpp(asarray(lhs)),
+            dynd_nd_array_to_cpp(asarray(rhs))))
 
     def __sub__(lhs, rhs):
-        cdef array res = array()
-        res.v = array_subtract(asarray(lhs).v, asarray(rhs).v)
-        return res
+        return dynd_nd_array_from_cpp(array_subtract(
+            dynd_nd_array_to_cpp(asarray(lhs)),
+            dynd_nd_array_to_cpp(asarray(rhs))))
 
     def __mul__(lhs, rhs):
-        cdef array res = array()
-        res.v = array_multiply(asarray(lhs).v, asarray(rhs).v)
-        return res
+        return dynd_nd_array_from_cpp(array_multiply(
+            dynd_nd_array_to_cpp(asarray(lhs)),
+            dynd_nd_array_to_cpp(asarray(rhs))))
 
     def __div__(lhs, rhs):
-        cdef array res = array()
-        res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
-        return res
+        return dynd_nd_array_from_cpp(array_divide(
+            dynd_nd_array_to_cpp(asarray(lhs)),
+            dynd_nd_array_to_cpp(asarray(rhs))))
 
     def __truediv__(lhs, rhs):
-        cdef array res = array()
-        res.v = array_divide(asarray(lhs).v, asarray(rhs).v)
-        return res
+        return dynd_nd_array_from_cpp(array_divide(
+            dynd_nd_array_to_cpp(asarray(lhs)),
+            dynd_nd_array_to_cpp(asarray(rhs))))
 
     def __richcmp__(a0, a1, int op):
         if op == Py_LT:

@@ -26,5 +26,13 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array operator>=(array &)
         array operator>(array &)
 
+    # These should be usable with Cython's operator overloading syntax, but
+    # the exception handling doesn't work for overloaded operators in Cython
+    # versions before 0.24, so, for now, this will have to do.
+    array array_add "operator+"(array&, array&) except +translate_exception
+    array array_subtract "operator-"(array&, array&) except +translate_exception
+    array array_multiply "operator*"(array&, array&) except +translate_exception
+    array array_divide "operator/"(array&, array&) except +translate_exception
+
     array groupby(array&, array&, type) except +translate_exception
     array groupby(array&, array&) except +translate_exception

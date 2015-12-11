@@ -6,7 +6,7 @@
 #ifndef _PYDYND__GIT_VERSION_HPP_
 #define _PYDYND__GIT_VERSION_HPP_
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 namespace pydynd {
 // These are defined in git_version.cpp, generated from

@@ -15,7 +15,7 @@
 
 #include <dynd/eval/eval_context.hpp>
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 namespace pydynd {
 

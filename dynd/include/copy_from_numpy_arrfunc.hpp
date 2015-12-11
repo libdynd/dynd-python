@@ -12,8 +12,6 @@
 #include <dynd/func/callable.hpp>
 #include <dynd/eval/eval_context.hpp>
 
-#include "config.hpp"
-
 namespace pydynd {
 namespace nd {
 

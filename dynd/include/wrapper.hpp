@@ -11,7 +11,7 @@
 #include <dynd/type.hpp>
 #include <dynd/func/callable.hpp>
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 template <typename T>
 struct DyND_PyWrapperObject {

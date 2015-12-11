@@ -3,8 +3,6 @@
 #include <dynd/kernels/base_kernel.hpp>
 #include <dynd/kernels/base_virtual_kernel.hpp>
 
-#include "config.hpp"
-
 namespace pydynd {
 namespace nd {
 

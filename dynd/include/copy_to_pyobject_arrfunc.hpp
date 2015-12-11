@@ -7,8 +7,6 @@
 
 #include <dynd/func/callable.hpp>
 
-#include "config.hpp"
-
 namespace pydynd {
 namespace nd {
 

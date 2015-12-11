@@ -173,7 +173,6 @@ set(pydynd_SRC
     dynd/include/array_functions.hpp
     dynd/include/arrfunc_functions.hpp
     dynd/include/arrfunc_from_pyfunc.hpp
-    dynd/include/config.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/copy_from_pyobject_arrfunc.hpp
     dynd/include/copy_to_numpy_arrfunc.hpp

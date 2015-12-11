@@ -10,8 +10,6 @@
 #include <dynd/kernels/ckernel_builder.hpp>
 #include <dynd/func/callable.hpp>
 
-#include "config.hpp"
-
 namespace pydynd {
 namespace nd {
 

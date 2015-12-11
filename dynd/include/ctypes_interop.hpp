@@ -9,8 +9,6 @@
 #ifndef _DYND__CTYPES_INTEROP_HPP_
 #define _DYND__CTYPES_INTEROP_HPP_
 
-#include "config.hpp"
-
 #include <dynd/type.hpp>
 
 namespace pydynd {

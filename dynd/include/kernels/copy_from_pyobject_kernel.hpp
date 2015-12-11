@@ -14,8 +14,6 @@
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "config.hpp"
-
 namespace pydynd {
 namespace nd {
 

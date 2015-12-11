@@ -10,7 +10,7 @@
 
 #include <dynd/array.hpp>
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 namespace pydynd {
 

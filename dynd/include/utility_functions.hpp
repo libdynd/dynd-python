@@ -14,8 +14,6 @@
 
 #include <dynd/type.hpp>
 
-#include "config.hpp"
-
 namespace dynd {
 // Forward declaration
 struct callable_type_data;

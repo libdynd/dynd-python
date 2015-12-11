@@ -1,6 +1,5 @@
 #pragma once
 
-#include "config.hpp"
 #include <dynd/kernels/base_kernel.hpp>
 #include <array_functions.hpp>
 #include <utility_functions.hpp>

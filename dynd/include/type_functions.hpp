@@ -12,7 +12,7 @@
 #include <dynd/type.hpp>
 #include <dynd/string_encodings.hpp>
 
-#include "config.hpp"
+#include "visibility.hpp"
 #include "wrapper.hpp"
 
 typedef DyND_PyWrapperObject<dynd::ndt::type> DyND_PyTypeObject;

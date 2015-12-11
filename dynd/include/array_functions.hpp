@@ -17,7 +17,7 @@
 #include <dynd/shape_tools.hpp>
 #include <dynd/json_parser.hpp>
 
-#include "config.hpp"
+#include "visibility.hpp"
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"
 #include "array_as_numpy.hpp"

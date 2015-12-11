@@ -46,7 +46,7 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 #ifndef NPY_DATETIME_NAT
 #define NPY_DATETIME_NAT NPY_MIN_INT64

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "config.hpp"
 #include <dynd/kernels/base_kernel.hpp>
 
 namespace pydynd {

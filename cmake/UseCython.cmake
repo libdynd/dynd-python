@@ -110,8 +110,16 @@ function( compile_pyx _name pyx_target_name generated_files pyx_file)
       endif()
   endif()
 
-  # Determining generated file name.
-  set( _generated_files "${_name}.${extension}" )
+  # Determining generated file names.
+  get_source_file_property( property_is_public ${pyx_file} CYTHON_PUBLIC )
+  get_source_file_property( property_is_api ${pyx_file} CYTHON_API )
+  if( ${property_is_api} )
+      set( _generated_files "${_name}.${extension}" "${_name}.h" "${name}_api.h")
+  elseif( ${property_is_public} )
+      set( _generated_files "${_name}.${extension}" "${_name}.h")
+  else()
+      set( _generated_files "${_name}.${extension}")
+  endif()
   set_source_files_properties( ${_generated_files} PROPERTIES GENERATED TRUE )
   set( ${generated_files} ${_generated_files} PARENT_SCOPE )
 

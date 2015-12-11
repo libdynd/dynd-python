@@ -205,7 +205,6 @@ set(pydynd_SRC
     dynd/src/copy_to_pyobject_arrfunc.cpp
     dynd/src/ctypes_interop.cpp
     dynd/src/eval_context_functions.cpp
-    dynd/src/exception_translation.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp

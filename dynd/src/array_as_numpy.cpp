@@ -301,17 +301,6 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
   }
-  case byteswap_type_id: {
-    const ndt::base_expr_type *bed = dt.extended<ndt::base_expr_type>();
-    // Analyze the unswapped version
-    as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim,
-                      bed->get_value_type(), arrmeta);
-    pyobject_ownref swapdt(out_numpy_dtype->release());
-    // Byteswap the numpy dtype
-    out_numpy_dtype->reset((PyObject *)PyArray_DescrNewByteorder(
-        (PyArray_Descr *)swapdt.get(), NPY_SWAP));
-    return;
-  }
   case fixed_dim_type_id: {
     const ndt::base_dim_type *bdt = dt.extended<ndt::base_dim_type>();
     if (ndim > 0) {

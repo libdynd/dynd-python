@@ -191,19 +191,6 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     o << "}";
     return;
   }
-/*
-  case byteswap_type_id: {
-    union {
-      char s[2];
-      uint16_t u;
-    } vals;
-    vals.u = '>' + ('<' << 8);
-    const ndt::byteswap_type *bd = tp.extended<ndt::byteswap_type>();
-    o << vals.s[0];
-    append_pep3118_format(out_itemsize, bd->get_value_type(), arrmeta, o);
-    return;
-  }
-*/
   case view_type_id: {
     const ndt::view_type *vd = tp.extended<ndt::view_type>();
     // If it's a view of bytes, usually to view unaligned data, can ignore it
@@ -230,8 +217,6 @@ std::string pydynd::make_pep3118_format(intptr_t &out_itemsize,
   // Specify native alignment/storage if it's a builtin scalar type
   if (tp.is_builtin()) {
     result << "@";
-  } else if (tp.get_type_id() != byteswap_type_id) {
-    result << "=";
   }
   append_pep3118_format(out_itemsize, tp, arrmeta, result);
   return result.str();
@@ -244,7 +229,8 @@ static void array_getbuffer_pep3118_bytes(const ndt::type &tp,
   buffer->itemsize = 1;
   if (flags & PyBUF_FORMAT) {
     buffer->format = (char *)"c";
-  } else {
+  }
+  else {
     buffer->format = NULL;
   }
   buffer->ndim = 1;
@@ -263,7 +249,8 @@ static void array_getbuffer_pep3118_bytes(const ndt::type &tp,
     // Variable-length bytes type
     buffer->buf = reinterpret_cast<bytes *>(data)->begin();
     buffer->len = reinterpret_cast<bytes *>(data)->size();
-  } else {
+  }
+  else {
     // Fixed-length bytes type
     buffer->len = tp.get_data_size();
   }
@@ -273,8 +260,7 @@ static void array_getbuffer_pep3118_bytes(const ndt::type &tp,
 int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 {
   // debug_print_getbuffer_flags(cout, flags);
-  try
-  {
+  try {
     buffer->shape = NULL;
     buffer->strides = NULL;
     buffer->suboffsets = NULL;
@@ -329,13 +315,15 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         buffer->format =
             reinterpret_cast<char *>(buffer->strides + buffer->ndim);
         memcpy(buffer->format, format.c_str(), format.size() + 1);
-      } else {
+      }
+      else {
         buffer->format = NULL;
         buffer->internal = malloc(2 * buffer->ndim * sizeof(intptr_t));
         buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
         buffer->strides = buffer->shape + buffer->ndim;
       }
-    } else {
+    }
+    else {
       buffer->format = NULL;
       buffer->itemsize = uniform_tp.get_data_size();
       buffer->internal = malloc(2 * buffer->ndim * sizeof(intptr_t));
@@ -380,13 +368,15 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
         throw runtime_error(
             "dynd array is not C-contiguous as requested for PEP 3118 buffer");
       }
-    } else if ((flags & PyBUF_F_CONTIGUOUS) == PyBUF_F_CONTIGUOUS) {
+    }
+    else if ((flags & PyBUF_F_CONTIGUOUS) == PyBUF_F_CONTIGUOUS) {
       if (!strides_are_f_contiguous(buffer->ndim, buffer->itemsize,
                                     buffer->shape, buffer->strides)) {
         throw runtime_error(
             "dynd array is not F-contiguous as requested for PEP 3118 buffer");
       }
-    } else if ((flags & PyBUF_ANY_CONTIGUOUS) == PyBUF_ANY_CONTIGUOUS) {
+    }
+    else if ((flags & PyBUF_ANY_CONTIGUOUS) == PyBUF_ANY_CONTIGUOUS) {
       if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize,
                                     buffer->shape, buffer->strides) &&
           !strides_are_f_contiguous(buffer->ndim, buffer->itemsize,
@@ -400,8 +390,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 
     return 0;
   }
-  catch (const std::exception &e)
-  {
+  catch (const std::exception &e) {
     // Numpy likes to hide these errors and repeatedly try again, so it's useful
     // to see what's happening
     // cout << "ERROR " << e.what() << endl;
@@ -414,8 +403,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     PyErr_SetString(PyExc_BufferError, e.what());
     return -1;
   }
-  catch (const dynd::dynd_exception &e)
-  {
+  catch (const dynd::dynd_exception &e) {
     // Numpy likes to hide these errors and repeatedly try again, so it's useful
     // to see what's happening
     // cout << "ERROR " << e.what() << endl;
@@ -432,21 +420,18 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
 
 int pydynd::array_releasebuffer_pep3118(PyObject *ndo, Py_buffer *buffer)
 {
-  try
-  {
+  try {
     if (buffer->internal != NULL) {
       free(buffer->internal);
       buffer->internal = NULL;
     }
     return 0;
   }
-  catch (const std::exception &e)
-  {
+  catch (const std::exception &e) {
     PyErr_SetString(PyExc_BufferError, e.what());
     return -1;
   }
-  catch (const dynd::dynd_exception &e)
-  {
+  catch (const dynd::dynd_exception &e) {
     PyErr_SetString(PyExc_BufferError, e.what());
     return -1;
   }

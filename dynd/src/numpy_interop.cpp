@@ -14,7 +14,6 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
-#include <dynd/types/adapt_type.hpp>
 
 #include "type_functions.hpp"
 #include "array_functions.hpp"
@@ -206,41 +205,6 @@ dynd::ndt::type pydynd::_type_from_numpy_dtype(PyArray_Descr *d,
     PyObject *unit = PyTuple_GetItem(dd.get(), 0);
     if (unit == NULL) {
       throw runtime_error("");
-    }
-    std::string s = pydynd::pystring_as_string(unit);
-    if (s == "D") {
-      // If it's 'datetime64[D]', then use an adapter type with appropriate
-      // metadata
-      dt = dynd::ndt::adapt_type::make(dynd::ndt::type::make<int64_t>(),
-                                       dynd::ndt::date_type::make(),
-                                       "days since 1970");
-    } else if (s == "h") {
-      dt = dynd::ndt::adapt_type::make(
-          dynd::ndt::type::make<int64_t>(),
-          dynd::ndt::datetime_type::make(dynd::tz_utc), "hours since 1970");
-    } else if (s == "m") {
-      dt = dynd::ndt::adapt_type::make(
-          dynd::ndt::type::make<int64_t>(),
-          dynd::ndt::datetime_type::make(dynd::tz_utc), "minutes since 1970");
-    } else if (s == "s") {
-      dt = dynd::ndt::adapt_type::make(
-          dynd::ndt::type::make<int64_t>(),
-          dynd::ndt::datetime_type::make(dynd::tz_utc), "seconds since 1970");
-    } else if (s == "ms") {
-      dt = dynd::ndt::adapt_type::make(
-          dynd::ndt::type::make<int64_t>(),
-          dynd::ndt::datetime_type::make(dynd::tz_utc),
-          "milliseconds since 1970");
-    } else if (s == "us") {
-      dt = dynd::ndt::adapt_type::make(
-          dynd::ndt::type::make<int64_t>(),
-          dynd::ndt::datetime_type::make(dynd::tz_utc),
-          "microseconds since 1970");
-    } else if (s == "ns") {
-      dt = dynd::ndt::adapt_type::make(
-          dynd::ndt::type::make<int64_t>(),
-          dynd::ndt::datetime_type::make(dynd::tz_utc),
-          "nanoseconds since 1970");
     }
     break;
   }
@@ -522,15 +486,6 @@ subarray dtype");
       return numpy_dtype_from__type(tp.value_type());
     }
     break;
-  }
-  case dynd::byteswap_type_id: {
-    // If it's a simple byteswap from bytes, that can be converted
-    if (tp.operand_type().get_type_id() == dynd::fixed_bytes_type_id) {
-      PyArray_Descr *unswapped = numpy_dtype_from__type(tp.value_type());
-      PyArray_Descr *result = PyArray_DescrNewByteorder(unswapped, NPY_SWAP);
-      Py_DECREF(unswapped);
-      return result;
-    }
   }
   default:
     break;

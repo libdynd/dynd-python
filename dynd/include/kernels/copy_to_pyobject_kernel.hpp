@@ -982,20 +982,20 @@ namespace nd {
       self_ck->m_src_tp = src_tp[0];
       self_ck->m_src_arrmeta = src_arrmeta[0];
       intptr_t field_count =
-          src_tp[0].extended<dynd::ndt::base_struct_type>()->get_field_count();
+          src_tp[0].extended<dynd::ndt::struct_type>()->get_field_count();
       const dynd::ndt::type *field_types =
           src_tp[0]
-              .extended<dynd::ndt::base_struct_type>()
+              .extended<dynd::ndt::struct_type>()
               ->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
           src_tp[0]
-              .extended<dynd::ndt::base_struct_type>()
+              .extended<dynd::ndt::struct_type>()
               ->get_arrmeta_offsets_raw();
       self_ck->m_field_names.reset(PyTuple_New(field_count));
       for (intptr_t i = 0; i < field_count; ++i) {
         const dynd::string &rawname =
             src_tp[0]
-                .extended<dynd::ndt::base_struct_type>()
+                .extended<dynd::ndt::struct_type>()
                 ->get_field_name_raw(i);
         pyobject_ownref name(PyUnicode_DecodeUTF8(
             rawname.begin(), rawname.end() - rawname.begin(), NULL));

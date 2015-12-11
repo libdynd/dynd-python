@@ -160,7 +160,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
   }
   case struct_type_id: {
     o << "T{";
-    const ndt::base_struct_type *tdt = tp.extended<ndt::base_struct_type>();
+    const ndt::struct_type *tdt = tp.extended<ndt::struct_type>();
     size_t num_fields = tdt->get_field_count();
     const uintptr_t *offsets = tdt->get_data_offsets(arrmeta);
     const uintptr_t *arrmeta_offsets = tdt->get_arrmeta_offsets_raw();

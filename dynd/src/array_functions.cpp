@@ -16,7 +16,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
 #include <dynd/type_promotion.hpp>
-#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/view.hpp>
@@ -693,7 +693,7 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
     ss << fdt;
     throw runtime_error(ss.str());
   }
-  const ndt::base_struct_type *bsd = fdt.extended<ndt::base_struct_type>();
+  const ndt::struct_type *bsd = fdt.extended<ndt::struct_type>();
 
   if (selected_fields.empty()) {
     throw runtime_error(
@@ -716,8 +716,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
   // Create the result udt
   ndt::type rudt = ndt::struct_type::make(selected_fields, selected__types);
   ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
-  const ndt::base_struct_type *rudt_bsd =
-      rudt.extended<ndt::base_struct_type>();
+  const ndt::struct_type *rudt_bsd =
+      rudt.extended<ndt::struct_type>();
 
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();

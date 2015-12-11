@@ -10,7 +10,7 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "copy_to_pyobject_arrfunc.hpp"
-#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/datetime_type.hpp>

@@ -17,7 +17,7 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/elwise.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
-#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 
 #include "kernels/copy_from_numpy_kernel.hpp"
 
@@ -62,12 +62,14 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
     return dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
                                         src_view_tp, NULL, kernreq, ectx);
-  } else if (PyDataType_ISOBJECT(dtype)) {
+  }
+  else if (PyDataType_ISOBJECT(dtype)) {
     dynd::ndt::callable_type::data_type *af = copy_from_pyobject::get().get();
     return af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
                            nkwd, kwds, tp_vars);
-  } else if (PyDataType_HASFIELDS(dtype)) {
+  }
+  else if (PyDataType_HASFIELDS(dtype)) {
     if (dst_tp.get_kind() != dynd::struct_kind &&
         dst_tp.get_kind() != dynd::tuple_kind) {
       stringstream ss;
@@ -99,19 +101,21 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
       field_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         intptr_t src_i =
-            dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_index(
+            dst_tp.extended<dynd::ndt::struct_type>()->get_field_index(
                 field_names_orig[i]);
         if (src_i >= 0) {
           field_dtypes[src_i] = field_dtypes_orig[i];
           field_offsets[src_i] = field_offsets_orig[i];
-        } else {
+        }
+        else {
           stringstream ss;
           ss << "Cannot assign from numpy type "
              << pyobject_repr((PyObject *)dtype) << " to dynd type " << dst_tp;
           throw invalid_argument(ss.str());
         }
       }
-    } else {
+    }
+    else {
       // In the tuple case, use position instead of name
       field_dtypes.swap(field_dtypes_orig);
       field_offsets.swap(field_offsets_orig);
@@ -147,7 +151,8 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
         dst_tp.extended<dynd::ndt::base_tuple_type>()->get_field_types_raw(),
         dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0],
         &src_fields_arrmeta[0], kernreq, ectx);
-  } else {
+  }
+  else {
     stringstream ss;
     ss << "TODO: implement assign from numpy type "
        << pyobject_repr((PyObject *)dtype) << " to dynd type " << dst_tp;

@@ -21,7 +21,6 @@
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/shape_tools.hpp>
-#include <dynd/types/builtin_type_properties.hpp>
 
 // Python's datetime C API
 #include "datetime.h"

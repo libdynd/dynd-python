@@ -20,7 +20,7 @@
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/option_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
-#include <dynd/types/base_tuple_type.hpp>
+#include <dynd/types/tuple_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/pointer_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>

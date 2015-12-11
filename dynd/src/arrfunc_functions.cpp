@@ -17,7 +17,7 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
 #include <dynd/type_promotion.hpp>
-#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/func/rolling.hpp>

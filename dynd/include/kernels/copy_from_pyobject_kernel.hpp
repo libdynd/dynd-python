@@ -1265,7 +1265,7 @@ namespace nd {
         while (PyDict_Next(src_obj, &dict_pos, &dict_key, &dict_value)) {
           std::string name = pydynd::pystring_as_string(dict_key);
           intptr_t i =
-              m_dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_index(
+              m_dst_tp.extended<dynd::ndt::struct_type>()->get_field_index(
                   name);
           // TODO: Add an error policy of whether to throw an error
           //       or not. For now, just raise an error
@@ -1292,7 +1292,7 @@ namespace nd {
             std::stringstream ss;
             ss << "python dict does not contain the field ";
             dynd::print_escaped_utf8_string(
-                ss, m_dst_tp.extended<dynd::ndt::base_struct_type>()
+                ss, m_dst_tp.extended<dynd::ndt::struct_type>()
                         ->get_field_name(i));
             ss << " as required by the data type " << m_dst_tp;
             throw dynd::broadcast_error(ss.str());
@@ -1356,11 +1356,11 @@ namespace nd {
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
       intptr_t field_count =
-          dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_count();
+          dst_tp.extended<dynd::ndt::struct_type>()->get_field_count();
       const dynd::ndt::type *field_types =
-          dst_tp.extended<dynd::ndt::base_struct_type>()->get_field_types_raw();
+          dst_tp.extended<dynd::ndt::struct_type>()->get_field_types_raw();
       const uintptr_t *arrmeta_offsets =
-          dst_tp.extended<dynd::ndt::base_struct_type>()
+          dst_tp.extended<dynd::ndt::struct_type>()
               ->get_arrmeta_offsets_raw();
       self->m_dim_broadcast = dim_broadcast;
       self->m_copy_el_offsets.resize(field_count);

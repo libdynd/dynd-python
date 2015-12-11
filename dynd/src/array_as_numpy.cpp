@@ -18,7 +18,7 @@
 
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/bytes_type.hpp>
@@ -165,7 +165,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     break;
   }
   case struct_type_id: {
-    const ndt::base_struct_type *bs = dt.extended<ndt::base_struct_type>();
+    const ndt::struct_type *bs = dt.extended<ndt::struct_type>();
     size_t field_count = bs->get_field_count();
 
     pyobject_ownref names_obj(PyList_New(field_count));
@@ -391,7 +391,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       *out_requires_copy = true;
       return;
     }
-    const ndt::base_struct_type *bs = dt.extended<ndt::base_struct_type>();
+    const ndt::struct_type *bs = dt.extended<ndt::struct_type>();
     const uintptr_t *offsets = bs->get_data_offsets(arrmeta);
     size_t field_count = bs->get_field_count();
 

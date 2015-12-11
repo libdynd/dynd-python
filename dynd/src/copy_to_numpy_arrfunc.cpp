@@ -13,7 +13,7 @@
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/elwise.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
-#include <dynd/types/base_struct_type.hpp>
+#include <dynd/types/struct_type.hpp>
 
 #include <dynd/memblock/array_memory_block.hpp>
 
@@ -106,7 +106,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
       field_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         intptr_t src_i =
-            src_tp[0].extended<dynd::ndt::base_struct_type>()->get_field_index(
+            src_tp[0].extended<dynd::ndt::struct_type>()->get_field_index(
                 field_names_orig[i]);
         if (src_i >= 0) {
           field_dtypes[src_i] = field_dtypes_orig[i];

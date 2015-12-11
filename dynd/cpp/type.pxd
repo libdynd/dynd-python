@@ -15,9 +15,6 @@ cdef extern from 'dynd/types/base_type.hpp' namespace 'dynd::ndt' nogil:
         void get_dynamic_array_properties(map[string, callable] &)
         void get_dynamic_array_functions(map[string, callable] &)
 
-cdef extern from 'dynd/types/builtin_type_properties.hpp' namespace 'dynd' nogil:
-    void get_builtin_type_dynamic_array_properties(type_id_t, map[string, callable] &)
-
 cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
     cdef cppclass type:
         type()
@@ -41,3 +38,6 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
         bint match(type&) except +translate_exception
 
         type_id_t get_type_id() const
+
+cdef extern from 'dynd/type.hpp' namespace 'dynd' nogil:
+    void get_builtin_type_dynamic_array_properties(type_id_t, map[string, callable] &)

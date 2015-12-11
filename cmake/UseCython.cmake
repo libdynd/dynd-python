@@ -127,7 +127,7 @@ function( compile_pyx _name pyx_target_name generated_files pyx_file)
   add_custom_target(${pyx_target_name}
     COMMAND ${CYTHON_EXECUTABLE} ${cxx_arg} ${include_directory_arg}
     ${annotate_arg} ${no_docstrings_arg} ${cython_debug_arg} ${CYTHON_FLAGS}
-    --output-file ${_generated_files} ${pyx_location}
+    --output-file "${_name}.${extension}" ${pyx_location}
     DEPENDS ${pyx_location}
     # do not specify byproducts for now since they don't work with the older
     # version of cmake available in the apt repositories.

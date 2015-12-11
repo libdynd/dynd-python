@@ -6,7 +6,7 @@
 #ifndef DYND__INIT_HPP
 #define DYND__INIT_HPP
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 namespace pydynd {
 

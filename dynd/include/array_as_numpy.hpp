@@ -6,7 +6,7 @@
 #ifndef _DYND__NDARRAY_AS_NUMPY_HPP_
 #define _DYND__NDARRAY_AS_NUMPY_HPP_
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 #include <dynd/array.hpp>
 

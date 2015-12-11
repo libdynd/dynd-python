@@ -9,7 +9,7 @@
 
 #include <dynd/func/callable.hpp>
 
-#include "config.hpp"
+#include "visibility.hpp"
 
 namespace pydynd {
 namespace nd {

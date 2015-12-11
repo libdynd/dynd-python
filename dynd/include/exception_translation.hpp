@@ -11,7 +11,7 @@
 
 #include <Python.h>
 
-#include "config.hpp"
+#include "dynd/array.hpp"
 
 namespace {
 PyObject *BroadcastException = NULL;

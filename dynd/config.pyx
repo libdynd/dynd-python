@@ -37,6 +37,8 @@ import_numpy()
 class BroadcastError(Exception):
     pass
 
+cdef api object DyND_PyExc_BroadcastError = BroadcastError
+
 # Initialize ctypes C level interop data
 pydynd_init()
 

@@ -10,8 +10,6 @@
 #include <dynd/kernels/base_virtual_kernel.hpp>
 #include <dynd/func/callable.hpp>
 
-#include "config.hpp"
-
 namespace pydynd {
 
 /**

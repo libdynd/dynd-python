@@ -64,19 +64,17 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
   // Convert kwds into nd::arrays
   intptr_t nkwd = PyDict_Size(kwds_obj);
   vector<std::string> kwd_names_strings(nkwd);
-  std::vector<const char *> kwd_names(nkwd);
-  std::vector<dynd::nd::array> kwd_values(nkwd);
+  std::vector<std::pair<const char *, dynd::nd::array>> kwds2(nkwd);
   PyObject *key, *value;
   for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwds_obj, &i, &key, &value); ++j) {
     kwd_names_strings[j] = pystring_as_string(key);
-    kwd_names[j] = kwd_names_strings[j].c_str();
-    kwd_values[j] = array_from_py(value, 0, false, ectx);
+    kwds2[j].first = kwd_names_strings[j].c_str();
+    kwds2[j].second = array_from_py(value, 0, false, ectx);
   }
 
   dynd::nd::array result =
-      af(narg, arg_values.empty() ? NULL : arg_values.data(),
-         kwds(nkwd, kwd_names.empty() ? NULL : kwd_names.data(),
-              kwd_values.empty() ? NULL : kwd_values.data()));
+      af.call(narg, arg_values.empty() ? NULL : arg_values.data(), nkwd,
+              kwds2.empty() ? NULL : kwds2.data());
   return DyND_PyWrapper_New(result);
 }
 

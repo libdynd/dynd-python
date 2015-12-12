@@ -4,28 +4,12 @@ from datetime import date
 from dynd import nd, ndt
 
 class TestScalarConstructor(unittest.TestCase):
-    def test_access_array(self):
-        a = nd.array(1)
-        self.assertEqual(a.access_flags, 'readwrite')
-        a = nd.array(1, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        a = nd.array(1, access='r')
-        self.assertEqual(a.access_flags, 'immutable')
-
     def test_access_array_with_type(self):
         a = nd.array(1, type=ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
         a = nd.array(1, type=ndt.int32, access='rw')
         self.assertEqual(a.access_flags, 'readwrite')
         a = nd.array(1, type=ndt.int32, access='r')
-        self.assertEqual(a.access_flags, 'immutable')
-
-    def test_access_asarray(self):
-        a = nd.asarray(1)
-        self.assertEqual(a.access_flags, 'readwrite')
-        a = nd.asarray(1, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        a = nd.asarray(1, access='r')
         self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_zeros(self):

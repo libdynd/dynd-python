@@ -54,6 +54,7 @@ cdef class callable(object):
 #        if kwds:
 #            msg = "nd.callable call got an unexpected keyword argument '%s'"
 #            raise TypeError(msg % (kwds.keys()[0]))
+
         return callable_call(self, args, kwds, ectx)
 
 cdef _callable dynd_nd_callable_to_cpp(callable c) except *:

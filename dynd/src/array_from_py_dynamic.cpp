@@ -167,13 +167,13 @@ static void copy_to_promoted_nd_arr(
           reinterpret_cast<const fixed_dim_type_arrmeta *>(
               src_coord[current_axis].arrmeta_ptr);
       if (!final_coordinate) {
-        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
+        kernel_strided_t fn = ck.get()->get_function<kernel_strided_t>();
         // Copy the full dimension
         char *src = const_cast<char *>(src_data_ptr);
         fn(ck.get(), dst_data_ptr, dst_md->stride, &src, &src_md->stride,
            shape[current_axis]);
       } else {
-        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
+        kernel_strided_t fn = ck.get()->get_function<kernel_strided_t>();
         // Copy up to, and possibly including, the coordinate
         char *src = const_cast<char *>(src_data_ptr);
         fn(ck.get(), dst_data_ptr, dst_md->stride, &src, &src_md->stride,
@@ -198,7 +198,7 @@ static void copy_to_promoted_nd_arr(
         ndt::var_dim_element_resize(dst_coord[current_axis].tp,
                                     dst_coord[current_axis].arrmeta_ptr,
                                     dst_data_ptr, src_d->size);
-        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
+        kernel_strided_t fn = ck.get()->get_function<kernel_strided_t>();
         // Copy the full dimension
         char *src = src_d->begin;
         fn(ck.get(), dst_d->begin, dst_md->stride, &src, &src_md->stride,
@@ -212,7 +212,7 @@ static void copy_to_promoted_nd_arr(
         dst_coord[current_axis].reserved_size =
             src_coord[current_axis].reserved_size;
         // Copy up to, and possibly including, the coordinate
-        expr_strided_t fn = ck.get()->get_function<expr_strided_t>();
+        kernel_strided_t fn = ck.get()->get_function<kernel_strided_t>();
         if (fn != NULL) {
           char *src = src_d->begin;
           fn(ck.get(), dst_d->begin, dst_md->stride, &src, &src_md->stride,

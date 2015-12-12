@@ -64,7 +64,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
                                         src_view_tp, NULL, kernreq, ectx);
   }
   else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::ndt::callable_type::data_type *af = copy_from_pyobject::get().get();
+    dynd::nd::base_callable *af = copy_from_pyobject::get().get();
     return af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
                            dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, ectx,
                            nkwd, kwds, tp_vars);
@@ -133,8 +133,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     }
 
     const uintptr_t *dst_arrmeta_offsets =
-        dst_tp.extended<dynd::ndt::tuple_type>()
-            ->get_arrmeta_offsets_raw();
+        dst_tp.extended<dynd::ndt::tuple_type>()->get_arrmeta_offsets_raw();
     dynd::shortvector<const char *> dst_fields_arrmeta(field_count);
     for (intptr_t i = 0; i != field_count; ++i) {
       dst_fields_arrmeta[i] = dst_arrmeta + dst_arrmeta_offsets[i];
@@ -146,8 +145,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
 
     return make_tuple_unary_op_ckernel(
         af.get(), af.get_type(), ckb, ckb_offset, field_count,
-        dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(
-            dst_arrmeta),
+        dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta),
         dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
         dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0],
         &src_fields_arrmeta[0], kernreq, ectx);

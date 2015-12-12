@@ -19,9 +19,7 @@ namespace nd {
       std::vector<const char *> m_src_arrmeta;
       dynd::eval::eval_context m_ectx;
 
-      apply_pyobject_kernel() : m_pyfunc(NULL)
-      {
-      }
+      apply_pyobject_kernel() : m_pyfunc(NULL) {}
 
       ~apply_pyobject_kernel()
       {
@@ -162,9 +160,10 @@ namespace nd {
         return ckb_offset;
       }
 
-      static void free(dynd::ndt::callable_type::data_type *self_af)
+      static void free(dynd::nd::base_callable *self_af)
       {
-        PyObject *pyfunc = *reinterpret_cast<PyObject **>(self_af->static_data());
+        PyObject *pyfunc =
+            *reinterpret_cast<PyObject **>(self_af->static_data());
         if (pyfunc) {
           PyGILState_RAII pgs;
           Py_DECREF(pyfunc);

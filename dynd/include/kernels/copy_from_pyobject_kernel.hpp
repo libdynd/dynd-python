@@ -995,8 +995,8 @@ namespace nd {
       }
 
       // If the var dim element hasn't been allocated, initialize it
-      dynd::var_dim_type_data *vdd =
-          reinterpret_cast<dynd::var_dim_type_data *>(dst);
+      dynd::ndt::var_dim_type::data_type *vdd =
+          reinterpret_cast<dynd::ndt::var_dim_type::data_type *>(dst);
       if (vdd->begin == NULL) {
         if (m_offset != 0) {
           throw std::runtime_error(
@@ -1050,17 +1050,20 @@ namespace nd {
           pydynd::nd::copy_from_pyobject_kernel<dynd::var_dim_type_id>::make(
               ckb, kernreq, ckb_offset);
       self->m_offset =
-          reinterpret_cast<const dynd::var_dim_type_arrmeta *>(dst_arrmeta)
+          reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
+              dst_arrmeta)
               ->offset;
       self->m_stride =
-          reinterpret_cast<const dynd::var_dim_type_arrmeta *>(dst_arrmeta)
+          reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
+              dst_arrmeta)
               ->stride;
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
       self->m_dim_broadcast = dim_broadcast;
       dynd::ndt::type el_tp =
           dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
-      const char *el_arrmeta = dst_arrmeta + sizeof(dynd::var_dim_type_arrmeta);
+      const char *el_arrmeta =
+          dst_arrmeta + sizeof(dynd::ndt::var_dim_type::metadata_type);
       ckb_offset = copy_from_pyobject::get().get()->instantiate(
           copy_from_pyobject::get().get()->static_data(), NULL, ckb, ckb_offset,
           el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,

@@ -10,11 +10,8 @@ namespace nd {
   struct copy_to_pyobject_kernel;
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::bool_type_id> : dynd::nd::
-                                base_kernel<
-                                    copy_to_pyobject_kernel<dynd::bool_type_id>,
-                                    1> {
+  struct copy_to_pyobject_kernel<dynd::bool_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::bool_type_id>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -69,10 +66,7 @@ namespace nd {
 #endif
   }
 
-  PyObject *pyint_from_int(uint32_t v)
-  {
-    return PyLong_FromUnsignedLong(v);
-  }
+  PyObject *pyint_from_int(uint32_t v) { return PyLong_FromUnsignedLong(v); }
 
 #if SIZEOF_LONG == 8
   PyObject *pyint_from_int(int64_t v)
@@ -84,15 +78,9 @@ namespace nd {
 #endif
   }
 
-  PyObject *pyint_from_int(uint64_t v)
-  {
-    return PyLong_FromUnsignedLong(v);
-  }
+  PyObject *pyint_from_int(uint64_t v) { return PyLong_FromUnsignedLong(v); }
 #else
-  PyObject *pyint_from_int(int64_t v)
-  {
-    return PyLong_FromLongLong(v);
-  }
+  PyObject *pyint_from_int(int64_t v) { return PyLong_FromLongLong(v); }
 
   PyObject *pyint_from_int(uint64_t v)
   {
@@ -122,7 +110,8 @@ namespace nd {
       }
       pyobject_ownref absval(pyint_from_int(static_cast<dynd::uint128>(-val)));
       return PyNumber_Negative(absval.get());
-    } else {
+    }
+    else {
       return pyint_from_int(static_cast<dynd::uint128>(val));
     }
   }
@@ -143,48 +132,48 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::int16_type_id> : copy_int_kernel<
-                                                            int16_t> {
+  struct copy_to_pyobject_kernel<dynd::int16_type_id>
+      : copy_int_kernel<int16_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::int32_type_id> : copy_int_kernel<
-                                                            int32_t> {
+  struct copy_to_pyobject_kernel<dynd::int32_type_id>
+      : copy_int_kernel<int32_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::int64_type_id> : copy_int_kernel<
-                                                            int64_t> {
+  struct copy_to_pyobject_kernel<dynd::int64_type_id>
+      : copy_int_kernel<int64_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::int128_type_id> : copy_int_kernel<
-                                                             dynd::int128> {
+  struct copy_to_pyobject_kernel<dynd::int128_type_id>
+      : copy_int_kernel<dynd::int128> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::uint8_type_id> : copy_int_kernel<
-                                                            uint8_t> {
+  struct copy_to_pyobject_kernel<dynd::uint8_type_id>
+      : copy_int_kernel<uint8_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::uint16_type_id> : copy_int_kernel<
-                                                             uint16_t> {
+  struct copy_to_pyobject_kernel<dynd::uint16_type_id>
+      : copy_int_kernel<uint16_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::uint32_type_id> : copy_int_kernel<
-                                                             uint32_t> {
+  struct copy_to_pyobject_kernel<dynd::uint32_type_id>
+      : copy_int_kernel<uint32_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::uint64_type_id> : copy_int_kernel<
-                                                             uint64_t> {
+  struct copy_to_pyobject_kernel<dynd::uint64_type_id>
+      : copy_int_kernel<uint64_t> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::uint128_type_id> : copy_int_kernel<
-                                                              dynd::uint128> {
+  struct copy_to_pyobject_kernel<dynd::uint128_type_id>
+      : copy_int_kernel<dynd::uint128> {
   };
 
   template <typename T>
@@ -199,18 +188,18 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::float16_type_id> : float_copy_kernel<
-                                                              dynd::float16> {
+  struct copy_to_pyobject_kernel<dynd::float16_type_id>
+      : float_copy_kernel<dynd::float16> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::float32_type_id> : float_copy_kernel<
-                                                              float> {
+  struct copy_to_pyobject_kernel<dynd::float32_type_id>
+      : float_copy_kernel<float> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<dynd::float64_type_id> : float_copy_kernel<
-                                                              double> {
+  struct copy_to_pyobject_kernel<dynd::float64_type_id>
+      : float_copy_kernel<double> {
   };
 
   template <class T>
@@ -228,21 +217,18 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::complex_float32_type_id> : complex_float_copy_kernel<float> {
+  struct copy_to_pyobject_kernel<dynd::complex_float32_type_id>
+      : complex_float_copy_kernel<float> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::complex_float64_type_id> : complex_float_copy_kernel<double> {
+  struct copy_to_pyobject_kernel<dynd::complex_float64_type_id>
+      : complex_float_copy_kernel<double> {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::bytes_type_id> : dynd::nd::
-                                 base_kernel<copy_to_pyobject_kernel<
-                                                 dynd::bytes_type_id>,
-                                             1> {
+  struct copy_to_pyobject_kernel<dynd::bytes_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::bytes_type_id>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -256,17 +242,12 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::fixed_bytes_type_id> : dynd::nd::
-                                       base_kernel<
-                                           copy_to_pyobject_kernel<
-                                               dynd::fixed_bytes_type_id>,
-                                           1> {
+  struct copy_to_pyobject_kernel<dynd::fixed_bytes_type_id>
+      : dynd::nd::base_kernel<
+            copy_to_pyobject_kernel<dynd::fixed_bytes_type_id>, 1> {
     intptr_t data_size;
 
-    copy_to_pyobject_kernel(intptr_t data_size) : data_size(data_size)
-    {
-    }
+    copy_to_pyobject_kernel(intptr_t data_size) : data_size(data_size) {}
 
     void single(char *dst, char *const *src)
     {
@@ -295,11 +276,8 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::char_type_id> : dynd::nd::
-                                base_kernel<
-                                    copy_to_pyobject_kernel<dynd::char_type_id>,
-                                    1> {
+  struct copy_to_pyobject_kernel<dynd::char_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::char_type_id>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -362,10 +340,9 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::string_type_id> : dynd::nd::
-                                  base_virtual_kernel<copy_to_pyobject_kernel<
-                                      dynd::string_type_id>> {
+  struct copy_to_pyobject_kernel<dynd::string_type_id>
+      : dynd::nd::base_virtual_kernel<
+            copy_to_pyobject_kernel<dynd::string_type_id>> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
                 const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -404,9 +381,7 @@ namespace nd {
       : dynd::nd::base_kernel<fixed_string_ascii_copy_kernel, 1> {
     intptr_t data_size;
 
-    fixed_string_ascii_copy_kernel(intptr_t data_size) : data_size(data_size)
-    {
-    }
+    fixed_string_ascii_copy_kernel(intptr_t data_size) : data_size(data_size) {}
 
     void single(char *dst, char *const *src)
     {
@@ -438,9 +413,7 @@ namespace nd {
       : dynd::nd::base_kernel<fixed_string_utf8_copy_kernel, 1> {
     intptr_t data_size;
 
-    fixed_string_utf8_copy_kernel(intptr_t data_size) : data_size(data_size)
-    {
-    }
+    fixed_string_utf8_copy_kernel(intptr_t data_size) : data_size(data_size) {}
 
     void single(char *dst, char *const *src)
     {
@@ -472,9 +445,7 @@ namespace nd {
       : dynd::nd::base_kernel<fixed_string_utf16_copy_kernel, 1> {
     intptr_t data_size;
 
-    fixed_string_utf16_copy_kernel(intptr_t data_size) : data_size(data_size)
-    {
-    }
+    fixed_string_utf16_copy_kernel(intptr_t data_size) : data_size(data_size) {}
 
     void single(char *dst, char *const *src)
     {
@@ -508,9 +479,7 @@ namespace nd {
       : dynd::nd::base_kernel<fixed_string_utf32_copy_kernel, 1> {
     intptr_t data_size;
 
-    fixed_string_utf32_copy_kernel(intptr_t data_size) : data_size(data_size)
-    {
-    }
+    fixed_string_utf32_copy_kernel(intptr_t data_size) : data_size(data_size) {}
 
     void single(char *dst, char *const *src)
     {
@@ -541,11 +510,9 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::fixed_string_type_id> : dynd::nd::
-                                        base_virtual_kernel<
-                                            copy_to_pyobject_kernel<
-                                                dynd::fixed_string_type_id>> {
+  struct copy_to_pyobject_kernel<dynd::fixed_string_type_id>
+      : dynd::nd::base_virtual_kernel<
+            copy_to_pyobject_kernel<dynd::fixed_string_type_id>> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
                 const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -581,11 +548,8 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::date_type_id> : dynd::nd::
-                                base_kernel<
-                                    copy_to_pyobject_kernel<dynd::date_type_id>,
-                                    1> {
+  struct copy_to_pyobject_kernel<dynd::date_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::date_type_id>, 1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
 
@@ -621,11 +585,8 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::time_type_id> : dynd::nd::
-                                base_kernel<
-                                    copy_to_pyobject_kernel<dynd::time_type_id>,
-                                    1> {
+  struct copy_to_pyobject_kernel<dynd::time_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::time_type_id>, 1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
 
@@ -662,11 +623,9 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::datetime_type_id> : dynd::nd::
-                                    base_kernel<copy_to_pyobject_kernel<
-                                                    dynd::datetime_type_id>,
-                                                1> {
+  struct copy_to_pyobject_kernel<dynd::datetime_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::datetime_type_id>,
+                              1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
 
@@ -707,11 +666,8 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::type_type_id> : dynd::nd::
-                                base_kernel<
-                                    copy_to_pyobject_kernel<dynd::type_type_id>,
-                                    1> {
+  struct copy_to_pyobject_kernel<dynd::type_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::type_type_id>, 1> {
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -724,11 +680,9 @@ namespace nd {
 
   // TODO: Should make a more efficient strided kernel function
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::option_type_id> : dynd::nd::
-                                  base_kernel<copy_to_pyobject_kernel<
-                                                  dynd::option_type_id>,
-                                              1> {
+  struct copy_to_pyobject_kernel<dynd::option_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::option_type_id>,
+                              1> {
     intptr_t m_copy_value_offset;
 
     ~copy_to_pyobject_kernel()
@@ -752,7 +706,8 @@ namespace nd {
       is_avail_fn(is_avail, &value_is_avail, src);
       if (value_is_avail != 0) {
         copy_value_fn(copy_value, dst, src);
-      } else {
+      }
+      else {
         *dst_obj = Py_None;
         Py_INCREF(*dst_obj);
       }
@@ -780,7 +735,8 @@ namespace nd {
           ->reserve(ckb_offset);
       self_ck =
           reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
-              ckb)->get_at<copy_to_pyobject_kernel>(root_ckb_offset);
+              ckb)
+              ->get_at<copy_to_pyobject_kernel>(root_ckb_offset);
       self_ck->m_copy_value_offset = ckb_offset - root_ckb_offset;
       dynd::ndt::type src_value_tp =
           src_tp[0].extended<dynd::ndt::option_type>()->get_value_type();
@@ -793,11 +749,9 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::fixed_dim_type_id> : dynd::nd::
-                                     base_kernel<copy_to_pyobject_kernel<
-                                                     dynd::fixed_dim_type_id>,
-                                                 1> {
+  struct copy_to_pyobject_kernel<dynd::fixed_dim_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::fixed_dim_type_id>,
+                              1> {
     intptr_t dim_size, stride;
 
     copy_to_pyobject_kernel(intptr_t dim_size, intptr_t stride)
@@ -805,10 +759,7 @@ namespace nd {
     {
     }
 
-    ~copy_to_pyobject_kernel()
-    {
-      get_child()->destroy();
-    }
+    ~copy_to_pyobject_kernel() { get_child()->destroy(); }
 
     void single(char *dst, char *const *src)
     {
@@ -855,11 +806,9 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::var_dim_type_id> : dynd::nd::
-                                   base_kernel<copy_to_pyobject_kernel<
-                                                   dynd::var_dim_type_id>,
-                                               1> {
+  struct copy_to_pyobject_kernel<dynd::var_dim_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::var_dim_type_id>,
+                              1> {
     intptr_t offset, stride;
 
     copy_to_pyobject_kernel(intptr_t offset, intptr_t stride)
@@ -867,18 +816,15 @@ namespace nd {
     {
     }
 
-    ~copy_to_pyobject_kernel()
-    {
-      get_child()->destroy();
-    }
+    ~copy_to_pyobject_kernel() { get_child()->destroy(); }
 
     void single(char *dst, char *const *src)
     {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::var_dim_type_data *vd =
-          reinterpret_cast<const dynd::var_dim_type_data *>(src[0]);
+      const dynd::ndt::var_dim_type::data_type *vd =
+          reinterpret_cast<const dynd::ndt::var_dim_type::data_type *>(src[0]);
       pyobject_ownref lst(PyList_New(vd->size));
       dynd::ckernel_prefix *copy_el = get_child();
       dynd::kernel_strided_t copy_el_fn =
@@ -904,14 +850,16 @@ namespace nd {
     {
       copy_to_pyobject_kernel::make(
           ckb, kernreq, ckb_offset,
-          reinterpret_cast<const dynd::var_dim_type_arrmeta *>(src_arrmeta[0])
+          reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
+              src_arrmeta[0])
               ->offset,
-          reinterpret_cast<const dynd::var_dim_type_arrmeta *>(src_arrmeta[0])
+          reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
+              src_arrmeta[0])
               ->stride);
       dynd::ndt::type el_tp =
           src_tp[0].extended<dynd::ndt::var_dim_type>()->get_element_type();
       const char *el_arrmeta =
-          src_arrmeta[0] + sizeof(dynd::var_dim_type_arrmeta);
+          src_arrmeta[0] + sizeof(dynd::ndt::var_dim_type::metadata_type);
       return copy_to_pyobject::get().get()->instantiate(
           copy_to_pyobject::get().get()->static_data(), data, ckb, ckb_offset,
           dst_tp, dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
@@ -921,11 +869,9 @@ namespace nd {
 
   // TODO: Should make a more efficient strided kernel function
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::struct_type_id> : dynd::nd::
-                                  base_kernel<copy_to_pyobject_kernel<
-                                                  dynd::struct_type_id>,
-                                              1> {
+  struct copy_to_pyobject_kernel<dynd::struct_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::struct_type_id>,
+                              1> {
     dynd::ndt::type m_src_tp;
     const char *m_src_arrmeta;
     std::vector<intptr_t> m_copy_el_offsets;
@@ -982,19 +928,14 @@ namespace nd {
       intptr_t field_count =
           src_tp[0].extended<dynd::ndt::struct_type>()->get_field_count();
       const dynd::ndt::type *field_types =
-          src_tp[0]
-              .extended<dynd::ndt::struct_type>()
-              ->get_field_types_raw();
-      const uintptr_t *arrmeta_offsets =
-          src_tp[0]
-              .extended<dynd::ndt::struct_type>()
-              ->get_arrmeta_offsets_raw();
+          src_tp[0].extended<dynd::ndt::struct_type>()->get_field_types_raw();
+      const uintptr_t *arrmeta_offsets = src_tp[0]
+                                             .extended<dynd::ndt::struct_type>()
+                                             ->get_arrmeta_offsets_raw();
       self_ck->m_field_names.reset(PyTuple_New(field_count));
       for (intptr_t i = 0; i < field_count; ++i) {
         const dynd::string &rawname =
-            src_tp[0]
-                .extended<dynd::ndt::struct_type>()
-                ->get_field_name_raw(i);
+            src_tp[0].extended<dynd::ndt::struct_type>()->get_field_name_raw(i);
         pyobject_ownref name(PyUnicode_DecodeUTF8(
             rawname.begin(), rawname.end() - rawname.begin(), NULL));
         PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
@@ -1002,9 +943,10 @@ namespace nd {
       self_ck->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
-            ckb)->reserve(ckb_offset);
+            ckb)
+            ->reserve(ckb_offset);
         self_ck = reinterpret_cast<
-            dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+                      dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
                       ->get_at<copy_to_pyobject_kernel>(root_ckb_offset);
         self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
@@ -1019,11 +961,8 @@ namespace nd {
 
   // TODO: Should make a more efficient strided kernel function
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::tuple_type_id> : dynd::nd::
-                                 base_kernel<copy_to_pyobject_kernel<
-                                                 dynd::tuple_type_id>,
-                                             1> {
+  struct copy_to_pyobject_kernel<dynd::tuple_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::tuple_type_id>, 1> {
     dynd::ndt::type src_tp;
     const char *src_arrmeta;
     std::vector<intptr_t> m_copy_el_offsets;
@@ -1081,19 +1020,17 @@ namespace nd {
       intptr_t field_count =
           src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_count();
       const dynd::ndt::type *field_types =
-          src_tp[0]
-              .extended<dynd::ndt::tuple_type>()
-              ->get_field_types_raw();
-      const uintptr_t *arrmeta_offsets =
-          src_tp[0]
-              .extended<dynd::ndt::tuple_type>()
-              ->get_arrmeta_offsets_raw();
+          src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw();
+      const uintptr_t *arrmeta_offsets = src_tp[0]
+                                             .extended<dynd::ndt::tuple_type>()
+                                             ->get_arrmeta_offsets_raw();
       self_ck->m_copy_el_offsets.resize(field_count);
       for (intptr_t i = 0; i < field_count; ++i) {
         reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
-            ckb)->reserve(ckb_offset);
+            ckb)
+            ->reserve(ckb_offset);
         self_ck = reinterpret_cast<
-            dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+                      dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
                       ->get_at<copy_to_pyobject_kernel>(root_ckb_offset);
         self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
@@ -1107,16 +1044,11 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::pointer_type_id> : dynd::nd::
-                                   base_kernel<copy_to_pyobject_kernel<
-                                                   dynd::pointer_type_id>,
-                                               1> {
+  struct copy_to_pyobject_kernel<dynd::pointer_type_id>
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::pointer_type_id>,
+                              1> {
 
-    ~copy_to_pyobject_kernel()
-    {
-      get_child()->destroy();
-    }
+    ~copy_to_pyobject_kernel() { get_child()->destroy(); }
 
     void single(char *dst, char *const *src)
     {
@@ -1153,11 +1085,9 @@ namespace nd {
   };
 
   template <>
-  struct copy_to_pyobject_kernel<
-      dynd::categorical_type_id> : dynd::nd::
-                                       base_virtual_kernel<
-                                           copy_to_pyobject_kernel<
-                                               dynd::categorical_type_id>> {
+  struct copy_to_pyobject_kernel<dynd::categorical_type_id>
+      : dynd::nd::base_virtual_kernel<
+            copy_to_pyobject_kernel<dynd::categorical_type_id>> {
     static intptr_t
     instantiate(char *DYND_UNUSED(static_data), char *data, void *ckb,
                 intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
@@ -1177,9 +1107,10 @@ namespace nd {
           make_callable_from_assignment(buffer_tp, src_tp[0],
                                         dynd::assign_error_default),
           copy_to_pyobject, buffer_tp);
-      return child.get()->instantiate(
-          child.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
-          nsrc, src_tp, src_arrmeta, kernreq, ectx, nkwd, kwds, tp_vars);
+      return child.get()->instantiate(child.get()->static_data(), NULL, ckb,
+                                      ckb_offset, dst_tp, dst_arrmeta, nsrc,
+                                      src_tp, src_arrmeta, kernreq, ectx, nkwd,
+                                      kwds, tp_vars);
     }
   };
 
@@ -1229,279 +1160,180 @@ namespace ndt {
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<bool_type_id>> {
-    static type make()
-    {
-      return type("(bool) -> void");
-    }
+    static type make() { return type("(bool) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int8_type_id>> {
-    static type make()
-    {
-      return type("(int8) -> void");
-    }
+    static type make() { return type("(int8) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int16_type_id>> {
-    static type make()
-    {
-      return type("(int16) -> void");
-    }
+    static type make() { return type("(int16) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int32_type_id>> {
-    static type make()
-    {
-      return type("(int32) -> void");
-    }
+    static type make() { return type("(int32) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int64_type_id>> {
-    static type make()
-    {
-      return type("(int64) -> void");
-    }
+    static type make() { return type("(int64) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int128_type_id>> {
-    static type make()
-    {
-      return type("(int128) -> void");
-    }
+    static type make() { return type("(int128) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint8_type_id>> {
-    static type make()
-    {
-      return type("(uint8) -> void");
-    }
+    static type make() { return type("(uint8) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint16_type_id>> {
-    static type make()
-    {
-      return type("(uint16) -> void");
-    }
+    static type make() { return type("(uint16) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint32_type_id>> {
-    static type make()
-    {
-      return type("(uint32) -> void");
-    }
+    static type make() { return type("(uint32) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint64_type_id>> {
-    static type make()
-    {
-      return type("(uint64) -> void");
-    }
+    static type make() { return type("(uint64) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<uint128_type_id>> {
-    static type make()
-    {
-      return type("(uint128) -> void");
-    }
+    static type make() { return type("(uint128) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<float16_type_id>> {
-    static type make()
-    {
-      return type("(float16) -> void");
-    }
+    static type make() { return type("(float16) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<float32_type_id>> {
-    static type make()
-    {
-      return type("(float32) -> void");
-    }
+    static type make() { return type("(float32) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<float64_type_id>> {
-    static type make()
-    {
-      return type("(float64) -> void");
-    }
+    static type make() { return type("(float64) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<complex_float32_type_id>> {
-    static type make()
-    {
-      return type("(complex[float32]) -> void");
-    }
+    static type make() { return type("(complex[float32]) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<complex_float64_type_id>> {
-    static type make()
-    {
-      return type("(complex[float64]) -> void");
-    }
+    static type make() { return type("(complex[float64]) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<bytes_type_id>> {
-    static type make()
-    {
-      return type("(bytes) -> void");
-    }
+    static type make() { return type("(bytes) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<fixed_bytes_type_id>> {
-    static type make()
-    {
-      return type("(FixedBytes) -> void");
-    }
+    static type make() { return type("(FixedBytes) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<char_type_id>> {
-    static type make()
-    {
-      return type("(char) -> void");
-    }
+    static type make() { return type("(char) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<string_type_id>> {
-    static type make()
-    {
-      return type("(string) -> void");
-    }
+    static type make() { return type("(string) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<fixed_string_type_id>> {
-    static type make()
-    {
-      return type("(FixedString) -> void");
-    }
+    static type make() { return type("(FixedString) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<date_type_id>> {
-    static type make()
-    {
-      return type("(date) -> void");
-    }
+    static type make() { return type("(date) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<time_type_id>> {
-    static type make()
-    {
-      return type("(time) -> void");
-    }
+    static type make() { return type("(time) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<datetime_type_id>> {
-    static type make()
-    {
-      return type("(datetime) -> void");
-    }
+    static type make() { return type("(datetime) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<type_type_id>> {
-    static type make()
-    {
-      return type("(type) -> void");
-    }
+    static type make() { return type("(type) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<option_type_id>> {
-    static type make()
-    {
-      return type("(?Any) -> void");
-    }
+    static type make() { return type("(?Any) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<categorical_type_id>> {
-    static type make()
-    {
-      return type("(Categorical) -> void");
-    }
+    static type make() { return type("(Categorical) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<fixed_dim_type_id>> {
-    static type make()
-    {
-      return type("(Fixed * Any) -> void");
-    }
+    static type make() { return type("(Fixed * Any) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<var_dim_type_id>> {
-    static type make()
-    {
-      return type("(var * Any) -> void");
-    }
+    static type make() { return type("(var * Any) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<tuple_type_id>> {
-    static type make()
-    {
-      return type("(...) -> void");
-    }
+    static type make() { return type("(...) -> void"); }
   };
 
   template <>
   struct type::equivalent<
       pydynd::nd::copy_to_pyobject_kernel<pointer_type_id>> {
-    static type make()
-    {
-      return type("(pointer[Any]) -> void");
-    }
+    static type make() { return type("(pointer[Any]) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<struct_type_id>> {
-    static type make()
-    {
-      return type("({...}) -> void");
-    }
+    static type make() { return type("({...}) -> void"); }
   };
 
   template <>
   struct type::equivalent<pydynd::nd::default_copy_to_pyobject_kernel> {
-    static type make()
-    {
-      return type("(Any) -> void");
-    }
+    static type make() { return type("(Any) -> void"); }
   };
 
 } // namespace dynd::ndt

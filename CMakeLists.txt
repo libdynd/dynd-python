@@ -152,6 +152,7 @@ include_directories(
     dynd/include
     ${CMAKE_CURRENT_BINARY_DIR}/dynd
     dynd
+    ${CMAKE_CURRENT_BINARY_DIR}
     )
 
 if(DYND_CUDA)

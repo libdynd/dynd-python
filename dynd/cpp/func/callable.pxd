@@ -1,3 +1,4 @@
+from libcpp.pair cimport pair
 from libcpp cimport bool
 
 from ..array cimport array
@@ -11,4 +12,5 @@ cdef extern from 'dynd/func/callable.hpp' namespace 'dynd::nd' nogil:
 
         bool is_null()
 
+        array call(size_t, array *, size_t, pair[char *, array] *)
         array operator()(...)

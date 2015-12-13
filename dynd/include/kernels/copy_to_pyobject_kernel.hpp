@@ -1159,181 +1159,168 @@ namespace dynd {
 namespace ndt {
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<bool_type_id>> {
-    static type make() { return type("(bool) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<bool_type_id>> {
+    static type equivalent() { return type("(bool) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int8_type_id>> {
-    static type make() { return type("(int8) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<int8_type_id>> {
+    static type equivalent() { return type("(int8) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int16_type_id>> {
-    static type make() { return type("(int16) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<int16_type_id>> {
+    static type equivalent() { return type("(int16) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int32_type_id>> {
-    static type make() { return type("(int32) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<int32_type_id>> {
+    static type equivalent() { return type("(int32) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int64_type_id>> {
-    static type make() { return type("(int64) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<int64_type_id>> {
+    static type equivalent() { return type("(int64) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<int128_type_id>> {
-    static type make() { return type("(int128) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<int128_type_id>> {
+    static type equivalent() { return type("(int128) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint8_type_id>> {
-    static type make() { return type("(uint8) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<uint8_type_id>> {
+    static type equivalent() { return type("(uint8) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint16_type_id>> {
-    static type make() { return type("(uint16) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<uint16_type_id>> {
+    static type equivalent() { return type("(uint16) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint32_type_id>> {
-    static type make() { return type("(uint32) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<uint32_type_id>> {
+    static type equivalent() { return type("(uint32) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<uint64_type_id>> {
-    static type make() { return type("(uint64) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<uint64_type_id>> {
+    static type equivalent() { return type("(uint64) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<uint128_type_id>> {
-    static type make() { return type("(uint128) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<uint128_type_id>> {
+    static type equivalent() { return type("(uint128) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<float16_type_id>> {
-    static type make() { return type("(float16) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<float16_type_id>> {
+    static type equivalent() { return type("(float16) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<float32_type_id>> {
-    static type make() { return type("(float32) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<float32_type_id>> {
+    static type equivalent() { return type("(float32) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<float64_type_id>> {
-    static type make() { return type("(float64) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<float64_type_id>> {
+    static type equivalent() { return type("(float64) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<complex_float32_type_id>> {
-    static type make() { return type("(complex[float32]) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<complex_float32_type_id>> {
+    static type equivalent() { return type("(complex[float32]) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<complex_float64_type_id>> {
-    static type make() { return type("(complex[float64]) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<complex_float64_type_id>> {
+    static type equivalent() { return type("(complex[float64]) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<bytes_type_id>> {
-    static type make() { return type("(bytes) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<bytes_type_id>> {
+    static type equivalent() { return type("(bytes) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<fixed_bytes_type_id>> {
-    static type make() { return type("(FixedBytes) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<fixed_bytes_type_id>> {
+    static type equivalent() { return type("(FixedBytes) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<char_type_id>> {
-    static type make() { return type("(char) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<char_type_id>> {
+    static type equivalent() { return type("(char) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<string_type_id>> {
-    static type make() { return type("(string) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<string_type_id>> {
+    static type equivalent() { return type("(string) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<fixed_string_type_id>> {
-    static type make() { return type("(FixedString) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<fixed_string_type_id>> {
+    static type equivalent() { return type("(FixedString) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<date_type_id>> {
-    static type make() { return type("(date) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<date_type_id>> {
+    static type equivalent() { return type("(date) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<time_type_id>> {
-    static type make() { return type("(time) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<time_type_id>> {
+    static type equivalent() { return type("(time) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<datetime_type_id>> {
-    static type make() { return type("(datetime) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<datetime_type_id>> {
+    static type equivalent() { return type("(datetime) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<type_type_id>> {
-    static type make() { return type("(type) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<type_type_id>> {
+    static type equivalent() { return type("(type) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<option_type_id>> {
-    static type make() { return type("(?Any) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<option_type_id>> {
+    static type equivalent() { return type("(?Any) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<categorical_type_id>> {
-    static type make() { return type("(Categorical) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<categorical_type_id>> {
+    static type equivalent() { return type("(Categorical) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<fixed_dim_type_id>> {
-    static type make() { return type("(Fixed * Any) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<fixed_dim_type_id>> {
+    static type equivalent() { return type("(Fixed * Any) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<var_dim_type_id>> {
-    static type make() { return type("(var * Any) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<var_dim_type_id>> {
+    static type equivalent() { return type("(var * Any) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<tuple_type_id>> {
-    static type make() { return type("(...) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<tuple_type_id>> {
+    static type equivalent() { return type("(...) -> void"); }
   };
 
   template <>
-  struct type::equivalent<
-      pydynd::nd::copy_to_pyobject_kernel<pointer_type_id>> {
-    static type make() { return type("(pointer[Any]) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<pointer_type_id>> {
+    static type equivalent() { return type("(pointer[Any]) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::copy_to_pyobject_kernel<struct_type_id>> {
-    static type make() { return type("({...}) -> void"); }
+  struct traits<pydynd::nd::copy_to_pyobject_kernel<struct_type_id>> {
+    static type equivalent() { return type("({...}) -> void"); }
   };
 
   template <>
-  struct type::equivalent<pydynd::nd::default_copy_to_pyobject_kernel> {
-    static type make() { return type("(Any) -> void"); }
+  struct traits<pydynd::nd::default_copy_to_pyobject_kernel> {
+    static type equivalent() { return type("(Any) -> void"); }
   };
 
 } // namespace dynd::ndt

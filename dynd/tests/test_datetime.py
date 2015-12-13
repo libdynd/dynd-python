@@ -79,7 +79,6 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.replace(day=-1,month=7)), date(1955,7,31))
         self.assertEqual(nd.as_py(a.replace(month=2,day=-1)), date(1955,2,28))
         self.assertEqual(nd.as_py(a.replace(month=2,day=-1,year=2000)), date(2000,2,29))
-    """
 
     def test_date_parse(self):
         # By default, don't allow ambiguous year interpretations
@@ -108,6 +107,7 @@ class TestDate(unittest.TestCase):
                                 ectx=nd.eval_context(date_parse_order='YMD',
                                                      century_window=1850))),
                          date(1901, 2, 3))
+    """
 
     def test_json_date_parse(self):
         a = nd.parse_json('var * date', '["2012-03-17", "1922-12-30"]')

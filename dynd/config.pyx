@@ -1,13 +1,13 @@
 from .cpp.config cimport dynd_version_string, dynd_git_sha1
+from cpython.ref cimport PyObject
 
-cdef extern from 'exception_translation.hpp' namespace 'pydynd':
+
+cdef extern from 'exception_translation.hpp':
     void _translate_exception "pydynd::translate_exception"()
-    void _set_broadcast_exception "pydynd::set_broadcast_exception"(object)
+    PyObject* DyND_BroadcastException
 
 cdef void translate_exception():
     _translate_exception()
-cdef void set_broadcast_exception(object e):
-    _set_broadcast_exception(e)
 
 cdef extern from 'do_import_array.hpp':
     pass
@@ -37,10 +37,9 @@ import_numpy()
 class BroadcastError(Exception):
     pass
 
-cdef api object DyND_PyExc_BroadcastError = BroadcastError
+# Used in exception translation header.
+# It is forward-declared there and then set when this module is initialized.
+DyND_BroadcastException = <PyObject*>BroadcastError
 
 # Initialize ctypes C level interop data
 pydynd_init()
-
-# Register all the exception objects with the exception translator
-set_broadcast_exception(BroadcastError)

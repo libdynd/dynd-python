@@ -13,15 +13,13 @@
 
 #include "dynd/array.hpp"
 
-namespace {
-PyObject *BroadcastException = NULL;
-} // anonymous namespace
+// This header must only be used inside the config module because otherwise
+// this variable is not properly initialized.
+static PyObject *DyND_BroadcastException;
 
 namespace pydynd {
 
-void set_broadcast_exception(PyObject *e) { BroadcastException = e; }
-
-inline void translate_exception()
+static inline void translate_exception()
 {
   try {
     // let any Python exn pass through, otherwise translate the C++ one
@@ -30,7 +28,7 @@ inline void translate_exception()
     }
   }
   catch (const dynd::broadcast_error &exn) {
-    PyErr_SetString(BroadcastException, exn.message());
+    PyErr_SetString(DyND_BroadcastException, exn.message());
   }
   catch (const dynd::too_many_indices &exn) {
     PyErr_SetString(PyExc_IndexError, exn.message());

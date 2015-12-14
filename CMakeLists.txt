@@ -152,6 +152,7 @@ include_directories(
     dynd/include
     ${CMAKE_CURRENT_BINARY_DIR}/dynd
     dynd
+    ${CMAKE_CURRENT_BINARY_DIR}
     )
 
 if(DYND_CUDA)
@@ -229,6 +230,10 @@ if(DYND_INSTALL_LIB)
 else()
     target_link_libraries(pydynd libdynd)
 endif()
+
+foreach(pyx_api_file dynd/config.pyx dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
+    set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)
+endforeach(pyx_api_file)
 
 foreach(module config eval_context ndt.type ndt.json nd.array nd.callable nd.functional nd.registry)
     string(REPLACE "." ";" directories ${module})

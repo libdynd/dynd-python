@@ -13,9 +13,34 @@
 #include <dynd/types/option_type.hpp>
 #include <dynd/types/time_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
+#include <dynd/func/assignment.hpp>
 
 namespace pydynd {
 namespace nd {
+
+  inline void typed_data_assign(const dynd::ndt::type &dst_tp,
+                                const char *dst_arrmeta, char *dst_data,
+                                const dynd::ndt::type &src_tp,
+                                const char *src_arrmeta, const char *src_data)
+  {
+    dynd::nd::array kwd = dynd::nd::empty(
+        dynd::ndt::option_type::make(dynd::ndt::type::make<int>()));
+    *reinterpret_cast<int *>(kwd.data()) =
+        static_cast<int>(dynd::assign_error_fractional);
+    std::map<std::string, dynd::ndt::type> tp_vars;
+    dynd::nd::assign::get()->call(
+        dst_tp, dst_arrmeta, dst_data, 1, &src_tp, &src_arrmeta,
+        const_cast<char *const *>(&src_data), 1, &kwd, tp_vars);
+  }
+
+  inline void typed_data_assign(const dynd::ndt::type &dst_tp,
+                                const char *dst_arrmeta, char *dst_data,
+                                const dynd::nd::array &src_arr)
+  {
+    pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst_data,
+                                  src_arr.get_type(), src_arr.get()->metadata(),
+                                  src_arr.cdata());
+  }
 
   template <dynd::type_id_t src_type_id>
   struct copy_from_pyobject_kernel;
@@ -363,8 +388,8 @@ namespace nd {
         }
       }
       else if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
       else {
@@ -377,8 +402,8 @@ namespace nd {
       dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
       dynd::string bytes_d(pybytes_data, pybytes_len);
 
-      dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp, NULL,
-                              reinterpret_cast<const char *>(&bytes_d));
+      pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp, NULL,
+                                    reinterpret_cast<const char *>(&bytes_d));
     }
 
     static intptr_t
@@ -434,8 +459,8 @@ namespace nd {
         dynd::ndt::type str_tp = dynd::ndt::string_type::make();
         dynd::string str_d(s, len);
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
-                                reinterpret_cast<const char *>(&str_d));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
+                                      reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
       }
       else if (PyString_Check(src_obj)) {
@@ -449,13 +474,13 @@ namespace nd {
         dynd::ndt::type str_dt = dynd::ndt::string_type::make();
         dynd::string str_d(pystr_data, pystr_len);
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt, NULL,
-                                reinterpret_cast<const char *>(&str_d));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt, NULL,
+                                      reinterpret_cast<const char *>(&str_d));
 #endif
       }
       else if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
       else {
@@ -531,11 +556,11 @@ namespace nd {
                     PyDateTime_GET_DAY(src_obj));
       }
       else if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
       }
       else {
-        dynd::typed_data_assign(
+        pydynd::nd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
             array_from_py(src_obj, 0, false,
                           &dynd::eval::default_eval_context));
@@ -584,11 +609,11 @@ namespace nd {
                          DYND_TICKS_PER_MICROSECOND);
       }
       else if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
       }
       else {
-        dynd::typed_data_assign(
+        pydynd::nd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
             array_from_py(src_obj, 0, false,
                           &dynd::eval::default_eval_context));
@@ -643,11 +668,11 @@ namespace nd {
                     PyDateTime_DATE_GET_MICROSECOND(src_obj) * 10);
       }
       else if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
       }
       else {
-        dynd::typed_data_assign(
+        pydynd::nd::typed_data_assign(
             dst_tp, dst_arrmeta, dst,
             array_from_py(src_obj, 0, false,
                           &dynd::eval::default_eval_context));
@@ -711,8 +736,8 @@ namespace nd {
         assign_na_fn(assign_na, dst, NULL);
       }
       else if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
       }
       else if (dst_tp.get_kind() != dynd::string_kind &&
                PyUnicode_Check(src_obj)) {
@@ -728,8 +753,8 @@ namespace nd {
         dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
-                                reinterpret_cast<const char *>(&str_d));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
+                                      reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
       }
       else if (dst_tp.get_kind() != dynd::string_kind &&
@@ -745,8 +770,8 @@ namespace nd {
         dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
 
-        dynd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
-                                reinterpret_cast<const char *>(&str_d));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
+                                      reinterpret_cast<const char *>(&str_d));
 #endif
       }
       else {
@@ -836,8 +861,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -954,13 +979,13 @@ namespace nd {
 
     ~copy_from_pyobject_kernel() { get_child()->destroy(); }
 
-    inline void single(char *dst, char *const *src)
+    void single(char *dst, char *const *src)
     {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1104,8 +1129,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1232,8 +1257,8 @@ namespace nd {
       PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
       if (DyND_PyArray_Check(src_obj)) {
-        dynd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                ((DyND_PyArrayObject *)src_obj)->v);
+        pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
+                                      ((DyND_PyArrayObject *)src_obj)->v);
         return;
       }
 #ifdef DYND_NUMPY_INTEROP
@@ -1557,17 +1582,26 @@ namespace ndt {
 
   template <>
   struct traits<pydynd::nd::copy_from_pyobject_kernel<var_dim_type_id>> {
-    static type equivalent() { return type("(void, broadcast: bool) -> var * Any"); }
+    static type equivalent()
+    {
+      return type("(void, broadcast: bool) -> var * Any");
+    }
   };
 
   template <>
   struct traits<pydynd::nd::copy_from_pyobject_kernel<tuple_type_id>> {
-    static type equivalent() { return type("(void, broadcast: bool) -> (...)"); }
+    static type equivalent()
+    {
+      return type("(void, broadcast: bool) -> (...)");
+    }
   };
 
   template <>
   struct traits<pydynd::nd::copy_from_pyobject_kernel<struct_type_id>> {
-    static type equivalent() { return type("(void, broadcast: bool) -> {...}"); }
+    static type equivalent()
+    {
+      return type("(void, broadcast: bool) -> {...}");
+    }
   };
 
   template <>

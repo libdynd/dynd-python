@@ -102,8 +102,6 @@ inline std::string array_repr(const dynd::nd::array &n)
   return ss.str();
 }
 
-PYDYND_API PyObject *array_str(const dynd::nd::array &n);
-PYDYND_API PyObject *array_unicode(const dynd::nd::array &n);
 PYDYND_API PyObject *array_index(const dynd::nd::array &n);
 PYDYND_API PyObject *array_nonzero(const dynd::nd::array &n);
 PYDYND_API PyObject *array_int(const dynd::nd::array &n);

@@ -57,8 +57,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     const char *array_access_flags_string(_array&) except +translate_exception
 
     string array_repr(_array&) except +translate_exception
-    object array_str(_array&) except +translate_exception
-    object array_unicode(_array&) except +translate_exception
 
     _array dynd_parse_json_type(_type&, _array&, object) except +translate_exception
     void dynd_parse_json_array(_array&, _array&, object) except +translate_exception
@@ -292,15 +290,6 @@ cdef class array(object):
 
     def __setitem__(self, x, y):
         array_setitem(self.v, x, y)
-
-    def __str__(self):
-        try:
-            return array_str(self.v)
-        except TypeError:
-            return self.__repr__()
-
-    def __unicode__(self):
-        return array_unicode(self.v)
 
     def __add__(lhs, rhs):
         return dynd_nd_array_from_cpp(array_add(

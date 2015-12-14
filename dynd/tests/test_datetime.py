@@ -14,7 +14,7 @@ class TestDate(unittest.TestCase):
 
     def test_date_properties(self):
         a = nd.array(date(1955, 3, 13))
-        self.assertEqual(str(a), '1955-03-13')
+        self.assertEqual(str(a).split('(')[1].split(',')[0], '1955-03-13')
         self.assertEqual(nd.dtype_of(a.year.eval()), ndt.int32)
         self.assertEqual(nd.dtype_of(a.month.eval()), ndt.int32)
         self.assertEqual(nd.dtype_of(a.day.eval()), ndt.int32)
@@ -130,7 +130,7 @@ class TestTime(unittest.TestCase):
 
     def test_time_properties(self):
         a = nd.array(time(14, 25, 59, 123456))
-        self.assertEqual(str(a), '14:25:59.123456')
+        self.assertEqual(str(a).split('(')[1].split(',')[0], '14:25:59.123456')
         self.assertEqual(nd.dtype_of(a.hour.eval()), ndt.int32)
         self.assertEqual(nd.dtype_of(a.minute.eval()), ndt.int32)
         self.assertEqual(nd.dtype_of(a.second.eval()), ndt.int32)

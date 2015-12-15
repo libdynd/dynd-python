@@ -9,7 +9,7 @@
 
 #include <dynd/array.hpp>
 #include <dynd/kernels/base_kernel.hpp>
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 
 #include <array_functions.hpp>
 #include <utility_functions.hpp>

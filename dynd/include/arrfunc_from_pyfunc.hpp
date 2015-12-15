@@ -7,7 +7,7 @@
 
 #include "type_functions.hpp"
 
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 
 #include "visibility.hpp"
 

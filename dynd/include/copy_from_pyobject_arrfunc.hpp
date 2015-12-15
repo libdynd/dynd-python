@@ -8,7 +8,7 @@
 #include <Python.h>
 
 #include <dynd/kernels/ckernel_builder.hpp>
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 
 namespace pydynd {
 namespace nd {

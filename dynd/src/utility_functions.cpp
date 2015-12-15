@@ -11,7 +11,7 @@
 
 #include <dynd/exceptions.hpp>
 #include <dynd/array.hpp>
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 
 using namespace std;
 using namespace dynd;

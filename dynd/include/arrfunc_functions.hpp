@@ -12,7 +12,7 @@
 
 #include <sstream>
 
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 
 #include "array_from_py.hpp"
 #include "array_as_py.hpp"

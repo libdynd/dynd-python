@@ -9,7 +9,7 @@
 
 #include <dynd/array.hpp>
 #include <dynd/type.hpp>
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 
 #include "visibility.hpp"
 

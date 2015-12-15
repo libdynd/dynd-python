@@ -22,7 +22,7 @@
 #include <dynd/types/struct_type.hpp>
 #include <dynd/func/rolling.hpp>
 #include <dynd/view.hpp>
-#include <dynd/func/callable.hpp>
+#include <dynd/callable.hpp>
 #include <dynd/func/callable_registry.hpp>
 
 using namespace std;

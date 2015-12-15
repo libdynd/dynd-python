@@ -4,6 +4,14 @@ from libcpp cimport bool
 from .type cimport type
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
+
+    cdef enum:
+        read_access_flag
+        write_access_flag
+        immutable_access_flag
+        readwrite_access_flags
+        default_access_flags
+
     cdef cppclass array:
 
         array()

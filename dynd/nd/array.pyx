@@ -14,7 +14,7 @@ from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_dat
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
-from ..ndt.type cimport type
+from ..ndt.type cimport type as _py_type
 from ..ndt import Unsupplied
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
@@ -176,7 +176,7 @@ cdef class array(object):
 
     property dtype:
         def __get__(self):
-            cdef type result = type()
+            cdef _py_type result = _py_type()
             result.v = self.v.get_dtype()
             return result
 
@@ -353,7 +353,7 @@ cdef class array(object):
             The type is cast into this type.
         """
         cdef array result = array()
-        result.v = array_cast(self.v, type(tp).v)
+        result.v = array_cast(self.v, _py_type(tp).v)
         return result
 
     def eval(self, ectx=None):
@@ -419,7 +419,7 @@ cdef class array(object):
         nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
         """
         cdef array result = array()
-        result.v = array_ucast(self.v, type(dtype).v, replace_ndim)
+        result.v = array_ucast(self.v, _py_type(dtype).v, replace_ndim)
         return result
 
     def view_scalars(self, dtp):
@@ -439,7 +439,7 @@ cdef class array(object):
             The scalars are viewed as this dtype.
         """
         cdef array result = array()
-        result.v = self.v.view_scalars(type(dtp).v)
+        result.v = self.v.view_scalars(_py_type(dtp).v)
         return result
 
 cdef _array dynd_nd_array_to_cpp(array a) except *:
@@ -499,7 +499,7 @@ def type_of(a):
     >>> nd.type_of(nd.array([[1,2],[3.0]]))
     ndt.type("2 * var * float64")
     """
-    cdef type result = type()
+    cdef _py_type result = _py_type()
     if isinstance(a, array):
         result.v = (<array> a).v.get_type()
     elif isinstance(a, callable):
@@ -524,7 +524,7 @@ def dtype_of(array a, size_t include_ndim=0):
         The number of array dimensions to include
         in the data type, default zero.
     """
-    cdef type result = type()
+    cdef _py_type result = _py_type()
     result.v = a.v.get_dtype(include_ndim)
     return result
 
@@ -681,13 +681,13 @@ def zeros(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_zeros(type(args[0]).v, access)
+        result.v = array_zeros(_py_type(args[0]).v, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_zeros(args[0], type(args[1]).v, access)
+        result.v = array_zeros(args[0], _py_type(args[1]).v, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_zeros(args[:-1], type(args[-1]).v, access)
+        result.v = array_zeros(args[:-1], _py_type(args[-1]).v, access)
     else:
         raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
     return result
@@ -725,13 +725,13 @@ def ones(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_ones(type(args[0]).v, access)
+        result.v = array_ones(_py_type(args[0]).v, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_ones(args[0], type(args[1]).v, access)
+        result.v = array_ones(args[0], _py_type(args[1]).v, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_ones(args[:-1], type(args[-1]).v, access)
+        result.v = array_ones(args[:-1], _py_type(args[-1]).v, access)
     else:
         raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
     return result
@@ -785,13 +785,13 @@ def full(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_full(type(args[0]).v, value, access)
+        result.v = array_full(_py_type(args[0]).v, value, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_full(args[0], type(args[1]).v, value, access)
+        result.v = array_full(args[0], _py_type(args[1]).v, value, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_full(args[:-1], type(args[-1]).v, value, access)
+        result.v = array_full(args[:-1], _py_type(args[-1]).v, value, access)
     else:
         raise TypeError('nd.full() expected at least 1 positional argument, got 0')
     return result
@@ -836,13 +836,13 @@ def empty(*args, **kwargs):
     largs = len(args)
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_empty(type(args[0]).v, access)
+        result.v = array_empty(_py_type(args[0]).v, access)
     elif largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_empty(args[0], type(args[1]).v, access)
+        result.v = array_empty(args[0], _py_type(args[1]).v, access)
     elif largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_empty(args[:-1], type(args[-1]).v, access)
+        result.v = array_empty(args[:-1], _py_type(args[-1]).v, access)
     else:
         raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
     return result
@@ -929,7 +929,7 @@ def parse_json(tp, json, ectx=None):
     if isinstance(tp, array):
         dynd_parse_json_array((<array>tp).v, array(json).v, ectx)
     else:
-        result.v = dynd_parse_json_type(type(tp).v, array(json).v, ectx)
+        result.v = dynd_parse_json_type(_py_type(tp).v, array(json).v, ectx)
         return result
 
 import operator
@@ -1010,4 +1010,4 @@ def fields(array struct_array, *fields_list):
 from ..cpp.json_parser cimport parse as _parse
 
 def parse(tp, obj):
-    return wrap(_parse((<type> tp).v, str(obj)))
+    return wrap(_parse((_py_type(tp)).v, str(obj)))

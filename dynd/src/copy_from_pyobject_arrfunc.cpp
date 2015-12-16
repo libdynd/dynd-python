@@ -6,6 +6,8 @@
 #include <Python.h>
 #include <datetime.h>
 
+#include <dynd/functional.hpp>
+
 #include "copy_from_pyobject_arrfunc.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "numpy_interop.hpp"
@@ -15,8 +17,6 @@
 #include "array_from_py_typededuction.hpp"
 
 #include "kernels/copy_from_pyobject_kernel.hpp"
-
-#include <dynd/func/multidispatch.hpp>
 
 using namespace std;
 
@@ -47,7 +47,7 @@ dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
   default_child =
       dynd::nd::callable::make<default_copy_from_pyobject_kernel>(0);
 
-  return dynd::nd::functional::multidispatch(
+  return dynd::nd::functional::dispatch(
       dynd::ndt::type("(void, broadcast: bool) -> Any"),
       [](const dynd::ndt::type &dst_tp, intptr_t DYND_UNUSED(nsrc),
          const dynd::ndt::type *src_tp) -> dynd::nd::callable & {

@@ -25,7 +25,7 @@
 #include <dynd/types/pointer_type.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/copy.hpp>
-#include <dynd/func/multidispatch.hpp>
+#include <dynd/functional.hpp>
 #include <dynd/func/compose.hpp>
 
 #include "kernels/copy_to_pyobject_kernel.hpp"
@@ -58,7 +58,7 @@ dynd::nd::callable pydynd::nd::copy_to_pyobject::make()
 
   default_child = dynd::nd::callable::make<default_copy_to_pyobject_kernel>(0);
 
-  return dynd::nd::functional::multidispatch(
+  return dynd::nd::functional::dispatch(
       dynd::ndt::type("(Any) -> void"),
       [](const dynd::ndt::type &DYND_UNUSED(dst_tp), intptr_t DYND_UNUSED(nsrc),
          const dynd::ndt::type *src_tp) -> dynd::nd::callable & {

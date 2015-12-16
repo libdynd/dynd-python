@@ -312,38 +312,7 @@ class TestViewConstructor(unittest.TestCase):
         a[1] = 10
         self.assertEqual(nd.as_py(b), [1, 10, 3])
         # Can't construct a view of a python list
-        self.assertRaises(RuntimeError, nd.view, [1, 2, 3])
-
-    def test_access_from_immutable_array(self):
-        # `a` is an immutable array
-        a = nd.array([1, 2, 3], access='r')
-        b = nd.view(a)
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.view(a, access='immutable')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.view(a, access='readonly')
-        self.assertEqual(b.access_flags, 'immutable')
-        b = nd.view(a, access='r')
-        self.assertEqual(b.access_flags, 'immutable')
-        # Can't create a readwrite view from a readonly array
-        self.assertRaises(RuntimeError, nd.view, b, access='readwrite')
-        self.assertRaises(RuntimeError, nd.view, b, access='rw')
-
-    def test_access_from_readwrite_array(self):
-        # `a` is a readwrite array
-        a = nd.array([1, 2, 3], access='rw')
-        b = nd.view(a)
-        self.assertEqual(b.access_flags, 'readwrite')
-        # Can't create an immutable view of a readwrite array
-        self.assertRaises(RuntimeError, nd.view, a, access='immutable')
-        b = nd.view(a, access='readonly')
-        self.assertEqual(b.access_flags, 'readonly')
-        b = nd.view(a, access='r')
-        self.assertEqual(b.access_flags, 'readonly')
-        b = nd.view(a, access='readwrite')
-        self.assertEqual(b.access_flags, 'readwrite')
-        b = nd.view(a, access='rw')
-        self.assertEqual(b.access_flags, 'readwrite')
+        self.assertRaises(TypeError, nd.view, [1, 2, 3])
 
 class TestAsArrayConstructor(unittest.TestCase):
     # Constructs a view if possible, otherwise a copy

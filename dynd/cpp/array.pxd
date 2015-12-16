@@ -34,6 +34,8 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array operator>=(array &)
         array operator>(array &)
 
+        array assign "operator="(array &) except +translate_exception
+
     # These should be usable with Cython's operator overloading syntax, but
     # the exception handling doesn't work for overloaded operators in Cython
     # versions before 0.24, so, for now, this will have to do.

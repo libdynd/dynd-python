@@ -374,7 +374,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         #self.assertEqual(np.asarray(a).dtype, np.dtype(object))
 
     def test_readwrite_access_flags(self):
-        def assign_to(x,y):
+        def assign_to(x, y):
             x[0] = y
         # Tests that read/write access control is preserved to/from numpy
         a = np.arange(10.)
@@ -385,9 +385,6 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
 
-        # Readonly view of writeable
-        b = nd.view(a, access='r')
-        self.assertRaises(RuntimeError, assign_to, b, 3.0)
         # should still be 2.0
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
@@ -399,8 +396,6 @@ class TestNumpyViewInterop(unittest.TestCase):
         # should still be 2.0
         self.assertEqual(nd.as_py(b[0]), 2.0)
         self.assertEqual(a[0], 2.0)
-        # Trying to get a readwrite view raises an error
-        self.assertRaises(RuntimeError, nd.view, a, access='rw')
 
 class TestAsNumpy(unittest.TestCase):
     def test_struct_as_numpy(self):

@@ -833,7 +833,7 @@ namespace nd {
       dynd::nd::callable copy_af = make_callable_from_assignment(
           dst_tp, buf_tp, dynd::assign_error_default);
       dynd::nd::callable child =
-          dynd::nd::functional::compose(copy_from_pyobject, copy_af, buf_tp);
+          dynd::nd::functional::compose(copy_from_pyobject::get(), copy_af, buf_tp);
       return child.get()->instantiate(child.get()->static_data(), NULL, ckb,
                                       ckb_offset, dst_tp, dst_arrmeta, nsrc,
                                       src_tp, src_arrmeta, kernreq, ectx, 0,
@@ -1422,7 +1422,7 @@ namespace nd {
     {
       if (dst_tp.get_kind() == dynd::expr_kind) {
         dynd::nd::callable af = dynd::nd::functional::compose(
-            copy_from_pyobject, dynd::nd::copy, dst_tp.value_type());
+            copy_from_pyobject::get(), dynd::nd::copy::get(), dst_tp.value_type());
         return af.get()->instantiate(
             af.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
             nsrc, src_tp, src_arrmeta, kernreq, ectx, nkwd, kwds, tp_vars);

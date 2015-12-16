@@ -68,7 +68,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
   }
   else if (PyDataType_ISOBJECT(dtype)) {
     dynd::nd::base_callable *af = const_cast<dynd::nd::base_callable *>(
-        static_cast<dynd::nd::callable>(nd::copy_to_pyobject).get());
+        nd::copy_to_pyobject::get().get());
     return af->instantiate(af->static_data(), NULL, ckb, ckb_offset,
                            dynd::ndt::type::make<void>(), NULL, nsrc, src_tp,
                            src_arrmeta, kernreq, ectx, 0, NULL, tp_vars);
@@ -216,10 +216,10 @@ void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
   }
   tmp_dst.get()->data = (char *)PyArray_DATA(dst_arr);
   char *src_data_nonconst = const_cast<char *>(src_data);
-  (*copy_to_numpy::get().get())(tmp_dst.get_type(), tmp_dst.get()->metadata(),
-                                tmp_dst.data(), 1, &src_tp, &src_arrmeta,
-                                &src_data_nonconst, 1, NULL,
-                                std::map<std::string, dynd::ndt::type>());
+  copy_to_numpy::get()->call(tmp_dst.get_type(), tmp_dst.get()->metadata(),
+                             tmp_dst.data(), 1, &src_tp, &src_arrmeta,
+                             &src_data_nonconst, 1, NULL,
+                             std::map<std::string, dynd::ndt::type>());
 }
 
 #endif // DYND_NUMPY_INTEROP

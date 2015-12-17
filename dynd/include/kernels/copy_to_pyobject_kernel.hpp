@@ -725,8 +725,7 @@ namespace nd {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck =
           copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
-      dynd::nd::callable &is_avail =
-          src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail();
+      dynd::nd::callable &is_avail = dynd::nd::is_avail::get();
       ckb_offset = is_avail.get()->instantiate(
           is_avail.get()->static_data(), NULL, ckb, ckb_offset,
           dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,

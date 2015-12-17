@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dynd/parser_util.hpp>
+#include <dynd/parse.hpp>
 #include <dynd/func/compose.hpp>
 #include <dynd/func/copy.hpp>
 #include <dynd/kernels/base_kernel.hpp>
@@ -73,9 +73,9 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-    if (dynd::parse::overflow_check<int8_t>::is_overflow(v)) {
-      throw std::overflow_error("overflow assigning to dynd int8");
-    }
+//    if (dynd::overflow_check<int8_t>::is_overflow(v, true)) {
+  //    throw std::overflow_error("overflow assigning to dynd int8");
+    //}
     *out = static_cast<int8_t>(v);
   }
 
@@ -85,9 +85,9 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-    if (dynd::parse::overflow_check<int16_t>::is_overflow(v)) {
-      throw std::overflow_error("overflow assigning to dynd int16");
-    }
+//    if (dynd::overflow_check<int16_t>::is_overflow(v, true)) {
+  //    throw std::overflow_error("overflow assigning to dynd int16");
+    //}
     *out = static_cast<int16_t>(v);
   }
 
@@ -97,9 +97,9 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-    if (dynd::parse::overflow_check<int32_t>::is_overflow(v)) {
-      throw std::overflow_error("overflow assigning to dynd int32");
-    }
+//    if (dynd::overflow_check<int32_t>::is_overflow(v, true)) {
+  //    throw std::overflow_error("overflow assigning to dynd int32");
+    //}
     *out = static_cast<int32_t>(v);
   }
 
@@ -146,7 +146,7 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-    if (dynd::parse::overflow_check<uint8_t>::is_overflow(v)) {
+    if (dynd::overflow_check<uint8_t>::is_overflow(v)) {
       throw std::overflow_error("overflow assigning to dynd uint8");
     }
     *out = static_cast<uint8_t>(v);
@@ -158,7 +158,7 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-    if (dynd::parse::overflow_check<uint16_t>::is_overflow(v)) {
+    if (dynd::overflow_check<uint16_t>::is_overflow(v)) {
       throw std::overflow_error("overflow assigning to dynd uint16");
     }
     *out = static_cast<uint16_t>(v);
@@ -170,7 +170,7 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-    if (dynd::parse::overflow_check<uint32_t>::is_overflow(v)) {
+    if (dynd::overflow_check<uint32_t>::is_overflow(v)) {
       throw std::overflow_error("overflow assigning to dynd uint32");
     }
     *out = static_cast<uint32_t>(v);

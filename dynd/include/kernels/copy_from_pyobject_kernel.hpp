@@ -23,8 +23,9 @@ namespace nd {
                                 const dynd::ndt::type &src_tp,
                                 const char *src_arrmeta, const char *src_data)
   {
-    dynd::nd::array kwd = dynd::nd::empty(
-        dynd::ndt::option_type::make(dynd::ndt::make_type<int>()));
+    dynd::nd::array kwd =
+        dynd::nd::empty(dynd::ndt::make_type<dynd::ndt::option_type>(
+            dynd::ndt::make_type<int>()));
     *reinterpret_cast<int *>(kwd.data()) =
         static_cast<int>(dynd::assign_error_fractional);
     std::map<std::string, dynd::ndt::type> tp_vars;
@@ -794,8 +795,7 @@ namespace nd {
 
       intptr_t root_ckb_offset = ckb_offset;
       make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
-      dynd::nd::callable assign_na =
-          dst_tp.extended<dynd::ndt::option_type>()->get_assign_na();
+      dynd::nd::callable assign_na = dynd::nd::assign_na::get();
       ckb_offset = assign_na.get()->instantiate(
           assign_na.get()->static_data(), NULL, ckb, ckb_offset, dst_tp,
           dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single, ectx,
@@ -832,8 +832,8 @@ namespace nd {
           dst_tp.extended<dynd::ndt::categorical_type>()->get_category_type();
       dynd::nd::callable copy_af = make_callable_from_assignment(
           dst_tp, buf_tp, dynd::assign_error_default);
-      dynd::nd::callable child =
-          dynd::nd::functional::compose(copy_from_pyobject::get(), copy_af, buf_tp);
+      dynd::nd::callable child = dynd::nd::functional::compose(
+          copy_from_pyobject::get(), copy_af, buf_tp);
       return child.get()->instantiate(child.get()->static_data(), NULL, ckb,
                                       ckb_offset, dst_tp, dst_arrmeta, nsrc,
                                       src_tp, src_arrmeta, kernreq, ectx, 0,
@@ -1422,7 +1422,8 @@ namespace nd {
     {
       if (dst_tp.get_kind() == dynd::expr_kind) {
         dynd::nd::callable af = dynd::nd::functional::compose(
-            copy_from_pyobject::get(), dynd::nd::copy::get(), dst_tp.value_type());
+            copy_from_pyobject::get(), dynd::nd::copy::get(),
+            dst_tp.value_type());
         return af.get()->instantiate(
             af.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
             nsrc, src_tp, src_arrmeta, kernreq, ectx, nkwd, kwds, tp_vars);

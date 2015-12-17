@@ -144,7 +144,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
 #endif // DYND_NUMPY_INTEROP
   }
   else if (obj == Py_None) {
-    return ndt::option_type::make(ndt::make_type<void>());
+    return ndt::make_type<ndt::option_type>(ndt::make_type<void>());
   }
 
   // Check for a blaze.Array, or something which looks similar,

@@ -210,8 +210,13 @@ dynd::ndt::type _type_of_numpy_scalar(PyObject *obj);
  * \param access_flags  The requested access flags (0 for default).
  * \param always_copy  If true, produce a copy instead of a view.
  */
-dynd::nd::array array_from_numpy_array(PyArrayObject *obj,
-                                       uint32_t access_flags, bool always_copy);
+dynd::nd::array PYDYND_API array_from_numpy_array(PyArrayObject *obj, uint32_t access_flags, bool always_copy);
+
+// Convenience wrapper for use in Cython where the type has already been
+// checked.
+inline dynd::nd::array array_from_numpy_array_cast(PyObject *obj, uint32_t access_flags, bool always_copy) {
+  return array_from_numpy_array(reinterpret_cast<PyArrayObject*>(obj), access_flags, always_copy);
+}
 
 /**
  * Creates a dynd::nd::array from a numpy scalar. This always produces

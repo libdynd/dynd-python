@@ -8,6 +8,8 @@
 
 #include <Python.h>
 
+#include "visibility.hpp"
+
 #include <dynd/array.hpp>
 
 namespace pydynd {
@@ -25,9 +27,15 @@ namespace pydynd {
  * \param always_copy If this is set to true, a new copy is always
  *                    created.
  */
-dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
+PYDYND_API dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
                               bool always_copy,
                               const dynd::eval::eval_context *ectx);
+
+// A convenience wrapper for Cython using the default eval context.
+inline dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
+                                     bool always_copy) {
+  return array_from_py(obj, access_flags, always_copy, &dynd::eval::default_eval_context);
+ }
 
 /**
  * Converts a Python object into an nd::array using

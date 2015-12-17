@@ -24,7 +24,7 @@ namespace nd {
                                 const char *src_arrmeta, const char *src_data)
   {
     dynd::nd::array kwd = dynd::nd::empty(
-        dynd::ndt::option_type::make(dynd::ndt::type::make<int>()));
+        dynd::ndt::option_type::make(dynd::ndt::make_type<int>()));
     *reinterpret_cast<int *>(kwd.data()) =
         static_cast<int>(dynd::assign_error_fractional);
     std::map<std::string, dynd::ndt::type> tp_vars;
@@ -456,7 +456,7 @@ namespace nd {
           throw std::exception();
         }
 
-        dynd::ndt::type str_tp = dynd::ndt::string_type::make();
+        dynd::ndt::type str_tp = dynd::ndt::make_type<dynd::ndt::string_type>();
         dynd::string str_d(s, len);
 
         pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_tp, NULL,
@@ -471,7 +471,7 @@ namespace nd {
           throw std::runtime_error("Error getting string data");
         }
 
-        dynd::ndt::type str_dt = dynd::ndt::string_type::make();
+        dynd::ndt::type str_dt = dynd::ndt::make_type<dynd::ndt::string_type>();
         dynd::string str_d(pystr_data, pystr_len);
 
         pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, str_dt, NULL,
@@ -749,7 +749,7 @@ namespace nd {
           throw std::exception();
         }
 
-        dynd::ndt::type str_tp = dynd::ndt::string_type::make();
+        dynd::ndt::type str_tp = dynd::ndt::make_type<dynd::ndt::string_type>();
         dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
 
@@ -766,7 +766,7 @@ namespace nd {
           throw std::exception();
         }
 
-        dynd::ndt::type str_tp = dynd::ndt::string_type::make();
+        dynd::ndt::type str_tp = dynd::ndt::make_type<dynd::ndt::string_type>();
         dynd::string str_d(s, len);
         const char *src_str = reinterpret_cast<const char *>(&str_d);
 

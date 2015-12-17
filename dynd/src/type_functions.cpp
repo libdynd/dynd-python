@@ -154,24 +154,24 @@ PyObject *pydynd::_type_get_type_id(const dynd::ndt::type &d)
 static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 {
   if (obj == &PyBool_Type) {
-    return ndt::type::make<bool1>();
+    return ndt::make_type<bool1>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (obj == &PyInt_Type) {
-    return ndt::type::make<int32_t>();
+    return ndt::make_type<int32_t>();
 #endif
   }
   else if (obj == &PyLong_Type) {
-    return ndt::type::make<int32_t>();
+    return ndt::make_type<int32_t>();
   }
   else if (obj == &PyFloat_Type) {
-    return ndt::type::make<double>();
+    return ndt::make_type<double>();
   }
   else if (obj == &PyComplex_Type) {
-    return ndt::type::make<dynd::complex<double>>();
+    return ndt::make_type<dynd::complex<double>>();
   }
   else if (obj == &PyUnicode_Type) {
-    return ndt::string_type::make();
+    return ndt::make_type<dynd::ndt::string_type>();
   }
   else if (obj == &PyByteArray_Type) {
     return ndt::bytes_type::make(1);
@@ -182,7 +182,7 @@ static dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 #else
   }
   else if (obj == &PyString_Type) {
-    return ndt::string_type::make();
+    return ndt::make_type<dynd::ndt::string_type>();
 #endif
   }
   else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
@@ -350,7 +350,7 @@ dynd::ndt::type pydynd::dynd_make_string_type(PyObject *encoding_obj)
 {
   string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-  return ndt::string_type::make();
+  return ndt::make_type<dynd::ndt::string_type>();
 }
 
 dynd::ndt::type pydynd::dynd_make_pointer_type(const ndt::type &target_tp)

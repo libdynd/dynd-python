@@ -81,7 +81,7 @@ void pydynd::get_ctypes_signature(PyCFuncPtrObject *cfunc,
   // Get the return type
   if (restype == Py_None) {
     // No return type
-    out_returntype = ndt::type::make<void>();
+    out_returntype = ndt::make_type<void>();
   }
   else {
     out_returntype = _type_from_ctypes_cdatatype(restype);
@@ -133,31 +133,31 @@ dynd::ndt::type pydynd::_type_from_ctypes_cdatatype(PyObject *d)
 
     switch (proto_str[0]) {
     case 'b':
-      return ndt::type::make<int8_t>();
+      return ndt::make_type<int8_t>();
     case 'B':
-      return ndt::type::make<uint8_t>();
+      return ndt::make_type<uint8_t>();
     case 'c':
       return ndt::fixed_string_type::make(1, string_encoding_ascii);
     case 'd':
-      return ndt::type::make<double>();
+      return ndt::make_type<double>();
     case 'f':
-      return ndt::type::make<float>();
+      return ndt::make_type<float>();
     case 'h':
-      return ndt::type::make<int16_t>();
+      return ndt::make_type<int16_t>();
     case 'H':
-      return ndt::type::make<uint16_t>();
+      return ndt::make_type<uint16_t>();
     case 'i':
-      return ndt::type::make<int32_t>();
+      return ndt::make_type<int32_t>();
     case 'I':
-      return ndt::type::make<uint32_t>();
+      return ndt::make_type<uint32_t>();
     case 'l':
-      return ndt::type::make<long>();
+      return ndt::make_type<long>();
     case 'L':
-      return ndt::type::make<unsigned long>();
+      return ndt::make_type<unsigned long>();
     case 'q':
-      return ndt::type::make<int64_t>();
+      return ndt::make_type<int64_t>();
     case 'Q':
-      return ndt::type::make<uint64_t>();
+      return ndt::make_type<uint64_t>();
     default: {
       stringstream ss;
       ss << "The ctypes type code '" << proto_str[0]

@@ -97,39 +97,39 @@ dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
  {
    switch (numpy_type_num) {
    case NPY_BOOL:
-     return dynd::ndt::type::make<dynd::bool1>();
+     return dynd::ndt::make_type<dynd::bool1>();
    case NPY_BYTE:
-     return dynd::ndt::type::make<npy_byte>();
+     return dynd::ndt::make_type<npy_byte>();
    case NPY_UBYTE:
-     return dynd::ndt::type::make<npy_ubyte>();
+     return dynd::ndt::make_type<npy_ubyte>();
    case NPY_SHORT:
-     return dynd::ndt::type::make<npy_short>();
+     return dynd::ndt::make_type<npy_short>();
    case NPY_USHORT:
-     return dynd::ndt::type::make<npy_ushort>();
+     return dynd::ndt::make_type<npy_ushort>();
    case NPY_INT:
-     return dynd::ndt::type::make<npy_int>();
+     return dynd::ndt::make_type<npy_int>();
    case NPY_UINT:
-     return dynd::ndt::type::make<npy_uint>();
+     return dynd::ndt::make_type<npy_uint>();
    case NPY_LONG:
-     return dynd::ndt::type::make<npy_long>();
+     return dynd::ndt::make_type<npy_long>();
    case NPY_ULONG:
-     return dynd::ndt::type::make<npy_ulong>();
+     return dynd::ndt::make_type<npy_ulong>();
    case NPY_LONGLONG:
-     return dynd::ndt::type::make<npy_longlong>();
+     return dynd::ndt::make_type<npy_longlong>();
    case NPY_ULONGLONG:
-     return dynd::ndt::type::make<npy_ulonglong>();
+     return dynd::ndt::make_type<npy_ulonglong>();
  #if NPY_API_VERSION >= 6 // At least NumPy 1.6
    case NPY_HALF:
-     return dynd::ndt::type::make<dynd::float16>();
+     return dynd::ndt::make_type<dynd::float16>();
  #endif
    case NPY_FLOAT:
-     return dynd::ndt::type::make<float>();
+     return dynd::ndt::make_type<float>();
    case NPY_DOUBLE:
-     return dynd::ndt::type::make<double>();
+     return dynd::ndt::make_type<double>();
    case NPY_CFLOAT:
-     return dynd::ndt::type::make<dynd::complex<float>>();
+     return dynd::ndt::make_type<dynd::complex<float>>();
    case NPY_CDOUBLE:
-     return dynd::ndt::type::make<dynd::complex<double>>();
+     return dynd::ndt::make_type<dynd::complex<double>>();
    default: {
      std::stringstream ss;
      ss << "Cannot convert numpy type num " << numpy_type_num

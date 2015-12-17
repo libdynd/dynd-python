@@ -729,7 +729,7 @@ namespace nd {
           src_tp[0].extended<dynd::ndt::option_type>()->get_is_avail();
       ckb_offset = is_avail.get()->instantiate(
           is_avail.get()->static_data(), NULL, ckb, ckb_offset,
-          dynd::ndt::type::make<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
+          dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, 0, NULL, tp_vars);
       reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
           ->reserve(ckb_offset);
@@ -1138,7 +1138,8 @@ namespace nd {
                 const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       dynd::nd::callable af = dynd::nd::functional::compose(
-          dynd::nd::copy::get(), copy_to_pyobject::get(), src_tp[0].value_type());
+          dynd::nd::copy::get(), copy_to_pyobject::get(),
+          src_tp[0].value_type());
       return af.get()->instantiate(
           af.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
           nsrc, src_tp, src_arrmeta, kernreq, ectx, nkwd, kwds, tp_vars);

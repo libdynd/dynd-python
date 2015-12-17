@@ -37,7 +37,7 @@ void pydynd::init_array_from_py_typededuction()
 }
 
 ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
-                                                bool throw_on_unknown)
+                                             bool throw_on_unknown)
 {
 #if DYND_NUMPY_INTEROP
   if (PyArray_Check(obj)) {
@@ -53,7 +53,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
 
   if (PyBool_Check(obj)) {
     // Python bool
-    return ndt::type::make<dynd::bool1>();
+    return ndt::make_type<dynd::bool1>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyInt_Check(obj)) {
@@ -64,13 +64,13 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     // is independent of sizeof(long), and is the same on 32-bit
     // and 64-bit platforms.
     if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::type::make<int>();
+      return ndt::make_type<int>();
     }
     else {
-      return ndt::type::make<long>();
+      return ndt::make_type<long>();
     }
 #else
-    return ndt::type::make<int>();
+    return ndt::make_type<int>();
 #endif
 #endif // PY_VERSION_HEX < 0x03000000
   }
@@ -84,24 +84,24 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     // is independent of sizeof(long), and is the same on 32-bit
     // and 64-bit platforms.
     if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::type::make<int>();
+      return ndt::make_type<int>();
     }
     else {
-      return ndt::type::make<PY_LONG_LONG>();
+      return ndt::make_type<PY_LONG_LONG>();
     }
   }
   else if (PyFloat_Check(obj)) {
     // Python float
-    return ndt::type::make<double>();
+    return ndt::make_type<double>();
   }
   else if (PyComplex_Check(obj)) {
     // Python complex
-    return ndt::type::make<dynd::complex<double>>();
+    return ndt::make_type<dynd::complex<double>>();
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyString_Check(obj)) {
     // Python string
-    return ndt::string_type::make();
+    return ndt::make_type<ndt::string_type>();
 #else
   }
   else if (PyBytes_Check(obj)) {
@@ -111,7 +111,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
   }
   else if (PyUnicode_Check(obj)) {
     // Python string
-    return ndt::string_type::make();
+    return ndt::make_type<ndt::string_type>();
   }
   else if (PyDateTime_Check(obj)) {
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&
@@ -144,7 +144,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
 #endif // DYND_NUMPY_INTEROP
   }
   else if (obj == Py_None) {
-    return ndt::option_type::make(ndt::type::make<void>());
+    return ndt::option_type::make(ndt::make_type<void>());
   }
 
   // Check for a blaze.Array, or something which looks similar,
@@ -226,7 +226,7 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
     ndt::type obj_tp;
 #if PY_VERSION_HEX >= 0x03000000
     if (PyUnicode_Check(obj)) {
-      obj_tp = ndt::string_type::make();
+      obj_tp = ndt::make_type<ndt::string_type>();
     }
     else {
       obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
@@ -266,10 +266,11 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
       return max_count;
     }
     else {
-      return min(max_count, 1 + get_nonragged_dim_count(
-                                    static_cast<const ndt::base_dim_type *>(
-                                        tp.extended())->get_element_type(),
-                                    max_count - 1));
+      return min(max_count,
+                 1 + get_nonragged_dim_count(
+                         static_cast<const ndt::base_dim_type *>(tp.extended())
+                             ->get_element_type(),
+                         max_count - 1));
     }
   case struct_kind:
   case tuple_kind:

@@ -2,11 +2,13 @@
 
 _builtin_type = type
 
-from cpython.object cimport Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT
+from cpython.object cimport (Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT,
+                             PyObject_TypeCheck, PyObject)
 from cpython.buffer cimport PyObject_CheckBuffer
 from libcpp.string cimport string
 from libcpp.map cimport map
 from cython.operator import dereference
+import numpy as _np
 
 from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide)
@@ -71,6 +73,18 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 
 cdef extern from 'array_assign_from_py.hpp' namespace 'pydynd':
     void array_broadcast_assign_from_py(_array &, object)
+
+cdef extern from "array_from_py.hpp" namespace 'pydynd':
+    _array array_from_py(object, unsigned int, int)
+
+cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
+    # Have Cython use an integer to represent the bool argument.
+    # It will convert implicitly to bool at the C++ level.
+    _array array_from_numpy_array_cast(PyObject*, unsigned int, bint)
+
+# Alias the builtin name `type` so it can be used in functions where it isn't
+# in scope due to argument naming.
+_builtin_type = type
 
 cdef class array(object):
     """
@@ -461,27 +475,27 @@ cdef array dynd_nd_array_from_cpp(_array a):
 
 set_wrapper_type[_array](array)
 
-cpdef array asarray(obj, access=None):
+cpdef array asarray(object obj):
     """
-    nd.asarray(obj, access=None)
+    nd.asarray(obj)
     Constructs a dynd array from the object, taking a view
-    if possible, otherwise making a copy.
+    if possible, otherwise making a copy. If the object is already
+    a DyND array, the same object is returned.
     Parameters
     ----------
     obj : object
         The object which is to be converted into a dynd array,
         as a view if possible, otherwise a copy.
-    access : 'readwrite'/'rw', 'readonly'/'r', 'immutable', optional
-        If provided, the access flags the resulting array should
-        satisfy. When a view can be taken, but these access flags
-        cannot, a copy is made.
     """
-
-    cdef array result = array()
+    if _builtin_type(obj) is array:
+        return obj
+    elif _builtin_type(obj) is _np.ndarray:
+        return dynd_nd_array_from_cpp(array_from_numpy_array_cast(<PyObject*>obj, 0, 0))
+    # elif PyObject_CheckBuffer(obj):
+    #     TODO
     if isinstance(obj, tuple):
         obj = list(obj)
-    result.v = array_asarray(obj, access)
-    return result
+    return dynd_nd_array_from_cpp(array_from_py(obj, 0, 0))
 
 from dynd.nd.callable cimport callable
 

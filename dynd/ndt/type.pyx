@@ -53,10 +53,12 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type dynd_make_fixed_dim_type(object, _type&) except +translate_exception
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
 
+_builtin_type = type
+
 __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
     'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
     'float64', 'float128', 'complex_float32', 'complex_float64', 'void', \
-    'tuple', 'struct', 'callable', 'scalar']
+    'tuple', 'struct', 'callable', 'scalar', 'astype']
 
 type_ids = {}
 type_ids['UNINITIALIZED'] = uninitialized_type_id
@@ -292,6 +294,11 @@ cdef type dynd_ndt_type_from_cpp(_type t):
     cdef type tp = type.__new__(type)
     tp.v = t
     return tp
+
+cpdef type astype(object o):
+    if _builtin_type(o) is type:
+        return <type>o
+    return dynd_ndt_type_from_cpp(make__type_from_pyobject(o))
 
 set_wrapper_type[_type](type)
 

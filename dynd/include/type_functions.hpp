@@ -22,11 +22,6 @@ inline int DyND_PyType_Check(PyObject *obj)
   return DyND_PyWrapper_Check<dynd::ndt::type>(obj);
 }
 
-inline int DyND_PyType_CheckExact(PyObject *obj)
-{
-  return DyND_PyWrapper_CheckExact<dynd::ndt::type>(obj);
-}
-
 namespace pydynd {
 
 inline std::string _type_str(const dynd::ndt::type &d)
@@ -93,14 +88,6 @@ PYDYND_API dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
 
 PYDYND_API dynd::ndt::type
 dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
-
-/**
- * Implementation of __getitem__ for the wrapped dynd type object.
- */
-PYDYND_API dynd::ndt::type _type_getitem(const dynd::ndt::type &d,
-                                         PyObject *subscript);
-
-PYDYND_API PyObject *_type_array_property_names(const dynd::ndt::type &d);
 
 PYDYND_API void init_type_functions();
 

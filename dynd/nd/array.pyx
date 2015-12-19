@@ -1024,8 +1024,3 @@ def fields(array struct_array, *fields_list):
     cdef array result = array()
     result.v = nd_fields(struct_array.v, fields_list)
     return result
-
-from ..cpp.json_parser cimport parse as _parse
-
-def parse(tp, obj):
-    return wrap(_parse((_py_type(tp)).v, str(obj)))

@@ -44,68 +44,6 @@ inline void print_generic_type_repr(ostream &o, const ndt::type &d)
   o << ")";
 }
 
-std::string pydynd::_type_repr(const dynd::ndt::type &d)
-{
-  std::stringstream ss;
-  if (d.is_builtin() && d.get_type_id() != dynd::complex_float32_type_id &&
-      d.get_type_id() != dynd::complex_float64_type_id) {
-    ss << "ndt." << d;
-  }
-  else {
-    switch (d.get_type_id()) {
-    case complex_float32_type_id:
-      ss << "ndt.complex_float32";
-      break;
-    case complex_float64_type_id:
-      ss << "ndt.complex_float64";
-      break;
-    case date_type_id:
-      ss << "ndt.date";
-      break;
-    case time_type_id:
-      if (d.extended<ndt::time_type>()->get_timezone() == tz_abstract) {
-        ss << "ndt.time";
-      }
-      else {
-        print_generic_type_repr(ss, d);
-      }
-      break;
-    case datetime_type_id:
-      if (d.extended<ndt::datetime_type>()->get_timezone() == tz_abstract) {
-        ss << "ndt.datetime";
-      }
-      else if (d.extended<ndt::datetime_type>()->get_timezone() == tz_utc) {
-        ss << "ndt.datetimeutc";
-      }
-      else {
-        print_generic_type_repr(ss, d);
-      }
-      break;
-    case bytes_type_id:
-      if (d.extended<ndt::bytes_type>()->get_target_alignment() == 1) {
-        ss << "ndt.bytes";
-      }
-      else {
-        print_generic_type_repr(ss, d);
-      }
-      break;
-    case string_type_id:
-      if (d.extended<ndt::string_type>()->get_encoding() ==
-          string_encoding_utf_8) {
-        ss << "ndt.string";
-      }
-      else {
-        print_generic_type_repr(ss, d);
-      }
-      break;
-    default:
-      print_generic_type_repr(ss, d);
-      break;
-    }
-  }
-  return ss.str();
-}
-
 PyObject *pydynd::_type_get_shape(const dynd::ndt::type &d)
 {
   size_t ndim = d.get_ndim();

@@ -31,7 +31,11 @@ inline std::string _type_str(const dynd::ndt::type &d)
   return ss.str();
 }
 
-PYDYND_API std::string _type_repr(const dynd::ndt::type &d);
+inline std::string _type_repr(const dynd::ndt::type &d) {
+  std::stringstream ss;
+  ss << "ndt.type('" << d << "')";
+  return ss.str();
+}
 
 PYDYND_API PyObject *_type_get_shape(const dynd::ndt::type &d);
 

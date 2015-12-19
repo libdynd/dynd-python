@@ -166,13 +166,13 @@ class TestDType(unittest.TestCase):
         import datetime
         self.assertEqual(ndt.date, ndt.type(datetime.date))
         self.assertEqual(str(ndt.date), "date")
-        self.assertEqual(repr(ndt.date), "ndt.date")
+        self.assertEqual(repr(ndt.date), "ndt.type('date')")
         self.assertEqual(ndt.time, ndt.type(datetime.time))
         self.assertEqual(str(ndt.time), "time")
-        self.assertEqual(repr(ndt.time), "ndt.time")
+        self.assertEqual(repr(ndt.time), "ndt.type('time')")
         self.assertEqual(ndt.datetime, ndt.type(datetime.datetime))
         self.assertEqual(str(ndt.datetime), "datetime")
-        self.assertEqual(repr(ndt.datetime), "ndt.datetime")
+        self.assertEqual(repr(ndt.datetime), "ndt.type('datetime')")
 
     def test_fixed_bytes_type(self):
         d = ndt.make_fixed_bytes(4, 4)
@@ -210,7 +210,7 @@ class TestDType(unittest.TestCase):
         self.assertFalse(ndt.type('{x: int32}') == ndt.type('{y: int32}'))
 
     def test_callable_type(self):
-        tp = ndt.callable(ndt.int32, ndt.float64)        
+        tp = ndt.callable(ndt.int32, ndt.float64)
 
     def test_struct_type(self):
         tp = ndt.make_struct([ndt.int32, ndt.int64], ['x', 'y'])

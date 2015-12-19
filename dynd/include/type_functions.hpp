@@ -29,8 +29,6 @@ inline int DyND_PyType_CheckExact(PyObject *obj)
 
 namespace pydynd {
 
-PYDYND_API void init_w_type_typeobject(PyObject *type);
-
 inline std::string _type_str(const dynd::ndt::type &d)
 {
   std::stringstream ss;

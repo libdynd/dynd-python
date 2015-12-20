@@ -4,7 +4,6 @@
 #include <dynd/func/compose.hpp>
 #include <dynd/func/copy.hpp>
 #include <dynd/kernels/base_kernel.hpp>
-#include <dynd/kernels/base_virtual_kernel.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/categorical_type.hpp>
@@ -73,8 +72,8 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-//    if (dynd::overflow_check<int8_t>::is_overflow(v, true)) {
-  //    throw std::overflow_error("overflow assigning to dynd int8");
+    //    if (dynd::overflow_check<int8_t>::is_overflow(v, true)) {
+    //    throw std::overflow_error("overflow assigning to dynd int8");
     //}
     *out = static_cast<int8_t>(v);
   }
@@ -85,8 +84,8 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-//    if (dynd::overflow_check<int16_t>::is_overflow(v, true)) {
-  //    throw std::overflow_error("overflow assigning to dynd int16");
+    //    if (dynd::overflow_check<int16_t>::is_overflow(v, true)) {
+    //    throw std::overflow_error("overflow assigning to dynd int16");
     //}
     *out = static_cast<int16_t>(v);
   }
@@ -97,8 +96,8 @@ namespace nd {
     if (v == -1 && PyErr_Occurred()) {
       throw std::exception();
     }
-//    if (dynd::overflow_check<int32_t>::is_overflow(v, true)) {
-  //    throw std::overflow_error("overflow assigning to dynd int32");
+    //    if (dynd::overflow_check<int32_t>::is_overflow(v, true)) {
+    //    throw std::overflow_error("overflow assigning to dynd int32");
     //}
     *out = static_cast<int32_t>(v);
   }
@@ -816,7 +815,7 @@ namespace nd {
 
   template <>
   struct copy_from_pyobject_kernel<dynd::categorical_type_id>
-      : dynd::nd::base_virtual_kernel<
+      : dynd::nd::base_kernel<
             copy_from_pyobject_kernel<dynd::categorical_type_id>> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
@@ -1410,7 +1409,7 @@ namespace nd {
   };
 
   struct default_copy_from_pyobject_kernel
-      : dynd::nd::base_virtual_kernel<default_copy_from_pyobject_kernel> {
+      : dynd::nd::base_kernel<default_copy_from_pyobject_kernel> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
                 const dynd::ndt::type &dst_tp, const char *dst_arrmeta,

@@ -7,7 +7,6 @@
 
 #include "numpy_interop.hpp"
 
-#include <dynd/kernels/base_virtual_kernel.hpp>
 #include <dynd/callable.hpp>
 
 namespace pydynd {
@@ -25,7 +24,7 @@ struct copy_to_numpy_arrmeta {
   uintptr_t dst_alignment;
 };
 
-struct copy_to_numpy_ck : dynd::nd::base_virtual_kernel<copy_to_numpy_ck> {
+struct copy_to_numpy_ck : dynd::nd::base_kernel<copy_to_numpy_ck> {
   static intptr_t
   instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,

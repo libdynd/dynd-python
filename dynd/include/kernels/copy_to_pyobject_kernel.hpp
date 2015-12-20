@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dynd/kernels/base_kernel.hpp>
-#include <dynd/kernels/base_virtual_kernel.hpp>
 
 namespace pydynd {
 namespace nd {
@@ -341,7 +340,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::string_type_id>
-      : dynd::nd::base_virtual_kernel<
+      : dynd::nd::base_kernel<
             copy_to_pyobject_kernel<dynd::string_type_id>> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
@@ -511,7 +510,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::fixed_string_type_id>
-      : dynd::nd::base_virtual_kernel<
+      : dynd::nd::base_kernel<
             copy_to_pyobject_kernel<dynd::fixed_string_type_id>> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
@@ -1085,7 +1084,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::categorical_type_id>
-      : dynd::nd::base_virtual_kernel<
+      : dynd::nd::base_kernel<
             copy_to_pyobject_kernel<dynd::categorical_type_id>> {
     static intptr_t
     instantiate(char *DYND_UNUSED(static_data), char *data, void *ckb,
@@ -1114,7 +1113,7 @@ namespace nd {
   };
 
   struct default_copy_to_pyobject_kernel
-      : dynd::nd::base_virtual_kernel<default_copy_to_pyobject_kernel> {
+      : dynd::nd::base_kernel<default_copy_to_pyobject_kernel> {
     static void resolve_dst_type(char *DYND_UNUSED(static_data),
                                  char *DYND_UNUSED(data), dynd::ndt::type &,
                                  intptr_t, const dynd::ndt::type *src_tp,

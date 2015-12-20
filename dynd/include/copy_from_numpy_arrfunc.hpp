@@ -8,7 +8,7 @@
 #include "numpy_interop.hpp"
 
 #include <dynd/kernels/ckernel_builder.hpp>
-#include <dynd/kernels/base_virtual_kernel.hpp>
+#include <dynd/kernels/base_kernel.hpp>
 #include <dynd/callable.hpp>
 #include <dynd/eval/eval_context.hpp>
 

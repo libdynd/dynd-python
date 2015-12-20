@@ -50,19 +50,19 @@ dynd::nd::callable pydynd::nd::copy_to_pyobject::make()
 {
   PyDateTime_IMPORT;
 
-  std::map<dynd::type_id_t, dynd::nd::callable> callables =
-      dynd::nd::callable::make_all<copy_to_pyobject_kernel, type_ids>(0);
-  for (std::pair<dynd::type_id_t, dynd::nd::callable> pair : callables) {
-    children[pair.first] = pair.second;
-  }
+  std::map<dynd::type_id_t, dynd::nd::callable> children =
+      dynd::nd::callable::make_all<copy_to_pyobject_kernel, type_ids>();
 
-  default_child = dynd::nd::callable::make<default_copy_to_pyobject_kernel>(0);
+  dynd::nd::callable default_child =
+      dynd::nd::callable::make<default_copy_to_pyobject_kernel>();
 
   return dynd::nd::functional::dispatch(
       dynd::ndt::type("(Any) -> void"),
-      [](const dynd::ndt::type &DYND_UNUSED(dst_tp), intptr_t DYND_UNUSED(nsrc),
-         const dynd::ndt::type *src_tp) -> dynd::nd::callable & {
-        dynd::nd::callable &child = overload(src_tp[0]);
+      [children, default_child](
+          const dynd::ndt::type &DYND_UNUSED(dst_tp),
+          intptr_t DYND_UNUSED(nsrc),
+          const dynd::ndt::type *src_tp) mutable -> dynd::nd::callable & {
+        dynd::nd::callable &child = children[src_tp[0].get_type_id()];
         if (child.is_null()) {
           return default_child;
         }
@@ -71,6 +71,3 @@ dynd::nd::callable pydynd::nd::copy_to_pyobject::make()
 }
 
 struct pydynd::nd::copy_to_pyobject pydynd::nd::copy_to_pyobject;
-
-dynd::nd::callable pydynd::nd::copy_to_pyobject::children[DYND_TYPE_ID_MAX + 1];
-dynd::nd::callable pydynd::nd::copy_to_pyobject::default_child;

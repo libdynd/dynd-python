@@ -219,6 +219,136 @@ PYDYND_API dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
 PYDYND_API dynd::ndt::type
 dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
 
+inline dynd::string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
+{
+  // Default is utf-8
+  if (encoding_obj == Py_None) {
+    return dynd::string_encoding_utf_8;
+  }
+
+  dynd::string_encoding_t encoding = dynd::string_encoding_invalid;
+  std::string encoding_str = pystring_as_string(encoding_obj);
+  switch (encoding_str.size()) {
+  case 4:
+    switch (encoding_str[3]) {
+    case '2':
+      if (encoding_str == "ucs2") {
+        encoding = dynd::string_encoding_ucs_2;
+      }
+      break;
+    case '8':
+      if (encoding_str == "utf8") {
+        encoding = dynd::string_encoding_utf_8;
+      }
+      break;
+    }
+  case 5:
+    switch (encoding_str[1]) {
+    case 'c':
+      if (encoding_str == "ucs_2" || encoding_str == "ucs-2") {
+        encoding = dynd::string_encoding_ucs_2;
+      }
+      break;
+    case 's':
+      if (encoding_str == "ascii") {
+        encoding = dynd::string_encoding_ascii;
+      }
+      break;
+    case 't':
+      if (encoding_str == "utf16") {
+        encoding = dynd::string_encoding_utf_16;
+      }
+      else if (encoding_str == "utf32") {
+        encoding = dynd::string_encoding_utf_32;
+      }
+      else if (encoding_str == "utf_8" || encoding_str == "utf-8") {
+        encoding = dynd::string_encoding_utf_8;
+      }
+      break;
+    }
+    break;
+  case 6:
+    switch (encoding_str[4]) {
+    case '1':
+      if (encoding_str == "utf_16" || encoding_str == "utf-16") {
+        encoding = dynd::string_encoding_utf_16;
+      }
+      break;
+    case '3':
+      if (encoding_str == "utf_32" || encoding_str == "utf-32") {
+        encoding = dynd::string_encoding_utf_32;
+      }
+      break;
+    }
+  }
+
+  if (encoding != dynd::string_encoding_invalid) {
+    return encoding;
+  }
+  else {
+    std::stringstream ss;
+    ss << "invalid input \"" << encoding_str << "\" for string encoding";
+    throw std::runtime_error(ss.str());
+  }
+}
+
+inline dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
+                                               const dynd::ndt::type &from_tp)
+{
+  return dynd::ndt::convert_type::make(to_tp, from_tp);
+}
+
+inline dynd::ndt::type dynd_make_view_type(const dynd::ndt::type &value_type,
+                                            const dynd::ndt::type &operand_type)
+{
+  return dynd::ndt::view_type::make(value_type, operand_type);
+}
+
+inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
+                                                    PyObject *encoding_obj)
+{
+  dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
+
+  return dynd::ndt::fixed_string_type::make(size, encoding);
+}
+
+inline dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj)
+{
+  dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
+
+  return dynd::ndt::make_type<dynd::ndt::string_type>();
+}
+
+inline dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type &target_tp)
+{
+  return dynd::ndt::pointer_type::make(target_tp);
+}
+
+inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
+                                              PyObject *field_names)
+{
+  std::vector<dynd::ndt::type> field_types_vec;
+  std::vector<std::string> field_names_vec;
+  pyobject_as_vector__type(field_types, field_types_vec);
+  pyobject_as_vector_string(field_names, field_names_vec);
+  if (field_types_vec.size() != field_names_vec.size()) {
+    std::stringstream ss;
+    ss << "creating a struct type requires that the number of types ";
+    ss << field_types_vec.size() << " must equal the number of names ";
+    ss << field_names_vec.size();
+    throw std::invalid_argument(ss.str());
+  }
+  return dynd::ndt::struct_type::make(field_names_vec, field_types_vec);
+}
+
+inline dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape,
+                                 const dynd::ndt::type &element_tp)
+{
+  std::vector<intptr_t> shape_vec;
+  pyobject_as_vector_intp(shape, shape_vec, true);
+  return dynd::ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
+}
+
 inline void init_type_functions()
 {
   // Initialize the pydatetime API

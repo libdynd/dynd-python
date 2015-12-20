@@ -11,6 +11,8 @@
 
 #include <dynd/type.hpp>
 
+#include "visibility.hpp"
+
 namespace pydynd {
 
 /**
@@ -29,7 +31,7 @@ struct ctypes_info {
   PyObject *PyCFuncPtrType_Type;
 };
 
-extern ctypes_info ctypes;
+extern PYDYND_API ctypes_info ctypes;
 
 /**
  * Is called by pydynd_init()
@@ -40,7 +42,7 @@ void init_ctypes_interop();
  * Constructs a dynd type from a ctypes type object, such
  * as ctypes.c_int, ctypes.c_float, etc.
  */
-dynd::ndt::type _type_from_ctypes_cdatatype(PyObject *d);
+PYDYND_API dynd::ndt::type _type_from_ctypes_cdatatype(PyObject *d);
 
 //////////////////////////////////////////////////////////
 // The following emulates a lot of the internal ctypes.h

@@ -36,7 +36,6 @@ class TestDTypeDataShape(unittest.TestCase):
     def test_struct(self):
         # Tests of struct datashape
         dt = ndt.type('{x: 3 * int32, y: string}')
-        self.assertEqual(dt.type_id, 'struct')
         self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
 
     def test_var_dshape(self):

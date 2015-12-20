@@ -36,7 +36,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type make__type_from_pyobject(object) except +translate_exception
 
     object _type_get_shape(_type&) except +translate_exception
-    object _type_get_kind(_type&) except +translate_exception
     object _type_get_type_id(_type&) except +translate_exception
     string _type_str(_type &)
     string _type_repr(_type &)
@@ -50,7 +49,9 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type dynd_make_cstruct_type(object, object) except +translate_exception
     _type dynd_make_fixed_dim_type(object, _type&) except +translate_exception
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
+    void init_type_functions()
 
+init_type_functions()
 _builtin_type = type
 
 __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
@@ -186,27 +187,6 @@ cdef class type(object):
         """
         def __get__(self):
             return self.v.get_arrmeta_size()
-
-    property kind:
-        """
-        tp.kind
-        The kind of this dynd type, as a string.
-        Example kinds are 'bool', 'int', 'uint',
-        'real', 'complex', 'string', 'uniform_array',
-        'expression'.
-        """
-        def __get__(self):
-            return _type_get_kind(self.v)
-
-    property type_id:
-        """
-        tp.type_id
-        The type id of this dynd type, as a string.
-        Example type ids are 'bool', 'int8', 'uint32',
-        'float64', 'complex_float32', 'string'.
-        """
-        def __get__(self):
-            return _type_get_type_id(self.v)
 
     def __getattr__(self, name):
         if self.v.is_null():

@@ -126,6 +126,18 @@ struct DyND_PyWrapperIter {
   }
 };
 
+typedef DyND_PyWrapperObject<dynd::nd::array> DyND_PyArrayObject;
+
+inline int DyND_PyArray_Check(PyObject *obj)
+{
+  return DyND_PyWrapper_Check<dynd::nd::array>(obj);
+}
+
+inline int DyND_PyArray_CheckExact(PyObject *obj)
+{
+  return DyND_PyWrapper_CheckExact<dynd::nd::array>(obj);
+}
+
 namespace std {
 
 template <typename T>

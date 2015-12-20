@@ -340,8 +340,7 @@ namespace nd {
 
   template <>
   struct copy_to_pyobject_kernel<dynd::string_type_id>
-      : dynd::nd::base_kernel<
-            copy_to_pyobject_kernel<dynd::string_type_id>> {
+      : dynd::nd::base_kernel<copy_to_pyobject_kernel<dynd::string_type_id>> {
     static intptr_t
     instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
                 const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -695,15 +694,15 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      dynd::ckernel_prefix *is_avail = get_child();
-      dynd::kernel_single_t is_avail_fn =
-          is_avail->get_function<dynd::kernel_single_t>();
+      dynd::ckernel_prefix *is_missing = get_child();
+      dynd::kernel_single_t is_missing_fn =
+          is_missing->get_function<dynd::kernel_single_t>();
       dynd::ckernel_prefix *copy_value = get_child(m_copy_value_offset);
       dynd::kernel_single_t copy_value_fn =
           copy_value->get_function<dynd::kernel_single_t>();
-      char value_is_avail = 0;
-      is_avail_fn(is_avail, &value_is_avail, src);
-      if (value_is_avail != 0) {
+      char value_is_missing = 1;
+      is_missing_fn(is_missing, &value_is_missing, src);
+      if (value_is_missing == 0) {
         copy_value_fn(copy_value, dst, src);
       }
       else {
@@ -724,9 +723,9 @@ namespace nd {
       intptr_t root_ckb_offset = ckb_offset;
       copy_to_pyobject_kernel *self_ck =
           copy_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
-      dynd::nd::callable &is_avail = dynd::nd::is_avail::get();
-      ckb_offset = is_avail.get()->instantiate(
-          is_avail.get()->static_data(), NULL, ckb, ckb_offset,
+      dynd::nd::callable &is_missing = dynd::nd::is_missing::get();
+      ckb_offset = is_missing.get()->instantiate(
+          is_missing.get()->static_data(), NULL, ckb, ckb_offset,
           dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
           dynd::kernel_request_single, ectx, 0, NULL, tp_vars);
       reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)

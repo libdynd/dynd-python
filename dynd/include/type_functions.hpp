@@ -146,7 +146,7 @@ inline dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
      return dynd::ndt::type(pystring_as_string(obj));
    }
    else if (PyInt_Check(obj)) {
-     return dynd::ndt::type(static_cast<type_id_t>(PyInt_AS_LONG(obj)));
+     return dynd::ndt::type(static_cast<dynd::type_id_t>(PyInt_AS_LONG(obj)));
  #endif
    }
    else if (PyLong_Check(obj)) {

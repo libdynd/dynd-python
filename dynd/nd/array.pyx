@@ -209,15 +209,11 @@ cdef class array(object):
         cdef map[string, _callable] properties
 
         cdef _type dt = self.v.get_type()
-        if (not dt.is_builtin()):
-            properties = dt.get().get_dynamic_array_properties()
-        else:
-            get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
+        properties = dt.get_array_properties()
         for pair in properties:
             result[pair.first] = wrap(pair.second)
 
-        if (not dt.is_builtin()):
-            properties = dt.get().get_dynamic_array_functions()
+        properties = dt.get_array_functions()
         for pair in properties:
             result[pair.first] = wrap(pair.second)
 
@@ -230,18 +226,14 @@ cdef class array(object):
         cdef map[string, _callable] properties
 
         cdef _type dt = self.v.get_type()
-        if (not dt.is_builtin()):
-            properties = dt.get().get_dynamic_array_properties()
-        else:
-            get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
+        properties = dt.get_array_properties()
 
         cdef _callable p = properties[name]
         if (not p.is_null()):
             return wrap(p(self.v))
 
         cdef map[string, _callable] functions
-        if (not dt.is_builtin()):
-            functions = dt.get().get_dynamic_array_functions()
+        functions = dt.get_array_functions()
 
         cdef _callable f = functions[name]
         if (not f.is_null()):
@@ -256,10 +248,7 @@ cdef class array(object):
         cdef map[string, _callable] properties
 
         cdef _type dt = self.v.get_type()
-        if (not dt.is_builtin()):
-            properties = dt.get().get_dynamic_array_properties()
-        else:
-            get_builtin_type_dynamic_array_properties(dt.get_type_id(), properties);
+        properties = dt.get_array_properties()
 
         cdef _callable p = properties[name]
         if (not p.is_null()):

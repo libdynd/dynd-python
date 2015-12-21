@@ -193,18 +193,16 @@ cdef class type(object):
             raise AttributeError(name)
 
         cdef _callable p
-        cdef map[string, _callable] properties
         cdef map[string, _callable] functions
         cdef _callable f
-        if (not self.v.is_builtin()):
-            properties = self.v.get().get_dynamic_type_properties()
-            p = properties[name]
-            if (not p.is_null()):
-                return wrap(p(self.v))
-            functions = self.v.get().get_dynamic_type_functions()
-            f = functions[name]
-            if (not f.is_null()):
-                return wrap(f(self.v))
+        cdef map[string, _callable] properties = self.v.get_properties()
+        p = properties[name]
+        if (not p.is_null()):
+            return wrap(p(self.v))
+        functions = self.v.get_functions()
+        f = functions[name]
+        if (not f.is_null()):
+            return wrap(f(self.v))
 
         raise AttributeError(name)
 

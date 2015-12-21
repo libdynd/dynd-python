@@ -12,8 +12,8 @@ cdef extern from 'dynd/types/base_type.hpp' namespace 'dynd::ndt' nogil:
     cdef cppclass base_type:
         map[string, callable] get_dynamic_type_properties()
         map[string, callable] get_dynamic_type_functions()
-        void get_dynamic_array_properties(map[string, callable] &)
-        void get_dynamic_array_functions(map[string, callable] &)
+        map[string, callable] get_dynamic_array_properties()
+        map[string, callable] get_dynamic_array_functions()
 
 cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
     cdef cppclass type:

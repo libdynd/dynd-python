@@ -14,6 +14,8 @@
 
 #include <dynd/type.hpp>
 
+#include "visibility.hpp"
+
 namespace dynd {
 // Forward declaration
 struct callable_type_data;
@@ -123,7 +125,7 @@ size_t pyobject_as_size_t(PyObject *obj);
 intptr_t pyobject_as_index(PyObject *index);
 int pyobject_as_int_index(PyObject *index);
 dynd::irange pyobject_as_irange(PyObject *index);
-std::string pystring_as_string(PyObject *str);
+PYDYND_API std::string pystring_as_string(PyObject *str);
 inline PyObject *pystring_from_string(const char *str)
 {
 #if PY_VERSION_HEX >= 0x03000000
@@ -181,7 +183,7 @@ inline PyObject *pydict_getitemstring(PyObject *dp, const char *key)
   return result;
 }
 
-PyObject *intptr_array_as_tuple(size_t size, const intptr_t *array);
+PYDYND_API PyObject *intptr_array_as_tuple(size_t size, const intptr_t *array);
 
 /**
  * Parses the axis argument, which may be either a single index

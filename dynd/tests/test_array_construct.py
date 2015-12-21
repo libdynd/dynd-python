@@ -383,7 +383,6 @@ class TestStringConstruct(unittest.TestCase):
     def test_fixed_string_array(self):
         a = nd.array(['a', 'b', 'c'],
                         dtype='fixed_string[1,"A"]')
-        self.assertEqual(nd.type_of(a[0]).type_id, 'fixed_string')
         self.assertEqual(nd.type_of(a[0]).data_size, 1)
         self.assertEqual(nd.as_py(a), ['a', 'b', 'c'])
 

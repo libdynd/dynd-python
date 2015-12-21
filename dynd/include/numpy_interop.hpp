@@ -82,7 +82,7 @@ inline int import_numpy()
  *
  * \returns  The dynd equivalent of the numpy dtype.
  */
-dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
+PYDYND_API dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
                                           size_t data_alignment = 0);
 
 /**
@@ -195,7 +195,7 @@ PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp,
  *
  * Returns 0 on success, -1 if it didn't match.
  */
-int _type_from_numpy_scalar_typeobject(PyTypeObject *obj,
+PYDYND_API int _type_from_numpy_scalar_typeobject(PyTypeObject *obj,
                                           dynd::ndt::type &out_tp);
 
 /**
@@ -265,6 +265,10 @@ dynd::nd::array array_from_numpy_scalar(PyObject *obj, uint32_t access_flags);
    ss << "dynd type \"" << d << "\" does not have an equivalent numpy kind";
    throw dynd::type_error(ss.str());
  }
+
+// Temporary function introduced to avoid dependency on non-standard
+// numpy importing in client modules. Wraps PyArray_DescrCheck.
+ PYDYND_API bool is_numpy_dtype(PyObject* o);
 
 } // namespace pydynd
 

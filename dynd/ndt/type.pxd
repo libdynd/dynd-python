@@ -6,6 +6,7 @@ cdef api class type(object)[object dynd_ndt_type_pywrapper,
 
 cdef api _type dynd_ndt_type_to_cpp(type) except *
 cdef api type dynd_ndt_type_from_cpp(_type)
+cpdef type astype(object o)
 
 cdef object as_numba_type(_type)
 cdef _type from_numba_type(object)

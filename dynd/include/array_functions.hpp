@@ -26,18 +26,6 @@
 
 #include "wrapper.hpp"
 
-typedef DyND_PyWrapperObject<dynd::nd::array> DyND_PyArrayObject;
-
-inline int DyND_PyArray_Check(PyObject *obj)
-{
-  return DyND_PyWrapper_Check<dynd::nd::array>(obj);
-}
-
-inline int DyND_PyArray_CheckExact(PyObject *obj)
-{
-  return DyND_PyWrapper_CheckExact<dynd::nd::array>(obj);
-}
-
 namespace pydynd {
 
 PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,

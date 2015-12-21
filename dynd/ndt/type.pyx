@@ -33,12 +33,9 @@ cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
-    void init_w_type_typeobject(object)
-
     _type make__type_from_pyobject(object) except +translate_exception
 
     object _type_get_shape(_type&) except +translate_exception
-    object _type_get_kind(_type&) except +translate_exception
     object _type_get_type_id(_type&) except +translate_exception
     string _type_str(_type &)
     string _type_repr(_type &)
@@ -52,11 +49,15 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type dynd_make_cstruct_type(object, object) except +translate_exception
     _type dynd_make_fixed_dim_type(object, _type&) except +translate_exception
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
+    void init_type_functions()
+
+init_type_functions()
+_builtin_type = type
 
 __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
     'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
     'float64', 'float128', 'complex_float32', 'complex_float64', 'void', \
-    'tuple', 'struct', 'callable', 'scalar']
+    'tuple', 'struct', 'callable', 'scalar', 'astype']
 
 type_ids = {}
 type_ids['UNINITIALIZED'] = uninitialized_type_id
@@ -187,27 +188,6 @@ cdef class type(object):
         def __get__(self):
             return self.v.get_arrmeta_size()
 
-    property kind:
-        """
-        tp.kind
-        The kind of this dynd type, as a string.
-        Example kinds are 'bool', 'int', 'uint',
-        'real', 'complex', 'string', 'uniform_array',
-        'expression'.
-        """
-        def __get__(self):
-            return _type_get_kind(self.v)
-
-    property type_id:
-        """
-        tp.type_id
-        The type id of this dynd type, as a string.
-        Example type ids are 'bool', 'int8', 'uint32',
-        'float64', 'complex_float32', 'string'.
-        """
-        def __get__(self):
-            return _type_get_type_id(self.v)
-
     def __getattr__(self, name):
         if self.v.is_null():
             raise AttributeError(name)
@@ -292,6 +272,11 @@ cdef type dynd_ndt_type_from_cpp(_type t):
     cdef type tp = type.__new__(type)
     tp.v = t
     return tp
+
+cpdef type astype(object o):
+    if _builtin_type(o) is type:
+        return <type>o
+    return dynd_ndt_type_from_cpp(make__type_from_pyobject(o))
 
 set_wrapper_type[_type](type)
 

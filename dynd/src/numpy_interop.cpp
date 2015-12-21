@@ -930,4 +930,8 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
   return result;
 }
 
+bool pydynd::is_numpy_dtype(PyObject *o) {
+  return PyArray_DescrCheck(o);
+}
+
 #endif // DYND_NUMPY_INTEROP

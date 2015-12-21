@@ -18,7 +18,7 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-ctypes_info pydynd::ctypes;
+PYDYND_API ctypes_info pydynd::ctypes;
 
 void pydynd::init_ctypes_interop()
 {

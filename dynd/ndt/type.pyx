@@ -217,11 +217,11 @@ cdef class type(object):
         cdef map[string, _callable] functions
         cdef _callable f
         if (not self.v.is_builtin()):
-            self.v.get().get_dynamic_type_properties(properties)
+            properties = self.v.get().get_dynamic_type_properties()
             p = properties[name]
             if (not p.is_null()):
                 return wrap(p(self.v))
-            self.v.get().get_dynamic_type_functions(functions)
+            functions = self.v.get().get_dynamic_type_functions()
             f = functions[name]
             if (not f.is_null()):
                 return wrap(f(self.v))

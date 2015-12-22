@@ -1,7 +1,6 @@
 from .cpp.config cimport dynd_version_string, dynd_git_sha1
 from cpython.ref cimport PyObject
 
-
 cdef extern from 'exception_translation.hpp':
     void _translate_exception "pydynd::translate_exception"()
     PyObject* DyND_BroadcastException

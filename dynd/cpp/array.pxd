@@ -17,6 +17,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array()
         array(type *, int)
 
+        T as[T]() except +translate_exception
         type get_type()
         type get_dtype()
         type get_dtype(size_t)

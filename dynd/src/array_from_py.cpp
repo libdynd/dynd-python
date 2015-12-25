@@ -575,9 +575,9 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     intrusive_ptr<memory_block_data> bytesref = make_external_memory_block(
         reinterpret_cast<void *>(obj), &py_decref_function);
     char *data_ptr;
-    result = nd::array(make_array_memory_block(
+    result = nd::array(reinterpret_cast<dynd::array_preamble *>(make_array_memory_block(
         d.extended()->get_arrmeta_size(), d.get_data_size(),
-        d.get_data_alignment(), &data_ptr));
+        d.get_data_alignment(), &data_ptr).get()), true);
     result.get()->data = data_ptr;
     result.get()->owner = NULL;
     result.get()->tp = d;

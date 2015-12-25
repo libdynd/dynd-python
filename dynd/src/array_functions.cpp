@@ -521,13 +521,15 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
 
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
-  nd::array result(make_array_memory_block(arrmeta_size));
+  nd::array result(reinterpret_cast<array_preamble *>(
+                       make_array_memory_block(arrmeta_size).get()),
+                   true);
 
   // Clone the data pointer
   result.get()->data = n.get()->data;
   result.get()->owner = n.get()->owner;
   if (!result.get()->owner) {
-    result.get()->owner = n;
+    result.get()->owner = n.get();
   }
 
   // Copy the flags
@@ -545,8 +547,9 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
           "nd.fields doesn't support dimensions with pointers yet");
     }
     const ndt::base_dim_type *budd = tmp_dt.extended<ndt::base_dim_type>();
-    size_t offset =
-        budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta, n);
+    size_t offset = budd->arrmeta_copy_construct_onedim(
+        dst_arrmeta, src_arrmeta,
+        intrusive_ptr<memory_block_data>(n.get(), true));
     dst_arrmeta += offset;
     src_arrmeta += offset;
     tmp_dt = budd->get_element_type();
@@ -564,7 +567,8 @@ dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
     if (dt.get_arrmeta_size() > 0) {
       dt.extended()->arrmeta_copy_construct(
           dst_arrmeta + result_arrmeta_offsets[i],
-          src_arrmeta + arrmeta_offsets[selected_index[i]], n);
+          src_arrmeta + arrmeta_offsets[selected_index[i]],
+          intrusive_ptr<memory_block_data>(n.get(), true));
     }
   }
 

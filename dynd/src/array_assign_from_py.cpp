@@ -23,7 +23,9 @@ void pydynd::array_broadcast_assign_from_py(
 {
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
-      dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
+      reinterpret_cast<dynd::array_preamble *>(
+          dynd::make_array_memory_block(dst_tp.get_arrmeta_size()).get()),
+      true);
   tmp_dst.get()->tp = dst_tp;
   tmp_dst.get()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;
@@ -46,10 +48,9 @@ void pydynd::array_broadcast_assign_from_py(
   tmp_dst.get()->tp = dynd::ndt::type();
 }
 
-void
-pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
-                                       PyObject *value,
-                                       const dynd::eval::eval_context *ectx)
+void pydynd::array_broadcast_assign_from_py(
+    const dynd::nd::array &a, PyObject *value,
+    const dynd::eval::eval_context *ectx)
 {
   array_broadcast_assign_from_py(a.get_type(), a.get()->metadata(), a.data(),
                                  value, ectx);
@@ -61,7 +62,9 @@ void pydynd::array_no_dim_broadcast_assign_from_py(
 {
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
-      dynd::make_array_memory_block(dst_tp.get_arrmeta_size()));
+      reinterpret_cast<dynd::array_preamble *>(
+          dynd::make_array_memory_block(dst_tp.get_arrmeta_size()).get()),
+      true);
   tmp_dst.get()->tp = dst_tp;
   tmp_dst.get()->flags =
       dynd::nd::read_access_flag | dynd::nd::write_access_flag;

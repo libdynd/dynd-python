@@ -551,7 +551,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
         if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
           throw runtime_error("Error getting byte string data");
         }
-        result = nd::empty(ndt::bytes_type::make(alignment));
+        result = nd::empty(ndt::bytes_type::make());
         reinterpret_cast<bytes *>(result.data())->assign(data, len);
         result.get()->flags = access_flags;
         return result;

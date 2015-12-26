@@ -535,10 +535,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                                   string_encoding_ascii);
       }
     }
-
-    result = nd::make_string_array(data, len, string_encoding_utf_8,
-                                   nd::readwrite_access_flags);
-
+    result = nd::empty(ndt::make_type<ndt::string_type>());
+    reinterpret_cast<dynd::string *>(result.data())->assign(data, len);
 #else
   }
   else if (PyBytes_Check(obj)) {
@@ -553,7 +551,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
         if (PyBytes_AsStringAndSize(obj, &data, &len) < 0) {
           throw runtime_error("Error getting byte string data");
         }
-        result = nd::make_bytes_array(data, len);
+        result = nd::empty(ndt::bytes_type::make());
+        reinterpret_cast<bytes *>(result.data())->assign(data, len);
         result.get()->flags = access_flags;
         return result;
       }
@@ -575,9 +574,13 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     intrusive_ptr<memory_block_data> bytesref = make_external_memory_block(
         reinterpret_cast<void *>(obj), &py_decref_function);
     char *data_ptr;
-    result = nd::array(reinterpret_cast<dynd::array_preamble *>(make_array_memory_block(
-        d.extended()->get_arrmeta_size(), d.get_data_size(),
-        d.get_data_alignment(), &data_ptr).get()), true);
+    result =
+        nd::array(reinterpret_cast<dynd::array_preamble *>(
+                      make_array_memory_block(d.extended()->get_arrmeta_size(),
+                                              d.get_data_size(),
+                                              d.get_data_alignment(), &data_ptr)
+                          .get()),
+                  true);
     result.get()->data = data_ptr;
     result.get()->owner = NULL;
     result.get()->tp = d;
@@ -597,8 +600,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
       throw exception();
     }
-    result = nd::make_string_array(s, len, string_encoding_utf_8,
-                                   nd::readwrite_access_flags);
+    result = nd::empty(ndt::make_type<ndt::string_type>());
+    reinterpret_cast<dynd::string *>(result.data())->assign(s, len);
   }
   else if (PyDateTime_Check(obj)) {
     if (((PyDateTime_DateTime *)obj)->hastzinfo &&

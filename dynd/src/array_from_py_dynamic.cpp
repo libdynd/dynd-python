@@ -93,7 +93,7 @@ static nd::array allocate_nd_arr(const std::vector<intptr_t> &shape,
   intptr_t ndim = (intptr_t)shape.size();
   // Allocate the nd::array
   nd::array result =
-      nd::make_strided_array(elem.dtp, ndim, ndim == 0 ? NULL : &shape[0]);
+      pydynd::make_strided_array(elem.dtp, ndim, ndim == 0 ? NULL : &shape[0]);
   // Fill `coord` with pointers from the allocated arrays,
   // reserving some data for any var dimensions.
   coord.resize(ndim);

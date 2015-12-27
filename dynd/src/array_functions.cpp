@@ -225,8 +225,8 @@ dynd::nd::array pydynd::array_zeros(PyObject *shape, const dynd::ndt::type &d,
   uint32_t access_flags = pyarg_creation_access_flags(access);
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
-  nd::array n = nd::make_strided_array(
-      d, (int)shape_vec.size(), shape_vec.empty() ? NULL : &shape_vec[0]);
+  nd::array n = make_strided_array(d, (int)shape_vec.size(),
+                                   shape_vec.empty() ? NULL : &shape_vec[0]);
   n.assign(0);
   if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     n.flag_as_immutable();
@@ -251,8 +251,8 @@ dynd::nd::array pydynd::array_ones(PyObject *shape, const dynd::ndt::type &d,
   uint32_t access_flags = pyarg_creation_access_flags(access);
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
-  nd::array n = nd::make_strided_array(
-      d, (int)shape_vec.size(), shape_vec.empty() ? NULL : &shape_vec[0]);
+  nd::array n = make_strided_array(d, (int)shape_vec.size(),
+                                   shape_vec.empty() ? NULL : &shape_vec[0]);
   n.assign(1);
   if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     n.flag_as_immutable();
@@ -278,8 +278,8 @@ dynd::nd::array pydynd::array_full(PyObject *shape, const dynd::ndt::type &d,
   uint32_t access_flags = pyarg_creation_access_flags(access);
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
-  nd::array n = nd::make_strided_array(
-      d, (int)shape_vec.size(), shape_vec.empty() ? NULL : &shape_vec[0]);
+  nd::array n = make_strided_array(d, (int)shape_vec.size(),
+                                   shape_vec.empty() ? NULL : &shape_vec[0]);
   array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
   if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     n.flag_as_immutable();
@@ -307,8 +307,8 @@ dynd::nd::array pydynd::array_empty(PyObject *shape, const dynd::ndt::type &d,
   }
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
-  return nd::make_strided_array(d, (int)shape_vec.size(),
-                                shape_vec.empty() ? NULL : &shape_vec[0]);
+  return make_strided_array(d, (int)shape_vec.size(),
+                            shape_vec.empty() ? NULL : &shape_vec[0]);
 }
 
 dynd::nd::array pydynd::array_cast(const dynd::nd::array &n,

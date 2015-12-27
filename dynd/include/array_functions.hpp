@@ -89,7 +89,7 @@ namespace nd {
         dtp.extended()->arrmeta_default_construct(
             reinterpret_cast<char *>(meta + ndim), true);
       }
-      for (ptrdiff_t i = (ptrdiff_t)ndim - 1; i >= 0; --i) {
+      for (int i = ndim - 1; i >= 0; --i) {
         intptr_t dim_size = shape[i];
         meta[i].stride = dim_size > 1 ? stride : 0;
         meta[i].dim_size = dim_size;

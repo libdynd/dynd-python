@@ -343,7 +343,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj,
   }
 
   // Create the array
-  nd::array result = nd::make_strided_array(tp, (int)shape.size(), &shape[0]);
+  nd::array result = pydynd::make_strided_array(tp, (int)shape.size(), &shape[0]);
 
   // Populate the array with data
   switch (tp.get_type_id()) {

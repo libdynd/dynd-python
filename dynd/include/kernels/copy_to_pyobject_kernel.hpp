@@ -233,8 +233,7 @@ namespace nd {
       PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
       Py_XDECREF(*dst_obj);
       *dst_obj = NULL;
-      const dynd::bytes_type_data *bd =
-          reinterpret_cast<const dynd::bytes_type_data *>(src[0]);
+      const dynd::bytes *bd = reinterpret_cast<const dynd::bytes *>(src[0]);
       *dst_obj =
           PyBytes_FromStringAndSize(bd->begin(), bd->end() - bd->begin());
     }

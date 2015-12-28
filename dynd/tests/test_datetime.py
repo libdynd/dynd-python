@@ -107,7 +107,6 @@ class TestDate(unittest.TestCase):
                                 ectx=nd.eval_context(date_parse_order='YMD',
                                                      century_window=1850))),
                          date(1901, 2, 3))
-    """
 
     def test_json_date_parse(self):
         a = nd.parse_json('var * date', '["2012-03-17", "1922-12-30"]')
@@ -118,6 +117,7 @@ class TestDate(unittest.TestCase):
                           '["2012-06-17T17:00:15-0600", "1921-12-30 Thursday"]',
                           ectx=nd.eval_context(errmode='nocheck'))
         self.assertEqual(nd.as_py(a), [date(2012, 6, 17), date(1921, 12, 30)])
+    """
 
 class TestTime(unittest.TestCase):
     def test_time_type_properties(self):

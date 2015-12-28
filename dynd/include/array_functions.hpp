@@ -22,7 +22,6 @@
 #include "array_as_py.hpp"
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
-#include "eval_context_functions.hpp"
 
 #include "wrapper.hpp"
 
@@ -236,14 +235,14 @@ inline dynd::nd::array dynd_parse_json_type(const dynd::ndt::type &tp,
                                             const dynd::nd::array &json,
                                             PyObject *ectx_obj)
 {
-  return dynd::parse_json(tp, json, eval_context_from_pyobj(ectx_obj));
+  return dynd::parse_json(tp, json, &dynd::eval::default_eval_context);
 }
 
 inline void dynd_parse_json_array(dynd::nd::array &out,
                                   const dynd::nd::array &json,
                                   PyObject *ectx_obj)
 {
-  dynd::parse_json(out, json, eval_context_from_pyobj(ectx_obj));
+  dynd::parse_json(out, json, &dynd::eval::default_eval_context);
 }
 
 } // namespace pydynd

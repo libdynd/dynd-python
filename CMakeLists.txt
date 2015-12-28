@@ -180,7 +180,6 @@ set(pydynd_SRC
     dynd/include/copy_to_pyobject_arrfunc.hpp
     dynd/include/ctypes_interop.hpp
     dynd/include/do_import_array.hpp
-    dynd/include/eval_context_functions.hpp
     dynd/include/exception_translation.hpp
     dynd/include/git_version.hpp
     dynd/include/init.hpp
@@ -204,7 +203,6 @@ set(pydynd_SRC
     dynd/src/copy_to_numpy_arrfunc.cpp
     dynd/src/copy_to_pyobject_arrfunc.cpp
     dynd/src/ctypes_interop.cpp
-    dynd/src/eval_context_functions.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
@@ -234,7 +232,7 @@ foreach(pyx_api_file dynd/config.pyx dynd/nd/array.pyx dynd/nd/callable.pyx dynd
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)
 endforeach(pyx_api_file)
 
-foreach(module config eval_context ndt.type ndt.json nd.array nd.callable nd.functional nd.registry)
+foreach(module config ndt.type ndt.json nd.array nd.callable nd.functional nd.registry)
     string(REPLACE "." ";" directories ${module})
     list(GET directories -1 module_name)
     list(REMOVE_AT directories -1)

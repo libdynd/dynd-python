@@ -51,7 +51,7 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
                     "callable_call requires a dictionary of keyword arguments");
     return NULL;
   }
-  const eval::eval_context *ectx = eval_context_from_pyobj(ectx_obj);
+  const eval::eval_context *ectx = &dynd::eval::default_eval_context;
 
   // Convert args into nd::arrays
   intptr_t narg = PyTuple_Size(args_obj);

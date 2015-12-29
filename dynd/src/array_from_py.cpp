@@ -30,6 +30,7 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
+#include "types/pyobject_type.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -676,8 +677,16 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
                                       bool fulltype, uint32_t access_flags)
 {
+
   ndt::type tpfull;
   nd::array result;
+
+  if (tp.get_type_id() == pyobject_type_id) {
+    result = dynd::nd::empty(dynd::ndt::make_type<pyobject_type>());
+    *reinterpret_cast<PyObject **>(result.data()) = obj;
+    return result;
+  }
+
   if (!fulltype) {
     if (PyUnicode_Check(obj)
 #if PY_VERSION_HEX < 0x03000000

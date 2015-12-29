@@ -35,5 +35,7 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
 
         type_id_t get_type_id() const
 
+    type make_type[T]()
+
 cdef extern from 'dynd/type.hpp' namespace 'dynd' nogil:
     void get_builtin_type_dynamic_array_properties(type_id_t, map[string, callable] &)

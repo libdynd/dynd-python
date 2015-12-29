@@ -30,7 +30,7 @@ using namespace dynd;
 using namespace pydynd;
 
 PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
-                                PyObject *kwds_obj, PyObject *ectx_obj)
+                                PyObject *kwds_obj)
 {
   if (!DyND_PyCallable_Check(af_obj)) {
     PyErr_SetString(PyExc_TypeError, "callable_call expected an nd.callable");
@@ -51,14 +51,12 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
                     "callable_call requires a dictionary of keyword arguments");
     return NULL;
   }
-  const eval::eval_context *ectx = &dynd::eval::default_eval_context;
 
   // Convert args into nd::arrays
   intptr_t narg = PyTuple_Size(args_obj);
   std::vector<dynd::nd::array> arg_values(narg);
   for (intptr_t i = 0; i < narg; ++i) {
-    arg_values[i] =
-        array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false, ectx);
+    arg_values[i] = array_from_py(PyTuple_GET_ITEM(args_obj, i), 0, false);
   }
 
   // Convert kwds into nd::arrays
@@ -69,7 +67,7 @@ PyObject *pydynd::callable_call(PyObject *af_obj, PyObject *args_obj,
   for (Py_ssize_t i = 0, j = 0; PyDict_Next(kwds_obj, &i, &key, &value); ++j) {
     kwd_names_strings[j] = pystring_as_string(key);
     kwds2[j].first = kwd_names_strings[j].c_str();
-    kwds2[j].second = array_from_py(value, 0, false, ectx);
+    kwds2[j].second = array_from_py(value, 0, false);
   }
 
   dynd::nd::array result =

@@ -203,9 +203,9 @@ void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
   n = array_from_py(obj, access_flags, true, &eval::default_eval_context);
 }
 
-dynd::nd::array pydynd::array_eval(const dynd::nd::array &n, PyObject *ectx_obj)
+dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)
 {
-  return n.eval(&dynd::eval::default_eval_context);
+  return n.eval();
 }
 
 dynd::nd::array pydynd::array_zeros(const dynd::ndt::type &d, PyObject *access)

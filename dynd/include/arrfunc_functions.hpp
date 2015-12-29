@@ -33,7 +33,7 @@ inline int DyND_PyCallable_Check(PyObject *obj)
 namespace pydynd {
 
 PYDYND_API PyObject *callable_call(PyObject *af_obj, PyObject *args_obj,
-                                   PyObject *kwds_obj, PyObject *ectx_obj);
+                                   PyObject *kwds_obj);
 
 /**
  * Returns a dictionary of all the published callables.

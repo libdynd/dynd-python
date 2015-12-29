@@ -156,7 +156,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
         src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(
             src_arrmeta[0]),
         src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
-        src_fields_arrmeta.get(), kernreq, &dynd::eval::default_eval_context);
+        src_fields_arrmeta.get(), kernreq);
   }
   else {
     stringstream ss;

@@ -10,7 +10,7 @@ from ..wrapper cimport set_wrapper_type, wrap
 
 cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
     void init_w_callable_typeobject(object)
-    object callable_call(object, object, object, object) except +translate_exception
+    object callable_call(object, object, object) except +translate_exception
 
 cdef class callable(object):
     """
@@ -50,12 +50,11 @@ cdef class callable(object):
 
     def __call__(self, *args, **kwds):
         # Handle the keyword-only arguments
-        ectx = kwds.pop('ectx', None)
 #        if kwds:
 #            msg = "nd.callable call got an unexpected keyword argument '%s'"
 #            raise TypeError(msg % (kwds.keys()[0]))
 
-        return callable_call(self, args, kwds, ectx)
+        return callable_call(self, args, kwds)
 
 cdef _callable dynd_nd_callable_to_cpp(callable c) except *:
     # Once this becomes a method of the type wrapper class, this check and

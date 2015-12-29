@@ -148,7 +148,7 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
         dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta),
         dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
         dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0],
-        &src_fields_arrmeta[0], kernreq, &dynd::eval::default_eval_context);
+        &src_fields_arrmeta[0], kernreq);
   }
   else {
     stringstream ss;

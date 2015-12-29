@@ -11,7 +11,7 @@
 
 extern const dynd::type_id_t pyobject_type_id;
 
-class pyobject_type : public dynd::ndt::base_type {
+class PYDYND_API pyobject_type : public dynd::ndt::base_type {
 public:
   pyobject_type();
 

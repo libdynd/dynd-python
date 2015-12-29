@@ -209,6 +209,7 @@ set(pydynd_SRC
     dynd/src/numpy_interop.cpp
     dynd/src/utility_functions.cpp
     dynd/src/wrapper.cpp
+    dynd/src/types/pyobject_type.cpp
 )
 
 add_library(pydynd SHARED ${pydynd_SRC})

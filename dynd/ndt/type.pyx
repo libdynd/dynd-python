@@ -15,6 +15,8 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   complex_float32_type_id,
                                   complex_float64_type_id, void_type_id,
                                   callable_type_id)
+from ..cpp.type cimport make_type
+from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.type_alignment cimport make_unaligned as dynd_make_unaligned_type
@@ -187,6 +189,10 @@ cdef class type(object):
         """
         def __get__(self):
             return self.v.get_arrmeta_size()
+
+    property id:
+        def __get__(self):
+            return self.v.get_type_id()
 
     def __getattr__(self, name):
         if self.v.is_null():
@@ -633,6 +639,7 @@ class struct(object):
 """
 
 scalar = type('Scalar')
+pyobject = wrap(make_type[object]())
 
 _to_numba_type = {}
 _from_numba_type = {}

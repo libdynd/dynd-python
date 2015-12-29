@@ -17,6 +17,7 @@ from ..cpp.type cimport type as _type, get_builtin_type_dynamic_array_properties
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.view cimport view as _view
+from ..cpp.types.pyobject_type cimport pyobject_type_id
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap

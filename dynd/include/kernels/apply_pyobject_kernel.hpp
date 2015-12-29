@@ -17,7 +17,6 @@ namespace nd {
       // The arrmeta
       const char *m_dst_arrmeta;
       std::vector<const char *> m_src_arrmeta;
-      dynd::eval::eval_context m_ectx;
 
       apply_pyobject_kernel() : m_pyfunc(NULL) {}
 
@@ -83,8 +82,9 @@ namespace nd {
         // Now call the function
         pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
         // Copy the result into the destination memory
-        array_no_dim_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst,
-                                              res.get(), &m_ectx);
+        array_no_dim_broadcast_assign_from_py(
+            dst_tp, m_dst_arrmeta, dst, res.get(),
+            &dynd::eval::default_eval_context);
         res.clear();
         // Validate that the call didn't hang onto the ephemeral data
         // pointers we used. This is done after the dst assignment, because
@@ -124,7 +124,7 @@ namespace nd {
           pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
           // Copy the result into the destination memory
           array_no_dim_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst,
-                                                res.get(), &m_ectx);
+                                                res.get(), &dynd::eval::default_eval_context);
           res.clear();
           // Validate that the call didn't hang onto the ephemeral data
           // pointers we used. This is done after the dst assignment, because
@@ -145,8 +145,7 @@ namespace nd {
                   intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
                   const char *dst_arrmeta, intptr_t nsrc,
                   const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-                  dynd::kernel_request_t kernreq,
-                  const dynd::eval::eval_context *ectx, intptr_t nkwd,
+                  dynd::kernel_request_t kernreq, intptr_t nkwd,
                   const dynd::nd::array *kwds,
                   const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
@@ -160,7 +159,6 @@ namespace nd {
         self->m_dst_arrmeta = dst_arrmeta;
         self->m_src_arrmeta.resize(nsrc);
         copy(src_arrmeta, src_arrmeta + nsrc, self->m_src_arrmeta.begin());
-        self->m_ectx = *ectx;
         return ckb_offset;
       }
 

@@ -30,8 +30,7 @@ struct copy_to_numpy_ck : dynd::nd::base_kernel<copy_to_numpy_ck> {
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
               intptr_t nsrc, const dynd::ndt::type *src_tp,
               const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-              const dynd::eval::eval_context *ectx, intptr_t nkwd,
-              const dynd::nd::array *kwds,
+              intptr_t nkwd, const dynd::nd::array *kwds,
               const std::map<std::string, dynd::ndt::type> &tp_vars);
 };
 

@@ -39,7 +39,6 @@ extern struct copy_to_numpy : dynd::nd::declfunc<copy_to_numpy> {
 } copy_to_numpy;
 
 void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp,
-                         const char *src_arrmeta, const char *src_data,
-                         const dynd::eval::eval_context *ectx);
+                         const char *src_arrmeta, const char *src_data);
 
 } // namespace pydynd

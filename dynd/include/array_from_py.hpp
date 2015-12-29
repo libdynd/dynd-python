@@ -28,14 +28,7 @@ namespace pydynd {
  *                    created.
  */
 PYDYND_API dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
-                              bool always_copy,
-                              const dynd::eval::eval_context *ectx);
-
-// A convenience wrapper for Cython using the default eval context.
-inline dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
-                                     bool always_copy) {
-  return array_from_py(obj, access_flags, always_copy, &dynd::eval::default_eval_context);
- }
+                                         bool always_copy);
 
 /**
  * Converts a Python object into an nd::array using
@@ -57,8 +50,7 @@ inline dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
  *                     immutable.
  */
 dynd::nd::array array_from_py(PyObject *obj, const dynd::ndt::type &tp,
-                              bool fulltype, uint32_t access_flags,
-                              const dynd::eval::eval_context *ectx);
+                              bool fulltype, uint32_t access_flags);
 
 void init_array_from_py();
 

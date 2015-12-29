@@ -47,7 +47,7 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     object array_index(_array&) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
-    _array array_eval(_array&, object) except +translate_exception
+    _array array_eval(_array&) except +translate_exception
     _array array_cast(_array&, _type&) except +translate_exception
     _array array_ucast(_array&, _type&, size_t) except +translate_exception
     _array array_range(object, object, object, object) except +translate_exception
@@ -388,7 +388,7 @@ cdef class array(object):
                  type="3 * complex[float32]")
         """
         cdef array result = array()
-        result.v = array_eval(self.v, ectx)
+        result.v = array_eval(self.v)
         return result
 
     def sum(self, axis = None):

@@ -27,8 +27,7 @@ namespace pydynd {
  * As an example, consider a deduced datashape "4 * var * var * float64"
  * from [[], [[], []], [], [[], [3.5]]].
  */
-dynd::nd::array array_from_py_dynamic(PyObject *obj,
-                                      const dynd::eval::eval_context *ectx);
+dynd::nd::array array_from_py_dynamic(PyObject *obj);
 
 void init_array_from_py_dynamic();
 

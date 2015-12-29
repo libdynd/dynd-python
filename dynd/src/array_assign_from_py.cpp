@@ -17,9 +17,9 @@
 
 using namespace std;
 
-void pydynd::array_broadcast_assign_from_py(
-    const dynd::ndt::type &dst_tp, const char *dst_arrmeta, char *dst_data,
-    PyObject *value, const dynd::eval::eval_context *ectx)
+void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dst_tp,
+                                            const char *dst_arrmeta,
+                                            char *dst_data, PyObject *value)
 {
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
@@ -48,17 +48,16 @@ void pydynd::array_broadcast_assign_from_py(
   tmp_dst.get()->tp = dynd::ndt::type();
 }
 
-void pydynd::array_broadcast_assign_from_py(
-    const dynd::nd::array &a, PyObject *value,
-    const dynd::eval::eval_context *ectx)
+void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
+                                            PyObject *value)
 {
   array_broadcast_assign_from_py(a.get_type(), a.get()->metadata(), a.data(),
-                                 value, ectx);
+                                 value);
 }
 
 void pydynd::array_no_dim_broadcast_assign_from_py(
     const dynd::ndt::type &dst_tp, const char *dst_arrmeta, char *dst_data,
-    PyObject *value, const dynd::eval::eval_context *ectx)
+    PyObject *value)
 {
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(

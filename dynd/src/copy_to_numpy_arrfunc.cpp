@@ -156,7 +156,7 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
         src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(
             src_arrmeta[0]),
         src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
-        src_fields_arrmeta.get(), kernreq, &dynd::eval::default_eval_context);
+        src_fields_arrmeta.get(), kernreq);
   }
   else {
     stringstream ss;
@@ -177,8 +177,7 @@ struct pydynd::copy_to_numpy pydynd::copy_to_numpy;
 
 void pydynd::array_copy_to_numpy(PyArrayObject *dst_arr,
                                  const dynd::ndt::type &src_tp,
-                                 const char *src_arrmeta, const char *src_data,
-                                 const dynd::eval::eval_context *ectx)
+                                 const char *src_arrmeta, const char *src_data)
 {
   intptr_t dst_ndim = PyArray_NDIM(dst_arr);
   intptr_t src_ndim = src_tp.get_ndim();

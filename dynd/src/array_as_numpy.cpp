@@ -674,8 +674,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
         shape.get(), strides.get(), NULL, 0, NULL));
     array_copy_to_numpy((PyArrayObject *)result.get(), a.get_type(),
-                        a.get()->metadata(), a.cdata(),
-                        &eval::default_eval_context);
+                        a.get()->metadata(), a.cdata());
 
     // Return the NumPy array
     return result.release();

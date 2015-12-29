@@ -184,8 +184,7 @@ void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
         nd::read_access_flag, "r", nd::read_access_flag, "immutable",
         nd::read_access_flag | nd::immutable_access_flag);
   }
-  n = array_from_py(obj, make__type_from_pyobject(dt), fulltype, access_flags,
-                    &eval::default_eval_context);
+  n = array_from_py(obj, make__type_from_pyobject(dt), fulltype, access_flags);
 }
 
 void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
@@ -200,7 +199,7 @@ void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
         nd::read_access_flag, "r", nd::read_access_flag, "immutable",
         nd::read_access_flag | nd::immutable_access_flag);
   }
-  n = array_from_py(obj, access_flags, true, &eval::default_eval_context);
+  n = array_from_py(obj, access_flags, true);
 }
 
 dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)
@@ -265,7 +264,7 @@ dynd::nd::array pydynd::array_full(const dynd::ndt::type &d, PyObject *value,
 {
   uint32_t access_flags = pyarg_creation_access_flags(access);
   nd::array n = nd::empty(d);
-  array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
+  array_broadcast_assign_from_py(n, value);
   if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     n.flag_as_immutable();
   }
@@ -280,7 +279,7 @@ dynd::nd::array pydynd::array_full(PyObject *shape, const dynd::ndt::type &d,
   pyobject_as_vector_intp(shape, shape_vec, true);
   nd::array n = make_strided_array(d, (int)shape_vec.size(),
                                    shape_vec.empty() ? NULL : &shape_vec[0]);
-  array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
+  array_broadcast_assign_from_py(n, value);
   if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
     n.flag_as_immutable();
   }
@@ -390,7 +389,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
                            PyObject *value)
 {
   if (subscript == Py_Ellipsis) {
-    array_broadcast_assign_from_py(n, value, &eval::default_eval_context);
+    array_broadcast_assign_from_py(n, value);
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyInt_Check(subscript)) {
@@ -399,8 +398,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
     char *data = n.data();
     ndt::type d =
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-    array_broadcast_assign_from_py(d, arrmeta, data, value,
-                                   &eval::default_eval_context);
+    array_broadcast_assign_from_py(d, arrmeta, data, value);
 #endif // PY_VERSION_HEX < 0x03000000
   }
   else if (PyLong_Check(subscript)) {
@@ -412,15 +410,14 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
     char *data = n.data();
     ndt::type d =
         n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-    array_broadcast_assign_from_py(d, arrmeta, data, value,
-                                   &eval::default_eval_context);
+    array_broadcast_assign_from_py(d, arrmeta, data, value);
   }
   else {
     intptr_t size;
     shortvector<irange> indices;
     pyobject_as_irange_array(size, indices, subscript);
     array_broadcast_assign_from_py(n.at_array(size, indices.get(), false),
-                                   value, &eval::default_eval_context);
+                                   value);
   }
 }
 
@@ -431,14 +428,14 @@ nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step,
   ndt::type dt_nd;
 
   if (start != Py_None) {
-    start_nd = array_from_py(start, 0, false, &eval::default_eval_context);
+    start_nd = array_from_py(start, 0, false);
   }
   else {
     start_nd = 0;
   }
-  stop_nd = array_from_py(stop, 0, false, &eval::default_eval_context);
+  stop_nd = array_from_py(stop, 0, false);
   if (step != Py_None) {
-    step_nd = array_from_py(step, 0, false, &eval::default_eval_context);
+    step_nd = array_from_py(step, 0, false);
   }
   else {
     step_nd = 1;
@@ -470,8 +467,8 @@ dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
 {
   nd::array start_nd, stop_nd;
   intptr_t count_val = pyobject_as_index(count);
-  start_nd = array_from_py(start, 0, false, &eval::default_eval_context);
-  stop_nd = array_from_py(stop, 0, false, &eval::default_eval_context);
+  start_nd = array_from_py(start, 0, false);
+  stop_nd = array_from_py(stop, 0, false);
   if (dt == Py_None) {
     return nd::linspace(start_nd, stop_nd, count_val);
   }

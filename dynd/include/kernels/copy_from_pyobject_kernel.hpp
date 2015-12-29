@@ -59,9 +59,7 @@ namespace nd {
         *dst = 0;
       }
       else {
-        *dst =
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
-                .as<dynd::bool1>();
+        *dst = array_from_py(src_obj, 0, false).as<dynd::bool1>();
       }
     }
   };
@@ -237,9 +235,7 @@ namespace nd {
         pyint_to_int(reinterpret_cast<T *>(dst), src_obj);
       }
       else {
-        *reinterpret_cast<T *>(dst) =
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
-                .as<T>();
+        *reinterpret_cast<T *>(dst) = array_from_py(src_obj, 0, false).as<T>();
       }
     }
   };
@@ -308,9 +304,7 @@ namespace nd {
         *reinterpret_cast<T *>(dst) = static_cast<T>(v);
       }
       else {
-        *reinterpret_cast<T *>(dst) =
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
-                .as<T>();
+        *reinterpret_cast<T *>(dst) = array_from_py(src_obj, 0, false).as<T>();
       }
     }
   };
@@ -346,8 +340,7 @@ namespace nd {
       }
       else {
         *reinterpret_cast<dynd::complex<T> *>(dst) =
-            array_from_py(src_obj, 0, false, &dynd::eval::default_eval_context)
-                .as<dynd::complex<T>>();
+            array_from_py(src_obj, 0, false).as<dynd::complex<T>>();
       }
     }
   };
@@ -558,10 +551,8 @@ namespace nd {
                                       ((DyND_PyArrayObject *)src_obj)->v);
       }
       else {
-        pydynd::nd::typed_data_assign(
-            dst_tp, dst_arrmeta, dst,
-            array_from_py(src_obj, 0, false,
-                          &dynd::eval::default_eval_context));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      array_from_py(src_obj, 0, false));
       }
     }
 
@@ -610,10 +601,8 @@ namespace nd {
                                       ((DyND_PyArrayObject *)src_obj)->v);
       }
       else {
-        pydynd::nd::typed_data_assign(
-            dst_tp, dst_arrmeta, dst,
-            array_from_py(src_obj, 0, false,
-                          &dynd::eval::default_eval_context));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      array_from_py(src_obj, 0, false));
       }
     }
 
@@ -668,10 +657,8 @@ namespace nd {
                                       ((DyND_PyArrayObject *)src_obj)->v);
       }
       else {
-        pydynd::nd::typed_data_assign(
-            dst_tp, dst_arrmeta, dst,
-            array_from_py(src_obj, 0, false,
-                          &dynd::eval::default_eval_context));
+        pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
+                                      array_from_py(src_obj, 0, false));
       }
     }
 

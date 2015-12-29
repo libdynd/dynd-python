@@ -21,7 +21,13 @@ public:
   bool operator==(const base_type &rhs) const;
 };
 
-template <>
-struct dynd::ndt::traits<PyObject *> {
-  static dynd::ndt::type equivalent() { return make_type<pyobject_type>(); }
-};
+namespace dynd {
+namespace ndt {
+
+  template <>
+  struct traits<PyObject *> {
+    static type equivalent() { return make_type<pyobject_type>(); }
+  };
+
+} // namespace dynd::ndt
+} // namespace dynd

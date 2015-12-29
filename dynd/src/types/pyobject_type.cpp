@@ -31,6 +31,10 @@ void pyobject_type::print_data(std::ostream &o, const char *arrmeta,
                                const char *data) const
 {
   PyObject *repr = PyObject_Repr(*reinterpret_cast<PyObject *const *>(data));
+#if PY_VERSION_HEX < 0x03000000
   o << PyString_AsString(repr);
+#else
+  o << PyUnicode_AsUTF8(repr);
+#endif
   Py_DECREF(repr);
 }

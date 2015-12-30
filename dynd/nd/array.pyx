@@ -147,19 +147,14 @@ cdef class array(object):
              type="2 * date")
     """
 
-    def __init__(self, value=Unsupplied, dtype=None, type=None, access=None):
+    def __init__(self, value=Unsupplied, type = None):
         if value is not Unsupplied:
             # Get the array data
-            if dtype is not None:
-                if type is not None:
-                    raise ValueError('Must provide only one of ' +
-                                    'dtype or type, not both')
-                array_init_from_pyobject(self.v, value, dtype, False, access)
-            elif type is not None:
-                array_init_from_pyobject(self.v, value, type, True, access)
+            if type is not None:
+                array_init_from_pyobject(self.v, value, type, True, None)
             else:
-                array_init_from_pyobject(self.v, value, access)
-        elif dtype is not None or type is not None or access is not None:
+                array_init_from_pyobject(self.v, value, None)
+        elif type is not None:
             raise ValueError('a value for the array construction must ' +
                             'be provided when another keyword parameter is used')
 

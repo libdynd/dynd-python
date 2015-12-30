@@ -301,7 +301,7 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(nd.as_py(n[1]), 100)
 
     def test_numpy_view_of_dynd_struct(self):
-        n = nd.array([(1, 2), (3, 4)], dtype='{a: int32, b: float64}')
+        n = nd.array([(1, 2), (3, 4)], type='2 * {a: int32, b: float64}')
         a = np.asarray(n)
         self.assertEqual(a.dtype, np.dtype({'names':['a','b'],
                                             'formats':['i4','f8'],
@@ -400,7 +400,7 @@ class TestNumpyViewInterop(unittest.TestCase):
 class TestAsNumpy(unittest.TestCase):
     def test_struct_as_numpy(self):
         # Aligned struct
-        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32, y: int64}')
+        a = nd.array([[1, 2], [3, 4]], type='2 * {x : int32, y: int64}')
         b = nd.as_numpy(a)
         self.assertEqual(b.dtype,
                     np.dtype([('x', np.int32), ('y', np.int64)], align=True))
@@ -408,7 +408,7 @@ class TestAsNumpy(unittest.TestCase):
         self.assertEqual(nd.as_py(a.y), b['y'].tolist())
         # Unaligned struct
         a = nd.array([[1, 2], [3, 4]],
-                    dtype='{x : unaligned[int32], y: unaligned[int64]}')
+                    type='2 * {x : unaligned[int32], y: unaligned[int64]}')
         b = nd.as_numpy(a)
         self.assertEqual(b.dtype, np.dtype([('x', np.int32), ('y', np.int64)]))
         self.assertEqual(nd.as_py(a.x), b['x'].tolist())
@@ -416,7 +416,7 @@ class TestAsNumpy(unittest.TestCase):
 
     def test_struct_via_pep3118(self):
         # Aligned struct
-        a = nd.array([[1, 2], [3, 4]], dtype='{x : int32, y: int64}')
+        a = nd.array([[1, 2], [3, 4]], type='2 * {x : int32, y: int64}')
         b = np.asarray(a)
         self.assertEqual(b.dtype,
                     np.dtype([('x', np.int32), ('y', np.int64)], align=True))

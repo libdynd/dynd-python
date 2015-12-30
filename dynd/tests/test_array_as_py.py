@@ -6,7 +6,7 @@ class TestArrayAsPy(unittest.TestCase):
     def test_struct_or_tuple(self):
         a = nd.array((3, "testing", 1.5), type='{x:int, y:string, z:real}')
         self.assertEqual(nd.as_py(a), {'x': 3, 'y': "testing", 'z': 1.5})
-        a = nd.array([(1, 1.5), (2, 3.5)], dtype='{x:int, y:real}')
+        a = nd.array([(1, 1.5), (2, 3.5)], type='2 * {x:int, y:real}')
         self.assertEqual(nd.as_py(a), [{'x': 1, 'y': 1.5}, {'x': 2, 'y': 3.5}])
 
         # Slightly bigger example

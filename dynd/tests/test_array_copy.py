@@ -231,7 +231,7 @@ class TestIteratorAssign(unittest.TestCase):
 
 class TestStringCopy(unittest.TestCase):
     def test_string_assign_to_slice(self):
-        a = nd.array(['a', 'b', 'c', 'd', 'e'], 'fixed_string[8]', access='rw')
+        a = nd.array(['a', 'b', 'c', 'd', 'e'], type = ndt.make_fixed_dim(5, 'fixed_string[8]'))
         a[:3] = 'test'
         self.assertEqual(nd.as_py(a), ['test', 'test', 'test', 'd', 'e'])
 

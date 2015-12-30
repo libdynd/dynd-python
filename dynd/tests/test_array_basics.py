@@ -20,13 +20,13 @@ class TestBasics(unittest.TestCase):
         a = [1, 2, 3, 4, 5, 6]
         self.assertEqual(a[nd.array(0)], 1)
         self.assertEqual(a[nd.array(1):nd.array(3)], [2, 3])
-        self.assertEqual(a[nd.array(-1, ndt.int8)], 6)
+        self.assertEqual(a[nd.array(-1, type=ndt.int8)], 6)
 
     def test_index_errors(self):
         a = [1, 2, 3, 4, 5, 6]
-        self.assertRaises(TypeError, lambda x : a[x], nd.array(True))
-        self.assertRaises(TypeError, lambda x : a[x], nd.array(3.5))
-        self.assertRaises(IndexError, lambda x : a[x], nd.array(10))
+        self.assertRaises(TypeError, lambda x : a[x], nd.array(True, type = ndt.bool))
+        self.assertRaises(TypeError, lambda x : a[x], nd.array(3.5, type = ndt.float64))
+        self.assertRaises(IndexError, lambda x : a[x], nd.array(10, type = ndt.int32))
 
     def test_nonzero(self):
         # boolean values
@@ -53,9 +53,9 @@ class TestBasics(unittest.TestCase):
         self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float64)))
         # strings
         self.assertFalse(bool(nd.array('')))
-        self.assertFalse(bool(nd.array('', ndt.string)))
+        self.assertFalse(bool(nd.array('', type = ndt.string)))
         self.assertTrue(bool(nd.array(' ')))
-        self.assertTrue(bool(nd.array('test', ndt.string)))
+        self.assertTrue(bool(nd.array('test', type = ndt.string)))
 
     def test_nonzero_errors(self):
         # Non-scalars raise errors like NumPy, because their
@@ -115,19 +115,19 @@ class TestBasics(unittest.TestCase):
 
     def test_uint_value_limits(self):
         # Valid maximums
-        a = nd.array(0xff, ndt.uint8)
+        a = nd.array(0xff, type = ndt.uint8)
         self.assertEqual(nd.as_py(a), 0xff)
-        a = nd.array(0xffff, ndt.uint16)
+        a = nd.array(0xffff, type = ndt.uint16)
         self.assertEqual(nd.as_py(a), 0xffff)
-        a = nd.array(0xffffffff, ndt.uint32)
+        a = nd.array(0xffffffff, type = ndt.uint32)
         self.assertEqual(nd.as_py(a), 0xffffffff)
-        a = nd.array(0xffffffffffffffff, ndt.uint64)
+        a = nd.array(0xffffffffffffffff, type = ndt.uint64)
         self.assertEqual(nd.as_py(a), 0xffffffffffffffff)
         # Out of bounds
-        self.assertRaises(OverflowError, nd.array, 0x100, ndt.uint8)
-        self.assertRaises(OverflowError, nd.array, 0x10000, ndt.uint16)
-        self.assertRaises(OverflowError, nd.array, 0x100000000, ndt.uint32)
-        self.assertRaises(OverflowError, nd.array, 0x10000000000000000, ndt.uint64)
+        self.assertRaises(OverflowError, nd.array, 0x100, type = ndt.uint8)
+        self.assertRaises(OverflowError, nd.array, 0x10000, type = ndt.uint16)
+        self.assertRaises(OverflowError, nd.array, 0x100000000, type = ndt.uint32)
+        self.assertRaises(OverflowError, nd.array, 0x10000000000000000, type = ndt.uint64)
 
     def test_inf(self):
         # Validate nd.inf
@@ -138,7 +138,7 @@ class TestBasics(unittest.TestCase):
         a = nd.array(nd.inf)
         self.assertEqual(nd.as_py(a), nd.inf)
         self.assertEqual(nd.type_of(a), ndt.float64)
-        a = nd.array(nd.inf, ndt.float32)
+        a = nd.array(nd.inf, type = ndt.float32)
         self.assertEqual(nd.as_py(a), nd.inf)
 
     def test_nan(self):
@@ -149,10 +149,10 @@ class TestBasics(unittest.TestCase):
         self.assertFalse(nd.nan == 0)
         self.assertFalse(nd.nan == nd.nan)
         # as an array
-        a = nd.array(nd.nan)
+        a = nd.array(nd.nan, type = ndt.float64)
         self.assertTrue(math.isnan(nd.as_py(a)))
         self.assertEqual(nd.type_of(a), ndt.float64)
-        a = nd.array(nd.nan, ndt.float32)
+        a = nd.array(nd.nan, type = ndt.float32)
         self.assertTrue(math.isnan(nd.as_py(a)))
 
 

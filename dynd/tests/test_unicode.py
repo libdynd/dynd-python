@@ -23,7 +23,7 @@ class TestUnicode(unittest.TestCase):
             # In Python 2, str and bytes are the same,
             # so we have to manually request a bytes type
             a = nd.array(b"Testing 1 2 3", type=ndt.bytes)
-            b = nd.array([b"First", b"Second"], dtype=ndt.bytes)
+            b = nd.array([b"First", b"Second"], type=ndt.make_fixed_dim(2, ndt.bytes))
         self.assertEqual(nd.type_of(a), ndt.bytes)
         self.assertEqual(nd.dtype_of(b), ndt.bytes)
         self.assertEqual(nd.as_py(a), b"Testing 1 2 3")

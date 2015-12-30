@@ -8,7 +8,7 @@ class TestFields(unittest.TestCase):
                 (1, 2, 'a', 'b'),
                 (3, 4, 'ab', 'cd'),
                 (5, 6, 'def', 'ghi')],
-                dtype='{x: int32, y: int32, z: string, w: string}')
+                type='3 * {x: int32, y: int32, z: string, w: string}')
         # Selecting a single field
         b = nd.fields(a, 'x')
         self.assertEqual(nd.dtype_of(b), ndt.make_struct(
@@ -89,7 +89,7 @@ class TestFields(unittest.TestCase):
                 (1, 2, 'a', 'b'),
                 (3, 4, 'ab', 'cd'),
                 (5, 6, 'def', 'ghi')],
-                dtype='{x: int32, y: int32, z: string, w: string}')
+                type='3 * {x: int32, y: int32, z: string, w: string}')
         self.assertRaises(RuntimeError, nd.fields, a, 'y', 'v')
 
 if __name__ == '__main__':

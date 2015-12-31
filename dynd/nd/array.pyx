@@ -162,7 +162,7 @@ cdef class array(object):
         from __init__ import assign
 
         cdef _array a
-        ids = [int32_type_id]
+        ids = [int8_type_id, int16_type_id, int32_type_id, int64_type_id]
 
         if value is not Unsupplied:
             # Get the array data

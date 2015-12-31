@@ -63,7 +63,10 @@ struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;
 
 PYDYND_API void pydynd::init_assign()
 {
+  std::cout << "pydynd::init_assign" << std::endl;
+
   dynd::nd::callable &assign = dynd::nd::assign::get();
+  std::cout << "assign = " << assign << std::endl;
 
   assign.set_overload(ndt::make_type<int8_t>(),
                       {dynd::ndt::make_type<pyobject_type>()},

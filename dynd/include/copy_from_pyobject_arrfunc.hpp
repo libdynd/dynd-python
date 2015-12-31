@@ -10,6 +10,8 @@
 #include <dynd/kernels/ckernel_builder.hpp>
 #include <dynd/callable.hpp>
 
+#include "visibility.hpp"
+
 namespace pydynd {
 namespace nd {
 
@@ -18,4 +20,7 @@ namespace nd {
   } copy_from_pyobject;
 
 } // namespace pydynd::nd
+
+PYDYND_API void init_assign();
+
 } // namespace pydynd

@@ -111,6 +111,8 @@ PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
 PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
                                          PyObject *access);
 
+PYDYND_API dynd::nd::array pyobject_array(PyObject *obj);
+
 PYDYND_API dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
 
 PYDYND_API dynd::nd::array array_eval(const dynd::nd::array &n);

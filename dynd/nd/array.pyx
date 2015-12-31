@@ -170,6 +170,7 @@ cdef class array(object):
                 if (not isinstance(type, ndt.type)):
                     type = ndt.type(type)
                 if (type.id in ids):
+                    print type
                     a = pyobject_array(value)
                     self.v = (<array> assign(wrap(a), dst_tp = type)).v
                     return

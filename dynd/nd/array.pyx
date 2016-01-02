@@ -55,8 +55,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     object array_index(_array&) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
-    void init_assign() except +translate_exception
-
     _array array_eval(_array&) except +translate_exception
     _array array_cast(_array&, _type&) except +translate_exception
     _array array_ucast(_array&, _type&, size_t) except +translate_exception

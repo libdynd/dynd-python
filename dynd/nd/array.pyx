@@ -27,7 +27,7 @@ from ..ndt import Unsupplied
 from dynd import ndt
 
 cdef extern from 'copy_from_pyobject_arrfunc.hpp' namespace 'pydynd':
-    void init_assign() except +translate_exception
+    void init_assign(_callable) except +translate_exception
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
@@ -94,8 +94,8 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
 # in scope due to argument naming.
 _builtin_type = type
 
-def overload_assign():
-    init_assign()
+def overload_assign(f):
+    init_assign((<callable> f).v)
 
 cdef class array(object):
     """

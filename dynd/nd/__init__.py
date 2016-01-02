@@ -20,4 +20,4 @@ from . import functional
 for key in get_published_callables():
     globals()[key] = get_published_callables()[key]
 
-overload_assign()
+overload_assign(globals()["assign"])

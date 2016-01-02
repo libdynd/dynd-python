@@ -21,6 +21,6 @@ namespace nd {
 
 } // namespace pydynd::nd
 
-PYDYND_API void init_assign();
+PYDYND_API void init_assign(dynd::nd::callable &assign);
 
 } // namespace pydynd

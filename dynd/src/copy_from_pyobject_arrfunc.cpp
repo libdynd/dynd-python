@@ -17,8 +17,10 @@
 #include "array_from_py_typededuction.hpp"
 
 #include "kernels/copy_from_pyobject_kernel.hpp"
+#include "types/pyobject_type.hpp"
 
 using namespace std;
+using namespace dynd;
 
 dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
 {
@@ -58,3 +60,23 @@ dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
 }
 
 struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;
+
+PYDYND_API void pydynd::init_assign(dynd::nd::callable &assign)
+{
+  assign.set_overload(ndt::make_type<int8_t>(),
+                      {dynd::ndt::make_type<pyobject_type>()},
+                      dynd::nd::callable::make<
+                          nd::copy_from_pyobject_kernel<dynd::int8_type_id>>());
+  assign.set_overload(
+      ndt::make_type<int16_t>(), {dynd::ndt::make_type<pyobject_type>()},
+      dynd::nd::callable::make<
+          nd::copy_from_pyobject_kernel<dynd::int16_type_id>>());
+  assign.set_overload(
+      ndt::make_type<int32_t>(), {dynd::ndt::make_type<pyobject_type>()},
+      dynd::nd::callable::make<
+          nd::copy_from_pyobject_kernel<dynd::int32_type_id>>());
+  assign.set_overload(
+      ndt::make_type<int64_t>(), {dynd::ndt::make_type<pyobject_type>()},
+      dynd::nd::callable::make<
+          nd::copy_from_pyobject_kernel<dynd::int64_type_id>>());
+}

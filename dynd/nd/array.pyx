@@ -16,6 +16,7 @@ from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport type as _type, get_builtin_type_dynamic_array_properties
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
+from ..cpp.types.type_id cimport *
 from ..cpp.view cimport view as _view
 from ..cpp.types.pyobject_type cimport pyobject_type_id
 
@@ -23,10 +24,16 @@ from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp as _dynd_ndt_type_to_cpp
 from ..ndt import Unsupplied
+from dynd import ndt
+
+cdef extern from 'copy_from_pyobject_arrfunc.hpp' namespace 'pydynd':
+    void init_assign(_callable) except +translate_exception
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
+
+    _array pyobject_array(object) except +translate_exception
 
     object array_int(_array&) except +translate_exception
     object array_float(_array&) except +translate_exception
@@ -86,6 +93,9 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
 _builtin_type = type
+
+def overload_assign(f):
+    init_assign((<callable> f).v)
 
 cdef class array(object):
     """
@@ -148,9 +158,21 @@ cdef class array(object):
     """
 
     def __init__(self, value=Unsupplied, type = None):
+        from __init__ import assign
+
+        cdef _array a
+        ids = [int8_type_id, int16_type_id, int32_type_id, int64_type_id]
+
         if value is not Unsupplied:
             # Get the array data
             if type is not None:
+                if (not isinstance(type, ndt.type)):
+                    type = ndt.type(type)
+                if (type.id in ids):
+                    a = pyobject_array(value)
+                    self.v = (<array> assign(wrap(a), dst_tp = type)).v
+                    return
+
                 array_init_from_pyobject(self.v, value, type, True, None)
             else:
                 array_init_from_pyobject(self.v, value, None)

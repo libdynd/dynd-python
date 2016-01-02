@@ -94,7 +94,8 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
 # in scope due to argument naming.
 _builtin_type = type
 
-init_assign()
+def overload_assign():
+    init_assign()
 
 cdef class array(object):
     """

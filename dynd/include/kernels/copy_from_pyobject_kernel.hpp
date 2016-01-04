@@ -1171,7 +1171,7 @@ namespace nd {
                 intptr_t nkwd, const dynd::nd::array *kwds,
                 const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      bool dim_broadcast = kwds[0].as<bool>();
+      bool dim_broadcast = false;
 
       intptr_t root_ckb_offset = ckb_offset;
       pydynd::nd::copy_from_pyobject_kernel<dynd::tuple_type_id> *self =

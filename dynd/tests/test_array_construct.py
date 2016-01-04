@@ -647,7 +647,7 @@ class TestIteratorConstruct(unittest.TestCase):
     def test_ragged_fromiter(self):
         # Strided array of var from list of iterators
         a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
-                        [2, 10]], type='Fixed * var * int32')
+                        [2, 10]], type='3 * var * int32')
         self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
         self.assertEqual(nd.as_py(a),
                         [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])

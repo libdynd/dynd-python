@@ -26,7 +26,7 @@ from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp as _dynd_ndt_type
 from ..ndt import Unsupplied
 from dynd import ndt
 
-cdef extern from 'copy_from_pyobject_arrfunc.hpp' namespace 'pydynd':
+cdef extern from 'copy_from_pyobject_arrfunc.hpp':
     void init_assign(_callable) except +translate_exception
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
@@ -158,11 +158,10 @@ cdef class array(object):
     """
 
     def __init__(self, value=Unsupplied, type = None):
-        from __init__ import assign
+        from . import assign
 
         cdef _array a
-        ids = [int8_type_id, int16_type_id, int32_type_id, int64_type_id]
-
+        ids = [bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id, uint8_type_id, uint16_type_id, uint32_type_id, uint64_type_id, option_type_id]
         if value is not Unsupplied:
             # Get the array data
             if type is not None:

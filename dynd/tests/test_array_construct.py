@@ -828,11 +828,7 @@ class TestOptionArrayConstruct(unittest.TestCase):
 #                                     ('NA', None),
 #                                     (False, False),
 #                                     ('true', True)])
-        self.check_scalars('?int', [(None, None),
-                                    ('', None),
-                                    ('NA', None),
-                                    (-10, -10),
-                                    ('12354', 12354)])
+        self.check_scalars('?int', [(None, None), ('', None), ('NA', None), (-10, -10), ('12354', 12354)])
         self.check_scalars('?real', [(None, None),
                                      ('', None),
                                      ('NA', None),

@@ -17,6 +17,7 @@
 #include "array_from_py_typededuction.hpp"
 
 #include "kernels/copy_from_pyobject_kernel.hpp"
+#include "kernels/assign_kernel.hpp"
 #include "types/pyobject_type.hpp"
 
 using namespace std;
@@ -61,22 +62,32 @@ dynd::nd::callable pydynd::nd::copy_from_pyobject::make()
 
 struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;
 
-PYDYND_API void pydynd::init_assign(dynd::nd::callable &assign)
+using namespace dynd;
+
+PYDYND_API void init_assign(nd::callable &assign)
 {
-  assign.set_overload(ndt::make_type<int8_t>(),
-                      {dynd::ndt::make_type<pyobject_type>()},
-                      dynd::nd::callable::make<
-                          nd::copy_from_pyobject_kernel<dynd::int8_type_id>>());
-  assign.set_overload(
-      ndt::make_type<int16_t>(), {dynd::ndt::make_type<pyobject_type>()},
-      dynd::nd::callable::make<
-          nd::copy_from_pyobject_kernel<dynd::int16_type_id>>());
-  assign.set_overload(
-      ndt::make_type<int32_t>(), {dynd::ndt::make_type<pyobject_type>()},
-      dynd::nd::callable::make<
-          nd::copy_from_pyobject_kernel<dynd::int32_type_id>>());
-  assign.set_overload(
-      ndt::make_type<int64_t>(), {dynd::ndt::make_type<pyobject_type>()},
-      dynd::nd::callable::make<
-          nd::copy_from_pyobject_kernel<dynd::int64_type_id>>());
+  typedef type_id_sequence<
+      bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,
+      int128_type_id, uint8_type_id, uint16_type_id, uint32_type_id,
+      uint64_type_id, uint128_type_id, option_type_id> type_ids;
+
+  for (const auto &pair : nd::callable::make_all<assign_kernel, type_ids>()) {
+    assign.set_overload(pair.first, {ndt::make_type<pyobject_type>()},
+                        pair.second);
+  }
+
+  typedef type_id_sequence<float16_type_id, float32_type_id, float64_type_id,
+                           complex_float32_type_id, complex_float64_type_id,
+                           bytes_type_id, fixed_bytes_type_id, string_type_id,
+                           fixed_string_type_id, date_type_id, time_type_id,
+                           datetime_type_id, type_type_id, categorical_type_id,
+                           fixed_dim_type_id, var_dim_type_id, tuple_type_id,
+                           struct_type_id> old_type_ids;
+
+  for (const auto &pair :
+       nd::callable::make_all<pydynd::nd::copy_from_pyobject_kernel,
+                              old_type_ids>()) {
+    assign.set_overload(pair.first, {ndt::make_type<pyobject_type>()},
+                        pair.second);
+  }
 }

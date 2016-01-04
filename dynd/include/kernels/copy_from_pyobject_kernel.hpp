@@ -687,7 +687,6 @@ namespace nd {
     }
   };
 
-  // TODO: Should make a more efficient strided kernel function
   template <>
   struct copy_from_pyobject_kernel<dynd::option_type_id>
       : dynd::nd::base_kernel<copy_from_pyobject_kernel<dynd::option_type_id>,

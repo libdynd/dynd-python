@@ -33,6 +33,8 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
 
+    _type xtype_for(object) except +translate_exception
+
     _array pyobject_array(object) except +translate_exception
 
     object array_int(_array&) except +translate_exception
@@ -85,10 +87,16 @@ cdef extern from 'array_assign_from_py.hpp' namespace 'pydynd':
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
     _array array_from_py(object, unsigned int, int)
 
+cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
+    _type deduce__type_from_pyobject(object)
+
 cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
     # Have Cython use an integer to represent the bool argument.
     # It will convert implicitly to bool at the C++ level.
     _array array_from_numpy_array_cast(PyObject*, unsigned int, bint)
+
+cdef extern from 'type_functions.hpp' namespace 'pydynd':
+    _type make__type_from_pyobject(object)
 
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
@@ -96,6 +104,9 @@ _builtin_type = type
 
 def overload_assign(f):
     init_assign((<callable> f).v)
+
+def type_for(obj):
+    return wrap(make__type_from_pyobject(type(obj)))
 
 cdef class array(object):
     """
@@ -157,32 +168,23 @@ cdef class array(object):
              type="2 * date")
     """
 
-    def __init__(self, value=Unsupplied, type = None):
+    # value -> deduce type
+    # value + type
+    # no value, no type
+    def __init__(self, value = Unsupplied, type = None):
         from . import assign
 
         cdef _array a
-        ids = [bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id, int128_type_id,
-            uint8_type_id, uint16_type_id, uint32_type_id, uint64_type_id, uint128_type_id,
-            float16_type_id, float32_type_id, float64_type_id, complex_float32_type_id, complex_float64_type_id,
-            bytes_type_id, fixed_bytes_type_id, string_type_id, date_type_id, time_type_id, datetime_type_id,
-            option_type_id, type_type_id, tuple_type_id, struct_type_id, fixed_dim_type_id, var_dim_type_id,
-            categorical_type_id]
         if value is not Unsupplied:
             # Get the array data
             if type is not None:
                 if (not isinstance(type, ndt.type)):
                     type = ndt.type(type)
-                if (type.id in ids):
-                    a = pyobject_array(value)
-                    self.v = (<array> assign(wrap(a), dst_tp = type)).v
-                    return
-
-                array_init_from_pyobject(self.v, value, type, True, None)
+                a = pyobject_array(value)
+                self.v = (<array> assign(wrap(a), dst_tp = type)).v
             else:
-                array_init_from_pyobject(self.v, value, None)
-        elif type is not None:
-            raise ValueError('a value for the array construction must ' +
-                            'be provided when another keyword parameter is used')
+                a = pyobject_array(value)
+                self.v = (<array> assign(wrap(a), dst_tp = wrap(xtype_for(value)))).v
 
     property access_flags:
         """

@@ -132,6 +132,8 @@ PYDYND_API dynd::nd::array array_full(const dynd::ndt::type &d, PyObject *value,
 PYDYND_API dynd::nd::array array_full(PyObject *shape, const dynd::ndt::type &d,
                                       PyObject *value, PyObject *access);
 
+PYDYND_API dynd::ndt::type xtype_for(PyObject *obj);
+
 PYDYND_API dynd::nd::array array_empty(const dynd::ndt::type &d,
                                        PyObject *access);
 PYDYND_API dynd::nd::array

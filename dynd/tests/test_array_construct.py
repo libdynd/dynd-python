@@ -482,264 +482,264 @@ class TestStructConstruct(unittest.TestCase):
         self.assertRaises(nd.BroadcastError, nd.array,
                         {'x':0,'y':1,'z':2,'w':3}, type='{x:int32, y:int32, z:int32}')
 
-class TestIteratorConstruct(unittest.TestCase):
-    # Test dynd construction from iterators
-    #
-    # NumPy's np.fromiter(x, dtype) becomes
-    #         nd.array(x, type=ndt.make_var(dtype)')
-    #
-    # Additionally, dynd supports dynamically deducing the type as
-    # it processes the iterators, so nd.array(x) where x is an iterator
-    # should work well too.
-
-    def test_dynamic_fromiter_notype(self):
-        # When constructing from an empty iterator, defaults to int32
-        a = nd.array(x for x in [])
-        self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
-        self.assertEqual(nd.as_py(a), [])
-
-    def test_dynamic_fromiter_onetype(self):
-        # Constructing with an iterator like this uses a dynamic
-        # array construction method. In this simple case, we
-        # use generators that have a consistent type
-        # bool result
-        a = nd.array(iter([True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('2 * bool'))
-        self.assertEqual(nd.as_py(a), [True, False])
-        # int32 result
-        a = nd.array(iter([1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('4 * int32'))
-        self.assertEqual(nd.as_py(a), [1, 2, 1, 0])
-        # int64 result
-        a = nd.array(iter([10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('5 * int64'))
-        self.assertEqual(nd.as_py(a), [10000000000, 1, 2, 1, 0])
-        # float64 result
-        a = nd.array(iter([3.25, 10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('6 * float64'))
-        self.assertEqual(nd.as_py(a), [3.25, 10000000000, 1, 2, 1, 0])
-        # complex[float64] result
-        a = nd.array(iter([3.25j, 3.25, 10000000000, 1, 2, True, False]))
-        self.assertEqual(nd.type_of(a), ndt.type('7 * complex[float64]'))
-        self.assertEqual(nd.as_py(a), [3.25j, 3.25, 10000000000, 1, 2, 1, 0])
-
-        """
-        Todo: Reenable this with new strings
-
-        # string result
-        a = nd.array(str(x) + 'test' for x in range(10))
-        self.assertEqual(nd.type_of(a), ndt.type('10 * string'))
-        self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
-        # string result
-        a = nd.array(iter([u'test', 'test2']))
-        self.assertEqual(nd.type_of(a), ndt.type('2 * string'))
-        self.assertEqual(nd.as_py(a), [u'test', u'test2'])
-        # bytes result
-        if sys.version_info[0] >= 3:
-            a = nd.array(b'x'*x for x in range(10))
-            self.assertEqual(nd.type_of(a), ndt.type('10 * bytes'))
-            self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
-        """
-
-    def test_dynamic_fromiter_booltypepromo(self):
-        # Test iterator construction cases promoting from a boolean
-        # int32 result
-        a = nd.array(iter([True, False, 3]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
-        self.assertEqual(nd.as_py(a), [1, 0, 3])
-        # int64 result
-        a = nd.array(iter([True, False, -10000000000]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * int64'))
-        self.assertEqual(nd.as_py(a), [1, 0, -10000000000])
-        # float64 result
-        a = nd.array(iter([True, False, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
-        self.assertEqual(nd.as_py(a), [1, 0, 3.25])
-        # complex[float64] result
-        a = nd.array(iter([True, False, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
-        self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
-        # Should raise an error mixing bool and string/bytes
-        self.assertRaises(TypeError, nd.array, iter([True, False, "test"]))
-        self.assertRaises(TypeError, nd.array, iter([True, False, u"test"]))
-        self.assertRaises(TypeError, nd.array, iter([True, False, b"test"]))
-
-    def test_dynamic_fromiter_int32typepromo(self):
-        # Test iterator construction cases promoting from an int32
-        # int64 result
-        a = nd.array(iter([1, 2, 10000000000]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * int64'))
-        self.assertEqual(nd.as_py(a), [1, 2, 10000000000])
-        # float64 result
-        a = nd.array(iter([1, 2, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
-        self.assertEqual(nd.as_py(a), [1, 2, 3.25])
-        # complex[float64] result
-        a = nd.array(iter([1, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
-        self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
-        # Should raise an error mixing int32 and string/bytes
-        self.assertRaises(TypeError, nd.array, iter([1, 2, "test"]))
-        self.assertRaises(TypeError, nd.array, iter([1, 2, u"test"]))
-        self.assertRaises(TypeError, nd.array, iter([1, 2, b"test"]))
-
-    def test_dynamic_fromiter_int64typepromo(self):
-        # Test iterator construction cases promoting from an int64
-        # float64 result
-        a = nd.array(iter([10000000000, 2, 3.25]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
-        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25])
-        # complex[float64] result
-        a = nd.array(iter([10000000000, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
-        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
-        # Should raise an error mixing int64 and string/bytes
-        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, "test"]))
-        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, u"test"]))
-        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, b"test"]))
-
-    def test_dynamic_fromiter_float64typepromo(self):
-        # Test iterator construction cases promoting from an float64
-        # complex[float64] result
-        a = nd.array(iter([3.25, 2, 3.25j]))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
-        self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
-        # Should raise an error mixing float64 and string/bytes
-        self.assertRaises(TypeError, nd.array, iter([3.25, 2, "test"]))
-        self.assertRaises(TypeError, nd.array, iter([3.25, 2, u"test"]))
-        self.assertRaises(TypeError, nd.array, iter([3.25, 2, b"test"]))
-
-    def test_dynamic_fromiter_complexfloat64typepromo(self):
-        # Test iterator construction cases promoting from an complex[float64]
-        # Should raise an error mixing complex[float64] and string/bytes
-        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, "test"]))
-        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, u"test"]))
-        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, b"test"]))
-
-    def test_simple_fromiter(self):
-        # Var dimension construction from a generator
-        a = nd.array((2*x + 5 for x in range(10)), type='var * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
-        self.assertEqual(len(a), 10)
-        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
-        # Fixed dimension construction from a generator
-        a = nd.array((2*x + 5 for x in range(10)), type='10 * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('10 * int32'))
-        self.assertEqual(len(a), 10)
-        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
-        # Produce an error if it's a fixed dimension with too few elements
-        self.assertRaises(nd.BroadcastError, nd.array,
-                        (2*x + 5 for x in range(10)), type='11 * int32')
-        # Produce an error if it's a fixed dimension with too many elements
-        self.assertRaises(nd.BroadcastError, nd.array,
-                        (2*x + 5 for x in range(10)), type='9 * int32')
-        # Produce an error if it's a fixed dimension
-        self.assertRaises(TypeError, nd.array,
-                        (2*x + 5 for x in range(10)), type='Fixed * int32')
-
-    def test_simple_fromiter_medsize(self):
-        # A bigger input to exercise the dynamic resizing a bit
-        a = nd.array((2*x + 5 for x in range(100000)), type='var * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
-        self.assertEqual(len(a), 100000)
-        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(100000)])
-
-    def test_ragged_fromiter(self):
-        # Strided array of var from list of iterators
-        a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
-                        [2, 10]], type='3 * var * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
-        self.assertEqual(nd.as_py(a),
-                        [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
-        # Var array of var from iterator of iterators
-        a = nd.array(((2*x for x in range(y)) for y in range(4)),
-                        type='var * var * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('var * var * int32'))
-        self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
-        # Range of ranges
-        a = nd.array(range(i) for i in range(4))
-        self.assertEqual(nd.as_py(a), [list(range(i)) for i in range(4)])
-
-    def test_ragged_fromiter_typepromo(self):
-        # 2D nested iterators
-        vals = [[True, False],
-                [False, 2, 3],
-                [-10000000000],
-                [True, 10, 3.125, 5.5j]]
-        a = nd.array(iter(x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('4 * var * complex[float64]'))
-        self.assertEqual(nd.as_py(a), vals)
-        # 3D nested iterators
-        vals = [[[True, True, True],
-                 [False, False]],
-                [[True, True, False],
-                 [False, False, -1000, 10000000000],
-                 [10, 20, 10]],
-                [],
-                [[],
-                 [1.5],
-                 []]]
-        a = nd.array((iter(y) for y in x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('4 * var * var * float64'))
-        self.assertEqual(nd.as_py(a), vals)
-        # Iterator of lists
-        vals = [[True, 2, 3],
-                [4, 5, 6.5],
-                [1, 2, 3]]
-        a = nd.array(iter(vals))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * 3 * float64'))
-        self.assertEqual(nd.as_py(a), vals)
-        # Iterator starting with list, also including iterator
-        vals = [[True, 2, 3],
-                [4, 5, 6.5],
-                [1, 2, 3]]
-        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('3 * 3 * float64'))
-        self.assertEqual(nd.as_py(a), vals)
-        # Iterator with lists, but ragged
-        vals = [[1], [2, 3, 4], [5, 6]]
-        a = nd.array(iter(vals))
-        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
-        self.assertEqual(nd.as_py(a), vals)
-        # Iterator starting with list, first raggedness is a short iterator
-        vals = [[1, 2, 3], [4], [5, 6]]
-        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
-        self.assertEqual(nd.as_py(a), vals)
-        # Iterator starting with list, first raggedness is a long iterator
-        vals = [[1], [2, 3, 4], [5, 6]]
-        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
-        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
-        self.assertEqual(nd.as_py(a), vals)
-
-    def test_ragged_fromlistofiter_typepromo(self):
-        # list of iterators
-        vals = [[True, False],
-                [False, 2, 3],
-                [-10000000000],
-                [True, 10, 3.125, 5.5j]]
-        a = nd.array([iter(x) for x in vals])
-        self.assertEqual(nd.type_of(a), ndt.type('4 * var * complex[float64]'))
-        self.assertEqual(nd.as_py(a), vals)
-        # list of list/iterator
-        a = nd.array([[1,2,3], (1.5*x for x in range(4)), iter([-1, 1])])
-        self.assertEqual(nd.type_of(a), ndt.type('3 * var * float64'))
-        self.assertEqual(nd.as_py(a),
-                         [[1,2,3], [1.5*x for x in range(4)], [-1,1]])
-
-    def test_ragged_initial_empty_typepromo(self):
-        # iterator of lists, first one is empty
-        vals = [[],
-                [False, 2, 3]]
-        a = nd.array(iter(x) for x in vals)
-        self.assertEqual(nd.type_of(a), ndt.type('2 * var * int32'))
-        self.assertEqual(nd.as_py(a), vals)
-
-    def test_dtype_fromiter(self):
-        # Specify dtype instead of full type
-        a = nd.array((2*x + 1 for x in range(7)), type=ndt.make_var_dim(ndt.int32))
-        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
-        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
+#class TestIteratorConstruct(unittest.TestCase):
+#    # Test dynd construction from iterators
+#    #
+#    # NumPy's np.fromiter(x, dtype) becomes
+#    #         nd.array(x, type=ndt.make_var(dtype)')
+#    #
+#    # Additionally, dynd supports dynamically deducing the type as
+#    # it processes the iterators, so nd.array(x) where x is an iterator
+#    # should work well too.
+#
+#    def test_dynamic_fromiter_notype(self):
+#        # When constructing from an empty iterator, defaults to int32
+#        a = nd.array(x for x in [])
+#        self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
+#        self.assertEqual(nd.as_py(a), [])
+#
+#    def test_dynamic_fromiter_onetype(self):
+#        # Constructing with an iterator like this uses a dynamic
+#        # array construction method. In this simple case, we
+#        # use generators that have a consistent type
+#        # bool result
+#        a = nd.array(iter([True, False]))
+#        self.assertEqual(nd.type_of(a), ndt.type('2 * bool'))
+#        self.assertEqual(nd.as_py(a), [True, False])
+#        # int32 result
+#        a = nd.array(iter([1, 2, True, False]))
+#        self.assertEqual(nd.type_of(a), ndt.type('4 * int32'))
+#        self.assertEqual(nd.as_py(a), [1, 2, 1, 0])
+#        # int64 result
+#        a = nd.array(iter([10000000000, 1, 2, True, False]))
+#        self.assertEqual(nd.type_of(a), ndt.type('5 * int64'))
+#        self.assertEqual(nd.as_py(a), [10000000000, 1, 2, 1, 0])
+#        # float64 result
+#        a = nd.array(iter([3.25, 10000000000, 1, 2, True, False]))
+#        self.assertEqual(nd.type_of(a), ndt.type('6 * float64'))
+#        self.assertEqual(nd.as_py(a), [3.25, 10000000000, 1, 2, 1, 0])
+#        # complex[float64] result
+#        a = nd.array(iter([3.25j, 3.25, 10000000000, 1, 2, True, False]))
+#        self.assertEqual(nd.type_of(a), ndt.type('7 * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), [3.25j, 3.25, 10000000000, 1, 2, 1, 0])
+#
+#        """
+#        Todo: Reenable this with new strings
+#
+#        # string result
+#        a = nd.array(str(x) + 'test' for x in range(10))
+#        self.assertEqual(nd.type_of(a), ndt.type('10 * string'))
+#        self.assertEqual(nd.as_py(a), [str(x) + 'test' for x in range(10)])
+#        # string result
+#        a = nd.array(iter([u'test', 'test2']))
+#        self.assertEqual(nd.type_of(a), ndt.type('2 * string'))
+#        self.assertEqual(nd.as_py(a), [u'test', u'test2'])
+#        # bytes result
+#        if sys.version_info[0] >= 3:
+#            a = nd.array(b'x'*x for x in range(10))
+#            self.assertEqual(nd.type_of(a), ndt.type('10 * bytes'))
+#            self.assertEqual(nd.as_py(a), [b'x'*x for x in range(10)])
+#        """
+#
+#    def test_dynamic_fromiter_booltypepromo(self):
+#        # Test iterator construction cases promoting from a boolean
+#        # int32 result
+#        a = nd.array(iter([True, False, 3]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
+#        self.assertEqual(nd.as_py(a), [1, 0, 3])
+#        # int64 result
+#        a = nd.array(iter([True, False, -10000000000]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * int64'))
+#        self.assertEqual(nd.as_py(a), [1, 0, -10000000000])
+#        # float64 result
+#        a = nd.array(iter([True, False, 3.25]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
+#        self.assertEqual(nd.as_py(a), [1, 0, 3.25])
+#        # complex[float64] result
+#        a = nd.array(iter([True, False, 3.25j]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), [1, 0, 3.25j])
+#        # Should raise an error mixing bool and string/bytes
+#        self.assertRaises(TypeError, nd.array, iter([True, False, "test"]))
+#        self.assertRaises(TypeError, nd.array, iter([True, False, u"test"]))
+#        self.assertRaises(TypeError, nd.array, iter([True, False, b"test"]))
+#
+#    def test_dynamic_fromiter_int32typepromo(self):
+#        # Test iterator construction cases promoting from an int32
+#        # int64 result
+#        a = nd.array(iter([1, 2, 10000000000]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * int64'))
+#        self.assertEqual(nd.as_py(a), [1, 2, 10000000000])
+#        # float64 result
+#        a = nd.array(iter([1, 2, 3.25]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
+#        self.assertEqual(nd.as_py(a), [1, 2, 3.25])
+#        # complex[float64] result
+#        a = nd.array(iter([1, 2, 3.25j]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), [1, 2, 3.25j])
+#        # Should raise an error mixing int32 and string/bytes
+#        self.assertRaises(TypeError, nd.array, iter([1, 2, "test"]))
+#        self.assertRaises(TypeError, nd.array, iter([1, 2, u"test"]))
+#        self.assertRaises(TypeError, nd.array, iter([1, 2, b"test"]))
+#
+#    def test_dynamic_fromiter_int64typepromo(self):
+#        # Test iterator construction cases promoting from an int64
+#        # float64 result
+#        a = nd.array(iter([10000000000, 2, 3.25]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * float64'))
+#        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25])
+#        # complex[float64] result
+#        a = nd.array(iter([10000000000, 2, 3.25j]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), [10000000000, 2, 3.25j])
+#        # Should raise an error mixing int64 and string/bytes
+#        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, "test"]))
+#        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, u"test"]))
+#        self.assertRaises(TypeError, nd.array, iter([10000000000, 2, b"test"]))
+#
+#    def test_dynamic_fromiter_float64typepromo(self):
+#        # Test iterator construction cases promoting from an float64
+#        # complex[float64] result
+#        a = nd.array(iter([3.25, 2, 3.25j]))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), [3.25, 2, 3.25j])
+#        # Should raise an error mixing float64 and string/bytes
+#        self.assertRaises(TypeError, nd.array, iter([3.25, 2, "test"]))
+#        self.assertRaises(TypeError, nd.array, iter([3.25, 2, u"test"]))
+#        self.assertRaises(TypeError, nd.array, iter([3.25, 2, b"test"]))
+#
+#    def test_dynamic_fromiter_complexfloat64typepromo(self):
+#        # Test iterator construction cases promoting from an complex[float64]
+#        # Should raise an error mixing complex[float64] and string/bytes
+#        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, "test"]))
+#        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, u"test"]))
+#        self.assertRaises(TypeError, nd.array, iter([3.25j, 2, b"test"]))
+#
+#    def test_simple_fromiter(self):
+#        # Var dimension construction from a generator
+#        a = nd.array((2*x + 5 for x in range(10)), type='var * int32')
+#        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
+#        self.assertEqual(len(a), 10)
+#        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
+#        # Fixed dimension construction from a generator
+#        a = nd.array((2*x + 5 for x in range(10)), type='10 * int32')
+#        self.assertEqual(nd.type_of(a), ndt.type('10 * int32'))
+#        self.assertEqual(len(a), 10)
+#        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(10)])
+#        # Produce an error if it's a fixed dimension with too few elements
+#        self.assertRaises(nd.BroadcastError, nd.array,
+#                        (2*x + 5 for x in range(10)), type='11 * int32')
+#        # Produce an error if it's a fixed dimension with too many elements
+#        self.assertRaises(nd.BroadcastError, nd.array,
+#                        (2*x + 5 for x in range(10)), type='9 * int32')
+#        # Produce an error if it's a fixed dimension
+#        self.assertRaises(TypeError, nd.array,
+#                        (2*x + 5 for x in range(10)), type='Fixed * int32')
+#
+#    def test_simple_fromiter_medsize(self):
+#        # A bigger input to exercise the dynamic resizing a bit
+#        a = nd.array((2*x + 5 for x in range(100000)), type='var * int32')
+#        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
+#        self.assertEqual(len(a), 100000)
+#        self.assertEqual(nd.as_py(a), [2*x + 5 for x in range(100000)])
+#
+#    def test_ragged_fromiter(self):
+#        # Strided array of var from list of iterators
+#        a = nd.array([(1+x for x in range(3)), (5*x - 10 for x in range(5)),
+#                        [2, 10]], type='3 * var * int32')
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
+#        self.assertEqual(nd.as_py(a),
+#                        [[1,2,3], [-10, -5, 0, 5, 10], [2, 10]])
+#        # Var array of var from iterator of iterators
+#        a = nd.array(((2*x for x in range(y)) for y in range(4)),
+#                        type='var * var * int32')
+#        self.assertEqual(nd.type_of(a), ndt.type('var * var * int32'))
+#        self.assertEqual(nd.as_py(a), [[], [0], [0, 2], [0, 2, 4]])
+#        # Range of ranges
+#        a = nd.array(range(i) for i in range(4))
+#        self.assertEqual(nd.as_py(a), [list(range(i)) for i in range(4)])
+#
+#    def test_ragged_fromiter_typepromo(self):
+#        # 2D nested iterators
+#        vals = [[True, False],
+#                [False, 2, 3],
+#                [-10000000000],
+#                [True, 10, 3.125, 5.5j]]
+#        a = nd.array(iter(x) for x in vals)
+#        self.assertEqual(nd.type_of(a), ndt.type('4 * var * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # 3D nested iterators
+#        vals = [[[True, True, True],
+#                 [False, False]],
+#                [[True, True, False],
+#                 [False, False, -1000, 10000000000],
+#                 [10, 20, 10]],
+#                [],
+#                [[],
+#                 [1.5],
+#                 []]]
+#        a = nd.array((iter(y) for y in x) for x in vals)
+#        self.assertEqual(nd.type_of(a), ndt.type('4 * var * var * float64'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # Iterator of lists
+#        vals = [[True, 2, 3],
+#                [4, 5, 6.5],
+#                [1, 2, 3]]
+#        a = nd.array(iter(vals))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * 3 * float64'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # Iterator starting with list, also including iterator
+#        vals = [[True, 2, 3],
+#                [4, 5, 6.5],
+#                [1, 2, 3]]
+#        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * 3 * float64'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # Iterator with lists, but ragged
+#        vals = [[1], [2, 3, 4], [5, 6]]
+#        a = nd.array(iter(vals))
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # Iterator starting with list, first raggedness is a short iterator
+#        vals = [[1, 2, 3], [4], [5, 6]]
+#        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # Iterator starting with list, first raggedness is a long iterator
+#        vals = [[1], [2, 3, 4], [5, 6]]
+#        a = nd.array(x for x in [vals[0], iter(vals[1]), vals[2]])
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * var * int32'))
+#        self.assertEqual(nd.as_py(a), vals)
+#
+#    def test_ragged_fromlistofiter_typepromo(self):
+#        # list of iterators
+#        vals = [[True, False],
+#                [False, 2, 3],
+#                [-10000000000],
+#                [True, 10, 3.125, 5.5j]]
+#        a = nd.array([iter(x) for x in vals])
+#        self.assertEqual(nd.type_of(a), ndt.type('4 * var * complex[float64]'))
+#        self.assertEqual(nd.as_py(a), vals)
+#        # list of list/iterator
+#        a = nd.array([[1,2,3], (1.5*x for x in range(4)), iter([-1, 1])])
+#        self.assertEqual(nd.type_of(a), ndt.type('3 * var * float64'))
+#        self.assertEqual(nd.as_py(a),
+#                         [[1,2,3], [1.5*x for x in range(4)], [-1,1]])
+#
+#    def test_ragged_initial_empty_typepromo(self):
+#        # iterator of lists, first one is empty
+#        vals = [[],
+#                [False, 2, 3]]
+#        a = nd.array(iter(x) for x in vals)
+#        self.assertEqual(nd.type_of(a), ndt.type('2 * var * int32'))
+#        self.assertEqual(nd.as_py(a), vals)
+#
+#    def test_dtype_fromiter(self):
+#        # Specify dtype instead of full type
+#        a = nd.array((2*x + 1 for x in range(7)), type=ndt.make_var_dim(ndt.int32))
+#        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
+#        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
 
 """
 class TestDeduceDims(unittest.TestCase):
@@ -802,9 +802,9 @@ class TestDeduceDims(unittest.TestCase):
 """
 
 class TestConstructErrors(unittest.TestCase):
-    def test_bad_params(self):
-        self.assertRaises(ValueError, nd.array, type='int32')
-        self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')
+#    def test_bad_params(self):
+#        self.assertRaises(ValueError, nd.array, type='int32')
+#        self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')
 #        self.assertRaises(ValueError, nd.array, access='readwrite')
 
     def test_dict_auto_detect(self):

@@ -204,6 +204,11 @@ void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
   n = array_from_py(obj, access_flags, true);
 }
 
+dynd::ndt::type pydynd::xtype_for(PyObject *obj)
+{
+  return array_from_py(obj, 0, true).get_type();
+}
+
 dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)
 {
   return n.eval();

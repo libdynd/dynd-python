@@ -17,6 +17,19 @@ class TestType(unittest.TestCase):
     def test_callable(self):
         tp = ndt.callable(ndt.void, ndt.int32, ndt.float64, x = ndt.complex128)
 
+class TestTypeFor(unittest.TestCase):
+    def test_bool(self):
+        self.assertEqual(ndt.bool, ndt.type_for(True))
+        self.assertEqual(ndt.bool, ndt.type_for(False))
+
+    def test_int(self):
+        self.assertEqual(ndt.int32, ndt.type_for(0))
+        self.assertEqual(ndt.int32, ndt.type_for(1))
+        self.assertEqual(ndt.int32, ndt.type_for(7))
+
+    def test_float(self):
+        pass
+
 class TestDType(unittest.TestCase):
     def test_bool_type_properties(self):
         self.assertEqual(type(ndt.bool), ndt.type)

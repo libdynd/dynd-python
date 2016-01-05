@@ -78,6 +78,7 @@ class TestPythonList(unittest.TestCase):
         self.assertEqual(nd.as_py(a), lst)
         self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)
 
+    """
     def test_datetime(self):
         lst = [datetime(2011, 3, 15, 3, 15, 12, 123456),
                datetime(1933, 12, 25),
@@ -90,6 +91,7 @@ class TestPythonList(unittest.TestCase):
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), lst)
         self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)
+    """
 
 if __name__ == '__main__':
     unittest.main()

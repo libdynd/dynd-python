@@ -23,6 +23,7 @@ from ..cpp.types.pyobject_type cimport pyobject_type_id
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp as _dynd_ndt_type_to_cpp
+from ..ndt.type cimport _type_for
 from dynd import ndt
 
 cdef extern from 'copy_from_pyobject_arrfunc.hpp':
@@ -84,8 +85,6 @@ cdef extern from 'array_assign_from_py.hpp' namespace 'pydynd':
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
     _array array_from_py(object, unsigned int, int)
 
-    _type xtype_for(object) except +translate_exception
-
 cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
     _type deduce__type_from_pyobject(object)
 
@@ -103,9 +102,6 @@ _builtin_type = type
 
 def overload_assign(f):
     init_assign((<callable> f).v)
-
-def type_for(obj):
-    return wrap(make__type_from_pyobject(type(obj)))
 
 cdef class array(object):
     """
@@ -174,7 +170,7 @@ cdef class array(object):
             return
 
         if type is None:
-            self.v = (<array> assign(wrap(pyobject_array(value)), dst_tp = wrap(xtype_for(value)))).v
+            self.v = (<array> assign(wrap(pyobject_array(value)), dst_tp = ndt.type_for(value))).v
         else:
             if (not isinstance(type, ndt.type)):
                 type = ndt.type(type)

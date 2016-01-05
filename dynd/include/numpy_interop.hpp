@@ -83,7 +83,7 @@ inline int import_numpy()
  * \returns  The dynd equivalent of the numpy dtype.
  */
 PYDYND_API dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
-                                          size_t data_alignment = 0);
+                                                  size_t data_alignment = 0);
 
 /**
  * Converts a numpy type number to a dynd type. This produces an
@@ -93,51 +93,51 @@ PYDYND_API dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
  *
  * \returns  The dynd equivalent of the numpy dtype.
  */
- inline dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num)
- {
-   switch (numpy_type_num) {
-   case NPY_BOOL:
-     return dynd::ndt::make_type<dynd::bool1>();
-   case NPY_BYTE:
-     return dynd::ndt::make_type<npy_byte>();
-   case NPY_UBYTE:
-     return dynd::ndt::make_type<npy_ubyte>();
-   case NPY_SHORT:
-     return dynd::ndt::make_type<npy_short>();
-   case NPY_USHORT:
-     return dynd::ndt::make_type<npy_ushort>();
-   case NPY_INT:
-     return dynd::ndt::make_type<npy_int>();
-   case NPY_UINT:
-     return dynd::ndt::make_type<npy_uint>();
-   case NPY_LONG:
-     return dynd::ndt::make_type<npy_long>();
-   case NPY_ULONG:
-     return dynd::ndt::make_type<npy_ulong>();
-   case NPY_LONGLONG:
-     return dynd::ndt::make_type<npy_longlong>();
-   case NPY_ULONGLONG:
-     return dynd::ndt::make_type<npy_ulonglong>();
- #if NPY_API_VERSION >= 6 // At least NumPy 1.6
-   case NPY_HALF:
-     return dynd::ndt::make_type<dynd::float16>();
- #endif
-   case NPY_FLOAT:
-     return dynd::ndt::make_type<float>();
-   case NPY_DOUBLE:
-     return dynd::ndt::make_type<double>();
-   case NPY_CFLOAT:
-     return dynd::ndt::make_type<dynd::complex<float>>();
-   case NPY_CDOUBLE:
-     return dynd::ndt::make_type<dynd::complex<double>>();
-   default: {
-     std::stringstream ss;
-     ss << "Cannot convert numpy type num " << numpy_type_num
-        << " to a dynd type";
-     throw dynd::type_error(ss.str());
-   }
-   }
- }
+inline dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num)
+{
+  switch (numpy_type_num) {
+  case NPY_BOOL:
+    return dynd::ndt::make_type<dynd::bool1>();
+  case NPY_BYTE:
+    return dynd::ndt::make_type<npy_byte>();
+  case NPY_UBYTE:
+    return dynd::ndt::make_type<npy_ubyte>();
+  case NPY_SHORT:
+    return dynd::ndt::make_type<npy_short>();
+  case NPY_USHORT:
+    return dynd::ndt::make_type<npy_ushort>();
+  case NPY_INT:
+    return dynd::ndt::make_type<npy_int>();
+  case NPY_UINT:
+    return dynd::ndt::make_type<npy_uint>();
+  case NPY_LONG:
+    return dynd::ndt::make_type<npy_long>();
+  case NPY_ULONG:
+    return dynd::ndt::make_type<npy_ulong>();
+  case NPY_LONGLONG:
+    return dynd::ndt::make_type<npy_longlong>();
+  case NPY_ULONGLONG:
+    return dynd::ndt::make_type<npy_ulonglong>();
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+  case NPY_HALF:
+    return dynd::ndt::make_type<dynd::float16>();
+#endif
+  case NPY_FLOAT:
+    return dynd::ndt::make_type<float>();
+  case NPY_DOUBLE:
+    return dynd::ndt::make_type<double>();
+  case NPY_CFLOAT:
+    return dynd::ndt::make_type<dynd::complex<float>>();
+  case NPY_CDOUBLE:
+    return dynd::ndt::make_type<dynd::complex<double>>();
+  default: {
+    std::stringstream ss;
+    ss << "Cannot convert numpy type num " << numpy_type_num
+       << " to a dynd type";
+    throw dynd::type_error(ss.str());
+  }
+  }
+}
 
 /**
  * Given a NumPy struct/record dtype, extracts the field types, names,
@@ -196,7 +196,7 @@ PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp,
  * Returns 0 on success, -1 if it didn't match.
  */
 PYDYND_API int _type_from_numpy_scalar_typeobject(PyTypeObject *obj,
-                                          dynd::ndt::type &out_tp);
+                                                  dynd::ndt::type &out_tp);
 
 /**
  * Gets the dynd type of a numpy scalar object
@@ -210,12 +210,20 @@ dynd::ndt::type _type_of_numpy_scalar(PyObject *obj);
  * \param access_flags  The requested access flags (0 for default).
  * \param always_copy  If true, produce a copy instead of a view.
  */
-dynd::nd::array PYDYND_API array_from_numpy_array(PyArrayObject *obj, uint32_t access_flags, bool always_copy);
+dynd::nd::array PYDYND_API array_from_numpy_array(PyArrayObject *obj,
+                                                  uint32_t access_flags,
+                                                  bool always_copy);
+
+dynd::ndt::type PYDYND_API array_from_numpy_array2(PyArrayObject *obj);
 
 // Convenience wrapper for use in Cython where the type has already been
 // checked.
-inline dynd::nd::array array_from_numpy_array_cast(PyObject *obj, uint32_t access_flags, bool always_copy) {
-  return array_from_numpy_array(reinterpret_cast<PyArrayObject*>(obj), access_flags, always_copy);
+inline dynd::nd::array array_from_numpy_array_cast(PyObject *obj,
+                                                   uint32_t access_flags,
+                                                   bool always_copy)
+{
+  return array_from_numpy_array(reinterpret_cast<PyArrayObject *>(obj),
+                                access_flags, always_copy);
 }
 
 /**
@@ -227,48 +235,50 @@ inline dynd::nd::array array_from_numpy_array_cast(PyObject *obj, uint32_t acces
  */
 dynd::nd::array array_from_numpy_scalar(PyObject *obj, uint32_t access_flags);
 
+dynd::ndt::type array_from_numpy_scalar2(PyObject *obj);
+
 /**
  * Returns the numpy kind ('i', 'f', etc) of the array.
  */
- inline char numpy_kindchar_of(const dynd::ndt::type &d)
- {
-   switch (d.get_kind()) {
-   case dynd::bool_kind:
-     return 'b';
-   case dynd::sint_kind:
-     return 'i';
-   case dynd::uint_kind:
-     return 'u';
-   case dynd::real_kind:
-     return 'f';
-   case dynd::complex_kind:
-     return 'c';
-   case dynd::string_kind:
-     if (d.get_type_id() == dynd::fixed_string_type_id) {
-       const dynd::ndt::base_string_type *esd =
-           d.extended<dynd::ndt::base_string_type>();
-       switch (esd->get_encoding()) {
-       case dynd::string_encoding_ascii:
-         return 'S';
-       case dynd::string_encoding_utf_32:
-         return 'U';
-       default:
-         break;
-       }
-     }
-     break;
-   default:
-     break;
-   }
+inline char numpy_kindchar_of(const dynd::ndt::type &d)
+{
+  switch (d.get_kind()) {
+  case dynd::bool_kind:
+    return 'b';
+  case dynd::sint_kind:
+    return 'i';
+  case dynd::uint_kind:
+    return 'u';
+  case dynd::real_kind:
+    return 'f';
+  case dynd::complex_kind:
+    return 'c';
+  case dynd::string_kind:
+    if (d.get_type_id() == dynd::fixed_string_type_id) {
+      const dynd::ndt::base_string_type *esd =
+          d.extended<dynd::ndt::base_string_type>();
+      switch (esd->get_encoding()) {
+      case dynd::string_encoding_ascii:
+        return 'S';
+      case dynd::string_encoding_utf_32:
+        return 'U';
+      default:
+        break;
+      }
+    }
+    break;
+  default:
+    break;
+  }
 
-   std::stringstream ss;
-   ss << "dynd type \"" << d << "\" does not have an equivalent numpy kind";
-   throw dynd::type_error(ss.str());
- }
+  std::stringstream ss;
+  ss << "dynd type \"" << d << "\" does not have an equivalent numpy kind";
+  throw dynd::type_error(ss.str());
+}
 
 // Temporary function introduced to avoid dependency on non-standard
 // numpy importing in client modules. Wraps PyArray_DescrCheck.
- PYDYND_API bool is_numpy_dtype(PyObject* o);
+PYDYND_API bool is_numpy_dtype(PyObject *o);
 
 } // namespace pydynd
 

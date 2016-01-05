@@ -39,17 +39,3 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
 
 cdef extern from 'dynd/type.hpp' namespace 'dynd' nogil:
     void get_builtin_type_dynamic_array_properties(type_id_t, map[string, callable] &)
-
-cimport cpython
-
-cdef inline type type_for(obj):
-    if isinstance(obj, cpython.bool):
-        return type(bool_type_id)
-
-    if isinstance(obj, int):
-        return make_type[int]()
-
-    if isinstance(obj, list):
-        pass
-
-    raise ValueError('unknown')

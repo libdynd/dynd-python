@@ -10,6 +10,7 @@ cpdef type astype(object o)
 
 cdef object as_numba_type(_type)
 cdef _type from_numba_type(object)
+cdef _type _type_for(object)
 
 # Should not have to repeat this declaration here, but doing it to get around a circular import
 from ..cpp.array cimport array as _array

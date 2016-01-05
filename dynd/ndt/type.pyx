@@ -15,7 +15,7 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   complex_float32_type_id,
                                   complex_float64_type_id, void_type_id,
                                   callable_type_id)
-from ..cpp.type cimport make_type, type_for as _type_for
+from ..cpp.type cimport make_type
 from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
@@ -33,6 +33,9 @@ from ..wrapper cimport set_wrapper_type, wrap
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
+
+cdef extern from "array_from_py.hpp" namespace 'pydynd':
+    _type xtype_for(object) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type make__type_from_pyobject(object) except +translate_exception
@@ -82,9 +85,6 @@ type_ids['COMPLEX64'] = complex_float32_type_id
 type_ids['COMPLEX128'] = complex_float64_type_id
 type_ids['VOID'] = void_type_id
 type_ids['CALLABLE'] = callable_type_id
-
-def type_for(obj):
-    return wrap(_type_for(obj))
 
 cdef class type(object):
     """
@@ -668,3 +668,9 @@ cdef as_numba_type(_type tp):
 
 cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
+
+cdef _type _type_for(obj):
+    return xtype_for(obj)
+
+def type_for(obj):
+    return wrap(_type_for(obj))

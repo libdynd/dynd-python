@@ -833,10 +833,11 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
 
 #if DYND_NUMPY_INTEROP
   if (PyArray_Check(obj)) {
-    return array_from_numpy_array((PyArrayObject *)obj, 0, true).get_type();
+    return array_from_numpy_array2((PyArrayObject *)obj);
   }
-  else if (PyArray_IsScalar(obj, Generic)) {
-    return array_from_numpy_scalar(obj, 0).get_type();
+
+  if (PyArray_IsScalar(obj, Generic)) {
+    return array_from_numpy_scalar2(obj);
   }
 #endif // DYND_NUMPY_INTEROP
 

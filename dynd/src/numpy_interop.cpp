@@ -785,6 +785,23 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
   }
 }
 
+dynd::ndt::type pydynd::array_from_numpy_array2(PyArrayObject *obj)
+{
+  PyArray_Descr *dtype = PyArray_DESCR(obj);
+
+  if (PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
+    return dynd::ndt::make_fixed_dim(
+        PyArray_NDIM(obj), PyArray_SHAPE(obj),
+        pydynd::_type_from_numpy_dtype(dtype).get_canonical_type());
+  }
+  else {
+    // Get the dtype of the array
+    dynd::ndt::type d = pydynd::_type_from_numpy_dtype(PyArray_DESCR(obj),
+                                                       get_alignment_of(obj));
+    return dynd::ndt::make_fixed_dim(PyArray_NDIM(obj), PyArray_DIMS(obj), d);
+  }
+}
+
 dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
                                                 uint32_t access_flags)
 {
@@ -930,8 +947,90 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
   return result;
 }
 
-bool pydynd::is_numpy_dtype(PyObject *o) {
-  return PyArray_DescrCheck(o);
+dynd::ndt::type pydynd::array_from_numpy_scalar2(PyObject *obj)
+{
+  if (PyArray_IsScalar(obj, Bool)) {
+    return dynd::ndt::make_type<bool>();
+  }
+
+  if (PyArray_IsScalar(obj, Byte)) {
+    return dynd::ndt::make_type<signed char>();
+  }
+
+  if (PyArray_IsScalar(obj, UByte)) {
+    return dynd::ndt::make_type<unsigned char>();
+  }
+
+  if (PyArray_IsScalar(obj, Short)) {
+    return dynd::ndt::make_type<short>();
+  }
+
+  if (PyArray_IsScalar(obj, UShort)) {
+    return dynd::ndt::make_type<unsigned short>();
+  }
+
+  if (PyArray_IsScalar(obj, Int)) {
+    return dynd::ndt::make_type<int>();
+  }
+
+  if (PyArray_IsScalar(obj, UInt)) {
+    return dynd::ndt::make_type<unsigned int>();
+  }
+
+  if (PyArray_IsScalar(obj, Long)) {
+    return dynd::ndt::make_type<long>();
+  }
+
+  if (PyArray_IsScalar(obj, ULong)) {
+    return dynd::ndt::make_type<unsigned long>();
+  }
+
+  if (PyArray_IsScalar(obj, LongLong)) {
+    return dynd::ndt::make_type<long long>();
+  }
+
+  if (PyArray_IsScalar(obj, ULongLong)) {
+    return dynd::ndt::make_type<unsigned long long>();
+  }
+
+  if (PyArray_IsScalar(obj, Float)) {
+    return dynd::ndt::make_type<float>();
+  }
+
+  if (PyArray_IsScalar(obj, Double)) {
+    return dynd::ndt::make_type<double>();
+  }
+
+  if (PyArray_IsScalar(obj, CFloat)) {
+    return dynd::ndt::make_type<dynd::complex<float>>();
+  }
+
+  if (PyArray_IsScalar(obj, CDouble)) {
+    return dynd::ndt::make_type<dynd::complex<double>>();
+#if NPY_API_VERSION >= 6 // At least NumPy 1.6
+  }
+
+  if (PyArray_IsScalar(obj, Datetime)) {
+    const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
+    if (scalar->obmeta.base <= NPY_FR_D) {
+      return dynd::ndt::date_type::make();
+    }
+
+    return dynd::ndt::datetime_type::make(dynd::tz_utc);
+#endif
+  }
+
+  if (PyArray_IsScalar(obj, Void)) {
+    return dynd::ndt::make_type<void>();
+  }
+
+  stringstream ss;
+  pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));
+  ss << "could not create a dynd array from the numpy scalar object";
+  ss << " of type " << pydynd::pystring_as_string(obj_tp.get());
+  throw dynd::type_error(ss.str());
 }
+
+bool pydynd::is_numpy_dtype(PyObject *o) { return PyArray_DescrCheck(o); }
 
 #endif // DYND_NUMPY_INTEROP

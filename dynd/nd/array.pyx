@@ -32,8 +32,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
 
-    _type xtype_for(object) except +translate_exception
-
     _array pyobject_array(object) except +translate_exception
 
     object array_int(_array&) except +translate_exception
@@ -85,6 +83,8 @@ cdef extern from 'array_assign_from_py.hpp' namespace 'pydynd':
 
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
     _array array_from_py(object, unsigned int, int)
+
+    _type xtype_for(object) except +translate_exception
 
 cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
     _type deduce__type_from_pyobject(object)

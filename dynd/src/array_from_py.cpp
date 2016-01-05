@@ -822,3 +822,130 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
 
   return result;
 }
+
+dynd::ndt::type pydynd::xtype_for(PyObject *obj)
+{
+  // If it's a Cython w_array
+  if (DyND_PyArray_Check(obj)) {
+    const nd::array &result = ((DyND_PyArrayObject *)obj)->v;
+    return result.get_type();
+  }
+
+#if DYND_NUMPY_INTEROP
+  if (PyArray_Check(obj)) {
+    return array_from_numpy_array((PyArrayObject *)obj, 0, true).get_type();
+  }
+  else if (PyArray_IsScalar(obj, Generic)) {
+    return array_from_numpy_scalar(obj, 0).get_type();
+  }
+#endif // DYND_NUMPY_INTEROP
+
+  nd::array result;
+
+  if (PyBool_Check(obj)) {
+    return ndt::make_type<bool>();
+#if PY_VERSION_HEX < 0x03000000
+  }
+  else if (PyInt_Check(obj)) {
+    long value = PyInt_AS_LONG(obj);
+#if SIZEOF_LONG > SIZEOF_INT
+    // Use a 32-bit int if it fits.
+    if (value >= INT_MIN && value <= INT_MAX) {
+      return ndt::make_type<int>();
+    }
+    else {
+      return ndt::make_type<long>();
+    }
+#else
+    return ndt::make_type<long>();
+#endif
+#endif // PY_VERSION_HEX < 0x03000000
+  }
+  else if (PyLong_Check(obj)) {
+    PY_LONG_LONG value = PyLong_AsLongLong(obj);
+    if (value == -1 && PyErr_Occurred()) {
+      throw runtime_error("error converting int value");
+    }
+
+    // Use a 32-bit int if it fits.
+    if (value >= INT_MIN && value <= INT_MAX) {
+      return ndt::make_type<int>();
+    }
+    else {
+      return ndt::make_type<PY_LONG_LONG>();
+    }
+  }
+  else if (PyFloat_Check(obj)) {
+    return ndt::make_type<double>();
+  }
+  else if (PyComplex_Check(obj)) {
+    return ndt::make_type<dynd::complex<double>>();
+#if PY_VERSION_HEX < 0x03000000
+  }
+  else if (PyString_Check(obj)) {
+    return ndt::make_type<ndt::string_type>();
+#else
+  }
+  else if (PyBytes_Check(obj)) {
+    return ndt::make_type<ndt::bytes_type>();
+#endif
+  }
+  else if (PyUnicode_Check(obj)) {
+    return ndt::make_type<ndt::string_type>();
+  }
+  else if (PyDateTime_Check(obj)) {
+    return ndt::datetime_type::make();
+  }
+  else if (PyDate_Check(obj)) {
+    return ndt::date_type::make();
+  }
+  else if (PyTime_Check(obj)) {
+    return ndt::time_type::make(tz_abstract);
+  }
+  else if (DyND_PyType_Check(obj)) {
+    return ((DyND_PyTypeObject *)obj)->v;
+  }
+  else if (PyList_Check(obj)) {
+    result = array_from_pylist(obj);
+  }
+  else if (PyType_Check(obj)) {
+    return ndt::make_type<ndt::type_type>();
+#if DYND_NUMPY_INTEROP
+  }
+  else if (PyArray_DescrCheck(obj)) {
+    return ndt::make_type<ndt::type_type>();
+#endif // DYND_NUMPY_INTEROP
+  }
+
+  if (result.get() == NULL) {
+    // If it supports the iterator protocol, use array_from_py_dynamic,
+    // which promotes to new types on the fly as needed during processing.
+    PyObject *iter = PyObject_GetIter(obj);
+    if (iter != NULL) {
+      Py_DECREF(iter);
+      return array_from_py_dynamic(obj).get_type();
+    }
+    else {
+      if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+        // A TypeError indicates that the object doesn't support
+        // the iterator protocol
+        PyErr_Clear();
+      }
+      else {
+        // Propagate the error
+        throw exception();
+      }
+    }
+  }
+
+  if (result.get() == NULL) {
+    pyobject_ownref pytpstr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+    stringstream ss;
+    ss << "could not convert python object of type ";
+    ss << pystring_as_string(pytpstr.get());
+    ss << " into a dynd array";
+    throw std::runtime_error(ss.str());
+  }
+
+  return result.get_type();
+}

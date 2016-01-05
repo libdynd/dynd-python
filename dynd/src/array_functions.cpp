@@ -173,11 +173,6 @@ PyObject *pydynd::array_complex(const dynd::nd::array &n)
   throw exception();
 }
 
-dynd::ndt::type pydynd::xtype_for(PyObject *obj)
-{
-  return array_from_py(obj, 0, true).get_type();
-}
-
 dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)
 {
   return n.eval();

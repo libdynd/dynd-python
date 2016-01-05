@@ -30,6 +30,8 @@ namespace pydynd {
 PYDYND_API dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
                                          bool always_copy);
 
+PYDYND_API dynd::ndt::type xtype_for(PyObject *obj);
+
 /**
  * Converts a Python object into an nd::array using
  * the default settings, using the provided type as a

@@ -23,7 +23,6 @@ from ..cpp.types.pyobject_type cimport pyobject_type_id
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp as _dynd_ndt_type_to_cpp
-from ..ndt import Unsupplied
 from dynd import ndt
 
 cdef extern from 'copy_from_pyobject_arrfunc.hpp':
@@ -168,23 +167,18 @@ cdef class array(object):
              type="2 * date")
     """
 
-    # value -> deduce type
-    # value + type
-    # no value, no type
-    def __init__(self, value = Unsupplied, type = None):
+    def __init__(self, value = None, type = None):
         from . import assign
 
-        cdef _array a
-        if value is not Unsupplied:
-            # Get the array data
-            if type is not None:
-                if (not isinstance(type, ndt.type)):
-                    type = ndt.type(type)
-                a = pyobject_array(value)
-                self.v = (<array> assign(wrap(a), dst_tp = type)).v
-            else:
-                a = pyobject_array(value)
-                self.v = (<array> assign(wrap(a), dst_tp = wrap(xtype_for(value)))).v
+        if value is None and type is None:
+            return
+
+        if type is None:
+            self.v = (<array> assign(wrap(pyobject_array(value)), dst_tp = wrap(xtype_for(value)))).v
+        else:
+            if (not isinstance(type, ndt.type)):
+                type = ndt.type(type)
+            self.v = (<array> assign(wrap(pyobject_array(value)), dst_tp = type)).v
 
     property access_flags:
         """

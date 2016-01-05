@@ -287,11 +287,6 @@ cpdef type astype(object o):
 
 set_wrapper_type[_type](type)
 
-class UnsuppliedType(object):
-    pass
-
-Unsupplied = UnsuppliedType()
-
 def make_categorical(values):
     """
     ndt.make_categorical(values)

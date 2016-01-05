@@ -105,12 +105,6 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
   return dynd::nd::array(ndo, true);
 }
 
-PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
-                                         PyObject *dt, bool uniform,
-                                         PyObject *access);
-PYDYND_API void array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
-                                         PyObject *access);
-
 PYDYND_API dynd::nd::array pyobject_array(PyObject *obj);
 
 PYDYND_API dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
@@ -131,6 +125,8 @@ PYDYND_API dynd::nd::array array_full(const dynd::ndt::type &d, PyObject *value,
                                       PyObject *access);
 PYDYND_API dynd::nd::array array_full(PyObject *shape, const dynd::ndt::type &d,
                                       PyObject *value, PyObject *access);
+
+PYDYND_API dynd::ndt::type xtype_for(PyObject *obj);
 
 PYDYND_API dynd::nd::array array_empty(const dynd::ndt::type &d,
                                        PyObject *access);

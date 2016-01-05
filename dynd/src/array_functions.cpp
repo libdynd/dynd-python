@@ -173,35 +173,9 @@ PyObject *pydynd::array_complex(const dynd::nd::array &n)
   throw exception();
 }
 
-void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
-                                      PyObject *dt, bool fulltype,
-                                      PyObject *access)
+dynd::ndt::type pydynd::xtype_for(PyObject *obj)
 {
-  uint32_t access_flags = 0;
-  if (access != Py_None) {
-    access_flags = pyarg_strings_to_int(
-        access, "access", 0, "readwrite",
-        nd::read_access_flag | nd::write_access_flag, "rw",
-        nd::read_access_flag | nd::write_access_flag, "readonly",
-        nd::read_access_flag, "r", nd::read_access_flag, "immutable",
-        nd::read_access_flag | nd::immutable_access_flag);
-  }
-  n = array_from_py(obj, make__type_from_pyobject(dt), fulltype, access_flags);
-}
-
-void pydynd::array_init_from_pyobject(dynd::nd::array &n, PyObject *obj,
-                                      PyObject *access)
-{
-  uint32_t access_flags = 0;
-  if (access != Py_None) {
-    access_flags = pyarg_strings_to_int(
-        access, "access", 0, "readwrite",
-        nd::read_access_flag | nd::write_access_flag, "rw",
-        nd::read_access_flag | nd::write_access_flag, "readonly",
-        nd::read_access_flag, "r", nd::read_access_flag, "immutable",
-        nd::read_access_flag | nd::immutable_access_flag);
-  }
-  n = array_from_py(obj, access_flags, true);
+  return array_from_py(obj, 0, true).get_type();
 }
 
 dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)

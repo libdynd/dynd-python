@@ -15,7 +15,7 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   complex_float32_type_id,
                                   complex_float64_type_id, void_type_id,
                                   callable_type_id)
-from ..cpp.type cimport make_type
+from ..cpp.type cimport make_type, type_for as _type_for
 from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
@@ -82,6 +82,9 @@ type_ids['COMPLEX64'] = complex_float32_type_id
 type_ids['COMPLEX128'] = complex_float64_type_id
 type_ids['VOID'] = void_type_id
 type_ids['CALLABLE'] = callable_type_id
+
+def type_for(obj):
+    return wrap(_type_for(obj))
 
 cdef class type(object):
     """
@@ -283,11 +286,6 @@ cpdef type astype(object o):
     return dynd_ndt_type_from_cpp(make__type_from_pyobject(o))
 
 set_wrapper_type[_type](type)
-
-class UnsuppliedType(object):
-    pass
-
-Unsupplied = UnsuppliedType()
 
 def make_categorical(values):
     """

@@ -2,7 +2,7 @@ from libcpp cimport bool
 from libcpp.map cimport map
 from libcpp.string cimport string
 
-from .types.type_id cimport type_id_t
+from .types.type_id cimport *
 
 from ..config cimport translate_exception
 from .array cimport array
@@ -39,3 +39,17 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
 
 cdef extern from 'dynd/type.hpp' namespace 'dynd' nogil:
     void get_builtin_type_dynamic_array_properties(type_id_t, map[string, callable] &)
+
+cimport cpython
+
+cdef inline type type_for(obj):
+    if isinstance(obj, cpython.bool):
+        return type(bool_type_id)
+
+    if isinstance(obj, int):
+        return make_type[int]()
+
+    if isinstance(obj, list):
+        pass
+
+    raise ValueError('unknown')

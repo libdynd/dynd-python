@@ -887,7 +887,7 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
 #else
   }
   else if (PyBytes_Check(obj)) {
-    return ndt::make_type<ndt::bytes_type>();
+    return ndt::make_type<ndt::bytes_type>(1);
 #endif
   }
   else if (PyUnicode_Check(obj)) {

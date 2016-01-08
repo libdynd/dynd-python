@@ -881,16 +881,7 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
 {
   nd::array result;
 
-  if (PyDateTime_Check(obj)) {
-    return ndt::datetime_type::make();
-  }
-  else if (PyDate_Check(obj)) {
-    return ndt::date_type::make();
-  }
-  else if (PyTime_Check(obj)) {
-    return ndt::time_type::make(tz_abstract);
-  }
-  else if (DyND_PyType_Check(obj)) {
+  if (DyND_PyType_Check(obj)) {
     return ((DyND_PyTypeObject *)obj)->v;
   }
   else if (PyList_Check(obj)) {

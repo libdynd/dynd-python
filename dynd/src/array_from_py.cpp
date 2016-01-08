@@ -881,20 +881,15 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
 {
   nd::array result;
 
-  if (DyND_PyType_Check(obj)) {
-    return ((DyND_PyTypeObject *)obj)->v;
-  }
-  else if (PyList_Check(obj)) {
+  if (PyList_Check(obj)) {
     result = array_from_pylist(obj);
   }
-  else if (PyType_Check(obj)) {
-    return ndt::make_type<ndt::type_type>();
+
 #if DYND_NUMPY_INTEROP
-  }
-  else if (PyArray_DescrCheck(obj)) {
+  if (PyArray_DescrCheck(obj)) {
     return ndt::make_type<ndt::type_type>();
-#endif // DYND_NUMPY_INTEROP
   }
+#endif // DYND_NUMPY_INTEROP
 
   if (result.get() == NULL) {
     // If it supports the iterator protocol, use array_from_py_dynamic,

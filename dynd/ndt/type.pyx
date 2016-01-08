@@ -5,6 +5,8 @@ from libc.stdint cimport intptr_t
 from libcpp.map cimport map
 from libcpp.string cimport string
 
+import datetime
+
 from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   bool_type_id, int8_type_id, int16_type_id,
                                   int32_type_id, int64_type_id, int128_type_id,
@@ -671,8 +673,6 @@ cdef as_numba_type(_type tp):
 cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
-import datetime
-
 cdef _type _type_for(obj):
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
@@ -698,6 +698,12 @@ cdef _type _type_for(obj):
 
     if isinstance(obj, datetime.datetime):
         return _type(datetime_type_id)
+
+    if isinstance(obj, type):
+        return (<type> obj).v
+
+    if isinstance(obj, __builtins__.type):
+        return make_type[_type]()
 
     return xtype_for(obj)
 

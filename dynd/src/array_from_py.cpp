@@ -877,49 +877,31 @@ dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
   return dynd::ndt::type();
 }
 
-dynd::ndt::type pydynd::xtype_for(PyObject *obj)
+dynd::ndt::type pydynd::xarray_from_pylist(PyObject *obj)
 {
-  nd::array result;
-
-  if (PyList_Check(obj)) {
-    result = array_from_pylist(obj);
+  // TODO: Add ability to specify access flags (e.g. immutable)
+  // Do a pass through all the data to deduce its type and shape
+  vector<intptr_t> shape;
+  ndt::type tp(void_type_id);
+  Py_ssize_t size = PyList_GET_SIZE(obj);
+  shape.push_back(size);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
   }
 
-#if DYND_NUMPY_INTEROP
-  if (PyArray_DescrCheck(obj)) {
-    return ndt::make_type<ndt::type_type>();
+  if (tp.get_type_id() == void_type_id) {
+    tp = dynd::ndt::type(int32_type_id);
   }
-#endif // DYND_NUMPY_INTEROP
 
-  if (result.get() == NULL) {
-    // If it supports the iterator protocol, use array_from_py_dynamic,
-    // which promotes to new types on the fly as needed during processing.
-    PyObject *iter = PyObject_GetIter(obj);
-    if (iter != NULL) {
-      Py_DECREF(iter);
-      return array_from_py_dynamic(obj).get_type();
+  for (int i = shape.size() - 1; i >= 0; --i) {
+    intptr_t size = shape[i];
+    if (size == -1) {
+      tp = dynd::ndt::make_type<dynd::ndt::var_dim_type>(tp);
     }
     else {
-      if (PyErr_ExceptionMatches(PyExc_TypeError)) {
-        // A TypeError indicates that the object doesn't support
-        // the iterator protocol
-        PyErr_Clear();
-      }
-      else {
-        // Propagate the error
-        throw exception();
-      }
+      tp = dynd::ndt::make_fixed_dim(size, tp);
     }
   }
 
-  if (result.get() == NULL) {
-    pyobject_ownref pytpstr(PyObject_Str((PyObject *)Py_TYPE(obj)));
-    stringstream ss;
-    ss << "could not convert python object of type ";
-    ss << pystring_as_string(pytpstr.get());
-    ss << " into a dynd array";
-    throw std::runtime_error(ss.str());
-  }
-
-  return result.get_type();
+  return tp;
 }

@@ -38,8 +38,8 @@ cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
 
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
-    _type xtype_for(object) except +translate_exception
     _type xtype_for_prefix(object) except +translate_exception
+    _type xarray_from_pylist(object) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type make__type_from_pyobject(object) except +translate_exception
@@ -705,7 +705,10 @@ cdef _type _type_for(obj):
     if isinstance(obj, __builtins__.type):
         return make_type[_type]()
 
-    return xtype_for(obj)
+    if isinstance(obj, list):
+        return xarray_from_pylist(obj)
+
+    raise ValueError('could not convert Python object into a DyND array')
 
 def type_for(obj):
     return wrap(_type_for(obj))

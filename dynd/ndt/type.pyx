@@ -681,7 +681,7 @@ cdef _type _type_for(obj):
     if isinstance(obj, complex):
         return _type(complex_float64_type_id)
 
-    if isinstance(obj, str):
+    if isinstance(obj, (str, unicode)):
         return _type(string_type_id)
 
     if isinstance(obj, bytes):

@@ -881,10 +881,7 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
 {
   nd::array result;
 
-  if (PyUnicode_Check(obj)) {
-    return ndt::make_type<ndt::string_type>();
-  }
-  else if (PyDateTime_Check(obj)) {
+  if (PyDateTime_Check(obj)) {
     return ndt::datetime_type::make();
   }
   else if (PyDate_Check(obj)) {

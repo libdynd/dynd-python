@@ -30,6 +30,8 @@ namespace pydynd {
 PYDYND_API dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
                                          bool always_copy);
 
+PYDYND_API dynd::ndt::type xtype_for_prefix(PyObject *obj);
+
 PYDYND_API dynd::ndt::type xtype_for(PyObject *obj);
 
 /**

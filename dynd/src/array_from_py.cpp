@@ -823,12 +823,11 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, const ndt::type &tp,
   return result;
 }
 
-dynd::ndt::type pydynd::xtype_for(PyObject *obj)
+dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
 {
   // If it's a Cython w_array
   if (DyND_PyArray_Check(obj)) {
-    const nd::array &result = ((DyND_PyArrayObject *)obj)->v;
-    return result.get_type();
+    return ((DyND_PyArrayObject *)obj)->v.get_type();
   }
 
 #if DYND_NUMPY_INTEROP
@@ -840,8 +839,6 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
     return array_from_numpy_scalar2(obj);
   }
 #endif // DYND_NUMPY_INTEROP
-
-  nd::array result;
 
   if (PyBool_Check(obj)) {
     return ndt::make_type<bool>();
@@ -876,22 +873,15 @@ dynd::ndt::type pydynd::xtype_for(PyObject *obj)
       return ndt::make_type<PY_LONG_LONG>();
     }
   }
-  else if (PyFloat_Check(obj)) {
-    return ndt::make_type<double>();
-  }
-  else if (PyComplex_Check(obj)) {
-    return ndt::make_type<dynd::complex<double>>();
-#if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyString_Check(obj)) {
-    return ndt::make_type<ndt::string_type>();
-#else
-  }
-  else if (PyBytes_Check(obj)) {
-    return ndt::make_type<ndt::bytes_type>(1);
-#endif
-  }
-  else if (PyUnicode_Check(obj)) {
+
+  return dynd::ndt::type();
+}
+
+dynd::ndt::type pydynd::xtype_for(PyObject *obj)
+{
+  nd::array result;
+
+  if (PyUnicode_Check(obj)) {
     return ndt::make_type<ndt::string_type>();
   }
   else if (PyDateTime_Check(obj)) {

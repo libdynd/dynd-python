@@ -14,7 +14,7 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   float64_type_id, float128_type_id,
                                   complex_float32_type_id,
                                   complex_float64_type_id, void_type_id,
-                                  callable_type_id)
+                                  callable_type_id, string_type_id, bytes_type_id)
 from ..cpp.type cimport make_type
 from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
@@ -36,6 +36,7 @@ cdef extern from "numpy_interop.hpp" namespace "pydynd":
 
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
     _type xtype_for(object) except +translate_exception
+    _type xtype_for_prefix(object) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type make__type_from_pyobject(object) except +translate_exception
@@ -670,6 +671,22 @@ cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
 cdef _type _type_for(obj):
+    cdef _type tp = xtype_for_prefix(obj)
+    if (not tp.is_null()):
+        return tp
+
+    if isinstance(obj, float):
+        return make_type[double]()
+
+    if isinstance(obj, complex):
+        return _type(complex_float64_type_id)
+
+    if isinstance(obj, str):
+        return _type(string_type_id)
+
+    if isinstance(obj, bytes):
+        return _type(bytes_type_id)
+
     return xtype_for(obj)
 
 def type_for(obj):

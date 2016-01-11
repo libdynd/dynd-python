@@ -177,7 +177,6 @@ set(pydynd_SRC
     dynd/include/copy_from_pyobject_arrfunc.hpp
     dynd/include/copy_to_numpy_arrfunc.hpp
     dynd/include/copy_to_pyobject_arrfunc.hpp
-    dynd/include/ctypes_interop.hpp
     dynd/include/do_import_array.hpp
     dynd/include/exception_translation.hpp
     dynd/include/git_version.hpp
@@ -200,7 +199,6 @@ set(pydynd_SRC
     dynd/src/copy_from_pyobject_arrfunc.cpp
     dynd/src/copy_to_numpy_arrfunc.cpp
     dynd/src/copy_to_pyobject_arrfunc.cpp
-    dynd/src/ctypes_interop.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp

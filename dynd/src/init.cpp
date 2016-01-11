@@ -7,7 +7,6 @@
 #include "numpy_interop.hpp"
 
 #include "init.hpp"
-#include "ctypes_interop.hpp"
 #include "copy_to_numpy_arrfunc.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "copy_to_pyobject_arrfunc.hpp"

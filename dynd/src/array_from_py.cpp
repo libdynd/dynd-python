@@ -24,7 +24,6 @@
 
 #include "array_from_py.hpp"
 #include "array_from_py_typededuction.hpp"
-#include "array_from_py_dynamic.hpp"
 #include "array_assign_from_py.hpp"
 #include "array_functions.hpp"
 #include "type_functions.hpp"
@@ -633,27 +632,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
   else if (PyArray_DescrCheck(obj)) {
     result = nd::array(make__type_from_pyobject(obj));
 #endif // DYND_NUMPY_INTEROP
-  }
-
-  if (result.get() == NULL) {
-    // If it supports the iterator protocol, use array_from_py_dynamic,
-    // which promotes to new types on the fly as needed during processing.
-    PyObject *iter = PyObject_GetIter(obj);
-    if (iter != NULL) {
-      Py_DECREF(iter);
-      return array_from_py_dynamic(obj);
-    }
-    else {
-      if (PyErr_ExceptionMatches(PyExc_TypeError)) {
-        // A TypeError indicates that the object doesn't support
-        // the iterator protocol
-        PyErr_Clear();
-      }
-      else {
-        // Propagate the error
-        throw exception();
-      }
-    }
   }
 
   if (result.get() == NULL) {

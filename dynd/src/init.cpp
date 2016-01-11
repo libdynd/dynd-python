@@ -13,7 +13,6 @@
 #include "copy_to_pyobject_arrfunc.hpp"
 #include "copy_from_pyobject_arrfunc.hpp"
 #include "array_from_py.hpp"
-#include "array_from_py_dynamic.hpp"
 #include "array_from_py_typededuction.hpp"
 #include "type_functions.hpp"
 
@@ -26,7 +25,6 @@ void pydynd::pydynd_init()
   atexit(pydynd_cleanup);
   pydynd::init_type_functions();
   pydynd::init_array_from_py_typededuction();
-  pydynd::init_array_from_py_dynamic();
   pydynd::init_array_from_py();
   pydynd::init_ctypes_interop();
 }

@@ -169,7 +169,6 @@ set(pydynd_SRC
     dynd/include/array_as_py.hpp
     dynd/include/array_assign_from_py.hpp
     dynd/include/array_from_py.hpp
-    dynd/include/array_from_py_dynamic.hpp
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
     dynd/include/arrfunc_functions.hpp
@@ -194,7 +193,6 @@ set(pydynd_SRC
     dynd/src/array_assign_from_py.cpp
     dynd/src/array_functions.cpp
     dynd/src/array_from_py.cpp
-    dynd/src/array_from_py_dynamic.cpp
     dynd/src/array_from_py_typededuction.cpp
     dynd/src/arrfunc_from_pyfunc.cpp
     dynd/src/arrfunc_functions.cpp

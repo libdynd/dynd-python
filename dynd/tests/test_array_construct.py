@@ -801,7 +801,7 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.as_py(a), [])
 """
 
-#class TestConstructErrors(unittest.TestCase):
+#class TestConstructErrors(unittest.TestCase): 
 #    def test_bad_params(self):
 #        self.assertRaises(ValueError, nd.array, type='int32')
 #        self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')

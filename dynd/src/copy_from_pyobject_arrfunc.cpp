@@ -64,7 +64,7 @@ struct pydynd::nd::copy_from_pyobject pydynd::nd::copy_from_pyobject;
 
 using namespace dynd;
 
-PYDYND_API void init_assign(nd::callable &assign)
+PYDYND_API void add_overloads()
 {
   typedef type_id_sequence<
       bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,
@@ -76,6 +76,7 @@ PYDYND_API void init_assign(nd::callable &assign)
       type_type_id, tuple_type_id, struct_type_id, fixed_dim_type_id,
       var_dim_type_id, categorical_type_id> type_ids;
 
+  nd::callable &assign = nd::assign::get();
   for (const auto &pair : nd::callable::make_all<assign_kernel, type_ids>()) {
     assign.set_overload(pair.first, {ndt::make_type<pyobject_type>()},
                         pair.second);

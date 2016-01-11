@@ -26,9 +26,6 @@ from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp as _dynd_ndt_type
 from ..ndt.type cimport _type_for
 from dynd import ndt
 
-cdef extern from 'copy_from_pyobject_arrfunc.hpp':
-    void init_assign(_callable) except +translate_exception
-
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
@@ -99,9 +96,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
 _builtin_type = type
-
-def overload_assign(f):
-    init_assign((<callable> f).v)
 
 cdef class array(object):
     """

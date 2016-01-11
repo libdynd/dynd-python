@@ -23,4 +23,4 @@ namespace nd {
 
 } // namespace pydynd
 
-PYDYND_API void init_assign(dynd::nd::callable &assign);
+PYDYND_API void add_overloads();

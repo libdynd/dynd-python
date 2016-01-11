@@ -893,15 +893,5 @@ dynd::ndt::type pydynd::xarray_from_pylist(PyObject *obj)
     tp = dynd::ndt::type(int32_type_id);
   }
 
-  for (size_t i = shape.size() - 1; i >= 0; --i) {
-    intptr_t size = shape[i];
-    if (size == -1) {
-      tp = dynd::ndt::make_type<dynd::ndt::var_dim_type>(tp);
-    }
-    else {
-      tp = dynd::ndt::make_fixed_dim(size, tp);
-    }
-  }
-
-  return tp;
+  return dynd::ndt::make_type(shape.size(), shape.data(), tp);
 }

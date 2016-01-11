@@ -17,7 +17,6 @@
 #include "wrapper.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
-#include "ctypes_interop.hpp"
 
 #include <dynd/types/convert_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
@@ -108,10 +107,6 @@ inline dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
   else if (obj == &PyString_Type) {
     return dynd::ndt::make_type<dynd::ndt::string_type>();
 #endif
-  }
-  else if (PyObject_IsSubclass((PyObject *)obj, ctypes.PyCData_Type)) {
-    // CTypes type object
-    return _type_from_ctypes_cdatatype((PyObject *)obj);
   }
   else if (obj == PyDateTimeAPI->DateType) {
     return dynd::ndt::date_type::make();

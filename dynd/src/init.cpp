@@ -26,5 +26,4 @@ void pydynd::pydynd_init()
   pydynd::init_type_functions();
   pydynd::init_array_from_py_typededuction();
   pydynd::init_array_from_py();
-  pydynd::init_ctypes_interop();
 }

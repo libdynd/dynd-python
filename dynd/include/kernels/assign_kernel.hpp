@@ -215,7 +215,13 @@ struct assign_kernel<DstTypeID, int_kind_type_id>
     }
 #endif
     else {
-      throw std::runtime_error("cannot assign Python object to integer");
+      int overflow;
+      long value = PyLong_AsLongAndOverflow(src_obj, &overflow);
+      if (overflow == 0 && value == -1) {
+        throw std::runtime_error("cannot assign Python object to integer");
+      }
+
+      *reinterpret_cast<T *>(dst) = static_cast<T>(value);
     }
   }
 };

@@ -221,7 +221,7 @@ struct assign_kernel<DstTypeID, int_kind_type_id>
         throw std::runtime_error("cannot assign Python object to integer");
       }
 
-      *reinterpret_cast<T *>(dst) = value;
+      *reinterpret_cast<T *>(dst) = static_cast<T>(value);
     }
   }
 };

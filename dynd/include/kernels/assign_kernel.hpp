@@ -1000,13 +1000,12 @@ struct assign_kernel<fixed_dim_type_id, dim_kind_type_id>
   intptr_t m_dim_size, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
-  bool m_dim_broadcast;
   // Offset to ckernel which copies from dst to dst, for broadcasting case
   intptr_t m_copy_dst_offset;
 
   ~assign_kernel() { get_child()->destroy(); }
 
-  inline void single(char *dst, char *const *src)
+  void single(char *dst, char *const *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
@@ -1034,7 +1033,9 @@ struct assign_kernel<fixed_dim_type_id, dim_kind_type_id>
     char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
-    if (m_dim_broadcast && pydynd::broadcast_as_scalar(m_dst_tp, src_obj)) {
+
+    if (!PyList_Check(src_obj) &&
+        pydynd::broadcast_as_scalar(m_dst_tp, src_obj)) {
       child_src = src[0];
       src_dim_size = 1;
     }
@@ -1078,8 +1079,6 @@ struct assign_kernel<fixed_dim_type_id, dim_kind_type_id>
               intptr_t nkwd, const dynd::nd::array *kwds,
               const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    bool dim_broadcast = false;
-
     intptr_t dim_size, stride;
     dynd::ndt::type el_tp;
     const char *el_arrmeta;
@@ -1091,7 +1090,6 @@ struct assign_kernel<fixed_dim_type_id, dim_kind_type_id>
       self->m_stride = stride;
       self->m_dst_tp = dst_tp;
       self->m_dst_arrmeta = dst_arrmeta;
-      self->m_dim_broadcast = dim_broadcast;
       // from pyobject ckernel
       ckb_offset = nd::assign::get()->instantiate(
           nd::assign::get()->static_data(), NULL, ckb, ckb_offset, el_tp,
@@ -1119,7 +1117,6 @@ struct assign_kernel<var_dim_type_id, dim_kind_type_id>
   intptr_t m_offset, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
-  bool m_dim_broadcast;
   // Offset to ckernel which copies from dst to dst, for broadcasting case
   intptr_t m_copy_dst_offset;
 
@@ -1153,7 +1150,8 @@ struct assign_kernel<var_dim_type_id, dim_kind_type_id>
     char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
-    if (m_dim_broadcast && pydynd::broadcast_as_scalar(m_dst_tp, src_obj)) {
+    if (!PyList_Check(src_obj) &&
+        pydynd::broadcast_as_scalar(m_dst_tp, src_obj)) {
       child_src = src[0];
       src_dim_size = 1;
     }
@@ -1227,7 +1225,6 @@ struct assign_kernel<var_dim_type_id, dim_kind_type_id>
             ->stride;
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
-    self->m_dim_broadcast = dim_broadcast;
     dynd::ndt::type el_tp =
         dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
     const char *el_arrmeta =

@@ -13,6 +13,7 @@
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 #include "copy_from_pyobject_arrfunc.hpp"
+#include "types/pyobject_type.hpp"
 
 using namespace std;
 
@@ -50,6 +51,7 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dst_tp,
 void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
                                             PyObject *value)
 {
-  array_broadcast_assign_from_py(a.get_type(), a.get()->metadata(), a.data(),
-                                 value);
+  a.assign(value);
+  // array_broadcast_assign_from_py(a.get_type(), a.get()->metadata(), a.data(),
+  //                             value);
 }

@@ -333,7 +333,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
                            PyObject *value)
 {
   if (subscript == Py_Ellipsis) {
-    array_broadcast_assign_from_py(n, value);
+    n.assign(value);
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyInt_Check(subscript)) {
@@ -360,8 +360,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
     intptr_t size;
     shortvector<irange> indices;
     pyobject_as_irange_array(size, indices, subscript);
-    array_broadcast_assign_from_py(n.at_array(size, indices.get(), false),
-                                   value);
+    n.at_array(size, indices.get(), false).assign(value);
   }
 }
 

@@ -47,11 +47,3 @@ void pydynd::array_broadcast_assign_from_py(const dynd::ndt::type &dst_tp,
 
   tmp_dst.get()->tp = dynd::ndt::type();
 }
-
-void pydynd::array_broadcast_assign_from_py(const dynd::nd::array &a,
-                                            PyObject *value)
-{
-  a.assign(value);
-  // array_broadcast_assign_from_py(a.get_type(), a.get()->metadata(), a.data(),
-  //                             value);
-}

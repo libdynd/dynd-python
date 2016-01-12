@@ -15,16 +15,6 @@
 namespace pydynd {
 
 /**
- * Assigns the values from 'obj' to 'a', broadcasting
- * the input if requested.
- *
- * \param a  The array which is being assigned to.
- * \param value  value PyObject for the source data.
- */
-PYDYND_API void array_broadcast_assign_from_py(const dynd::nd::array &a,
-                                               PyObject *value);
-
-/**
  * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array,
  * broadcasting the input.
  *

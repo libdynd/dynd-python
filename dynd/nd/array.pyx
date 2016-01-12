@@ -45,8 +45,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array array_zeros(object, _type&, object) except +translate_exception
     _array array_ones(_type&, object) except +translate_exception
     _array array_ones(object, _type&, object) except +translate_exception
-    _array array_full(_type&, object, object) except +translate_exception
-    _array array_full(object, _type&, object, object) except +translate_exception
     _array array_empty(_type&, object) except +translate_exception
     _array array_empty(object, _type&, object) except +translate_exception
     object array_index(_array&) except +translate_exception
@@ -75,12 +73,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 
     int array_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
-
-cdef extern from 'array_assign_from_py.hpp' namespace 'pydynd':
-    void array_broadcast_assign_from_py(_array &, object)
-
-cdef extern from "array_from_py.hpp" namespace 'pydynd':
-    _array array_from_py(object, unsigned int, int)
 
 cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
     _type deduce__type_from_pyobject(object)
@@ -260,7 +252,7 @@ cdef class array(object):
 
         cdef _callable p = properties[name]
         if (not p.is_null()):
-            array_broadcast_assign_from_py(p(self.v), value)
+            p(self.v).assign(pyobject_array(value))
             return
 
         raise AttributeError(name)
@@ -492,7 +484,7 @@ cpdef array asarray(object obj):
     #     TODO
     if isinstance(obj, tuple):
         obj = list(obj)
-    return dynd_nd_array_from_cpp(array_from_py(obj, 0, 0))
+    return array(obj)
 
 from dynd.nd.callable cimport callable
 
@@ -749,66 +741,6 @@ def ones(*args, **kwargs):
         result.v = array_ones(args[:-1], _py_type(args[-1]).v, access)
     else:
         raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
-    return result
-
-def full(*args, **kwargs):
-    """
-    nd.full(type, *, value, access=None)
-    nd.ones(shape, dtype, *, value, access=None)
-    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, value, access=None)
-    Creates an array filled with the given value and
-    of the specified type. Dimensions may be provided as
-    integer positional parameters, a tuple of integers,
-    or within the dtype itself.
-    TODO: In the immutable case it should use zero-strides to optimize storage.
-    TODO: Add order= keyword-only argument. This would accept
-    'C', 'F', or a permutation tuple.
-    Parameters
-    ----------
-    shape : list of int, optional
-        If provided, specifies the shape for dimensions which
-        are prepended to the following dtype.
-    dtype : dynd type
-        The dtype of the uninitialized array to create.
-    access : 'readwrite' or 'immutable', optional
-        Specifies the access control of the resulting copy. Defaults
-        to readwrite.
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-    >>> nd.full(2, 3, ndt.int32, value=123)
-    nd.array([[123, 123, 123], [123, 123, 123]],
-             type="2 * 3 * int32")
-    >>> nd.full(2, 2, ndt.int32, value=[1, 5])
-    nd.array([[1, 5], [1, 5]],
-             type="2 * 2 * int32")
-    >>> nd.full('3 * {x : int32, y : 2 * int16}', value=[1, [2, 3]], access='rw')
-    nd.array([[1, [2, 3]], [1, [2, 3]], [1, [2, 3]]],
-             type="3 * {x : int32, y : 2 * int16}")
-    """
-    # Handle the keyword-only arguments
-    if 'value' not in kwargs:
-        raise TypeError("nd.full() missing required " +
-                    "keyword-only argument: 'value'")
-    access = kwargs.pop('access', None)
-    value = kwargs.pop('value', None)
-    if kwargs:
-        msg = "nd.full() got an unexpected keyword argument '%s'"
-        raise TypeError(msg % (kwargs.keys()[0]))
-
-    cdef array result = array()
-    largs = len(args)
-    if largs  == 1:
-        # Only the full type is provided
-        result.v = array_full(_py_type(args[0]).v, value, access)
-    elif largs == 2:
-        # The shape is a provided as a tuple (or single integer)
-        result.v = array_full(args[0], _py_type(args[1]).v, value, access)
-    elif largs > 2:
-        # The shape is expanded out in the arguments
-        result.v = array_full(args[:-1], _py_type(args[-1]).v, value, access)
-    else:
-        raise TypeError('nd.full() expected at least 1 positional argument, got 0')
     return result
 
 def empty(*args, **kwargs):

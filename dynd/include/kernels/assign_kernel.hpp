@@ -203,9 +203,19 @@ struct assign_kernel<DstTypeID, int_kind_type_id>
             ) {
       pyint_to_int(reinterpret_cast<T *>(dst), src_obj);
     }
-    else {
+#if DYND_NUMPY_INTEROP
+    else if (PyArray_Check(src_obj)) {
       *reinterpret_cast<T *>(dst) =
-          pydynd::array_from_py(src_obj, 0, false).as<T>();
+          pydynd::array_from_numpy_array((PyArrayObject *)src_obj, 0, true)
+              .as<T>();
+    }
+    else if (PyArray_IsScalar(src_obj, Generic)) {
+      *reinterpret_cast<T *>(dst) =
+          pydynd::array_from_numpy_scalar(src_obj, 0).as<T>();
+    }
+#endif
+    else {
+      throw std::runtime_error("cannot assign Python object to integer");
     }
   }
 };

@@ -338,11 +338,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
   }
   else if (PyInt_Check(subscript)) {
     long i = PyInt_AS_LONG(subscript);
-    const char *arrmeta = n.get()->metadata();
-    char *data = n.data();
-    ndt::type d =
-        n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-    array_broadcast_assign_from_py(d, arrmeta, data, value);
+    n(i).assign(value);
 #endif // PY_VERSION_HEX < 0x03000000
   }
   else if (PyLong_Check(subscript)) {
@@ -350,11 +346,7 @@ void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
     if (i == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");
     }
-    const char *arrmeta = n.get()->metadata();
-    char *data = n.data();
-    ndt::type d =
-        n.get_type().at_single(i, &arrmeta, const_cast<const char **>(&data));
-    array_broadcast_assign_from_py(d, arrmeta, data, value);
+    n(i).assign(value);
   }
   else {
     intptr_t size;

@@ -7,20 +7,6 @@
 
 #include <Python.h>
 
-#include <dynd/kernels/ckernel_builder.hpp>
-#include <dynd/callable.hpp>
-
 #include "visibility.hpp"
-
-namespace pydynd {
-namespace nd {
-
-  extern struct copy_from_pyobject : dynd::nd::declfunc<copy_from_pyobject> {
-    static dynd::nd::callable make();
-  } copy_from_pyobject;
-
-} // namespace pydynd::nd
-
-} // namespace pydynd
 
 PYDYND_API void add_overloads();

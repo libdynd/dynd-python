@@ -8,6 +8,37 @@
 
 using namespace dynd;
 
+namespace pydynd {
+namespace nd {
+
+  inline void typed_data_assign(const dynd::ndt::type &dst_tp,
+                                const char *dst_arrmeta, char *dst_data,
+                                const dynd::ndt::type &src_tp,
+                                const char *src_arrmeta, const char *src_data)
+  {
+    dynd::nd::array kwd =
+        dynd::nd::empty(dynd::ndt::make_type<dynd::ndt::option_type>(
+            dynd::ndt::make_type<int>()));
+    *reinterpret_cast<int *>(kwd.data()) =
+        static_cast<int>(dynd::assign_error_fractional);
+    std::map<std::string, dynd::ndt::type> tp_vars;
+    dynd::nd::assign::get()->call(
+        dst_tp, dst_arrmeta, dst_data, 1, &src_tp, &src_arrmeta,
+        const_cast<char *const *>(&src_data), 1, &kwd, tp_vars);
+  }
+
+  inline void typed_data_assign(const dynd::ndt::type &dst_tp,
+                                const char *dst_arrmeta, char *dst_data,
+                                const dynd::nd::array &src_arr)
+  {
+    pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst_data,
+                                  src_arr.get_type(), src_arr.get()->metadata(),
+                                  src_arr.cdata());
+  }
+
+} // namespace pydynd::nd
+} // namespace pydynd
+
 namespace detail {
 
 template <type_id_t DstTypeID, type_id_t DstBaseTypeID>

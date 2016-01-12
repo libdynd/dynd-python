@@ -1,6 +1,9 @@
 #pragma once
 
 #include <dynd/kernels/base_kernel.hpp>
+#include <dynd/func/assignment.hpp>
+
+#include "types/pyobject_type.hpp"
 
 namespace pydynd {
 namespace nd {
@@ -82,7 +85,9 @@ namespace nd {
         // Now call the function
         pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
         // Copy the result into the destination memory
-        array_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst, res.get());
+        PyObject *child_obj = res.get();
+        char *child_src = reinterpret_cast<char *>(&child_obj);
+        get_child()->single(dst, &child_src);
         res.clear();
         // Validate that the call didn't hang onto the ephemeral data
         // pointers we used. This is done after the dst assignment, because
@@ -121,7 +126,9 @@ namespace nd {
           // Call the function
           pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
           // Copy the result into the destination memory
-          array_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst, res.get());
+          PyObject *child_obj = res.get();
+          char *child_src = reinterpret_cast<char *>(&child_obj);
+          get_child()->single(dst, &child_src);
           res.clear();
           // Validate that the call didn't hang onto the ephemeral data
           // pointers we used. This is done after the dst assignment, because
@@ -156,7 +163,12 @@ namespace nd {
         self->m_dst_arrmeta = dst_arrmeta;
         self->m_src_arrmeta.resize(nsrc);
         copy(src_arrmeta, src_arrmeta + nsrc, self->m_src_arrmeta.begin());
-        return ckb_offset;
+
+        dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
+        return dynd::nd::assign::get()->instantiate(
+            dynd::nd::assign::get()->static_data(), nullptr, ckb, ckb_offset,
+            dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
+            dynd::kernel_request_single, 0, nullptr, tp_vars);
       }
 
       static void free(dynd::nd::base_callable *self_af)

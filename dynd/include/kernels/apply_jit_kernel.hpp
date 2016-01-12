@@ -5,7 +5,6 @@
 #include <utility_functions.hpp>
 #include <arrfunc_from_pyfunc.hpp>
 #include <type_functions.hpp>
-#include <array_assign_from_py.hpp>
 
 #include "../arrfunc_functions.hpp"
 

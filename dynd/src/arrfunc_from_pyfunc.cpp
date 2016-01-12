@@ -15,7 +15,6 @@
 #include <utility_functions.hpp>
 #include <arrfunc_from_pyfunc.hpp>
 #include <type_functions.hpp>
-#include <array_assign_from_py.hpp>
 #include <kernels/apply_pyobject_kernel.hpp>
 
 using namespace std;

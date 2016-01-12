@@ -21,8 +21,8 @@ namespace pydynd {
  * \param a  The array which is being assigned to.
  * \param value  value PyObject for the source data.
  */
-PYDYND_API void array_broadcast_assign_from_py(
-    const dynd::nd::array &a, PyObject *value);
+PYDYND_API void array_broadcast_assign_from_py(const dynd::nd::array &a,
+                                               PyObject *value);
 
 /**
  * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array,
@@ -36,19 +36,6 @@ PYDYND_API void array_broadcast_assign_from_py(
 void array_broadcast_assign_from_py(const dynd::ndt::type &dt,
                                     const char *arrmeta, char *data,
                                     PyObject *value);
-
-/**
- * Assigns the values from 'obj' to the 'dt/arrmeta/data' raw nd::array,
- * broadcasting the individual input dimensions, but not broadcasting
- * by skipping dimensions.
- *
- * \param dt  The dynd type of the destination.
- * \param arrmeta  The arrmeta of the destination.
- * \param data  The data of the destination.
- * \param value The PyObject for the source data.
- */
-void array_no_dim_broadcast_assign_from_py(
-    const dynd::ndt::type &dt, const char *arrmeta, char *data, PyObject *value);
 
 } // namespace pydynd
 

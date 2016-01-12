@@ -82,8 +82,7 @@ namespace nd {
         // Now call the function
         pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
         // Copy the result into the destination memory
-        array_no_dim_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst,
-                                              res.get());
+        array_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst, res.get());
         res.clear();
         // Validate that the call didn't hang onto the ephemeral data
         // pointers we used. This is done after the dst assignment, because
@@ -122,8 +121,7 @@ namespace nd {
           // Call the function
           pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
           // Copy the result into the destination memory
-          array_no_dim_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst,
-                                                res.get());
+          array_broadcast_assign_from_py(dst_tp, m_dst_arrmeta, dst, res.get());
           res.clear();
           // Validate that the call didn't hang onto the ephemeral data
           // pointers we used. This is done after the dst assignment, because

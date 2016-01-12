@@ -7,7 +7,6 @@
 #include <datetime.h>
 
 #include "copy_from_numpy_arrfunc.hpp"
-#include "copy_from_pyobject_arrfunc.hpp"
 #include "numpy_interop.hpp"
 #include "utility_functions.hpp"
 #include "type_functions.hpp"
@@ -20,6 +19,7 @@
 #include <dynd/types/struct_type.hpp>
 
 #include "kernels/copy_from_numpy_kernel.hpp"
+#include "types/pyobject_type.hpp"
 
 using namespace std;
 
@@ -64,9 +64,10 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
                                         &dynd::eval::default_eval_context);
   }
   else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::nd::base_callable *af = copy_from_pyobject::get().get();
+    dynd::nd::base_callable *af = dynd::nd::assign::get().get();
+    dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
     return af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
-                           dst_arrmeta, 1, src_tp, src_arrmeta, kernreq, nkwd,
+                           dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd,
                            kwds, tp_vars);
   }
   else if (PyDataType_HASFIELDS(dtype)) {

@@ -28,14 +28,6 @@ class TestScalarConstructor(unittest.TestCase):
 #        a = nd.ones(ndt.int32, access='r')
 #        self.assertEqual(a.access_flags, 'immutable')
 
-    def test_access_full(self):
-        a = nd.full(ndt.int32, value=1)
-        self.assertEqual(a.access_flags, 'readwrite')
-#        a = nd.full(ndt.int32, value=1, access='rw')
-#        self.assertEqual(a.access_flags, 'readwrite')
-#        a = nd.full(ndt.int32, value=1, access='r')
-#        self.assertEqual(a.access_flags, 'immutable')
-
 class TestArrayConstruct(unittest.TestCase):
     def test_empty_array(self):
         # Empty arrays default to int32
@@ -209,41 +201,6 @@ class TestTypedArrayConstructors(unittest.TestCase):
     def test_ones(self):
         self.check_constructor(nd.ones, 1)
         self.check_constructor_readwrite(nd.ones, 1)
-
-    def test_full(self):
-        def cons(value):
-            def c(*args, **kwargs):
-                kwargs['value'] = value
-                return nd.full(*args, **kwargs)
-            return c
-        self.check_constructor(cons(1000), 1000)
-        self.check_constructor_readwrite(cons(1000), 1000)
-        self.check_constructor(cons(-21000), -21000)
-        self.check_constructor_readwrite(cons(-21000), -21000)
-        # Also check that 'value' is keyword-only
-        a = nd.full(2, 3, ndt.float32, value=1.5)
-        self.assertEqual(nd.as_py(a), [[1.5]*3]*2)
-        self.assertRaises(TypeError, nd.full, 2, 3, ndt.float32, 1.5)
-
-    def test_full_of_struct(self):
-        # Constructor of a struct type
-        a = nd.full(3, '{x: int32, y: int32}', value=[1,5], access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a),
-                    ndt.type('3 * {x: int32, y: int32}'))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a),
-                    [{'x': 1, 'y': 5}]*3)
-        # Constructor of a struct type
-        a = nd.full(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']),
-                    value={'x' : 3, 'y' : 10}, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a),
-                    ndt.make_fixed_dim(3,
-                        ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a),
-                    [{'x': 3, 'y': 10}]*3)
 
 class TestArrayConstructor(unittest.TestCase):
     # Always constructs a new array
@@ -801,7 +758,7 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.as_py(a), [])
 """
 
-#class TestConstructErrors(unittest.TestCase): 
+#class TestConstructErrors(unittest.TestCase):
 #    def test_bad_params(self):
 #        self.assertRaises(ValueError, nd.array, type='int32')
 #        self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')

@@ -28,6 +28,7 @@ namespace nd {
         if (m_pyfunc != NULL) {
           PyGILState_RAII pgs;
           Py_DECREF(m_pyfunc);
+          get_child()->destroy();
         }
       }
 

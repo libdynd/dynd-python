@@ -167,7 +167,6 @@ set(pydynd_SRC
     dynd/include/array_as_numpy.hpp
     dynd/include/array_as_pep3118.hpp
     dynd/include/array_as_py.hpp
-    dynd/include/array_assign_from_py.hpp
     dynd/include/array_from_py.hpp
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
@@ -189,7 +188,6 @@ set(pydynd_SRC
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
     dynd/src/array_as_py.cpp
-    dynd/src/array_assign_from_py.cpp
     dynd/src/array_functions.cpp
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp

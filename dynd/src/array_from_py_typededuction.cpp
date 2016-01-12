@@ -20,7 +20,6 @@
 #include <dynd/exceptions.hpp>
 
 #include "array_from_py_typededuction.hpp"
-#include "array_assign_from_py.hpp"
 #include "array_functions.hpp"
 #include "type_functions.hpp"
 #include "utility_functions.hpp"

@@ -16,6 +16,7 @@
 
 #include "array_from_py_typededuction.hpp"
 #include "array_functions.hpp"
+#include "copy_from_numpy_arrfunc.hpp"
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 

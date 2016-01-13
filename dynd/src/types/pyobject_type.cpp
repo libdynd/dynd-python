@@ -11,12 +11,13 @@
 
 using namespace dynd;
 
-const type_id_t pyobject_type_id =
-    ndt::type_registry.insert(any_kind_type_id, ndt::type());
+const type_id_t pyobject_type_id = ndt::type_registry.insert(
+    any_kind_type_id, ndt::type(new pyobject_type(), true));
 
 pyobject_type::pyobject_type()
     : ndt::base_type(pyobject_type_id, custom_kind, sizeof(PyObject *),
-                     alignof(PyObject *), type_flag_none, 0, 0, 0)
+                     alignof(PyObject *), type_flag_none | type_flag_zeroinit,
+                     0, 0, 0)
 {
 }
 

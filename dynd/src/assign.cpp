@@ -14,7 +14,7 @@
 using namespace std;
 using namespace dynd;
 
-PYDYND_API void add_overloads()
+PYDYND_API void assign_init()
 {
   typedef type_id_sequence<
       bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,

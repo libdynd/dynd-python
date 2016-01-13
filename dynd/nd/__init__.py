@@ -8,7 +8,7 @@ from .callable import callable
 inf = float('inf')
 nan = float('nan')
 
-from .registry import add_overloads, get_published_callables
+from .registry import get_published_callables
 from . import functional
 
 ## This is a hack until we fix the Cython compiler issues
@@ -16,8 +16,6 @@ from . import functional
 #    @staticmethod
 #    def parse(tp, obj):
 #        return _parse(tp, obj)
-
-add_overloads()
 
 for key in get_published_callables():
     globals()[key] = get_published_callables()[key]

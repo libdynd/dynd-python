@@ -673,7 +673,7 @@ cdef as_numba_type(_type tp):
 cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
-cdef _type _type_for(obj):
+cdef _type cpp_type_for(obj):
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
         return tp
@@ -711,4 +711,4 @@ cdef _type _type_for(obj):
     raise ValueError('could not convert Python object into a DyND array')
 
 def type_for(obj):
-    return wrap(_type_for(obj))
+    return dynd_ndt_type_from_cpp(cpp_type_for(obj))

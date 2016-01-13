@@ -505,6 +505,28 @@ cdef array dynd_nd_array_from_cpp(_array a):
 
 set_wrapper_type[_array](array)
 
+cdef _array as_cpp_array(object obj) except *:
+    """
+    nd.as_cpp_array(obj)
+    Constructs a dynd array from a Python object, taking
+    a view if possible, otherwise making a copy. If the object
+    is already a DyND array, this is equivalent to calling
+    dynd_nd_array_to_cpp(obj).
+    """
+    # TODO: Remove lazy import since it's really only needed because of the weird
+    # boxing and unboxing used further down
+    from . import assign
+    if _builtin_type(obj) is array:
+        return dynd_nd_array_to_cpp(obj)
+    elif _builtin_type(obj) is _np.ndarray:
+        return array_from_numpy_array_cast(<PyObject*>obj, 0, 0)
+    # elif PyObject_CheckBuffer(obj):
+    #     TODO
+    cdef _type tp = cpp_type_for(obj)
+    cdef _array out = cpp_empty(tp)
+    out.assign(pyobject_array(obj))
+    return out
+
 cpdef array asarray(object obj):
     """
     nd.asarray(obj)
@@ -519,13 +541,7 @@ cpdef array asarray(object obj):
     """
     if _builtin_type(obj) is array:
         return obj
-    elif _builtin_type(obj) is _np.ndarray:
-        return dynd_nd_array_from_cpp(array_from_numpy_array_cast(<PyObject*>obj, 0, 0))
-    # elif PyObject_CheckBuffer(obj):
-    #     TODO
-    if isinstance(obj, tuple):
-        obj = list(obj)
-    return array(obj)
+    return dynd_nd_array_from_cpp(as_cpp_array(obj))
 
 from dynd.nd.callable cimport callable
 

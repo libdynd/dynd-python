@@ -11,7 +11,7 @@ from cython.operator import dereference
 import numpy as _np
 
 from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
-                          array_multiply, array_divide)
+                          array_multiply, array_divide, empty as cpp_empty)
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport type as _type, get_builtin_type_dynamic_array_properties
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
@@ -22,8 +22,8 @@ from ..cpp.types.pyobject_type cimport pyobject_type_id
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
-from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp as _dynd_ndt_type_to_cpp
-from ..ndt.type cimport _type_for
+from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp
+from ..ndt.type cimport cpp_type_for
 from dynd import ndt
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
@@ -150,17 +150,21 @@ cdef class array(object):
     """
 
     def __init__(self, value = None, type = None):
-        from . import assign
 
         if value is None and type is None:
             return
 
+        cdef _type dst_tp
         if type is None:
-            self.v = (<array> assign(wrap(pyobject_array(value)), dst_tp = ndt.type_for(value))).v
+            dst_tp = cpp_type_for(value)
+            self.v = cpp_empty(dst_tp)
+            self.v.assign(pyobject_array(value))
         else:
             if (not isinstance(type, ndt.type)):
                 type = ndt.type(type)
-            self.v = (<array> assign(wrap(pyobject_array(value)), dst_tp = type)).v
+            dst_tp = dynd_ndt_type_to_cpp(type)
+            self.v = cpp_empty(dst_tp)
+            self.v.assign(pyobject_array(value))
 
     property access_flags:
         """
@@ -662,7 +666,7 @@ def view(obj, type=None):
     # on the C++ side of things for the case where the type is not provided.
     if type is None:
         return dynd_nd_array_from_cpp(input)
-    cdef _type tp = _dynd_ndt_type_to_cpp(_py_type(type))
+    cdef _type tp = dynd_ndt_type_to_cpp(_py_type(type))
     return dynd_nd_array_from_cpp(_view(input, tp))
 
 def zeros(*args, **kwargs):

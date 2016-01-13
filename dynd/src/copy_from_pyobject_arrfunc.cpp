@@ -6,25 +6,10 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include <dynd/parse.hpp>
-#include <dynd/func/assignment.hpp>
-#include <dynd/func/compose.hpp>
-#include <dynd/functional.hpp>
-#include <dynd/option.hpp>
-#include <dynd/types/bytes_type.hpp>
-#include <dynd/types/categorical_type.hpp>
-#include <dynd/types/var_dim_type.hpp>
-
 #include "copy_from_pyobject_arrfunc.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
-#include "numpy_interop.hpp"
-#include "utility_functions.hpp"
-#include "type_functions.hpp"
-#include "array_functions.hpp"
-#include "array_from_py_typededuction.hpp"
 
-#include "kernels/assign_kernel.hpp"
-#include "types/pyobject_type.hpp"
+#include "kernels/assign_from_pyobject_kernel.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -44,7 +29,8 @@ PYDYND_API void add_overloads()
   PyDateTime_IMPORT;
 
   nd::callable &assign = nd::assign::get();
-  for (const auto &pair : nd::callable::make_all<assign_kernel, type_ids>()) {
+  for (const auto &pair :
+       nd::callable::make_all<assign_from_pyobject_kernel, type_ids>()) {
     assign.set_overload(pair.first, {ndt::make_type<pyobject_type>()},
                         pair.second);
   }

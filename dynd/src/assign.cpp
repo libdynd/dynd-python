@@ -6,10 +6,8 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include "copy_from_pyobject_arrfunc.hpp"
-#include "copy_from_numpy_arrfunc.hpp"
-
 #include "kernels/assign_from_pyobject_kernel.hpp"
+#include "kernels/assign_to_pyobject_kernel.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -34,4 +32,8 @@ PYDYND_API void assign_init()
     assign.set_overload(pair.first, {ndt::make_type<pyobject_type>()},
                         pair.second);
   }
+
+  assign.set_overload(
+      ndt::make_type<pyobject_type>(), {ndt::type(bool_type_id)},
+      nd::callable::make<assign_to_pyobject_kernel<bool_type_id>>());
 }

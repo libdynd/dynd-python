@@ -10,7 +10,6 @@
 #include "copy_to_numpy_arrfunc.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "copy_to_pyobject_arrfunc.hpp"
-#include "copy_from_pyobject_arrfunc.hpp"
 #include "array_from_py.hpp"
 #include "array_from_py_typededuction.hpp"
 #include "type_functions.hpp"

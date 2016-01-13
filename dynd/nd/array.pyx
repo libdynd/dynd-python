@@ -598,6 +598,16 @@ def as_py(array n, tuple=False):
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
+
+    from . import assign
+
+    type_ids = [bool_type_id]
+
+    cdef array res
+    if (n.v.get_type().get_type_id() in type_ids):
+        res = assign(n, dst_tp = ndt.pyobject)
+        return <object> dereference(<PyObject **> res.v.data())
+
     cdef bint tup = tuple
     return array_as_py(n.v, tup != 0)
 

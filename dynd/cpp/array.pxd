@@ -23,6 +23,9 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         intptr_t get_ndim()
         intptr_t get_dim_size() except +translate_exception
 
+        char *data() const
+        const char *cdata() const
+
         array view_scalars(type&) except +translate_exception
 
         bool is_null()

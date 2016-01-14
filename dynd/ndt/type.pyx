@@ -17,7 +17,8 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
                                   complex_float32_type_id,
                                   complex_float64_type_id, void_type_id,
                                   callable_type_id, string_type_id, bytes_type_id,
-                                  date_type_id, datetime_type_id, time_type_id)
+                                  date_type_id, datetime_type_id, time_type_id,
+                                  type_type_id)
 from ..cpp.type cimport make_type
 from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
@@ -673,7 +674,11 @@ cdef as_numba_type(_type tp):
 cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
-cdef _type cpp_type_for(obj):
+cdef _type cpp_type_for(object obj):
+
+    if isinstance(obj, type):
+        return _type(type_type_id)
+
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
         return tp
@@ -698,9 +703,6 @@ cdef _type cpp_type_for(obj):
 
     if isinstance(obj, datetime.datetime):
         return _type(datetime_type_id)
-
-    if isinstance(obj, type):
-        return (<type> obj).v
 
     if isinstance(obj, __builtins__.type):
         return make_type[_type]()

@@ -105,7 +105,7 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         # Should be able to roundtrip dynd -> numpy -> dynd
         x = nd.array(['testing', 'one', 'two'])
         self.assertEqual(nd.type_of(x), ndt.type('3 * string'))
-        y = nd.as_numpy(x, allow_copy=True)
+        y = x.to(np.ndarray)
         self.assertEqual(y.shape, (3,))
         self.assertEqual(y[0], 'testing')
         self.assertEqual(y[1], 'one')
@@ -401,7 +401,7 @@ class TestAsNumpy(unittest.TestCase):
     def test_struct_as_numpy(self):
         # Aligned struct
         a = nd.array([[1, 2], [3, 4]], type='2 * {x : int32, y: int64}')
-        b = nd.as_numpy(a)
+        b = a.to(np.ndarray)
         self.assertEqual(b.dtype,
                     np.dtype([('x', np.int32), ('y', np.int64)], align=True))
         self.assertEqual(nd.as_py(a.x), b['x'].tolist())
@@ -425,7 +425,7 @@ class TestAsNumpy(unittest.TestCase):
 
     def test_fixed_dim(self):
         a = nd.array([1, 3, 5], type='3 * int32')
-        b = nd.as_numpy(a)
+        b = a.to(np.ndarray)
         self.assertEqual(b.dtype, np.dtype('int32'))
         self.assertEqual(b.tolist(), [1, 3, 5])
 
@@ -546,7 +546,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
 
     def test_expr_struct_conversion(self):
         a = nd.array([date(2000, 12, 13), date(1995, 5, 2)]).to_struct
-        b = nd.as_numpy(a, allow_copy=True)
+        b = a.to(np.ndarray)
         self.assertTrue(isinstance(b, np.ndarray))
         # Use the NumPy assertions which support arrays
         assert_equal(b['year'], [2000, 1995])
@@ -557,7 +557,7 @@ class TestNumpyScalarInterop(unittest.TestCase):
         # A simple instantiated var_dim array should be
         # viewable with numpy without changes
         a = nd.array([1, 2, 3, 4, 5], type='var * int32')
-        b = nd.as_numpy(a)
+        b = a.to(np.ndarray)
         self.assertTrue(isinstance(b, np.ndarray))
         self.assertEqual(b.dtype, np.dtype('int32'))
         # Use the NumPy assertions which support arrays
@@ -645,14 +645,14 @@ class TestNumpyScalarInterop(unittest.TestCase):
 
     def test_string_as_numpy(self):
         a = nd.array(["this", "is", "a", "test of varlen strings"])
-        b = nd.as_numpy(a, allow_copy=True)
+        b = a.to(np.ndarray)
         self.assertEqual(b.dtype, np.dtype('O'))
         assert_equal(b, np.array(["this", "is", "a", "test of varlen strings"],
                                  dtype='O'))
         # Also in a struct
         a = nd.array([(1, "testing", 1.5), (10, "abc", 2)],
                      type="2 * {x: int, y: string, z: real}")
-        b = nd.as_numpy(a, allow_copy=True)
+        b = a.to(np.ndarray)
         self.assertEqual(b.dtype, np.dtype([('x', 'int32'),
                                             ('y', 'O'),
                                             ('z', 'float64')], align=True))

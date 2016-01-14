@@ -751,6 +751,298 @@ struct assign_to_pyobject_kernel<dynd::type_type_id, any_kind_type_id>
   }
 };
 
+// TODO: Should make a more efficient strided kernel function
+template <>
+struct assign_to_pyobject_kernel<dynd::tuple_type_id, scalar_kind_type_id>
+    : dynd::nd::base_kernel<
+          assign_to_pyobject_kernel<dynd::tuple_type_id, scalar_kind_type_id>,
+          1> {
+  dynd::ndt::type src_tp;
+  const char *src_arrmeta;
+  std::vector<intptr_t> m_copy_el_offsets;
+
+  assign_to_pyobject_kernel(dynd::ndt::type src_tp, const char *src_arrmeta)
+      : src_tp(src_tp), src_arrmeta(src_arrmeta)
+  {
+  }
+
+  ~assign_to_pyobject_kernel()
+  {
+    for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+      get_child(m_copy_el_offsets[i])->destroy();
+    }
+  }
+
+  void single(char *dst, char *const *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    intptr_t field_count =
+        src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
+    const uintptr_t *field_offsets =
+        src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(src_arrmeta);
+    pydynd::pyobject_ownref tup(PyTuple_New(field_count));
+    for (intptr_t i = 0; i < field_count; ++i) {
+      ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+      dynd::kernel_single_t copy_el_fn =
+          copy_el->get_function<dynd::kernel_single_t>();
+      char *el_src = src[0] + field_offsets[i];
+      char *el_dst =
+          reinterpret_cast<char *>(((PyTupleObject *)tup.get())->ob_item + i);
+      copy_el_fn(copy_el, el_dst, &el_src);
+    }
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = tup.release();
+  }
+
+  static intptr_t
+  instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
+              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+              intptr_t nsrc, const dynd::ndt::type *src_tp,
+              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+              intptr_t nkwd, const dynd::nd::array *kwds,
+              const std::map<std::string, dynd::ndt::type> &tp_vars)
+  {
+    intptr_t root_ckb_offset = ckb_offset;
+    assign_to_pyobject_kernel *self_ck = assign_to_pyobject_kernel::make(
+        ckb, kernreq, ckb_offset, src_tp[0], src_arrmeta[0]);
+    intptr_t field_count =
+        src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_count();
+    const dynd::ndt::type *field_types =
+        src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw();
+    const uintptr_t *arrmeta_offsets =
+        src_tp[0].extended<dynd::ndt::tuple_type>()->get_arrmeta_offsets_raw();
+    self_ck->m_copy_el_offsets.resize(field_count);
+    for (intptr_t i = 0; i < field_count; ++i) {
+      reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+          ->reserve(ckb_offset);
+      self_ck =
+          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
+              ckb)
+              ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
+      self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+      const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
+      ckb_offset = nd::assign::get()->instantiate(
+          nd::assign::get()->static_data(), data, ckb, ckb_offset, dst_tp,
+          dst_arrmeta, nsrc, &field_types[i], &field_arrmeta,
+          dynd::kernel_request_single, nkwd, kwds, tp_vars);
+    }
+    return ckb_offset;
+  }
+};
+
+// TODO: Should make a more efficient strided kernel function
+template <>
+struct assign_to_pyobject_kernel<dynd::struct_type_id, tuple_type_id>
+    : dynd::nd::base_kernel<
+          assign_to_pyobject_kernel<dynd::struct_type_id, tuple_type_id>, 1> {
+  dynd::ndt::type m_src_tp;
+  const char *m_src_arrmeta;
+  std::vector<intptr_t> m_copy_el_offsets;
+  pydynd::pyobject_ownref m_field_names;
+
+  ~assign_to_pyobject_kernel()
+  {
+    for (size_t i = 0; i < m_copy_el_offsets.size(); ++i) {
+      get_child(m_copy_el_offsets[i])->destroy();
+    }
+  }
+
+  void single(char *dst, char *const *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    intptr_t field_count =
+        m_src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
+    const uintptr_t *field_offsets =
+        m_src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(
+            m_src_arrmeta);
+    pydynd::pyobject_ownref dct(PyDict_New());
+    for (intptr_t i = 0; i < field_count; ++i) {
+      dynd::ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+      dynd::kernel_single_t copy_el_fn =
+          copy_el->get_function<dynd::kernel_single_t>();
+      char *el_src = src[0] + field_offsets[i];
+      pydynd::pyobject_ownref el;
+      copy_el_fn(copy_el, reinterpret_cast<char *>(el.obj_addr()), &el_src);
+      PyDict_SetItem(dct.get(), PyTuple_GET_ITEM(m_field_names.get(), i),
+                     el.get());
+    }
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = dct.release();
+  }
+
+  static intptr_t
+  instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
+              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+              intptr_t nsrc, const dynd::ndt::type *src_tp,
+              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+              intptr_t nkwd, const dynd::nd::array *kwds,
+              const std::map<std::string, dynd::ndt::type> &tp_vars)
+  {
+    intptr_t root_ckb_offset = ckb_offset;
+    assign_to_pyobject_kernel *self_ck =
+        assign_to_pyobject_kernel::make(ckb, kernreq, ckb_offset);
+    self_ck->m_src_tp = src_tp[0];
+    self_ck->m_src_arrmeta = src_arrmeta[0];
+    intptr_t field_count =
+        src_tp[0].extended<dynd::ndt::struct_type>()->get_field_count();
+    const dynd::ndt::type *field_types =
+        src_tp[0].extended<dynd::ndt::struct_type>()->get_field_types_raw();
+    const uintptr_t *arrmeta_offsets =
+        src_tp[0].extended<dynd::ndt::struct_type>()->get_arrmeta_offsets_raw();
+    self_ck->m_field_names.reset(PyTuple_New(field_count));
+    for (intptr_t i = 0; i < field_count; ++i) {
+      const dynd::string &rawname =
+          src_tp[0].extended<dynd::ndt::struct_type>()->get_field_name_raw(i);
+      pydynd::pyobject_ownref name(PyUnicode_DecodeUTF8(
+          rawname.begin(), rawname.end() - rawname.begin(), NULL));
+      PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
+    }
+    self_ck->m_copy_el_offsets.resize(field_count);
+    for (intptr_t i = 0; i < field_count; ++i) {
+      reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
+          ->reserve(ckb_offset);
+      self_ck =
+          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
+              ckb)
+              ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
+      self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+      const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
+      ckb_offset = nd::assign::get()->instantiate(
+          nd::assign::get()->static_data(), NULL, ckb, ckb_offset, dst_tp,
+          dst_arrmeta, nsrc, &field_types[i], &field_arrmeta,
+          dynd::kernel_request_single, 0, NULL, tp_vars);
+    }
+    return ckb_offset;
+  }
+};
+
+template <>
+struct assign_to_pyobject_kernel<dynd::fixed_dim_type_id, dim_kind_type_id>
+    : dynd::nd::base_kernel<
+          assign_to_pyobject_kernel<dynd::fixed_dim_type_id, dim_kind_type_id>,
+          1> {
+  intptr_t dim_size, stride;
+
+  assign_to_pyobject_kernel(intptr_t dim_size, intptr_t stride)
+      : dim_size(dim_size), stride(stride)
+  {
+  }
+
+  ~assign_to_pyobject_kernel() { get_child()->destroy(); }
+
+  void single(char *dst, char *const *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    pydynd::pyobject_ownref lst(PyList_New(dim_size));
+    ckernel_prefix *copy_el = get_child();
+    dynd::kernel_strided_t copy_el_fn =
+        copy_el->get_function<dynd::kernel_strided_t>();
+    copy_el_fn(copy_el,
+               reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
+               sizeof(PyObject *), src, &stride, dim_size);
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = lst.release();
+  }
+
+  static intptr_t
+  instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
+              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+              intptr_t nsrc, const dynd::ndt::type *src_tp,
+              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+              intptr_t nkwd, const dynd::nd::array *kwds,
+              const std::map<std::string, dynd::ndt::type> &tp_vars)
+  {
+    intptr_t dim_size, stride;
+    dynd::ndt::type el_tp;
+    const char *el_arrmeta;
+    if (src_tp[0].get_as_strided(src_arrmeta[0], &dim_size, &stride, &el_tp,
+                                 &el_arrmeta)) {
+      assign_to_pyobject_kernel::make(ckb, kernreq, ckb_offset, dim_size,
+                                      stride);
+      return nd::assign::get()->instantiate(
+          nd::assign::get()->static_data(), data, ckb, ckb_offset, dst_tp,
+          dst_arrmeta, nsrc, &el_tp, &el_arrmeta, dynd::kernel_request_strided,
+          nkwd, kwds, tp_vars);
+    }
+
+    throw std::runtime_error("cannot process as strided");
+  }
+};
+
+template <>
+struct assign_to_pyobject_kernel<dynd::var_dim_type_id, dim_kind_type_id>
+    : dynd::nd::base_kernel<
+          assign_to_pyobject_kernel<dynd::var_dim_type_id, dim_kind_type_id>,
+          1> {
+  intptr_t offset, stride;
+
+  assign_to_pyobject_kernel(intptr_t offset, intptr_t stride)
+      : offset(offset), stride(stride)
+  {
+  }
+
+  ~assign_to_pyobject_kernel() { get_child()->destroy(); }
+
+  void single(char *dst, char *const *src)
+  {
+    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
+    Py_XDECREF(*dst_obj);
+    *dst_obj = NULL;
+    const dynd::ndt::var_dim_type::data_type *vd =
+        reinterpret_cast<const dynd::ndt::var_dim_type::data_type *>(src[0]);
+    pydynd::pyobject_ownref lst(PyList_New(vd->size));
+    dynd::ckernel_prefix *copy_el = get_child();
+    dynd::kernel_strided_t copy_el_fn =
+        copy_el->get_function<dynd::kernel_strided_t>();
+    char *el_src = vd->begin + offset;
+    copy_el_fn(copy_el,
+               reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item),
+               sizeof(PyObject *), &el_src, &stride, vd->size);
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+    *dst_obj = lst.release();
+  }
+
+  static intptr_t
+  instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
+              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+              intptr_t nsrc, const dynd::ndt::type *src_tp,
+              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+              intptr_t nkwd, const dynd::nd::array *kwds,
+              const std::map<std::string, dynd::ndt::type> &tp_vars)
+  {
+    assign_to_pyobject_kernel::make(
+        ckb, kernreq, ckb_offset,
+        reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
+            src_arrmeta[0])
+            ->offset,
+        reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
+            src_arrmeta[0])
+            ->stride);
+    dynd::ndt::type el_tp =
+        src_tp[0].extended<dynd::ndt::var_dim_type>()->get_element_type();
+    const char *el_arrmeta =
+        src_arrmeta[0] + sizeof(dynd::ndt::var_dim_type::metadata_type);
+    return nd::assign::get()->instantiate(
+        nd::assign::get()->static_data(), data, ckb, ckb_offset, dst_tp,
+        dst_arrmeta, nsrc, &el_tp, &el_arrmeta, dynd::kernel_request_strided,
+        nkwd, kwds, tp_vars);
+  }
+};
+
 } // namespace detail
 
 template <type_id_t Arg0ID>

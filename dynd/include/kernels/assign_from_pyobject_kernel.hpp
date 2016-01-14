@@ -1318,31 +1318,6 @@ struct assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>
   }
 };
 
-template <>
-struct assign_from_pyobject_kernel<categorical_type_id, any_kind_type_id>
-    : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<categorical_type_id, any_kind_type_id>> {
-  static intptr_t
-  instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
-              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-              intptr_t nsrc, const dynd::ndt::type *src_tp,
-              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-              intptr_t nkwd, const dynd::nd::array *kwds,
-              const std::map<std::string, dynd::ndt::type> &tp_vars)
-  {
-    // Assign via an intermediate category_type buffer
-    const dynd::ndt::type &buf_tp =
-        dst_tp.extended<dynd::ndt::categorical_type>()->get_category_type();
-    dynd::nd::callable copy_af = make_callable_from_assignment(
-        dst_tp, buf_tp, dynd::assign_error_default);
-    dynd::nd::callable child =
-        dynd::nd::functional::compose(nd::assign::get(), copy_af, buf_tp);
-    return child.get()->instantiate(
-        child.get()->static_data(), NULL, ckb, ckb_offset, dst_tp, dst_arrmeta,
-        nsrc, src_tp, src_arrmeta, kernreq, 0, NULL, tp_vars);
-  }
-};
-
 } // namespace detail
 
 template <type_id_t DstTypeID>

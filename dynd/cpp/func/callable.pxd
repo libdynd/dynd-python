@@ -16,4 +16,6 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
         array call(size_t, array *, size_t, pair[char *, array] *)
         array operator()(...)
 
+    callable make_callable 'dynd::nd::callable::make'[T](...) except +translate_exception
+
     callable apply[T](T) except +translate_exception

@@ -35,7 +35,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     object array_float(_array&) except +translate_exception
     object array_complex(_array&) except +translate_exception
 
-    _array array_asarray(object, object) except +translate_exception
     object array_get_shape(_array&) except +translate_exception
     object array_get_strides(_array&) except +translate_exception
     _array array_getitem(_array&, object) except +translate_exception

@@ -106,8 +106,6 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
 
 PYDYND_API dynd::nd::array pyobject_array(PyObject *obj);
 
-PYDYND_API dynd::nd::array array_asarray(PyObject *obj, PyObject *access);
-
 PYDYND_API dynd::nd::array array_eval(const dynd::nd::array &n);
 
 PYDYND_API dynd::nd::array array_zeros(const dynd::ndt::type &d,

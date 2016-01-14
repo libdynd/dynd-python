@@ -76,7 +76,6 @@ class TestPythonList(unittest.TestCase):
         self.assertEqual(nd.dtype_of(a), ndt.date)
         self.assertEqual(a.shape, (3,))
         self.assertEqual(nd.as_py(a), lst)
-        self.assertEqual(nd.as_py(a.ucast(ndt.string)), lststr)
 
     """
     def test_datetime(self):

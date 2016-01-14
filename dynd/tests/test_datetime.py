@@ -12,6 +12,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(ndt.date.data_alignment, 4)
         self.assertEqual(ndt.date.canonical_type, ndt.date)
 
+    """
     def test_date_properties(self):
         a = nd.array(date(1955, 3, 13))
         self.assertEqual(str(a).split('(')[1].split(',')[0], '1955-03-13')
@@ -22,6 +23,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(nd.as_py(a.month), 3)
         self.assertEqual(nd.as_py(a.day), 13)
         self.assertEqual(nd.as_py(a), date(1955, 3, 13))
+    """
 
     """
     def test_struct_casting(self):
@@ -40,8 +42,6 @@ class TestDate(unittest.TestCase):
     """
 
     def test_struct_function(self):
-        import os
-
         a = nd.array(date(1955,3,13))
         s = a.to_struct.eval()
         self.assertEqual(nd.dtype_of(s),
@@ -64,9 +64,11 @@ class TestDate(unittest.TestCase):
                         ['1931-12-12 346 49 6 49', '2013-05-14 134 19 2 19', '2012-12-25 360 52 2 52'])
     """
 
+    """
     def test_weekday(self):
         self.assertEqual(nd.as_py(nd.array(date(1955,3,13)).weekday), 6)
         self.assertEqual(nd.as_py(nd.array(date(2002,12,4)).weekday), 2)
+    """
 
     """
     def test_replace(self):
@@ -128,6 +130,7 @@ class TestTime(unittest.TestCase):
                          ctypes.alignment(ctypes.c_int64))
         self.assertEqual(ndt.time.canonical_type, ndt.time)
 
+    """
     def test_time_properties(self):
         a = nd.array(time(14, 25, 59, 123456))
         self.assertEqual(str(a).split('(')[1].split(',')[0], '14:25:59.123456')
@@ -142,6 +145,7 @@ class TestTime(unittest.TestCase):
         self.assertEqual(nd.as_py(a.microsecond), 123456)
         self.assertEqual(nd.as_py(a.tick), 1234560)
         self.assertEqual(nd.as_py(a), time(14, 25, 59, 123456))
+    """
 
     """
     def test_struct_casting(self):

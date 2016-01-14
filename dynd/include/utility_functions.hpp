@@ -16,11 +16,6 @@
 
 #include "visibility.hpp"
 
-namespace dynd {
-// Forward declaration
-struct callable_type_data;
-} // namespace dynd
-
 namespace pydynd {
 
 /**
@@ -155,7 +150,6 @@ void pyobject_as_vector_string(PyObject *list_string,
 void pyobject_as_vector_intp(PyObject *list_index,
                              std::vector<intptr_t> &vector_intp,
                              bool allow_int);
-void pyobject_as_vector_int(PyObject *list_int, std::vector<int> &vector_int);
 
 /**
  * Same as PySequence_Size, but throws a C++
@@ -170,84 +164,17 @@ inline Py_ssize_t pysequence_size(PyObject *seq)
   return s;
 }
 
-/**
- * Same as PyDict_GetItemString, but throws a
- * C++ exception on error.
- */
-inline PyObject *pydict_getitemstring(PyObject *dp, const char *key)
-{
-  PyObject *result = PyDict_GetItemString(dp, key);
-  if (result == NULL) {
-    throw std::exception();
-  }
-  return result;
-}
-
 PYDYND_API PyObject *intptr_array_as_tuple(size_t size, const intptr_t *array);
-
-/**
- * Parses the axis argument, which may be either a single index
- * or a tuple of indices. They are converted into a boolean array
- * which is set to true whereever a reduction axis is provided.
- *
- * Returns the number of axes which were set.
- */
-int pyarg_axis_argument(PyObject *axis, int ndim, dynd::bool1 *reduce_axes);
-
-/**
- * Parses the error_mode argument. If it is None, returns
- * assign_error_default.
- */
-dynd::assign_error_mode pyarg_error_mode(PyObject *error_mode_obj);
-dynd::assign_error_mode pyarg_error_mode_no_default(PyObject *error_mode_obj);
-
-PyObject *pyarg_error_mode_to_pystring(dynd::assign_error_mode errmode);
-
-/**
- * Matches the input object against one of several
- * strings, returning the corresponding integer.
- */
-int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                         const char *string0, int value0);
-
-/**
- * Matches the input object against one of several
- * strings, returning the corresponding integer.
- */
-int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                         const char *string0, int value0, const char *string1,
-                         int value1);
-
-int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                         const char *string0, int value0, const char *string1,
-                         int value1, const char *string2, int value2);
 
 int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
                          const char *string0, int value0, const char *string1,
                          int value1, const char *string2, int value2,
                          const char *string3, int value3);
 
-int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                         const char *string0, int value0, const char *string1,
-                         int value1, const char *string2, int value2,
-                         const char *string3, int value3, const char *string4,
-                         int value4);
-
-bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
-
-/**
- * Accepts "readwrite", "readonly", and "immutable".
- */
-uint32_t pyarg_access_flags(PyObject *obj);
 /**
  * Accepts "readwrite" and "immutable".
  */
 uint32_t pyarg_creation_access_flags(PyObject *obj);
-
-const dynd::callable_type_data *pyarg_callable_ro(PyObject *af,
-                                                  const char *paramname);
-dynd::callable_type_data *pyarg_callable_rw(PyObject *af,
-                                            const char *paramname);
 
 } // namespace pydynd
 

@@ -59,7 +59,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     bint array_is_c_contiguous(_array&) except +translate_exception
     bint array_is_f_contiguous(_array&) except +translate_exception
 
-    object array_as_py(_array&, bint) except +translate_exception
     object array_as_numpy(object, bint) except +translate_exception
 
     const char *array_access_flags_string(_array&) except +translate_exception
@@ -578,9 +577,9 @@ def is_f_contiguous(array a):
     """
     return array_is_f_contiguous(a.v)
 
-def as_py(array n, tuple=False):
+def as_py(array n):
     """
-    nd.as_py(n, tuple=False)
+    nd.as_py(n)
     Evaluates the dynd array, converting it into native Python types.
     Uniform dimensions convert into Python lists, struct types convert
     into Python dicts, scalars convert into the most appropriate Python

@@ -346,6 +346,8 @@ cdef _type cpp_type_from_numpy_type(object o) except *:
         return make_type[dynd_complex[double]]()
 
 cdef _type cpp_type_from_typeobject(object o) except *:
+    if o is type or o is _builtin_type:
+        return make_type[_type]()
     if o is _builtin_bool:
         return make_type[cpp_bool]()
     elif o is int or o is long:
@@ -356,7 +358,7 @@ cdef _type cpp_type_from_typeobject(object o) except *:
         return make_type[double]()
     elif o is complex:
         return make_type[dynd_complex[double]]()
-    elif o is str:
+    elif o is str or o is unicode:
         return make_type[string_type]()
     elif o is bytes:
         return make_bytes_type()
@@ -782,42 +784,13 @@ cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
 cdef _type cpp_type_for(object obj):
-
-    if isinstance(obj, type):
-        return _type(type_type_id)
-
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
         return tp
-
-    if isinstance(obj, float):
-        return make_type[double]()
-
-    if isinstance(obj, complex):
-        return _type(complex_float64_type_id)
-
-    if isinstance(obj, (str, unicode)):
-        return _type(string_type_id)
-
-    if isinstance(obj, bytes):
-        return _type(bytes_type_id)
-
-    if isinstance(obj, datetime.date):
-        return _type(date_type_id)
-
-    if isinstance(obj, datetime.time):
-        return _type(time_type_id)
-
-    if isinstance(obj, datetime.datetime):
-        return _type(datetime_type_id)
-
-    if isinstance(obj, __builtins__.type):
-        return make_type[_type]()
-
-    if isinstance(obj, list):
+    if _builtin_type(obj) is list:
         return xarray_from_pylist(obj)
-
-    raise ValueError('could not convert Python object into a DyND array')
+    tp = cpp_type_from_typeobject(_builtin_type(obj))
+    return tp
 
 def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))

@@ -19,7 +19,6 @@
 
 #include "visibility.hpp"
 #include "array_from_py.hpp"
-#include "array_as_py.hpp"
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
 

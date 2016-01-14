@@ -15,6 +15,7 @@
 #include "array_functions.hpp"
 #include "utility_functions.hpp"
 #include "copy_to_numpy_arrfunc.hpp"
+#include "types/pyobject_type.hpp"
 
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
@@ -128,7 +129,8 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                                 bdt->get_element_type(),
                                 arrmeta + sizeof(fixed_dim_type_arrmeta));
       return;
-    } else {
+    }
+    else {
       // If this isn't one of the array dimensions, it maps into
       // a numpy dtype with a shape
       // Build up the shape of the array for NumPy
@@ -247,8 +249,9 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(
         dynd_to_numpy_type_id[dt.get_type_id()]));
     return;
-  } else if (dt.get_type_id() == view_type_id &&
-             dt.operand_type().get_type_id() == fixed_bytes_type_id) {
+  }
+  else if (dt.get_type_id() == view_type_id &&
+           dt.operand_type().get_type_id() == fixed_bytes_type_id) {
     // View operation for alignment
     as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim, dt.value_type(),
                       NULL);
@@ -310,7 +313,8 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
                         bdt->get_element_type(),
                         arrmeta + sizeof(fixed_dim_type_arrmeta));
       return;
-    } else {
+    }
+    else {
       // If this isn't one of the array dimensions, it maps into
       // a numpy dtype with a shape
       out_numpy_dtype->clear();
@@ -490,7 +494,8 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       if (*a.cdata()) {
         Py_INCREF(PyArrayScalar_True);
         result.reset(PyArrayScalar_True);
-      } else {
+      }
+      else {
         Py_INCREF(PyArrayScalar_False);
         result.reset(PyArrayScalar_False);
       }
@@ -613,9 +618,13 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
         // If it's an expression kind
         pyobject_ownref n_tmp(DyND_PyWrapper_New(a.eval()));
         return array_as_numpy(n_tmp.get(), true);
-      } else if (a.get_type().get_kind() == string_kind) {
-        // If it's a string kind, return it as a Python unicode
-        return array_as_py(a, false);
+      }
+      else if (a.get_type().get_kind() == string_kind) {
+        nd::array res = nd::empty(ndt::make_type<pyobject_type>());
+        res.assign(a);
+        PyObject *res_obj = *reinterpret_cast<PyObject **>(res.data());
+        Py_INCREF(res_obj);
+        return res_obj;
       }
       stringstream ss;
       ss << "dynd as_numpy could not convert dynd type ";
@@ -662,7 +671,8 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     intptr_t element_size = ((PyArray_Descr *)numpy_dtype.get())->elsize;
     if (ndim == 1) {
       strides[0] = element_size;
-    } else if (ndim > 1) {
+    }
+    else if (ndim > 1) {
       shortvector<int> axis_perm(ndim);
       strides_to_axis_perm(ndim, strides.get(), axis_perm.get());
       axis_perm_to_strides(ndim, axis_perm.get(), shape.get(), element_size,
@@ -678,7 +688,8 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
 
     // Return the NumPy array
     return result.release();
-  } else {
+  }
+  else {
     // Create a view directly to the dynd array
     pyobject_ownref result(PyArray_NewFromDescr(
         &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,

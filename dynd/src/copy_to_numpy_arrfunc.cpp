@@ -18,8 +18,8 @@
 #include <dynd/memblock/array_memory_block.hpp>
 
 #include "copy_to_numpy_arrfunc.hpp"
-#include "copy_to_pyobject_arrfunc.hpp"
 #include "utility_functions.hpp"
+#include "types/pyobject_type.hpp"
 
 using namespace std;
 
@@ -67,9 +67,9 @@ intptr_t pydynd::copy_to_numpy_ck::instantiate(
   }
   else if (PyDataType_ISOBJECT(dtype)) {
     dynd::nd::base_callable *af = const_cast<dynd::nd::base_callable *>(
-        nd::copy_to_pyobject::get().get());
+        dynd::nd::assign::get().get());
     return af->instantiate(af->static_data(), NULL, ckb, ckb_offset,
-                           dynd::ndt::make_type<void>(), NULL, nsrc, src_tp,
+                           dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
                            src_arrmeta, kernreq, 0, NULL, tp_vars);
   }
   else if (PyDataType_HASFIELDS(dtype)) {

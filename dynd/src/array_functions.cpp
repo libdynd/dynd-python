@@ -25,25 +25,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyObject *pydynd::array_index(const dynd::nd::array &n)
-{
-  // Implements the nb_index slot
-  switch (n.get_type().get_kind()) {
-  case uint_kind:
-  case sint_kind: {
-    nd::array res = nd::empty(ndt::make_type<pyobject_type>());
-    res.assign(n);
-    PyObject *res_obj = *reinterpret_cast<PyObject **>(res.data());
-    Py_INCREF(res_obj);
-    return res_obj;
-  }
-  default:
-    PyErr_SetString(PyExc_TypeError, "dynd array must have kind 'int'"
-                                     " or 'uint' to be used as an index");
-    throw exception();
-  }
-}
-
 PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
 {
   // Implements the nonzero/conversion to boolean slot

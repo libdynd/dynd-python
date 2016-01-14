@@ -7,13 +7,15 @@ from cpython.object cimport (Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT,
 from cpython.buffer cimport PyObject_CheckBuffer
 from libcpp.string cimport string
 from libcpp.map cimport map
+from libcpp cimport bool as cpp_bool
 from cython.operator import dereference
 import numpy as _np
 
 from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide, empty as cpp_empty)
 from ..cpp.func.callable cimport callable as _callable
-from ..cpp.type cimport type as _type, get_builtin_type_dynamic_array_properties
+from ..cpp.type cimport (type as _type,
+                         get_builtin_type_dynamic_array_properties, make_type)
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *
@@ -81,6 +83,8 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type make__type_from_pyobject(object)
+
+ctypedef long long longlong
 
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
@@ -313,8 +317,11 @@ cdef class array(object):
         result.v = array_getitem(self.v, x)
         return result
 
-    def __index__(self):
-        return array_index(self.v)
+    def __index__(array self):
+        cdef type_id_t tp = dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+        if tp == uint_kind_type_id or tp == int_kind_type_id:
+            return dynd_nd_array_to_cpp(self).as[longlong]()
+        raise TypeError('Only integer types can be converted to scalar indices.')
 
     def __int__(self):
         return array_int(self.v)

@@ -51,3 +51,6 @@ cdef extern from 'dynd/types/type_id.hpp' namespace 'dynd':
         callable_type_id
 
         type_type_id
+
+        uint_kind_type_id
+        int_kind_type_id

@@ -9,7 +9,6 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
-#include "arrfunc_from_pyfunc.hpp"
 
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/base_dim_type.hpp>

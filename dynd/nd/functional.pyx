@@ -1,27 +1,12 @@
-from cpython.ref cimport PyObject
-from libc.stdint cimport intptr_t
-
-from ..cpp.type cimport type as _type
 from ..cpp.types.callable_type cimport make_callable
-from ..cpp.func.callable cimport callable as _callable
 from ..cpp.func.elwise cimport elwise as _elwise
 from ..cpp.func.reduction cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
-from ..config cimport translate_exception
 from ..wrapper cimport wrap, begin, end
 from .callable cimport callable
 from .. import ndt
 from ..ndt.type cimport type, as_numba_type, from_numba_type
-
-cdef extern from "arrfunc_from_pyfunc.hpp" namespace "pydynd::nd::functional":
-    _callable _apply 'pydynd::nd::functional::apply'(object, object) except +translate_exception
-
-cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functional":
-    _callable _apply_jit "pydynd::nd::functional::apply_jit"(const _type &tp, intptr_t)
-
-    cdef cppclass jit_dispatcher:
-        jit_dispatcher(object, object (*)(object, intptr_t, const _type *))
 
 cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
     _callable _dispatch 'dynd::nd::functional::dispatch'[T](_type, T) \
@@ -100,13 +85,13 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):
-    def make(tp, func):
+    def make(type tp, func):
         if jit:
             import numba
             return wrap(_dispatch((<type> tp).v,
                 jit_dispatcher(numba.jit(func, *args, **kwds), _jit)))
 
-        return wrap(_apply(func, tp))
+        return wrap(_apply(tp.v, func))
 
     if func is None:
         return lambda func: make(ndt.callable(func), func)

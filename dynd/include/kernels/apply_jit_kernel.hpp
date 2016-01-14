@@ -3,7 +3,6 @@
 #include <dynd/kernels/base_kernel.hpp>
 #include <array_functions.hpp>
 #include <utility_functions.hpp>
-#include <arrfunc_from_pyfunc.hpp>
 #include <type_functions.hpp>
 
 #include "../arrfunc_functions.hpp"

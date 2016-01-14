@@ -170,12 +170,12 @@ set(pydynd_SRC
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
     dynd/include/arrfunc_functions.hpp
-    dynd/include/arrfunc_from_pyfunc.hpp
     dynd/include/assign.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/copy_to_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
     dynd/include/exception_translation.hpp
+    dynd/include/functional.hpp
     dynd/include/git_version.hpp
     dynd/include/init.hpp
     dynd/include/numpy_interop.hpp
@@ -188,11 +188,11 @@ set(pydynd_SRC
     dynd/src/array_functions.cpp
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp
-    dynd/src/arrfunc_from_pyfunc.cpp
     dynd/src/arrfunc_functions.cpp
     dynd/src/assign.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
     dynd/src/copy_to_numpy_arrfunc.cpp
+    dynd/src/functional.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp

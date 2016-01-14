@@ -200,6 +200,44 @@ cdef class array(object):
             result.v = self.v.get_dtype()
             return result
 
+    def to(self, tp = None):
+        """
+        nd.to(tp)
+
+        Evaluates the dynd array, and converts it into a NumPy object.
+
+        Parameters
+        ----------
+        n : dynd array
+            The array to convert into native Python types.
+        allow_copy : bool, optional
+            If true, allows a copy to be made when the array types
+            can't be directly viewed as a NumPy array, but with a
+            data-preserving copy they can be.
+
+        Examples
+        --------
+        >>> from dynd import nd, ndt
+        >>> import numpy as np
+        >>> a = nd.array([[1, 2, 3], [4, 5, 6]])
+        >>> a
+        nd.array([[1, 2, 3], [4, 5, 6]],
+                type="2 * 3 * int32")
+        >>> nd.as_numpy(a)
+        array([[1, 2, 3],
+            [4, 5, 6]])
+        """
+
+        try:
+            import numpy as np
+
+            if (tp == np.ndarray):
+                return array_as_numpy(self, bool(True))
+        except Exception:
+            pass
+
+        raise ValueError('could not copy to type ' + tp)
+
     def __contains__(self, x):
         raise NotImplementedError('__contains__ is not yet implemented for nd.array')
 
@@ -606,33 +644,6 @@ def as_py(array n):
 
     cdef array res = assign(n, dst_tp = ndt.pyobject)
     return <object> dereference(<PyObject **> res.v.data())
-
-def as_numpy(array n, allow_copy=False):
-    """
-    nd.as_numpy(n, allow_copy=False)
-    Evaluates the dynd array, and converts it into a NumPy object.
-    Parameters
-    ----------
-    n : dynd array
-        The array to convert into native Python types.
-    allow_copy : bool, optional
-        If true, allows a copy to be made when the array types
-        can't be directly viewed as a NumPy array, but with a
-        data-preserving copy they can be.
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-    >>> import numpy as np
-    >>> a = nd.array([[1, 2, 3], [4, 5, 6]])
-    >>> a
-    nd.array([[1, 2, 3], [4, 5, 6]],
-             type="2 * 3 * int32")
-    >>> nd.as_numpy(a)
-    array([[1, 2, 3],
-           [4, 5, 6]])
-    """
-    # TODO: Could also convert dynd types into numpy dtypes
-    return array_as_numpy(n, bool(allow_copy))
 
 def view(obj, type=None):
     """

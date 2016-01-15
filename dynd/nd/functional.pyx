@@ -5,7 +5,6 @@ from ..cpp.array cimport array as _array
 
 from ..wrapper cimport wrap, begin, end
 from .callable cimport callable
-from .. import ndt
 from ..ndt.type cimport type, as_numba_type, from_numba_type
 
 cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
@@ -85,6 +84,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):
+    from .. import ndt
     def make(type tp, func):
         if jit:
             import numba

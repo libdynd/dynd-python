@@ -682,12 +682,10 @@ void = type(void_type_id)
 
 class tuple_factory(__builtins__.type):
     def __call__(self, *args):
-        from ..nd.array import asarray
-
         if args:
-            return wrap(_make_tuple((<array> asarray(args)).v))
+            return dynd_ndt_type_from_cpp(_make_tuple(as_cpp_array(args)))
 
-        return wrap(_make_tuple())
+        return dynd_ndt_type_from_cpp(_make_tuple())
 
 class tuple(object):
     __metaclass__ = tuple_factory
@@ -730,7 +728,8 @@ class callable_factory(__builtins__.type):
                     args.append(type('Scalar'))
 #            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
 
-        return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v, (<type> struct(**kwds)).v))
+        return dynd_ndt_type_from_cpp(make_callable(as_cpp_type(ret),
+                   as_cpp_type(tuple(*args)), as_cpp_type(struct(**kwds))))
 
     @property
     def id(self):
@@ -796,4 +795,4 @@ def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
-from ..nd.array cimport dynd_nd_array_to_cpp
+from ..nd.array cimport dynd_nd_array_to_cpp, as_cpp_array

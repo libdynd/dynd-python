@@ -14,7 +14,7 @@
 #include "numpy_interop.hpp"
 #include "array_functions.hpp"
 #include "utility_functions.hpp"
-#include "copy_to_numpy_arrfunc.hpp"
+#include "assign.hpp"
 #include "types/pyobject_type.hpp"
 
 #include <dynd/types/fixed_dim_type.hpp>

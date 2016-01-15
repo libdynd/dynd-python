@@ -24,7 +24,6 @@ from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp
 from ..ndt.type cimport cpp_type_for
-from dynd import ndt
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
@@ -159,8 +158,9 @@ cdef class array(object):
             self.v = cpp_empty(dst_tp)
             self.v.assign(pyobject_array(value))
         else:
-            if (not isinstance(type, ndt.type)):
-                type = ndt.type(type)
+            from ..ndt import type as ndt_type
+            if (not isinstance(type, ndt_type)):
+                type = ndt_type(type)
             dst_tp = dynd_ndt_type_to_cpp(type)
             self.v = cpp_empty(dst_tp)
             self.v.assign(pyobject_array(value))
@@ -505,6 +505,28 @@ cdef array dynd_nd_array_from_cpp(_array a):
 
 set_wrapper_type[_array](array)
 
+cdef _array as_cpp_array(object obj) except *:
+    """
+    nd.as_cpp_array(obj)
+    Constructs a dynd array from a Python object, taking
+    a view if possible, otherwise making a copy. If the object
+    is already a DyND array, this is equivalent to calling
+    dynd_nd_array_to_cpp(obj).
+    """
+    # TODO: Remove lazy import since it's really only needed because of the weird
+    # boxing and unboxing used further down
+    from . import assign
+    if _builtin_type(obj) is array:
+        return dynd_nd_array_to_cpp(obj)
+    elif _builtin_type(obj) is _np.ndarray:
+        return array_from_numpy_array_cast(<PyObject*>obj, 0, 0)
+    # elif PyObject_CheckBuffer(obj):
+    #     TODO
+    cdef _type tp = cpp_type_for(obj)
+    cdef _array out = cpp_empty(tp)
+    out.assign(pyobject_array(obj))
+    return out
+
 cpdef array asarray(object obj):
     """
     nd.asarray(obj)
@@ -519,13 +541,7 @@ cpdef array asarray(object obj):
     """
     if _builtin_type(obj) is array:
         return obj
-    elif _builtin_type(obj) is _np.ndarray:
-        return dynd_nd_array_from_cpp(array_from_numpy_array_cast(<PyObject*>obj, 0, 0))
-    # elif PyObject_CheckBuffer(obj):
-    #     TODO
-    if isinstance(obj, tuple):
-        obj = list(obj)
-    return array(obj)
+    return dynd_nd_array_from_cpp(as_cpp_array(obj))
 
 from dynd.nd.callable cimport callable
 
@@ -639,11 +655,10 @@ def as_py(array n):
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
-
-    from . import assign
-
-    cdef array res = assign(n, dst_tp = ndt.pyobject)
-    return <object> dereference(<PyObject **> res.v.data())
+    from ..ndt import pyobject
+    cdef _array res = cpp_empty(dynd_ndt_type_to_cpp(pyobject))
+    res.assign(dynd_nd_array_to_cpp(n))
+    return <object> dereference(<PyObject **> res.data())
 
 def view(obj, type=None):
     """

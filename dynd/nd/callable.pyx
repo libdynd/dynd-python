@@ -1,7 +1,13 @@
+from libc.string cimport const_char
+from libcpp.vector cimport vector
+from libcpp.pair cimport pair
+
 from ..cpp.array cimport array as _array
+from ..cpp.func.callable cimport const_charptr
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
+from .array cimport as_cpp_array, dynd_nd_array_from_cpp
 
 #cdef extern from "<iostream>" namespace "std":
 #    cdef cppclass ostream:
@@ -10,7 +16,14 @@ from ..wrapper cimport set_wrapper_type, wrap
 
 cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
     void init_w_callable_typeobject(object)
-    object callable_call(object, object, object) except +translate_exception
+
+cdef extern from *:
+    # Hack to allow compile-time resolution of the Python version.
+    # This can be used inside if-statements which will, in turn, be
+    # removed by the compiler's optimizer.
+    bint is_py_2 "(PY_MAJOR_VERSION == 2)"
+
+ctypedef pair[const_charptr, _array] char_array_pair
 
 cdef class callable(object):
     """
@@ -48,13 +61,26 @@ cdef class callable(object):
         def __get__(self):
             return wrap(self.v.get_array_type())
 
-    def __call__(self, *args, **kwds):
-        # Handle the keyword-only arguments
-#        if kwds:
-#            msg = "nd.callable call got an unexpected keyword argument '%s'"
-#            raise TypeError(msg % (kwds.keys()[0]))
-
-        return callable_call(self, args, kwds)
+    def __call__(callable self, *args, **kwargs):
+        cdef size_t nargs = len(args), nkwargs = len(kwargs)
+        cdef vector[_array] cpp_args
+        cpp_args.reserve(nargs)
+        cdef vector[char_array_pair] cpp_kwargs
+        cpp_kwargs.reserve(nkwargs)
+        for ar in args:
+            cpp_args.push_back(as_cpp_array(ar))
+        if is_py_2:
+            for s, ar in kwargs.iteritems():
+                cpp_kwargs.push_back(char_array_pair(
+                    <const_char*>s, as_cpp_array(ar)))
+        else:
+            for s, ar in kwargs.items():
+                s_tmp = s.encode('UTF-8')
+                cpp_kwargs.push_back(char_array_pair(
+                    <const_char*>s_tmp, as_cpp_array(ar)))
+        a = dynd_nd_array_from_cpp(dynd_nd_callable_to_cpp(self).call(
+                   nargs, cpp_args.data(), nkwargs, cpp_kwargs.data()))
+        return a
 
 cdef _callable dynd_nd_callable_to_cpp(callable c) except *:
     # Once this becomes a method of the type wrapper class, this check and

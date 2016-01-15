@@ -86,6 +86,8 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 import numpy as _np
 
+builtin_tuple = tuple
+
 init_type_functions()
 _builtin_type = __builtins__.type
 _builtin_bool = __builtins__.bool
@@ -680,29 +682,28 @@ complex_float32 = type(complex_float32_type_id)
 complex_float64 = type(complex_float64_type_id)
 void = type(void_type_id)
 
-class tuple_factory(__builtins__.type):
-    def __call__(self, *args):
-        from ..nd.array import asarray
+def tuple(*args):
 
-        if args:
-            return wrap(_make_tuple((<array> asarray(args)).v))
+    if args:
+        # TODO: Use a different interface that doesn't involve nd.array.
+        # This should basicaly just go through and call as_cpp_type
+        # on each argument and make a vector or array of C++ types
+        # that can then be used to create a tuple type.
+        # Constructing an array from the list is really
+        # only partially correct.
+        return dynd_ndt_type_from_cpp(_make_tuple(as_cpp_array(args)))
 
-        return wrap(_make_tuple())
+    return dynd_ndt_type_from_cpp(_make_tuple())
 
-class tuple(object):
-    __metaclass__ = tuple_factory
+def struct(**kwds):
+    # TODO: require an ordered dict here since struct types are ordered.
+    # TODO: Use something other than dynd arrays to pass these arguments.
+    #       See the comment in the tuple function for details.
+    if kwds:
+        return dynd_ndt_type_from_cpp(_make_struct(
+            as_cpp_array(list(kwds.keys())), as_cpp_array(list(kwds.values()))))
 
-class struct_factory(__builtins__.type):
-    def __call__(self, **kwds):
-        from ..nd.array import asarray
-
-        if kwds:
-            return wrap(_make_struct((<array> asarray(list(kwds.keys()))).v, (<array> asarray(list(kwds.values()))).v))
-
-        return wrap(_make_struct())
-
-class struct(object):
-    __metaclass__ = struct_factory
+    return dynd_ndt_type_from_cpp(_make_struct())
 
 #class fixed_dim(__builtins__.type):
 #    def __call__(self, size_or_element_tp, element_tp = None):
@@ -711,33 +712,23 @@ class struct(object):
 #
 #        return make_fixed_dim(size_or_element_tp, (<type> element_tp).v)
 
-class callable_factory(__builtins__.type):
-    def __call__(self, ret_or_func, *args, **kwds):
-        if isinstance(ret_or_func, type):
-            ret = ret_or_func
-        else:
-            func = ret_or_func
+def callable(ret_or_func, *args, **kwds):
+    if isinstance(ret_or_func, type):
+        ret = ret_or_func
+    else:
+        func = ret_or_func
+        try:
+            ret = func.__annotations__['return']
+        except (AttributeError, KeyError):
+            ret = type('Scalar')
+        args = []
+        for name in func.__code__.co_varnames:
             try:
-                ret = func.__annotations__['return']
+                args.append(func.__annotations__[name])
             except (AttributeError, KeyError):
-                ret = type('Scalar')
-
-            args = []
-            for name in func.__code__.co_varnames:
-                try:
-                    args.append(func.__annotations__[name])
-                except (AttributeError, KeyError):
-                    args.append(type('Scalar'))
-#            args = [func.__annotations__[name] for name in func.__code__.co_varnames]
-
-        return wrap(make_callable((<type> ret).v, (<type> tuple(*args)).v, (<type> struct(**kwds)).v))
-
-    @property
-    def id(self):
-        return callable_type_id
-
-class callable(object):
-    __metaclass__ = callable_factory
+                args.append(type('Scalar'))
+    return dynd_ndt_type_from_cpp(make_callable(as_cpp_type(ret),
+               as_cpp_type(tuple(*args)), as_cpp_type(struct(**kwds))))
 
 """
 class struct_factory(__builtins__.type):
@@ -783,10 +774,12 @@ cdef as_numba_type(_type tp):
 cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
-cdef _type cpp_type_for(object obj):
+cdef _type cpp_type_for(object obj) except *:
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
         return tp
+    if _builtin_type(obj) is builtin_tuple:
+        obj = list(obj)
     if _builtin_type(obj) is list:
         return xarray_from_pylist(obj)
     tp = cpp_type_from_typeobject(_builtin_type(obj))
@@ -796,4 +789,4 @@ def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
-from ..nd.array cimport dynd_nd_array_to_cpp
+from ..nd.array cimport dynd_nd_array_to_cpp, as_cpp_array

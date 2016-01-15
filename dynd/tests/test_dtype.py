@@ -3,10 +3,6 @@ import ctypes
 import unittest
 from dynd import nd, ndt
 
-class TestTypeID(unittest.TestCase):
-    def test_callable(self):
-        self.assertEqual(ndt.type_ids['CALLABLE'], ndt.callable.id)
-
 class TestType(unittest.TestCase):
     def test_tuple(self):
         tp = ndt.tuple(ndt.int32, ndt.float64)

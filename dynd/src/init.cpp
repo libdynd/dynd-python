@@ -6,8 +6,8 @@
 #define NUMPY_IMPORT_ARRAY
 #include "numpy_interop.hpp"
 
+#include "assign.hpp"
 #include "init.hpp"
-#include "copy_to_numpy_arrfunc.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "array_from_py.hpp"
 #include "array_from_py_typededuction.hpp"

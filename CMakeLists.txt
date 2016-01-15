@@ -172,7 +172,6 @@ set(pydynd_SRC
     dynd/include/arrfunc_functions.hpp
     dynd/include/assign.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
-    dynd/include/copy_to_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
     dynd/include/exception_translation.hpp
     dynd/include/functional.hpp
@@ -191,7 +190,6 @@ set(pydynd_SRC
     dynd/src/arrfunc_functions.cpp
     dynd/src/assign.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
-    dynd/src/copy_to_numpy_arrfunc.cpp
     dynd/src/functional.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in

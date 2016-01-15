@@ -86,6 +86,8 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 
 import numpy as _np
 
+builtin_tuple = tuple
+
 init_type_functions()
 _builtin_type = __builtins__.type
 _builtin_bool = __builtins__.bool
@@ -776,6 +778,8 @@ cdef _type cpp_type_for(object obj) except *:
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
         return tp
+    if _builtin_type(obj) is builtin_tuple:
+        obj = list(obj)
     if _builtin_type(obj) is list:
         return xarray_from_pylist(obj)
     tp = cpp_type_from_typeobject(_builtin_type(obj))

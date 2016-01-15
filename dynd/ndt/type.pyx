@@ -1,9 +1,11 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from cpython.object cimport Py_EQ, Py_NE
-from libc.stdint cimport intptr_t
+from cpython.object cimport Py_EQ, Py_NE, PyObject
+from libc.stdint cimport (intptr_t, int8_t, int16_t, int32_t, int64_t,
+                          uint8_t, uint16_t, uint32_t, uint64_t)
 from libcpp.map cimport map
 from libcpp.string cimport string
+from libcpp cimport bool as cpp_bool
 
 import datetime
 
@@ -30,21 +32,42 @@ from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
 from ..cpp.types.tuple_type cimport make_tuple as _make_tuple
 from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
+from ..cpp.types.string_type cimport string_type
+from ..cpp.types.date_type cimport make as make_date_type
+from ..cpp.types.time_type cimport make as make_time_type
+from ..cpp.types.datetime_type cimport make as make_datetime_type
+from ..cpp.types.bytes_type cimport make as make_bytes_type
 from ..cpp.func.callable cimport callable as _callable
+from ..cpp.type cimport make_type
+from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 
+import datetime as _datetime
+import numpy as _np
+import ctypes as _ct
+
+cdef extern from *:
+    # Declare these here rather than using the declarations in the Cython
+    # wrappers for the Python headers since their versions incorrectly pass
+    # a reference rather than a pointer.
+    bint PyUnicode_Check(PyObject *o)
+    bint PyType_Check(PyObject *o)
+
+cdef extern from "numpy_interop.hpp":
+    ctypedef struct PyArray_Descr
+
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     object numpy_dtype_obj_from__type(_type&) except +translate_exception
+    cpp_bool is_numpy_dtype(PyObject*)
+    _type _type_from_numpy_dtype(PyArray_Descr*)
 
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
     _type xtype_for_prefix(object) except +translate_exception
     _type xarray_from_pylist(object) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
-    _type make__type_from_pyobject(object) except +translate_exception
-
     object _type_get_shape(_type&) except +translate_exception
     object _type_get_type_id(_type&) except +translate_exception
     string _type_str(_type &)
@@ -61,8 +84,11 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
     void init_type_functions()
 
+import numpy as _np
+
 init_type_functions()
-_builtin_type = type
+_builtin_type = __builtins__.type
+_builtin_bool = __builtins__.bool
 
 __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
     'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
@@ -104,7 +130,7 @@ cdef class type(object):
     ----------
     obj : string or other data type, optional
         A Blaze datashape string or a data type from another
-        system such as NumPy or ctypes.
+        system such as NumPy.
 
     Examples
     --------
@@ -118,9 +144,9 @@ cdef class type(object):
     ndt.type("{x : float32, y : float32, z : float32}")
     """
 
-    def __cinit__(self, rep=None):
+    def __init__(self, rep=None):
         if rep is not None:
-            self.v = make__type_from_pyobject(rep)
+            self.v = as_cpp_type(rep)
 
     property shape:
         """
@@ -285,10 +311,93 @@ cdef type dynd_ndt_type_from_cpp(_type t):
     tp.v = t
     return tp
 
+# TODO: The translation from Python object to C++ type is complex enough
+# that we really ought to have some sort of
+# Pyobject* to ndt::type mapping set up. That's not trivial to do, so
+# an army of if statements will have to suffice for now.
+# A dictionary-like interface would probably make more sense though.
+
+cdef _type cpp_type_from_numpy_type(object o) except *:
+    if o is _np.bool_:
+        return make_type[cpp_bool]()
+    elif o is _np.int8:
+        return make_type[int8_t]()
+    elif o is _np.int16:
+        return make_type[int16_t]()
+    elif o is _np.int32:
+        return make_type[int32_t]()
+    elif o is _np.int64:
+        return make_type[int64_t]()
+    elif o is _np.uint8:
+        return make_type[uint8_t]()
+    elif o is _np.uint16:
+        return make_type[uint16_t]()
+    elif o is _np.uint32:
+        return make_type[uint32_t]()
+    elif o is _np.uint64:
+        return make_type[uint64_t]()
+    elif o is _np.float32:
+        return make_type[float]()
+    elif o is _np.float64:
+        return make_type[double]()
+    elif o is _np.complex64:
+        return make_type[dynd_complex[float]]()
+    elif o is _np.complex128:
+        return make_type[dynd_complex[double]]()
+
+cdef _type cpp_type_from_typeobject(object o) except *:
+    if o is type or o is _builtin_type:
+        return make_type[_type]()
+    if o is _builtin_bool:
+        return make_type[cpp_bool]()
+    elif o is int or o is long:
+        # Once we support arbitrary precision integers,
+        # Python longs should map to those instead.
+        return make_type[int32_t]()
+    elif o is float:
+        return make_type[double]()
+    elif o is complex:
+        return make_type[dynd_complex[double]]()
+    elif o is str or o is unicode:
+        return make_type[string_type]()
+    elif o is bytes:
+        return make_bytes_type()
+    elif o is bytearray:
+        return make_bytes_type()
+    elif o is _datetime.date:
+        return make_date_type()
+    elif o is _datetime.time:
+        return make_time_type()
+    elif o is _datetime.datetime:
+        return make_datetime_type()
+    elif issubclass(o, _np.generic):
+        return cpp_type_from_numpy_type(o)
+    raise ValueError("Cannot make ndt.type from {}.".format(o))
+
+_ctypes_base_type = _ct.c_int.__bases__[0].__bases__[0]
+
+cdef _type as_cpp_type(object o) except *:
+    if _builtin_type(o) is type:
+        return dynd_ndt_type_to_cpp(<type>o)
+    elif _builtin_type(o) is str or PyUnicode_Check(<PyObject*>o):
+        # Use Cython's automatic conversion to c++ strings.
+        return _type(<string>o)
+    elif _builtin_type(o) is int or _builtin_type(o) is long:
+        return _type(<type_id_t>(<int>o))
+    elif _builtin_type(o) is array:
+        return dynd_nd_array_to_cpp(<array>o).as[_type]()
+    elif is_numpy_dtype(<PyObject*>o):
+        return _type_from_numpy_dtype(<PyArray_Descr*>o)
+    elif issubclass(o, _ctypes_base_type):
+        raise ValueError("Conversion from ctypes type to DyND type not currently supported.")
+    elif PyType_Check(<PyObject*>o):
+        return cpp_type_from_typeobject(o)
+    raise ValueError("Cannot make ndt.type from {}.".format(o))
+
 cpdef type astype(object o):
     if _builtin_type(o) is type:
-        return <type>o
-    return dynd_ndt_type_from_cpp(make__type_from_pyobject(o))
+        return o
+    return dynd_ndt_type_from_cpp(as_cpp_type(o))
 
 set_wrapper_type[_type](type)
 
@@ -675,42 +784,16 @@ cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
 cdef _type cpp_type_for(object obj):
-
-    if isinstance(obj, type):
-        return _type(type_type_id)
-
     cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null()):
         return tp
-
-    if isinstance(obj, float):
-        return make_type[double]()
-
-    if isinstance(obj, complex):
-        return _type(complex_float64_type_id)
-
-    if isinstance(obj, (str, unicode)):
-        return _type(string_type_id)
-
-    if isinstance(obj, bytes):
-        return _type(bytes_type_id)
-
-    if isinstance(obj, datetime.date):
-        return _type(date_type_id)
-
-    if isinstance(obj, datetime.time):
-        return _type(time_type_id)
-
-    if isinstance(obj, datetime.datetime):
-        return _type(datetime_type_id)
-
-    if isinstance(obj, __builtins__.type):
-        return make_type[_type]()
-
-    if isinstance(obj, list):
+    if _builtin_type(obj) is list:
         return xarray_from_pylist(obj)
-
-    raise ValueError('could not convert Python object into a DyND array')
+    tp = cpp_type_from_typeobject(_builtin_type(obj))
+    return tp
 
 def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))
+
+# Avoid circular import issues by importing these last.
+from ..nd.array cimport dynd_nd_array_to_cpp

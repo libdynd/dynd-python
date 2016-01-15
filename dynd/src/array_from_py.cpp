@@ -663,16 +663,12 @@ dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
     return array_from_numpy_array2((PyArrayObject *)obj);
   }
 
-  if (PyArray_IsScalar(obj, Generic)) {
-    return array_from_numpy_scalar2(obj);
-  }
 #endif // DYND_NUMPY_INTEROP
-
   if (PyBool_Check(obj)) {
     return ndt::make_type<bool>();
-#if PY_VERSION_HEX < 0x03000000
   }
-  else if (PyInt_Check(obj)) {
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
     long value = PyInt_AS_LONG(obj);
 #if SIZEOF_LONG > SIZEOF_INT
     // Use a 32-bit int if it fits.
@@ -685,9 +681,9 @@ dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
 #else
     return ndt::make_type<long>();
 #endif
-#endif // PY_VERSION_HEX < 0x03000000
   }
-  else if (PyLong_Check(obj)) {
+#endif // PY_VERSION_HEX < 0x03000000
+  if (PyLong_Check(obj)) {
     PY_LONG_LONG value = PyLong_AsLongLong(obj);
     if (value == -1 && PyErr_Occurred()) {
       throw runtime_error("error converting int value");

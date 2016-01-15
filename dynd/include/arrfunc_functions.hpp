@@ -20,14 +20,6 @@
 #include "array_functions.hpp"
 
 #include "visibility.hpp"
-#include "wrapper.hpp"
-
-typedef DyND_PyWrapperObject<dynd::nd::callable> DyND_PyCallableObject;
-
-inline int DyND_PyCallable_Check(PyObject *obj)
-{
-  return DyND_PyWrapper_Check<dynd::nd::callable>(obj);
-}
 
 namespace pydynd {
 

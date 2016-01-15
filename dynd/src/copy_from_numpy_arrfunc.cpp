@@ -211,7 +211,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp,
   char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {true};
-  (*pydynd::nd::copy_from_numpy::get().get())(
+  pydynd::nd::copy_from_numpy::get()->call(
       tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp,
       &src_am, &src_data, 1, kwd_values,
       std::map<std::string, dynd::ndt::type>());

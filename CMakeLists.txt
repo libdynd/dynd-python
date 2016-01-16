@@ -169,7 +169,6 @@ set(pydynd_SRC
     dynd/include/array_from_py.hpp
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
-    dynd/include/arrfunc_functions.hpp
     dynd/include/assign.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
@@ -187,7 +186,6 @@ set(pydynd_SRC
     dynd/src/array_functions.cpp
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp
-    dynd/src/arrfunc_functions.cpp
     dynd/src/assign.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
     dynd/src/functional.cpp

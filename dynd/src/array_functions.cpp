@@ -4,7 +4,6 @@
 //
 
 #include "array_functions.hpp"
-#include "arrfunc_functions.hpp"
 #include "array_from_py.hpp"
 #include "type_functions.hpp"
 #include "utility_functions.hpp"

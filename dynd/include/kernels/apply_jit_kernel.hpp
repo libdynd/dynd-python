@@ -5,8 +5,6 @@
 #include <utility_functions.hpp>
 #include <type_functions.hpp>
 
-#include "../arrfunc_functions.hpp"
-
 namespace pydynd {
 namespace nd {
   namespace functional {
@@ -99,7 +97,7 @@ namespace nd {
           Py_INCREF(obj);
         }
 
-        return reinterpret_cast<DyND_PyCallableObject *>(obj)->v;
+        return reinterpret_cast<DyND_PyWrapperObject<dynd::nd::callable> *>(obj)->v;
       }
     };
 

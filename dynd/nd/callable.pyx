@@ -9,14 +9,6 @@ from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp
 
-#cdef extern from "<iostream>" namespace "std":
-#    cdef cppclass ostream:
-#        ostream& operator<< (_callable val)
-#    ostream cout
-
-cdef extern from "arrfunc_functions.hpp" namespace "pydynd":
-    void init_w_callable_typeobject(object)
-
 cdef extern from *:
     # Hack to allow compile-time resolution of the Python version.
     # This can be used inside if-statements which will, in turn, be

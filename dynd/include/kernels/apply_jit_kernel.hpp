@@ -5,8 +5,6 @@
 #include <utility_functions.hpp>
 #include <type_functions.hpp>
 
-#include "../arrfunc_functions.hpp"
-
 namespace pydynd {
 namespace nd {
   namespace functional {

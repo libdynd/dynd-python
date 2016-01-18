@@ -24,6 +24,7 @@ from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp
 from ..ndt.type cimport cpp_type_for
+from dynd import ndt
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
@@ -86,6 +87,21 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
 _builtin_type = type
+
+def overloadable(func):
+    def func2(self, tp = None):
+        return func(self, tp)
+
+    func2.x = None
+
+    return func2
+
+import numpy as np
+
+to_children = {}
+a = wrap(assign_pyarrayscalarobject.get())
+to_children[np.generic] = a
+to_children[np.ndarray] = None
 
 cdef class array(object):
     """
@@ -228,13 +244,21 @@ cdef class array(object):
             [4, 5, 6]])
         """
 
-        try:
-            import numpy as np
+        import numpy as np
 
-            if (tp == np.ndarray):
-                return array_as_numpy(self, bool(True))
-        except Exception:
-            pass
+        type_ids = [bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,
+            uint8_type_id, uint16_type_id, uint32_type_id, uint64_type_id, float32_type_id, float64_type_id,
+            complex_float32_type_id, complex_float64_type_id]
+
+        child = to_children[tp]
+
+        cdef array res
+        if (self.v.get_type().get_type_id() in type_ids):
+            res = child(self)
+            return <object> dereference(<PyObject **> res.v.data())
+
+        if (tp == np.ndarray):
+            return array_as_numpy(self, bool(True))
 
         raise ValueError('could not copy to type ' + tp)
 

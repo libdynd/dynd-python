@@ -12,6 +12,7 @@
 #include "assign.hpp"
 #include "kernels/assign_from_pyobject_kernel.hpp"
 #include "kernels/assign_to_pyarrayobject_kernel.hpp"
+#include "kernels/assign_to_pyarrayscalarobject_kernel.hpp"
 #include "kernels/assign_to_pyobject_kernel.hpp"
 
 using namespace std;
@@ -46,13 +47,38 @@ PYDYND_API void assign_init()
 
 #if DYND_NUMPY_INTEROP
 
-nd::callable assign_to_pyarrayobject::make()
+nd::callable old_assign_to_pyarrayobject::make()
 {
   return nd::functional::elwise(
-      nd::callable::make<assign_to_pyarrayobject_kernel>());
+      nd::callable::make<old_assign_to_pyarrayobject_kernel>());
 }
 
-struct assign_to_pyarrayobject assign_to_pyarrayobject;
+struct old_assign_to_pyarrayobject old_assign_to_pyarrayobject;
+
+nd::callable assign_pyarrayscalarobject::make()
+{
+  typedef type_id_sequence<
+      bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,
+      uint8_type_id, uint16_type_id, uint32_type_id, uint64_type_id,
+      float32_type_id, float64_type_id, complex_float32_type_id,
+      complex_float64_type_id> type_ids;
+  auto children =
+      nd::callable::make_all<assign_to_pyarrayscalarobject_kernel, type_ids>();
+
+  ndt::type self_tp = ndt::callable_type::make(ndt::make_type<pyobject_type>(),
+                                               {ndt::type("Any")});
+
+  nd::callable res = nd::functional::dispatch(
+      self_tp, [children](const ndt::type &dst_tp, intptr_t DYND_UNUSED(nsrc),
+                          const ndt::type *src_tp) mutable -> nd::callable & {
+        return children[src_tp[0].get_type_id()];
+      });
+  res.get()->kernreq = kernel_request_call;
+
+  return res;
+}
+
+struct assign_pyarrayscalarobject assign_pyarrayscalarobject;
 
 void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp,
                          const char *src_arrmeta, const char *src_data)
@@ -95,7 +121,7 @@ void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp,
   }
   tmp_dst.get()->data = (char *)PyArray_DATA(dst_arr);
   char *src_data_nonconst = const_cast<char *>(src_data);
-  assign_to_pyarrayobject::get()->call(
+  old_assign_to_pyarrayobject::get()->call(
       tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp,
       &src_arrmeta, &src_data_nonconst, 1, NULL,
       std::map<std::string, dynd::ndt::type>());

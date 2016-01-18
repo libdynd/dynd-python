@@ -7,6 +7,9 @@
 
 #include <dynd/kernels/base_kernel.hpp>
 
+#include <numpy/arrayobject.h>
+#include <numpy/arrayscalars.h>
+
 #include "types/pyobject_type.hpp"
 
 /**
@@ -27,13 +30,13 @@ struct strided_of_numpy_arrmeta {
   copy_to_numpy_arrmeta am;
 };
 
-struct assign_to_pyarrayobject_kernel;
+struct old_assign_to_pyarrayobject_kernel;
 
 namespace dynd {
 namespace ndt {
 
   template <>
-  struct traits<assign_to_pyarrayobject_kernel> {
+  struct traits<old_assign_to_pyarrayobject_kernel> {
     static type equivalent() { return type("(Any) -> void"); }
   };
 
@@ -46,8 +49,8 @@ namespace ndt {
  * represented by dst_tp being ``void`` and the dst_arrmeta
  * being a pointer to the ``PyArray_Descr *`` of the type for the destination.
  */
-struct assign_to_pyarrayobject_kernel
-    : dynd::nd::base_kernel<assign_to_pyarrayobject_kernel> {
+struct old_assign_to_pyarrayobject_kernel
+    : dynd::nd::base_kernel<old_assign_to_pyarrayobject_kernel> {
   static intptr_t
   instantiate(char *static_data, char *data, void *ckb, intptr_t ckb_offset,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -157,7 +160,7 @@ struct assign_to_pyarrayobject_kernel
 
       // Todo: Remove this
       dynd::nd::callable af =
-          dynd::nd::callable::make<assign_to_pyarrayobject_kernel>();
+          dynd::nd::callable::make<old_assign_to_pyarrayobject_kernel>();
 
       return make_tuple_unary_op_ckernel(
           af.get(), af.get_type(), ckb, ckb_offset, field_count,

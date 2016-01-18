@@ -16,3 +16,4 @@ cdef extern from 'assign.hpp':
         _callable get()
 
     cdef extern declfunc assign_pyarrayscalarobject
+    cdef extern declfunc assign_pyarrayobject

@@ -99,9 +99,8 @@ def overloadable(func):
 import numpy as np
 
 to_children = {}
-a = wrap(assign_pyarrayscalarobject.get())
-to_children[np.generic] = a
-to_children[np.ndarray] = None
+to_children[np.generic] = wrap(assign_pyarrayscalarobject.get())
+to_children[np.ndarray] = wrap(assign_pyarrayobject.get())
 
 cdef class array(object):
     """
@@ -249,15 +248,20 @@ cdef class array(object):
         type_ids = [bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,
             uint8_type_id, uint16_type_id, uint32_type_id, uint64_type_id, float32_type_id, float64_type_id,
             complex_float32_type_id, complex_float64_type_id]
+        type_ids2 = [bool_type_id]
 
         child = to_children[tp]
 
         cdef array res
-        if (self.v.get_type().get_type_id() in type_ids):
+        if (tp == np.generic and self.v.get_type().get_type_id() in type_ids):
+            res = child(self)
+            return <object> dereference(<PyObject **> res.v.data())
+        if (tp == np.ndarray and self.v.get_type().get_type_id() in type_ids2):
             res = child(self)
             return <object> dereference(<PyObject **> res.v.data())
 
         if (tp == np.ndarray):
+#            print wrap(self.v.get_type())
             return array_as_numpy(self, bool(True))
 
         raise ValueError('could not copy to type ' + tp)

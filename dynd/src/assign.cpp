@@ -11,6 +11,7 @@
 
 #include "assign.hpp"
 #include "kernels/assign_from_pyobject_kernel.hpp"
+#include "kernels/old_assign_to_pyarrayobject_kernel.hpp"
 #include "kernels/assign_to_pyarrayobject_kernel.hpp"
 #include "kernels/assign_to_pyarrayscalarobject_kernel.hpp"
 #include "kernels/assign_to_pyobject_kernel.hpp"
@@ -79,6 +80,22 @@ nd::callable assign_pyarrayscalarobject::make()
 }
 
 struct assign_pyarrayscalarobject assign_pyarrayscalarobject;
+
+nd::callable assign_pyarrayobject::make()
+{
+  typedef type_id_sequence<bool_type_id> ids;
+
+  auto children = nd::callable::make_all<assign_to_pyarrayobject_kernel, ids>();
+  return nd::functional::dispatch(
+      ndt::callable_type::make(ndt::make_type<pyobject_type>(),
+                               {ndt::type("Any")}),
+      [children](const ndt::type &dst_tp, intptr_t DYND_UNUSED(nsrc),
+                 const ndt::type *src_tp) mutable -> nd::callable & {
+        return children[src_tp[0].get_type_id()];
+      });
+}
+
+struct assign_pyarrayobject assign_pyarrayobject;
 
 void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp,
                          const char *src_arrmeta, const char *src_data)

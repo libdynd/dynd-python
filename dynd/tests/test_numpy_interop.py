@@ -572,6 +572,10 @@ class TestNumpyScalarInterop(unittest.TestCase):
         self.assertEqual(a.dtype, np.bool_)
         assert_equal(a, False)
 
+    def test_bool_array(self):
+        a = nd.array(True).to(np.ndarray)
+        print a
+
     def test_int(self):
         a = nd.array(7).to(np.generic)
         assert_equal(a.dtype, np.int32)

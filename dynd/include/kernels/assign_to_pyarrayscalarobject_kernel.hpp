@@ -7,7 +7,6 @@
 
 #include <dynd/kernels/base_kernel.hpp>
 
-#include <numpy/arrayobject.h>
 #include <numpy/arrayscalars.h>
 
 #include "types/pyobject_type.hpp"

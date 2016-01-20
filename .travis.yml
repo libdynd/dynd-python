@@ -6,7 +6,7 @@ env:
 
 addons:
   apt:
-    sources:
+    sources: 
     - ubuntu-toolchain-r-test
     - kalakris-cmake
     packages:

@@ -53,7 +53,7 @@ matrix:
     install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-${Miniconda_OS}-x86_64.sh
     - bash Miniconda-latest-${Miniconda_OS}-x86_64.sh -b
-    - export PATH=$HOME/miniconda/bin:$PATH
+    - export PATH=$HOME/miniconda2/bin:$PATH
     - conda install --yes conda-build jinja2
     - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
     - conda build conda.recipe --channel dynd/channel/dev

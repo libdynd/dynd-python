@@ -43,16 +43,14 @@ matrix:
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
       - popd
       - python setup.py install
-  - language: python
-    python: 2.7
+  - language: objective-c
     os: osx
     compiler: clang
     osx_image: xcode6.4
     env: Miniconda_OS=MacOSX
     addons:
     before_install:
-  - language: python
-    python: 3.5
+  - language: objective-c
     os: osx
     compiler: clang
     osx_image: xcode6.4

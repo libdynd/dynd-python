@@ -8,6 +8,7 @@ from cpython.buffer cimport PyObject_CheckBuffer
 from libcpp.string cimport string
 from libcpp.map cimport map
 from libcpp cimport bool as cpp_bool
+from libcpp.complex cimport complex as cpp_complex
 from cython.operator import dereference
 import numpy as _np
 
@@ -33,10 +34,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 
     _array pyobject_array(object) except +translate_exception
 
-    object array_int(_array&) except +translate_exception
-    object array_float(_array&) except +translate_exception
-    object array_complex(_array&) except +translate_exception
-
     object array_get_shape(_array&) except +translate_exception
     object array_get_strides(_array&) except +translate_exception
     _array array_getitem(_array&, object) except +translate_exception
@@ -47,7 +44,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array array_ones(object, _type&, object) except +translate_exception
     _array array_empty(_type&, object) except +translate_exception
     _array array_empty(object, _type&, object) except +translate_exception
-    object array_index(_array&) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
     _array array_eval(_array&) except +translate_exception
@@ -84,7 +80,10 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type make__type_from_pyobject(object)
 
+# Work around Cython misparsing various types when
+# they are used as template parameters.
 ctypedef long long longlong
+ctypedef cpp_complex[double] cpp_complex_double
 
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
@@ -318,27 +317,43 @@ cdef class array(object):
         return result
 
     def __index__(array self):
-        cdef type_id_t tp = dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+        cdef type_id_t tp = \
+            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
         if tp == uint_kind_type_id or tp == int_kind_type_id:
             return dynd_nd_array_to_cpp(self).as[longlong]()
-        raise TypeError('Only integer scalars can be converted to scalar indices.')
+        raise TypeError('Only integer scalars can be converted '
+                        'to scalar indices.')
 
     def __int__(array self):
-        cdef type_id_t tp = dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+        cdef type_id_t tp = \
+            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
         if (tp == uint_kind_type_id or tp == int_kind_type_id or
             tp == bool_kind_type_id):
             return dynd_nd_array_to_cpp(self).as[longlong]()
-        raise TypeError('Only integer and boolean scalars can be converted to integers.')
+        raise TypeError('Only integer and boolean scalars can be '
+                        'converted to integers.')
 
     def __float__(array self):
-        cdef type_id_t tp = dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+        cdef type_id_t tp = \
+            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
         if (tp == uint_kind_type_id or tp == int_kind_type_id or
             tp == bool_kind_type_id or tp == float_kind_type_id):
             return dynd_nd_array_to_cpp(self).as[double]()
-        raise TypeError('Only integer and boolean scalars can be converted to integers.')
+        raise TypeError('Only integer, boolean, and floating point '
+                        'scalars can be converted to floating point numbers.')
 
     def __complex__(self):
-        return array_complex(self.v)
+        cdef type_id_t tp = \
+            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+        cdef cpp_complex_double ret
+        if (tp == uint_kind_type_id or tp == int_kind_type_id or
+            tp == bool_kind_type_id or tp == float_kind_type_id
+            or tp == complex_kind_type_id):
+            ret = dynd_nd_array_to_cpp(self).as[cpp_complex_double]()
+            return complex(ret.real(), ret.imag())
+        raise TypeError('Only integer, boolean, floating point, and '
+                        'complex floating point scalars can be converted '
+                        'to complex floating point numbers.')
 
     def __len__(self):
         return self.v.get_dim_size()

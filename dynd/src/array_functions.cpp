@@ -95,27 +95,6 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
   }
 }
 
-PyObject *pydynd::array_complex(const dynd::nd::array &n)
-{
-  switch (n.get_type().value_type().get_kind()) {
-  case bool_kind:
-  case uint_kind:
-  case sint_kind:
-  case real_kind:
-  case complex_kind: {
-    dynd::complex<double> value = n.as<dynd::complex<double>>();
-    return PyComplex_FromDoubles(value.real(), value.imag());
-  }
-  default:
-    break;
-  }
-  stringstream ss;
-  ss << "cannot convert dynd array of type " << n.get_type();
-  ss << " to a complex";
-  PyErr_SetString(PyExc_ValueError, ss.str().c_str());
-  throw exception();
-}
-
 dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)
 {
   return n.eval();

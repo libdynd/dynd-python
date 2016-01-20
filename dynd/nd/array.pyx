@@ -46,7 +46,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     _array array_empty(object, _type&, object) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
-    _array array_eval(_array&) except +translate_exception
     _array array_cast(_array&, _type&) except +translate_exception
     _array array_ucast(_array&, _type&, size_t) except +translate_exception
     _array array_range(object, object, object, object) except +translate_exception
@@ -432,16 +431,12 @@ cdef class array(object):
         result.v = array_cast(self.v, _py_type(tp).v)
         return result
 
-    def eval(self, ectx=None):
+    def eval(array self):
         """
-        a.eval(ectx=<default eval_context>)
+        a.eval()
         Returns a version of the dynd array with plain values,
         all expressions evaluated. This returns the original
         array back if it has no expression type.
-        Parameters
-        ----------
-        ectx : nd.eval_context
-            The evaluation context to use.
         Examples
         --------
         >>> from dynd import nd, ndt
@@ -457,9 +452,7 @@ cdef class array(object):
         nd.array([(1.5 + 0j),   (2 + 0j),   (3 + 0j)],
                  type="3 * complex[float32]")
         """
-        cdef array result = array()
-        result.v = array_eval(self.v)
-        return result
+        return dynd_nd_array_from_cpp(dynd_nd_array_to_cpp(self).eval())
 
     def sum(self, axis = None):
       from .. import nd

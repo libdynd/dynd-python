@@ -95,11 +95,6 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
   }
 }
 
-dynd::nd::array pydynd::array_eval(const dynd::nd::array &n)
-{
-  return n.eval();
-}
-
 dynd::nd::array pydynd::array_zeros(const dynd::ndt::type &d, PyObject *access)
 {
   uint32_t access_flags = pyarg_creation_access_flags(access);

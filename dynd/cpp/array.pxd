@@ -39,6 +39,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array operator>(array &)
 
         void assign(array &) except +translate_exception
+        array eval() except +translate_exception
 
     array empty(type &tp) except +translate_exception
 

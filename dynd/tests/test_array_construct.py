@@ -15,18 +15,10 @@ class TestScalarConstructor(unittest.TestCase):
     def test_access_zeros(self):
         a = nd.zeros(ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
-#        a = nd.zeros(ndt.int32, access='rw')
-#        self.assertEqual(a.access_flags, 'readwrite')
-        a = nd.zeros(ndt.int32, access='r')
-#        self.assertEqual(a.access_flags, 'immutable')
 
     def test_access_ones(self):
         a = nd.ones(ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
-#        a = nd.ones(ndt.int32, access='rw')
-#        self.assertEqual(a.access_flags, 'readwrite')
-#        a = nd.ones(ndt.int32, access='r')
-#        self.assertEqual(a.access_flags, 'immutable')
 
 class TestArrayConstruct(unittest.TestCase):
     def test_empty_array(self):
@@ -72,8 +64,6 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
         self.assertEqual(a.shape, (3,))
-        # Can't create with access as immutable
-        self.assertRaises(ValueError, nd.empty, '3 * int32', access='immutable')
         # Constructor from shape as single integer
         a = nd.empty(3, ndt.int32)
         self.assertEqual(a.access_flags, 'readwrite')
@@ -94,9 +84,6 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.access_flags, 'readwrite')
         self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
         self.assertEqual(a.shape, (3,4))
-        # Can't create with access as immutable
-        self.assertRaises(ValueError, nd.empty, 3, 4, ndt.int32, access='immutable')
-
 
     def check_constructor(self, cons, value):
         # Constructor from scalar type
@@ -146,61 +133,11 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(nd.as_py(a),
                     [{'x': value, 'y': value}]*3)
 
-    def check_constructor_readwrite(self, cons, value):
-        # Constructor from scalar type
-        a = cons(ndt.int32, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.int32)
-        self.assertEqual(nd.as_py(a), value)
-        # Constructor from type with fixed dimension
-        a = cons('3 * int32', access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.make_fixed_dim(3, ndt.int32))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a), [value]*3)
-        # Constructor from shape as single integer
-        a = cons(3, ndt.int32, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('3 * int32'))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a), [value]*3)
-        # Constructor from shape as tuple
-        a = cons((3,4), ndt.int32, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
-        self.assertEqual(a.shape, (3,4))
-        self.assertEqual(nd.as_py(a), [[value]*4]*3)
-        # Constructor from shape as variadic arguments
-        a = cons(3, 4, ndt.int32, access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a), ndt.type('3 * 4 * int32'))
-        self.assertEqual(a.shape, (3,4))
-        self.assertEqual(nd.as_py(a), [[value]*4]*3)
-        # Constructor of a struct type
-        a = cons(3, '{x: int32, y: int32}', access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a),
-                    ndt.type('3 * {x: int32, y: int32}'))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a),
-                    [{'x': value, 'y': value}]*3)
-        # Constructor of a struct type
-        a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']), access='rw')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a),
-                    ndt.make_fixed_dim(3,
-                        ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a),
-                    [{'x': value, 'y': value}]*3)
-
     def test_zeros(self):
         self.check_constructor(nd.zeros, 0)
-        self.check_constructor_readwrite(nd.zeros, 0)
 
     def test_ones(self):
         self.check_constructor(nd.ones, 1)
-        self.check_constructor_readwrite(nd.ones, 1)
 
 class TestArrayConstructor(unittest.TestCase):
     # Always constructs a new array

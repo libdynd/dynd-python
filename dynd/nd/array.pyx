@@ -709,11 +709,11 @@ def view(obj, type=None):
     cdef _type tp = dynd_ndt_type_to_cpp(_py_type(type))
     return dynd_nd_array_from_cpp(_view(input, tp))
 
-def zeros(*args, **kwargs):
+def zeros(*args):
     """
-    nd.zeros(dtype, *, access=None)
-    nd.zeros(shape, dtype, *, access=None)
-    nd.zeros(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
+    nd.zeros(dtype, *)
+    nd.zeros(shape, dtype, *)
+    nd.zeros(shape_0, shape_1, ..., shape_(n-1), dtype, *)
     Creates an array of zeros of the specified
     type. Dimensions may be provided as integer
     positional parameters, a tuple of integers,
@@ -728,16 +728,8 @@ def zeros(*args, **kwargs):
         are prepended to the following dtype.
     dtype : dynd type
         The dtype of the uninitialized array to create.
-    access : 'readwrite' or 'immutable', optional
-        Specifies the access control of the resulting copy. Defaults
-        to readwrite.
     """
-    # Handle the keyword-only arguments
-    access = kwargs.pop('access', None)
-    if kwargs:
-        msg = "nd.zeros() got an unexpected keyword argument '%s'"
-        raise TypeError(msg % (kwargs.keys()[0]))
-
+    access = 'readwrite'
     cdef array result = array()
     largs = len(args)
     if largs  == 1:
@@ -755,9 +747,9 @@ def zeros(*args, **kwargs):
 
 def ones(*args, **kwargs):
     """
-    nd.ones(type, *, access=None)
-    nd.ones(shape, dtype, *, access=None)
-    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *, access=None)
+    nd.ones(type, *)
+    nd.ones(shape, dtype, *)
+    nd.ones(shape_0, shape_1, ..., shape_(n-1), dtype, *)
     Creates an array of ones of the specified
     type. Dimensions may be provided as integer
     positional parameters, a tuple of integers,
@@ -772,16 +764,8 @@ def ones(*args, **kwargs):
         are prepended to the following dtype.
     dtype : dynd type
         The dtype of the uninitialized array to create.
-    access : 'readwrite' or 'immutable', optional
-        Specifies the access control of the resulting copy. Defaults
-        to readwrite.
     """
-    # Handle the keyword-only arguments
-    access = kwargs.pop('access', None)
-    if kwargs:
-        msg = "nd.ones() got an unexpected keyword argument '%s'"
-        raise TypeError(msg % (kwargs.keys()[0]))
-
+    access = 'readwrite'
     cdef array result = array()
     largs = len(args)
     if largs  == 1:
@@ -799,9 +783,9 @@ def ones(*args, **kwargs):
 
 def empty(*args, **kwargs):
     """
-    nd.empty(type, access=None)
-    nd.empty(shape, dtype, access=None)
-    nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype, access=None)
+    nd.empty(type)
+    nd.empty(shape, dtype)
+    nd.empty(shape_0, shape_1, ..., shape_(n-1), dtype)
     Creates an uninitialized array of the specified type.
     Dimensions may be provided as integer positional
     parameters, a tuple of integers, or within the dtype itself.
@@ -814,9 +798,6 @@ def empty(*args, **kwargs):
         are prepended to the following dtype.
     dtype : dynd type
         The dtype of the uninitialized array to create.
-    access : 'readwrite' or 'immutable', optional
-        Specifies the access control of the resulting copy. Defaults
-        to readwrite.
     Examples
     --------
     >>> from dynd import nd, ndt
@@ -827,12 +808,7 @@ def empty(*args, **kwargs):
     nd.array([[0, 27], [159, 0]],
              type="2 * 2 * int16")
     """
-    # Handle the keyword-only arguments
-    access = kwargs.pop('access', None)
-    if kwargs:
-        msg = "nd.empty() got an unexpected keyword argument '%s'"
-        raise TypeError(msg % (kwargs.keys()[0]))
-
+    access = 'readwrite'
     cdef array result = array()
     largs = len(args)
     if largs  == 1:

@@ -95,24 +95,6 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
   }
 }
 
-PyObject *pydynd::array_float(const dynd::nd::array &n)
-{
-  switch (n.get_type().value_type().get_kind()) {
-  case bool_kind:
-  case uint_kind:
-  case sint_kind:
-  case real_kind:
-    return PyFloat_FromDouble(n.as<double>());
-  default:
-    break;
-  }
-  stringstream ss;
-  ss << "cannot convert dynd array of type " << n.get_type();
-  ss << " to a float";
-  PyErr_SetString(PyExc_ValueError, ss.str().c_str());
-  throw exception();
-}
-
 PyObject *pydynd::array_complex(const dynd::nd::array &n)
 {
   switch (n.get_type().value_type().get_kind()) {

@@ -226,6 +226,10 @@ cdef class type(object):
         def __get__(self):
             return self.v.get_arrmeta_size()
 
+    property base_type_id:
+        def __get__(type self):
+            return dynd_ndt_type_to_cpp(self).get_base_type_id()
+
     property id:
         def __get__(self):
             return self.v.get_type_id()

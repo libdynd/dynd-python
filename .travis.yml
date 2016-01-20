@@ -44,6 +44,7 @@ matrix:
       - popd
       - python setup.py install
   - language: python
+    python: 2.7
     os: osx
     compiler: clang
     osx_image: xcode6.4
@@ -51,6 +52,7 @@ matrix:
     addons:
     before_install:
   - language: python
+    python: 3.5
     os: osx
     compiler: clang
     osx_image: xcode6.4

@@ -60,6 +60,7 @@ matrix:
     - conda install --yes numpy libdynd --channel dynd/channel/dev
     - conda install $(conda build --output conda.recipe)
     - language: objective-c
+  - language: objective-c
     os: osx
     compiler: clang
     osx_image: xcode6.4

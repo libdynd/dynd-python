@@ -28,9 +28,17 @@ matrix:
   - language: C++
     compiler: gcc
     env: Miniconda_OS=Linux
+    before_install:
+      - wget https://repo.continuum.io/miniconda/Miniconda-latest-${Miniconda_OS}-x86_64.sh
+      - bash Miniconda-latest-${Miniconda_OS}-x86_64.sh -b
+      - export PATH=$HOME/miniconda2/bin:$PATH
   - language: C++
     compiler: gcc
     env: Miniconda_OS=Linux
+    before_install:
+      - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh
+      - bash Miniconda3-latest-${Miniconda_OS}-x86_64.sh -b
+      - export PATH=$HOME/miniconda3/bin:$PATH
   - language: python
     python: 3.5
     compiler: gcc
@@ -50,6 +58,9 @@ matrix:
     env: Miniconda_OS=MacOSX
     addons:
     before_install:
+      - wget https://repo.continuum.io/miniconda/Miniconda-latest-${Miniconda_OS}-x86_64.sh
+      - bash Miniconda-latest-${Miniconda_OS}-x86_64.sh -b
+      - export PATH=$HOME/miniconda2/bin:$PATH
   - language: objective-c
     os: osx
     compiler: clang
@@ -57,11 +68,12 @@ matrix:
     env: Miniconda_OS=MacOSX
     addons:
     before_install:
+      - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh
+      - bash Miniconda3-latest-${Miniconda_OS}-x86_64.sh -b
+      - export PATH=$HOME/miniconda3/bin:$PATH
+
 
 install:
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh
-  - bash Miniconda3-latest-${Miniconda_OS}-x86_64.sh -b
-  - export PATH=$HOME/miniconda3/bin:$PATH
   - conda install --yes conda-build jinja2
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
   - conda build conda.recipe --channel dynd/channel/dev

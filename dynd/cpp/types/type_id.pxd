@@ -54,3 +54,4 @@ cdef extern from 'dynd/types/type_id.hpp' namespace 'dynd':
 
         uint_kind_type_id
         int_kind_type_id
+        bool_kind_type_id

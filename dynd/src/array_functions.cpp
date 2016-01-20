@@ -95,29 +95,6 @@ PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
   }
 }
 
-PyObject *pydynd::array_int(const dynd::nd::array &n)
-{
-  const ndt::type &vt = n.get_type().value_type();
-  switch (vt.get_kind()) {
-  case bool_kind:
-  case uint_kind:
-  case sint_kind:
-    if (vt.get_type_id() != uint64_type_id) {
-      return PyLong_FromLongLong(n.as<int64_t>());
-    }
-    else {
-      return PyLong_FromUnsignedLongLong(n.as<uint64_t>());
-    }
-  default:
-    break;
-  }
-  stringstream ss;
-  ss << "cannot convert dynd array of type " << n.get_type();
-  ss << " to an int";
-  PyErr_SetString(PyExc_ValueError, ss.str().c_str());
-  throw exception();
-}
-
 PyObject *pydynd::array_float(const dynd::nd::array &n)
 {
   switch (n.get_type().value_type().get_kind()) {

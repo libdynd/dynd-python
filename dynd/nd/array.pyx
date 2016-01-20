@@ -321,10 +321,14 @@ cdef class array(object):
         cdef type_id_t tp = dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
         if tp == uint_kind_type_id or tp == int_kind_type_id:
             return dynd_nd_array_to_cpp(self).as[longlong]()
-        raise TypeError('Only integer types can be converted to scalar indices.')
+        raise TypeError('Only integer scalars can be converted to scalar indices.')
 
     def __int__(self):
-        return array_int(self.v)
+        cdef type_id_t tp = dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+        if (tp == uint_kind_type_id or tp == int_kind_type_id or
+            tp == bool_kind_type_id):
+            return dynd_nd_array_to_cpp(self).as[longlong]()
+        raise TypeError('Only integer and boolean scalars can be converted to integers.')
 
     def __float__(self):
         return array_float(self.v)

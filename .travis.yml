@@ -59,7 +59,6 @@ matrix:
     - conda build conda.recipe --channel dynd/channel/dev
     - conda install --yes numpy libdynd --channel dynd/channel/dev
     - conda install $(conda build --output conda.recipe)
-    - language: objective-c
   - language: objective-c
     os: osx
     compiler: clang

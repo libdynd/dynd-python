@@ -43,23 +43,14 @@ matrix:
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
       - popd
       - python setup.py install
-  - language: objective-c
+  - language: python
     os: osx
     compiler: clang
     osx_image: xcode6.4
     env: Miniconda_OS=MacOSX
     addons:
     before_install:
-    install:
-    - wget https://repo.continuum.io/miniconda/Miniconda-latest-${Miniconda_OS}-x86_64.sh
-    - bash Miniconda-latest-${Miniconda_OS}-x86_64.sh -b
-    - export PATH=$HOME/miniconda2/bin:$PATH
-    - conda install --yes conda-build jinja2
-    - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
-    - conda build conda.recipe --channel dynd/channel/dev
-    - conda install --yes numpy libdynd --channel dynd/channel/dev
-    - conda install $(conda build --output conda.recipe)
-  - language: objective-c
+  - language: python
     os: osx
     compiler: clang
     osx_image: xcode6.4

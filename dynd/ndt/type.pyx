@@ -226,6 +226,10 @@ cdef class type(object):
         def __get__(self):
             return self.v.get_arrmeta_size()
 
+    property base_type_id:
+        def __get__(type self):
+            return dynd_ndt_type_to_cpp(self).get_base_type_id()
+
     property id:
         def __get__(self):
             return self.v.get_type_id()
@@ -776,7 +780,7 @@ cdef _type from_numba_type(tp):
 
 cdef _type cpp_type_for(object obj) except *:
     cdef _type tp = xtype_for_prefix(obj)
-    if (not tp.is_null()):
+    if (not tp.is_null() and not isinstance(obj, _np.integer)):
         return tp
     if _builtin_type(obj) is builtin_tuple:
         obj = list(obj)

@@ -1,6 +1,7 @@
 from ..config cimport translate_exception
 from libc.stdint cimport intptr_t
 from libcpp cimport bool
+from libcpp.vector cimport vector
 from .type cimport type
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
@@ -15,6 +16,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
     cdef cppclass array:
 
         array()
+        array(int)
         array(type *, int)
 
         T as[T]() except +translate_exception
@@ -39,6 +41,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array operator>(array &)
 
         void assign(array &) except +translate_exception
+        array eval() except +translate_exception
 
     array empty(type &tp) except +translate_exception
 
@@ -49,6 +52,10 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
     array array_subtract "operator-"(array&, array&) except +translate_exception
     array array_multiply "operator*"(array&, array&) except +translate_exception
     array array_divide "operator/"(array&, array&) except +translate_exception
+
+    array dtyped_zeros(ssize_t, ssize_t*, type&) except +translate_exception
+    array dtyped_ones(ssize_t, ssize_t*, type&) except +translate_exception
+    array dtyped_empty(ssize_t, ssize_t*, type&) except +translate_exception
 
     array groupby(array&, array&, type) except +translate_exception
     array groupby(array&, array&) except +translate_exception

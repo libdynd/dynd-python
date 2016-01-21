@@ -6,7 +6,7 @@ env:
 
 addons:
   apt:
-    sources: 
+    sources:
     - ubuntu-toolchain-r-test
     - kalakris-cmake
     packages:
@@ -27,18 +27,14 @@ matrix:
   include:
   - language: C++
     compiler: gcc
-    env: Miniconda_OS=Linux
-    before_install:
-      - wget https://repo.continuum.io/miniconda/Miniconda-latest-${Miniconda_OS}-x86_64.sh
-      - bash Miniconda-latest-${Miniconda_OS}-x86_64.sh -b
-      - export PATH=$HOME/miniconda2/bin:$PATH
+    env:
+      - Miniconda_OS=Linux
+      - Miniconda_ver=2
   - language: C++
     compiler: gcc
-    env: Miniconda_OS=Linux
-    before_install:
-      - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh
-      - bash Miniconda3-latest-${Miniconda_OS}-x86_64.sh -b
-      - export PATH=$HOME/miniconda3/bin:$PATH
+    env:
+      - Miniconda_OS=Linux
+      - Miniconda_ver=3
   - language: python
     python: 3.5
     compiler: gcc
@@ -55,25 +51,25 @@ matrix:
     os: osx
     compiler: clang
     osx_image: xcode6.4
-    env: Miniconda_OS=MacOSX
+    env:
+      - Miniconda_OS=MacOSX
+      - Miniconda_ver=2
     addons:
     before_install:
-      - wget https://repo.continuum.io/miniconda/Miniconda-latest-${Miniconda_OS}-x86_64.sh
-      - bash Miniconda-latest-${Miniconda_OS}-x86_64.sh -b
-      - export PATH=$HOME/miniconda2/bin:$PATH
   - language: objective-c
     os: osx
     compiler: clang
     osx_image: xcode6.4
-    env: Miniconda_OS=MacOSX
+    env:
+      - Miniconda_OS=MacOSX
+      - Miniconda_ver=3
     addons:
     before_install:
-      - wget https://repo.continuum.io/miniconda/Miniconda3-latest-${Miniconda_OS}-x86_64.sh
-      - bash Miniconda3-latest-${Miniconda_OS}-x86_64.sh -b
-      - export PATH=$HOME/miniconda3/bin:$PATH
-
 
 install:
+  - wget https://repo.continuum.io/miniconda/Miniconda${Miniconda_ver}-latest-${Miniconda_OS}-x86_64.sh
+  - bash Miniconda${Miniconda_ver}-latest-${Miniconda_OS}-x86_64.sh -b
+  - export PATH=$HOME/miniconda${Miniconda_ver}/bin:$PATH
   - conda install --yes conda-build jinja2
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
   - conda build conda.recipe --channel dynd/channel/dev

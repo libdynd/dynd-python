@@ -780,7 +780,7 @@ cdef _type from_numba_type(tp):
 
 cdef _type cpp_type_for(object obj) except *:
     cdef _type tp = xtype_for_prefix(obj)
-    if (not tp.is_null()):
+    if (not tp.is_null() and not isinstance(obj, _np.integer)):
         return tp
     if _builtin_type(obj) is builtin_tuple:
         obj = list(obj)

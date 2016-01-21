@@ -106,26 +106,10 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
 
 PYDYND_API dynd::nd::array pyobject_array(PyObject *obj);
 
-
-PYDYND_API dynd::nd::array array_zeros(const dynd::ndt::type &d,
-                                       PyObject *access);
-PYDYND_API dynd::nd::array
-array_zeros(PyObject *shape, const dynd::ndt::type &d, PyObject *access);
-
-PYDYND_API dynd::nd::array array_ones(const dynd::ndt::type &d,
-                                      PyObject *access);
-PYDYND_API dynd::nd::array array_ones(PyObject *shape, const dynd::ndt::type &d,
-                                      PyObject *access);
-
 PYDYND_API dynd::nd::array array_full(const dynd::ndt::type &d, PyObject *value,
                                       PyObject *access);
 PYDYND_API dynd::nd::array array_full(PyObject *shape, const dynd::ndt::type &d,
                                       PyObject *value, PyObject *access);
-
-PYDYND_API dynd::nd::array array_empty(const dynd::ndt::type &d,
-                                       PyObject *access);
-PYDYND_API dynd::nd::array
-array_empty(PyObject *shape, const dynd::ndt::type &d, PyObject *access);
 
 inline bool array_is_c_contiguous(const dynd::nd::array &n)
 {

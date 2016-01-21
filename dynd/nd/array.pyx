@@ -10,10 +10,12 @@ from libcpp.map cimport map
 from libcpp cimport bool as cpp_bool
 from libcpp.complex cimport complex as cpp_complex
 from cython.operator import dereference
+from libcpp.vector cimport vector
 import numpy as _np
 
 from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
-                          array_multiply, array_divide, empty as cpp_empty)
+                          array_multiply, array_divide, empty as cpp_empty,
+                          dtyped_zeros, dtyped_ones, dtyped_empty)
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport (type as _type,
                          get_builtin_type_dynamic_array_properties, make_type)
@@ -25,7 +27,7 @@ from ..cpp.types.pyobject_type cimport pyobject_type_id
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
-from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp
+from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type
 from ..ndt.type cimport cpp_type_for
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
@@ -38,12 +40,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     object array_get_strides(_array&) except +translate_exception
     _array array_getitem(_array&, object) except +translate_exception
     void array_setitem(_array&, object, object) except +translate_exception
-    _array array_zeros(_type&, object) except +translate_exception
-    _array array_zeros(object, _type&, object) except +translate_exception
-    _array array_ones(_type&, object) except +translate_exception
-    _array array_ones(object, _type&, object) except +translate_exception
-    _array array_empty(_type&, object) except +translate_exception
-    _array array_empty(object, _type&, object) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
     _array array_cast(_array&, _type&) except +translate_exception
@@ -709,15 +705,20 @@ def view(obj, type=None):
     cdef _type tp = dynd_ndt_type_to_cpp(_py_type(type))
     return dynd_nd_array_from_cpp(_view(input, tp))
 
+# TODO: The wrappers for zeros, ones, and empty are identical.
+# They should be handled via a macro of some sort (Use Tempita?)
+# Some expansion of the interface on the C++ side is probably necessary
+# to allow that to work easily. That needs to happen anyway.
+
 def zeros(*args):
     """
-    nd.zeros(dtype, *)
-    nd.zeros(shape, dtype, *)
-    nd.zeros(shape_0, shape_1, ..., shape_(n-1), dtype, *)
+    nd.zeros(type)
+    nd.zeros(shape, type)
+    nd.zeros(shape_0, shape_1, ..., shape_(n-1), type)
     Creates an array of zeros of the specified
     type. Dimensions may be provided as integer
     positional parameters, a tuple of integers,
-    or within the dtype itself.
+    or within the type itself.
     TODO: In the immutable case it should use zero-strides to optimize storage.
     TODO: Add order= keyword-only argument. This would accept
     'C', 'F', or a permutation tuple.
@@ -726,24 +727,47 @@ def zeros(*args):
     shape : list of int, optional
         If provided, specifies the shape for dimensions which
         are prepended to the following dtype.
-    dtype : dynd type
-        The dtype of the uninitialized array to create.
+    type : dynd type
+        The type of the uninitialized array to create.
     """
-    access = 'readwrite'
-    cdef array result = array()
-    largs = len(args)
+    cdef size_t largs = len(args)
+    cdef _array ret
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_zeros(_py_type(args[0]).v, access)
-    elif largs == 2:
+        tp = args[0]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        ret = cpp_empty(as_cpp_type(tp))
+        ret.assign(_array(0))
+        return dynd_nd_array_from_cpp(ret)
+    # TODO: This should be a size_t, not a ssize_t, but the C++ interface needs
+    # to be updtated to support that.
+    cdef vector[ssize_t] shape
+    if largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_zeros(args[0], _py_type(args[1]).v, access)
-    elif largs > 2:
+        tp = args[1]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        py_shape = args[0]
+        if _builtin_type(py_shape) in [int, long]:
+            py_shape = (py_shape,)
+        shape = py_shape
+        # TODO: C++ interface should be using size_t instead of ssize_t
+        # here as well.
+        ret = dtyped_zeros(<ssize_t>shape.size(), shape.data(), as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    if largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_zeros(args[:-1], _py_type(args[-1]).v, access)
-    else:
-        raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
-    return result
+        tp = args[-1]
+        shape = args[:-1]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        ret = dtyped_zeros(shape.size(), shape.data(), as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    raise TypeError('nd.zeros() expected at least 1 positional argument, got 0')
 
 def ones(*args, **kwargs):
     """
@@ -765,21 +789,44 @@ def ones(*args, **kwargs):
     dtype : dynd type
         The dtype of the uninitialized array to create.
     """
-    access = 'readwrite'
-    cdef array result = array()
-    largs = len(args)
+    cdef size_t largs = len(args)
+    cdef _array ret
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_ones(_py_type(args[0]).v, access)
-    elif largs == 2:
+        tp = args[0]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        ret = cpp_empty(as_cpp_type(tp))
+        ret.assign(_array(1))
+        return dynd_nd_array_from_cpp(ret)
+    # TODO: This should be a size_t, not a ssize_t, but the C++ interface needs
+    # to be updtated to support that.
+    cdef vector[ssize_t] shape
+    if largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_ones(args[0], _py_type(args[1]).v, access)
-    elif largs > 2:
+        tp = args[1]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        py_shape = args[0]
+        if _builtin_type(py_shape) in [int, long]:
+            py_shape = (py_shape,)
+        shape = py_shape
+        # TODO: C++ interface should be using size_t instead of ssize_t
+        # here as well.
+        ret = dtyped_ones(<ssize_t>shape.size(), shape.data(), as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    if largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_ones(args[:-1], _py_type(args[-1]).v, access)
-    else:
-        raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
-    return result
+        tp = args[-1]
+        shape = args[:-1]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        ret = dtyped_ones(shape.size(), shape.data(), as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    raise TypeError('nd.ones() expected at least 1 positional argument, got 0')
 
 def empty(*args, **kwargs):
     """
@@ -808,21 +855,43 @@ def empty(*args, **kwargs):
     nd.array([[0, 27], [159, 0]],
              type="2 * 2 * int16")
     """
-    access = 'readwrite'
-    cdef array result = array()
-    largs = len(args)
+    cdef size_t largs = len(args)
+    cdef _array ret
     if largs  == 1:
         # Only the full type is provided
-        result.v = array_empty(_py_type(args[0]).v, access)
-    elif largs == 2:
+        tp = args[0]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        ret = cpp_empty(as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    # TODO: This should be a size_t, not a ssize_t, but the C++ interface needs
+    # to be updtated to support that.
+    cdef vector[ssize_t] shape
+    if largs == 2:
         # The shape is a provided as a tuple (or single integer)
-        result.v = array_empty(args[0], _py_type(args[1]).v, access)
-    elif largs > 2:
+        tp = args[1]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        py_shape = args[0]
+        if _builtin_type(py_shape) in [int, long]:
+            py_shape = (py_shape,)
+        shape = py_shape
+        # TODO: C++ interface should be using size_t instead of ssize_t
+        # here as well.
+        ret = dtyped_empty(<ssize_t>shape.size(), shape.data(), as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    if largs > 2:
         # The shape is expanded out in the arguments
-        result.v = array_empty(args[:-1], _py_type(args[-1]).v, access)
-    else:
-        raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
-    return result
+        tp = args[-1]
+        shape = args[:-1]
+        if _builtin_type(tp) in [int, long]:
+            raise ValueError('Data type must be explicitly specified. '
+                             'It cannot be provided as an integer.')
+        ret = dtyped_empty(shape.size(), shape.data(), as_cpp_type(tp))
+        return dynd_nd_array_from_cpp(ret)
+    raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
 
 def range(start=None, stop=None, step=None, dtype=None):
     """

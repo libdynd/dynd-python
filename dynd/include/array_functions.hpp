@@ -23,6 +23,7 @@
 #include "array_from_py.hpp"
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
+#include "utility_functions.hpp"
 
 #include "wrapper.hpp"
 
@@ -213,7 +214,18 @@ inline PyObject *array_nonzero(const dynd::nd::array &n)
   }
 }
 
-PYDYND_API PyObject *array_get_shape(const dynd::nd::array &n);
+inline PyObject *array_get_shape(const dynd::nd::array &n)
+{
+  if (n.is_null()) {
+    PyErr_SetString(PyExc_AttributeError,
+                    "Cannot access attribute of null dynd array");
+    throw std::exception();
+  }
+  size_t ndim = n.get_type().get_ndim();
+  dynd::dimvector result(ndim);
+  n.get_shape(result.get());
+  return intptr_array_as_tuple(ndim, result.get());
+}
 
 PYDYND_API PyObject *array_get_strides(const dynd::nd::array &n);
 

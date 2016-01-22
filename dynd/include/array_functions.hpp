@@ -113,7 +113,13 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
   return dynd::nd::array(ndo, true);
 }
 
-PYDYND_API dynd::nd::array pyobject_array(PyObject *obj);
+inline dynd::nd::array pyobject_array(PyObject *obj)
+{
+  dynd::nd::array a = dynd::nd::empty(dynd::ndt::make_type<pyobject_type>());
+  *reinterpret_cast<PyObject **>(a.data()) = obj;
+
+  return a;
+}
 
 PYDYND_API dynd::nd::array array_full(const dynd::ndt::type &d, PyObject *value,
                                       PyObject *access);

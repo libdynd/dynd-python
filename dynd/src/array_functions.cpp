@@ -20,11 +20,3 @@
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
-
-PYDYND_API dynd::nd::array pydynd::pyobject_array(PyObject *obj)
-{
-  dynd::nd::array a = dynd::nd::empty(dynd::ndt::make_type<pyobject_type>());
-  *reinterpret_cast<PyObject **>(a.data()) = obj;
-
-  return a;
-}

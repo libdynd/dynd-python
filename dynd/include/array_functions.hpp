@@ -18,6 +18,8 @@
 #include <dynd/json_parser.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/string_type.hpp>
+#include <dynd/type_promotion.hpp>
+#include <dynd/array_range.hpp>
 
 #include "visibility.hpp"
 #include "array_from_py.hpp"
@@ -25,6 +27,7 @@
 #include "array_as_pep3118.hpp"
 #include "utility_functions.hpp"
 #include "types/pyobject_type.hpp"
+#include "type_functions.hpp"
 
 #include "wrapper.hpp"
 
@@ -314,8 +317,46 @@ inline void pyobject_as_irange_array(intptr_t &out_size,
 /**
  * Implementation of nd.range().
  */
-PYDYND_API dynd::nd::array array_range(PyObject *start, PyObject *stop,
-                                       PyObject *step, PyObject *dt);
+ inline dynd::nd::array array_range(PyObject *start, PyObject *stop, PyObject *step,
+                               PyObject *dt)
+ {
+   dynd::nd::array start_nd, stop_nd, step_nd;
+   dynd::ndt::type dt_nd;
+
+   if (start != Py_None) {
+     start_nd = array_from_py(start, 0, false);
+   }
+   else {
+     start_nd = 0;
+   }
+   stop_nd = array_from_py(stop, 0, false);
+   if (step != Py_None) {
+     step_nd = array_from_py(step, 0, false);
+   }
+   else {
+     step_nd = 1;
+   }
+
+   if (dt != Py_None) {
+     dt_nd = make__type_from_pyobject(dt);
+   }
+   else {
+     dt_nd = promote_types_arithmetic(
+         start_nd.get_type(),
+         promote_types_arithmetic(stop_nd.get_type(), step_nd.get_type()));
+   }
+
+   start_nd = start_nd.ucast(dt_nd).eval();
+   stop_nd = stop_nd.ucast(dt_nd).eval();
+   step_nd = step_nd.ucast(dt_nd).eval();
+
+   if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
+     throw std::runtime_error(
+         "nd::range should only be called with scalar parameters");
+   }
+
+   return dynd::nd::range(dt_nd, start_nd.cdata(), stop_nd.cdata(), step_nd.cdata());
+ }
 
 /**
  * Implementation of nd.linspace().

@@ -5,7 +5,6 @@
 
 #include "array_functions.hpp"
 #include "array_from_py.hpp"
-#include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 #include "types/pyobject_type.hpp"
@@ -15,7 +14,6 @@
 #include <dynd/types/base_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
-#include <dynd/type_promotion.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/struct_type.hpp>
@@ -24,47 +22,6 @@
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
-
-nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step,
-                              PyObject *dt)
-{
-  nd::array start_nd, stop_nd, step_nd;
-  ndt::type dt_nd;
-
-  if (start != Py_None) {
-    start_nd = array_from_py(start, 0, false);
-  }
-  else {
-    start_nd = 0;
-  }
-  stop_nd = array_from_py(stop, 0, false);
-  if (step != Py_None) {
-    step_nd = array_from_py(step, 0, false);
-  }
-  else {
-    step_nd = 1;
-  }
-
-  if (dt != Py_None) {
-    dt_nd = make__type_from_pyobject(dt);
-  }
-  else {
-    dt_nd = promote_types_arithmetic(
-        start_nd.get_type(),
-        promote_types_arithmetic(stop_nd.get_type(), step_nd.get_type()));
-  }
-
-  start_nd = start_nd.ucast(dt_nd).eval();
-  stop_nd = stop_nd.ucast(dt_nd).eval();
-  step_nd = step_nd.ucast(dt_nd).eval();
-
-  if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
-    throw runtime_error(
-        "nd::range should only be called with scalar parameters");
-  }
-
-  return nd::range(dt_nd, start_nd.cdata(), stop_nd.cdata(), step_nd.cdata());
-}
 
 dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
                                        PyObject *count, PyObject *dt)

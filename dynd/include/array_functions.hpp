@@ -240,6 +240,26 @@ inline PyObject *array_get_strides(const dynd::nd::array &n)
   return intptr_array_as_tuple(ndim, result.get());
 }
 
+inline void pyobject_as_irange_array(intptr_t &out_size,
+                                     dynd::shortvector<dynd::irange> &out_indices,
+                                     PyObject *subscript)
+{
+  if (!PyTuple_Check(subscript)) {
+    // A single subscript
+    out_size = 1;
+    out_indices.init(1);
+    out_indices[0] = pyobject_as_irange(subscript);
+  }
+  else {
+    out_size = PyTuple_GET_SIZE(subscript);
+    // Tuple of subscripts
+    out_indices.init(out_size);
+    for (Py_ssize_t i = 0; i < out_size; ++i) {
+      out_indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
+    }
+  }
+}
+
 /**
  * Implementation of __getitem__ for the wrapped array object.
  */

@@ -25,26 +25,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static void pyobject_as_irange_array(intptr_t &out_size,
-                                     shortvector<irange> &out_indices,
-                                     PyObject *subscript)
-{
-  if (!PyTuple_Check(subscript)) {
-    // A single subscript
-    out_size = 1;
-    out_indices.init(1);
-    out_indices[0] = pyobject_as_irange(subscript);
-  }
-  else {
-    out_size = PyTuple_GET_SIZE(subscript);
-    // Tuple of subscripts
-    out_indices.init(out_size);
-    for (Py_ssize_t i = 0; i < out_size; ++i) {
-      out_indices[i] = pyobject_as_irange(PyTuple_GET_ITEM(subscript, i));
-    }
-  }
-}
-
 dynd::nd::array pydynd::array_getitem(const dynd::nd::array &n,
                                       PyObject *subscript)
 {

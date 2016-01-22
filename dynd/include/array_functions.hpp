@@ -16,6 +16,8 @@
 #include <dynd/array.hpp>
 #include <dynd/shape_tools.hpp>
 #include <dynd/json_parser.hpp>
+#include <dynd/types/base_bytes_type.hpp>
+#include <dynd/types/string_type.hpp>
 
 #include "visibility.hpp"
 #include "array_from_py.hpp"
@@ -141,7 +143,75 @@ inline std::string array_repr(const dynd::nd::array &n)
   return ss.str();
 }
 
-PYDYND_API PyObject *array_nonzero(const dynd::nd::array &n);
+inline PyObject *array_nonzero(const dynd::nd::array &n)
+{
+  // Implements the nonzero/conversion to boolean slot
+  switch (n.get_type().value_type().get_kind()) {
+  case dynd::bool_kind:
+  case dynd::uint_kind:
+  case dynd::sint_kind:
+  case dynd::real_kind:
+  case dynd::complex_kind:
+    // Follow Python in not raising errors here
+    if (n.as<bool>(dynd::assign_error_nocheck)) {
+      Py_INCREF(Py_True);
+      return Py_True;
+    }
+    else {
+      Py_INCREF(Py_False);
+      return Py_False;
+    }
+  case dynd::string_kind: {
+    // Follow Python, return True if the string is nonempty, False otherwise
+    dynd::nd::array n_eval = n.eval();
+    const dynd::ndt::base_string_type *bsd =
+        n_eval.get_type().extended<dynd::ndt::base_string_type>();
+    const char *begin = NULL, *end = NULL;
+    bsd->get_string_range(&begin, &end, n_eval.get()->metadata(),
+                          n_eval.cdata());
+    if (begin != end) {
+      Py_INCREF(Py_True);
+      return Py_True;
+    }
+    else {
+      Py_INCREF(Py_False);
+      return Py_False;
+    }
+  }
+  case dynd::bytes_kind: {
+    // Return True if there is a non-zero byte, False otherwise
+    dynd::nd::array n_eval = n.eval();
+    const dynd::ndt::base_bytes_type *bbd =
+        n_eval.get_type().extended<dynd::ndt::base_bytes_type>();
+    const char *begin = NULL, *end = NULL;
+    bbd->get_bytes_range(&begin, &end, n_eval.get()->metadata(),
+                         n_eval.cdata());
+    while (begin != end) {
+      if (*begin != 0) {
+        Py_INCREF(Py_True);
+        return Py_True;
+      }
+      else {
+        ++begin;
+      }
+    }
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  case dynd::datetime_kind: {
+    // Dates and datetimes are never zero
+    // TODO: What to do with NA value?
+    Py_INCREF(Py_True);
+    return Py_True;
+  }
+  default:
+    // TODO: Implement nd.any and nd.all, mention them
+    //       here like NumPy does.
+    PyErr_SetString(PyExc_ValueError, "the truth value of a dynd array with "
+                                      "non-scalar type is ambiguous");
+    throw std::exception();
+  }
+}
 
 PYDYND_API dynd::nd::array array_cast(const dynd::nd::array &n,
                                       const dynd::ndt::type &dt);

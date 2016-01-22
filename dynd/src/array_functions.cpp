@@ -16,84 +16,14 @@
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/array_range.hpp>
 #include <dynd/type_promotion.hpp>
-#include <dynd/types/struct_type.hpp>
 #include <dynd/types/base_bytes_type.hpp>
+#include <dynd/types/struct_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/view.hpp>
 
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
-
-PyObject *pydynd::array_nonzero(const dynd::nd::array &n)
-{
-  // Implements the nonzero/conversion to boolean slot
-  switch (n.get_type().value_type().get_kind()) {
-  case bool_kind:
-  case uint_kind:
-  case sint_kind:
-  case real_kind:
-  case complex_kind:
-    // Follow Python in not raising errors here
-    if (n.as<bool>(assign_error_nocheck)) {
-      Py_INCREF(Py_True);
-      return Py_True;
-    }
-    else {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-  case string_kind: {
-    // Follow Python, return True if the string is nonempty, False otherwise
-    nd::array n_eval = n.eval();
-    const ndt::base_string_type *bsd =
-        n_eval.get_type().extended<ndt::base_string_type>();
-    const char *begin = NULL, *end = NULL;
-    bsd->get_string_range(&begin, &end, n_eval.get()->metadata(),
-                          n_eval.cdata());
-    if (begin != end) {
-      Py_INCREF(Py_True);
-      return Py_True;
-    }
-    else {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-  }
-  case bytes_kind: {
-    // Return True if there is a non-zero byte, False otherwise
-    nd::array n_eval = n.eval();
-    const ndt::base_bytes_type *bbd =
-        n_eval.get_type().extended<ndt::base_bytes_type>();
-    const char *begin = NULL, *end = NULL;
-    bbd->get_bytes_range(&begin, &end, n_eval.get()->metadata(),
-                         n_eval.cdata());
-    while (begin != end) {
-      if (*begin != 0) {
-        Py_INCREF(Py_True);
-        return Py_True;
-      }
-      else {
-        ++begin;
-      }
-    }
-    Py_INCREF(Py_False);
-    return Py_False;
-  }
-  case datetime_kind: {
-    // Dates and datetimes are never zero
-    // TODO: What to do with NA value?
-    Py_INCREF(Py_True);
-    return Py_True;
-  }
-  default:
-    // TODO: Implement nd.any and nd.all, mention them
-    //       here like NumPy does.
-    PyErr_SetString(PyExc_ValueError, "the truth value of a dynd array with "
-                                      "non-scalar type is ambiguous");
-    throw exception();
-  }
-}
 
 dynd::nd::array pydynd::array_cast(const dynd::nd::array &n,
                                    const ndt::type &dt)

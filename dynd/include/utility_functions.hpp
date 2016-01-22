@@ -137,8 +137,6 @@ public:
    }
  }
 
-size_t pyobject_as_size_t(PyObject *obj);
-
 inline intptr_t pyobject_as_index(PyObject *index)
 {
   pyobject_ownref start_obj(PyNumber_Index(index));
@@ -159,7 +157,22 @@ inline intptr_t pyobject_as_index(PyObject *index)
   return result;
 }
 
-int pyobject_as_int_index(PyObject *index);
+inline int pyobject_as_int_index(PyObject *index)
+{
+  pyobject_ownref start_obj(PyNumber_Index(index));
+#if PY_VERSION_HEX >= 0x03000000
+  long result = PyLong_AsLong(start_obj);
+#else
+  long result = PyInt_AsLong(start_obj);
+#endif
+  if (result == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  if (((unsigned long)result & 0xffffffffu) != (unsigned long)result) {
+    throw std::overflow_error("overflow converting Python integer to 32-bit int");
+  }
+  return (int)result;
+}
 
 inline dynd::irange pyobject_as_irange(PyObject *index)
 {

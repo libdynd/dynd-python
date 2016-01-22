@@ -17,37 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-size_t pydynd::pyobject_as_size_t(PyObject *obj)
-{
-  pyobject_ownref ind_obj(PyNumber_Index(obj));
-#if PY_VERSION_HEX >= 0x03000000
-  size_t result = PyLong_AsSize_t(ind_obj);
-#else
-  size_t result = (size_t)PyInt_AsUnsignedLongMask(ind_obj);
-#endif
-  if (result == (size_t) - 1 && PyErr_Occurred()) {
-    throw exception();
-  }
-  return result;
-}
-
-int pydynd::pyobject_as_int_index(PyObject *index)
-{
-  pyobject_ownref start_obj(PyNumber_Index(index));
-#if PY_VERSION_HEX >= 0x03000000
-  long result = PyLong_AsLong(start_obj);
-#else
-  long result = PyInt_AsLong(start_obj);
-#endif
-  if (result == -1 && PyErr_Occurred()) {
-    throw exception();
-  }
-  if (((unsigned long)result & 0xffffffffu) != (unsigned long)result) {
-    throw overflow_error("overflow converting Python integer to 32-bit int");
-  }
-  return (int)result;
-}
-
 std::string pydynd::pystring_as_string(PyObject *str)
 {
   char *data = NULL;

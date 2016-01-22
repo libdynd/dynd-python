@@ -24,6 +24,7 @@
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
 #include "utility_functions.hpp"
+#include "types/pyobject_type.hpp"
 
 #include "wrapper.hpp"
 
@@ -263,14 +264,52 @@ inline void pyobject_as_irange_array(intptr_t &out_size,
 /**
  * Implementation of __getitem__ for the wrapped array object.
  */
-PYDYND_API dynd::nd::array array_getitem(const dynd::nd::array &n,
-                                         PyObject *subscript);
+ inline dynd::nd::array array_getitem(const dynd::nd::array &n,
+                                       PyObject *subscript)
+ {
+   if (subscript == Py_Ellipsis) {
+     return n.at_array(0, NULL);
+   }
+   else {
+     // Convert the pyobject into an array of iranges
+     intptr_t size;
+     dynd::shortvector<dynd::irange> indices;
+     pyobject_as_irange_array(size, indices, subscript);
 
-/**
- * Implementation of __setitem__ for the wrapped dynd array object.
- */
-PYDYND_API void array_setitem(const dynd::nd::array &n, PyObject *subscript,
-                              PyObject *value);
+     // Do an indexing operation
+     return n.at_array(size, indices.get());
+   }
+ }
+
+ /**
+  * Implementation of __setitem__ for the wrapped dynd array object.
+  */
+ inline void array_setitem(const dynd::nd::array &n, PyObject *subscript,
+                            PyObject *value)
+ {
+   if (subscript == Py_Ellipsis) {
+     n.assign(value);
+ #if PY_VERSION_HEX < 0x03000000
+   }
+   else if (PyInt_Check(subscript)) {
+     long i = PyInt_AS_LONG(subscript);
+     n(i).assign(value);
+ #endif // PY_VERSION_HEX < 0x03000000
+   }
+   else if (PyLong_Check(subscript)) {
+     intptr_t i = PyLong_AsSsize_t(subscript);
+     if (i == -1 && PyErr_Occurred()) {
+       throw std::runtime_error("error converting int value");
+     }
+     n(i).assign(value);
+   }
+   else {
+     intptr_t size;
+     dynd::shortvector<dynd::irange> indices;
+     pyobject_as_irange_array(size, indices, subscript);
+     n.at_array(size, indices.get(), false).assign(value);
+   }
+ }
 
 /**
  * Implementation of nd.range().

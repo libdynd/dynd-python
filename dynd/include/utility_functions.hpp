@@ -122,9 +122,49 @@ public:
 };
 
 size_t pyobject_as_size_t(PyObject *obj);
-intptr_t pyobject_as_index(PyObject *index);
+
+inline intptr_t pyobject_as_index(PyObject *index)
+{
+  pyobject_ownref start_obj(PyNumber_Index(index));
+  intptr_t result;
+  if (PyLong_Check(start_obj.get())) {
+    result = PyLong_AsSsize_t(start_obj.get());
+#if PY_VERSION_HEX < 0x03000000
+  } else if (PyInt_Check(start_obj.get())) {
+    result = PyInt_AS_LONG(start_obj.get());
+#endif
+  } else {
+    throw std::runtime_error(
+        "Value returned from PyNumber_Index is not an int or long");
+  }
+  if (result == -1 && PyErr_Occurred()) {
+    throw std::exception();
+  }
+  return result;
+}
+
 int pyobject_as_int_index(PyObject *index);
-dynd::irange pyobject_as_irange(PyObject *index);
+
+inline dynd::irange pyobject_as_irange(PyObject *index)
+{
+  if (PySlice_Check(index)) {
+    dynd::irange result;
+    PySliceObject *slice = (PySliceObject *)index;
+    if (slice->start != Py_None) {
+      result.set_start(pyobject_as_index(slice->start));
+    }
+    if (slice->stop != Py_None) {
+      result.set_finish(pyobject_as_index(slice->stop));
+    }
+    if (slice->step != Py_None) {
+      result.set_step(pyobject_as_index(slice->step));
+    }
+    return result;
+  } else {
+    return dynd::irange(pyobject_as_index(index));
+  }
+}
+
 PYDYND_API std::string pystring_as_string(PyObject *str);
 inline PyObject *pystring_from_string(const char *str)
 {

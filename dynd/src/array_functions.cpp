@@ -25,50 +25,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-dynd::nd::array pydynd::array_getitem(const dynd::nd::array &n,
-                                      PyObject *subscript)
-{
-  if (subscript == Py_Ellipsis) {
-    return n.at_array(0, NULL);
-  }
-  else {
-    // Convert the pyobject into an array of iranges
-    intptr_t size;
-    shortvector<irange> indices;
-    pyobject_as_irange_array(size, indices, subscript);
-
-    // Do an indexing operation
-    return n.at_array(size, indices.get());
-  }
-}
-
-void pydynd::array_setitem(const dynd::nd::array &n, PyObject *subscript,
-                           PyObject *value)
-{
-  if (subscript == Py_Ellipsis) {
-    n.assign(value);
-#if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyInt_Check(subscript)) {
-    long i = PyInt_AS_LONG(subscript);
-    n(i).assign(value);
-#endif // PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyLong_Check(subscript)) {
-    intptr_t i = PyLong_AsSsize_t(subscript);
-    if (i == -1 && PyErr_Occurred()) {
-      throw runtime_error("error converting int value");
-    }
-    n(i).assign(value);
-  }
-  else {
-    intptr_t size;
-    shortvector<irange> indices;
-    pyobject_as_irange_array(size, indices, subscript);
-    n.at_array(size, indices.get(), false).assign(value);
-  }
-}
-
 nd::array pydynd::array_range(PyObject *start, PyObject *stop, PyObject *step,
                               PyObject *dt)
 {

@@ -362,6 +362,30 @@ inline PyObject *intptr_array_as_tuple(size_t size, const intptr_t *values)
   return result;
 }
 
+// Helper function for pyarg_axis_argument.
+inline void mark_axis(PyObject *int_axis, int ndim, dynd::bool1 *reduce_axes)
+{
+  pyobject_ownref value_obj(PyNumber_Index(int_axis));
+  long value = PyLong_AsLong(value_obj);
+  if (value == -1 && PyErr_Occurred()) {
+    throw std::runtime_error("error getting integer for axis argument");
+  }
+
+  if (value >= ndim || value < -ndim) {
+    throw dynd::axis_out_of_bounds(value, ndim);
+  } else if (value < 0) {
+    value += ndim;
+  }
+
+  if (!reduce_axes[value]) {
+    reduce_axes[value] = true;
+  } else {
+    std::stringstream ss;
+    ss << "axis " << value << " is specified more than once";
+    throw std::runtime_error(ss.str());
+  }
+}
+
 /**
  * Parses the axis argument, which may be either a single index
  * or a tuple of indices. They are converted into a boolean array
@@ -369,7 +393,37 @@ inline PyObject *intptr_array_as_tuple(size_t size, const intptr_t *values)
  *
  * Returns the number of axes which were set.
  */
-int pyarg_axis_argument(PyObject *axis, int ndim, dynd::bool1 *reduce_axes);
+ inline int pyarg_axis_argument(PyObject *axis, int ndim, dynd::bool1 *reduce_axes)
+ {
+   int axis_count = 0;
+
+   if (axis == NULL || axis == Py_None) {
+     // None means use all the axes
+     for (int i = 0; i < ndim; ++i) {
+       reduce_axes[i] = true;
+     }
+     axis_count = ndim;
+   } else {
+     // Start with no axes marked
+     for (int i = 0; i < ndim; ++i) {
+       reduce_axes[i] = false;
+     }
+     if (PyTuple_Check(axis)) {
+       // A tuple of axes
+       Py_ssize_t size = PyTuple_GET_SIZE(axis);
+       for (Py_ssize_t i = 0; i < size; ++i) {
+         mark_axis(PyTuple_GET_ITEM(axis, i), ndim, reduce_axes);
+         axis_count++;
+       }
+     } else {
+       // Just one axis
+       mark_axis(axis, ndim, reduce_axes);
+       axis_count = 1;
+     }
+   }
+
+   return axis_count;
+ }
 
 /**
  * Parses the error_mode argument. If it is None, returns

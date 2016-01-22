@@ -17,61 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static void mark_axis(PyObject *int_axis, int ndim, bool1 *reduce_axes)
-{
-  pyobject_ownref value_obj(PyNumber_Index(int_axis));
-  long value = PyLong_AsLong(value_obj);
-  if (value == -1 && PyErr_Occurred()) {
-    throw runtime_error("error getting integer for axis argument");
-  }
-
-  if (value >= ndim || value < -ndim) {
-    throw dynd::axis_out_of_bounds(value, ndim);
-  } else if (value < 0) {
-    value += ndim;
-  }
-
-  if (!reduce_axes[value]) {
-    reduce_axes[value] = true;
-  } else {
-    stringstream ss;
-    ss << "axis " << value << " is specified more than once";
-    throw runtime_error(ss.str());
-  }
-}
-
-int pydynd::pyarg_axis_argument(PyObject *axis, int ndim, bool1 *reduce_axes)
-{
-  int axis_count = 0;
-
-  if (axis == NULL || axis == Py_None) {
-    // None means use all the axes
-    for (int i = 0; i < ndim; ++i) {
-      reduce_axes[i] = true;
-    }
-    axis_count = ndim;
-  } else {
-    // Start with no axes marked
-    for (int i = 0; i < ndim; ++i) {
-      reduce_axes[i] = false;
-    }
-    if (PyTuple_Check(axis)) {
-      // A tuple of axes
-      Py_ssize_t size = PyTuple_GET_SIZE(axis);
-      for (Py_ssize_t i = 0; i < size; ++i) {
-        mark_axis(PyTuple_GET_ITEM(axis, i), ndim, reduce_axes);
-        axis_count++;
-      }
-    } else {
-      // Just one axis
-      mark_axis(axis, ndim, reduce_axes);
-      axis_count = 1;
-    }
-  }
-
-  return axis_count;
-}
-
 assign_error_mode pydynd::pyarg_error_mode(PyObject *error_mode_obj)
 {
   return (assign_error_mode)pyarg_strings_to_int(

@@ -25,19 +25,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyObject *pydynd::array_get_strides(const dynd::nd::array &n)
-{
-  if (n.is_null()) {
-    PyErr_SetString(PyExc_AttributeError,
-                    "Cannot access attribute of null dynd array");
-    throw std::exception();
-  }
-  size_t ndim = n.get_type().get_ndim();
-  dimvector result(ndim);
-  n.get_strides(result.get());
-  return intptr_array_as_tuple(ndim, result.get());
-}
-
 static void pyobject_as_irange_array(intptr_t &out_size,
                                      shortvector<irange> &out_indices,
                                      PyObject *subscript)

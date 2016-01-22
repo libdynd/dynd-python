@@ -20,6 +20,8 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/array_range.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/base_dim_type.hpp>
 
 #include "visibility.hpp"
 #include "array_from_py.hpp"
@@ -380,8 +382,99 @@ inline void pyobject_as_irange_array(intptr_t &out_size,
 /**
  * Implementation of nd.fields().
  */
-PYDYND_API dynd::nd::array nd_fields(const dynd::nd::array &n,
-                                     PyObject *field_list);
+ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
+ {
+   std::vector<std::string> selected_fields;
+   pyobject_as_vector_string(field_list, selected_fields);
+
+   // TODO: Move this implementation into dynd
+   dynd::ndt::type fdt = n.get_dtype();
+   if (fdt.get_kind() != dynd::struct_kind) {
+     std::stringstream ss;
+     ss << "nd.fields must be given a dynd array of 'struct' kind, not ";
+     ss << fdt;
+     throw std::runtime_error(ss.str());
+   }
+   const dynd::ndt::struct_type *bsd = fdt.extended<dynd::ndt::struct_type>();
+
+   if (selected_fields.empty()) {
+     throw std::runtime_error(
+         "nd.fields requires at least one field name to be specified");
+   }
+   // Construct the field mapping and output field types
+   std::vector<intptr_t> selected_index(selected_fields.size());
+   std::vector<dynd::ndt::type> selected__types(selected_fields.size());
+   for (size_t i = 0; i != selected_fields.size(); ++i) {
+     selected_index[i] = bsd->get_field_index(selected_fields[i]);
+     if (selected_index[i] < 0) {
+       std::stringstream ss;
+       ss << "field name ";
+       dynd::print_escaped_utf8_string(ss, selected_fields[i]);
+       ss << " does not exist in dynd type " << fdt;
+       throw std::runtime_error(ss.str());
+     }
+     selected__types[i] = bsd->get_field_type(selected_index[i]);
+   }
+   // Create the result udt
+   dynd::ndt::type rudt = dynd::ndt::struct_type::make(selected_fields, selected__types);
+   dynd::ndt::type result_tp = n.get_type().with_replaced_dtype(rudt);
+   const dynd::ndt::struct_type *rudt_bsd = rudt.extended<dynd::ndt::struct_type>();
+
+   // Allocate the new memory block.
+   size_t arrmeta_size = result_tp.get_arrmeta_size();
+   dynd::nd::array result(reinterpret_cast<dynd::array_preamble *>(
+                        dynd::make_array_memory_block(arrmeta_size).get()),
+                    true);
+
+   // Clone the data pointer
+   result.get()->data = n.get()->data;
+   result.get()->owner = n.get()->owner;
+   if (!result.get()->owner) {
+     result.get()->owner = n.get();
+   }
+
+   // Copy the flags
+   result.get()->flags = n.get()->flags;
+
+   // Set the type and transform the arrmeta
+   result.get()->tp = result_tp;
+   // First copy all the array data type arrmeta
+   dynd::ndt::type tmp_dt = result_tp;
+   char *dst_arrmeta = result.get()->metadata();
+   const char *src_arrmeta = n.get()->metadata();
+   while (tmp_dt.get_ndim() > 0) {
+     if (tmp_dt.get_kind() != dynd::dim_kind) {
+       throw std::runtime_error(
+           "nd.fields doesn't support dimensions with pointers yet");
+     }
+     const dynd::ndt::base_dim_type *budd = tmp_dt.extended<dynd::ndt::base_dim_type>();
+     size_t offset = budd->arrmeta_copy_construct_onedim(
+         dst_arrmeta, src_arrmeta,
+         dynd::intrusive_ptr<dynd::memory_block_data>(n.get(), true));
+     dst_arrmeta += offset;
+     src_arrmeta += offset;
+     tmp_dt = budd->get_element_type();
+   }
+   // Then create the arrmeta for the new struct
+   const size_t *arrmeta_offsets = bsd->get_arrmeta_offsets_raw();
+   const size_t *result_arrmeta_offsets = rudt_bsd->get_arrmeta_offsets_raw();
+   const size_t *data_offsets = bsd->get_data_offsets(src_arrmeta);
+   size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_arrmeta);
+   for (size_t i = 0; i != selected_fields.size(); ++i) {
+     const dynd::ndt::type &dt = selected__types[i];
+     // Copy the data offset
+     result_data_offsets[i] = data_offsets[selected_index[i]];
+     // Copy the arrmeta for this field
+     if (dt.get_arrmeta_size() > 0) {
+       dt.extended()->arrmeta_copy_construct(
+           dst_arrmeta + result_arrmeta_offsets[i],
+           src_arrmeta + arrmeta_offsets[selected_index[i]],
+           dynd::intrusive_ptr<dynd::memory_block_data>(n.get(), true));
+     }
+   }
+
+   return result;
+ }
 
 inline const char *array_access_flags_string(const dynd::nd::array &n)
 {

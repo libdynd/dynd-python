@@ -190,8 +190,18 @@ inline std::string pyobject_repr(PyObject *obj)
 
 void pyobject_as_vector__type(PyObject *list_dtype,
                               std::vector<dynd::ndt::type> &vector_dtype);
-void pyobject_as_vector_string(PyObject *list_string,
-                               std::vector<std::string> &vector_string);
+
+inline void pyobject_as_vector_string(PyObject *list_string,
+                                     std::vector<std::string> &vector_string)
+{
+Py_ssize_t size = PySequence_Size(list_string);
+vector_string.resize(size);
+for (Py_ssize_t i = 0; i < size; ++i) {
+  pyobject_ownref item(PySequence_GetItem(list_string, i));
+  vector_string[i] = pystring_as_string(item.get());
+}
+}
+
 void pyobject_as_vector_intp(PyObject *list_index,
                              std::vector<intptr_t> &vector_intp,
                              bool allow_int);

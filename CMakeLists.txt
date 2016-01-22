@@ -192,7 +192,6 @@ set(pydynd_SRC
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
     dynd/src/numpy_interop.cpp
-    dynd/src/utility_functions.cpp
     dynd/src/wrapper.cpp
     dynd/src/types/pyobject_type.cpp
 )

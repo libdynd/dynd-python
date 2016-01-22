@@ -425,26 +425,6 @@ inline void mark_axis(PyObject *int_axis, int ndim, dynd::bool1 *reduce_axes)
    return axis_count;
  }
 
-/**
- * Matches the input object against one of several
- * strings, returning the corresponding integer.
- */
-int pyarg_strings_to_int(PyObject *obj, const char *argname, int default_value,
-                         const char *string0, int value0, const char *string1,
-                         int value1, const char *string2, int value2);
-
-bool pyarg_bool(PyObject *obj, const char *argname, bool default_value);
-
-/**
- * Accepts "readwrite", "readonly", and "immutable".
- */
-uint32_t pyarg_access_flags(PyObject *obj);
-
-const dynd::callable_type_data *pyarg_callable_ro(PyObject *af,
-                                                  const char *paramname);
-dynd::callable_type_data *pyarg_callable_rw(PyObject *af,
-                                            const char *paramname);
-
 } // namespace pydynd
 
 #include "type_functions.hpp"

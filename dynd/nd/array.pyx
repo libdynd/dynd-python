@@ -42,8 +42,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_setitem(_array&, object, object) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
-    _array array_cast(_array&, _type&) except +translate_exception
-    _array array_ucast(_array&, _type&, size_t) except +translate_exception
     _array array_range(object, object, object, object) except +translate_exception
     _array array_linspace(object, object, object, object) except +translate_exception
 
@@ -411,7 +409,7 @@ cdef class array(object):
         #"""PEP 3118 buffer protocol"""
         array_releasebuffer_pep3118(self, buffer)
 
-    def cast(self, tp):
+    def cast(array self, tp):
         """
         a.cast(type)
         Casts the dynd array's type to the requested type,
@@ -423,9 +421,8 @@ cdef class array(object):
         type : dynd type
             The type is cast into this type.
         """
-        cdef array result = array()
-        result.v = array_cast(self.v, _py_type(tp).v)
-        return result
+        cdef _type t = as_cpp_type(tp)
+        return dynd_nd_array_from_cpp(dynd_nd_array_to_cpp(self).cast(t))
 
     def eval(array self):
         """
@@ -458,7 +455,7 @@ cdef class array(object):
 
       return nd.sum(self, axes = [axis])
 
-    def ucast(self, dtype, int replace_ndim=0):
+    def ucast(array self, dtype, ssize_t replace_ndim=0):
         """
         a.ucast(dtype, replace_ndim=0)
         Casts the dynd array's dtype to the requested type,
@@ -483,9 +480,8 @@ cdef class array(object):
         >>> a.eval()
         nd.array([[3, 1929, 13], [3, 1979, 22]], type="2 * {month : int32, year : int32, day : float32}")
         """
-        cdef array result = array()
-        result.v = array_ucast(self.v, _py_type(dtype).v, replace_ndim)
-        return result
+        cdef _type t = as_cpp_type(dtype)
+        return dynd_nd_array_from_cpp(dynd_nd_array_to_cpp(self).ucast(t, replace_ndim))
 
     def view_scalars(self, dtp):
         """

@@ -213,13 +213,6 @@ inline PyObject *array_nonzero(const dynd::nd::array &n)
   }
 }
 
-PYDYND_API dynd::nd::array array_cast(const dynd::nd::array &n,
-                                      const dynd::ndt::type &dt);
-
-PYDYND_API dynd::nd::array array_ucast(const dynd::nd::array &n,
-                                       const dynd::ndt::type &dt,
-                                       intptr_t replace_ndim);
-
 PYDYND_API PyObject *array_get_shape(const dynd::nd::array &n);
 
 PYDYND_API PyObject *array_get_strides(const dynd::nd::array &n);

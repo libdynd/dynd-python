@@ -25,18 +25,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-dynd::nd::array pydynd::array_cast(const dynd::nd::array &n,
-                                   const ndt::type &dt)
-{
-  return n.cast(dt);
-}
-
-dynd::nd::array pydynd::array_ucast(const dynd::nd::array &n,
-                                    const ndt::type &dt, intptr_t replace_ndim)
-{
-  return n.ucast(dt, replace_ndim);
-}
-
 PyObject *pydynd::array_get_shape(const dynd::nd::array &n)
 {
   if (n.is_null()) {

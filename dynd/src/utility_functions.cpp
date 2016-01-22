@@ -17,56 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-void pydynd::pyobject_as_vector_intp(PyObject *list_index,
-                                     std::vector<intptr_t> &vector_intp,
-                                     bool allow_int)
-{
-  if (allow_int) {
-    // If permitted, convert an int into a size-1 list
-    if (PyLong_Check(list_index)) {
-      intptr_t v = PyLong_AsSsize_t(list_index);
-      if (v == -1 && PyErr_Occurred()) {
-        throw runtime_error("error converting int");
-      }
-      vector_intp.resize(1);
-      vector_intp[0] = v;
-      return;
-    }
-#if PY_VERSION_HEX < 0x03000000
-    if (PyInt_Check(list_index)) {
-      vector_intp.resize(1);
-      vector_intp[0] = PyInt_AS_LONG(list_index);
-      return;
-    }
-#endif
-    if (PyIndex_Check(list_index)) {
-      PyObject *idx_obj = PyNumber_Index(list_index);
-      if (idx_obj != NULL) {
-        intptr_t v = PyLong_AsSsize_t(idx_obj);
-        Py_DECREF(idx_obj);
-        if (v == -1 && PyErr_Occurred()) {
-          throw exception();
-        }
-        vector_intp.resize(1);
-        vector_intp[0] = v;
-        return;
-      } else if (PyErr_ExceptionMatches(PyExc_TypeError)) {
-        // Swallow a type error, fall through to the sequence code
-        PyErr_Clear();
-      } else {
-        // Propagate the error
-        throw exception();
-      }
-    }
-  }
-  Py_ssize_t size = PySequence_Size(list_index);
-  vector_intp.resize(size);
-  for (Py_ssize_t i = 0; i < size; ++i) {
-    pyobject_ownref item(PySequence_GetItem(list_index, i));
-    vector_intp[i] = pyobject_as_index(item.get());
-  }
-}
-
 void pydynd::pyobject_as_vector_int(PyObject *list_int,
                                     std::vector<int> &vector_int)
 {

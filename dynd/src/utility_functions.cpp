@@ -17,17 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-void pydynd::pyobject_as_vector_int(PyObject *list_int,
-                                    std::vector<int> &vector_int)
-{
-  Py_ssize_t size = PySequence_Size(list_int);
-  vector_int.resize(size);
-  for (Py_ssize_t i = 0; i < size; ++i) {
-    pyobject_ownref item(PySequence_GetItem(list_int, i));
-    vector_int[i] = pyobject_as_int_index(item.get());
-  }
-}
-
 PyObject *pydynd::intptr_array_as_tuple(size_t size, const intptr_t *values)
 {
   PyObject *result = PyTuple_New(size);

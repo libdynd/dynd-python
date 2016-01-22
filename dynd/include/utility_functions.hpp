@@ -317,8 +317,6 @@ inline void pyobject_as_vector_intp(PyObject *list_index,
   }
 }
 
-void pyobject_as_vector_int(PyObject *list_int, std::vector<int> &vector_int);
-
 /**
  * Same as PySequence_Size, but throws a C++
  * exception on error.

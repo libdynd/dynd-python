@@ -183,7 +183,6 @@ set(pydynd_SRC
     dynd/include/wrapper.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
-    dynd/src/array_functions.cpp
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp
     dynd/src/assign.cpp

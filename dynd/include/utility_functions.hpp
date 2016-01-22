@@ -3,8 +3,7 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
-#ifndef _DYND__UTILITY_FUNCTIONS_HPP_
-#define _DYND__UTILITY_FUNCTIONS_HPP_
+#pragma once
 
 #include <Python.h>
 
@@ -368,5 +367,3 @@ dynd::callable_type_data *pyarg_callable_rw(PyObject *af,
 } // namespace pydynd
 
 #include "type_functions.hpp"
-
-#endif // _DYND__UTILITY_FUNCTIONS_HPP_

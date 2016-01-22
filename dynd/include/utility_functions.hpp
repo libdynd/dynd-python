@@ -426,15 +426,6 @@ inline void mark_axis(PyObject *int_axis, int ndim, dynd::bool1 *reduce_axes)
  }
 
 /**
- * Parses the error_mode argument. If it is None, returns
- * assign_error_default.
- */
-dynd::assign_error_mode pyarg_error_mode(PyObject *error_mode_obj);
-dynd::assign_error_mode pyarg_error_mode_no_default(PyObject *error_mode_obj);
-
-PyObject *pyarg_error_mode_to_pystring(dynd::assign_error_mode errmode);
-
-/**
  * Matches the input object against one of several
  * strings, returning the corresponding integer.
  */

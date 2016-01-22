@@ -17,45 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-assign_error_mode pydynd::pyarg_error_mode(PyObject *error_mode_obj)
-{
-  return (assign_error_mode)pyarg_strings_to_int(
-      error_mode_obj, "error_mode", assign_error_default, "nocheck",
-      assign_error_nocheck, "overflow", assign_error_overflow, "fractional",
-      assign_error_fractional, "inexact", assign_error_inexact, "default",
-      assign_error_default);
-}
-
-assign_error_mode pydynd::pyarg_error_mode_no_default(PyObject *error_mode_obj)
-{
-  assign_error_mode result = (assign_error_mode)pyarg_strings_to_int(
-      error_mode_obj, "error_mode", assign_error_default, "nocheck",
-      assign_error_nocheck, "overflow", assign_error_overflow, "fractional",
-      assign_error_fractional, "inexact", assign_error_inexact);
-  if (result == assign_error_default) {
-    throw invalid_argument("must specify a non-default error mode");
-  }
-  return result;
-}
-
-PyObject *pydynd::pyarg_error_mode_to_pystring(assign_error_mode errmode)
-{
-  switch (errmode) {
-  case assign_error_nocheck:
-    return PyUnicode_FromString("nocheck");
-  case assign_error_overflow:
-    return PyUnicode_FromString("overflow");
-  case assign_error_fractional:
-    return PyUnicode_FromString("fractional");
-  case assign_error_inexact:
-    return PyUnicode_FromString("inexact");
-  case assign_error_default:
-    return PyUnicode_FromString("default");
-  default:
-    throw invalid_argument("invalid assign_error_mode enum value");
-  }
-}
-
 int pydynd::pyarg_strings_to_int(PyObject *obj, const char *argname,
                                  int default_value, const char *string0,
                                  int value0)

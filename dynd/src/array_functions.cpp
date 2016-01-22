@@ -13,7 +13,6 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/base_dim_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/array_range.hpp>
 #include <dynd/types/base_bytes_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/struct_type.hpp>
@@ -22,22 +21,6 @@
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
-
-dynd::nd::array pydynd::array_linspace(PyObject *start, PyObject *stop,
-                                       PyObject *count, PyObject *dt)
-{
-  nd::array start_nd, stop_nd;
-  intptr_t count_val = pyobject_as_index(count);
-  start_nd = array_from_py(start, 0, false);
-  stop_nd = array_from_py(stop, 0, false);
-  if (dt == Py_None) {
-    return nd::linspace(start_nd, stop_nd, count_val);
-  }
-  else {
-    return nd::linspace(start_nd, stop_nd, count_val,
-                        make__type_from_pyobject(dt));
-  }
-}
 
 dynd::nd::array pydynd::nd_fields(const nd::array &n, PyObject *field_list)
 {

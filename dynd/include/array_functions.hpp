@@ -361,8 +361,21 @@ inline void pyobject_as_irange_array(intptr_t &out_size,
 /**
  * Implementation of nd.linspace().
  */
-PYDYND_API dynd::nd::array array_linspace(PyObject *start, PyObject *stop,
-                                          PyObject *count, PyObject *dt);
+ inline dynd::nd::array array_linspace(PyObject *start, PyObject *stop,
+                                        PyObject *count, PyObject *dt)
+ {
+   dynd::nd::array start_nd, stop_nd;
+   intptr_t count_val = pyobject_as_index(count);
+   start_nd = array_from_py(start, 0, false);
+   stop_nd = array_from_py(stop, 0, false);
+   if (dt == Py_None) {
+     return dynd::nd::linspace(start_nd, stop_nd, count_val);
+   }
+   else {
+     return dynd::nd::linspace(start_nd, stop_nd, count_val,
+                         make__type_from_pyobject(dt));
+   }
+ }
 
 /**
  * Implementation of nd.fields().

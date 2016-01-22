@@ -17,18 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-void
-pydynd::pyobject_as_vector__type(PyObject *list_of_types,
-                                 std::vector<dynd::ndt::type> &vector_of__types)
-{
-  Py_ssize_t size = PySequence_Size(list_of_types);
-  vector_of__types.resize(size);
-  for (Py_ssize_t i = 0; i < size; ++i) {
-    pyobject_ownref item(PySequence_GetItem(list_of_types, i));
-    vector_of__types[i] = make__type_from_pyobject(item.get());
-  }
-}
-
 void pydynd::pyobject_as_vector_intp(PyObject *list_index,
                                      std::vector<intptr_t> &vector_intp,
                                      bool allow_int)

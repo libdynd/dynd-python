@@ -243,8 +243,19 @@ inline std::string pyobject_repr(PyObject *obj)
   return pystring_as_string(src_repr.get());
 }
 
-void pyobject_as_vector__type(PyObject *list_dtype,
-                              std::vector<dynd::ndt::type> &vector_dtype);
+// Forward declare this. Include type functions header at the bottom.
+inline dynd::ndt::type make__type_from_pyobject(PyObject *obj);
+
+inline void pyobject_as_vector__type(PyObject *list_of_types,
+                                 std::vector<dynd::ndt::type> &vector_of__types)
+{
+  Py_ssize_t size = PySequence_Size(list_of_types);
+  vector_of__types.resize(size);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    pyobject_ownref item(PySequence_GetItem(list_of_types, i));
+    vector_of__types[i] = make__type_from_pyobject(item.get());
+  }
+}
 
 inline void pyobject_as_vector_string(PyObject *list_string,
                                      std::vector<std::string> &vector_string)
@@ -355,5 +366,7 @@ dynd::callable_type_data *pyarg_callable_rw(PyObject *af,
                                             const char *paramname);
 
 } // namespace pydynd
+
+#include "type_functions.hpp"
 
 #endif // _DYND__UTILITY_FUNCTIONS_HPP_

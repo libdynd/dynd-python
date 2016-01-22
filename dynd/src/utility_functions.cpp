@@ -17,43 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-std::string pydynd::pystring_as_string(PyObject *str)
-{
-  char *data = NULL;
-  Py_ssize_t len = 0;
-  if (PyUnicode_Check(str)) {
-    pyobject_ownref utf8(PyUnicode_AsUTF8String(str));
-
-#if PY_VERSION_HEX >= 0x03000000
-    if (PyBytes_AsStringAndSize(utf8.get(), &data, &len) < 0) {
-#else
-    if (PyString_AsStringAndSize(utf8.get(), &data, &len) < 0) {
-#endif
-      throw runtime_error("Error getting string data");
-    }
-    return std::string(data, len);
-#if PY_VERSION_HEX < 0x03000000
-  } else if (PyString_Check(str)) {
-    if (PyString_AsStringAndSize(str, &data, &len) < 0) {
-      throw runtime_error("Error getting string data");
-    }
-    return std::string(data, len);
-#endif
-  } else if (DyND_PyArray_Check(str)) {
-    const nd::array &n = ((DyND_PyArrayObject *)str)->v;
-    if (n.get_type().value_type().get_kind() == string_kind) {
-      return n.as<std::string>();
-    } else {
-      stringstream ss;
-      ss << "Cannot implicitly convert object of type ";
-      ss << n.get_type() << " to string";
-      throw dynd::type_error(ss.str());
-    }
-  } else {
-    throw dynd::type_error("Cannot convert pyobject to string");
-  }
-}
-
 void
 pydynd::pyobject_as_vector__type(PyObject *list_of_types,
                                  std::vector<dynd::ndt::type> &vector_of__types)

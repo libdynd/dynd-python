@@ -194,7 +194,33 @@ inline dynd::irange pyobject_as_irange(PyObject *index)
   }
 }
 
-PYDYND_API std::string pystring_as_string(PyObject *str);
+inline std::string pystring_as_string(PyObject *str)
+{
+  char *data = NULL;
+  Py_ssize_t len = 0;
+  if (PyUnicode_Check(str)) {
+    pyobject_ownref utf8(PyUnicode_AsUTF8String(str));
+
+#if PY_VERSION_HEX >= 0x03000000
+    if (PyBytes_AsStringAndSize(utf8.get(), &data, &len) < 0) {
+#else
+    if (PyString_AsStringAndSize(utf8.get(), &data, &len) < 0) {
+#endif
+      throw std::runtime_error("Error getting string data");
+    }
+    return std::string(data, len);
+#if PY_VERSION_HEX < 0x03000000
+  } else if (PyString_Check(str)) {
+    if (PyString_AsStringAndSize(str, &data, &len) < 0) {
+      throw std::runtime_error("Error getting string data");
+    }
+    return std::string(data, len);
+#endif
+  } else {
+    throw dynd::type_error("Cannot convert pyobject to string");
+  }
+}
+
 inline PyObject *pystring_from_string(const char *str)
 {
 #if PY_VERSION_HEX >= 0x03000000

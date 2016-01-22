@@ -17,25 +17,6 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-PyObject *pydynd::intptr_array_as_tuple(size_t size, const intptr_t *values)
-{
-  PyObject *result = PyTuple_New(size);
-  if (result == NULL) {
-    return NULL;
-  }
-
-  for (size_t i = 0; i < size; i++) {
-    PyObject *o = PyLong_FromLongLong(values[i]);
-    if (o == NULL) {
-      Py_DECREF(result);
-      return NULL;
-    }
-    PyTuple_SET_ITEM(result, i, o);
-  }
-
-  return result;
-}
-
 static void mark_axis(PyObject *int_axis, int ndim, bool1 *reduce_axes)
 {
   pyobject_ownref value_obj(PyNumber_Index(int_axis));

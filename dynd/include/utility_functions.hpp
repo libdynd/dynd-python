@@ -343,7 +343,24 @@ inline PyObject *pydict_getitemstring(PyObject *dp, const char *key)
   return result;
 }
 
-PYDYND_API PyObject *intptr_array_as_tuple(size_t size, const intptr_t *array);
+inline PyObject *intptr_array_as_tuple(size_t size, const intptr_t *values)
+{
+  PyObject *result = PyTuple_New(size);
+  if (result == NULL) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < size; i++) {
+    PyObject *o = PyLong_FromLongLong(values[i]);
+    if (o == NULL) {
+      Py_DECREF(result);
+      return NULL;
+    }
+    PyTuple_SET_ITEM(result, i, o);
+  }
+
+  return result;
+}
 
 /**
  * Parses the axis argument, which may be either a single index

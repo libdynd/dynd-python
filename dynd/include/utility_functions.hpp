@@ -24,12 +24,6 @@ struct callable_type_data;
 namespace pydynd {
 
 /**
- * Function which casts the parameter to
- * a PyObject pointer and calls Py_XDECREF on it.
- */
-void py_decref_function(void *obj);
-
-/**
  * A container class for managing the local lifetime of
  * PyObject *.
  *
@@ -120,6 +114,28 @@ public:
 
   inline ~PyGILState_RAII() { PyGILState_Release(m_gstate); }
 };
+
+/**
+ * Function which casts the parameter to
+ * a PyObject pointer and calls Py_XDECREF on it.
+ */
+ inline void py_decref_function(void *obj)
+ {
+   // Because dynd in general is intended to do things multi-threaded
+   // (eventually),
+   // the decref function needs to be threadsafe. The way to do that is to ensure
+   // we're holding the GIL. This is slower than normal DECREF, but because the
+   // reference count isn't an atomic variable, this appears to be the best we
+   // can do.
+   if (obj != NULL) {
+     PyGILState_STATE gstate;
+     gstate = PyGILState_Ensure();
+
+     Py_DECREF((PyObject *)obj);
+
+     PyGILState_Release(gstate);
+   }
+ }
 
 size_t pyobject_as_size_t(PyObject *obj);
 

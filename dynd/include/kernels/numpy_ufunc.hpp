@@ -26,15 +26,13 @@ namespace nd {
     struct scalar_ufunc_ck;
 
     template <>
-    struct scalar_ufunc_ck<false> : dynd::nd::base_kernel<
-                                        scalar_ufunc_ck<false>, 1> {
+    struct scalar_ufunc_ck<false>
+        : dynd::nd::base_kernel<scalar_ufunc_ck<false>, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
 
-      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data)
-      {
-      }
+      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data) {}
 
       void single(char *dst, char *const *src)
       {
@@ -66,8 +64,9 @@ namespace nd {
       }
 
       static intptr_t
-      instantiate(char *static_data, char *DYND_UNUSED(data), void *ckb,
-                  intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
+      instantiate(char *static_data, char *DYND_UNUSED(data),
+                  kernel_builder *ckb, intptr_t ckb_offset,
+                  const dynd::ndt::type &dst_tp,
                   const char *DYND_UNUSED(dst_arrmeta),
                   intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
                   const char *const *DYND_UNUSED(src_arrmeta),
@@ -78,23 +77,22 @@ namespace nd {
       {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        self_type::make(ckb, kernreq, ckb_offset,
-                        reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(
-                            static_data)->get());
+        self_type::make(
+            ckb, kernreq, ckb_offset,
+            reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(static_data)
+                ->get());
         return ckb_offset;
       }
     };
 
     template <>
-    struct scalar_ufunc_ck<true> : dynd::nd::base_kernel<scalar_ufunc_ck<true>,
-                                                         1> {
+    struct scalar_ufunc_ck<true>
+        : dynd::nd::base_kernel<scalar_ufunc_ck<true>, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
 
-      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data)
-      {
-      }
+      scalar_ufunc_ck(const scalar_ufunc_data *data) : data(data) {}
 
       void single(char *dst, char *const *src)
       {
@@ -144,9 +142,10 @@ namespace nd {
       {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
-        self_type::make(ckb, kernreq, ckb_offset,
-                        reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(
-                            static_data)->get());
+        self_type::make(
+            ckb, kernreq, ckb_offset,
+            reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(static_data)
+                ->get());
         return ckb_offset;
       }
     };

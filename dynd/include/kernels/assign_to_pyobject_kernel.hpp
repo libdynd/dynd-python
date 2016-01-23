@@ -720,12 +720,9 @@ struct assign_to_pyobject_kernel<dynd::option_type_id, any_kind_type_id>
         is_missing.get()->static_data(), NULL, ckb, ckb_offset,
         dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
         dynd::kernel_request_single, 0, NULL, tp_vars);
-    reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-        ->reserve(ckb_offset);
-    self_ck =
-        reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
-            ckb)
-            ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
+    reinterpret_cast<dynd::kernel_builder *>(ckb)->reserve(ckb_offset);
+    self_ck = reinterpret_cast<dynd::kernel_builder *>(ckb)
+                  ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
     self_ck->m_assign_value_offset = ckb_offset - root_ckb_offset;
     dynd::ndt::type src_value_tp =
         src_tp[0].extended<dynd::ndt::option_type>()->get_value_type();
@@ -817,12 +814,9 @@ struct assign_to_pyobject_kernel<dynd::tuple_type_id, scalar_kind_type_id>
         src_tp[0].extended<dynd::ndt::tuple_type>()->get_arrmeta_offsets_raw();
     self_ck->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
-      reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-          ->reserve(ckb_offset);
-      self_ck =
-          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
-              ckb)
-              ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
+      reinterpret_cast<dynd::kernel_builder *>(ckb)->reserve(ckb_offset);
+      self_ck = reinterpret_cast<dynd::kernel_builder *>(ckb)
+                    ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
       self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
       ckb_offset = nd::assign::get()->instantiate(
@@ -907,12 +901,9 @@ struct assign_to_pyobject_kernel<dynd::struct_type_id, tuple_type_id>
     }
     self_ck->m_copy_el_offsets.resize(field_count);
     for (intptr_t i = 0; i < field_count; ++i) {
-      reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(ckb)
-          ->reserve(ckb_offset);
-      self_ck =
-          reinterpret_cast<dynd::ckernel_builder<dynd::kernel_request_host> *>(
-              ckb)
-              ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
+      reinterpret_cast<dynd::kernel_builder *>(ckb)->reserve(ckb_offset);
+      self_ck = reinterpret_cast<dynd::kernel_builder *>(ckb)
+                    ->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
       self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
       const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
       ckb_offset = nd::assign::get()->instantiate(

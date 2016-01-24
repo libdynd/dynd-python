@@ -8,7 +8,7 @@ namespace nd {
   struct copy_from_numpy_kernel
       : dynd::nd::base_kernel<copy_from_numpy_kernel> {
     static intptr_t
-    instantiate(char *static_data, char *data, dynd::kernel_builder *ckb,
+    instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
                 intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
                 const char *dst_arrmeta, intptr_t nsrc,
                 const dynd::ndt::type *src_tp, const char *const *src_arrmeta,

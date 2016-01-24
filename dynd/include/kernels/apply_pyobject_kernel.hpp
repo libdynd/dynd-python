@@ -149,7 +149,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
 
   static intptr_t
   instantiate(char *static_data, char *DYND_UNUSED(data),
-              dynd::kernel_builder *ckb, intptr_t ckb_offset,
+              dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
               intptr_t nsrc, const dynd::ndt::type *src_tp,
               const char *const *src_arrmeta, dynd::kernel_request_t kernreq,

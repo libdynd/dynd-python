@@ -183,7 +183,6 @@ set(pydynd_SRC
     dynd/include/wrapper.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
-    dynd/src/array_functions.cpp
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp
     dynd/src/assign.cpp
@@ -193,7 +192,6 @@ set(pydynd_SRC
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
     dynd/src/numpy_interop.cpp
-    dynd/src/utility_functions.cpp
     dynd/src/wrapper.cpp
     dynd/src/types/pyobject_type.cpp
 )

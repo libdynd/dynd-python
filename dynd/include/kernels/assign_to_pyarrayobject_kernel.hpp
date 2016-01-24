@@ -48,14 +48,15 @@ namespace ndt {
  */
 struct assign_to_pyarrayobject_kernel
     : dynd::nd::base_kernel<assign_to_pyarrayobject_kernel> {
-  static intptr_t
-  instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
-              intptr_t ckb_offset, const dynd::ndt::type &dst_tp,
-              const char *dst_arrmeta, intptr_t nsrc,
-              const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-              dynd::kernel_request_t kernreq, intptr_t nkwd,
-              const dynd::nd::array *kwds,
-              const std::map<std::string, dynd::ndt::type> &tp_vars)
+  static void instantiate(char *static_data, char *data,
+                          dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
+                          const dynd::ndt::type &dst_tp,
+                          const char *dst_arrmeta, intptr_t nsrc,
+                          const dynd::ndt::type *src_tp,
+                          const char *const *src_arrmeta,
+                          dynd::kernel_request_t kernreq, intptr_t nkwd,
+                          const dynd::nd::array *kwds,
+                          const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     PyObject *dst_obj = *reinterpret_cast<PyObject *const *>(dst_arrmeta);
     uintptr_t dst_alignment =
@@ -68,16 +69,18 @@ struct assign_to_pyarrayobject_kernel
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       dynd::ndt::type dst_view_tp =
           pydynd::_type_from_numpy_dtype(dtype, dst_alignment);
-      return dynd::make_assignment_kernel(ckb, ckb_offset, dst_view_tp, NULL,
-                                          src_tp[0], src_arrmeta[0], kernreq,
-                                          &dynd::eval::default_eval_context);
+      dynd::make_assignment_kernel(ckb, ckb_offset, dst_view_tp, NULL,
+                                   src_tp[0], src_arrmeta[0], kernreq,
+                                   &dynd::eval::default_eval_context);
+      return;
     }
 
     if (PyDataType_ISOBJECT(dtype)) {
-      return dynd::nd::assign::get()->instantiate(
+      dynd::nd::assign::get()->instantiate(
           dynd::nd::assign::get()->static_data(), NULL, ckb, ckb_offset,
           dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
           src_arrmeta, kernreq, 0, NULL, tp_vars);
+      return;
     }
 
     if (PyDataType_HASFIELDS(dtype)) {
@@ -160,13 +163,14 @@ struct assign_to_pyarrayobject_kernel
       dynd::nd::callable af =
           dynd::nd::callable::make<assign_to_pyarrayobject_kernel>();
 
-      return make_tuple_unary_op_ckernel(
+      make_tuple_unary_op_ckernel(
           af.get(), af.get_type(), ckb, ckb_offset, field_count,
           &field_offsets[0], &dst_fields_tp[0], &dst_fields_arrmeta[0],
           src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(
               src_arrmeta[0]),
           src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
           src_fields_arrmeta.get(), kernreq);
+      return;
     }
     else {
       std::stringstream ss;

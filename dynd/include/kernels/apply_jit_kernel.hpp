@@ -35,7 +35,7 @@ namespace nd {
         }
       }
 
-      static intptr_t
+      static void
       instantiate(char *static_data, char *DYND_UNUSED(data),
                   dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
                   const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -47,7 +47,6 @@ namespace nd {
       {
         apply_jit_kernel::make(ckb, kernreq, ckb_offset, nsrc,
                                *reinterpret_cast<func_type *>(static_data));
-        return ckb_offset;
       }
     };
 

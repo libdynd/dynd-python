@@ -34,7 +34,7 @@ struct strided_of_numpy_arrmeta {
 
 } // anonymous namespace
 
-intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
+void pydynd::nd::copy_from_numpy_kernel::instantiate(
     char *DYND_UNUSED(static_data), char *DYND_UNUSED(data),
     dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
     const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -60,16 +60,18 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     // If there is no object type in the numpy type, get the dynd equivalent
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
-    return dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
-                                        src_view_tp, NULL, kernreq,
-                                        &dynd::eval::default_eval_context);
+    dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
+                                 src_view_tp, NULL, kernreq,
+                                 &dynd::eval::default_eval_context);
+    return;
   }
   else if (PyDataType_ISOBJECT(dtype)) {
     dynd::nd::base_callable *af = dynd::nd::assign::get().get();
     dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-    return af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
-                           dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd,
-                           kwds, tp_vars);
+    af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
+                    dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds,
+                    tp_vars);
+    return;
   }
   else if (PyDataType_HASFIELDS(dtype)) {
     if (dst_tp.get_kind() != dynd::struct_kind &&
@@ -145,12 +147,13 @@ intptr_t pydynd::nd::copy_from_numpy_kernel::instantiate(
     dynd::nd::callable af = dynd::nd::callable::make<copy_from_numpy_kernel>(
         dynd::ndt::type("(void, broadcast: bool) -> T"), 0);
 
-    return make_tuple_unary_op_ckernel(
+    make_tuple_unary_op_ckernel(
         af.get(), af.get_type(), ckb, ckb_offset, field_count,
         dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta),
         dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
         dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0],
         &src_fields_arrmeta[0], kernreq);
+    return;
   }
   else {
     stringstream ss;

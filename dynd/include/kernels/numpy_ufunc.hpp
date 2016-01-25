@@ -63,7 +63,7 @@ namespace nd {
                       data->ufunc_data);
       }
 
-      static intptr_t
+      static void
       instantiate(char *static_data, char *DYND_UNUSED(data),
                   kernel_builder *ckb, intptr_t ckb_offset,
                   const dynd::ndt::type &dst_tp,
@@ -78,10 +78,9 @@ namespace nd {
         // Acquire the GIL for creating the ckernel
         PyGILState_RAII pgs;
         self_type::make(
-            ckb, kernreq, ckb_offset,
+            ckb, kernreq,
             reinterpret_cast<std::shared_ptr<scalar_ufunc_data> *>(static_data)
                 ->get());
-        return ckb_offset;
       }
     };
 

@@ -159,7 +159,8 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
   {
     pydynd::PyGILState_RAII pgs;
 
-    apply_pyobject_kernel *self = make(ckb, kernreq, ckb_offset);
+    apply_pyobject_kernel *self = make(ckb, kernreq);
+    ckb_offset = ckb->m_size;
     self->m_proto =
         dynd::ndt::callable_type::make(dst_tp, dynd::nd::array(src_tp, nsrc));
     self->m_pyfunc = *reinterpret_cast<PyObject **>(static_data);

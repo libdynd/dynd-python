@@ -276,8 +276,8 @@ struct assign_to_pyobject_kernel<dynd::fixed_bytes_type_id, scalar_kind_type_id>
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    assign_to_pyobject_kernel::make(
-        ckb, kernreq,
+    ckb->emplace_back<assign_to_pyobject_kernel>(
+        kernreq,
         src_tp[0].extended<dynd::ndt::fixed_bytes_type>()->get_data_size());
   }
 };
@@ -415,8 +415,8 @@ struct fixed_string_ascii_assign_kernel
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    fixed_string_ascii_assign_kernel::make(ckb, kernreq,
-                                           src_tp[0].get_data_size());
+    ckb->emplace_back<fixed_string_ascii_assign_kernel>(
+        kernreq, src_tp[0].get_data_size());
   }
 };
 
@@ -446,8 +446,8 @@ struct fixed_string_utf8_assign_kernel
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    fixed_string_utf8_assign_kernel::make(ckb, kernreq,
-                                          src_tp[0].get_data_size());
+    ckb->emplace_back<fixed_string_utf8_assign_kernel>(
+        kernreq, src_tp[0].get_data_size());
   }
 };
 
@@ -479,8 +479,8 @@ struct fixed_string_utf16_assign_kernel
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    fixed_string_utf16_assign_kernel::make(ckb, kernreq,
-                                           src_tp[0].get_data_size());
+    ckb->emplace_back<fixed_string_utf16_assign_kernel>(
+        kernreq, src_tp[0].get_data_size());
   }
 };
 
@@ -512,8 +512,8 @@ struct fixed_string_utf32_assign_kernel
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    fixed_string_utf32_assign_kernel::make(ckb, kernreq,
-                                           src_tp[0].get_data_size());
+    ckb->emplace_back<fixed_string_utf32_assign_kernel>(
+        kernreq, src_tp[0].get_data_size());
   }
 };
 
@@ -593,7 +593,8 @@ struct assign_to_pyobject_kernel<dynd::date_type_id, scalar_kind_type_id>
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    assign_to_pyobject_kernel::make(ckb, kernreq, src_tp[0], src_arrmeta[0]);
+    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq, src_tp[0],
+                                                 src_arrmeta[0]);
   }
 };
 
@@ -631,7 +632,8 @@ struct assign_to_pyobject_kernel<dynd::time_type_id, scalar_kind_type_id>
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    assign_to_pyobject_kernel::make(ckb, kernreq, src_tp[0], src_arrmeta[0]);
+    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq, src_tp[0],
+                                                 src_arrmeta[0]);
   }
 };
 
@@ -673,7 +675,8 @@ struct assign_to_pyobject_kernel<dynd::datetime_type_id, scalar_kind_type_id>
       const dynd::nd::array *DYND_UNUSED(kwds),
       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
   {
-    assign_to_pyobject_kernel::make(ckb, kernreq, src_tp[0], src_arrmeta[0]);
+    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq, src_tp[0],
+                                                 src_arrmeta[0]);
   }
 };
 
@@ -724,8 +727,9 @@ struct assign_to_pyobject_kernel<dynd::option_type_id, any_kind_type_id>
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     intptr_t root_ckb_offset = ckb_offset;
+    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq);
     assign_to_pyobject_kernel *self_ck =
-        assign_to_pyobject_kernel::make(ckb, kernreq);
+        ckb->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
     ckb_offset = ckb->m_size;
     dynd::nd::callable &is_missing = dynd::nd::is_missing::get();
     is_missing.get()->instantiate(
@@ -818,8 +822,10 @@ struct assign_to_pyobject_kernel<dynd::tuple_type_id, scalar_kind_type_id>
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     intptr_t root_ckb_offset = ckb_offset;
-    assign_to_pyobject_kernel *self_ck = assign_to_pyobject_kernel::make(
-        ckb, kernreq, src_tp[0], src_arrmeta[0]);
+    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq, src_tp[0],
+                                                 src_arrmeta[0]);
+    assign_to_pyobject_kernel *self_ck =
+        ckb->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
     ckb_offset = ckb->m_size;
     intptr_t field_count =
         src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_count();
@@ -897,8 +903,9 @@ struct assign_to_pyobject_kernel<dynd::struct_type_id, tuple_type_id>
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     intptr_t root_ckb_offset = ckb_offset;
+    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq);
     assign_to_pyobject_kernel *self_ck =
-        assign_to_pyobject_kernel::make(ckb, kernreq);
+        ckb->get_at<assign_to_pyobject_kernel>(root_ckb_offset);
     ckb_offset = ckb->m_size;
     self_ck->m_src_tp = src_tp[0];
     self_ck->m_src_arrmeta = src_arrmeta[0];
@@ -978,7 +985,7 @@ struct assign_to_pyobject_kernel<dynd::fixed_dim_type_id, dim_kind_type_id>
     const char *el_arrmeta;
     if (src_tp[0].get_as_strided(src_arrmeta[0], &dim_size, &stride, &el_tp,
                                  &el_arrmeta)) {
-      assign_to_pyobject_kernel::make(ckb, kernreq, dim_size, stride);
+      ckb->emplace_back<assign_to_pyobject_kernel>(kernreq, dim_size, stride);
       ckb_offset = ckb->m_size;
       nd::assign::get()->instantiate(
           nd::assign::get()->static_data(), data, ckb, ckb_offset, dst_tp,
@@ -1036,8 +1043,8 @@ struct assign_to_pyobject_kernel<dynd::var_dim_type_id, dim_kind_type_id>
                           const dynd::nd::array *kwds,
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    assign_to_pyobject_kernel::make(
-        ckb, kernreq,
+    ckb->emplace_back<assign_to_pyobject_kernel>(
+        kernreq,
         reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
             src_arrmeta[0])
             ->offset,

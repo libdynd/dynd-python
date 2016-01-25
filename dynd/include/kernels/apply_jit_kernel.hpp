@@ -45,8 +45,8 @@ namespace nd {
                   const dynd::nd::array *kwds,
                   const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
-        apply_jit_kernel::make(ckb, kernreq, nsrc,
-                               *reinterpret_cast<func_type *>(static_data));
+        ckb->emplace_back<apply_jit_kernel>(
+            kernreq, nsrc, *reinterpret_cast<func_type *>(static_data));
       }
     };
 

@@ -159,7 +159,9 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
   {
     pydynd::PyGILState_RAII pgs;
 
-    apply_pyobject_kernel *self = make(ckb, kernreq);
+    ckb->emplace_back<apply_pyobject_kernel>(kernreq);
+    apply_pyobject_kernel *self =
+        ckb->get_at<apply_pyobject_kernel>(ckb_offset);
     ckb_offset = ckb->m_size;
     self->m_proto =
         dynd::ndt::callable_type::make(dst_tp, dynd::nd::array(src_tp, nsrc));

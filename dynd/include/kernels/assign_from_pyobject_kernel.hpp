@@ -396,7 +396,7 @@ struct assign_from_pyobject_kernel<bytes_type_id, scalar_kind_type_id>
                           const dynd::nd::array *kwds,
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+    make(ckb, kernreq, dst_tp, dst_arrmeta);
   }
 };
 
@@ -478,7 +478,8 @@ struct assign_from_pyobject_kernel<string_type_id, scalar_kind_type_id>
                           const dynd::nd::array *kwds,
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+    make(ckb, kernreq, dst_tp, dst_arrmeta);
+    ckb_offset = ckb->m_size;
   }
 };
 
@@ -549,7 +550,7 @@ struct assign_from_pyobject_kernel<date_type_id, scalar_kind_type_id>
                           const dynd::nd::array *kwds,
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+    make(ckb, kernreq, dst_tp, dst_arrmeta);
   }
 };
 
@@ -599,7 +600,7 @@ struct assign_from_pyobject_kernel<time_type_id, scalar_kind_type_id>
                           const dynd::nd::array *kwds,
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+    make(ckb, kernreq, dst_tp, dst_arrmeta);
   }
 };
 
@@ -656,7 +657,7 @@ struct assign_from_pyobject_kernel<datetime_type_id, scalar_kind_type_id>
                           const dynd::nd::array *kwds,
                           const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+    make(ckb, kernreq, dst_tp, dst_arrmeta);
   }
 };
 
@@ -760,7 +761,8 @@ struct assign_from_pyobject_kernel<option_type_id, any_kind_type_id>
   {
 
     intptr_t root_ckb_offset = ckb_offset;
-    make(ckb, kernreq, ckb_offset, dst_tp, dst_arrmeta);
+    make(ckb, kernreq, dst_tp, dst_arrmeta);
+    ckb_offset = ckb->m_size;
     dynd::nd::callable assign_na = dynd::nd::assign_na::get();
     assign_na.get()->instantiate(assign_na.get()->static_data(), NULL, ckb,
                                  ckb_offset, dst_tp, dst_arrmeta, nsrc, NULL,
@@ -873,7 +875,8 @@ struct assign_from_pyobject_kernel<tuple_type_id, scalar_kind_type_id>
 
     intptr_t root_ckb_offset = ckb_offset;
     assign_from_pyobject_kernel *self =
-        assign_from_pyobject_kernel::make(ckb, kernreq, ckb_offset);
+        assign_from_pyobject_kernel::make(ckb, kernreq);
+    ckb_offset = ckb->m_size;
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     intptr_t field_count =
@@ -1039,7 +1042,8 @@ struct assign_from_pyobject_kernel<struct_type_id, tuple_type_id>
 
     intptr_t root_ckb_offset = ckb_offset;
     assign_from_pyobject_kernel *self =
-        assign_from_pyobject_kernel::make(ckb, kernreq, ckb_offset);
+        assign_from_pyobject_kernel::make(ckb, kernreq);
+    ckb_offset = ckb->m_size;
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     intptr_t field_count =
@@ -1161,7 +1165,8 @@ struct assign_from_pyobject_kernel<fixed_dim_type_id, dim_kind_type_id>
                               &el_arrmeta)) {
       intptr_t root_ckb_offset = ckb_offset;
       assign_from_pyobject_kernel *self =
-          assign_from_pyobject_kernel::make(ckb, kernreq, ckb_offset);
+          assign_from_pyobject_kernel::make(ckb, kernreq);
+      ckb_offset = ckb->m_size;
       self->m_dim_size = dim_size;
       self->m_stride = stride;
       self->m_dst_tp = dst_tp;
@@ -1292,7 +1297,8 @@ struct assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>
 
     intptr_t root_ckb_offset = ckb_offset;
     assign_from_pyobject_kernel *self =
-        assign_from_pyobject_kernel::make(ckb, kernreq, ckb_offset);
+        assign_from_pyobject_kernel::make(ckb, kernreq);
+    ckb_offset = ckb->m_size;
     self->m_offset =
         reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
             dst_arrmeta)

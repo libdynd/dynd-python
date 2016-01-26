@@ -775,8 +775,8 @@ struct assign_from_pyobject_kernel<option_type_id, any_kind_type_id>
                                  NULL, dynd::kernel_request_single, nkwd, kwds,
                                  tp_vars);
     ckb_offset = ckb->m_size;
-    assign_from_pyobject_kernel *self = get_self(ckb, root_ckb_offset);
-    self->copy_value_offset = ckb_offset - root_ckb_offset;
+    ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset)
+        ->copy_value_offset = ckb_offset - root_ckb_offset;
     nd::assign::get()->instantiate(
         nd::assign::get()->static_data(), NULL, ckb, ckb_offset,
         dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),

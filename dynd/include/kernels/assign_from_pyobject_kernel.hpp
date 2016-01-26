@@ -1189,8 +1189,8 @@ struct assign_from_pyobject_kernel<fixed_dim_type_id, dim_kind_type_id>
       self = ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
-      dynd::make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
-                                   el_arrmeta, dynd::kernel_request_strided,
+      dynd::make_assignment_kernel(ckb, el_tp, el_arrmeta, el_tp, el_arrmeta,
+                                   dynd::kernel_request_strided,
                                    &dynd::eval::default_eval_context);
       return;
     }
@@ -1331,8 +1331,8 @@ struct assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>
     self = ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case
-    dynd::make_assignment_kernel(ckb, ckb_offset, el_tp, el_arrmeta, el_tp,
-                                 el_arrmeta, dynd::kernel_request_strided,
+    dynd::make_assignment_kernel(ckb, el_tp, el_arrmeta, el_tp, el_arrmeta,
+                                 dynd::kernel_request_strided,
                                  &dynd::eval::default_eval_context);
   }
 };

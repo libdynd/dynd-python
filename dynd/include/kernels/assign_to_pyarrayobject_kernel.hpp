@@ -69,8 +69,8 @@ struct assign_to_pyarrayobject_kernel
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       dynd::ndt::type dst_view_tp =
           pydynd::_type_from_numpy_dtype(dtype, dst_alignment);
-      dynd::make_assignment_kernel(ckb, ckb_offset, dst_view_tp, NULL,
-                                   src_tp[0], src_arrmeta[0], kernreq,
+      dynd::make_assignment_kernel(ckb, dst_view_tp, NULL, src_tp[0],
+                                   src_arrmeta[0], kernreq,
                                    &dynd::eval::default_eval_context);
       return;
     }
@@ -164,8 +164,8 @@ struct assign_to_pyarrayobject_kernel
           dynd::nd::callable::make<assign_to_pyarrayobject_kernel>();
 
       make_tuple_unary_op_ckernel(
-          af.get(), af.get_type(), ckb, ckb_offset, field_count,
-          &field_offsets[0], &dst_fields_tp[0], &dst_fields_arrmeta[0],
+          af.get(), af.get_type(), ckb, field_count, &field_offsets[0],
+          &dst_fields_tp[0], &dst_fields_arrmeta[0],
           src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(
               src_arrmeta[0]),
           src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw(),

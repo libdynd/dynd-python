@@ -60,9 +60,8 @@ void pydynd::nd::copy_from_numpy_kernel::instantiate(
     // If there is no object type in the numpy type, get the dynd equivalent
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
-    dynd::make_assignment_kernel(ckb, ckb_offset, dst_tp, dst_arrmeta,
-                                 src_view_tp, NULL, kernreq,
-                                 &dynd::eval::default_eval_context);
+    dynd::make_assignment_kernel(ckb, dst_tp, dst_arrmeta, src_view_tp, NULL,
+                                 kernreq, &dynd::eval::default_eval_context);
     return;
   }
   else if (PyDataType_ISOBJECT(dtype)) {
@@ -148,7 +147,7 @@ void pydynd::nd::copy_from_numpy_kernel::instantiate(
         dynd::ndt::type("(void, broadcast: bool) -> T"), 0);
 
     make_tuple_unary_op_ckernel(
-        af.get(), af.get_type(), ckb, ckb_offset, field_count,
+        af.get(), af.get_type(), ckb, field_count,
         dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta),
         dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
         dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0],

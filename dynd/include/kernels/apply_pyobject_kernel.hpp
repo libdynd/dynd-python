@@ -148,7 +148,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
   }
 
   static void instantiate(char *static_data, char *DYND_UNUSED(data),
-                          dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
+                          dynd::nd::kernel_builder *ckb,
                           const dynd::ndt::type &dst_tp,
                           const char *dst_arrmeta, intptr_t nsrc,
                           const dynd::ndt::type *src_tp,
@@ -159,10 +159,10 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
   {
     pydynd::PyGILState_RAII pgs;
 
+    intptr_t ckb_offset = ckb->m_size;
     ckb->emplace_back<apply_pyobject_kernel>(kernreq);
     apply_pyobject_kernel *self =
         ckb->get_at<apply_pyobject_kernel>(ckb_offset);
-    ckb_offset = ckb->m_size;
     self->m_proto =
         dynd::ndt::callable_type::make(dst_tp, dynd::nd::array(src_tp, nsrc));
     self->m_pyfunc = *reinterpret_cast<PyObject **>(static_data);
@@ -173,8 +173,8 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
 
     dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
     dynd::nd::assign::get()->instantiate(
-        dynd::nd::assign::get()->static_data(), nullptr, ckb, ckb_offset,
-        dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
-        dynd::kernel_request_single, 0, nullptr, tp_vars);
+        dynd::nd::assign::get()->static_data(), nullptr, ckb, dst_tp,
+        dst_arrmeta, 1, &child_src_tp, nullptr, dynd::kernel_request_single, 0,
+        nullptr, tp_vars);
   }
 };

@@ -188,7 +188,7 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
   if (PyList_Check(obj)) {
     Py_ssize_t size = PyList_GET_SIZE(obj);
     if (shape.size() == current_axis) {
-      if (tp.get_type_id() == void_type_id) {
+      if (tp.get_id() == void_id) {
         shape.push_back(size);
       }
       else {
@@ -206,16 +206,16 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
     for (Py_ssize_t i = 0; i < size; ++i) {
       deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp,
                                     current_axis + 1);
-      // Propagate uninitialized_type_id as a signal an
+      // Propagate uninitialized_id as a signal an
       // undeducable object was encountered
-      if (tp.get_type_id() == uninitialized_type_id) {
+      if (tp.get_id() == uninitialized_id) {
         return;
       }
     }
   }
   else {
     if (shape.size() != current_axis) {
-      // Return uninitialized_type_id as a signal
+      // Return uninitialized_id as a signal
       // when an ambiguous situation like this is encountered,
       // letting the dynamic conversion handle it.
       tp = ndt::type();
@@ -229,18 +229,18 @@ void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
     }
     else {
       obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
-      // Propagate uninitialized_type_id as a signal an
+      // Propagate uninitialized_id as a signal an
       // undeducable object was encountered
-      if (obj_tp.get_type_id() == uninitialized_type_id) {
+      if (obj_tp.get_id() == uninitialized_id) {
         tp = obj_tp;
         return;
       }
     }
 #else
     obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
-    // Propagate uninitialized_type_id as a signal an
+    // Propagate uninitialized_id as a signal an
     // undeducable object was encountered
-    if (obj_tp.get_type_id() == uninitialized_type_id) {
+    if (obj_tp.get_id() == uninitialized_id) {
       tp = obj_tp;
       return;
     }

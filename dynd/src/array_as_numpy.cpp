@@ -30,7 +30,7 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static int dynd_to_numpy_type_id[builtin_type_id_count] = {
+static int dynd_to_numpy_id[builtin_id_count] = {
     NPY_NOTYPE,    NPY_BOOL,       NPY_INT8,    NPY_INT16,
     NPY_INT32,     NPY_INT64,      NPY_NOTYPE, // INT128
     NPY_UINT8,     NPY_UINT16,     NPY_UINT32,  NPY_UINT64,
@@ -45,12 +45,12 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   // DyND builtin types
   if (dt.is_builtin()) {
     out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(
-        dynd_to_numpy_type_id[dt.get_type_id()]));
+        dynd_to_numpy_id[dt.get_id()]));
     return;
   }
 
-  switch (dt.get_type_id()) {
-  case fixed_string_type_id: {
+  switch (dt.get_id()) {
+  case fixed_string_id: {
     const ndt::fixed_string_type *fsd = dt.extended<ndt::fixed_string_type>();
     PyArray_Descr *result;
     switch (fsd->get_encoding()) {
@@ -75,7 +75,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
-  case string_type_id: {
+  case string_id: {
     // Convert variable-length strings into NumPy object arrays
     PyArray_Descr *dtype = PyArray_DescrNewFromType(NPY_OBJECT);
     // Add metadata to the string type being created so that
@@ -87,7 +87,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     PyDict_SetItemString(dtype->metadata, "vlen", (PyObject *)&PyUnicode_Type);
     return;
   }
-  case date_type_id: {
+  case date_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     PyArray_Descr *datedt = NULL;
 #if PY_VERSION_HEX >= 0x03000000
@@ -104,7 +104,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
   }
-  case datetime_type_id: {
+  case datetime_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     PyArray_Descr *datetimedt = NULL;
 #if PY_VERSION_HEX >= 0x03000000
@@ -122,7 +122,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
         "NumPy >= 1.6 is required for dynd datetime type interop");
 #endif
   }
-  case fixed_dim_type_id: {
+  case fixed_dim_id: {
     if (ndim > 0) {
       const ndt::base_dim_type *bdt = dt.extended<ndt::base_dim_type>();
       make_numpy_dtype_for_copy(out_numpy_dtype, ndim - 1,
@@ -166,7 +166,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
-  case struct_type_id: {
+  case struct_id: {
     const ndt::struct_type *bs = dt.extended<ndt::struct_type>();
     size_t field_count = bs->get_field_count();
 
@@ -247,19 +247,19 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   if (dt.is_builtin()) {
     // DyND builtin types
     out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(
-        dynd_to_numpy_type_id[dt.get_type_id()]));
+        dynd_to_numpy_id[dt.get_id()]));
     return;
   }
-  else if (dt.get_type_id() == view_type_id &&
-           dt.operand_type().get_type_id() == fixed_bytes_type_id) {
+  else if (dt.get_id() == view_id &&
+           dt.operand_type().get_id() == fixed_bytes_id) {
     // View operation for alignment
     as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim, dt.value_type(),
                       NULL);
     return;
   }
 
-  switch (dt.get_type_id()) {
-  case fixed_string_type_id: {
+  switch (dt.get_id()) {
+  case fixed_string_id: {
     const ndt::fixed_string_type *fsd = dt.extended<ndt::fixed_string_type>();
     PyArray_Descr *result;
     switch (fsd->get_encoding()) {
@@ -280,13 +280,13 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     }
     break;
   }
-  case string_type_id: {
+  case string_id: {
     // Convert to numpy object type, requires copy
     out_numpy_dtype->clear();
     *out_requires_copy = true;
     return;
   }
-  case date_type_id: {
+  case date_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     out_numpy_dtype->clear();
     *out_requires_copy = true;
@@ -295,7 +295,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
   }
-  case datetime_type_id: {
+  case datetime_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
     out_numpy_dtype->clear();
     *out_requires_copy = true;
@@ -304,7 +304,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
 #endif
   }
-  case fixed_dim_type_id: {
+  case fixed_dim_id: {
     const ndt::base_dim_type *bdt = dt.extended<ndt::base_dim_type>();
     if (ndim > 0) {
       // If this is one of the array dimensions, it simply
@@ -324,7 +324,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     break;
   }
   /*
-    case cfixed_dim_type_id: {
+    case cfixed_dim_id: {
       const cfixed_dim_type *fad = dt.extended<cfixed_dim_type>();
       if (ndim > 0) {
         // If this is one of the array dimensions, it simply
@@ -341,7 +341,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
         ndt::type element_tp = dt;
         while (ndim > 0) {
           size_t dim_size = 0;
-          if (dt.get_type_id() == cfixed_dim_type_id) {
+          if (dt.get_id() == cfixed_dim_id) {
             const cfixed_dim_type *cfd = element_tp.extended<cfixed_dim_type>();
             element_tp = cfd->get_element_type();
             if (cfd->get_data_size() != element_tp.get_data_size() * dim_size) {
@@ -388,8 +388,8 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       break;
     }
   */
-  case struct_type_id: {
-    if (dt.get_type_id() == struct_type_id && arrmeta == NULL) {
+  case struct_id: {
+    if (dt.get_id() == struct_id && arrmeta == NULL) {
       // If it's a struct type with no arrmeta, a copy is required
       out_numpy_dtype->clear();
       *out_requires_copy = true;
@@ -485,12 +485,12 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
   // If a copy is allowed, convert the builtin scalars to NumPy scalars
   if (allow_copy && a.get_type().is_scalar()) {
     pyobject_ownref result;
-    switch (a.get_type().get_type_id()) {
-    case uninitialized_type_id:
+    switch (a.get_type().get_id()) {
+    case uninitialized_id:
       throw runtime_error("cannot convert uninitialized dynd array to numpy");
-    case void_type_id:
+    case void_id:
       throw runtime_error("cannot convert void dynd array to numpy");
-    case bool_type_id:
+    case bool_id:
       if (*a.cdata()) {
         Py_INCREF(PyArrayScalar_True);
         result.reset(PyArrayScalar_True);
@@ -500,71 +500,71 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
         result.reset(PyArrayScalar_False);
       }
       break;
-    case int8_type_id:
+    case int8_id:
       result.reset(PyArrayScalar_New(Int8));
       PyArrayScalar_ASSIGN(result.get(), Int8,
                            *reinterpret_cast<const int8_t *>(a.cdata()));
       break;
-    case int16_type_id:
+    case int16_id:
       result.reset(PyArrayScalar_New(Int16));
       PyArrayScalar_ASSIGN(result.get(), Int16,
                            *reinterpret_cast<const int16_t *>(a.cdata()));
       break;
-    case int32_type_id:
+    case int32_id:
       result.reset(PyArrayScalar_New(Int32));
       PyArrayScalar_ASSIGN(result.get(), Int32,
                            *reinterpret_cast<const int32_t *>(a.cdata()));
       break;
-    case int64_type_id:
+    case int64_id:
       result.reset(PyArrayScalar_New(Int64));
       PyArrayScalar_ASSIGN(result.get(), Int64,
                            *reinterpret_cast<const int64_t *>(a.cdata()));
       break;
-    case uint8_type_id:
+    case uint8_id:
       result.reset(PyArrayScalar_New(UInt8));
       PyArrayScalar_ASSIGN(result.get(), UInt8,
                            *reinterpret_cast<const uint8_t *>(a.cdata()));
       break;
-    case uint16_type_id:
+    case uint16_id:
       result.reset(PyArrayScalar_New(UInt16));
       PyArrayScalar_ASSIGN(result.get(), UInt16,
                            *reinterpret_cast<const uint16_t *>(a.cdata()));
       break;
-    case uint32_type_id:
+    case uint32_id:
       result.reset(PyArrayScalar_New(UInt32));
       PyArrayScalar_ASSIGN(result.get(), UInt32,
                            *reinterpret_cast<const uint32_t *>(a.cdata()));
       break;
-    case uint64_type_id:
+    case uint64_id:
       result.reset(PyArrayScalar_New(UInt64));
       PyArrayScalar_ASSIGN(result.get(), UInt64,
                            *reinterpret_cast<const uint64_t *>(a.cdata()));
       break;
-    case float32_type_id:
+    case float32_id:
       result.reset(PyArrayScalar_New(Float32));
       PyArrayScalar_ASSIGN(result.get(), Float32,
                            *reinterpret_cast<const float *>(a.cdata()));
       break;
-    case float64_type_id:
+    case float64_id:
       result.reset(PyArrayScalar_New(Float64));
       PyArrayScalar_ASSIGN(result.get(), Float64,
                            *reinterpret_cast<const double *>(a.cdata()));
       break;
-    case complex_float32_type_id:
+    case complex_float32_id:
       result.reset(PyArrayScalar_New(Complex64));
       PyArrayScalar_VAL(result.get(), Complex64).real =
           reinterpret_cast<const float *>(a.cdata())[0];
       PyArrayScalar_VAL(result.get(), Complex64).imag =
           reinterpret_cast<const float *>(a.cdata())[1];
       break;
-    case complex_float64_type_id:
+    case complex_float64_id:
       result.reset(PyArrayScalar_New(Complex128));
       PyArrayScalar_VAL(result.get(), Complex128).real =
           reinterpret_cast<const double *>(a.cdata())[0];
       PyArrayScalar_VAL(result.get(), Complex128).imag =
           reinterpret_cast<const double *>(a.cdata())[1];
       break;
-    case date_type_id: {
+    case date_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
       int32_t dateval = *reinterpret_cast<const int32_t *>(a.cdata());
       result.reset(PyArrayScalar_New(Datetime));
@@ -585,7 +585,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
           "NumPy >= 1.6 is required for dynd date type interop");
 #endif
     }
-    case datetime_type_id: {
+    case datetime_id: {
 #if NPY_API_VERSION >= 6 // At least NumPy 1.6
       int64_t datetimeval = *reinterpret_cast<const int64_t *>(a.cdata());
       if (datetimeval < 0) {
@@ -636,7 +636,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     return result.release();
   }
 
-  if (a.get_type().get_type_id() == var_dim_type_id) {
+  if (a.get_type().get_id() == var_dim_id) {
     // If it's a var_dim, view it as fixed then try again
     pyobject_ownref n_tmp(DyND_PyWrapper_New(a.view(ndt::make_fixed_dim(
         a.get_dim_size(),
@@ -644,7 +644,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     return array_as_numpy(n_tmp.get(), allow_copy);
   }
   // TODO: Handle pointer type nicely as well
-  // n.get_type().get_type_id() == pointer_type_id
+  // n.get_type().get_id() == pointer_id
 
   // Do a recursive analysis of the dynd array for how to
   // convert it to NumPy

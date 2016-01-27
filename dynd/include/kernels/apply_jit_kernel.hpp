@@ -81,7 +81,7 @@ namespace nd {
       {
         std::vector<dynd::type_id_t> key(nsrc);
         for (int i = 0; i < nsrc; ++i) {
-          key[i] = src_tp[i].get_type_id();
+          key[i] = src_tp[i].get_id();
         }
 
         PyObject *&obj = children[key];

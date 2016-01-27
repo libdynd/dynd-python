@@ -42,7 +42,7 @@ void pydynd::nd::copy_from_numpy_kernel::instantiate(
     dynd::kernel_request_t kernreq, intptr_t nkwd, const dynd::nd::array *kwds,
     const std::map<std::string, dynd::ndt::type> &tp_vars)
 {
-  if (src_tp[0].get_type_id() != dynd::void_type_id) {
+  if (src_tp[0].get_id() != dynd::void_id) {
     stringstream ss;
     ss << "Cannot instantiate dynd::nd::callable copy_from_numpy with "
           "signature (";

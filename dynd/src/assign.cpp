@@ -20,14 +20,14 @@ using namespace dynd;
 PYDYND_API void assign_init()
 {
   typedef type_id_sequence<
-      bool_type_id, int8_type_id, int16_type_id, int32_type_id, int64_type_id,
-      int128_type_id, uint8_type_id, uint16_type_id, uint32_type_id,
-      uint64_type_id, uint128_type_id, float16_type_id, float32_type_id,
-      float64_type_id, complex_float32_type_id, complex_float64_type_id,
-      bytes_type_id, fixed_bytes_type_id, string_type_id, fixed_string_type_id,
-      date_type_id, time_type_id, datetime_type_id, option_type_id,
-      type_type_id, tuple_type_id, struct_type_id, fixed_dim_type_id,
-      var_dim_type_id> type_ids;
+      bool_id, int8_id, int16_id, int32_id, int64_id,
+      int128_id, uint8_id, uint16_id, uint32_id,
+      uint64_id, uint128_id, float16_id, float32_id,
+      float64_id, complex_float32_id, complex_float64_id,
+      bytes_id, fixed_bytes_id, string_id, fixed_string_id,
+      date_id, time_id, datetime_id, option_id,
+      type_id, tuple_id, struct_id, fixed_dim_id,
+      var_dim_id> type_ids;
 
   PyDateTime_IMPORT;
 

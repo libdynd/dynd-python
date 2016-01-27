@@ -254,7 +254,7 @@ inline char numpy_kindchar_of(const dynd::ndt::type &d)
   case dynd::complex_kind:
     return 'c';
   case dynd::string_kind:
-    if (d.get_type_id() == dynd::fixed_string_type_id) {
+    if (d.get_id() == dynd::fixed_string_id) {
       const dynd::ndt::base_string_type *esd =
           d.extended<dynd::ndt::base_string_type>();
       switch (esd->get_encoding()) {

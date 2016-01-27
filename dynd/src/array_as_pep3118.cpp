@@ -64,60 +64,60 @@ static void debug_print_py_buffer(std::ostream &o, const Py_buffer *buffer,
 static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
                                   const char *arrmeta, std::stringstream &o)
 {
-  switch (tp.get_type_id()) {
-  case bool_type_id:
+  switch (tp.get_id()) {
+  case bool_id:
     o << "?";
     out_itemsize = 1;
     return;
-  case int8_type_id:
+  case int8_id:
     o << "b";
     out_itemsize = 1;
     return;
-  case int16_type_id:
+  case int16_id:
     o << "h";
     out_itemsize = 2;
     return;
-  case int32_type_id:
+  case int32_id:
     o << "i";
     out_itemsize = 4;
     return;
-  case int64_type_id:
+  case int64_id:
     o << "q";
     out_itemsize = 8;
     return;
-  case uint8_type_id:
+  case uint8_id:
     o << "B";
     out_itemsize = 1;
     return;
-  case uint16_type_id:
+  case uint16_id:
     o << "H";
     out_itemsize = 2;
     return;
-  case uint32_type_id:
+  case uint32_id:
     o << "I";
     out_itemsize = 4;
     return;
-  case uint64_type_id:
+  case uint64_id:
     o << "Q";
     out_itemsize = 8;
     return;
-  case float32_type_id:
+  case float32_id:
     o << "f";
     out_itemsize = 4;
     return;
-  case float64_type_id:
+  case float64_id:
     o << "d";
     out_itemsize = 8;
     return;
-  case complex_float32_type_id:
+  case complex_float32_id:
     o << "Zf";
     out_itemsize = 8;
     return;
-  case complex_float64_type_id:
+  case complex_float64_id:
     o << "Zd";
     out_itemsize = 16;
     return;
-  case fixed_string_type_id:
+  case fixed_string_id:
     switch (tp.extended<ndt::fixed_string_type>()->get_encoding()) {
     case string_encoding_ascii: {
       intptr_t element_size = tp.get_data_size();
@@ -137,7 +137,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     }
     // Pass through to error
     break;
-  case fixed_dim_type_id: {
+  case fixed_dim_id: {
     ndt::type child_tp = tp;
     o << "(";
     do {
@@ -153,12 +153,12 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
       }
       o << ")";
       child_tp = tdt->get_element_type();
-    } while (child_tp.get_type_id() == fixed_dim_type_id && (o << ","));
+    } while (child_tp.get_id() == fixed_dim_id && (o << ","));
     append_pep3118_format(out_itemsize, child_tp, arrmeta, o);
     out_itemsize = tp.get_data_size();
     return;
   }
-  case struct_type_id: {
+  case struct_id: {
     o << "T{";
     const ndt::struct_type *tdt = tp.extended<ndt::struct_type>();
     size_t num_fields = tdt->get_field_count();
@@ -191,11 +191,11 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     o << "}";
     return;
   }
-  case view_type_id: {
+  case view_id: {
     const ndt::view_type *vd = tp.extended<ndt::view_type>();
     // If it's a view of bytes, usually to view unaligned data, can ignore it
     // since the buffer format we're creating doesn't use alignment
-    if (vd->get_operand_type().get_type_id() == fixed_bytes_type_id) {
+    if (vd->get_operand_type().get_id() == fixed_bytes_id) {
       append_pep3118_format(out_itemsize, vd->get_value_type(), arrmeta, o);
       return;
     }
@@ -245,7 +245,7 @@ static void array_getbuffer_pep3118_bytes(const ndt::type &tp,
 #endif
   buffer->strides[0] = 1;
 
-  if (tp.get_type_id() == bytes_type_id) {
+  if (tp.get_id() == bytes_id) {
     // Variable-length bytes type
     buffer->buf = reinterpret_cast<bytes *>(data)->begin();
     buffer->len = reinterpret_cast<bytes *>(data)->size();
@@ -283,8 +283,8 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     buffer->readonly = ((n.get_access_flags() & nd::write_access_flag) == 0);
     buffer->buf = preamble->data;
 
-    if (tp.get_type_id() == bytes_type_id ||
-        tp.get_type_id() == fixed_bytes_type_id) {
+    if (tp.get_id() == bytes_id ||
+        tp.get_id() == fixed_bytes_id) {
       array_getbuffer_pep3118_bytes(tp, n.get()->metadata(), n.get()->data,
                                     buffer, flags);
       return 0;
@@ -334,8 +334,8 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     // Fill in the shape and strides
     const char *arrmeta = n.get()->metadata();
     for (int i = 0; i < buffer->ndim; ++i) {
-      switch (tp.get_type_id()) {
-      case fixed_dim_type_id: {
+      switch (tp.get_id()) {
+      case fixed_dim_id: {
         const ndt::fixed_dim_type *tdt = tp.extended<ndt::fixed_dim_type>();
         const fixed_dim_type_arrmeta *md =
             reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);

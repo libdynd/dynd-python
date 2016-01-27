@@ -9,7 +9,7 @@
 
 #include <dynd/types/base_type.hpp>
 
-extern const dynd::type_id_t pyobject_type_id;
+extern const dynd::type_id_t pyobject_id;
 
 class PYDYND_API pyobject_type : public dynd::ndt::base_type {
 public:

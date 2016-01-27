@@ -39,6 +39,7 @@ find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)
 find_package(NumPy REQUIRED)
 include(UseCython)
+include(PostprocessCython)
 
 # Default install location for Python packages
 if (NOT PYTHON_PACKAGE_INSTALL_PREFIX)
@@ -250,3 +251,6 @@ foreach(module config ndt.type ndt.json nd.array nd.callable nd.functional nd.re
 endforeach(module)
 
 add_dependencies(pydynd array_pyx callable_pyx type_pyx)
+
+postprocess_cython( postprocess.py callable_postprocess callable_pyx callable)
+add_dependencies(pydynd callable_postprocess)

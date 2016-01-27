@@ -9,7 +9,7 @@ from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception
 from ..wrapper cimport wrap, begin, end
-from .callable cimport callable
+from .callable cimport callable, dynd_nd_callable_from_cpp
 from ..ndt.type cimport type, as_numba_type, from_numba_type
 
 cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
@@ -94,7 +94,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     library.add_ir_module(ir_module)
     library.finalize()
 
-    return wrap(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
+    return dynd_nd_callable_from_cpp(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):
@@ -102,10 +102,10 @@ def apply(func = None, jit = _import_numba(), *args, **kwds):
     def make(type tp, func):
         if jit:
             import numba
-            return wrap(_dispatch((<type> tp).v,
+            return dynd_nd_callable_from_cpp(_dispatch((<type> tp).v,
                 jit_dispatcher(numba.jit(func, *args, **kwds), _jit)))
 
-        return wrap(_apply(tp.v, func))
+        return dynd_nd_callable_from_cpp(_apply(tp.v, func))
 
     if func is None:
         return lambda func: make(ndt.callable(func), func)
@@ -116,14 +116,14 @@ def elwise(func):
     if not isinstance(func, callable):
         func = apply(func)
 
-    return wrap(_elwise((<callable> func).v))
+    return dynd_nd_callable_from_cpp(_elwise((<callable> func).v))
 
 def reduction(child):
     if not isinstance(child, callable):
         child = apply(child)
 
-    return wrap(_reduction((<callable> child).v))
+    return dynd_nd_callable_from_cpp(_reduction((<callable> child).v))
 
 def multidispatch(type tp, iterable = None):
-    return wrap(_multidispatch(tp.v, begin[_callable](iterable),
-        end[_callable](iterable)))
+    return dynd_nd_callable_from_cpp(_multidispatch(tp.v,
+        begin[_callable](iterable), end[_callable](iterable)))

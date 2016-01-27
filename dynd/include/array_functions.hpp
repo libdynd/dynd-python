@@ -31,8 +31,6 @@
 #include "types/pyobject_type.hpp"
 #include "type_functions.hpp"
 
-#include "wrapper.hpp"
-
 namespace pydynd {
 
 inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,

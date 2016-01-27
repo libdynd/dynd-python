@@ -19,6 +19,7 @@
 #include "copy_from_numpy_arrfunc.hpp"
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
+#include "conversions.hpp"
 
 using namespace dynd;
 
@@ -367,9 +368,9 @@ struct assign_from_pyobject_kernel<bytes_type_id, scalar_kind_type_id>
         throw std::runtime_error("Error getting byte string data");
       }
     }
-    else if (DyND_PyArray_Check(src_obj)) {
+    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
       return;
     }
     else {
@@ -455,9 +456,9 @@ struct assign_from_pyobject_kernel<string_type_id, scalar_kind_type_id>
                                     reinterpret_cast<const char *>(&str_d));
 #endif
     }
-    else if (DyND_PyArray_Check(src_obj)) {
+    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
       return;
     }
     else {
@@ -528,9 +529,9 @@ struct assign_from_pyobject_kernel<date_type_id, scalar_kind_type_id>
                   PyDateTime_GET_YEAR(src_obj), PyDateTime_GET_MONTH(src_obj),
                   PyDateTime_GET_DAY(src_obj));
     }
-    else if (DyND_PyArray_Check(src_obj)) {
+    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
     }
     else {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
@@ -577,9 +578,9 @@ struct assign_from_pyobject_kernel<time_type_id, scalar_kind_type_id>
                    PyDateTime_TIME_GET_MICROSECOND(src_obj) *
                        DYND_TICKS_PER_MICROSECOND);
     }
-    else if (DyND_PyArray_Check(src_obj)) {
+    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
     }
     else {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
@@ -633,9 +634,9 @@ struct assign_from_pyobject_kernel<datetime_type_id, scalar_kind_type_id>
                   PyDateTime_DATE_GET_SECOND(src_obj),
                   PyDateTime_DATE_GET_MICROSECOND(src_obj) * 10);
     }
-    else if (DyND_PyArray_Check(src_obj)) {
+    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
     }
     else {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
@@ -697,9 +698,9 @@ struct assign_from_pyobject_kernel<option_type_id, any_kind_type_id>
           assign_na->get_function<dynd::kernel_single_t>();
       assign_na_fn(assign_na, dst, NULL);
     }
-    else if (DyND_PyArray_Check(src_obj)) {
+    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
     }
     else if (dst_tp.get_kind() != dynd::string_kind &&
              PyUnicode_Check(src_obj)) {
@@ -793,9 +794,9 @@ struct assign_from_pyobject_kernel<tuple_type_id, scalar_kind_type_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
-    if (DyND_PyArray_Check(src_obj)) {
+    if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
       return;
     }
 #ifdef DYND_NUMPY_INTEROP
@@ -912,9 +913,9 @@ struct assign_from_pyobject_kernel<struct_type_id, tuple_type_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
-    if (DyND_PyArray_Check(src_obj)) {
+    if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
       return;
     }
 #ifdef DYND_NUMPY_INTEROP
@@ -1074,9 +1075,9 @@ struct assign_from_pyobject_kernel<fixed_dim_type_id, dim_kind_type_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
-    if (DyND_PyArray_Check(src_obj)) {
+    if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
       return;
     }
 #ifdef DYND_NUMPY_INTEROP
@@ -1190,9 +1191,9 @@ struct assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
-    if (DyND_PyArray_Check(src_obj)) {
+    if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
       pydynd::nd::typed_data_assign(m_dst_tp, m_dst_arrmeta, dst,
-                                    ((DyND_PyArrayObject *)src_obj)->v);
+                                    pydynd::array_to_cpp_ref(src_obj));
       return;
     }
 #ifdef DYND_NUMPY_INTEROP

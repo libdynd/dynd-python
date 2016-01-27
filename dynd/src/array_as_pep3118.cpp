@@ -268,10 +268,10 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     buffer->obj = ndo;
     buffer->internal = NULL;
     Py_INCREF(ndo);
-    if (!DyND_PyArray_Check(ndo)) {
+    if (!PyObject_TypeCheck(ndo, get_array_pytypeobject())) {
       throw runtime_error("array_getbuffer_pep3118 called on a non-array");
     }
-    nd::array &n = ((DyND_PyArrayObject *)ndo)->v;
+    nd::array &n = pydynd::array_to_cpp_ref(ndo);
     array_preamble *preamble = n.get();
     ndt::type tp = n.get_type();
 

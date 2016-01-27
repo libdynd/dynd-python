@@ -14,9 +14,9 @@
 #include <dynd/shape_tools.hpp>
 
 #include "visibility.hpp"
-#include "wrapper.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
+#include "conversions.hpp"
 
 #include <dynd/types/convert_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
@@ -33,13 +33,6 @@
 
 // Python's datetime C API
 #include "datetime.h"
-
-typedef DyND_PyWrapperObject<dynd::ndt::type> DyND_PyTypeObject;
-
-inline int DyND_PyType_Check(PyObject *obj)
-{
-  return DyND_PyWrapper_Check<dynd::ndt::type>(obj);
-}
 
 namespace pydynd {
 
@@ -133,8 +126,8 @@ inline dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
  */
  inline dynd::ndt::type make__type_from_pyobject(PyObject *obj)
  {
-   if (DyND_PyType_Check(obj)) {
-     return ((DyND_PyTypeObject *)obj)->v;
+   if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
+     return type_to_cpp_ref(obj);
  #if PY_VERSION_HEX < 0x03000000
    }
    else if (PyString_Check(obj)) {
@@ -150,8 +143,8 @@ inline dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
    else if (PyUnicode_Check(obj)) {
      return dynd::ndt::type(pystring_as_string(obj));
    }
-   else if (DyND_PyArray_Check(obj)) {
-     return ((DyND_PyArrayObject *)obj)->v.as<dynd::ndt::type>();
+   else if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
+     return array_to_cpp_ref(obj).as<dynd::ndt::type>();
    }
    else if (PyType_Check(obj)) {
  #if DYND_NUMPY_INTEROP

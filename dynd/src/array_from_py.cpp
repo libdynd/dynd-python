@@ -29,6 +29,7 @@
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
 #include "types/pyobject_type.hpp"
+#include "conversions.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -422,8 +423,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                                       bool always_copy)
 {
   // If it's a Cython w_array
-  if (DyND_PyArray_Check(obj)) {
-    const nd::array &result = ((DyND_PyArrayObject *)obj)->v;
+  if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
+    const nd::array &result = pydynd::array_to_cpp_ref(obj);
     if (always_copy) {
       return result.eval_copy(access_flags);
     }
@@ -618,8 +619,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
                  PyDateTime_TIME_GET_SECOND(obj),
                  PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
   }
-  else if (DyND_PyType_Check(obj)) {
-    result = nd::array(((DyND_PyTypeObject *)obj)->v);
+  else if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
+    result = nd::array(type_to_cpp_ref(obj));
   }
   else if (PyList_Check(obj)) {
     result = array_from_pylist(obj);
@@ -654,8 +655,8 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
 {
   // If it's a Cython w_array
-  if (DyND_PyArray_Check(obj)) {
-    return ((DyND_PyArrayObject *)obj)->v.get_type();
+  if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
+    return pydynd::array_to_cpp_ref(obj).get_type();
   }
 
 #if DYND_NUMPY_INTEROP

@@ -1,4 +1,5 @@
 from libc.stdint cimport intptr_t
+from libcpp.vector cimport vector
 
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport type as _type
@@ -8,9 +9,8 @@ from ..cpp.func.reduction cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception
-from ..wrapper cimport begin, end
-from .callable cimport callable, dynd_nd_callable_from_cpp
-from ..ndt.type cimport type, as_numba_type, from_numba_type
+from .callable cimport callable, dynd_nd_callable_from_cpp, dynd_nd_callable_to_cpp
+from ..ndt.type cimport type, as_numba_type, from_numba_type, as_cpp_type
 
 cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
     _callable _dispatch 'dynd::nd::functional::dispatch'[T](_type, T) \
@@ -125,5 +125,8 @@ def reduction(child):
     return dynd_nd_callable_from_cpp(_reduction((<callable> child).v))
 
 def multidispatch(type tp, iterable = None):
-    return dynd_nd_callable_from_cpp(_multidispatch(tp.v,
-        begin[_callable](iterable), end[_callable](iterable)))
+    cdef vector[_callable] v
+    if iterable is not None:
+        for c in iterable:
+            v.push_back(dynd_nd_callable_to_cpp(c))
+    return dynd_nd_callable_from_cpp(_multidispatch(as_cpp_type(tp), v.begin(), v.end()))

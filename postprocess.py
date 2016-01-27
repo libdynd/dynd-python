@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 def postprocess(files):
+    # Remove erroneous #line directives since we aren't including them deliberately
+    # and they cause compilation failures on Windows.
     for cpp_file in files:
         print('Postprocessing {}'.format(cpp_file))
         with open(cpp_file, 'r') as f:

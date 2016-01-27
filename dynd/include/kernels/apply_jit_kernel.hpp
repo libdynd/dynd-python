@@ -5,7 +5,7 @@
 #include <utility_functions.hpp>
 #include <type_functions.hpp>
 
-#include "functional.hpp"
+#include "conversions.hpp"
 
 namespace pydynd {
 namespace nd {
@@ -97,7 +97,7 @@ namespace nd {
 
           Py_INCREF(obj);
         }
-        return dynd_nd_callable_to_cpp_ref(obj);
+        return callable_to_cpp_ref(obj);
       }
     };
 

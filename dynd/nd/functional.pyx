@@ -20,7 +20,6 @@ cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
 
 cdef extern from 'functional.hpp':
     _callable _apply 'apply'(_type, object) except +translate_exception
-    void init_functional_cpp() except *
 
 cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functional":
     _callable _apply_jit "pydynd::nd::functional::apply_jit"(const _type &tp, intptr_t)
@@ -128,5 +127,3 @@ def reduction(child):
 def multidispatch(type tp, iterable = None):
     return wrap(_multidispatch(tp.v, begin[_callable](iterable),
         end[_callable](iterable)))
-
-init_functional_cpp()

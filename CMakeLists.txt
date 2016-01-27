@@ -171,6 +171,7 @@ set(pydynd_SRC
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
     dynd/include/assign.hpp
+    dynd/include/conversions.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
     dynd/include/exception_translation.hpp
@@ -187,6 +188,7 @@ set(pydynd_SRC
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp
     dynd/src/assign.cpp
+    dynd/src/conversions.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
     dynd/src/functional.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
@@ -252,5 +254,11 @@ endforeach(module)
 
 add_dependencies(pydynd array_pyx callable_pyx type_pyx)
 
+# Run a postprocess script to work around some Cython bugs
+# that haven't been fixed in the latest release.
+postprocess_cython( postprocess.py type_postprocess type_pyx type)
+add_dependencies(pydynd type_postprocess)
+postprocess_cython( postprocess.py array_postprocess array_pyx array)
+add_dependencies(pydynd array_postprocess)
 postprocess_cython( postprocess.py callable_postprocess callable_pyx callable)
 add_dependencies(pydynd callable_postprocess)

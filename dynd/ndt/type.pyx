@@ -311,6 +311,14 @@ cdef _type dynd_ndt_type_to_cpp(type t) except *:
         raise TypeError("Cannot extract DyND C++ type from None.")
     return t.v
 
+cdef _type *dynd_ndt_type_to_ptr(type t) except *:
+    # Once this becomes a method of the type wrapper class, this check and
+    # its corresponding exception handler declaration are no longer necessary
+    # since the self parameter is guaranteed to never be None.
+    if t is None:
+        raise TypeError("Cannot extract DyND C++ type from None.")
+    return &(t.v)
+
 # returns a Python object, so no exception specifier is needed.
 cdef type dynd_ndt_type_from_cpp(_type t):
     cdef type tp = type.__new__(type)

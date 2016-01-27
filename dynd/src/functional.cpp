@@ -17,9 +17,8 @@ nd::callable apply(const ndt::type &tp, PyObject *func)
 }
 
 dynd::nd::callable &dynd_nd_callable_to_cpp_ref(PyObject *o) {
+  if(dynd_nd_callable_to_ptr == NULL) {
+    import_dynd__nd__callable();
+  }
   return *dynd_nd_callable_to_ptr(reinterpret_cast<dynd_nd_callable_pywrapper*>(o));
-}
-
-void init_functional_cpp() {
-  import_dynd__nd__callable();
 }

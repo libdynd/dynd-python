@@ -8,4 +8,5 @@ cdef _array as_cpp_array(object obj) except *
 cpdef array asarray(object obj)
 
 cdef api _array dynd_nd_array_to_cpp(array) except *
+cdef api _array *dynd_nd_array_to_ptr(array) except *
 cdef api array dynd_nd_array_from_cpp(_array)

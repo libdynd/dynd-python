@@ -511,6 +511,14 @@ cdef _array dynd_nd_array_to_cpp(array a) except *:
         raise TypeError("Cannot extract DyND C++ array from None.")
     return a.v
 
+cdef _array *dynd_nd_array_to_ptr(array a) except *:
+    # Once this becomes a method of the type wrapper class, this check and
+    # its corresponding exception handler declaration are no longer necessary
+    # since the self parameter is guaranteed to never be None.
+    if a is None:
+        raise TypeError("Cannot extract DyND C++ array from None.")
+    return &(a.v)
+
 # returns a Python object, so no exception specifier is needed.
 cdef array dynd_nd_array_from_cpp(_array a):
     cdef array arr = array.__new__(array)

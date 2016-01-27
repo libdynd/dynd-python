@@ -6,7 +6,7 @@ from ..cpp.array cimport array as _array
 from ..cpp.func.callable cimport const_charptr
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type, wrap
+from ..wrapper cimport set_wrapper_type
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp
 
 cdef extern from *:
@@ -51,7 +51,7 @@ cdef class callable(object):
 
     property type:
         def __get__(self):
-            return wrap(self.v.get_array_type())
+            return dynd_ndt_type_from_cpp(self.v.get_array_type())
 
     def __call__(callable self, *args, **kwargs):
         cdef size_t nargs = len(args), nkwargs = len(kwargs)
@@ -97,3 +97,5 @@ cdef callable dynd_nd_callable_from_cpp(_callable c):
     return cl
 
 set_wrapper_type[_callable](callable)
+
+from ..ndt.type cimport dynd_ndt_type_from_cpp

@@ -42,7 +42,7 @@ from ..cpp.type cimport make_type
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type, wrap
+from ..wrapper cimport set_wrapper_type
 
 import datetime as _datetime
 import numpy as _np
@@ -244,11 +244,11 @@ cdef class type(object):
         cdef map[string, _callable] properties = self.v.get_properties()
         p = properties[name]
         if (not p.is_null()):
-            return wrap(p(self.v))
+            return dynd_nd_array_from_cpp(p(self.v))
         functions = self.v.get_functions()
         f = functions[name]
         if (not f.is_null()):
-            return wrap(f(self.v))
+            return dynd_nd_array_from_cpp(f(self.v))
 
         raise AttributeError(name)
 
@@ -754,7 +754,7 @@ class struct(object):
 """
 
 scalar = type('Scalar')
-pyobject = wrap(make_type[object]())
+pyobject = dynd_ndt_type_from_cpp(make_type[object]())
 
 _to_numba_type = {}
 _from_numba_type = {}
@@ -801,4 +801,5 @@ def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
-from ..nd.array cimport dynd_nd_array_to_cpp, as_cpp_array
+from ..nd.array cimport (dynd_nd_array_to_cpp, dynd_nd_array_from_cpp,
+                         as_cpp_array)

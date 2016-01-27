@@ -8,7 +8,7 @@ from ..cpp.func.reduction cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception
-from ..wrapper cimport wrap, begin, end
+from ..wrapper cimport begin, end
 from .callable cimport callable, dynd_nd_callable_from_cpp
 from ..ndt.type cimport type, as_numba_type, from_numba_type
 

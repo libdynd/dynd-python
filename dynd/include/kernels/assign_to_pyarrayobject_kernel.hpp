@@ -48,15 +48,13 @@ namespace ndt {
  */
 struct assign_to_pyarrayobject_kernel
     : dynd::nd::base_kernel<assign_to_pyarrayobject_kernel> {
-  static void instantiate(char *static_data, char *data,
-                          dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
-                          const dynd::ndt::type &dst_tp,
-                          const char *dst_arrmeta, intptr_t nsrc,
-                          const dynd::ndt::type *src_tp,
-                          const char *const *src_arrmeta,
-                          dynd::kernel_request_t kernreq, intptr_t nkwd,
-                          const dynd::nd::array *kwds,
-                          const std::map<std::string, dynd::ndt::type> &tp_vars)
+  static void
+  instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
+              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+              intptr_t nsrc, const dynd::ndt::type *src_tp,
+              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+              intptr_t nkwd, const dynd::nd::array *kwds,
+              const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     PyObject *dst_obj = *reinterpret_cast<PyObject *const *>(dst_arrmeta);
     uintptr_t dst_alignment =
@@ -77,7 +75,7 @@ struct assign_to_pyarrayobject_kernel
 
     if (PyDataType_ISOBJECT(dtype)) {
       dynd::nd::assign::get()->instantiate(
-          dynd::nd::assign::get()->static_data(), NULL, ckb, ckb_offset,
+          dynd::nd::assign::get()->static_data(), NULL, ckb,
           dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
           src_arrmeta, kernreq, 0, NULL, tp_vars);
       return;

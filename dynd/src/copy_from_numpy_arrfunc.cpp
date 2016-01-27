@@ -36,11 +36,10 @@ struct strided_of_numpy_arrmeta {
 
 void pydynd::nd::copy_from_numpy_kernel::instantiate(
     char *DYND_UNUSED(static_data), char *DYND_UNUSED(data),
-    dynd::nd::kernel_builder *ckb, intptr_t ckb_offset,
-    const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-    intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
-    const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-    intptr_t nkwd, const dynd::nd::array *kwds,
+    dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
+    const char *dst_arrmeta, intptr_t DYND_UNUSED(nsrc),
+    const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+    dynd::kernel_request_t kernreq, intptr_t nkwd, const dynd::nd::array *kwds,
     const std::map<std::string, dynd::ndt::type> &tp_vars)
 {
   if (src_tp[0].get_type_id() != dynd::void_type_id) {
@@ -67,9 +66,8 @@ void pydynd::nd::copy_from_numpy_kernel::instantiate(
   else if (PyDataType_ISOBJECT(dtype)) {
     dynd::nd::base_callable *af = dynd::nd::assign::get().get();
     dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-    af->instantiate(af->static_data(), NULL, ckb, ckb_offset, dst_tp,
-                    dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds,
-                    tp_vars);
+    af->instantiate(af->static_data(), NULL, ckb, dst_tp, dst_arrmeta, 1,
+                    &child_src_tp, NULL, kernreq, nkwd, kwds, tp_vars);
     return;
   }
   else if (PyDataType_HASFIELDS(dtype)) {

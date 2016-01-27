@@ -23,7 +23,7 @@ from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *
 from ..cpp.view cimport view as _view
-from ..cpp.types.pyobject_type cimport pyobject_type_id
+from ..cpp.types.pyobject_type cimport pyobject_id
 
 from ..config cimport translate_exception
 from ..wrapper cimport set_wrapper_type, wrap
@@ -311,37 +311,37 @@ cdef class array(object):
 
     def __index__(array self):
         cdef type_id_t tp = \
-            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
-        if tp == uint_kind_type_id or tp == int_kind_type_id:
+            dynd_nd_array_to_cpp(self).get_type().get_base_id()
+        if tp == uint_kind_id or tp == int_kind_id:
             return dynd_nd_array_to_cpp(self).as[longlong]()
         raise TypeError('Only integer scalars can be converted '
                         'to scalar indices.')
 
     def __int__(array self):
         cdef type_id_t tp = \
-            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
-        if (tp == uint_kind_type_id or tp == int_kind_type_id or
-            tp == bool_kind_type_id):
+            dynd_nd_array_to_cpp(self).get_type().get_base_id()
+        if (tp == uint_kind_id or tp == int_kind_id or
+            tp == bool_kind_id):
             return dynd_nd_array_to_cpp(self).as[longlong]()
         raise TypeError('Only integer and boolean scalars can be '
                         'converted to integers.')
 
     def __float__(array self):
         cdef type_id_t tp = \
-            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
-        if (tp == uint_kind_type_id or tp == int_kind_type_id or
-            tp == bool_kind_type_id or tp == float_kind_type_id):
+            dynd_nd_array_to_cpp(self).get_type().get_base_id()
+        if (tp == uint_kind_id or tp == int_kind_id or
+            tp == bool_kind_id or tp == float_kind_id):
             return dynd_nd_array_to_cpp(self).as[double]()
         raise TypeError('Only integer, boolean, and floating point '
                         'scalars can be converted to floating point numbers.')
 
     def __complex__(self):
         cdef type_id_t tp = \
-            dynd_nd_array_to_cpp(self).get_type().get_base_type_id()
+            dynd_nd_array_to_cpp(self).get_type().get_base_id()
         cdef cpp_complex_double ret
-        if (tp == uint_kind_type_id or tp == int_kind_type_id or
-            tp == bool_kind_type_id or tp == float_kind_type_id
-            or tp == complex_kind_type_id):
+        if (tp == uint_kind_id or tp == int_kind_id or
+            tp == bool_kind_id or tp == float_kind_id
+            or tp == complex_kind_id):
             ret = dynd_nd_array_to_cpp(self).as[cpp_complex_double]()
             return complex(ret.real(), ret.imag())
         raise TypeError('Only integer, boolean, floating point, and '

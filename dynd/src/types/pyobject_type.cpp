@@ -11,11 +11,11 @@
 
 using namespace dynd;
 
-const type_id_t pyobject_type_id = ndt::type_registry.insert(
-    any_kind_type_id, ndt::type(new pyobject_type(), true));
+const type_id_t pyobject_id = ndt::type_registry.insert(
+    any_kind_id, ndt::type(new pyobject_type(), true));
 
 pyobject_type::pyobject_type()
-    : ndt::base_type(pyobject_type_id, custom_kind, sizeof(PyObject *),
+    : ndt::base_type(pyobject_id, custom_kind, sizeof(PyObject *),
                      alignof(PyObject *), type_flag_none | type_flag_zeroinit,
                      0, 0, 0)
 {
@@ -25,7 +25,7 @@ void pyobject_type::print_type(std::ostream &o) const { o << "pyobject"; }
 
 bool pyobject_type::operator==(const base_type &rhs) const
 {
-  return get_type_id() == rhs.get_type_id();
+  return get_id() == rhs.get_id();
 }
 
 void pyobject_type::print_data(std::ostream &o, const char *arrmeta,

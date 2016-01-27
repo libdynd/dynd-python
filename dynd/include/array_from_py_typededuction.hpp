@@ -54,8 +54,8 @@ enum shape_deduction_t {
  *               vector, and gets updated and extended by this
  *               function as needed.
  * \param tp  The data type to start the deduction from. It should start as
- *            void_type_id, and is updated in place. This is updated to
- *            uninitialized_type_id if a value is encountered which can't be
+ *            void_id, and is updated in place. This is updated to
+ *            uninitialized_id if a value is encountered which can't be
  *            deduced.
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.

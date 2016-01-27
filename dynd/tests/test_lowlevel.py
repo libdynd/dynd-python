@@ -8,14 +8,14 @@ class TestLowLevel(unittest.TestCase):
     def type_id_of(self, dt):
         assert isinstance(dt, ndt.type)
         bd = _lowlevel.get_base_type_ptr(dt)
-        if bd < _lowlevel.type_id.BUILTIN_TYPE_ID_COUNT:
+        if bd < _lowlevel.type_id.BUILTIN_id_COUNT:
             return bd
         else:
             bdm = _lowlevel.BaseDTypeMembers.from_address(
                             _lowlevel.get_base_type_members(bd))
             return bdm.type_id
 
-    def test_type_id(self):
+    def test_id(self):
         # Numeric type id
         self.assertEqual(self.type_id_of(ndt.bool),
                         _lowlevel.type_id.BOOL)

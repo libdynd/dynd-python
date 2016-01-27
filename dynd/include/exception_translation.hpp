@@ -42,7 +42,7 @@ static inline void translate_exception()
   catch (const dynd::irange_out_of_bounds &exn) {
     PyErr_SetString(PyExc_IndexError, exn.message());
   }
-  catch (const dynd::invalid_type_id &exn) {
+  catch (const dynd::invalid_id &exn) {
     PyErr_SetString(PyExc_TypeError, exn.message());
   }
   catch (const dynd::type_error &exn) {

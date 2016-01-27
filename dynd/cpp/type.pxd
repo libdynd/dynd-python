@@ -33,8 +33,8 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
 
         bint match(type&) except +translate_exception
 
-        type_id_t get_type_id() const
-        type_id_t get_base_type_id() const
+        type_id_t get_id() const
+        type_id_t get_base_id() const
 
     type make_type[T]() except +translate_exception
 

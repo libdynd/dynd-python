@@ -72,7 +72,7 @@ inline PyObject *_type_get_shape(const dynd::ndt::type &d)
 /**
  * Returns the type id of the dynd::ndt::type, as a Python string.
  */
-PYDYND_API PyObject *_type_get_type_id(const dynd::ndt::type &d);
+PYDYND_API PyObject *_type_get_id(const dynd::ndt::type &d);
 
 inline dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
 {

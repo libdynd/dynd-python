@@ -9,18 +9,18 @@ from libcpp cimport bool as cpp_bool
 
 import datetime
 
-from ..cpp.types.type_id cimport (type_id_t, uninitialized_type_id,
-                                  bool_type_id, int8_type_id, int16_type_id,
-                                  int32_type_id, int64_type_id, int128_type_id,
-                                  uint8_type_id, uint16_type_id, uint32_type_id,
-                                  uint64_type_id, uint128_type_id,
-                                  float16_type_id, float32_type_id,
-                                  float64_type_id, float128_type_id,
-                                  complex_float32_type_id,
-                                  complex_float64_type_id, void_type_id,
-                                  callable_type_id, string_type_id, bytes_type_id,
-                                  date_type_id, datetime_type_id, time_type_id,
-                                  type_type_id)
+from ..cpp.types.type_id cimport (type_id_t, uninitialized_id,
+                                  bool_id, int8_id, int16_id,
+                                  int32_id, int64_id, int128_id,
+                                  uint8_id, uint16_id, uint32_id,
+                                  uint64_id, uint128_id,
+                                  float16_id, float32_id,
+                                  float64_id, float128_id,
+                                  complex_float32_id,
+                                  complex_float64_id, void_id,
+                                  callable_id, string_id, bytes_id,
+                                  date_id, datetime_id, time_id,
+                                  type_id)
 from ..cpp.type cimport make_type
 from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
@@ -69,7 +69,7 @@ cdef extern from "array_from_py.hpp" namespace 'pydynd':
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     object _type_get_shape(_type&) except +translate_exception
-    object _type_get_type_id(_type&) except +translate_exception
+    object _type_get_id(_type&) except +translate_exception
     string _type_str(_type &)
     string _type_repr(_type &)
 
@@ -98,26 +98,26 @@ __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int12
     'tuple', 'struct', 'callable', 'scalar', 'astype']
 
 type_ids = {}
-type_ids['UNINITIALIZED'] = uninitialized_type_id
-type_ids['BOOL'] = bool_type_id
-type_ids['INT8'] = int8_type_id
-type_ids['INT16'] = int16_type_id
-type_ids['INT32'] = int32_type_id
-type_ids['INT64'] = int64_type_id
-type_ids['INT128'] = int128_type_id
-type_ids['UINT8'] = uint8_type_id
-type_ids['UINT16'] = uint16_type_id
-type_ids['UINT32'] = uint32_type_id
-type_ids['UINT64'] = uint64_type_id
-type_ids['UINT128'] = uint128_type_id
-type_ids['FLOAT16'] = float16_type_id
-type_ids['FLOAT32'] = float32_type_id
-type_ids['FLOAT64'] = float64_type_id
-type_ids['FLOAT128'] = float128_type_id
-type_ids['COMPLEX64'] = complex_float32_type_id
-type_ids['COMPLEX128'] = complex_float64_type_id
-type_ids['VOID'] = void_type_id
-type_ids['CALLABLE'] = callable_type_id
+type_ids['UNINITIALIZED'] = uninitialized_id
+type_ids['BOOL'] = bool_id
+type_ids['INT8'] = int8_id
+type_ids['INT16'] = int16_id
+type_ids['INT32'] = int32_id
+type_ids['INT64'] = int64_id
+type_ids['INT128'] = int128_id
+type_ids['UINT8'] = uint8_id
+type_ids['UINT16'] = uint16_id
+type_ids['UINT32'] = uint32_id
+type_ids['UINT64'] = uint64_id
+type_ids['UINT128'] = uint128_id
+type_ids['FLOAT16'] = float16_id
+type_ids['FLOAT32'] = float32_id
+type_ids['FLOAT64'] = float64_id
+type_ids['FLOAT128'] = float128_id
+type_ids['COMPLEX64'] = complex_float32_id
+type_ids['COMPLEX128'] = complex_float64_id
+type_ids['VOID'] = void_id
+type_ids['CALLABLE'] = callable_id
 
 cdef class type(object):
     """
@@ -226,13 +226,13 @@ cdef class type(object):
         def __get__(self):
             return self.v.get_arrmeta_size()
 
-    property base_type_id:
+    property base_id:
         def __get__(type self):
-            return dynd_ndt_type_to_cpp(self).get_base_type_id()
+            return dynd_ndt_type_to_cpp(self).get_base_id()
 
     property id:
         def __get__(self):
-            return self.v.get_type_id()
+            return self.v.get_id()
 
     def __getattr__(self, name):
         if self.v.is_null():
@@ -667,24 +667,24 @@ def make_view(value_type, operand_type):
     result.v = dynd_make_view_type(type(value_type).v, type(operand_type).v)
     return result
 
-bool = type(bool_type_id)
-int8 = type(int8_type_id)
-int16 = type(int16_type_id)
-int32 = type(int32_type_id)
-int64 = type(int64_type_id)
-int128 = type(int128_type_id)
-uint8 = type(uint8_type_id)
-uint16 = type(uint16_type_id)
-uint32 = type(uint32_type_id)
-uint64 = type(uint64_type_id)
-uint128 = type(uint128_type_id)
-float16 = type(float16_type_id)
-float32 = type(float32_type_id)
-float64 = type(float64_type_id)
-float128 = type(float128_type_id)
-complex_float32 = type(complex_float32_type_id)
-complex_float64 = type(complex_float64_type_id)
-void = type(void_type_id)
+bool = type(bool_id)
+int8 = type(int8_id)
+int16 = type(int16_id)
+int32 = type(int32_id)
+int64 = type(int64_id)
+int128 = type(int128_id)
+uint8 = type(uint8_id)
+uint16 = type(uint16_id)
+uint32 = type(uint32_id)
+uint64 = type(uint64_id)
+uint128 = type(uint128_id)
+float16 = type(float16_id)
+float32 = type(float32_id)
+float64 = type(float64_id)
+float128 = type(float128_id)
+complex_float32 = type(complex_float32_id)
+complex_float64 = type(complex_float64_id)
+void = type(void_id)
 
 def tuple(*args):
 
@@ -754,26 +754,26 @@ _from_numba_type = {}
 try:
     import numba
 
-    _to_numba_type[bool_type_id] = numba.boolean
-    _to_numba_type[int8_type_id] = numba.int8
-    _to_numba_type[int16_type_id] = numba.int16
-    _to_numba_type[int32_type_id] = numba.int32
-    _to_numba_type[int64_type_id] = numba.int64
-    _to_numba_type[uint8_type_id] = numba.uint8
-    _to_numba_type[uint16_type_id] = numba.uint16
-    _to_numba_type[uint32_type_id] = numba.uint32
-    _to_numba_type[uint64_type_id] = numba.uint64
-    _to_numba_type[float32_type_id] = numba.float32
-    _to_numba_type[float64_type_id] = numba.float64
-    _to_numba_type[complex_float32_type_id] = numba.complex64
-    _to_numba_type[complex_float64_type_id] = numba.complex128
+    _to_numba_type[bool_id] = numba.boolean
+    _to_numba_type[int8_id] = numba.int8
+    _to_numba_type[int16_id] = numba.int16
+    _to_numba_type[int32_id] = numba.int32
+    _to_numba_type[int64_id] = numba.int64
+    _to_numba_type[uint8_id] = numba.uint8
+    _to_numba_type[uint16_id] = numba.uint16
+    _to_numba_type[uint32_id] = numba.uint32
+    _to_numba_type[uint64_id] = numba.uint64
+    _to_numba_type[float32_id] = numba.float32
+    _to_numba_type[float64_id] = numba.float64
+    _to_numba_type[complex_float32_id] = numba.complex64
+    _to_numba_type[complex_float64_id] = numba.complex128
 
     _from_numba_type = dict((_to_numba_type[key], key) for key in _to_numba_type)
 except ImportError:
     pass
 
 cdef as_numba_type(_type tp):
-    return _to_numba_type[tp.get_type_id()]
+    return _to_numba_type[tp.get_id()]
 
 cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])

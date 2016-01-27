@@ -307,7 +307,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
   // TODO: Add ability to specify access flags (e.g. immutable)
   // Do a pass through all the data to deduce its type and shape
   vector<intptr_t> shape;
-  ndt::type tp(void_type_id);
+  ndt::type tp(void_id);
   Py_ssize_t size = PyList_GET_SIZE(obj);
   shape.push_back(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
@@ -315,8 +315,8 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
   }
   // If no type was deduced, return with no result. This will fall
   // through to the array_from_py_dynamic code.
-  if (tp.get_type_id() == uninitialized_type_id ||
-      tp.get_type_id() == void_type_id) {
+  if (tp.get_id() == uninitialized_id ||
+      tp.get_id() == void_id) {
     return nd::array();
   }
 
@@ -325,43 +325,43 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
       pydynd::make_strided_array(tp, (int)shape.size(), &shape[0]);
 
   // Populate the array with data
-  switch (tp.get_type_id()) {
-  case bool_type_id:
+  switch (tp.get_id()) {
+  case bool_id:
     fill_array_from_pylist<convert_one_pyscalar_bool>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case int32_type_id:
+  case int32_id:
     fill_array_from_pylist<convert_one_pyscalar_int32>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case int64_type_id:
+  case int64_id:
     fill_array_from_pylist<convert_one_pyscalar_int64>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case float32_type_id:
+  case float32_id:
     fill_array_from_pylist<convert_one_pyscalar_float32>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case float64_type_id:
+  case float64_id:
     fill_array_from_pylist<convert_one_pyscalar_float64>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case complex_float64_type_id:
+  case complex_float64_id:
     fill_array_from_pylist<convert_one_pyscalar_cdouble>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case bytes_type_id:
+  case bytes_id:
     fill_array_from_pylist<convert_one_pyscalar_bytes>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
-  case string_type_id: {
+  case string_id: {
     const ndt::base_string_type *ext = tp.extended<ndt::base_string_type>();
     if (ext->get_encoding() == string_encoding_utf_8) {
       fill_array_from_pylist<convert_one_pyscalar_ustring>(
@@ -376,31 +376,31 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
     }
     break;
   }
-  case date_type_id: {
+  case date_id: {
     fill_array_from_pylist<convert_one_pyscalar_date>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
   }
-  case time_type_id: {
+  case time_id: {
     fill_array_from_pylist<convert_one_pyscalar_time>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
   }
-  case datetime_type_id: {
+  case datetime_id: {
     fill_array_from_pylist<convert_one_pyscalar_datetime>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
   }
-  case type_type_id: {
+  case type_id: {
     fill_array_from_pylist<convert_one_pyscalar__type>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
   }
-  case option_type_id: {
+  case option_id: {
     fill_array_from_pylist<convert_one_pyscalar_option>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
@@ -706,15 +706,15 @@ dynd::ndt::type pydynd::xarray_from_pylist(PyObject *obj)
   // TODO: Add ability to specify access flags (e.g. immutable)
   // Do a pass through all the data to deduce its type and shape
   vector<intptr_t> shape;
-  ndt::type tp(void_type_id);
+  ndt::type tp(void_id);
   Py_ssize_t size = PyList_GET_SIZE(obj);
   shape.push_back(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
     deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
   }
 
-  if (tp.get_type_id() == void_type_id) {
-    tp = dynd::ndt::type(int32_type_id);
+  if (tp.get_id() == void_id) {
+    tp = dynd::ndt::type(int32_id);
   }
 
   return dynd::ndt::make_type(shape.size(), shape.data(), tp);

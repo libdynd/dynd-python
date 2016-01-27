@@ -59,9 +59,9 @@ template <type_id_t ID, type_id_t BaseID>
 struct assign_from_pyobject_kernel;
 
 template <>
-struct assign_from_pyobject_kernel<bool_type_id, bool_kind_type_id>
+struct assign_from_pyobject_kernel<bool_id, bool_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<bool_type_id, bool_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<bool_id, bool_kind_id>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject **>(src[0]);
@@ -235,9 +235,9 @@ void pyint_to_int(dynd::uint128 *out, PyObject *obj)
 }
 
 template <type_id_t DstTypeID>
-struct assign_from_pyobject_kernel<DstTypeID, int_kind_type_id>
+struct assign_from_pyobject_kernel<DstTypeID, int_kind_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<DstTypeID, int_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<DstTypeID, int_kind_id>, 1> {
   typedef typename type_of<DstTypeID>::type T;
 
   void single(char *dst, char *const *src)
@@ -274,9 +274,9 @@ struct assign_from_pyobject_kernel<DstTypeID, int_kind_type_id>
 };
 
 template <type_id_t DstTypeID>
-struct assign_from_pyobject_kernel<DstTypeID, uint_kind_type_id>
+struct assign_from_pyobject_kernel<DstTypeID, uint_kind_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<DstTypeID, uint_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<DstTypeID, uint_kind_id>, 1> {
   typedef typename type_of<DstTypeID>::type T;
 
   void single(char *dst, char *const *src)
@@ -297,9 +297,9 @@ struct assign_from_pyobject_kernel<DstTypeID, uint_kind_type_id>
 };
 
 template <type_id_t DstTypeID>
-struct assign_from_pyobject_kernel<DstTypeID, float_kind_type_id>
+struct assign_from_pyobject_kernel<DstTypeID, float_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<DstTypeID, float_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<DstTypeID, float_kind_id>, 1> {
   typedef typename type_of<DstTypeID>::type T;
 
   void single(char *dst, char *const *src)
@@ -320,9 +320,9 @@ struct assign_from_pyobject_kernel<DstTypeID, float_kind_type_id>
 };
 
 template <type_id_t DstTypeID>
-struct assign_from_pyobject_kernel<DstTypeID, complex_kind_type_id>
+struct assign_from_pyobject_kernel<DstTypeID, complex_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<DstTypeID, complex_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<DstTypeID, complex_kind_id>, 1> {
   typedef typename type_of<DstTypeID>::type U;
   typedef typename U::value_type T;
 
@@ -345,9 +345,9 @@ struct assign_from_pyobject_kernel<DstTypeID, complex_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<bytes_type_id, scalar_kind_type_id>
+struct assign_from_pyobject_kernel<bytes_id, scalar_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<bytes_type_id, scalar_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<bytes_id, scalar_kind_id>, 1> {
   ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -400,14 +400,14 @@ struct assign_from_pyobject_kernel<bytes_type_id, scalar_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<fixed_bytes_type_id, scalar_kind_type_id>
-    : assign_from_pyobject_kernel<dynd::bytes_type_id, scalar_kind_type_id> {
+struct assign_from_pyobject_kernel<fixed_bytes_id, scalar_kind_id>
+    : assign_from_pyobject_kernel<dynd::bytes_id, scalar_kind_id> {
 };
 
 template <>
-struct assign_from_pyobject_kernel<string_type_id, scalar_kind_type_id>
+struct assign_from_pyobject_kernel<string_id, scalar_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<string_type_id, scalar_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<string_id, scalar_kind_id>, 1> {
   ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -481,14 +481,14 @@ struct assign_from_pyobject_kernel<string_type_id, scalar_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<fixed_string_type_id, scalar_kind_type_id>
-    : assign_from_pyobject_kernel<string_type_id, scalar_kind_type_id> {
+struct assign_from_pyobject_kernel<fixed_string_id, scalar_kind_id>
+    : assign_from_pyobject_kernel<string_id, scalar_kind_id> {
 };
 
 template <>
-struct assign_from_pyobject_kernel<date_type_id, scalar_kind_type_id>
+struct assign_from_pyobject_kernel<date_id, scalar_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<date_type_id, scalar_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<date_id, scalar_kind_id>, 1> {
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -551,9 +551,9 @@ struct assign_from_pyobject_kernel<date_type_id, scalar_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<time_type_id, scalar_kind_type_id>
+struct assign_from_pyobject_kernel<time_id, scalar_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<time_type_id, scalar_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<time_id, scalar_kind_id>, 1> {
 
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
@@ -600,9 +600,9 @@ struct assign_from_pyobject_kernel<time_type_id, scalar_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<datetime_type_id, scalar_kind_type_id>
+struct assign_from_pyobject_kernel<datetime_id, scalar_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<datetime_type_id, scalar_kind_type_id>,
+          assign_from_pyobject_kernel<datetime_id, scalar_kind_id>,
           1> {
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
@@ -656,9 +656,9 @@ struct assign_from_pyobject_kernel<datetime_type_id, scalar_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<type_type_id, any_kind_type_id>
+struct assign_from_pyobject_kernel<type_id, any_kind_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<type_type_id, any_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<type_id, any_kind_id>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -668,9 +668,9 @@ struct assign_from_pyobject_kernel<type_type_id, any_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<option_type_id, any_kind_type_id>
+struct assign_from_pyobject_kernel<option_id, any_kind_id>
     : nd::base_kernel<
-          assign_from_pyobject_kernel<option_type_id, any_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<option_id, any_kind_id>, 1> {
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
   intptr_t copy_value_offset;
@@ -773,9 +773,9 @@ struct assign_from_pyobject_kernel<option_type_id, any_kind_type_id>
 
 // TODO: Should make a more efficient strided kernel function
 template <>
-struct assign_from_pyobject_kernel<tuple_type_id, scalar_kind_type_id>
+struct assign_from_pyobject_kernel<tuple_id, scalar_kind_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<tuple_type_id, scalar_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<tuple_id, scalar_kind_id>, 1> {
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
   bool m_dim_broadcast;
@@ -894,9 +894,9 @@ struct assign_from_pyobject_kernel<tuple_type_id, scalar_kind_type_id>
 
 // TODO: Should make a more efficient strided kernel function
 template <>
-struct assign_from_pyobject_kernel<struct_type_id, tuple_type_id>
+struct assign_from_pyobject_kernel<struct_id, tuple_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<struct_type_id, tuple_type_id>, 1> {
+          assign_from_pyobject_kernel<struct_id, tuple_id>, 1> {
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
   bool m_dim_broadcast;
@@ -1062,9 +1062,9 @@ struct assign_from_pyobject_kernel<struct_type_id, tuple_type_id>
 // TODO: Could instantiate the dst_tp -> dst_tp assignment
 //       as part of the ckernel instead of dynamically
 template <>
-struct assign_from_pyobject_kernel<fixed_dim_type_id, dim_kind_type_id>
+struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<fixed_dim_type_id, dim_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>, 1> {
   intptr_t m_dim_size, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
@@ -1182,9 +1182,9 @@ struct assign_from_pyobject_kernel<fixed_dim_type_id, dim_kind_type_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>
+struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
     : dynd::nd::base_kernel<
-          assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>, 1> {
+          assign_from_pyobject_kernel<var_dim_id, dim_kind_id>, 1> {
   intptr_t m_offset, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
@@ -1322,7 +1322,7 @@ struct assign_from_pyobject_kernel<var_dim_type_id, dim_kind_type_id>
 template <type_id_t DstTypeID>
 using assign_from_pyobject_kernel =
     ::detail::assign_from_pyobject_kernel<DstTypeID,
-                                          base_type_id_of<DstTypeID>::value>;
+                                          base_id_of<DstTypeID>::value>;
 
 namespace dynd {
 namespace ndt {

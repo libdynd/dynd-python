@@ -214,7 +214,7 @@ dynd::ndt::type pydynd::_type_from_numpy_dtype(PyArray_Descr *d,
     break;
   }
 
-  if (dt.get_type_id() == dynd::uninitialized_type_id) {
+  if (dt.get_id() == dynd::uninitialized_id) {
     stringstream ss;
     ss << "unsupported Numpy dtype with type id " << d->type_num;
     throw dynd::type_error(ss.str());
@@ -238,8 +238,8 @@ dynd::ndt::type pydynd::_type_from_numpy_dtype(PyArray_Descr *d,
 void pydynd::fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &dt,
                                            PyArray_Descr *d, char *arrmeta)
 {
-  switch (dt.get_type_id()) {
-  case dynd::struct_type_id: {
+  switch (dt.get_id()) {
+  case dynd::struct_id: {
     // In DyND, the struct offsets are part of the arrmeta instead of the dtype.
     // That's why we have to populate them here.
     PyObject *d_names = d->names;
@@ -266,7 +266,7 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &dt,
     }
     break;
   }
-  case dynd::fixed_dim_type_id: {
+  case dynd::fixed_dim_id: {
     // The Numpy subarray becomes a series of fixed_dim types, so we
     // need to copy the strides into the arrmeta.
     dynd::ndt::type el;
@@ -313,34 +313,34 @@ void pydynd::fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &dt,
 
 PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp)
 {
-  switch (tp.get_type_id()) {
-  case dynd::bool_type_id:
+  switch (tp.get_id()) {
+  case dynd::bool_id:
     return PyArray_DescrFromType(NPY_BOOL);
-  case dynd::int8_type_id:
+  case dynd::int8_id:
     return PyArray_DescrFromType(NPY_INT8);
-  case dynd::int16_type_id:
+  case dynd::int16_id:
     return PyArray_DescrFromType(NPY_INT16);
-  case dynd::int32_type_id:
+  case dynd::int32_id:
     return PyArray_DescrFromType(NPY_INT32);
-  case dynd::int64_type_id:
+  case dynd::int64_id:
     return PyArray_DescrFromType(NPY_INT64);
-  case dynd::uint8_type_id:
+  case dynd::uint8_id:
     return PyArray_DescrFromType(NPY_UINT8);
-  case dynd::uint16_type_id:
+  case dynd::uint16_id:
     return PyArray_DescrFromType(NPY_UINT16);
-  case dynd::uint32_type_id:
+  case dynd::uint32_id:
     return PyArray_DescrFromType(NPY_UINT32);
-  case dynd::uint64_type_id:
+  case dynd::uint64_id:
     return PyArray_DescrFromType(NPY_UINT64);
-  case dynd::float32_type_id:
+  case dynd::float32_id:
     return PyArray_DescrFromType(NPY_FLOAT32);
-  case dynd::float64_type_id:
+  case dynd::float64_id:
     return PyArray_DescrFromType(NPY_FLOAT64);
-  case dynd::complex_float32_type_id:
+  case dynd::complex_float32_id:
     return PyArray_DescrFromType(NPY_CFLOAT);
-  case dynd::complex_float64_type_id:
+  case dynd::complex_float64_id:
     return PyArray_DescrFromType(NPY_CDOUBLE);
-  case dynd::fixed_string_type_id: {
+  case dynd::fixed_string_id: {
     const dynd::ndt::fixed_string_type *ftp =
         tp.extended<dynd::ndt::fixed_string_type>();
     PyArray_Descr *result;
@@ -359,7 +359,7 @@ PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp)
     break;
   }
   /*
-        case tuple_type_id: {
+        case tuple_id: {
             const tuple_type *ttp = tp.extended<tuple_type>();
             const vector<ndt::type>& fields = ttp->get_fields();
             size_t num_fields = fields.size();
@@ -395,7 +395,7 @@ dtype via dict");
             }
             return result;
         }
-        case struct_type_id: {
+        case struct_id: {
             const struct_type *ttp = tp.extended<struct_type>();
             size_t field_count = ttp->get_field_count();
             size_t max_numpy_alignment = 1;
@@ -450,7 +450,7 @@ dict";
             }
             return result;
         }
-        case fixed_dim_type_id: {
+        case fixed_dim_id: {
             ndt::type child_tp = tp;
             vector<intptr_t> shape;
             do {
@@ -465,7 +465,7 @@ dtype because it is not C-order";
                     throw dynd::type_error(ss.str());
                 }
                 child_tp = ttp->get_element_type();
-            } while (child_tp.get_type_id() == cfixed_dim_type_id);
+            } while (child_tp.get_id() == cfixed_dim_id);
             pyobject_ownref dtype_obj((PyObject
 *)numpy_dtype_from__type(child_tp));
             pyobject_ownref shape_obj(intptr_array_as_tuple((int)shape.size(),
@@ -481,10 +481,10 @@ subarray dtype");
             return result;
         }
 */
-  case dynd::view_type_id: {
+  case dynd::view_id: {
     // If there's a view which is for alignment purposes, throw it
     // away because Numpy works differently
-    if (tp.operand_type().get_type_id() == dynd::fixed_bytes_type_id) {
+    if (tp.operand_type().get_id() == dynd::fixed_bytes_id) {
       return numpy_dtype_from__type(tp.value_type());
     }
     break;
@@ -501,8 +501,8 @@ subarray dtype");
 PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp,
                                               const char *arrmeta)
 {
-  switch (tp.get_type_id()) {
-  case dynd::struct_type_id: {
+  switch (tp.get_id()) {
+  case dynd::struct_id: {
     throw std::runtime_error("converting");
     if (arrmeta == NULL) {
       stringstream ss;
@@ -772,7 +772,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj,
         dynd::nd::read_access_flag |
             (PyArray_ISWRITEABLE(obj) ? dynd::nd::write_access_flag : 0),
         PyArray_BYTES(obj), std::move(memblock), &arrmeta);
-    if (d.get_type_id() == dynd::struct_type_id) {
+    if (d.get_id() == dynd::struct_id) {
       // If it's a struct, there's additional arrmeta that needs to be populated
       pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);
     }

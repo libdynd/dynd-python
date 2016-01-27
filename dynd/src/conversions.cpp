@@ -21,7 +21,7 @@ PyTypeObject *pydynd::get_type_pytypeobject(){
   return &dynd_ndt_type_pywrapper_type;
 }
 
-PyObject *pydynd::type_from_cpp(dynd::ndt::type t){
+PyObject *pydynd::type_from_cpp(const dynd::ndt::type &t){
   if(dynd_ndt_type_from_cpp == NULL) {
     import_dynd__ndt__type();
   }
@@ -45,7 +45,7 @@ PyTypeObject *pydynd::get_array_pytypeobject(){
   return &dynd_nd_array_pywrapper_type;
 }
 
-PyObject *pydynd::array_from_cpp(dynd::nd::array a){
+PyObject *pydynd::array_from_cpp(const dynd::nd::array &a){
   if(dynd_nd_array_from_cpp == NULL) {
     import_dynd__nd__array();
   }
@@ -69,7 +69,7 @@ PyTypeObject *pydynd::get_callable_pytypeobject(){
   return &dynd_nd_callable_pywrapper_type;
 }
 
-PyObject *pydynd::callable_from_cpp(dynd::nd::callable c){
+PyObject *pydynd::callable_from_cpp(const dynd::nd::callable &c){
   if(dynd_nd_callable_from_cpp == NULL) {
     import_dynd__nd__callable();
   }

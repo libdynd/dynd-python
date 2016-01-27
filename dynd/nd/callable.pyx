@@ -90,7 +90,7 @@ cdef _callable *dynd_nd_callable_to_ptr(callable c) except *:
     return &(c.v)
 
 # returns a Python object, so no exception specifier is needed.
-cdef callable dynd_nd_callable_from_cpp(_callable c):
+cdef callable dynd_nd_callable_from_cpp(const _callable &c):
     cdef callable cl = callable.__new__(callable)
     cl.v = c
     return cl

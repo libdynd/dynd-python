@@ -319,7 +319,7 @@ cdef _type *dynd_ndt_type_to_ptr(type t) except *:
     return &(t.v)
 
 # returns a Python object, so no exception specifier is needed.
-cdef type dynd_ndt_type_from_cpp(_type t):
+cdef type dynd_ndt_type_from_cpp(const _type &t):
     cdef type tp = type.__new__(type)
     tp.v = t
     return tp

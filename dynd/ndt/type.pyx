@@ -42,7 +42,6 @@ from ..cpp.type cimport make_type
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type
 
 import datetime as _datetime
 import numpy as _np
@@ -412,8 +411,6 @@ cpdef type astype(object o):
     if _builtin_type(o) is type:
         return o
     return dynd_ndt_type_from_cpp(as_cpp_type(o))
-
-set_wrapper_type[_type](type)
 
 def make_categorical(values):
     """

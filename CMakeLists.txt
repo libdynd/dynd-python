@@ -182,7 +182,6 @@ set(pydynd_SRC
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/visibility.hpp
-    dynd/include/wrapper.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
     dynd/src/array_from_py.cpp
@@ -195,7 +194,6 @@ set(pydynd_SRC
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
     dynd/src/numpy_interop.cpp
-    dynd/src/wrapper.cpp
     dynd/src/types/pyobject_type.cpp
 )
 

@@ -6,7 +6,6 @@ from ..cpp.array cimport array as _array
 from ..cpp.func.callable cimport const_charptr
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp
 
 cdef extern from *:
@@ -95,7 +94,5 @@ cdef callable dynd_nd_callable_from_cpp(_callable c):
     cdef callable cl = callable.__new__(callable)
     cl.v = c
     return cl
-
-set_wrapper_type[_callable](callable)
 
 from ..ndt.type cimport dynd_ndt_type_from_cpp

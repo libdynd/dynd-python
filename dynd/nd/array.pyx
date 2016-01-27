@@ -26,7 +26,6 @@ from ..cpp.view cimport view as _view
 from ..cpp.types.pyobject_type cimport pyobject_type_id
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type
 from ..ndt.type cimport cpp_type_for
 
@@ -524,8 +523,6 @@ cdef array dynd_nd_array_from_cpp(_array a):
     cdef array arr = array.__new__(array)
     arr.v = a
     return arr
-
-set_wrapper_type[_array](array)
 
 cdef _array as_cpp_array(object obj) except *:
     """

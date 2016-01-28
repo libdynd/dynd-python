@@ -24,6 +24,7 @@
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
 #include "numpy_interop.hpp"
+#include "conversions.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -131,7 +132,7 @@ ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
     }
     return ndt::time_type::make(tz_abstract);
   }
-  else if (DyND_PyType_Check(obj)) {
+  else if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
     return ndt::make_type<ndt::type_type>();
   }
   else if (PyType_Check(obj)) {

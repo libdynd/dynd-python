@@ -42,7 +42,6 @@ from ..cpp.type cimport make_type
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type, wrap
 
 import datetime as _datetime
 import numpy as _np
@@ -244,11 +243,11 @@ cdef class type(object):
         cdef map[string, _callable] properties = self.v.get_properties()
         p = properties[name]
         if (not p.is_null()):
-            return wrap(p(self.v))
+            return dynd_nd_array_from_cpp(p(self.v))
         functions = self.v.get_functions()
         f = functions[name]
         if (not f.is_null()):
-            return wrap(f(self.v))
+            return dynd_nd_array_from_cpp(f(self.v))
 
         raise AttributeError(name)
 
@@ -311,8 +310,16 @@ cdef _type dynd_ndt_type_to_cpp(type t) except *:
         raise TypeError("Cannot extract DyND C++ type from None.")
     return t.v
 
+cdef _type *dynd_ndt_type_to_ptr(type t) except *:
+    # Once this becomes a method of the type wrapper class, this check and
+    # its corresponding exception handler declaration are no longer necessary
+    # since the self parameter is guaranteed to never be None.
+    if t is None:
+        raise TypeError("Cannot extract DyND C++ type from None.")
+    return &(t.v)
+
 # returns a Python object, so no exception specifier is needed.
-cdef type dynd_ndt_type_from_cpp(_type t):
+cdef type dynd_ndt_type_from_cpp(const _type &t):
     cdef type tp = type.__new__(type)
     tp.v = t
     return tp
@@ -404,8 +411,6 @@ cpdef type astype(object o):
     if _builtin_type(o) is type:
         return o
     return dynd_ndt_type_from_cpp(as_cpp_type(o))
-
-set_wrapper_type[_type](type)
 
 def make_categorical(values):
     """
@@ -746,7 +751,7 @@ class struct(object):
 """
 
 scalar = type('Scalar')
-pyobject = wrap(make_type[object]())
+pyobject = dynd_ndt_type_from_cpp(make_type[object]())
 
 _to_numba_type = {}
 _from_numba_type = {}
@@ -793,4 +798,5 @@ def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
-from ..nd.array cimport dynd_nd_array_to_cpp, as_cpp_array
+from ..nd.array cimport (dynd_nd_array_to_cpp, dynd_nd_array_from_cpp,
+                         as_cpp_array)

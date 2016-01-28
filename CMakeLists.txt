@@ -39,6 +39,7 @@ find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)
 find_package(NumPy REQUIRED)
 include(UseCython)
+include(PostprocessCython)
 
 # Default install location for Python packages
 if (NOT PYTHON_PACKAGE_INSTALL_PREFIX)
@@ -170,6 +171,7 @@ set(pydynd_SRC
     dynd/include/array_from_py_typededuction.hpp
     dynd/include/array_functions.hpp
     dynd/include/assign.hpp
+    dynd/include/conversions.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
     dynd/include/exception_translation.hpp
@@ -180,19 +182,18 @@ set(pydynd_SRC
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/visibility.hpp
-    dynd/include/wrapper.hpp
     dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
     dynd/src/array_from_py.cpp
     dynd/src/array_from_py_typededuction.cpp
     dynd/src/assign.cpp
+    dynd/src/conversions.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
     dynd/src/functional.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
     dynd/src/numpy_interop.cpp
-    dynd/src/wrapper.cpp
     dynd/src/types/pyobject_type.cpp
 )
 
@@ -250,3 +251,12 @@ foreach(module config ndt.type ndt.json nd.array nd.callable nd.functional nd.re
 endforeach(module)
 
 add_dependencies(pydynd array_pyx callable_pyx type_pyx)
+
+# Run a postprocess script to work around some Cython bugs
+# that haven't been fixed in the latest release.
+postprocess_cython( postprocess.py type_postprocess type_pyx type)
+add_dependencies(pydynd type_postprocess)
+postprocess_cython( postprocess.py array_postprocess array_pyx array)
+add_dependencies(pydynd array_postprocess)
+postprocess_cython( postprocess.py callable_postprocess callable_pyx callable)
+add_dependencies(pydynd callable_postprocess)

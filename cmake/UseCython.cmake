@@ -114,11 +114,11 @@ function( compile_pyx _name pyx_target_name generated_files pyx_file)
   get_source_file_property( property_is_public ${pyx_file} CYTHON_PUBLIC )
   get_source_file_property( property_is_api ${pyx_file} CYTHON_API )
   if( ${property_is_api} )
-      set( _generated_files "${_name}.${extension}" "${_name}.h" "${name}_api.h")
+      set( _generated_files ${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension} ${CMAKE_CURRENT_BINARY_DIR}/${_name}.h ${CMAKE_CURRENT_BINARY_DIR}/${_name}_api.h)
   elseif( ${property_is_public} )
-      set( _generated_files "${_name}.${extension}" "${_name}.h")
+      set( _generated_files ${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension} ${CMAKE_CURRENT_BINARY_DIR}/${_name}.h)
   else()
-      set( _generated_files "${_name}.${extension}")
+      set( _generated_files ${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension})
   endif()
   set_source_files_properties( ${_generated_files} PROPERTIES GENERATED TRUE )
   set( ${generated_files} ${_generated_files} PARENT_SCOPE )
@@ -134,6 +134,9 @@ function( compile_pyx _name pyx_target_name generated_files pyx_file)
     #BYPRODUCTS ${_generated_files}
     COMMENT ${comment}
     )
+
+  set_target_properties(${pyx_target_name}
+  PROPERTIES generated_files "${_generated_files}")
 
   # Remove their visibility to the user.
   set( corresponding_pxd_file "" CACHE INTERNAL "" )

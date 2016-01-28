@@ -1,17 +1,31 @@
+from libc.stdint cimport intptr_t
+from libcpp.vector cimport vector
+
+from ..cpp.func.callable cimport callable as _callable
+from ..cpp.type cimport type as _type
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.func.elwise cimport elwise as _elwise
 from ..cpp.func.reduction cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
-from ..wrapper cimport wrap, begin, end
-from .callable cimport callable
-from ..ndt.type cimport type, as_numba_type, from_numba_type
+from ..config cimport translate_exception
+from .callable cimport callable, dynd_nd_callable_from_cpp, dynd_nd_callable_to_cpp
+from ..ndt.type cimport type, as_numba_type, from_numba_type, as_cpp_type
 
 cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
     _callable _dispatch 'dynd::nd::functional::dispatch'[T](_type, T) \
         except +translate_exception
     _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T) \
         except +translate_exception
+
+cdef extern from 'functional.hpp':
+    _callable _apply 'apply'(_type, object) except +translate_exception
+
+cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functional":
+    _callable _apply_jit "pydynd::nd::functional::apply_jit"(const _type &tp, intptr_t)
+
+    cdef cppclass jit_dispatcher:
+        jit_dispatcher(object, object (*)(object, intptr_t, const _type *))
 
 def _import_numba():
     try:
@@ -80,7 +94,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     library.add_ir_module(ir_module)
     library.finalize()
 
-    return wrap(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
+    return dynd_nd_callable_from_cpp(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):
@@ -88,10 +102,10 @@ def apply(func = None, jit = _import_numba(), *args, **kwds):
     def make(type tp, func):
         if jit:
             import numba
-            return wrap(_dispatch((<type> tp).v,
+            return dynd_nd_callable_from_cpp(_dispatch((<type> tp).v,
                 jit_dispatcher(numba.jit(func, *args, **kwds), _jit)))
 
-        return wrap(_apply(tp.v, func))
+        return dynd_nd_callable_from_cpp(_apply(tp.v, func))
 
     if func is None:
         return lambda func: make(ndt.callable(func), func)
@@ -102,14 +116,17 @@ def elwise(func):
     if not isinstance(func, callable):
         func = apply(func)
 
-    return wrap(_elwise((<callable> func).v))
+    return dynd_nd_callable_from_cpp(_elwise((<callable> func).v))
 
 def reduction(child):
     if not isinstance(child, callable):
         child = apply(child)
 
-    return wrap(_reduction((<callable> child).v))
+    return dynd_nd_callable_from_cpp(_reduction((<callable> child).v))
 
 def multidispatch(type tp, iterable = None):
-    return wrap(_multidispatch(tp.v, begin[_callable](iterable),
-        end[_callable](iterable)))
+    cdef vector[_callable] v
+    if iterable is not None:
+        for c in iterable:
+            v.push_back(dynd_nd_callable_to_cpp(c))
+    return dynd_nd_callable_from_cpp(_multidispatch(as_cpp_type(tp), v.begin(), v.end()))

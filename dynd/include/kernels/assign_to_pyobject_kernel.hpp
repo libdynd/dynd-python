@@ -747,7 +747,7 @@ struct assign_to_pyobject_kernel<dynd::type_id, any_kind_id>
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
     dynd::ndt::type tp = *reinterpret_cast<const dynd::ndt::type *>(src[0]);
-    *dst_obj = DyND_PyWrapper_New(std::move(tp));
+    *dst_obj = pydynd::type_from_cpp(std::move(tp));
   }
 };
 

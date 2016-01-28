@@ -41,7 +41,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
     for (intptr_t i = 0; i != nsrc; ++i) {
       PyObject *item = PyTuple_GET_ITEM(args, i);
       if (Py_REFCNT(item) != 1 ||
-          ((DyND_PyArrayObject *)item)->v.get()->m_use_count != 1) {
+          pydynd::array_to_cpp_ref(item).get()->m_use_count != 1) {
         std::stringstream ss;
         ss << "Python callback function ";
         pydynd::pyobject_ownref pyfunc_repr(PyObject_Repr(m_pyfunc));
@@ -50,10 +50,10 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
         ss << (i + 1) << " which contained temporary memory.";
         ss << " This is disallowed.\n";
         ss << "Python wrapper ref count: " << Py_REFCNT(item) << "\n";
-        ((DyND_PyArrayObject *)item)->v.debug_print(ss);
+        pydynd::array_to_cpp_ref(item).debug_print(ss);
         // Set all the args' data pointers to NULL as a precaution
         for (i = 0; i != nsrc; ++i) {
-          ((DyND_PyArrayObject *)item)->v.get()->data = NULL;
+          pydynd::array_to_cpp_ref(item).get()->data = NULL;
         }
         throw std::runtime_error(ss.str());
       }
@@ -83,7 +83,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
             n.get()->metadata(), m_src_arrmeta[i],
             dynd::intrusive_ptr<dynd::memory_block_data>());
       }
-      PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
+      PyTuple_SET_ITEM(args.get(), i, pydynd::array_from_cpp(std::move(n)));
     }
     // Now call the function
     pydynd::pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
@@ -122,7 +122,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
             n.get()->metadata(), m_src_arrmeta[i],
             dynd::intrusive_ptr<dynd::memory_block_data>());
       }
-      PyTuple_SET_ITEM(args.get(), i, DyND_PyWrapper_New(std::move(n)));
+      PyTuple_SET_ITEM(args.get(), i, pydynd::array_from_cpp(std::move(n)));
     }
     // Do the loop, reusing the args we created
     for (size_t j = 0; j != count; ++j) {
@@ -141,7 +141,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
       dst += dst_stride;
       for (intptr_t i = 0; i != nsrc; ++i) {
         const dynd::nd::array &n =
-            ((DyND_PyArrayObject *)PyTuple_GET_ITEM(args.get(), i))->v;
+            pydynd::array_to_cpp_ref(PyTuple_GET_ITEM(args.get(), i));
         n.get()->data += src_stride[i];
       }
     }

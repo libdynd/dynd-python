@@ -26,7 +26,6 @@ from ..cpp.view cimport view as _view
 from ..cpp.types.pyobject_type cimport pyobject_id
 
 from ..config cimport translate_exception
-from ..wrapper cimport set_wrapper_type, wrap
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type
 from ..ndt.type cimport cpp_type_for
 
@@ -247,11 +246,11 @@ cdef class array(object):
         cdef _type dt = self.v.get_type()
         properties = dt.get_array_properties()
         for pair in properties:
-            result[pair.first] = wrap(pair.second)
+            result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
         properties = dt.get_array_functions()
         for pair in properties:
-            result[pair.first] = wrap(pair.second)
+            result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
         return result.keys()
 
@@ -266,14 +265,14 @@ cdef class array(object):
 
         cdef _callable p = properties[name]
         if (not p.is_null()):
-            return wrap(p(self.v))
+            return dynd_nd_array_from_cpp(p(self.v))
 
         cdef map[string, _callable] functions
         functions = dt.get_array_functions()
 
         cdef _callable f = functions[name]
         if (not f.is_null()):
-            return wrap(f(self.v))
+            return dynd_nd_array_from_cpp(f(self.v))
 
         raise AttributeError(name)
 
@@ -387,17 +386,17 @@ cdef class array(object):
 
     def __richcmp__(a0, a1, int op):
         if op == Py_LT:
-            return wrap(asarray(a0).v < asarray(a1).v)
+            return dynd_nd_array_from_cpp(asarray(a0).v < asarray(a1).v)
         elif op == Py_LE:
-            return wrap(asarray(a0).v <= asarray(a1).v)
+            return dynd_nd_array_from_cpp(asarray(a0).v <= asarray(a1).v)
         elif op == Py_EQ:
-            return wrap(asarray(a0).v == asarray(a1).v)
+            return dynd_nd_array_from_cpp(asarray(a0).v == asarray(a1).v)
         elif op == Py_NE:
-            return wrap(asarray(a0).v != asarray(a1).v)
+            return dynd_nd_array_from_cpp(asarray(a0).v != asarray(a1).v)
         elif op == Py_GE:
-            return wrap(asarray(a0).v >= asarray(a1).v)
+            return dynd_nd_array_from_cpp(asarray(a0).v >= asarray(a1).v)
         elif op == Py_GT:
-            return wrap(asarray(a0).v > asarray(a1).v)
+            return dynd_nd_array_from_cpp(asarray(a0).v > asarray(a1).v)
 
     def __getbuffer__(array self, Py_buffer* buffer, int flags):
         # Docstring triggered Cython bug (fixed in master), so it's commented out
@@ -511,13 +510,19 @@ cdef _array dynd_nd_array_to_cpp(array a) except *:
         raise TypeError("Cannot extract DyND C++ array from None.")
     return a.v
 
+cdef _array *dynd_nd_array_to_ptr(array a) except *:
+    # Once this becomes a method of the type wrapper class, this check and
+    # its corresponding exception handler declaration are no longer necessary
+    # since the self parameter is guaranteed to never be None.
+    if a is None:
+        raise TypeError("Cannot extract DyND C++ array from None.")
+    return &(a.v)
+
 # returns a Python object, so no exception specifier is needed.
 cdef array dynd_nd_array_from_cpp(_array a):
     cdef array arr = array.__new__(array)
     arr.v = a
     return arr
-
-set_wrapper_type[_array](array)
 
 cdef _array as_cpp_array(object obj) except *:
     """
@@ -1048,3 +1053,5 @@ def fields(array struct_array, *fields_list):
     cdef array result = array()
     result.v = nd_fields(struct_array.v, fields_list)
     return result
+
+from .callable cimport dynd_nd_callable_from_cpp

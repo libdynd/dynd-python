@@ -45,6 +45,9 @@ static inline void translate_exception()
   catch (const dynd::invalid_type_id &exn) {
     PyErr_SetString(PyExc_TypeError, exn.message());
   }
+  catch (const dynd::zero_division_error &exn) {
+    PyErr_SetString(PyExc_ZeroDivisionError, exn.message());
+  }
   catch (const dynd::type_error &exn) {
     PyErr_SetString(PyExc_TypeError, exn.message());
   }

@@ -151,8 +151,8 @@ include_directories(
     ${PYTHON_INCLUDE_DIRS}
     ${LIBDYND_INCLUDE_DIRS}
     dynd/include
-    ${CMAKE_CURRENT_BINARY_DIR}/dynd
-    dynd
+    ${CMAKE_CURRENT_BINARY_DIR}/dynd/nd
+    ${CMAKE_CURRENT_BINARY_DIR}/dynd/ndt
     ${CMAKE_CURRENT_BINARY_DIR}
     )
 
@@ -165,12 +165,6 @@ else()
 endif()
 
 set(pydynd_SRC
-    dynd/include/array_as_numpy.hpp
-    dynd/include/array_as_pep3118.hpp
-    dynd/include/array_from_py.hpp
-    dynd/include/array_from_py_typededuction.hpp
-    dynd/include/array_functions.hpp
-    dynd/include/assign.hpp
     dynd/include/conversions.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
@@ -218,21 +212,9 @@ foreach(pyx_api_file dynd/config.pyx dynd/nd/array.pyx dynd/nd/callable.pyx dynd
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)
 endforeach(pyx_api_file)
 
-foreach(module config ndt.type ndt.json nd.array nd.callable nd.functional nd.registry)
-    string(REPLACE "." ";" directories ${module})
-    list(GET directories -1 module_name)
-    list(REMOVE_AT directories -1)
+foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
 
-    string(REPLACE "." "/" module_root "${module}")
-    set(module_SRC dynd/${module_root}.pyx)
-    set_source_files_properties(${module_SRC} PROPERTIES CYTHON_IS_CXX 1)
-
-    cython_add_module(${module_name} ${module_name}_pyx ${module_name}_output ${module_SRC})
-
-    if (directories)
-        string(REPLACE ";" "/" module_output_directory ${directories})
-        set_target_properties(${module_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${module_output_directory})
-    endif()
+    cython_add_module(${module} ${module}_pyx True)
 
     if(APPLE)
         set(module_install_rpath "@loader_path")
@@ -245,18 +227,18 @@ foreach(module config ndt.type ndt.json nd.array nd.callable nd.functional nd.re
         math(EXPR i "${i} - 1" )
     endwhile(${i} GREATER 0)
 #    set(module_install_rpath "/opt/anaconda/envs/_test/lib/python2.7/site-packages/dynd/")
-    set_target_properties(${module_name} PROPERTIES INSTALL_RPATH ${module_install_rpath})
+    set_target_properties(${module} PROPERTIES INSTALL_RPATH ${module_install_rpath})
 
-    target_link_libraries(${module_name} pydynd)
+    target_link_libraries(${module} pydynd)
 endforeach(module)
 
 add_dependencies(pydynd array_pyx callable_pyx type_pyx)
 
 # Run a postprocess script to work around some Cython bugs
 # that haven't been fixed in the latest release.
-postprocess_cython( postprocess.py type_postprocess type_pyx type)
+postprocess_cython( postprocess.py type_postprocess dynd.ndt.type_pyx dynd.ndt.type)
 add_dependencies(pydynd type_postprocess)
-postprocess_cython( postprocess.py array_postprocess array_pyx array)
+postprocess_cython( postprocess.py array_postprocess dynd.nd.array_pyx dynd.nd.array)
 add_dependencies(pydynd array_postprocess)
-postprocess_cython( postprocess.py callable_postprocess callable_pyx callable)
+postprocess_cython( postprocess.py callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
 add_dependencies(pydynd callable_postprocess)

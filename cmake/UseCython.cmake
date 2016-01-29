@@ -73,95 +73,122 @@ set( CYTHON_CXX_EXTENSION "cxx" )
 set( CYTHON_C_EXTENSION "c" )
 
 # Create a *.c or *.cxx file from a *.pyx file.
-# Input the generated file basename.  The generate files will put into the variable
-# placed in the "generated_files" argument. Finally all the *.py and *.pyx files.
-function( compile_pyx _name pyx_target_name generated_files pyx_file)
+function( compile_pyx _name _pyx_target_name _module_name _directories _pyx_file)
   # Default to assuming all files are C.
-  set( cxx_arg "" )
-  set( extension ${CYTHON_C_EXTENSION} )
-  set( pyx_lang "C" )
-  set( comment "Compiling Cython C source for ${_name}..." )
+  set( _cxx_arg "" )
+  set( _extension ${CYTHON_C_EXTENSION} )
 
-  get_filename_component( pyx_file_basename "${pyx_file}" NAME_WE )
+  # Make sure the output directory is created.
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${_directories})
 
   # Determine if it is a C or C++ file.
-  get_source_file_property( property_is_cxx ${pyx_file} CYTHON_IS_CXX )
-  if( ${property_is_cxx} )
-    set( cxx_arg "--cplus" )
-    set( extension ${CYTHON_CXX_EXTENSION} )
-    set( pyx_lang "CXX" )
-    set( comment "Compiling Cython CXX source for ${_name}..." )
+  get_source_file_property( _is_cxx ${_pyx_file} CYTHON_IS_CXX )
+  if( ${_is_cxx} )
+    set( _cxx_arg "--cplus" )
+    set( _extension ${CYTHON_CXX_EXTENSION} )
   endif()
-  get_source_file_property( pyx_location ${pyx_file} LOCATION )
+
+  get_source_file_property( _pyx_location ${_pyx_file} LOCATION )
 
   # Set additional flags.
   if( CYTHON_ANNOTATE )
-    set( annotate_arg "--annotate" )
+    set( _annotate_arg "--annotate" )
   endif()
 
   if( CYTHON_NO_DOCSTRINGS )
-    set( no_docstrings_arg "--no-docstrings" )
+    set( _no_docstrings_arg "--no-docstrings" )
   endif()
 
   if(NOT WIN32)
       if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR
             "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo" )
-          set( cython_debug_arg "--gdb" )
+          set( _cython_debug_arg "--gdb" )
       endif()
   endif()
 
   # Determining generated file names.
-  get_source_file_property( property_is_public ${pyx_file} CYTHON_PUBLIC )
-  get_source_file_property( property_is_api ${pyx_file} CYTHON_API )
-  if( ${property_is_api} )
-      set( _generated_files ${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension} ${CMAKE_CURRENT_BINARY_DIR}/${_name}.h ${CMAKE_CURRENT_BINARY_DIR}/${_name}_api.h)
-  elseif( ${property_is_public} )
-      set( _generated_files ${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension} ${CMAKE_CURRENT_BINARY_DIR}/${_name}.h)
+  get_source_file_property( _is_public ${_pyx_file} CYTHON_PUBLIC )
+  get_source_file_property( _is_api ${_pyx_file} CYTHON_API )
+  if( ${_is_api} )
+      set( _generated_files
+          ${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.${_extension}
+          ${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.h
+          ${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}_api.h)
+  elseif( ${_is_public} )
+      set( _generated_files
+          ${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.${_extension}
+        ${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.h)
   else()
-      set( _generated_files ${CMAKE_CURRENT_BINARY_DIR}/${_name}.${extension})
+      set( _generated_files
+      ${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.${_extension})
   endif()
   set_source_files_properties( ${_generated_files} PROPERTIES GENERATED TRUE )
-  set( ${generated_files} ${_generated_files} PARENT_SCOPE )
+
+  set(_cython_command ${CYTHON_EXECUTABLE} ${_cxx_arg}
+  ${_annotate_arg} ${_no_docstrings_arg} ${_cython_debug_arg} ${CYTHON_FLAGS}
+  --output-file "${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.${_extension}" ${_pyx_location})
+  string(REPLACE ";" " " _cython_comment "${_cython_command}")
 
   # Add the command to run the compiler.
-  add_custom_target(${pyx_target_name}
-    COMMAND ${CYTHON_EXECUTABLE} ${cxx_arg} ${include_directory_arg}
-    ${annotate_arg} ${no_docstrings_arg} ${cython_debug_arg} ${CYTHON_FLAGS}
-    --output-file "${_name}.${extension}" ${pyx_location}
-    DEPENDS ${pyx_location}
+  add_custom_target(${_pyx_target_name}
+    COMMAND ${_cython_command}
+    DEPENDS ${_pyx_location}
     # do not specify byproducts for now since they don't work with the older
     # version of cmake available in the apt repositories.
     #BYPRODUCTS ${_generated_files}
-    COMMENT ${comment}
+    COMMENT "${_cython_comment}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_directories}
     )
 
-  set_target_properties(${pyx_target_name}
+  set_target_properties(${_pyx_target_name}
   PROPERTIES generated_files "${_generated_files}")
 
-  # Remove their visibility to the user.
-  set( corresponding_pxd_file "" CACHE INTERNAL "" )
-  set( header_location "" CACHE INTERNAL "" )
-  set( pxd_location "" CACHE INTERNAL "" )
+  # Remove internal variables' visibility to the user.
+  foreach(_v _cxx_arg _extension _is_cxx _pyx_location _annotate_arg _no_docstrings_arg _cython_debug_arg _is_public _is_api _generated_files _cython_command _cython_comment)
+    set( ${_v} "" CACHE INTERNAL "" )
+  endforeach(_v)
+
 endfunction()
 
 # cython_add_module( <name> src1 src2 ... srcN )
 # Build the Cython Python module.
-function( cython_add_module _name pyx_target_name generated_files)
-  set( pyx_module_source "" )
-  set( other_module_sources "" )
-  foreach( _file ${ARGN} )
-    if( ${_file} MATCHES ".*\\.py[x]?$" )
-      list( APPEND pyx_module_source ${_file} )
-    else()
-      list( APPEND other_module_sources ${_file} )
-    endif()
-  endforeach()
-  compile_pyx( ${_name} ${pyx_target_name} _generated_files ${pyx_module_source} )
-  set( ${generated_files} ${_generated_files} PARENT_SCOPE )
+function( cython_add_module _name _pyx_target_name _is_cxx)
+
+  string(REPLACE "." "/" _module_source ${_name})
+  set(_module_source ${_module_source}.pyx)
+  get_filename_component( _directories "${_module_source}" DIRECTORY )
+  get_filename_component( _module_name "${_module_source}" NAME_WE)
+
+  if(${_is_cxx})
+    set_source_files_properties(${_module_source} PROPERTIES CYTHON_IS_CXX 1)
+  endif()
+
+  compile_pyx( ${_name} ${_pyx_target_name} ${_module_name} "${_directories}" ${_module_source} )
   include_directories( ${PYTHON_INCLUDE_DIRS} )
-  python_add_module( ${_name} ${_generated_files} ${other_module_sources} )
-  add_dependencies( ${_name} ${pyx_target_name})
+
+  # Set up the Python module corresponding to this pyx file.
+  get_target_property(_generated_files ${_pyx_target_name} generated_files)
+  python_add_module( ${_name} ${_generated_files} ${_other_module_sources} ${ARGN})
+
+  # Force output to not be written to the Release or Debug subdirectory of the target
+  # directory. The difference in build configuration should already be taken care of in
+  # the CMAKE_CURRENT_BINARY_DIR on generators where that matters.
+  set(_output_dir ${CMAKE_CURRENT_BINARY_DIR}/${_directories})
+  set_target_properties(${_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${_output_dir})
+  foreach( _build_type RELEASE DEBUG RELWITHDEBINFO MINSIZEREL )
+    set_target_properties(${_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${_build_type} ${_output_dir})
+  endforeach(_build_type)
+
+  set_target_properties(${_name} PROPERTIES OUTPUT_NAME ${_module_name})
+
+  add_dependencies( ${_name} ${_pyx_target_name})
   target_link_libraries( ${_name} ${PYTHON_LIBRARIES} )
+
+  # Remove internal variables' visibility to the user.
+  foreach(_v _module_source _directories _module_name _generated_files _output_dir)
+    set( ${_v} "" CACHE INTERNAL "" )
+  endforeach(_v)
+
 endfunction()
 
 include( CMakeParseArguments )

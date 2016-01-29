@@ -208,24 +208,30 @@ else()
     target_link_libraries(pydynd libdynd)
 endif()
 
-foreach(pyx_api_file dynd/config.pyx dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
+foreach(pyx_api_file dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)
+    set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_PUBLIC 1)
 endforeach(pyx_api_file)
+
+set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
 foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
 
     cython_add_module(${module} ${module}_pyx True)
 
+    # Make sure libpydynd is on the rpath.
+    # This has no effect on Windows.
     if(APPLE)
         set(module_install_rpath "@loader_path")
     else()
         set(module_install_rpath "$ORIGIN")
     endif()
-    list(LENGTH directories i)
-    while(${i} GREATER 0)
+    string(REPLACE "." ";" module_directories "${module}")
+    list(LENGTH module_directories i)
+    while(${i} GREATER 2)
         set(module_install_rpath "${module_install_rpath}/..")
         math(EXPR i "${i} - 1" )
-    endwhile(${i} GREATER 0)
+    endwhile(${i} GREATER 2)
 #    set(module_install_rpath "/opt/anaconda/envs/_test/lib/python2.7/site-packages/dynd/")
     set_target_properties(${module} PROPERTIES INSTALL_RPATH ${module_install_rpath})
 

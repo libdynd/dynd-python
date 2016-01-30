@@ -103,7 +103,7 @@ string(REPLACE "v" "" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
 string(REPLACE "-" ";" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION}")
 list(GET DYND_PYTHON_VERSION 0 "${DYND_PYTHON_VERSION}")
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(MSVC)
     # Treat warnings as errors (-WX does this)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX -EHsc")
     if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 18)
@@ -135,7 +135,7 @@ else()
     endif()
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_ROUND")
 else()
     set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -238,13 +238,11 @@ foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.cal
     target_link_libraries(${module} pydynd)
 endforeach(module)
 
-add_dependencies(pydynd array_pyx callable_pyx type_pyx)
+add_dependencies(pydynd dynd.nd.array_pyx dynd.nd.callable_pyx dynd.ndt.type_pyx)
 
 # Run a postprocess script to work around some Cython bugs
 # that haven't been fixed in the latest release.
-postprocess_cython( postprocess.py type_postprocess dynd.ndt.type_pyx dynd.ndt.type)
-add_dependencies(pydynd type_postprocess)
-postprocess_cython( postprocess.py array_postprocess dynd.nd.array_pyx dynd.nd.array)
-add_dependencies(pydynd array_postprocess)
-postprocess_cython( postprocess.py callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
-add_dependencies(pydynd callable_postprocess)
+postprocess_cython( postprocess.py dynd.ndt.type_postprocess dynd.ndt.type_pyx dynd.ndt.type)
+postprocess_cython( postprocess.py dynd.nd.array_postprocess dynd.nd.array_pyx dynd.nd.array)
+postprocess_cython( postprocess.py dynd.nd.callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
+add_dependencies(pydynd dynd.ndt.type_postprocess dynd.nd.array_postprocess dynd.nd.callable_postprocess)

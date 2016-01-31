@@ -35,13 +35,8 @@ class cmake_build_ext(build_ext):
     return os.path.join(package_dir, filename)
 
   def get_ext_built(self, name):
-    if sys.platform == 'win32':
-        head, tail = os.path.split(name)
-        suffix = sysconfig.get_config_var('SO')
-        return os.path.join(head, build_type, tail + suffix)
-    else:
-        suffix = sysconfig.get_config_var('SO')
-        return name + suffix
+    suffix = sysconfig.get_config_var('SO')
+    return os.path.join('dynd', *os.path.split(name)) + suffix
 
   def initialize_options(self):
     build_ext.initialize_options(self)
@@ -136,6 +131,7 @@ class cmake_build_ext(build_ext):
     self._found_names = []
     for name in self.get_expected_names():
         built_path = self.get_ext_built(name)
+        print(os.getcwd())
         if os.path.exists(built_path):
             ext_path = os.path.join(build_lib, self.get_ext_path(name))
             if os.path.exists(ext_path):

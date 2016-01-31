@@ -103,7 +103,7 @@ string(REPLACE "v" "" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION_STRING}")
 string(REPLACE "-" ";" DYND_PYTHON_VERSION "${DYND_PYTHON_VERSION}")
 list(GET DYND_PYTHON_VERSION 0 "${DYND_PYTHON_VERSION}")
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(MSVC)
     # Treat warnings as errors (-WX does this)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX -EHsc")
     if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 18)
@@ -135,7 +135,7 @@ else()
     endif()
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_ROUND")
 else()
     set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -151,8 +151,8 @@ include_directories(
     ${PYTHON_INCLUDE_DIRS}
     ${LIBDYND_INCLUDE_DIRS}
     dynd/include
-    ${CMAKE_CURRENT_BINARY_DIR}/dynd
-    dynd
+    ${CMAKE_CURRENT_BINARY_DIR}/dynd/nd
+    ${CMAKE_CURRENT_BINARY_DIR}/dynd/ndt
     ${CMAKE_CURRENT_BINARY_DIR}
     )
 
@@ -165,12 +165,6 @@ else()
 endif()
 
 set(pydynd_SRC
-    dynd/include/array_as_numpy.hpp
-    dynd/include/array_as_pep3118.hpp
-    dynd/include/array_from_py.hpp
-    dynd/include/array_from_py_typededuction.hpp
-    dynd/include/array_functions.hpp
-    dynd/include/assign.hpp
     dynd/include/conversions.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
     dynd/include/do_import_array.hpp
@@ -214,49 +208,41 @@ else()
     target_link_libraries(pydynd libdynd)
 endif()
 
-foreach(pyx_api_file dynd/config.pyx dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
+foreach(pyx_api_file dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)
+    set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_PUBLIC 1)
 endforeach(pyx_api_file)
 
-foreach(module config ndt.type ndt.json nd.array nd.callable nd.functional nd.registry)
-    string(REPLACE "." ";" directories ${module})
-    list(GET directories -1 module_name)
-    list(REMOVE_AT directories -1)
+set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
-    string(REPLACE "." "/" module_root "${module}")
-    set(module_SRC dynd/${module_root}.pyx)
-    set_source_files_properties(${module_SRC} PROPERTIES CYTHON_IS_CXX 1)
+foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
 
-    cython_add_module(${module_name} ${module_name}_pyx ${module_name}_output ${module_SRC})
+    cython_add_module(${module} ${module}_pyx True)
 
-    if (directories)
-        string(REPLACE ";" "/" module_output_directory ${directories})
-        set_target_properties(${module_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${module_output_directory})
-    endif()
-
+    # Make sure libpydynd is on the rpath.
+    # This has no effect on Windows.
     if(APPLE)
         set(module_install_rpath "@loader_path")
     else()
         set(module_install_rpath "$ORIGIN")
     endif()
-    list(LENGTH directories i)
-    while(${i} GREATER 0)
+    string(REPLACE "." ";" module_directories "${module}")
+    list(LENGTH module_directories i)
+    while(${i} GREATER 2)
         set(module_install_rpath "${module_install_rpath}/..")
         math(EXPR i "${i} - 1" )
-    endwhile(${i} GREATER 0)
+    endwhile(${i} GREATER 2)
 #    set(module_install_rpath "/opt/anaconda/envs/_test/lib/python2.7/site-packages/dynd/")
-    set_target_properties(${module_name} PROPERTIES INSTALL_RPATH ${module_install_rpath})
+    set_target_properties(${module} PROPERTIES INSTALL_RPATH ${module_install_rpath})
 
-    target_link_libraries(${module_name} pydynd)
+    target_link_libraries(${module} pydynd)
 endforeach(module)
 
-add_dependencies(pydynd array_pyx callable_pyx type_pyx)
+add_dependencies(pydynd dynd.nd.array_pyx dynd.nd.callable_pyx dynd.ndt.type_pyx)
 
 # Run a postprocess script to work around some Cython bugs
 # that haven't been fixed in the latest release.
-postprocess_cython( postprocess.py type_postprocess type_pyx type)
-add_dependencies(pydynd type_postprocess)
-postprocess_cython( postprocess.py array_postprocess array_pyx array)
-add_dependencies(pydynd array_postprocess)
-postprocess_cython( postprocess.py callable_postprocess callable_pyx callable)
-add_dependencies(pydynd callable_postprocess)
+postprocess_cython( postprocess.py dynd.ndt.type_postprocess dynd.ndt.type_pyx dynd.ndt.type)
+postprocess_cython( postprocess.py dynd.nd.array_postprocess dynd.nd.array_pyx dynd.nd.array)
+postprocess_cython( postprocess.py dynd.nd.callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
+add_dependencies(pydynd dynd.ndt.type_postprocess dynd.nd.array_postprocess dynd.nd.callable_postprocess)

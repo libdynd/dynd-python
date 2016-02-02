@@ -280,8 +280,7 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
         reinterpret_cast<ndt::var_dim_type::data_type *>(data);
     char *out_end = NULL;
 
-    memory_block_data::api *allocator = md->blockref->get_api();
-    out->begin = allocator->allocate(md->blockref.get(), size);
+    out->begin = md->blockref->alloc(size);
     out_end = out->begin + size * stride;
     out->size = size;
     char *element_data = out->begin;
@@ -316,8 +315,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
   }
   // If no type was deduced, return with no result. This will fall
   // through to the array_from_py_dynamic code.
-  if (tp.get_id() == uninitialized_id ||
-      tp.get_id() == void_id) {
+  if (tp.get_id() == uninitialized_id || tp.get_id() == void_id) {
     return nd::array();
   }
 

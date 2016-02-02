@@ -66,7 +66,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
         m_proto.extended<dynd::ndt::callable_type>();
     intptr_t nsrc = fpt->get_npos();
     const dynd::ndt::type &dst_tp = fpt->get_return_type();
-    const dynd::ndt::type *src_tp = fpt->get_pos_types_raw();
+    const std::vector<dynd::ndt::type> &src_tp = fpt->get_pos_types();
     // First set up the parameters in a tuple
     pydynd::pyobject_ownref args(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
@@ -105,7 +105,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
         m_proto.extended<dynd::ndt::callable_type>();
     intptr_t nsrc = fpt->get_npos();
     const dynd::ndt::type &dst_tp = fpt->get_return_type();
-    const dynd::ndt::type *src_tp = fpt->get_pos_types_raw();
+    const std::vector<dynd::ndt::type> &src_tp = fpt->get_pos_types();
     // First set up the parameters in a tuple
     pydynd::pyobject_ownref args(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {

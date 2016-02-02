@@ -78,7 +78,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     # The following generates the wrapper function using LLVM IR
     fndesc = compile_res.fndesc
     target_context = compile_res.target_context
-    library = target_context.jit_codegen().create_library(name = 'library')
+    library = target_context.codegen().create_library(name = 'library')
 
     ir_module = library.create_ir_module(name = 'module')
 #    memcpy = ir_module.declare_intrinsic('llvm.memcpy',

@@ -1239,8 +1239,10 @@ struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
             "Cannot assign to an uninitialized dynd var_dim "
             "which has a non-zero offset");
       }
-      dynd::ndt::var_dim_element_initialize(m_dst_tp, m_dst_arrmeta, dst,
-                                            src_dim_size);
+
+      vdd->begin = reinterpret_cast<const ndt::var_dim_type::metadata_type *>(
+                       m_dst_arrmeta)
+                       ->blockref->alloc(src_dim_size);
       vdd->size = src_dim_size;
     }
 

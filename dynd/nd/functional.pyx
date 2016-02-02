@@ -70,7 +70,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
 
     # Compile the function with Numba
     func.compile(signature)
-    compile_res = func._compileinfos[signature]
+    compile_res = func.overloads[signature]
 
     # Check if there is a corresponding return type in DyND
     cdef _type dst_tp = from_numba_type(compile_res.signature.return_type)

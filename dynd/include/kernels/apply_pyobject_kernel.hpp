@@ -159,12 +159,16 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
   {
     pydynd::PyGILState_RAII pgs;
 
+    std::vector<dynd::ndt::type> src_tp_copy(nsrc);
+    for (int i = 0; i < nsrc; ++i) {
+      src_tp_copy[i] = src_tp[i];
+    }
+
     intptr_t ckb_offset = ckb->m_size;
     ckb->emplace_back<apply_pyobject_kernel>(kernreq);
     apply_pyobject_kernel *self =
         ckb->get_at<apply_pyobject_kernel>(ckb_offset);
-    self->m_proto =
-        dynd::ndt::callable_type::make(dst_tp, dynd::nd::array(src_tp, nsrc));
+    self->m_proto = dynd::ndt::callable_type::make(dst_tp, src_tp_copy);
     self->m_pyfunc = *reinterpret_cast<PyObject **>(static_data);
     Py_XINCREF(self->m_pyfunc);
     self->m_dst_arrmeta = dst_arrmeta;

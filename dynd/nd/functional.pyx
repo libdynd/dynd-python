@@ -94,7 +94,11 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     library.add_ir_module(ir_module)
     library.finalize()
 
-    return dynd_nd_callable_from_cpp(_apply_jit(make_callable(dst_tp, _array(src_tp, nsrc)),
+    cdef vector[_type] src_tp_copy
+    for i in range(nsrc):
+        src_tp_copy.push_back(src_tp[i])
+
+    return dynd_nd_callable_from_cpp(_apply_jit(make_callable(dst_tp, src_tp_copy),
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):

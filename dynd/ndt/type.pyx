@@ -5,6 +5,7 @@ from libc.stdint cimport (intptr_t, int8_t, int16_t, int32_t, int64_t,
                           uint8_t, uint16_t, uint32_t, uint64_t)
 from libcpp.map cimport map
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from libcpp cimport bool as cpp_bool
 
 import datetime
@@ -692,6 +693,7 @@ complex_float64 = type(complex_float64_id)
 void = type(void_id)
 
 def tuple(*args):
+    cdef vector[_type] _args
 
     if args:
         # TODO: Use a different interface that doesn't involve nd.array.
@@ -700,7 +702,10 @@ def tuple(*args):
         # that can then be used to create a tuple type.
         # Constructing an array from the list is really
         # only partially correct.
-        return dynd_ndt_type_from_cpp(_make_tuple(as_cpp_array(args)))
+        for arg in args:
+            _args.push_back(as_cpp_type(arg))
+
+        return dynd_ndt_type_from_cpp(_make_tuple(_args))
 
     return dynd_ndt_type_from_cpp(_make_tuple())
 
@@ -708,9 +713,14 @@ def struct(**kwds):
     # TODO: require an ordered dict here since struct types are ordered.
     # TODO: Use something other than dynd arrays to pass these arguments.
     #       See the comment in the tuple function for details.
+    cdef vector[_type] _kwds
+
     if kwds:
+        for kwd in kwds.values():
+            _kwds.push_back(as_cpp_type(kwd))
+
         return dynd_ndt_type_from_cpp(_make_struct(
-            as_cpp_array(list(kwds.keys())), as_cpp_array(list(kwds.values()))))
+            as_cpp_array(list(kwds.keys())), _kwds))
 
     return dynd_ndt_type_from_cpp(_make_struct())
 

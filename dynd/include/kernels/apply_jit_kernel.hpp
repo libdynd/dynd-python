@@ -90,8 +90,7 @@ namespace nd {
         if (obj == NULL) {
 
           obj = (*jit)(func, nsrc, src_tp);
-          if (obj == NULL) {
-            PyErr_Print();
+          if (PyErr_Occurred()) {
             throw std::runtime_error("An exception was raised in Python");
           }
 

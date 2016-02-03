@@ -1,6 +1,17 @@
 DyND-Python Release Notes
 =========================
 
+Release 0.7.1
+-------------
+
+Commits by author since last release:
+
+   903  Irwin Zaid
+   200  Ian Henriksen
+   109  Mark Wiebe
+     1  Michael Pacer
+     1  Phillip Cloud
+
 Release 0.6.6
 -------------
 

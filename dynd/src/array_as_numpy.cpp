@@ -45,8 +45,8 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 {
   // DyND builtin types
   if (dt.is_builtin()) {
-    out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(
-        dynd_to_numpy_id[dt.get_id()]));
+    out_numpy_dtype->reset(
+        (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id[dt.get_id()]));
     return;
   }
 
@@ -173,7 +173,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
 
     pyobject_ownref names_obj(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      const dynd::string &fn = bs->get_field_name_raw(i);
+      const dynd::string &fn = bs->get_field_name(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
           PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
@@ -247,8 +247,8 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 {
   if (dt.is_builtin()) {
     // DyND builtin types
-    out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(
-        dynd_to_numpy_id[dt.get_id()]));
+    out_numpy_dtype->reset(
+        (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id[dt.get_id()]));
     return;
   }
   else if (dt.get_id() == view_id &&
@@ -402,7 +402,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
 
     pyobject_ownref names_obj(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      const dynd::string &fn = bs->get_field_name_raw(i);
+      const dynd::string &fn = bs->get_field_name(i);
 #if PY_VERSION_HEX >= 0x03000000
       pyobject_ownref name_str(
           PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));

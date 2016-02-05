@@ -709,6 +709,8 @@ def tuple(*args):
 
     return dynd_ndt_type_from_cpp(_make_tuple())
 
+from libcpp.string cimport string
+
 def struct(**kwds):
     # TODO: require an ordered dict here since struct types are ordered.
     # TODO: Use something other than dynd arrays to pass these arguments.
@@ -719,8 +721,7 @@ def struct(**kwds):
         for kwd in kwds.values():
             _kwds.push_back(as_cpp_type(kwd))
 
-        return dynd_ndt_type_from_cpp(_make_struct(
-            as_cpp_array(list(kwds.keys())), _kwds))
+        return dynd_ndt_type_from_cpp(_make_struct(kwds.keys(), _kwds))
 
     return dynd_ndt_type_from_cpp(_make_struct())
 

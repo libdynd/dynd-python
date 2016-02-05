@@ -891,7 +891,7 @@ struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
     self_ck->m_field_names.reset(PyTuple_New(field_count));
     for (intptr_t i = 0; i < field_count; ++i) {
       const dynd::string &rawname =
-          src_tp[0].extended<dynd::ndt::struct_type>()->get_field_name_raw(i);
+          src_tp[0].extended<dynd::ndt::struct_type>()->get_field_name(i);
       pydynd::pyobject_ownref name(PyUnicode_DecodeUTF8(
           rawname.begin(), rawname.end() - rawname.begin(), NULL));
       PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());

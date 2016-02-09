@@ -1,3 +1,5 @@
+# cython: c_string_type=str, c_string_encoding=ascii
+
 from cython.operator cimport dereference, postincrement
 
 from libcpp.map cimport map
@@ -20,10 +22,6 @@ cdef extern from *:
 def get_published_callables():
     py_reg = dict()
     for pair in callable_registry:
-        if is_py_2:
-            py_reg[pair.first] = dynd_nd_callable_from_cpp(pair.second)
-        else:
-            key = pair.first
-            py_reg[key.decode('UTF-8')] = dynd_nd_callable_from_cpp(pair.second)
+        py_reg[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
     return py_reg

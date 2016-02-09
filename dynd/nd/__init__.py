@@ -17,5 +17,5 @@ from . import functional
 #    def parse(tp, obj):
 #        return _parse(tp, obj)
 
-for key in get_published_callables():
-    globals()[key] = get_published_callables()[key]
+for key, value in get_published_callables():
+    globals()[key] = value

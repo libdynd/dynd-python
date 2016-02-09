@@ -7,6 +7,10 @@ from ...config cimport translate_exception
 
 cdef extern from "dynd/callable_registry.hpp" namespace "dynd::nd" nogil:
     cdef cppclass callable_registry:
-        map[string, callable] &get_regfunctions() except +translate_exception
+        map[string, callable].iterator begin()
+        map[string, callable].const_iterator cbegin()
+
+        map[string, callable].iterator end()
+        map[string, callable].const_iterator cend()
 
     cdef extern callable_registry callable_registry

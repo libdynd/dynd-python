@@ -19,13 +19,11 @@ cdef extern from *:
 
 def get_published_callables():
     py_reg = dict()
-    cdef map[string, callable].const_iterator it = callable_registry.get_regfunctions().const_begin()
-    cdef map[string, callable].const_iterator end = callable_registry.get_regfunctions().const_end()
-    while it != end:
+    for pair in callable_registry:
         if is_py_2:
-            py_reg[dereference(it).first] = dynd_nd_callable_from_cpp(dereference(it).second)
+            py_reg[pair.first] = dynd_nd_callable_from_cpp(pair.second)
         else:
-            key = dereference(it).first
-            py_reg[key.decode('UTF-8')] = dynd_nd_callable_from_cpp(dereference(it).second)
-        postincrement(it)
+            key = pair.first
+            py_reg[key.decode('UTF-8')] = dynd_nd_callable_from_cpp(pair.second)
+
     return py_reg

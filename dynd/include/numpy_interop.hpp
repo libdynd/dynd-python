@@ -11,6 +11,11 @@
 
 #include <Python.h>
 
+#include <string>
+#include <vector>
+
+#include "utility_functions.hpp"
+
 // Define this to 1 or 0 depending on whether numpy interop
 // should be compiled in.
 #define DYND_NUMPY_INTEROP 1
@@ -40,8 +45,8 @@
 
 #include <sstream>
 
-#include <dynd/type.hpp>
 #include <dynd/array.hpp>
+#include <dynd/type.hpp>
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
@@ -149,10 +154,36 @@ inline dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num)
  * \param out_field_names  This is filled with the field names.
  * \param out_field_offsets  This is filled with the field offsets.
  */
-void extract_fields_from_numpy_struct(
-    PyArray_Descr *d, std::vector<PyArray_Descr *> &out_field_dtypes,
-    std::vector<std::string> &out_field_names,
-    std::vector<size_t> &out_field_offsets);
+// This doesn't rely on any static initialization from numpy,
+// so it should be fine to inline.
+inline void
+extract_fields_from_numpy_struct(PyArray_Descr *d,
+                                 std::vector<PyArray_Descr *> &out_field_dtypes,
+                                 std::vector<std::string> &out_field_names,
+                                 std::vector<size_t> &out_field_offsets)
+{
+  if (!PyDataType_HASFIELDS(d)) {
+    throw dynd::type_error(
+        "Tried to treat a non-structured NumPy dtype as a structure");
+  }
+
+  PyObject *names = d->names;
+  Py_ssize_t names_size = PyTuple_GET_SIZE(names);
+
+  for (Py_ssize_t i = 0; i < names_size; ++i) {
+    PyObject *key = PyTuple_GET_ITEM(names, i);
+    PyObject *tup = PyDict_GetItem(d->fields, key);
+    PyArray_Descr *fld_dtype;
+    PyObject *title;
+    int offset = 0;
+    if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
+      throw dynd::type_error("Numpy struct dtype has corrupt data");
+    }
+    out_field_dtypes.push_back(fld_dtype);
+    out_field_names.push_back(pystring_as_string(key));
+    out_field_offsets.push_back(offset);
+  }
+}
 
 /**
  * When the function _type_from_numpy_dtype returns a type which requires

@@ -7,49 +7,22 @@
 
 #if DYND_NUMPY_INTEROP
 
-#include <dynd/types/view_type.hpp>
-#include <dynd/types/type_alignment.hpp>
-#include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/struct_type.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/datetime_type.hpp>
+#include <dynd/types/fixed_string_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/type_alignment.hpp>
+#include <dynd/types/view_type.hpp>
 
-#include "type_functions.hpp"
 #include "array_functions.hpp"
-#include "utility_functions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
+#include "type_functions.hpp"
+#include "utility_functions.hpp"
 
 #include <numpy/arrayscalars.h>
 
 using namespace std;
-
-void pydynd::extract_fields_from_numpy_struct(
-    PyArray_Descr *d, vector<PyArray_Descr *> &out_field_dtypes,
-    vector<string> &out_field_names, vector<size_t> &out_field_offsets)
-{
-  if (!PyDataType_HASFIELDS(d)) {
-    throw dynd::type_error(
-        "Tried to treat a non-structured NumPy dtype as a structure");
-  }
-
-  PyObject *names = d->names;
-  Py_ssize_t names_size = PyTuple_GET_SIZE(names);
-
-  for (Py_ssize_t i = 0; i < names_size; ++i) {
-    PyObject *key = PyTuple_GET_ITEM(names, i);
-    PyObject *tup = PyDict_GetItem(d->fields, key);
-    PyArray_Descr *fld_dtype;
-    PyObject *title;
-    int offset = 0;
-    if (!PyArg_ParseTuple(tup, "Oi|O", &fld_dtype, &offset, &title)) {
-      throw dynd::type_error("Numpy struct dtype has corrupt data");
-    }
-    out_field_dtypes.push_back(fld_dtype);
-    out_field_names.push_back(pystring_as_string(key));
-    out_field_offsets.push_back(offset);
-  }
-}
 
 dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
                                                    size_t data_alignment)

@@ -26,6 +26,7 @@
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
 #include "array_from_py.hpp"
+#include "conversions.hpp"
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 #include "utility_functions.hpp"
@@ -345,7 +346,7 @@ inline dynd::nd::array array_range(PyObject *start, PyObject *stop,
   }
 
   if (dt != Py_None) {
-    dt_nd = make__type_from_pyobject(dt);
+    dt_nd = dynd_ndt_as_cpp_type(dt);
   }
   else {
     dt_nd = promote_types_arithmetic(
@@ -381,7 +382,7 @@ inline dynd::nd::array array_linspace(PyObject *start, PyObject *stop,
   }
   else {
     return dynd::nd::linspace(start_nd, stop_nd, count_val,
-                              make__type_from_pyobject(dt));
+                              dynd_ndt_as_cpp_type(dt));
   }
 }
 

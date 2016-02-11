@@ -69,9 +69,6 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
     # It will convert implicitly to bool at the C++ level.
     _array array_from_numpy_array_cast(PyObject*, unsigned int, bint)
 
-cdef extern from 'type_functions.hpp' namespace 'pydynd':
-    _type make__type_from_pyobject(object)
-
 # Work around Cython misparsing various types when
 # they are used as template parameters.
 ctypedef long long longlong

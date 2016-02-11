@@ -13,6 +13,7 @@
 
 #include <dynd/type.hpp>
 
+#include "conversions.hpp"
 #include "visibility.hpp"
 
 namespace dynd {
@@ -248,9 +249,6 @@ inline std::string pyobject_repr(PyObject *obj)
   return pystring_as_string(src_repr.get());
 }
 
-// Forward declare this. Include type functions header at the bottom.
-inline dynd::ndt::type make__type_from_pyobject(PyObject *obj);
-
 inline void
 pyobject_as_vector__type(PyObject *list_of_types,
                          std::vector<dynd::ndt::type> &vector_of__types)
@@ -259,7 +257,7 @@ pyobject_as_vector__type(PyObject *list_of_types,
   vector_of__types.resize(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
     pyobject_ownref item(PySequence_GetItem(list_of_types, i));
-    vector_of__types[i] = make__type_from_pyobject(item.get());
+    vector_of__types[i] = dynd_ndt_as_cpp_type(item.get());
   }
 }
 
@@ -440,5 +438,3 @@ inline int pyarg_axis_argument(PyObject *axis, int ndim,
 }
 
 } // namespace pydynd
-
-#include "type_functions.hpp"

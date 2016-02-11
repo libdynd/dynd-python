@@ -43,6 +43,18 @@ PyObject *pydynd::type_from_cpp(const dynd::ndt::type &t)
   return reinterpret_cast<PyObject *>(dynd_ndt_type_from_cpp(t));
 }
 
+dynd::ndt::type pydynd::dynd_ndt_as_cpp_type(PyObject *o)
+{
+  if (as_cpp_type == NULL) {
+    import_dynd__ndt__type();
+    // Propagate any exceptions (e.g. an import error) back to Python.
+    if (PyErr_Occurred()) {
+      throw std::exception();
+    }
+  }
+  return as_cpp_type(o);
+}
+
 dynd::nd::array &pydynd::array_to_cpp_ref(PyObject *o)
 {
   if (dynd_nd_array_to_ptr == NULL) {

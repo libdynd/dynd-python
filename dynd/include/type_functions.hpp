@@ -9,27 +9,27 @@
 
 #include <sstream>
 
-#include <dynd/type.hpp>
+#include <dynd/shape_tools.hpp>
 #include <dynd/string_encodings.hpp>
-#include <dynd/shape_tools.hpp>
+#include <dynd/type.hpp>
 
-#include "visibility.hpp"
-#include "utility_functions.hpp"
-#include "numpy_interop.hpp"
 #include "conversions.hpp"
+#include "numpy_interop.hpp"
+#include "utility_functions.hpp"
+#include "visibility.hpp"
 
-#include <dynd/types/convert_type.hpp>
-#include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/string_type.hpp>
-#include <dynd/types/bytes_type.hpp>
-#include <dynd/types/pointer_type.hpp>
-#include <dynd/types/struct_type.hpp>
-#include <dynd/types/fixed_dim_type.hpp>
-#include <dynd/types/date_type.hpp>
-#include <dynd/types/time_type.hpp>
-#include <dynd/types/datetime_type.hpp>
-#include <dynd/types/type_type.hpp>
 #include <dynd/shape_tools.hpp>
+#include <dynd/types/bytes_type.hpp>
+#include <dynd/types/convert_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
+#include <dynd/types/fixed_dim_type.hpp>
+#include <dynd/types/fixed_string_type.hpp>
+#include <dynd/types/pointer_type.hpp>
+#include <dynd/types/string_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/time_type.hpp>
+#include <dynd/types/type_type.hpp>
 
 // Python's datetime C API
 #include "datetime.h"
@@ -43,7 +43,8 @@ inline std::string _type_str(const dynd::ndt::type &d)
   return ss.str();
 }
 
-inline std::string _type_repr(const dynd::ndt::type &d) {
+inline std::string _type_repr(const dynd::ndt::type &d)
+{
   std::stringstream ss;
   ss << "ndt.type('" << d << "')";
   return ss.str();
@@ -124,51 +125,51 @@ inline dynd::ndt::type make__type_from_pytypeobject(PyTypeObject *obj)
  * into an dynd::ndt::type. This raises an error if given an object
  * which contains values, it is for type-like things only.
  */
- inline dynd::ndt::type make__type_from_pyobject(PyObject *obj)
- {
-   if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
-     return type_to_cpp_ref(obj);
- #if PY_VERSION_HEX < 0x03000000
-   }
-   else if (PyString_Check(obj)) {
-     return dynd::ndt::type(pystring_as_string(obj));
-   }
-   else if (PyInt_Check(obj)) {
-     return dynd::ndt::type(static_cast<dynd::type_id_t>(PyInt_AS_LONG(obj)));
- #endif
-   }
-   else if (PyLong_Check(obj)) {
-     return dynd::ndt::type(static_cast<dynd::type_id_t>(PyLong_AsLong(obj)));
-   }
-   else if (PyUnicode_Check(obj)) {
-     return dynd::ndt::type(pystring_as_string(obj));
-   }
-   else if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
-     return array_to_cpp_ref(obj).as<dynd::ndt::type>();
-   }
-   else if (PyType_Check(obj)) {
- #if DYND_NUMPY_INTEROP
-     dynd::ndt::type result;
-     if (_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
-       return result;
-     }
- #endif // DYND_NUMPY_INTEROP
-     return make__type_from_pytypeobject((PyTypeObject *)obj);
-   }
+inline dynd::ndt::type make__type_from_pyobject(PyObject *obj)
+{
+  if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
+    return type_to_cpp_ref(obj);
+#if PY_VERSION_HEX < 0x03000000
+  }
+  else if (PyString_Check(obj)) {
+    return dynd::ndt::type(pystring_as_string(obj));
+  }
+  else if (PyInt_Check(obj)) {
+    return dynd::ndt::type(static_cast<dynd::type_id_t>(PyInt_AS_LONG(obj)));
+#endif
+  }
+  else if (PyLong_Check(obj)) {
+    return dynd::ndt::type(static_cast<dynd::type_id_t>(PyLong_AsLong(obj)));
+  }
+  else if (PyUnicode_Check(obj)) {
+    return dynd::ndt::type(pystring_as_string(obj));
+  }
+  else if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
+    return array_to_cpp_ref(obj).as<dynd::ndt::type>();
+  }
+  else if (PyType_Check(obj)) {
+#if DYND_NUMPY_INTEROP
+    dynd::ndt::type result;
+    if (_type_from_numpy_scalar_typeobject((PyTypeObject *)obj, result) == 0) {
+      return result;
+    }
+#endif // DYND_NUMPY_INTEROP
+    return make__type_from_pytypeobject((PyTypeObject *)obj);
+  }
 
- #if DYND_NUMPY_INTEROP
-   if (is_numpy_dtype(obj)) {
-     return _type_from_numpy_dtype((PyArray_Descr *)obj);
-   }
- #endif // DYND_NUMPY_INTEROP
+#if DYND_NUMPY_INTEROP
+  if (is_numpy_dtype(obj)) {
+    return _type_from_numpy_dtype((PyArray_Descr *)obj);
+  }
+#endif // DYND_NUMPY_INTEROP
 
-   std::stringstream ss;
-   ss << "could not convert the object ";
-   pyobject_ownref repr(PyObject_Repr(obj));
-   ss << pystring_as_string(repr.get());
-   ss << " into a dynd type";
-   throw dynd::type_error(ss.str());
- }
+  std::stringstream ss;
+  ss << "could not convert the object ";
+  pyobject_ownref repr(PyObject_Repr(obj));
+  ss << pystring_as_string(repr.get());
+  ss << " into a dynd type";
+  throw dynd::type_error(ss.str());
+}
 
 /**
  * Creates a convert type.
@@ -281,19 +282,19 @@ inline dynd::string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
 }
 
 inline dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
-                                               const dynd::ndt::type &from_tp)
+                                              const dynd::ndt::type &from_tp)
 {
   return dynd::ndt::convert_type::make(to_tp, from_tp);
 }
 
 inline dynd::ndt::type dynd_make_view_type(const dynd::ndt::type &value_type,
-                                            const dynd::ndt::type &operand_type)
+                                           const dynd::ndt::type &operand_type)
 {
   return dynd::ndt::view_type::make(value_type, operand_type);
 }
 
 inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
-                                                    PyObject *encoding_obj)
+                                                   PyObject *encoding_obj)
 {
   dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
@@ -313,7 +314,7 @@ inline dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type &target_tp)
 }
 
 inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
-                                              PyObject *field_names)
+                                             PyObject *field_names)
 {
   std::vector<dynd::ndt::type> field_types_vec;
   std::vector<std::string> field_names_vec;
@@ -329,8 +330,8 @@ inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
   return dynd::ndt::struct_type::make(field_names_vec, field_types_vec);
 }
 
-inline dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape,
-                                 const dynd::ndt::type &element_tp)
+inline dynd::ndt::type
+dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp)
 {
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);

@@ -167,27 +167,20 @@ endif()
 set(pydynd_SRC
     dynd/include/conversions.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
-    dynd/include/do_import_array.hpp
     dynd/include/exception_translation.hpp
     dynd/include/functional.hpp
     dynd/include/git_version.hpp
     dynd/include/init.hpp
-    dynd/include/numpy_interop.hpp
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/visibility.hpp
-    dynd/src/array_as_numpy.cpp
     dynd/src/array_as_pep3118.cpp
-    dynd/src/array_from_py.cpp
-    dynd/src/array_from_py_typededuction.cpp
-    dynd/src/assign.cpp
     dynd/src/conversions.cpp
     dynd/src/copy_from_numpy_arrfunc.cpp
     dynd/src/functional.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
-    dynd/src/numpy_interop.cpp
     dynd/src/types/pyobject_type.cpp
 )
 
@@ -215,10 +208,26 @@ endforeach(pyx_api_file)
 
 set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
-foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+cython_add_module(dynd.nd.array dynd.nd.array_pyx True
+                  # Additional C++ source files:
+                  dynd/src/assign.cpp
+                  dynd/include/do_import_array.hpp
+                  dynd/include/numpy_interop.hpp
+                  dynd/src/array_as_numpy.cpp
+                  dynd/src/array_from_py.cpp
+                  dynd/src/array_from_py_typededuction.cpp
+                  dynd/src/numpy_interop.cpp
+                  )
+set_property(
+   TARGET dynd.nd.array
+   PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
+   )
 
+foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True)
+endforeach(module)
 
+foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     # Make sure libpydynd is on the rpath.
     # This has no effect on Windows.
     if(APPLE)

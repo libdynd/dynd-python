@@ -102,7 +102,7 @@ dynd_make_pointer_type(const dynd::ndt::type &target_tp);
 PYDYND_API dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
                                                  PyObject *field_names);
 
-PYDYND_API dynd::ndt::type
+inline dynd::ndt::type
 dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
 
 inline dynd::string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)

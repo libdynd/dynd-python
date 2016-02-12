@@ -7,29 +7,29 @@
 #include <datetime.h>
 
 #include <dynd/callable.hpp>
-#include <dynd/types/string_type.hpp>
-#include <dynd/types/bytes_type.hpp>
-#include <dynd/types/var_dim_type.hpp>
-#include <dynd/types/struct_type.hpp>
-#include <dynd/types/date_type.hpp>
-#include <dynd/types/time_type.hpp>
-#include <dynd/types/datetime_type.hpp>
-#include <dynd/types/type_type.hpp>
-#include <dynd/types/option_type.hpp>
-#include <dynd/types/substitute_shape.hpp>
+#include <dynd/exceptions.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/type_promotion.hpp>
-#include <dynd/exceptions.hpp>
+#include <dynd/types/bytes_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
+#include <dynd/types/option_type.hpp>
+#include <dynd/types/string_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/substitute_shape.hpp>
+#include <dynd/types/time_type.hpp>
+#include <dynd/types/type_type.hpp>
+#include <dynd/types/var_dim_type.hpp>
 
 #include "array_from_py.hpp"
 #include "array_from_py_typededuction.hpp"
 #include "array_functions.hpp"
-#include "type_functions.hpp"
-#include "utility_functions.hpp"
-#include "numpy_interop.hpp"
-#include "types/pyobject_type.hpp"
 #include "conversions.hpp"
+#include "numpy_interop.hpp"
+#include "type_functions.hpp"
+#include "types/pyobject_type.hpp"
+#include "utility_functions.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -221,7 +221,7 @@ inline void convert_one_pyscalar__type(const ndt::type &DYND_UNUSED(tp),
                                        const char *DYND_UNUSED(arrmeta),
                                        char *out, PyObject *obj)
 {
-  ndt::type obj_as_tp = make__type_from_pyobject(obj);
+  ndt::type obj_as_tp = dynd_ndt_cpp_type_for(obj);
   obj_as_tp.swap(*reinterpret_cast<ndt::type *>(out));
 }
 
@@ -624,11 +624,11 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     result = array_from_pylist(obj);
   }
   else if (PyType_Check(obj)) {
-    result = nd::array(make__type_from_pyobject(obj));
+    result = nd::array(dynd_ndt_cpp_type_for(obj));
 #if DYND_NUMPY_INTEROP
   }
   else if (PyArray_DescrCheck(obj)) {
-    result = nd::array(make__type_from_pyobject(obj));
+    result = nd::array(dynd_ndt_cpp_type_for(obj));
 #endif // DYND_NUMPY_INTEROP
   }
 
@@ -698,23 +698,4 @@ dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
   }
 
   return dynd::ndt::type();
-}
-
-dynd::ndt::type pydynd::xarray_from_pylist(PyObject *obj)
-{
-  // TODO: Add ability to specify access flags (e.g. immutable)
-  // Do a pass through all the data to deduce its type and shape
-  vector<intptr_t> shape;
-  ndt::type tp(void_id);
-  Py_ssize_t size = PyList_GET_SIZE(obj);
-  shape.push_back(size);
-  for (Py_ssize_t i = 0; i < size; ++i) {
-    deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
-  }
-
-  if (tp.get_id() == void_id) {
-    tp = dynd::ndt::type(int32_id);
-  }
-
-  return dynd::ndt::make_type(shape.size(), shape.data(), tp);
 }

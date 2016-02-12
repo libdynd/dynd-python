@@ -65,7 +65,6 @@ cdef extern from "array_from_py.hpp" namespace "pydynd":
     void init_array_from_py() except *
 
 cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
-    _type deduce__type_from_pyobject(object)
     void init_array_from_py_typededuction() except *
 
 cdef extern from 'numpy_interop.hpp' namespace 'pydynd':

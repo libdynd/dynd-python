@@ -61,8 +61,12 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     int array_getbuffer_pep3118(object ndo, Py_buffer *buffer, int flags) except -1
     int array_releasebuffer_pep3118(object ndo, Py_buffer *buffer) except -1
 
+cdef extern from "array_from_py.hpp" namespace "pydynd":
+    void init_array_from_py() except *
+
 cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
     _type deduce__type_from_pyobject(object)
+    void init_array_from_py_typededuction() except *
 
 cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
     # Have Cython use an integer to represent the bool argument.
@@ -77,6 +81,9 @@ ctypedef cpp_complex[double] cpp_complex_double
 # Alias the builtin name `type` so it can be used in functions where it isn't
 # in scope due to argument naming.
 _builtin_type = type
+
+init_array_from_py()
+init_array_from_py_typededuction()
 
 cdef class array(object):
     """

@@ -676,10 +676,10 @@ struct assign_to_pyobject_kernel<dynd::option_id, any_kind_id>
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
-    dynd::ckernel_prefix *is_na = get_child();
+    dynd::nd::kernel_prefix *is_na = get_child();
     dynd::kernel_single_t is_na_fn =
         is_na->get_function<dynd::kernel_single_t>();
-    dynd::ckernel_prefix *assign_value = get_child(m_assign_value_offset);
+    dynd::nd::kernel_prefix *assign_value = get_child(m_assign_value_offset);
     dynd::kernel_single_t assign_value_fn =
         assign_value->get_function<dynd::kernel_single_t>();
     char value_is_na = 1;
@@ -772,7 +772,7 @@ struct assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>
         src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(src_arrmeta);
     pydynd::pyobject_ownref tup(PyTuple_New(field_count));
     for (intptr_t i = 0; i < field_count; ++i) {
-      ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+      nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
       dynd::kernel_single_t copy_el_fn =
           copy_el->get_function<dynd::kernel_single_t>();
       char *el_src = src[0] + field_offsets[i];
@@ -851,7 +851,7 @@ struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
             m_src_arrmeta);
     pydynd::pyobject_ownref dct(PyDict_New());
     for (intptr_t i = 0; i < field_count; ++i) {
-      dynd::ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+      dynd::nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
       dynd::kernel_single_t copy_el_fn =
           copy_el->get_function<dynd::kernel_single_t>();
       char *el_src = src[0] + field_offsets[i];
@@ -930,7 +930,7 @@ struct assign_to_pyobject_kernel<dynd::fixed_dim_id, dim_kind_id>
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
     pydynd::pyobject_ownref lst(PyList_New(dim_size));
-    ckernel_prefix *copy_el = get_child();
+    nd::kernel_prefix *copy_el = get_child();
     dynd::kernel_strided_t copy_el_fn =
         copy_el->get_function<dynd::kernel_strided_t>();
     copy_el_fn(copy_el,
@@ -990,7 +990,7 @@ struct assign_to_pyobject_kernel<dynd::var_dim_id, dim_kind_id>
     const dynd::ndt::var_dim_type::data_type *vd =
         reinterpret_cast<const dynd::ndt::var_dim_type::data_type *>(src[0]);
     pydynd::pyobject_ownref lst(PyList_New(vd->size));
-    dynd::ckernel_prefix *copy_el = get_child();
+    dynd::nd::kernel_prefix *copy_el = get_child();
     dynd::kernel_strided_t copy_el_fn =
         copy_el->get_function<dynd::kernel_strided_t>();
     char *el_src = vd->begin + offset;

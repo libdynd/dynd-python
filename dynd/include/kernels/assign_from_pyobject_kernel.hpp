@@ -687,7 +687,7 @@ struct assign_from_pyobject_kernel<option_id, any_kind_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
     if (src_obj == Py_None) {
-      ckernel_prefix *assign_na = get_child();
+      nd::kernel_prefix *assign_na = get_child();
       dynd::kernel_single_t assign_na_fn =
           assign_na->get_function<dynd::kernel_single_t>();
       assign_na_fn(assign_na, dst, NULL);
@@ -732,7 +732,7 @@ struct assign_from_pyobject_kernel<option_id, any_kind_id>
 #endif
     }
     else {
-      ckernel_prefix *copy_value = get_child(copy_value_offset);
+      nd::kernel_prefix *copy_value = get_child(copy_value_offset);
       dynd::kernel_single_t copy_value_fn =
           copy_value->get_function<dynd::kernel_single_t>();
       copy_value_fn(copy_value, dst, src);
@@ -836,7 +836,7 @@ struct assign_from_pyobject_kernel<tuple_id, scalar_kind_id>
       child_stride = 0;
     }
     for (intptr_t i = 0; i < field_count; ++i) {
-      ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+      nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
       dynd::kernel_single_t copy_el_fn =
           copy_el->get_function<dynd::kernel_single_t>();
       char *el_dst = dst + field_offsets[i];
@@ -945,7 +945,7 @@ struct assign_from_pyobject_kernel<struct_id, tuple_id>
         // TODO: Add an error policy of whether to throw an error
         //       or not. For now, just raise an error
         if (i >= 0) {
-          ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+          nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
           dynd::kernel_single_t copy_el_fn =
               copy_el->get_function<dynd::kernel_single_t>();
           char *el_dst = dst + field_offsets[i];
@@ -1002,7 +1002,7 @@ struct assign_from_pyobject_kernel<struct_id, tuple_id>
         child_stride = 0;
       }
       for (intptr_t i = 0; i < field_count; ++i) {
-        ckernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
+        nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
         dynd::kernel_single_t copy_el_fn =
             copy_el->get_function<dynd::kernel_single_t>();
         char *el_dst = dst + field_offsets[i];
@@ -1088,7 +1088,7 @@ struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
 #endif
     // TODO: PEP 3118 support here
 
-    ckernel_prefix *copy_el = get_child();
+    nd::kernel_prefix *copy_el = get_child();
     dynd::kernel_strided_t copy_el_fn =
         copy_el->get_function<dynd::kernel_strided_t>();
 
@@ -1120,7 +1120,7 @@ struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
     if (src_dim_size == 1 && m_dim_size > 1) {
       // Copy once from Python, then duplicate that element
       copy_el_fn(copy_el, dst, 0, &child_src, &child_stride, 1);
-      ckernel_prefix *copy_dst = get_child(m_copy_dst_offset);
+      nd::kernel_prefix *copy_dst = get_child(m_copy_dst_offset);
       dynd::kernel_strided_t copy_dst_fn =
           copy_dst->get_function<dynd::kernel_strided_t>();
       intptr_t zero = 0;
@@ -1208,7 +1208,7 @@ struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
 #endif
     // TODO: PEP 3118 support here
 
-    ckernel_prefix *copy_el = get_child();
+    nd::kernel_prefix *copy_el = get_child();
     dynd::kernel_strided_t copy_el_fn =
         copy_el->get_function<dynd::kernel_strided_t>();
 
@@ -1256,7 +1256,7 @@ struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
       // Copy once from Python, then duplicate that element
       copy_el_fn(copy_el, vdd->begin + m_offset, 0, &child_src, &child_stride,
                  1);
-      ckernel_prefix *copy_dst = get_child(m_copy_dst_offset);
+      nd::kernel_prefix *copy_dst = get_child(m_copy_dst_offset);
       dynd::kernel_strided_t copy_dst_fn =
           copy_dst->get_function<dynd::kernel_strided_t>();
       intptr_t zero = 0;

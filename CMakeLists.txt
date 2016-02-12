@@ -174,14 +174,10 @@ set(pydynd_SRC
     dynd/include/type_functions.hpp
     dynd/include/utility_functions.hpp
     dynd/include/visibility.hpp
-    dynd/src/array_as_pep3118.cpp
     dynd/src/conversions.cpp
-    dynd/src/copy_from_numpy_arrfunc.cpp
-    dynd/src/functional.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
     dynd/src/init.cpp
-    dynd/src/types/pyobject_type.cpp
 )
 
 add_library(pydynd SHARED ${pydynd_SRC})
@@ -210,13 +206,17 @@ set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
 cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   # Additional C++ source files:
+                  dynd/src/array_as_pep3118.cpp
                   dynd/src/assign.cpp
                   dynd/include/do_import_array.hpp
                   dynd/include/numpy_interop.hpp
                   dynd/src/array_as_numpy.cpp
                   dynd/src/array_from_py.cpp
                   dynd/src/array_from_py_typededuction.cpp
+                  dynd/src/copy_from_numpy_arrfunc.cpp
+                  dynd/src/functional.cpp
                   dynd/src/numpy_interop.cpp
+                  dynd/src/types/pyobject_type.cpp
                   )
 set_property(
    TARGET dynd.nd.array

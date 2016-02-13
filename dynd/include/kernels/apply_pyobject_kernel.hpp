@@ -164,7 +164,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
       src_tp_copy[i] = src_tp[i];
     }
 
-    intptr_t ckb_offset = ckb->m_size;
+    intptr_t ckb_offset = ckb->size();
     ckb->emplace_back<apply_pyobject_kernel>(kernreq);
     apply_pyobject_kernel *self =
         ckb->get_at<apply_pyobject_kernel>(ckb_offset);

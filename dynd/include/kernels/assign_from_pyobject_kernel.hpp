@@ -747,15 +747,15 @@ struct assign_from_pyobject_kernel<option_id, any_kind_id>
               intptr_t nkwd, const dynd::nd::array *kwds,
               const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    intptr_t root_ckb_offset = ckb->m_size;
+    intptr_t root_ckb_offset = ckb->size();
     ckb->emplace_back<assign_from_pyobject_kernel>(kernreq, dst_tp,
                                                    dst_arrmeta);
-    intptr_t ckb_offset = ckb->m_size;
+    intptr_t ckb_offset = ckb->size();
     dynd::nd::callable assign_na = dynd::nd::assign_na::get();
     assign_na.get()->instantiate(
         assign_na.get()->static_data(), NULL, ckb, dst_tp, dst_arrmeta, nsrc,
         NULL, NULL, dynd::kernel_request_single, nkwd, kwds, tp_vars);
-    ckb_offset = ckb->m_size;
+    ckb_offset = ckb->size();
     ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset)
         ->copy_value_offset = ckb_offset - root_ckb_offset;
     nd::assign::get()->instantiate(
@@ -763,7 +763,7 @@ struct assign_from_pyobject_kernel<option_id, any_kind_id>
         dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
         dst_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single,
         nkwd, kwds, tp_vars);
-    ckb_offset = ckb->m_size;
+    ckb_offset = ckb->size();
   }
 };
 
@@ -858,12 +858,12 @@ struct assign_from_pyobject_kernel<tuple_id, scalar_kind_id>
   {
     bool dim_broadcast = false;
 
-    intptr_t ckb_offset = ckb->m_size;
+    intptr_t ckb_offset = ckb->size();
     intptr_t root_ckb_offset = ckb_offset;
     ckb->emplace_back<assign_from_pyobject_kernel>(kernreq);
     assign_from_pyobject_kernel *self =
         ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
-    ckb_offset = ckb->m_size;
+    ckb_offset = ckb->size();
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     intptr_t field_count =
@@ -883,7 +883,7 @@ struct assign_from_pyobject_kernel<tuple_id, scalar_kind_id>
           nd::assign::get()->static_data(), NULL, ckb, field_types[i],
           field_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single,
           nkwd, kwds, tp_vars);
-      ckb_offset = ckb->m_size;
+      ckb_offset = ckb->size();
     }
   }
 };
@@ -1025,12 +1025,12 @@ struct assign_from_pyobject_kernel<struct_id, tuple_id>
   {
     bool dim_broadcast = false;
 
-    intptr_t ckb_offset = ckb->m_size;
+    intptr_t ckb_offset = ckb->size();
     intptr_t root_ckb_offset = ckb_offset;
     ckb->emplace_back<assign_from_pyobject_kernel>(kernreq);
     assign_from_pyobject_kernel *self =
         ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
-    ckb_offset = ckb->m_size;
+    ckb_offset = ckb->size();
     self->m_dst_tp = dst_tp;
     self->m_dst_arrmeta = dst_arrmeta;
     intptr_t field_count =
@@ -1050,7 +1050,7 @@ struct assign_from_pyobject_kernel<struct_id, tuple_id>
           nd::assign::get()->static_data(), NULL, ckb, field_types[i],
           field_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single,
           nkwd, kwds, tp_vars);
-      ckb_offset = ckb->m_size;
+      ckb_offset = ckb->size();
     }
   }
 };
@@ -1143,7 +1143,7 @@ struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
               intptr_t nkwd, const dynd::nd::array *kwds,
               const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    intptr_t ckb_offset = ckb->m_size;
+    intptr_t ckb_offset = ckb->size();
     intptr_t dim_size, stride;
     dynd::ndt::type el_tp;
     const char *el_arrmeta;
@@ -1153,7 +1153,7 @@ struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
       ckb->emplace_back<assign_from_pyobject_kernel>(kernreq);
       assign_from_pyobject_kernel *self =
           ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
-      ckb_offset = ckb->m_size;
+      ckb_offset = ckb->size();
       self->m_dim_size = dim_size;
       self->m_stride = stride;
       self->m_dst_tp = dst_tp;
@@ -1163,7 +1163,7 @@ struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
                                      ckb, el_tp, el_arrmeta, nsrc, src_tp,
                                      src_arrmeta, dynd::kernel_request_strided,
                                      nkwd, kwds, tp_vars);
-      ckb_offset = ckb->m_size;
+      ckb_offset = ckb->size();
       self = ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
@@ -1281,14 +1281,14 @@ struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
               intptr_t nkwd, const dynd::nd::array *kwds,
               const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
-    intptr_t ckb_offset = ckb->m_size;
+    intptr_t ckb_offset = ckb->size();
     bool dim_broadcast = false;
 
     intptr_t root_ckb_offset = ckb_offset;
     ckb->emplace_back<assign_from_pyobject_kernel>(kernreq);
     assign_from_pyobject_kernel *self =
         ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
-    ckb_offset = ckb->m_size;
+    ckb_offset = ckb->size();
     self->m_offset =
         reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(
             dst_arrmeta)
@@ -1306,7 +1306,7 @@ struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
     nd::assign::get()->instantiate(
         nd::assign::get()->static_data(), NULL, ckb, el_tp, el_arrmeta, nsrc,
         src_tp, src_arrmeta, dynd::kernel_request_strided, nkwd, kwds, tp_vars);
-    ckb_offset = ckb->m_size;
+    ckb_offset = ckb->size();
     self = ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case

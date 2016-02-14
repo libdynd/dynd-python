@@ -3,7 +3,7 @@
 _builtin_type = type
 
 from cpython.object cimport (Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT,
-                             PyObject_TypeCheck, PyObject)
+                             PyObject_TypeCheck)
 from cpython.buffer cimport PyObject_CheckBuffer
 from libcpp.string cimport string
 from libcpp.map cimport map
@@ -17,8 +17,7 @@ from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
 from ..cpp.func.callable cimport callable as _callable
-from ..cpp.type cimport (type as _type,
-                         get_builtin_type_dynamic_array_properties, make_type)
+from ..cpp.type cimport get_builtin_type_dynamic_array_properties, make_type
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *
@@ -1063,3 +1062,40 @@ def fields(array struct_array, *fields_list):
     return result
 
 from .callable cimport dynd_nd_callable_from_cpp
+
+# These are functions exported by the numpy interop stuff that are needed in
+# other modules. These are only here until we put together a better way of
+# making them available where they are actually needed.
+
+cdef extern from 'functional.hpp':
+    _callable _apply 'apply'(_type, object) except +translate_exception
+
+cdef _callable _functional_apply(_type t, object o) except *:
+    return _apply(t, o)
+
+cdef extern from 'assign.hpp':
+    void assign_init() except +translate_exception
+
+cdef void _registry_assign_init() except *:
+    assign_init()
+
+cdef extern from "numpy_interop.hpp":
+    ctypedef struct PyArray_Descr
+
+cdef extern from "numpy_interop.hpp" namespace "pydynd":
+    PyArray_Descr *numpy_dtype_from__type(const _type &tp)
+    # Technically returns a bool.
+    # Rely on an implicit cast to convert it to a bint for Cython.
+    bint is_numpy_dtype(PyObject*)
+
+cdef object _numpy_dtype_from__type(const _type &tp):
+    return <object> numpy_dtype_from__type(tp)
+
+cdef bint _is_numpy_dtype(PyObject *o) except *:
+    return is_numpy_dtype(o)
+
+cdef extern from "array_from_py.hpp" namespace 'pydynd':
+    _type xtype_for_prefix(object) except +translate_exception
+
+cdef _type _xtype_for_prefix(object o) except *:
+    return xtype_for_prefix(o)

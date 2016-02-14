@@ -394,12 +394,6 @@ void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &tp, PyArray_Descr *d,
  */
 PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp);
 
-/** Small helper for cython parameter */
-inline PyObject *numpy_dtype_obj_from__type(const dynd::ndt::type &tp)
-{
-  return (PyObject *)numpy_dtype_from__type(tp);
-}
-
 /**
  * Converts a dynd type to a numpy dtype, also supporting types which
  * rely on their arrmeta for field offset information.

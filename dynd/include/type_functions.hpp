@@ -25,7 +25,7 @@
 #include <dynd/types/datetime_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/pointer_type.hpp>
+//#include <dynd/types/pointer_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/time_type.hpp>
@@ -62,45 +62,6 @@ inline PyObject *_type_get_shape(const dynd::ndt::type &d)
     return PyTuple_New(0);
   }
 }
-
-/**
- * Returns the type id of the dynd::ndt::type, as a Python string.
- */
-PYDYND_API PyObject *_type_get_id(const dynd::ndt::type &d);
-
-/**
- * Creates a convert type.
- */
-PYDYND_API dynd::ndt::type
-dynd_make_convert_type(const dynd::ndt::type &to_tp,
-                       const dynd::ndt::type &from_tp);
-
-/**
- * Creates a view type.
- */
-PYDYND_API dynd::ndt::type
-dynd_make_view_type(const dynd::ndt::type &value_type,
-                    const dynd::ndt::type &operand_type);
-
-/**
- * Creates a fixed-sized string type.
- */
-PYDYND_API dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
-                                                       PyObject *encoding_obj);
-
-/**
- * Creates a blockref string type.
- */
-PYDYND_API dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj);
-
-/**
- * Creates a blockref pointer type.
- */
-PYDYND_API dynd::ndt::type
-dynd_make_pointer_type(const dynd::ndt::type &target_tp);
-
-PYDYND_API dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
-                                                 PyObject *field_names);
 
 inline dynd::ndt::type
 dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);

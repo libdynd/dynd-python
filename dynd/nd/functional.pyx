@@ -9,6 +9,7 @@ from ..cpp.func.reduction cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception
+from .array cimport _functional_apply as _apply
 from .callable cimport callable, dynd_nd_callable_from_cpp, dynd_nd_callable_to_cpp
 from ..ndt.type cimport type, as_numba_type, from_numba_type, as_cpp_type
 
@@ -17,9 +18,6 @@ cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
         except +translate_exception
     _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T) \
         except +translate_exception
-
-cdef extern from 'functional.hpp':
-    _callable _apply 'apply'(_type, object) except +translate_exception
 
 cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functional":
     _callable _apply_jit "pydynd::nd::functional::apply_jit"(const _type &tp, intptr_t)

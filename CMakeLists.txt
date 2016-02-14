@@ -177,7 +177,6 @@ set(pydynd_SRC
     dynd/src/conversions.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
     dynd/src/git_version.cpp.in
-    dynd/src/init.cpp
 )
 
 add_library(pydynd SHARED ${pydynd_SRC})
@@ -214,6 +213,7 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/array_from_py.cpp
                   dynd/src/array_from_py_typededuction.cpp
                   dynd/src/copy_from_numpy_arrfunc.cpp
+                  dynd/src/init.cpp
                   dynd/src/functional.cpp
                   dynd/src/numpy_interop.cpp
                   dynd/src/types/pyobject_type.cpp

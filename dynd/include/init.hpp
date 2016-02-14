@@ -10,7 +10,7 @@
 
 namespace pydynd {
 
-PYDYND_API void pydynd_init();
+PYDYND_API void numpy_interop_init();
 
 } // namespace pydynd
 

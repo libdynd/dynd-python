@@ -7,12 +7,6 @@
 #include "numpy_interop.hpp"
 
 #include "assign.hpp"
-#include "copy_from_numpy_arrfunc.hpp"
 #include "init.hpp"
-#include "type_functions.hpp"
 
-void pydynd::pydynd_init()
-{
-  import_numpy();
-  pydynd::init_type_functions();
-}
+void pydynd::numpy_interop_init() { import_numpy(); }

@@ -72,6 +72,9 @@ cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
     # It will convert implicitly to bool at the C++ level.
     _array array_from_numpy_array_cast(PyObject*, unsigned int, bint)
 
+cdef extern from 'init.hpp' namespace 'pydynd':
+    void numpy_interop_init() except *
+
 # Work around Cython misparsing various types when
 # they are used as template parameters.
 ctypedef long long longlong
@@ -81,6 +84,8 @@ ctypedef cpp_complex[double] cpp_complex_double
 # in scope due to argument naming.
 _builtin_type = type
 
+# Initialize ctypes C level interop data
+numpy_interop_init()
 init_array_from_py()
 init_array_from_py_typededuction()
 

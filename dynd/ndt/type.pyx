@@ -23,7 +23,6 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_id,
                                   date_id, datetime_id, time_id,
                                   type_id)
 from ..cpp.type cimport make_type
-from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.type_alignment cimport make_unaligned as dynd_make_unaligned_type

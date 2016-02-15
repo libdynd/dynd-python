@@ -112,6 +112,11 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
   return dynd::nd::array(ndo, true);
 }
 
+inline dynd::nd::array pyobject_array()
+{
+  return dynd::nd::empty(dynd::ndt::make_type<pyobject_type>());
+}
+
 inline dynd::nd::array pyobject_array(PyObject *obj)
 {
   dynd::nd::array a = dynd::nd::empty(dynd::ndt::make_type<pyobject_type>());

@@ -32,6 +32,7 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
     void array_init_from_pyobject(_array&, object, object) except +translate_exception
 
+    _array pyobject_array() except +translate_exception
     _array pyobject_array(object) except +translate_exception
 
     object array_get_shape(_array&) except +translate_exception
@@ -681,8 +682,7 @@ def as_py(array n):
     >>> nd.as_py(a)
     [1.0, 2.0, 3.0, 4.0]
     """
-    from ..ndt import pyobject
-    cdef _array res = cpp_empty(dynd_ndt_type_to_cpp(pyobject))
+    cdef _array res = pyobject_array(None)
     res.assign(dynd_nd_array_to_cpp(n))
     return <object> dereference(<PyObject **> res.data())
 

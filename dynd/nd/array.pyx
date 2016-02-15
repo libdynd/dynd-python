@@ -1083,7 +1083,7 @@ cdef extern from "numpy_interop.hpp":
     ctypedef struct PyArray_Descr
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    PyArray_Descr *numpy_dtype_from__type(const _type &tp)
+    PyArray_Descr *numpy_dtype_from__type(const _type &tp) except +translate_exception
     # Technically returns a bool.
     # Rely on an implicit cast to convert it to a bint for Cython.
     bint is_numpy_dtype(PyObject*)

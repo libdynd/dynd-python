@@ -7,6 +7,8 @@
 #include "types/pyobject_type.hpp"
 
 struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
+  static const dynd::kernel_request_t kernreq = dynd::kernel_request_call;
+
   struct static_data_type {
     PyObject *func;
 
@@ -58,6 +60,20 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
         throw std::runtime_error(ss.str());
       }
     }
+  }
+
+  void call(dynd::nd::array *dst, dynd::nd::array *const *src)
+  {
+    const dynd::ndt::callable_type *fpt =
+        m_proto.extended<dynd::ndt::callable_type>();
+    intptr_t nsrc = fpt->get_npos();
+
+    std::vector<char *> src_data(nsrc);
+    for (int i = 0; i < nsrc; ++i) {
+      src_data[i] = const_cast<char *>(src[i]->cdata());
+    }
+
+    single(const_cast<char *>(dst->cdata()), src_data.data());
   }
 
   void single(char *dst, char *const *src)

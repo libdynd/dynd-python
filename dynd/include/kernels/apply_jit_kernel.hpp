@@ -12,6 +12,8 @@ namespace nd {
   namespace functional {
 
     struct apply_jit_kernel : dynd::nd::base_kernel<apply_jit_kernel> {
+      static const dynd::kernel_request_t kernreq = dynd::kernel_request_call;
+
       typedef void (*func_type)(char *dst, char *const *src);
 
       intptr_t nsrc;
@@ -19,6 +21,16 @@ namespace nd {
 
       apply_jit_kernel(intptr_t nsrc, func_type func) : nsrc(nsrc), func(func)
       {
+      }
+
+      void call(dynd::nd::array *dst, dynd::nd::array *const *src)
+      {
+        std::vector<char *> src_data(nsrc);
+        for (int i = 0; i < nsrc; ++i) {
+          src_data[i] = const_cast<char *>(src[i]->cdata());
+        }
+
+        single(const_cast<char *>(dst->cdata()), src_data.data());
       }
 
       void single(char *dst, char *const *src) { func(dst, src); }

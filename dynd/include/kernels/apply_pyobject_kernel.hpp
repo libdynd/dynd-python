@@ -60,7 +60,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
     }
   }
 
-  void call(dynd::nd::array *dst, dynd::nd::array *const *src)
+  void call(dynd::nd::array *dst, const dynd::nd::array *src)
   {
     const dynd::ndt::callable_type *fpt =
         m_proto.extended<dynd::ndt::callable_type>();
@@ -68,7 +68,7 @@ struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
 
     std::vector<char *> src_data(nsrc);
     for (int i = 0; i < nsrc; ++i) {
-      src_data[i] = const_cast<char *>(src[i]->cdata());
+      src_data[i] = const_cast<char *>(src[i].cdata());
     }
 
     single(const_cast<char *>(dst->cdata()), src_data.data());

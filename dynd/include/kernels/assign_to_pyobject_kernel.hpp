@@ -17,6 +17,8 @@ struct assign_to_pyobject_kernel;
 template <>
 struct assign_to_pyobject_kernel<bool_id, bool_kind_id>
     : nd::base_kernel<assign_to_pyobject_kernel<bool_id, bool_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     Py_XDECREF(*reinterpret_cast<PyObject **>(dst));
@@ -133,55 +135,67 @@ struct assign_int_kernel : dynd::nd::base_kernel<assign_int_kernel<T>, 1> {
 template <>
 struct assign_to_pyobject_kernel<dynd::int8_id, int_kind_id>
     : assign_int_kernel<int8_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::int16_id, int_kind_id>
     : assign_int_kernel<int16_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::int32_id, int_kind_id>
     : assign_int_kernel<int32_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::int64_id, int_kind_id>
     : assign_int_kernel<int64_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::int128_id, int_kind_id>
     : assign_int_kernel<dynd::int128> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::uint8_id, uint_kind_id>
     : assign_int_kernel<uint8_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::uint16_id, uint_kind_id>
     : assign_int_kernel<uint16_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::uint32_id, uint_kind_id>
     : assign_int_kernel<uint32_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::uint64_id, uint_kind_id>
     : assign_int_kernel<uint64_t> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::uint128_id, uint_kind_id>
     : assign_int_kernel<dynd::uint128> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <typename T>
 struct float_assign_kernel : dynd::nd::base_kernel<float_assign_kernel<T>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -194,21 +208,26 @@ struct float_assign_kernel : dynd::nd::base_kernel<float_assign_kernel<T>, 1> {
 template <>
 struct assign_to_pyobject_kernel<dynd::float16_id, float_kind_id>
     : float_assign_kernel<dynd::float16> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::float32_id, float_kind_id>
     : float_assign_kernel<float> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::float64_id, float_kind_id>
     : float_assign_kernel<double> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <class T>
 struct complex_float_assign_kernel
     : dynd::nd::base_kernel<complex_float_assign_kernel<T>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -223,17 +242,21 @@ struct complex_float_assign_kernel
 template <>
 struct assign_to_pyobject_kernel<dynd::complex_float32_id, complex_kind_id>
     : complex_float_assign_kernel<float> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::complex_float64_id, complex_kind_id>
     : complex_float_assign_kernel<double> {
+  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_to_pyobject_kernel<dynd::bytes_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::bytes_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -248,6 +271,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::fixed_bytes_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::fixed_bytes_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t data_size;
 
   assign_to_pyobject_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -280,6 +305,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::char_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::char_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -291,6 +318,8 @@ struct assign_to_pyobject_kernel<dynd::char_id, scalar_kind_id>
 
 struct string_ascii_assign_kernel
     : dynd::nd::base_kernel<string_ascii_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -304,6 +333,8 @@ struct string_ascii_assign_kernel
 
 struct string_utf8_assign_kernel
     : dynd::nd::base_kernel<string_utf8_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -316,6 +347,8 @@ struct string_utf8_assign_kernel
 
 struct string_utf16_assign_kernel
     : dynd::nd::base_kernel<string_utf16_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -329,6 +362,8 @@ struct string_utf16_assign_kernel
 
 struct string_utf32_assign_kernel
     : dynd::nd::base_kernel<string_utf32_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -344,6 +379,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::string_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::string_id, scalar_kind_id>> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   static void
   instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -382,6 +419,8 @@ struct assign_to_pyobject_kernel<dynd::string_id, scalar_kind_id>
 
 struct fixed_string_ascii_assign_kernel
     : dynd::nd::base_kernel<fixed_string_ascii_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t data_size;
 
   fixed_string_ascii_assign_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -412,6 +451,8 @@ struct fixed_string_ascii_assign_kernel
 
 struct fixed_string_utf8_assign_kernel
     : dynd::nd::base_kernel<fixed_string_utf8_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t data_size;
 
   fixed_string_utf8_assign_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -442,6 +483,8 @@ struct fixed_string_utf8_assign_kernel
 
 struct fixed_string_utf16_assign_kernel
     : dynd::nd::base_kernel<fixed_string_utf16_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t data_size;
 
   fixed_string_utf16_assign_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -474,6 +517,8 @@ struct fixed_string_utf16_assign_kernel
 
 struct fixed_string_utf32_assign_kernel
     : dynd::nd::base_kernel<fixed_string_utf32_assign_kernel, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t data_size;
 
   fixed_string_utf32_assign_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -508,6 +553,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::fixed_string_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::fixed_string_id, scalar_kind_id>> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   static void
   instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -548,6 +595,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::date_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::date_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   dynd::ndt::type src_tp;
   const char *src_arrmeta;
 
@@ -584,6 +633,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::time_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::time_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   dynd::ndt::type src_tp;
   const char *src_arrmeta;
 
@@ -621,6 +672,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::datetime_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::datetime_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   dynd::ndt::type src_tp;
   const char *src_arrmeta;
 
@@ -663,6 +716,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::option_id, any_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::option_id, any_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t m_assign_value_offset;
 
   ~assign_to_pyobject_kernel()
@@ -725,6 +780,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::type_id, any_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::type_id, any_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -740,6 +797,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   dynd::ndt::type src_tp;
   const char *src_arrmeta;
   std::vector<intptr_t> m_copy_el_offsets;
@@ -822,6 +881,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::struct_id, tuple_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   dynd::ndt::type m_src_tp;
   const char *m_src_arrmeta;
   std::vector<intptr_t> m_copy_el_offsets;
@@ -910,6 +971,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::fixed_dim_id, dim_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::fixed_dim_id, dim_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t dim_size, stride;
 
   assign_to_pyobject_kernel(intptr_t dim_size, intptr_t stride)
@@ -968,6 +1031,8 @@ template <>
 struct assign_to_pyobject_kernel<dynd::var_dim_id, dim_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::var_dim_id, dim_kind_id>, 1> {
+  static const kernel_request_t kernreq = kernel_request_call;
+
   intptr_t offset, stride;
 
   assign_to_pyobject_kernel(intptr_t offset, intptr_t stride)

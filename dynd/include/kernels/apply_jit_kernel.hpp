@@ -12,8 +12,6 @@ namespace nd {
   namespace functional {
 
     struct apply_jit_kernel : dynd::nd::base_kernel<apply_jit_kernel> {
-      static const dynd::kernel_request_t kernreq = dynd::kernel_request_call;
-
       typedef void (*func_type)(char *dst, char *const *src);
 
       intptr_t nsrc;

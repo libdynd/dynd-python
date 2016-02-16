@@ -48,8 +48,6 @@ namespace ndt {
  */
 struct assign_to_pyarrayobject_kernel
     : dynd::nd::base_kernel<assign_to_pyarrayobject_kernel> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   static void
   instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,

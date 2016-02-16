@@ -7,8 +7,6 @@
 #include "types/pyobject_type.hpp"
 
 struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
-  static const dynd::kernel_request_t kernreq = dynd::kernel_request_call;
-
   struct static_data_type {
     PyObject *func;
 

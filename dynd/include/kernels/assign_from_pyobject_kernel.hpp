@@ -62,8 +62,6 @@ struct assign_from_pyobject_kernel;
 template <>
 struct assign_from_pyobject_kernel<bool_id, bool_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<bool_id, bool_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   void single(char *dst, char *const *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject **>(src[0]);
@@ -240,8 +238,6 @@ template <type_id_t DstTypeID>
 struct assign_from_pyobject_kernel<DstTypeID, int_kind_id>
     : dynd::nd::base_kernel<assign_from_pyobject_kernel<DstTypeID, int_kind_id>,
                             1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   typedef typename type_of<DstTypeID>::type T;
 
   void single(char *dst, char *const *src)
@@ -281,8 +277,6 @@ template <type_id_t DstTypeID>
 struct assign_from_pyobject_kernel<DstTypeID, uint_kind_id>
     : dynd::nd::base_kernel<
           assign_from_pyobject_kernel<DstTypeID, uint_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   typedef typename type_of<DstTypeID>::type T;
 
   void single(char *dst, char *const *src)
@@ -306,8 +300,6 @@ template <type_id_t DstTypeID>
 struct assign_from_pyobject_kernel<DstTypeID, float_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<DstTypeID, float_kind_id>,
                       1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   typedef typename type_of<DstTypeID>::type T;
 
   void single(char *dst, char *const *src)
@@ -331,8 +323,6 @@ template <type_id_t DstTypeID>
 struct assign_from_pyobject_kernel<DstTypeID, complex_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<DstTypeID, complex_kind_id>,
                       1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   typedef typename type_of<DstTypeID>::type U;
   typedef typename U::value_type T;
 
@@ -358,8 +348,6 @@ template <>
 struct assign_from_pyobject_kernel<bytes_id, scalar_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<bytes_id, scalar_kind_id>,
                       1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -414,15 +402,12 @@ struct assign_from_pyobject_kernel<bytes_id, scalar_kind_id>
 template <>
 struct assign_from_pyobject_kernel<fixed_bytes_id, scalar_kind_id>
     : assign_from_pyobject_kernel<dynd::bytes_id, scalar_kind_id> {
-  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_from_pyobject_kernel<string_id, scalar_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<string_id, scalar_kind_id>,
                       1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -498,14 +483,11 @@ struct assign_from_pyobject_kernel<string_id, scalar_kind_id>
 template <>
 struct assign_from_pyobject_kernel<fixed_string_id, scalar_kind_id>
     : assign_from_pyobject_kernel<string_id, scalar_kind_id> {
-  static const kernel_request_t kernreq = kernel_request_call;
 };
 
 template <>
 struct assign_from_pyobject_kernel<date_id, scalar_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<date_id, scalar_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -570,8 +552,6 @@ struct assign_from_pyobject_kernel<date_id, scalar_kind_id>
 template <>
 struct assign_from_pyobject_kernel<time_id, scalar_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<time_id, scalar_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -620,8 +600,6 @@ template <>
 struct assign_from_pyobject_kernel<datetime_id, scalar_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<datetime_id, scalar_kind_id>,
                       1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -677,8 +655,6 @@ template <>
 struct assign_from_pyobject_kernel<type_id, any_kind_id>
     : dynd::nd::base_kernel<assign_from_pyobject_kernel<type_id, any_kind_id>,
                             1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   void single(char *dst, char *const *src)
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
@@ -690,8 +666,6 @@ struct assign_from_pyobject_kernel<type_id, any_kind_id>
 template <>
 struct assign_from_pyobject_kernel<option_id, any_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<option_id, any_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   dynd::ndt::type dst_tp;
   const char *dst_arrmeta;
   intptr_t copy_value_offset;
@@ -797,8 +771,6 @@ template <>
 struct assign_from_pyobject_kernel<tuple_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_from_pyobject_kernel<tuple_id, scalar_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
   bool m_dim_broadcast;
@@ -920,8 +892,6 @@ template <>
 struct assign_from_pyobject_kernel<struct_id, tuple_id>
     : dynd::nd::base_kernel<assign_from_pyobject_kernel<struct_id, tuple_id>,
                             1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
   bool m_dim_broadcast;
@@ -1090,8 +1060,6 @@ template <>
 struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
     : dynd::nd::base_kernel<
           assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   intptr_t m_dim_size, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
@@ -1212,8 +1180,6 @@ template <>
 struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
     : dynd::nd::base_kernel<
           assign_from_pyobject_kernel<var_dim_id, dim_kind_id>, 1> {
-  static const kernel_request_t kernreq = kernel_request_call;
-
   intptr_t m_offset, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;

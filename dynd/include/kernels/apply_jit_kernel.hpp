@@ -21,11 +21,11 @@ namespace nd {
       {
       }
 
-      void call(dynd::nd::array *dst, dynd::nd::array *const *src)
+      void call(dynd::nd::array *dst, const dynd::nd::array *src)
       {
         std::vector<char *> src_data(nsrc);
         for (int i = 0; i < nsrc; ++i) {
-          src_data[i] = const_cast<char *>(src[i]->cdata());
+          src_data[i] = const_cast<char *>(src[i].cdata());
         }
 
         single(const_cast<char *>(dst->cdata()), src_data.data());

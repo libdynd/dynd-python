@@ -660,7 +660,7 @@ struct assign_from_pyobject_kernel<type_id, any_kind_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
     *reinterpret_cast<dynd::ndt::type *>(dst) =
-        pydynd::dynd_ndt_cpp_type_for(src_obj);
+        pydynd::dynd_ndt_as_cpp_type(src_obj);
   }
 };
 

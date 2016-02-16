@@ -23,7 +23,6 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_id,
                                   date_id, datetime_id, time_id,
                                   type_id)
 from ..cpp.type cimport make_type
-from ..cpp.types.pyobject_type cimport pyobject_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.type_alignment cimport make_unaligned as dynd_make_unaligned_type
@@ -59,12 +58,9 @@ cdef extern from "numpy_interop.hpp":
     ctypedef struct PyArray_Descr
 
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    object numpy_dtype_obj_from__type(_type&) except +translate_exception
-    cpp_bool is_numpy_dtype(PyObject*)
     _type _type_from_numpy_dtype(PyArray_Descr*)
 
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
-    _type xtype_for_prefix(object) except +translate_exception
     _type xarray_from_pylist(object) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
@@ -282,7 +278,7 @@ cdef class type(object):
         >>> ndt.int32.as_numpy()
         dtype('int32')
         """
-        return numpy_dtype_obj_from__type(self.v)
+        return _numpy_dtype_from__type(self.v)
 
     def match(self, rhs):
         """
@@ -400,7 +396,7 @@ cdef _type as_cpp_type(object o) except *:
         return _type(<type_id_t>(<int>o))
     elif _builtin_type(o) is array:
         return dynd_nd_array_to_cpp(<array>o).as[_type]()
-    elif is_numpy_dtype(<PyObject*>o):
+    elif _is_numpy_dtype(<PyObject*>o):
         return _type_from_numpy_dtype(<PyArray_Descr*>o)
     elif issubclass(o, _ctypes_base_type):
         raise ValueError("Conversion from ctypes type to DyND type not currently supported.")
@@ -762,7 +758,6 @@ class struct(object):
 """
 
 scalar = type('Scalar')
-pyobject = dynd_ndt_type_from_cpp(make_type[object]())
 
 _to_numba_type = {}
 _from_numba_type = {}
@@ -795,7 +790,7 @@ cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
 cdef _type cpp_type_for(object obj) except *:
-    cdef _type tp = xtype_for_prefix(obj)
+    cdef _type tp = _xtype_for_prefix(obj)
     if (not tp.is_null() and not isinstance(obj, _np.integer)):
         return tp
     if _builtin_type(obj) is builtin_tuple:
@@ -810,4 +805,5 @@ def type_for(obj):
 
 # Avoid circular import issues by importing these last.
 from ..nd.array cimport (dynd_nd_array_to_cpp, dynd_nd_array_from_cpp,
-                         as_cpp_array)
+                         as_cpp_array, _numpy_dtype_from__type, _is_numpy_dtype,
+                         _xtype_for_prefix)

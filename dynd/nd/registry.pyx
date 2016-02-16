@@ -5,9 +5,7 @@ from ..cpp.func.callable_registry cimport callable_registry
 
 from ..config cimport translate_exception
 from .callable cimport dynd_nd_callable_from_cpp
-
-cdef extern from 'assign.hpp':
-    void assign_init() except +translate_exception
+from .array cimport _registry_assign_init as assign_init
 
 assign_init()
 

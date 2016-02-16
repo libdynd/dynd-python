@@ -14,9 +14,6 @@ cdef extern from 'do_import_array.hpp':
 cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
     void import_numpy()
 
-cdef extern from 'init.hpp' namespace 'pydynd':
-    void pydynd_init() except +translate_exception
-
 cdef extern from 'git_version.hpp' namespace 'pydynd':
     extern char[] dynd_python_version_string
     extern char[] dynd_python_git_sha1
@@ -39,6 +36,3 @@ class BroadcastError(Exception):
 # Used in exception translation header.
 # It is forward-declared there and then set when this module is initialized.
 DyND_BroadcastException = <PyObject*>BroadcastError
-
-# Initialize ctypes C level interop data
-pydynd_init()

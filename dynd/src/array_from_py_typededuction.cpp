@@ -7,24 +7,22 @@
 #include <datetime.h>
 
 #include <dynd/callable.hpp>
-#include <dynd/types/string_type.hpp>
-#include <dynd/types/bytes_type.hpp>
-#include <dynd/types/var_dim_type.hpp>
-#include <dynd/types/struct_type.hpp>
-#include <dynd/types/date_type.hpp>
-#include <dynd/types/time_type.hpp>
-#include <dynd/types/datetime_type.hpp>
-#include <dynd/types/type_type.hpp>
-#include <dynd/types/option_type.hpp>
-#include <dynd/type_promotion.hpp>
 #include <dynd/exceptions.hpp>
+#include <dynd/type_promotion.hpp>
+#include <dynd/types/bytes_type.hpp>
+#include <dynd/types/date_type.hpp>
+#include <dynd/types/datetime_type.hpp>
+#include <dynd/types/option_type.hpp>
+#include <dynd/types/struct_type.hpp>
+#include <dynd/types/time_type.hpp>
+#include <dynd/types/type_type.hpp>
+#include <dynd/types/var_dim_type.hpp>
 
 #include "array_from_py_typededuction.hpp"
 #include "array_functions.hpp"
+#include "numpy_interop.hpp"
 #include "type_functions.hpp"
 #include "utility_functions.hpp"
-#include "numpy_interop.hpp"
-#include "conversions.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -34,223 +32,6 @@ void pydynd::init_array_from_py_typededuction()
 {
   // Initialize the pydatetime API
   PyDateTime_IMPORT;
-}
-
-ndt::type pydynd::deduce__type_from_pyobject(PyObject *obj,
-                                             bool throw_on_unknown)
-{
-#if DYND_NUMPY_INTEROP
-  if (PyArray_Check(obj)) {
-    // Numpy array
-    PyArray_Descr *d = PyArray_DESCR((PyArrayObject *)obj);
-    return _type_from_numpy_dtype(d);
-  }
-  else if (PyArray_IsScalar(obj, Generic)) {
-    // Numpy scalar
-    return _type_of_numpy_scalar(obj);
-  }
-#endif // DYND_NUMPY_INTEROP
-
-  if (PyBool_Check(obj)) {
-    // Python bool
-    return ndt::make_type<dynd::bool1>();
-#if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyInt_Check(obj)) {
-// Python integer
-#if SIZEOF_LONG > SIZEOF_INT
-    long value = PyInt_AS_LONG(obj);
-    // Use a 32-bit int if it fits. This conversion strategy
-    // is independent of sizeof(long), and is the same on 32-bit
-    // and 64-bit platforms.
-    if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::make_type<int>();
-    }
-    else {
-      return ndt::make_type<long>();
-    }
-#else
-    return ndt::make_type<int>();
-#endif
-#endif // PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyLong_Check(obj)) {
-    // Python integer
-    PY_LONG_LONG value = PyLong_AsLongLong(obj);
-    if (value == -1 && PyErr_Occurred()) {
-      throw runtime_error("error converting int value");
-    }
-    // Use a 32-bit int if it fits. This conversion strategy
-    // is independent of sizeof(long), and is the same on 32-bit
-    // and 64-bit platforms.
-    if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::make_type<int>();
-    }
-    else {
-      return ndt::make_type<PY_LONG_LONG>();
-    }
-  }
-  else if (PyFloat_Check(obj)) {
-    // Python float
-    return ndt::make_type<double>();
-  }
-  else if (PyComplex_Check(obj)) {
-    // Python complex
-    return ndt::make_type<dynd::complex<double>>();
-#if PY_VERSION_HEX < 0x03000000
-  }
-  else if (PyString_Check(obj)) {
-    // Python string
-    return ndt::make_type<ndt::string_type>();
-#else
-  }
-  else if (PyBytes_Check(obj)) {
-    // Python bytes string
-    return ndt::bytes_type::make(1);
-#endif
-  }
-  else if (PyUnicode_Check(obj)) {
-    // Python string
-    return ndt::make_type<ndt::string_type>();
-  }
-  else if (PyDateTime_Check(obj)) {
-    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
-        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-      throw runtime_error("Converting datetimes with a timezone to dynd arrays "
-                          "is not yet supported");
-    }
-    return ndt::datetime_type::make();
-  }
-  else if (PyDate_Check(obj)) {
-    return ndt::date_type::make();
-  }
-  else if (PyTime_Check(obj)) {
-    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
-        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-      throw runtime_error("Converting times with a timezone to dynd arrays is "
-                          "not yet supported");
-    }
-    return ndt::time_type::make(tz_abstract);
-  }
-  else if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
-    return ndt::make_type<ndt::type_type>();
-  }
-  else if (PyType_Check(obj)) {
-    return ndt::make_type<ndt::type_type>();
-#if DYND_NUMPY_INTEROP
-  }
-  else if (PyArray_DescrCheck(obj)) {
-    return ndt::make_type<ndt::type_type>();
-#endif // DYND_NUMPY_INTEROP
-  }
-  else if (obj == Py_None) {
-    return ndt::make_type<ndt::option_type>(ndt::make_type<void>());
-  }
-
-  // Check for a blaze.Array, or something which looks similar,
-  // specifically named 'Array' and with a property 'dshape'
-  PyObject *pytypename =
-      PyObject_GetAttrString((PyObject *)Py_TYPE(obj), "__name__");
-  if (pytypename != NULL) {
-    pyobject_ownref pytypename_obj(pytypename);
-    if (pystring_as_string(pytypename) == "Array") {
-      PyObject *dshape = PyObject_GetAttrString(obj, "dshape");
-      if (dshape != NULL) {
-        pyobject_ownref dshape_obj(dshape);
-        pyobject_ownref dshapestr_obj(PyObject_Str(dshape));
-        return ndt::type(pystring_as_string(dshapestr_obj.get()));
-      }
-      else {
-        PyErr_Clear();
-      }
-    }
-  }
-  else {
-    PyErr_Clear();
-  }
-
-  if (throw_on_unknown) {
-    stringstream ss;
-    ss << "could not deduce pydynd type from the python object ";
-    pyobject_ownref repr_obj(PyObject_Repr(obj));
-    ss << pystring_as_string(repr_obj.get());
-    throw std::runtime_error(ss.str());
-  }
-  else {
-    // Return an uninitialized type to signal nothing was deduced
-    return ndt::type();
-  }
-}
-
-void pydynd::deduce_pylist_shape_and_dtype(PyObject *obj,
-                                           vector<intptr_t> &shape,
-                                           ndt::type &tp, size_t current_axis)
-{
-  if (PyList_Check(obj)) {
-    Py_ssize_t size = PyList_GET_SIZE(obj);
-    if (shape.size() == current_axis) {
-      if (tp.get_id() == void_id) {
-        shape.push_back(size);
-      }
-      else {
-        throw runtime_error("dynd array doesn't support dimensions "
-                            "which are sometimes scalars and sometimes arrays");
-      }
-    }
-    else {
-      if (shape[current_axis] != size) {
-        // A variable-sized dimension
-        shape[current_axis] = pydynd_shape_deduction_var;
-      }
-    }
-
-    for (Py_ssize_t i = 0; i < size; ++i) {
-      deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp,
-                                    current_axis + 1);
-      // Propagate uninitialized_id as a signal an
-      // undeducable object was encountered
-      if (tp.get_id() == uninitialized_id) {
-        return;
-      }
-    }
-  }
-  else {
-    if (shape.size() != current_axis) {
-      // Return uninitialized_id as a signal
-      // when an ambiguous situation like this is encountered,
-      // letting the dynamic conversion handle it.
-      tp = ndt::type();
-      return;
-    }
-
-    ndt::type obj_tp;
-#if PY_VERSION_HEX >= 0x03000000
-    if (PyUnicode_Check(obj)) {
-      obj_tp = ndt::make_type<ndt::string_type>();
-    }
-    else {
-      obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
-      // Propagate uninitialized_id as a signal an
-      // undeducable object was encountered
-      if (obj_tp.get_id() == uninitialized_id) {
-        tp = obj_tp;
-        return;
-      }
-    }
-#else
-    obj_tp = pydynd::deduce__type_from_pyobject(obj, false);
-    // Propagate uninitialized_id as a signal an
-    // undeducable object was encountered
-    if (obj_tp.get_id() == uninitialized_id) {
-      tp = obj_tp;
-      return;
-    }
-#endif
-
-    if (tp != obj_tp) {
-      tp = dynd::promote_types_arithmetic(obj_tp, tp);
-    }
-  }
 }
 
 size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)

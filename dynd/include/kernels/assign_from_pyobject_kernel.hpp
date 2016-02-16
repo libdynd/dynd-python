@@ -5,21 +5,21 @@
 
 #pragma once
 
-#include <dynd/option.hpp>
-#include <dynd/parse.hpp>
 #include <dynd/func/assignment.hpp>
 #include <dynd/func/compose.hpp>
 #include <dynd/kernels/base_kernel.hpp>
+#include <dynd/option.hpp>
+#include <dynd/parse.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/categorical_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
 #include "array_from_py_typededuction.hpp"
 #include "array_functions.hpp"
+#include "conversions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
-#include "conversions.hpp"
 
 using namespace dynd;
 
@@ -660,7 +660,7 @@ struct assign_from_pyobject_kernel<type_id, any_kind_id>
   {
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
     *reinterpret_cast<dynd::ndt::type *>(dst) =
-        pydynd::make__type_from_pyobject(src_obj);
+        pydynd::dynd_ndt_as_cpp_type(src_obj);
   }
 };
 

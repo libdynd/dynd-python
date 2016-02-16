@@ -8,15 +8,5 @@
 
 #include "assign.hpp"
 #include "init.hpp"
-#include "copy_from_numpy_arrfunc.hpp"
-#include "array_from_py.hpp"
-#include "array_from_py_typededuction.hpp"
-#include "type_functions.hpp"
 
-void pydynd::pydynd_init()
-{
-  import_numpy();
-  pydynd::init_type_functions();
-  pydynd::init_array_from_py_typededuction();
-  pydynd::init_array_from_py();
-}
+void pydynd::numpy_interop_init() { import_numpy(); }

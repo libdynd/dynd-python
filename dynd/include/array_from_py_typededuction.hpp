@@ -9,27 +9,14 @@
 #include <Python.h>
 
 #include <dynd/array.hpp>
+#include <dynd/type.hpp>
+#include <dynd/type_promotion.hpp>
+#include <dynd/types/string_type.hpp>
+#include <dynd/types/type_id.hpp>
+
+#include "conversions.hpp"
 
 namespace pydynd {
-
-/**
- * Produces a ndt::type corresponding to the object's type. This
- * is to determine the ndt::type of an object that contains a value
- * or values.
- *
- * This function doesn't recursively process lists, or return
- * a shape if the object is a dynd or numpy array, for example.
- *
- * \param obj  The python object whose type is to be deduced.
- * \param throw_on_unknown  If true (the default), raises an exception
- *                          when no type can be deduced, otherwise returns
- *                          an uninitialized type.
- *
- * \return A type for the object, or an uninitialized type if
- *         `throw_on_unknown` is false, and nothing could be deduced.
- */
-dynd::ndt::type deduce__type_from_pyobject(PyObject *obj,
-                                              bool throw_on_unknown = true);
 
 /**
  * An enumeration for describing information known about a particular
@@ -60,8 +47,66 @@ enum shape_deduction_t {
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.
  */
-void deduce_pylist_shape_and_dtype(PyObject *obj, std::vector<intptr_t> &shape,
-                                   dynd::ndt::type &tp, size_t current_axis);
+inline void deduce_pylist_shape_and_dtype(PyObject *obj,
+                                          std::vector<intptr_t> &shape,
+                                          dynd::ndt::type &tp,
+                                          size_t current_axis)
+{
+  if (PyList_Check(obj)) {
+    Py_ssize_t size = PyList_GET_SIZE(obj);
+    if (shape.size() == current_axis) {
+      if (tp.get_id() == dynd::void_id) {
+        shape.push_back(size);
+      }
+      else {
+        throw std::runtime_error(
+            "dynd array doesn't support dimensions "
+            "which are sometimes scalars and sometimes arrays");
+      }
+    }
+    else {
+      if (shape[current_axis] != size) {
+        // A variable-sized dimension
+        shape[current_axis] = pydynd_shape_deduction_var;
+      }
+    }
+
+    for (Py_ssize_t i = 0; i < size; ++i) {
+      deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp,
+                                    current_axis + 1);
+      // Propagate uninitialized_id as a signal an
+      // undeducable object was encountered
+      if (tp.get_id() == dynd::uninitialized_id) {
+        return;
+      }
+    }
+  }
+  else {
+    if (shape.size() != current_axis) {
+      // Return uninitialized_id as a signal
+      // when an ambiguous situation like this is encountered,
+      // letting the dynamic conversion handle it.
+      tp = dynd::ndt::type();
+      return;
+    }
+
+    dynd::ndt::type obj_tp;
+#if PY_VERSION_HEX >= 0x03000000
+    if (PyUnicode_Check(obj)) {
+      obj_tp = dynd::ndt::make_type<dynd::ndt::string_type>();
+    }
+    else {
+      obj_tp = pydynd::dynd_ndt_cpp_type_for(obj);
+    }
+#else
+    obj_tp = pydynd::dynd_ndt_cpp_type_for(obj);
+#endif
+
+    if (tp != obj_tp) {
+      tp = dynd::promote_types_arithmetic(obj_tp, tp);
+    }
+  }
+}
 
 /**
  * This function iterates over the elements of the provided

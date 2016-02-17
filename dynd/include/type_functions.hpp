@@ -28,7 +28,6 @@
 //#include <dynd/types/pointer_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/time_type.hpp>
 #include <dynd/types/type_type.hpp>
 
 // Python's datetime C API

@@ -581,43 +581,6 @@ struct assign_to_pyobject_kernel<dynd::date_id, scalar_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::time_id, scalar_kind_id>
-    : dynd::nd::base_kernel<
-          assign_to_pyobject_kernel<dynd::time_id, scalar_kind_id>, 1> {
-  dynd::ndt::type src_tp;
-  const char *src_arrmeta;
-
-  assign_to_pyobject_kernel(dynd::ndt::type src_tp, const char *src_arrmeta)
-      : src_tp(src_tp), src_arrmeta(src_arrmeta)
-  {
-  }
-
-  void single(char *dst, char *const *src)
-  {
-    PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
-    Py_XDECREF(*dst_obj);
-    *dst_obj = NULL;
-    const dynd::ndt::time_type *tt = src_tp.extended<dynd::ndt::time_type>();
-    dynd::time_hmst hmst = tt->get_time(src_arrmeta, src[0]);
-    *dst_obj = PyTime_FromTime(hmst.hour, hmst.minute, hmst.second,
-                               hmst.tick / DYND_TICKS_PER_MICROSECOND);
-  }
-
-  static void instantiate(
-      char *DYND_UNUSED(static_data), char *DYND_UNUSED(data),
-      dynd::nd::kernel_builder *ckb, const dynd::ndt::type &DYND_UNUSED(dst_tp),
-      const char *DYND_UNUSED(dst_arrmeta), intptr_t DYND_UNUSED(nsrc),
-      const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
-      dynd::kernel_request_t kernreq, intptr_t nkwd,
-      const dynd::nd::array *DYND_UNUSED(kwds),
-      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
-  {
-    ckb->emplace_back<assign_to_pyobject_kernel>(kernreq, src_tp[0],
-                                                 src_arrmeta[0]);
-  }
-};
-
-template <>
 struct assign_to_pyobject_kernel<dynd::datetime_id, scalar_kind_id>
     : dynd::nd::base_kernel<
           assign_to_pyobject_kernel<dynd::datetime_id, scalar_kind_id>, 1> {

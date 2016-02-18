@@ -51,13 +51,6 @@ class TestPythonScalar(unittest.TestCase):
         self.assertEqual(type(nd.as_py(a)), complex)
         self.assertEqual(nd.as_py(a), 5.125 - 2.5j)
 
-    def test_date(self):
-        # Date
-        a = nd.array(date(2012,12,12))
-        self.assertEqual(nd.type_of(a), ndt.date)
-        self.assertEqual(type(nd.as_py(a)), date)
-        self.assertEqual(nd.as_py(a), date(2012,12,12))
-
     def test_string(self):
         a = nd.array('abcdef')
         self.assertEqual(nd.type_of(a), ndt.string)

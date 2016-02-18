@@ -82,12 +82,6 @@ class TestNumpyDTypeInterop(unittest.TestCase):
                             align=True))
         tp1 = ndt.type('{x : int32, y : int64}')
         self.assertEqual(tp0, tp1)
-        # unaligned struct
-        tp0 = ndt.type(np.dtype([('x', np.int32), ('y', np.int64)]))
-        tp1 = ndt.make_struct([ndt.make_unaligned(ndt.int32),
-                        ndt.make_unaligned(ndt.int64)],
-                        ['x', 'y'])
-        self.assertEqual(tp0, tp1)
 
     def test__type_from_h5py_special(self):
         # h5py 2.3 style "special dtype"
@@ -156,7 +150,6 @@ class TestNumpyDTypeInterop(unittest.TestCase):
         """
 
         # check some types which can't be converted
-        self.assertRaises(TypeError, ndt.date.as_numpy)
         self.assertRaises(TypeError, ndt.bytes.as_numpy)
         self.assertRaises(TypeError, ndt.string.as_numpy)
 
@@ -216,14 +209,6 @@ class TestNumpyViewInterop(unittest.TestCase):
         self.assertEqual(n.shape, a.shape)
         self.assertEqual(n.strides, a.strides)
         """
-
-        a = np.arange(49, dtype='i1')
-        a = a[1:].view(dtype=np.int32).reshape(4,3)
-        n = nd.view(a)
-        self.assertEqual(nd.dtype_of(n), ndt.make_unaligned(ndt.int32))
-        self.assertEqual(nd.ndim_of(n), a.ndim)
-        self.assertEqual(n.shape, a.shape)
-        self.assertEqual(n.strides, a.strides)
 
         """
         a = np.arange(49, dtype='i1')
@@ -542,15 +527,6 @@ class TestNumpyScalarInterop(unittest.TestCase):
         # nd.view should fail
         self.assertRaises(RuntimeError, nd.view, a)
     """
-
-    def test_expr_struct_conversion(self):
-        a = nd.array([date(2000, 12, 13), date(1995, 5, 2)]).to_struct
-        b = a.to(np.ndarray)
-        self.assertTrue(isinstance(b, np.ndarray))
-        # Use the NumPy assertions which support arrays
-        assert_equal(b['year'], [2000, 1995])
-        assert_equal(b['month'], [12, 5])
-        assert_equal(b['day'], [13, 2])
 
     def test_var_dim_conversion(self):
         # A simple instantiated var_dim array should be

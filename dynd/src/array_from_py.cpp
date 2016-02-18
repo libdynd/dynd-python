@@ -12,7 +12,6 @@
 #include <dynd/memblock/pod_memory_block.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/date_type.hpp>
 #include <dynd/types/option_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/struct_type.hpp>
@@ -171,17 +170,6 @@ inline void convert_one_pyscalar_ustring(const ndt::type &tp,
   }
 }
 
-inline void convert_one_pyscalar_date(const ndt::type &tp, const char *arrmeta,
-                                      char *out, PyObject *obj)
-{
-  if (!PyDate_Check(obj)) {
-    throw dynd::type_error("input object is not a date as expected");
-  }
-  const ndt::date_type *dd = tp.extended<ndt::date_type>();
-  dd->set_ymd(arrmeta, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
-              PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-}
-
 inline void convert_one_pyscalar__type(const ndt::type &DYND_UNUSED(tp),
                                        const char *DYND_UNUSED(arrmeta),
                                        char *out, PyObject *obj)
@@ -338,12 +326,6 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
          << ", doesn't have a dynd array conversion";
       throw runtime_error(ss.str());
     }
-    break;
-  }
-  case date_id: {
-    fill_array_from_pylist<convert_one_pyscalar_date>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
     break;
   }
   case type_id: {
@@ -530,14 +512,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     }
     result = nd::empty(ndt::make_type<ndt::string_type>());
     reinterpret_cast<dynd::string *>(result.data())->assign(s, len);
-  }
-  else if (PyDate_Check(obj)) {
-    ndt::type d = ndt::date_type::make();
-    const ndt::date_type *dd = d.extended<ndt::date_type>();
-    result = nd::empty(d);
-    dd->set_ymd(result.get()->metadata(), result.get()->data,
-                assign_error_fractional, PyDateTime_GET_YEAR(obj),
-                PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
   }
   else if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
     result = nd::array(type_to_cpp_ref(obj));

@@ -48,7 +48,6 @@
 #include <dynd/array.hpp>
 #include <dynd/type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/type_alignment.hpp>
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
@@ -205,7 +204,7 @@ inline dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
     // If the field isn't aligned enough, turn it into an unaligned type
     if (!dynd::offset_is_aligned(offset | data_alignment,
                                  field_types.back().get_data_alignment())) {
-      field_types.back() = make_unaligned(field_types.back());
+      throw std::runtime_error("field isn't unaligned");
     }
   }
 
@@ -369,7 +368,7 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
   // If the data this dtype is for isn't aligned enough,
   // make an unaligned version.
   if (data_alignment != 0 && data_alignment < dt.get_data_alignment()) {
-    dt = make_unaligned(dt);
+    throw std::runtime_error("unaligned dtype");
   }
 
   return dt;

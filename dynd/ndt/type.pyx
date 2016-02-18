@@ -25,7 +25,6 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_id,
 from ..cpp.type cimport make_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
-from ..cpp.types.type_alignment cimport make_unaligned as dynd_make_unaligned_type
 from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
 from ..cpp.types.fixed_dim_kind_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
@@ -33,7 +32,6 @@ from ..cpp.types.tuple_type cimport make_tuple as _make_tuple
 from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
-from ..cpp.types.date_type cimport make as make_date_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport make_type
@@ -68,7 +66,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     string _type_repr(_type &)
 
     _type dynd_make_convert_type(_type&, _type&) except +translate_exception
-    _type dynd_make_view_type(_type&, _type&) except +translate_exception
     _type dynd_make_fixed_string_type(int, object) except +translate_exception
     _type dynd_make_string_type(object) except +translate_exception
     _type dynd_make_pointer_type(_type&) except +translate_exception
@@ -372,8 +369,6 @@ cdef _type cpp_type_from_typeobject(object o) except *:
         return make_bytes_type()
     elif o is bytearray:
         return make_bytes_type()
-    elif o is _datetime.date:
-        return make_date_type()
     elif issubclass(o, _np.generic):
         return cpp_type_from_numpy_type(o)
     raise ValueError("Cannot make ndt.type from {}.".format(o))
@@ -449,28 +444,6 @@ def make_convert(to_tp, from_tp):
     """
     cdef type result = type()
     result.v = dynd_make_convert_type(type(to_tp).v, type(from_tp).v)
-    return result
-
-def make_unaligned(aligned_tp):
-    """
-    ndt.make_unaligned(aligned_tp)
-    Constructs a type with alignment of 1 from the given type.
-    If the type already has alignment 1, just returns it.
-    Parameters
-    ----------
-    aligned_tp : dynd type
-        The dynd type which should be viewed on data that is
-        not properly aligned.
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-    >>> ndt.make_unaligned(ndt.int32)
-    ndt.type("unaligned[int32]")
-    >>> ndt.make_unaligned(ndt.uint8)
-    ndt.uint8
-    """
-    cdef type result = type()
-    result.v = dynd_make_unaligned_type(type(aligned_tp).v)
     return result
 
 def make_fixed_bytes(intptr_t data_size, intptr_t data_alignment=1):
@@ -637,30 +610,6 @@ def make_var_dim(element_tp):
     """
     cdef type result = type()
     result.v = dynd_make_var_dim_type(type(element_tp).v)
-    return result
-
-
-def make_view(value_type, operand_type):
-    """
-    ndt.make_view(value_type, operand_type)
-    Constructs an expression type which views the bytes of
-    one type as another.
-    Parameters
-    ----------
-    value_type : dynd type
-        The dynd type to interpret the bytes as. This is the 'value_type'
-        of the resulting expression dynd type.
-    operand_type : dynd type
-        The dynd type the memory originally was. This is the 'operand_type'
-        of the resulting expression dynd type.
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-    >>> ndt.make_view(ndt.int32, ndt.uint32)
-    ndt.type("view[as=int32, original=uint32]")
-    """
-    cdef type result = type()
-    result.v = dynd_make_view_type(type(value_type).v, type(operand_type).v)
     return result
 
 bool = type(bool_id)

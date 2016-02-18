@@ -7,7 +7,6 @@
 
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
-#include <dynd/types/view_type.hpp>
 #include <dynd/shape_tools.hpp>
 
 #include "array_as_pep3118.hpp"
@@ -190,16 +189,6 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
     out_itemsize = format_offset;
     o << "}";
     return;
-  }
-  case view_id: {
-    const ndt::view_type *vd = tp.extended<ndt::view_type>();
-    // If it's a view of bytes, usually to view unaligned data, can ignore it
-    // since the buffer format we're creating doesn't use alignment
-    if (vd->get_operand_type().get_id() == fixed_bytes_id) {
-      append_pep3118_format(out_itemsize, vd->get_value_type(), arrmeta, o);
-      return;
-    }
-    break;
   }
   default:
     break;

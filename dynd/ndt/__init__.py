@@ -1,6 +1,6 @@
 from .type import make_fixed_bytes, make_fixed_string, make_struct, \
     make_fixed_dim, make_string, make_var_dim, make_fixed_dim_kind, \
-    make_unaligned, make_convert, make_categorical, make_view, type_for
+    make_convert, make_categorical, type_for
 from .type import *
 
 intptr = type('intptr')
@@ -10,7 +10,6 @@ complex64 = complex_float32
 complex128 = complex_float64
 
 string = type('string')
-date = type('date')
 #json = type('json')
 bytes = type('bytes')
 

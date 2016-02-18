@@ -143,12 +143,6 @@ inline dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
   return dynd::ndt::convert_type::make(to_tp, from_tp);
 }
 
-inline dynd::ndt::type dynd_make_view_type(const dynd::ndt::type &value_type,
-                                           const dynd::ndt::type &operand_type)
-{
-  return dynd::ndt::view_type::make(value_type, operand_type);
-}
-
 inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
                                                    PyObject *encoding_obj)
 {

@@ -8,7 +8,6 @@
 #if DYND_NUMPY_INTEROP
 
 #include <dynd/memblock/external_memory_block.hpp>
-#include <dynd/types/date_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/view_type.hpp>
 
@@ -638,47 +637,6 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
   else if (PyArray_IsScalar(obj, CDouble)) {
     npy_cdouble &val = ((PyCDoubleScalarObject *)obj)->obval;
     result = dynd::nd::array(dynd::complex<double>(val.real, val.imag));
-#if NPY_API_VERSION >= 6 // At least NumPy 1.6
-  }
-  else if (PyArray_IsScalar(obj, Datetime)) {
-    const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
-    int64_t val = scalar->obval;
-    if (scalar->obmeta.base <= NPY_FR_D) {
-      result = dynd::nd::empty(dynd::ndt::date_type::make());
-      int32_t result_val;
-      if (val == NPY_DATETIME_NAT) {
-        result_val = DYND_DATE_NA;
-      }
-      else {
-        dynd::date_ymd ymd;
-        switch (scalar->obmeta.base) {
-        case NPY_FR_Y:
-          ymd.year = static_cast<int16_t>(val + 1970);
-          ymd.month = 1;
-          ymd.day = 1;
-          result_val = ymd.to_days();
-          break;
-        case NPY_FR_M:
-          if (val >= 0) {
-            ymd.year = static_cast<int16_t>(val / 12 + 1970);
-          }
-          else {
-            ymd.year = static_cast<int16_t>((val - 11) / 12 + 1970);
-          }
-          ymd.month = static_cast<int8_t>(val - (ymd.year - 1970) * 12 + 1);
-          ymd.day = 1;
-          result_val = ymd.to_days();
-          break;
-        case NPY_FR_D:
-          result_val = static_cast<int32_t>(val);
-          break;
-        default:
-          throw dynd::type_error("Unsupported NumPy date unit");
-        }
-      }
-      *reinterpret_cast<int32_t *>(result.data()) = result_val;
-    }
-#endif
   }
   else if (PyArray_IsScalar(obj, Void)) {
     pyobject_ownref arr(PyArray_FromAny(obj, NULL, 0, 0, 0, NULL));

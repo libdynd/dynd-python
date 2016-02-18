@@ -25,7 +25,6 @@ class TestDTypeDataShape(unittest.TestCase):
         self.assertEqual(ndt.complex_float32, ndt.type('complex64'))
         self.assertEqual(ndt.complex_float64, ndt.type('complex128'))
         self.assertEqual(ndt.string, ndt.type('string'))
-        self.assertEqual(ndt.date, ndt.type('date'))
         self.assertEqual(ndt.bytes, ndt.type('bytes'))
 
     def test_aliases(self):

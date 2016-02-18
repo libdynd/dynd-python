@@ -322,14 +322,9 @@ class TestNumpyViewInterop(unittest.TestCase):
         assert_array_equal(a, c)
 
         # ASCII dynd -> UTF32 dynd
-        b_u = b.ucast(ndt.make_fixed_string(7, 'utf_32'))
-        self.assertEqual(
-                ndt.make_convert(
-                    ndt.make_fixed_string(7, 'utf_32'),
-                    ndt.make_fixed_string(7, 'ascii')),
-                nd.dtype_of(b_u))
+        b_u = b.cast(ndt.make_fixed_dim(3, ndt.make_fixed_string(7, 'utf_32')))
         # Evaluate to its value array
-        b_u = b_u.eval()
+        b_u = b_u
         self.assertEqual(
                 ndt.make_fixed_string(7, 'utf_32'),
                 nd.dtype_of(b_u))

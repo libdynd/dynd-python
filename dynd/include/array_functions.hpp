@@ -359,9 +359,9 @@ inline dynd::nd::array array_range(PyObject *start, PyObject *stop,
         promote_types_arithmetic(stop_nd.get_type(), step_nd.get_type()));
   }
 
-  start_nd = start_nd.ucast(dt_nd).eval();
-  stop_nd = stop_nd.ucast(dt_nd).eval();
-  step_nd = step_nd.ucast(dt_nd).eval();
+  start_nd = dynd::nd::empty(dt_nd).assign(start_nd);
+  stop_nd = dynd::nd::empty(dt_nd).assign(stop_nd);
+  step_nd = dynd::nd::empty(dt_nd).assign(step_nd);
 
   if (!start_nd.is_scalar() || !stop_nd.is_scalar() || !step_nd.is_scalar()) {
     throw std::runtime_error(

@@ -65,7 +65,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     string _type_str(_type &)
     string _type_repr(_type &)
 
-    _type dynd_make_convert_type(_type&, _type&) except +translate_exception
     _type dynd_make_fixed_string_type(int, object) except +translate_exception
     _type dynd_make_string_type(object) except +translate_exception
     _type dynd_make_pointer_type(_type&) except +translate_exception
@@ -421,29 +420,6 @@ def make_categorical(values):
     """
     cdef type result = type()
     result.v = dynd_make_categorical_type(array(values).v)
-    return result
-
-def make_convert(to_tp, from_tp):
-    """
-    ndt.make_convert(to_tp, from_tp)
-    Constructs an expression type which converts from one
-    dynd type to another.
-    Parameters
-    ----------
-    to_tp : dynd type
-        The dynd type being converted to. This is the 'value_type'
-        of the resulting expression dynd type.
-    from_tp : dynd type
-        The dynd type being converted from. This is the 'operand_type'
-        of the resulting expression dynd type.
-    Examples
-    --------
-    >>> from dynd import nd, ndt
-    >>> ndt.make_convert(ndt.int16, ndt.float32)
-    ndt.type("convert[to=int16, from=float32]")
-    """
-    cdef type result = type()
-    result.v = dynd_make_convert_type(type(to_tp).v, type(from_tp).v)
     return result
 
 def make_fixed_bytes(intptr_t data_size, intptr_t data_alignment=1):

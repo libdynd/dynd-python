@@ -20,7 +20,6 @@
 
 #include <dynd/shape_tools.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/convert_type.hpp>
 #include <dynd/types/date_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
@@ -135,12 +134,6 @@ inline dynd::string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
     ss << "invalid input \"" << encoding_str << "\" for string encoding";
     throw std::runtime_error(ss.str());
   }
-}
-
-inline dynd::ndt::type dynd_make_convert_type(const dynd::ndt::type &to_tp,
-                                              const dynd::ndt::type &from_tp)
-{
-  return dynd::ndt::convert_type::make(to_tp, from_tp);
 }
 
 inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,

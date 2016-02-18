@@ -429,7 +429,10 @@ cdef class array(object):
             The type is cast into this type.
         """
         cdef _type t = as_cpp_type(tp)
-        return dynd_nd_array_from_cpp(dynd_nd_array_to_cpp(self).cast(t))
+        cdef _array res = cpp_empty(t)
+        res.assign(dynd_nd_array_to_cpp(self))
+
+        return dynd_nd_array_from_cpp(res)
 
     def eval(array self):
         """

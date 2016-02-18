@@ -66,21 +66,21 @@ class TestPythonScalar(unittest.TestCase):
         x = u'\uc548\ub155 hello'
         # UTF-8
         a = nd.array(x)
-        a = a.ucast(ndt.make_fixed_string(16, 'utf_8'))
+        a = a.cast(ndt.make_fixed_string(16, 'utf_8'))
         a = a.eval()
         self.assertEqual(nd.type_of(a), ndt.make_fixed_string(16, 'utf_8'))
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), x)
         # UTF-16
         a = nd.array(x)
-        a = a.ucast(ndt.make_fixed_string(8, 'utf_16'))
+        a = a.cast(ndt.make_fixed_string(8, 'utf_16'))
         a = a.eval()
         self.assertEqual(nd.type_of(a), ndt.make_fixed_string(8, 'utf_16'))
         self.assertEqual(type(nd.as_py(a)), unicode)
         self.assertEqual(nd.as_py(a), x)
         # UTF-32
         a = nd.array(x)
-        a = a.ucast(ndt.make_fixed_string(8, 'utf_32'))
+        a = a.cast(ndt.make_fixed_string(8, 'utf_32'))
         a = a.eval()
         self.assertEqual(nd.type_of(a), ndt.make_fixed_string(8, 'utf_32'))
         self.assertEqual(type(nd.as_py(a)), unicode)

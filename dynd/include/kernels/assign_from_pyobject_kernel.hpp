@@ -550,53 +550,6 @@ struct assign_from_pyobject_kernel<date_id, scalar_kind_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<time_id, scalar_kind_id>
-    : nd::base_kernel<assign_from_pyobject_kernel<time_id, scalar_kind_id>, 1> {
-  dynd::ndt::type dst_tp;
-  const char *dst_arrmeta;
-
-  assign_from_pyobject_kernel(const dynd::ndt::type &dst_tp,
-                              const char *dst_arrmeta)
-      : dst_tp(dst_tp), dst_arrmeta(dst_arrmeta)
-  {
-  }
-
-  void single(char *dst, char *const *src)
-  {
-    PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
-    if (PyTime_Check(src_obj)) {
-      const dynd::ndt::time_type *tt = dst_tp.extended<dynd::ndt::time_type>();
-      tt->set_time(dst_arrmeta, dst, dynd::assign_error_fractional,
-                   PyDateTime_TIME_GET_HOUR(src_obj),
-                   PyDateTime_TIME_GET_MINUTE(src_obj),
-                   PyDateTime_TIME_GET_SECOND(src_obj),
-                   PyDateTime_TIME_GET_MICROSECOND(src_obj) *
-                       DYND_TICKS_PER_MICROSECOND);
-    }
-    else if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {
-      pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    pydynd::array_to_cpp_ref(src_obj));
-    }
-    else {
-      pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
-                                    pydynd::array_from_py(src_obj, 0, false));
-    }
-  }
-
-  static void
-  instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
-              const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-              intptr_t nsrc, const dynd::ndt::type *src_tp,
-              const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-              intptr_t nkwd, const dynd::nd::array *kwds,
-              const std::map<std::string, dynd::ndt::type> &tp_vars)
-  {
-    ckb->emplace_back<assign_from_pyobject_kernel>(kernreq, dst_tp,
-                                                   dst_arrmeta);
-  }
-};
-
-template <>
 struct assign_from_pyobject_kernel<datetime_id, scalar_kind_id>
     : nd::base_kernel<assign_from_pyobject_kernel<datetime_id, scalar_kind_id>,
                       1> {

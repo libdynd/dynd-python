@@ -18,7 +18,6 @@
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/substitute_shape.hpp>
-#include <dynd/types/time_type.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
@@ -182,19 +181,6 @@ inline void convert_one_pyscalar_date(const ndt::type &tp, const char *arrmeta,
   const ndt::date_type *dd = tp.extended<ndt::date_type>();
   dd->set_ymd(arrmeta, out, assign_error_fractional, PyDateTime_GET_YEAR(obj),
               PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-}
-
-inline void convert_one_pyscalar_time(const ndt::type &tp, const char *arrmeta,
-                                      char *out, PyObject *obj)
-{
-  if (!PyTime_Check(obj)) {
-    throw dynd::type_error("input object is not a time as expected");
-  }
-  const ndt::time_type *tt = tp.extended<ndt::time_type>();
-  tt->set_time(
-      arrmeta, out, assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
-      PyDateTime_TIME_GET_MINUTE(obj), PyDateTime_TIME_GET_SECOND(obj),
-      PyDateTime_TIME_GET_MICROSECOND(obj) * DYND_TICKS_PER_MICROSECOND);
 }
 
 inline void convert_one_pyscalar_datetime(const ndt::type &tp,
@@ -377,12 +363,6 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
   }
   case date_id: {
     fill_array_from_pylist<convert_one_pyscalar_date>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
-    break;
-  }
-  case time_id: {
-    fill_array_from_pylist<convert_one_pyscalar_time>(
         result.get_type(), result.get()->metadata(), result.data(), obj,
         &shape[0], 0);
     break;
@@ -601,21 +581,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     dd->set_ymd(result.get()->metadata(), result.get()->data,
                 assign_error_fractional, PyDateTime_GET_YEAR(obj),
                 PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-  }
-  else if (PyTime_Check(obj)) {
-    if (((PyDateTime_DateTime *)obj)->hastzinfo &&
-        ((PyDateTime_DateTime *)obj)->tzinfo != NULL) {
-      throw runtime_error("Converting times with a timezone to dynd "
-                          "arrays is not yet supported");
-    }
-    ndt::type d = ndt::time_type::make(tz_abstract);
-    const ndt::time_type *tt = d.extended<ndt::time_type>();
-    result = nd::empty(d);
-    tt->set_time(result.get()->metadata(), result.get()->data,
-                 assign_error_fractional, PyDateTime_TIME_GET_HOUR(obj),
-                 PyDateTime_TIME_GET_MINUTE(obj),
-                 PyDateTime_TIME_GET_SECOND(obj),
-                 PyDateTime_TIME_GET_MICROSECOND(obj) * 10);
   }
   else if (PyObject_TypeCheck(obj, get_type_pytypeobject())) {
     result = nd::array(type_to_cpp_ref(obj));

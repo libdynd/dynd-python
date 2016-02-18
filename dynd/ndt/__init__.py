@@ -11,7 +11,6 @@ complex128 = complex_float64
 
 string = type('string')
 date = type('date')
-time = type('time')
 datetime = type('datetime')
 datetimeutc = type('datetime[tz="UTC"]')
 #json = type('json')

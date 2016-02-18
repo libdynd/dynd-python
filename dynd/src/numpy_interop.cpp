@@ -265,14 +265,6 @@ subarray dtype");
             return result;
         }
 */
-  case dynd::view_id: {
-    // If there's a view which is for alignment purposes, throw it
-    // away because Numpy works differently
-    if (tp.operand_type().get_id() == dynd::fixed_bytes_id) {
-      return numpy_dtype_from__type(tp.value_type());
-    }
-    break;
-  }
   default:
     break;
   }

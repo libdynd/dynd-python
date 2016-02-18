@@ -11,8 +11,6 @@ complex128 = complex_float64
 
 string = type('string')
 date = type('date')
-datetime = type('datetime')
-datetimeutc = type('datetime[tz="UTC"]')
 #json = type('json')
 bytes = type('bytes')
 

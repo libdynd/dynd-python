@@ -34,7 +34,6 @@ from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.date_type cimport make as make_date_type
-from ..cpp.types.datetime_type cimport make as make_datetime_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
 from ..cpp.func.callable cimport callable as _callable
 from ..cpp.type cimport make_type
@@ -375,8 +374,6 @@ cdef _type cpp_type_from_typeobject(object o) except *:
         return make_bytes_type()
     elif o is _datetime.date:
         return make_date_type()
-    elif o is _datetime.datetime:
-        return make_datetime_type()
     elif issubclass(o, _np.generic):
         return cpp_type_from_numpy_type(o)
     raise ValueError("Cannot make ndt.type from {}.".format(o))

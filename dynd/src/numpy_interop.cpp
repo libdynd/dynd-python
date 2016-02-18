@@ -9,7 +9,6 @@
 
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/date_type.hpp>
-#include <dynd/types/datetime_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/view_type.hpp>
 
@@ -679,39 +678,6 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj,
       }
       *reinterpret_cast<int32_t *>(result.data()) = result_val;
     }
-    else {
-      result = dynd::nd::empty(dynd::ndt::datetime_type::make(dynd::tz_utc));
-      int64_t result_val;
-      switch (scalar->obmeta.base) {
-      case NPY_FR_h:
-        result_val = val * DYND_TICKS_PER_HOUR;
-        break;
-      case NPY_FR_m:
-        result_val = val * DYND_TICKS_PER_MINUTE;
-        break;
-      case NPY_FR_s:
-        result_val = val * DYND_TICKS_PER_SECOND;
-        break;
-      case NPY_FR_ms:
-        result_val = val * DYND_TICKS_PER_MILLISECOND;
-        break;
-      case NPY_FR_us:
-        result_val = val * DYND_TICKS_PER_MICROSECOND;
-        break;
-      case NPY_FR_ns:
-        if (val >= 0) {
-          result_val = val / DYND_NANOSECONDS_PER_TICK;
-        }
-        else {
-          result_val =
-              (val - DYND_NANOSECONDS_PER_TICK + 1) / DYND_NANOSECONDS_PER_TICK;
-        }
-        break;
-      default:
-        throw dynd::type_error("Unsupported NumPy datetime unit");
-      }
-      *reinterpret_cast<int64_t *>(result.data()) = result_val;
-    }
 #endif
   }
   else if (PyArray_IsScalar(obj, Void)) {
@@ -793,17 +759,6 @@ dynd::ndt::type pydynd::array_from_numpy_scalar2(PyObject *obj)
 
   if (PyArray_IsScalar(obj, CDouble)) {
     return dynd::ndt::make_type<dynd::complex<double>>();
-#if NPY_API_VERSION >= 6 // At least NumPy 1.6
-  }
-
-  if (PyArray_IsScalar(obj, Datetime)) {
-    const PyDatetimeScalarObject *scalar = (PyDatetimeScalarObject *)obj;
-    if (scalar->obmeta.base <= NPY_FR_D) {
-      return dynd::ndt::date_type::make();
-    }
-
-    return dynd::ndt::datetime_type::make(dynd::tz_utc);
-#endif
   }
 
   if (PyArray_IsScalar(obj, Void)) {

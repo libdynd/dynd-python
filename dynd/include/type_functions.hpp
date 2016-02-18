@@ -22,7 +22,6 @@
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/convert_type.hpp>
 #include <dynd/types/date_type.hpp>
-#include <dynd/types/datetime_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
 //#include <dynd/types/pointer_type.hpp>

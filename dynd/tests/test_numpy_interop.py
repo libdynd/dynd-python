@@ -157,7 +157,6 @@ class TestNumpyDTypeInterop(unittest.TestCase):
 
         # check some types which can't be converted
         self.assertRaises(TypeError, ndt.date.as_numpy)
-        self.assertRaises(TypeError, ndt.datetime.as_numpy)
         self.assertRaises(TypeError, ndt.bytes.as_numpy)
         self.assertRaises(TypeError, ndt.string.as_numpy)
 

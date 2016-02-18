@@ -10,7 +10,6 @@
 #include <dynd/exceptions.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/types/bytes_type.hpp>
-#include <dynd/types/date_type.hpp>
 #include <dynd/types/option_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/type_type.hpp>

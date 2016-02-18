@@ -21,7 +21,6 @@
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/date_type.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/shape_tools.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
@@ -86,23 +85,6 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
     }
     PyDict_SetItemString(dtype->metadata, "vlen", (PyObject *)&PyUnicode_Type);
     return;
-  }
-  case date_id: {
-#if NPY_API_VERSION >= 6 // At least NumPy 1.6
-    PyArray_Descr *datedt = NULL;
-#if PY_VERSION_HEX >= 0x03000000
-    pyobject_ownref M8str(PyUnicode_FromString("M8[D]"));
-#else
-    pyobject_ownref M8str(PyString_FromString("M8[D]"));
-#endif
-    if (!PyArray_DescrConverter(M8str.get(), &datedt)) {
-      throw dynd::type_error("Failed to create NumPy datetime64[D] dtype");
-    }
-    out_numpy_dtype->reset((PyObject *)datedt);
-    return;
-#else
-    throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
-#endif
   }
   case fixed_dim_id: {
     if (ndim > 0) {
@@ -232,14 +214,6 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
         (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id[dt.get_id()]));
     return;
   }
-  else if (dt.get_id() == view_id &&
-           dt.operand_type().get_id() == fixed_bytes_id) {
-    // View operation for alignment
-    as_numpy_analysis(out_numpy_dtype, out_requires_copy, ndim, dt.value_type(),
-                      NULL);
-    return;
-  }
-
   switch (dt.get_id()) {
   case fixed_string_id: {
     const ndt::fixed_string_type *fsd = dt.extended<ndt::fixed_string_type>();
@@ -267,15 +241,6 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
     out_numpy_dtype->clear();
     *out_requires_copy = true;
     return;
-  }
-  case date_id: {
-#if NPY_API_VERSION >= 6 // At least NumPy 1.6
-    out_numpy_dtype->clear();
-    *out_requires_copy = true;
-    return;
-#else
-    throw runtime_error("NumPy >= 1.6 is required for dynd date type interop");
-#endif
   }
   case fixed_dim_id: {
     const ndt::base_dim_type *bdt = dt.extended<ndt::base_dim_type>();
@@ -537,27 +502,6 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       PyArrayScalar_VAL(result.get(), Complex128).imag =
           reinterpret_cast<const double *>(a.cdata())[1];
       break;
-    case date_id: {
-#if NPY_API_VERSION >= 6 // At least NumPy 1.6
-      int32_t dateval = *reinterpret_cast<const int32_t *>(a.cdata());
-      result.reset(PyArrayScalar_New(Datetime));
-
-      PyArrayScalar_VAL(result.get(), Datetime) =
-          (dateval == DYND_DATE_NA) ? NPY_DATETIME_NAT : dateval;
-      PyArray_DatetimeMetaData &meta =
-          ((PyDatetimeScalarObject *)result.get())->obmeta;
-      meta.base = NPY_FR_D;
-      meta.num = 1;
-#if NPY_API_VERSION == 6 // Only for NumPy 1.6
-      meta.den = 1;
-      meta.events = 1;
-#endif
-      break;
-#else
-      throw runtime_error(
-          "NumPy >= 1.6 is required for dynd date type interop");
-#endif
-    }
     default: {
       // Because 'allow_copy' is true
       // we can evaluate any expressions and

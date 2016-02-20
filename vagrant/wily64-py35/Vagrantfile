@@ -6,11 +6,12 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "trusty64"
+  config.vm.box = "wily64"
   # The url from where the 'config.vm.box' box will be fetched if it
-  config.vm.box_url = 'http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box'
+  config.vm.box_url = 'http://cloud-images.ubuntu.com/vagrant/wily/current/wily-server-cloudimg-amd64-vagrant-disk1.box'
   config.vm.provider :virtualbox do |vb|
-      vb.customize [ "modifyvm", :id, "--memory", "8192" ]
+    vb.customize ["modifyvm", :id, "--memory", "8192"]
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
   # The list of software to install
   config.vm.provision :shell, :path => "bootstrap.sh"

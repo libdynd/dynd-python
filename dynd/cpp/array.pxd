@@ -1,8 +1,11 @@
 from ..config cimport translate_exception
 from libc.stdint cimport intptr_t
 from libcpp cimport bool
+from libcpp.map cimport map
+from libcpp.string cimport string
 from libcpp.vector cimport vector
 from .type cimport type
+from .func.callable cimport callable
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
 
@@ -25,6 +28,8 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         type get_dtype(size_t)
         intptr_t get_ndim()
         intptr_t get_dim_size() except +translate_exception
+
+        map[string, callable] get_properties()
 
         char *data() const
         const char *cdata() const

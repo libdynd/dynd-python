@@ -256,7 +256,7 @@ cdef class array(object):
         for pair in properties:
             result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
-        properties = dt.get_array_functions()
+        properties = self.v.get_functions()
         for pair in properties:
             result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
@@ -276,7 +276,7 @@ cdef class array(object):
             return dynd_nd_array_from_cpp(p(self.v))
 
         cdef map[string, _callable] functions
-        functions = dt.get_array_functions()
+        functions = self.v.get_functions()
 
         cdef _callable f = functions[name]
         if (not f.is_null()):

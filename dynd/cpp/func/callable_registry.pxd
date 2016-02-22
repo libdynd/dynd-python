@@ -7,6 +7,13 @@ from ...config cimport translate_exception
 
 cdef extern from "dynd/callable_registry.hpp" namespace "dynd::nd" nogil:
     cdef cppclass callable_registry:
+        cppclass iterator:
+            pass
+
+        callable operator[](string)
+
+        map[string, callable].iterator find(string)
+
         map[string, callable].iterator begin()
         map[string, callable].const_iterator cbegin()
 

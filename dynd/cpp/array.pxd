@@ -29,8 +29,9 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         intptr_t get_ndim()
         intptr_t get_dim_size() except +translate_exception
 
+        array p(string)
+
         map[string, callable] get_properties()
-        map[string, callable] get_functions()
 
         char *data() const
         const char *cdata() const

@@ -17,6 +17,7 @@ from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
 from ..cpp.func.callable cimport callable as _callable
+from ..cpp.func.callable_registry cimport callable_registry
 from ..cpp.type cimport get_builtin_type_dynamic_array_properties, make_type
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
@@ -249,15 +250,7 @@ cdef class array(object):
         result = dict(array.__dict__)
         result.update(object.__dict__)
 
-        cdef map[string, _callable] properties
-
-        cdef _type dt = self.v.get_type()
-        properties = self.v.get_properties()
-        for pair in properties:
-            result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
-
-        properties = self.v.get_functions()
-        for pair in properties:
+        for pair in callable_registry:
             result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
         return result.keys()
@@ -266,39 +259,17 @@ cdef class array(object):
         if self.v.is_null():
             raise AttributeError(name)
 
-        cdef map[string, _callable] properties
+        for pair in callable_registry:
+            if (pair.first == <string> name):
+                return dynd_nd_array_from_cpp(pair.second(self.v))
 
-        cdef _type dt = self.v.get_type()
-        properties = self.v.get_properties()
-
-        cdef _callable p = properties[name]
-        if (not p.is_null()):
-            return dynd_nd_array_from_cpp(p(self.v))
-
-        cdef map[string, _callable] functions
-        functions = self.v.get_functions()
-
-        cdef _callable f = functions[name]
-        if (not f.is_null()):
-            return dynd_nd_array_from_cpp(f(self.v))
-
-        raise AttributeError(name)
+        return dynd_nd_array_from_cpp(self.v.p(name))
 
     def __setattr__(self, name, value):
         if self.v.is_null():
             raise AttributeError(name)
 
-        cdef map[string, _callable] properties
-
-        cdef _type dt = self.v.get_type()
-        properties = self.v.get_properties()
-
-        cdef _callable p = properties[name]
-        if (not p.is_null()):
-            p(self.v).assign(pyobject_array(value))
-            return
-
-        raise AttributeError(name)
+        self.v.p(name).assign(pyobject_array(value))
 
     def __getitem__(self, x):
         from .. import ndt, nd

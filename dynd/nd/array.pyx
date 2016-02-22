@@ -252,11 +252,11 @@ cdef class array(object):
         cdef map[string, _callable] properties
 
         cdef _type dt = self.v.get_type()
-        properties = dt.get_array_properties()
+        properties = self.v.get_properties()
         for pair in properties:
             result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
-        properties = dt.get_array_functions()
+        properties = self.v.get_functions()
         for pair in properties:
             result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
@@ -269,14 +269,14 @@ cdef class array(object):
         cdef map[string, _callable] properties
 
         cdef _type dt = self.v.get_type()
-        properties = dt.get_array_properties()
+        properties = self.v.get_properties()
 
         cdef _callable p = properties[name]
         if (not p.is_null()):
             return dynd_nd_array_from_cpp(p(self.v))
 
         cdef map[string, _callable] functions
-        functions = dt.get_array_functions()
+        functions = self.v.get_functions()
 
         cdef _callable f = functions[name]
         if (not f.is_null()):
@@ -291,7 +291,7 @@ cdef class array(object):
         cdef map[string, _callable] properties
 
         cdef _type dt = self.v.get_type()
-        properties = dt.get_array_properties()
+        properties = self.v.get_properties()
 
         cdef _callable p = properties[name]
         if (not p.is_null()):

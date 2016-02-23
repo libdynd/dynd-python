@@ -229,16 +229,10 @@ cdef class type(object):
             raise AttributeError(name)
 
         cdef _callable p
-        cdef map[string, _callable] functions
-        cdef _callable f
         cdef map[string, _callable] properties = self.v.get_properties()
         p = properties[name]
         if (not p.is_null()):
             return dynd_nd_array_from_cpp(p(self.v))
-        functions = self.v.get_functions()
-        f = functions[name]
-        if (not f.is_null()):
-            return dynd_nd_array_from_cpp(f(self.v))
 
         raise AttributeError(name)
 

@@ -231,9 +231,9 @@ struct assign_to_pyobject_kernel<dynd::complex_float64_id, complex_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::bytes_id, scalar_kind_id>
+struct assign_to_pyobject_kernel<dynd::bytes_id, bytes_kind_id>
     : dynd::nd::base_kernel<
-          assign_to_pyobject_kernel<dynd::bytes_id, scalar_kind_id>, 1> {
+          assign_to_pyobject_kernel<dynd::bytes_id, bytes_kind_id>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -245,9 +245,9 @@ struct assign_to_pyobject_kernel<dynd::bytes_id, scalar_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::fixed_bytes_id, scalar_kind_id>
+struct assign_to_pyobject_kernel<dynd::fixed_bytes_id, bytes_kind_id>
     : dynd::nd::base_kernel<
-          assign_to_pyobject_kernel<dynd::fixed_bytes_id, scalar_kind_id>, 1> {
+          assign_to_pyobject_kernel<dynd::fixed_bytes_id, bytes_kind_id>, 1> {
   intptr_t data_size;
 
   assign_to_pyobject_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -341,9 +341,9 @@ struct string_utf32_assign_kernel
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::string_id, scalar_kind_id>
+struct assign_to_pyobject_kernel<dynd::string_id, string_kind_id>
     : dynd::nd::base_kernel<
-          assign_to_pyobject_kernel<dynd::string_id, scalar_kind_id>> {
+          assign_to_pyobject_kernel<dynd::string_id, string_kind_id>> {
   static void
   instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
@@ -505,9 +505,9 @@ struct fixed_string_utf32_assign_kernel
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::fixed_string_id, scalar_kind_id>
+struct assign_to_pyobject_kernel<dynd::fixed_string_id, string_kind_id>
     : dynd::nd::base_kernel<
-          assign_to_pyobject_kernel<dynd::fixed_string_id, scalar_kind_id>> {
+          assign_to_pyobject_kernel<dynd::fixed_string_id, string_kind_id>> {
   static void
   instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb,
               const dynd::ndt::type &dst_tp, const char *dst_arrmeta,

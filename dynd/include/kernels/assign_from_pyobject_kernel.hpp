@@ -345,9 +345,8 @@ struct assign_from_pyobject_kernel<DstTypeID, complex_kind_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<bytes_id, scalar_kind_id>
-    : nd::base_kernel<assign_from_pyobject_kernel<bytes_id, scalar_kind_id>,
-                      1> {
+struct assign_from_pyobject_kernel<bytes_id, bytes_kind_id>
+    : nd::base_kernel<assign_from_pyobject_kernel<bytes_id, bytes_kind_id>, 1> {
   ndt::type dst_tp;
   const char *dst_arrmeta;
 
@@ -400,13 +399,13 @@ struct assign_from_pyobject_kernel<bytes_id, scalar_kind_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<fixed_bytes_id, scalar_kind_id>
-    : assign_from_pyobject_kernel<dynd::bytes_id, scalar_kind_id> {
+struct assign_from_pyobject_kernel<fixed_bytes_id, bytes_kind_id>
+    : assign_from_pyobject_kernel<dynd::bytes_id, bytes_kind_id> {
 };
 
 template <>
-struct assign_from_pyobject_kernel<string_id, scalar_kind_id>
-    : nd::base_kernel<assign_from_pyobject_kernel<string_id, scalar_kind_id>,
+struct assign_from_pyobject_kernel<string_id, string_kind_id>
+    : nd::base_kernel<assign_from_pyobject_kernel<string_id, string_kind_id>,
                       1> {
   ndt::type dst_tp;
   const char *dst_arrmeta;
@@ -481,8 +480,8 @@ struct assign_from_pyobject_kernel<string_id, scalar_kind_id>
 };
 
 template <>
-struct assign_from_pyobject_kernel<fixed_string_id, scalar_kind_id>
-    : assign_from_pyobject_kernel<string_id, scalar_kind_id> {
+struct assign_from_pyobject_kernel<fixed_string_id, string_kind_id>
+    : assign_from_pyobject_kernel<string_id, string_kind_id> {
 };
 
 template <>

@@ -21,7 +21,6 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
         type get_canonical_type()
 
         map[string, callable] get_properties()
-        map[string, callable] get_functions()
 
         bool is_builtin()
         bool is_null()

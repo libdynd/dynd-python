@@ -81,26 +81,19 @@ class cmake_build_ext(build_ext):
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
 
+    extra_cmake_args = shlex.split(self.extra_cmake_args)
+    cmake_command = ['cmake'] + extra_cmake_args + [pyexe_option,
+                     install_lib_option, build_tests_option,
+                     static_lib_option, source]
     if sys.platform != 'win32':
-        cmake_command = ['cmake', self.extra_cmake_args, pyexe_option,
-                         install_lib_option, build_tests_option,
-                         static_lib_option, source]
-
         self.spawn(cmake_command)
         self.spawn(['make'])
     else:
-        import struct
-        cmake_generator = 'Visual Studio 14 2015'
-        if is_64_bit: cmake_generator += ' Win64'
-        # Generate the build files
-        extra_cmake_args = shlex.split(self.extra_cmake_args)
-        cmake_command = ['cmake'] + extra_cmake_args + [source, pyexe_option,
-                         install_lib_option, static_lib_option,
-                         build_tests_option,
-                         '-G', cmake_generator]
-        if "-G" in self.extra_cmake_args:
-            cmake_command = cmake_command[:-2]
-
+        if "-G" not in self.extra_cmake_args:
+            cmake_generator = 'Visual Studio 14 2015'
+            if is_64_bit:
+                cmake_generator += ' Win64'
+            cmake_command += ['-G', cmake_generator]
         self.spawn(cmake_command)
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', build_type])

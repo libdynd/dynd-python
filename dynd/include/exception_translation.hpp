@@ -115,6 +115,11 @@ static inline void translate_exception()
   catch (const std::exception &exn) {
     PyErr_SetString(PyExc_RuntimeError, exn.what());
   }
+  catch (...) {
+    PyErr_SetString(
+        PyExc_RuntimeError,
+        "Conversion from C++ exception to Python exception failed!");
+  }
 }
 
 } // namespace pydynd

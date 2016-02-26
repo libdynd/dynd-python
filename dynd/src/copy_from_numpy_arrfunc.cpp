@@ -6,15 +6,15 @@
 #include <Python.h>
 #include <datetime.h>
 
+#include "array_from_py_typededuction.hpp"
+#include "array_functions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "numpy_interop.hpp"
-#include "utility_functions.hpp"
 #include "type_functions.hpp"
-#include "array_functions.hpp"
-#include "array_from_py_typededuction.hpp"
+#include "utility_functions.hpp"
 
-#include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/func/elwise.hpp>
+#include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
 #include <dynd/types/struct_type.hpp>
 
@@ -165,6 +165,12 @@ dynd::nd::callable pydynd::nd::copy_from_numpy::make()
   return dynd::nd::functional::elwise(
       dynd::nd::callable::make<copy_from_numpy_kernel>(
           dynd::ndt::type("(void, broadcast: bool) -> T"), 0));
+}
+
+dynd::nd::callable &pydynd::nd::copy_from_numpy::get()
+{
+  static dynd::nd::callable self = pydynd::nd::copy_from_numpy::make();
+  return self;
 }
 
 struct pydynd::nd::copy_from_numpy pydynd::nd::copy_from_numpy;

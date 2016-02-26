@@ -32,6 +32,7 @@ namespace nd {
 
   extern struct copy_from_numpy : dynd::nd::declfunc<copy_from_numpy> {
     static dynd::nd::callable make();
+    static dynd::nd::callable &get();
   } copy_from_numpy;
 
   void array_copy_from_numpy(const dynd::ndt::type &dst_tp,

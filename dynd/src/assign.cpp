@@ -24,7 +24,8 @@ PYDYND_API void assign_init()
       uint16_id, uint32_id, uint64_id, uint128_id, float16_id, float32_id,
       float64_id, complex_float32_id, complex_float64_id, bytes_id,
       fixed_bytes_id, string_id, fixed_string_id, option_id, type_id, tuple_id,
-      struct_id, fixed_dim_id, var_dim_id> type_ids;
+      struct_id, fixed_dim_id, var_dim_id>
+      type_ids;
 
   PyDateTime_IMPORT;
 
@@ -47,6 +48,12 @@ nd::callable assign_to_pyarrayobject::make()
 {
   return nd::functional::elwise(
       nd::callable::make<assign_to_pyarrayobject_kernel>());
+}
+
+nd::callable &assign_to_pyarrayobject::get()
+{
+  static nd::callable self = assign_to_pyarrayobject::make();
+  return self;
 }
 
 struct assign_to_pyarrayobject assign_to_pyarrayobject;

@@ -219,5 +219,22 @@ foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.cal
         target_link_libraries(${module} "${LIBDYND_LIBRARIES}")
     else()
         target_link_libraries(${module} libdynd)
+        if(UNIX)
+            # Make sure libdynd is on the rpath.
+            # On Windows, the dll is loaded dynamically via the logic in
+            # dynd/__init__.py
+            if(APPLE)
+                set(module_install_rpath "@loader_path")
+            else()
+                set(module_install_rpath "$ORIGIN")
+            endif()
+            string(REPLACE "." ";" module_directories "${module}")
+            list(LENGTH module_directories i)
+            while(${i} GREATER 2)
+                set(module_install_rpath "${module_install_rpath}/..")
+                math(EXPR i "${i} - 1" )
+            endwhile(${i} GREATER 2)
+            set_target_properties(${module} PROPERTIES INSTALL_RPATH ${module_install_rpath})
+        endif()
     endif()
 endforeach(module)

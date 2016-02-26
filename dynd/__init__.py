@@ -1,6 +1,7 @@
 import os
 if os.name == 'nt':
     # Manually load dlls before loading the extension modules.
+    # This is handled via rpaths on Unix based systems.
     from ctypes import cdll
     import os.path
     # If libdynd.dll is already on the path, use it.

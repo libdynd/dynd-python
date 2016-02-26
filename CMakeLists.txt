@@ -167,7 +167,6 @@ endif()
 set(pydynd_SRC
     dynd/include/conversions.hpp
     dynd/include/copy_from_numpy_arrfunc.hpp
-    dynd/include/exception_translation.hpp
     dynd/include/functional.hpp
     dynd/include/git_version.hpp
     dynd/include/init.hpp
@@ -175,8 +174,6 @@ set(pydynd_SRC
     dynd/include/utility_functions.hpp
     dynd/include/visibility.hpp
     dynd/src/conversions.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
-    dynd/src/git_version.cpp.in
 )
 
 add_library(pydynd SHARED ${pydynd_SRC})
@@ -219,11 +216,21 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/types/pyobject_type.cpp
                   )
 set_property(
-   TARGET dynd.nd.array
-   PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
-   )
+    TARGET dynd.nd.array
+    PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
+    )
 
-foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+cython_add_module(dynd.config dynd.config_pyx True
+                  dynd/include/exception_translation.hpp
+                  ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
+                  )
+
+set_property(
+    TARGET dynd.config
+    PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
+)
+
+foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True)
 endforeach(module)
 

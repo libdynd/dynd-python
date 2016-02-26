@@ -164,34 +164,6 @@ else()
     set(DYND_CUDA_01 0)
 endif()
 
-set(pydynd_SRC
-    dynd/include/conversions.hpp
-    dynd/include/copy_from_numpy_arrfunc.hpp
-    dynd/include/functional.hpp
-    dynd/include/git_version.hpp
-    dynd/include/init.hpp
-    dynd/include/type_functions.hpp
-    dynd/include/utility_functions.hpp
-    dynd/include/visibility.hpp
-)
-
-add_library(pydynd SHARED ${pydynd_SRC})
-set_property(
-   TARGET pydynd
-   PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
-   )
-
-if(APPLE)
-    set_target_properties(pydynd PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-elseif(WIN32)
-    target_link_libraries(pydynd "${PYTHON_LIBRARIES}")
-endif()
-if(DYND_INSTALL_LIB)
-    target_link_libraries(pydynd "${LIBDYND_LIBRARIES}")
-else()
-    target_link_libraries(pydynd libdynd)
-endif()
-
 foreach(pyx_api_file dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_PUBLIC 1)
@@ -215,10 +187,6 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/numpy_interop.cpp
                   dynd/src/types/pyobject_type.cpp
                   )
-set_property(
-    TARGET dynd.nd.array
-    PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
-    )
 
 cython_add_module(dynd.config dynd.config_pyx True
                   dynd/include/exception_translation.hpp
@@ -226,40 +194,30 @@ cython_add_module(dynd.config dynd.config_pyx True
                   ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
                   )
 
-set_property(
-    TARGET dynd.config
-    PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
-)
-
 foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True dynd/src/conversions.cpp)
 endforeach(module)
-
-foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
-    # Make sure libpydynd is on the rpath.
-    # This has no effect on Windows.
-    if(APPLE)
-        set(module_install_rpath "@loader_path")
-    else()
-        set(module_install_rpath "$ORIGIN")
-    endif()
-    string(REPLACE "." ";" module_directories "${module}")
-    list(LENGTH module_directories i)
-    while(${i} GREATER 2)
-        set(module_install_rpath "${module_install_rpath}/..")
-        math(EXPR i "${i} - 1" )
-    endwhile(${i} GREATER 2)
-#    set(module_install_rpath "/opt/anaconda/envs/_test/lib/python2.7/site-packages/dynd/")
-    set_target_properties(${module} PROPERTIES INSTALL_RPATH ${module_install_rpath})
-
-    target_link_libraries(${module} pydynd)
-endforeach(module)
-
-add_dependencies(pydynd dynd.nd.array_pyx dynd.nd.callable_pyx dynd.ndt.type_pyx)
 
 # Run a postprocess script to work around some Cython bugs
 # that haven't been fixed in the latest release.
 postprocess_cython( postprocess.py dynd.ndt.type_postprocess dynd.ndt.type_pyx dynd.ndt.type)
 postprocess_cython( postprocess.py dynd.nd.array_postprocess dynd.nd.array_pyx dynd.nd.array)
 postprocess_cython( postprocess.py dynd.nd.callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
-add_dependencies(pydynd dynd.ndt.type_postprocess dynd.nd.array_postprocess dynd.nd.callable_postprocess)
+
+foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+    # Temporarily continue to define PYDYND_EXPORT to avoid inconsistent linkage warnings.
+    # This should be removed once the macros have been refactored to hide all symbols
+    # other than module initialization routines.
+    set_property(
+        TARGET ${module}
+        PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
+    )
+    # Make sure the api headers are all built and postprocessed
+    # before anything tries to build conversions.cpp
+    add_dependencies(${module} dynd.nd.array_postprocess dynd.nd.callable_postprocess dynd.ndt.type_postprocess)
+    if(DYND_INSTALL_LIB)
+        target_link_libraries(${module} "${LIBDYND_LIBRARIES}")
+    else()
+        target_link_libraries(${module} libdynd)
+    endif()
+endforeach(module)

@@ -608,9 +608,9 @@ struct assign_to_pyobject_kernel<dynd::option_id, any_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::type_id, any_kind_id>
+struct assign_to_pyobject_kernel<dynd::type_id, scalar_kind_id>
     : dynd::nd::base_kernel<
-          assign_to_pyobject_kernel<dynd::type_id, any_kind_id>, 1> {
+          assign_to_pyobject_kernel<dynd::type_id, scalar_kind_id>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);

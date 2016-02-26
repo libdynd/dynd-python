@@ -46,10 +46,6 @@ if os.name == 'nt':
                                         'libdynd.dll')
             if os.path.isfile(libdynd_path):
                 cdll.LoadLibrary(libdynd_path)
-    # Load libpydynd from current directory now that libdynd
-    # has been loaded.
-    pydynd_dir = os.path.dirname(os.path.realpath(__file__))
-    cdll.LoadLibrary(os.path.join(pydynd_dir, 'pydynd.dll'))
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \

@@ -1,6 +1,7 @@
 import os
 if os.name == 'nt':
     # Manually load dlls before loading the extension modules.
+    # This is handled via rpaths on Unix based systems.
     from ctypes import cdll
     import os.path
     # If libdynd.dll is already on the path, use it.
@@ -46,10 +47,6 @@ if os.name == 'nt':
                                         'libdynd.dll')
             if os.path.isfile(libdynd_path):
                 cdll.LoadLibrary(libdynd_path)
-    # Load libpydynd from current directory now that libdynd
-    # has been loaded.
-    pydynd_dir = os.path.dirname(os.path.realpath(__file__))
-    cdll.LoadLibrary(os.path.join(pydynd_dir, 'pydynd.dll'))
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \

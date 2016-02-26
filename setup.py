@@ -84,8 +84,9 @@ class cmake_build_ext(build_ext):
     extra_cmake_args = shlex.split(self.extra_cmake_args)
     cmake_command = ['cmake'] + extra_cmake_args + [pyexe_option,
                      install_lib_option, build_tests_option,
-                     static_lib_option, source]
+                     static_lib_option]
     if sys.platform != 'win32':
+        cmake_command.append(source)
         self.spawn(cmake_command)
         self.spawn(['make'])
     else:
@@ -94,26 +95,19 @@ class cmake_build_ext(build_ext):
             if is_64_bit:
                 cmake_generator += ' Win64'
             cmake_command += ['-G', cmake_generator]
+        cmake_command.append(source)
         self.spawn(cmake_command)
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', build_type])
 
     import glob, shutil
 
-    # Move the built libpydynd library to the place expected by the Python build
     if sys.platform != 'win32':
-        name, = glob.glob('libpydynd.*')
-        try:
-            os.makedirs(os.path.join(build_lib, 'dynd'))
-        except OSError:
-            pass
-        shutil.move(name, os.path.join(build_lib, 'dynd', name))
         if install_lib_option.split('=')[1] == 'OFF':
             name, = glob.glob('libraries/libdynd/libdynd.*')
             short_name = split(name)[1]
             shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
     else:
-        shutil.move(os.path.join(build_type, 'pydynd.dll'), os.path.join(build_lib, 'dynd', 'pydynd.dll'))
         if install_lib_option.split('=')[1] == 'OFF':
             names = glob.glob('libraries/libdynd/%s/libdynd.*' % build_type)
             for name in names:

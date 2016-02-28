@@ -9,7 +9,6 @@
 
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/types/struct_type.hpp>
-#include <dynd/types/view_type.hpp>
 
 #include "array_functions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"

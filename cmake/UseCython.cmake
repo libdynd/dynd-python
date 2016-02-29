@@ -155,6 +155,7 @@ function( compile_pyx _name _pyx_target_name _module_name _directories _pyx_file
     #BYPRODUCTS ${_generated_files}
     COMMENT "${_cython_comment}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_directories}
+    VERBATIM
     )
 
   set_target_properties(${_pyx_target_name}

@@ -29,13 +29,49 @@ using namespace std;
 using namespace dynd;
 using namespace pydynd;
 
-static int dynd_to_numpy_id[builtin_id_count] = {
-    NPY_NOTYPE,    NPY_BOOL,       NPY_INT8,    NPY_INT16,
-    NPY_INT32,     NPY_INT64,      NPY_NOTYPE, // INT128
-    NPY_UINT8,     NPY_UINT16,     NPY_UINT32,  NPY_UINT64,
-    NPY_NOTYPE,                                             // UINT128
-    NPY_FLOAT16,   NPY_FLOAT32,    NPY_FLOAT64, NPY_NOTYPE, // FLOAT128
-    NPY_COMPLEX64, NPY_COMPLEX128, NPY_NOTYPE};
+static int dynd_to_numpy_id(dynd::type_id_t id)
+{
+  switch (id) {
+  case uninitialized_id:
+    return NPY_NOTYPE;
+  case bool_id:
+    return NPY_BOOL;
+  case int8_id:
+    return NPY_INT8;
+  case int16_id:
+    return NPY_INT16;
+  case int32_id:
+    return NPY_INT32;
+  case int64_id:
+    return NPY_INT64;
+  case int128_id:
+    return NPY_NOTYPE;
+  case uint8_id:
+    return NPY_UINT8;
+  case uint16_id:
+    return NPY_UINT16;
+  case uint32_id:
+    return NPY_UINT32;
+  case uint64_id:
+    return NPY_UINT64;
+  case uint128_id:
+    return NPY_NOTYPE;
+  case float16_id:
+    return NPY_FLOAT16;
+  case float32_id:
+    return NPY_FLOAT32;
+  case float64_id:
+    return NPY_FLOAT64;
+  case float128_id:
+    return NPY_NOTYPE;
+  case complex_float32_id:
+    return NPY_COMPLEX64;
+  case complex_float64_id:
+    return NPY_COMPLEX128;
+  default:
+    return NPY_NOTYPE;
+  }
+}
 
 static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
                                       intptr_t ndim, const ndt::type &dt,
@@ -44,7 +80,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   // DyND builtin types
   if (dt.is_builtin()) {
     out_numpy_dtype->reset(
-        (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id[dt.get_id()]));
+        (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id(dt.get_id())));
     return;
   }
 
@@ -211,7 +247,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   if (dt.is_builtin()) {
     // DyND builtin types
     out_numpy_dtype->reset(
-        (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id[dt.get_id()]));
+        (PyObject *)PyArray_DescrFromType(dynd_to_numpy_id(dt.get_id())));
     return;
   }
   switch (dt.get_id()) {
@@ -280,9 +316,11 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
         while (ndim > 0) {
           size_t dim_size = 0;
           if (dt.get_id() == cfixed_dim_id) {
-            const cfixed_dim_type *cfd = element_tp.extended<cfixed_dim_type>();
+            const cfixed_dim_type *cfd =
+    element_tp.extended<cfixed_dim_type>();
             element_tp = cfd->get_element_type();
-            if (cfd->get_data_size() != element_tp.get_data_size() * dim_size) {
+            if (cfd->get_data_size() != element_tp.get_data_size() * dim_size)
+    {
               // If it's not C-order, a copy is required
               out_numpy_dtype->clear();
               *out_requires_copy = true;
@@ -302,7 +340,8 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
         }
         // Get the numpy dtype of the element
         pyobject_ownref child_numpy_dtype;
-        as_numpy_analysis(&child_numpy_dtype, out_requires_copy, 0, element_tp,
+        as_numpy_analysis(&child_numpy_dtype, out_requires_copy, 0,
+    element_tp,
                           arrmeta);
         if (*out_requires_copy) {
           // If the child required a copy, stop right away

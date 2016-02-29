@@ -27,7 +27,7 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<false>
-        : dynd::nd::base_kernel<scalar_ufunc_ck<false>, 1> {
+        : dynd::nd::base_strided_kernel<scalar_ufunc_ck<false>, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;
@@ -86,7 +86,7 @@ namespace nd {
 
     template <>
     struct scalar_ufunc_ck<true>
-        : dynd::nd::base_kernel<scalar_ufunc_ck<true>, 1> {
+        : dynd::nd::base_strided_kernel<scalar_ufunc_ck<true>, 1> {
       typedef scalar_ufunc_ck self_type;
 
       const scalar_ufunc_data *data;

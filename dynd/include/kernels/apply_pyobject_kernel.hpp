@@ -6,7 +6,8 @@
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 
-struct apply_pyobject_kernel : dynd::nd::base_kernel<apply_pyobject_kernel> {
+struct apply_pyobject_kernel
+    : dynd::nd::base_strided_kernel<apply_pyobject_kernel> {
   struct static_data_type {
     PyObject *func;
 

@@ -53,7 +53,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
 
   dynd::intrusive_ptr<dynd::memory_block_data> result;
   char *data_ptr = NULL;
-  if (array_tp.get_kind() == dynd::memory_kind) {
+  if (array_tp.get_base_id() == dynd::memory_id) {
     result = dynd::make_array_memory_block(array_tp.get_arrmeta_size());
     array_tp.extended<dynd::ndt::base_memory_type>()->data_alloc(&data_ptr,
                                                                  data_size);
@@ -66,7 +66,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp,
   }
 
   if (array_tp.get_flags() & dynd::type_flag_zeroinit) {
-    if (array_tp.get_kind() == dynd::memory_kind) {
+    if (array_tp.get_base_id() == dynd::memory_id) {
       array_tp.extended<dynd::ndt::base_memory_type>()->data_zeroinit(
           data_ptr, data_size);
     }
@@ -163,12 +163,12 @@ inline std::string array_repr(const dynd::nd::array &n)
 inline PyObject *array_nonzero(const dynd::nd::array &n)
 {
   // Implements the nonzero/conversion to boolean slot
-  switch (n.get_type().value_type().get_kind()) {
-  case dynd::bool_kind:
-  case dynd::uint_kind:
-  case dynd::sint_kind:
-  case dynd::real_kind:
-  case dynd::complex_kind:
+  switch (n.get_type().value_type().get_base_id()) {
+  case dynd::bool_kind_id:
+  case dynd::uint_kind_id:
+  case dynd::int_kind_id:
+  case dynd::float_kind_id:
+  case dynd::complex_kind_id:
     // Follow Python in not raising errors here
     if (n.as<bool>(dynd::assign_error_nocheck)) {
       Py_INCREF(Py_True);
@@ -178,7 +178,7 @@ inline PyObject *array_nonzero(const dynd::nd::array &n)
       Py_INCREF(Py_False);
       return Py_False;
     }
-  case dynd::string_kind: {
+  case dynd::string_kind_id: {
     // Follow Python, return True if the string is nonempty, False otherwise
     dynd::nd::array n_eval = n.eval();
     const dynd::ndt::base_string_type *bsd =
@@ -195,7 +195,7 @@ inline PyObject *array_nonzero(const dynd::nd::array &n)
       return Py_False;
     }
   }
-  case dynd::bytes_kind: {
+  case dynd::bytes_kind_id: {
     // Return True if there is a non-zero byte, False otherwise
     dynd::nd::array n_eval = n.eval();
     const dynd::ndt::base_bytes_type *bbd =
@@ -214,12 +214,6 @@ inline PyObject *array_nonzero(const dynd::nd::array &n)
     }
     Py_INCREF(Py_False);
     return Py_False;
-  }
-  case dynd::datetime_kind: {
-    // Dates and datetimes are never zero
-    // TODO: What to do with NA value?
-    Py_INCREF(Py_True);
-    return Py_True;
   }
   default:
     // TODO: Implement nd.any and nd.all, mention them
@@ -401,7 +395,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
 
   // TODO: Move this implementation into dynd
   dynd::ndt::type fdt = n.get_dtype();
-  if (fdt.get_kind() != dynd::struct_kind) {
+  if (fdt.get_id() != dynd::struct_id) {
     std::stringstream ss;
     ss << "nd.fields must be given a dynd array of 'struct' kind, not ";
     ss << fdt;
@@ -457,7 +451,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
   char *dst_arrmeta = result.get()->metadata();
   const char *src_arrmeta = n.get()->metadata();
   while (tmp_dt.get_ndim() > 0) {
-    if (tmp_dt.get_kind() != dynd::dim_kind) {
+    if (tmp_dt.get_base_id() != dynd::dim_kind_id) {
       throw std::runtime_error(
           "nd.fields doesn't support dimensions with pointers yet");
     }

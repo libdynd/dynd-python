@@ -33,13 +33,13 @@ void pydynd::init_array_from_py_typededuction()
 
 size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
 {
-  switch (tp.get_kind()) {
-  case kind_kind:
-  case pattern_kind:
+  if (tp.is_symbolic()) {
     if (tp.is_scalar()) {
       return 0;
     }
-  case dim_kind:
+  }
+
+  if (!tp.is_scalar()) {
     if (max_count <= 1) {
       return max_count;
     }
@@ -50,8 +50,11 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
                              ->get_element_type(),
                          max_count - 1));
     }
-  case struct_kind:
-  case tuple_kind:
+  }
+
+  switch (tp.get_id()) {
+  case struct_id:
+  case tuple_id:
     if (max_count <= 1) {
       return max_count;
     }
@@ -150,7 +153,7 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
       if (initial_pass) {
         shape.push_back(size);
       }
-      else if (tp.get_kind() == struct_kind || tp.get_kind() == tuple_kind) {
+      else if (tp.get_id() == struct_id || tp.get_id() == tuple_id) {
         // Signal that this is a dimension which is sometimes scalar, to allow
         // for
         // raggedness in the struct type's fields
@@ -176,7 +179,7 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
     }
   }
   else {
-    if (PyDict_Check(obj) && tp.get_kind() == struct_kind) {
+    if (PyDict_Check(obj) && tp.get_id() == struct_id) {
       if (shape.size() == current_axis) {
         shape.push_back(pydynd_shape_deduction_dict);
       }
@@ -185,7 +188,7 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
       }
     }
     else if (shape.size() != current_axis) {
-      if (tp.get_kind() == struct_kind || tp.get_kind() == tuple_kind) {
+      if (tp.get_id() == struct_id || tp.get_id() == tuple_id) {
         shape[current_axis] = pydynd_shape_deduction_ragged;
       }
       else {
@@ -207,10 +210,10 @@ static intptr_t get_leading_dim_count(const dynd::ndt::type &tp)
   if (ndim) {
     return ndim + get_leading_dim_count(tp.get_dtype());
   }
-  else if (tp.get_kind() == expr_kind) {
+  else if (tp.get_base_id() == expr_kind_id) {
     return get_leading_dim_count(tp.value_type());
   }
-  else if (tp.get_kind() == tuple_kind || tp.get_kind() == struct_kind) {
+  else if (tp.get_id() == tuple_id || tp.get_id() == struct_id) {
     if (tp.extended<ndt::tuple_type>()->get_field_count() == 0) {
       return 1;
     }
@@ -234,7 +237,7 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
   for (;;) {
     // Don't treat these types as sequences
     if (PyDict_Check(v)) {
-      if (tp.get_dtype().get_kind() == struct_kind) {
+      if (tp.get_dtype().get_id() == struct_id) {
         // If the object to assign to a dynd struct ends in a dict, apply
         // the dict as the struct's value
         return (tp.get_ndim() > obj_ndim);

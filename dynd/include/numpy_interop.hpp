@@ -456,18 +456,18 @@ dynd::ndt::type array_from_numpy_scalar2(PyObject *obj);
  */
 inline char numpy_kindchar_of(const dynd::ndt::type &d)
 {
-  switch (d.get_kind()) {
-  case dynd::bool_kind:
+  switch (d.get_base_id()) {
+  case dynd::bool_kind_id:
     return 'b';
-  case dynd::sint_kind:
+  case dynd::int_kind_id:
     return 'i';
   case dynd::uint_kind:
     return 'u';
-  case dynd::real_kind:
+  case dynd::float_kind_id:
     return 'f';
-  case dynd::complex_kind:
+  case dynd::complex_kind_id:
     return 'c';
-  case dynd::string_kind:
+  case dynd::string_kind_id:
     if (d.get_id() == dynd::fixed_string_id) {
       const dynd::ndt::base_string_type *esd =
           d.extended<dynd::ndt::base_string_type>();

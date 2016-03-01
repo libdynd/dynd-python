@@ -226,7 +226,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype,
   }
   }
 
-  if (dt.get_kind() == expr_kind) {
+  if (dt.get_base_id() == expr_kind_id) {
     // Convert the value type for the copy
     make_numpy_dtype_for_copy(out_numpy_dtype, ndim, dt.value_type(), NULL);
     return;
@@ -433,7 +433,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
   }
   }
 
-  if (dt.get_kind() == expr_kind) {
+  if (dt.get_base_id() == expr_kind_id) {
     // If none of the prior checks caught this expression,
     // a copy is required.
     out_numpy_dtype->clear();
@@ -545,12 +545,12 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       // Because 'allow_copy' is true
       // we can evaluate any expressions and
       // make copies of strings
-      if (a.get_type().get_kind() == expr_kind) {
+      if (a.get_type().get_base_id() == expr_kind_id) {
         // If it's an expression kind
         pyobject_ownref n_tmp(pydynd::array_from_cpp(a.eval()));
         return array_as_numpy(n_tmp.get(), true);
       }
-      else if (a.get_type().get_kind() == string_kind) {
+      else if (a.get_type().get_base_id() == string_kind_id) {
         nd::array res = nd::empty(ndt::make_type<pyobject_type>());
         res.assign(a);
         PyObject *res_obj = *reinterpret_cast<PyObject **>(res.data());

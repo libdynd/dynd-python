@@ -531,7 +531,7 @@ struct assign_from_pyobject_kernel<option_id, any_kind_id>
       pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst,
                                     pydynd::array_to_cpp_ref(src_obj));
     }
-    else if (dst_tp.get_kind() != dynd::string_kind &&
+    else if (dst_tp.get_base_id() != dynd::string_kind_id &&
              PyUnicode_Check(src_obj)) {
       // Copy from the string
       pydynd::pyobject_ownref utf8(PyUnicode_AsUTF8String(src_obj));
@@ -549,7 +549,7 @@ struct assign_from_pyobject_kernel<option_id, any_kind_id>
                                     reinterpret_cast<const char *>(&str_d));
 #if PY_VERSION_HEX < 0x03000000
     }
-    else if (dst_tp.get_kind() != dynd::string_kind &&
+    else if (dst_tp.get_base_id() != dynd::string_kind_id &&
              PyString_Check(src_obj)) {
       // Copy from the string
       char *s = NULL;

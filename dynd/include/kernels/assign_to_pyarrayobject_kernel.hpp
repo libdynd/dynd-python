@@ -82,8 +82,8 @@ struct assign_to_pyarrayobject_kernel
     }
 
     if (PyDataType_HASFIELDS(dtype)) {
-      if (src_tp[0].get_kind() != dynd::struct_kind &&
-          src_tp[0].get_kind() != dynd::tuple_kind) {
+      if (src_tp[0].get_id() != dynd::struct_id &&
+          src_tp[0].get_id() != dynd::tuple_id) {
         std::stringstream ss;
         pydynd::pyobject_ownref dtype_str(PyObject_Str((PyObject *)dtype));
         ss << "Cannot assign from source dynd type " << src_tp[0]
@@ -110,7 +110,7 @@ struct assign_to_pyarrayobject_kernel
       // Permute the numpy fields to match with the dynd fields
       std::vector<PyArray_Descr *> field_dtypes;
       std::vector<size_t> field_offsets;
-      if (src_tp[0].get_kind() == dynd::struct_kind) {
+      if (src_tp[0].get_id() == dynd::struct_id) {
         field_dtypes.resize(field_count);
         field_offsets.resize(field_count);
         for (intptr_t i = 0; i < field_count; ++i) {

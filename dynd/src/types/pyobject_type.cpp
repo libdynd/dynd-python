@@ -15,9 +15,8 @@ const type_id_t pyobject_id = ndt::type_registry.insert(
     any_kind_id, ndt::type(new pyobject_type(), true));
 
 pyobject_type::pyobject_type()
-    : ndt::base_type(pyobject_id, custom_kind, sizeof(PyObject *),
-                     alignof(PyObject *), type_flag_none | type_flag_zeroinit,
-                     0, 0, 0)
+    : ndt::base_type(pyobject_id, sizeof(PyObject *), alignof(PyObject *),
+                     type_flag_none | type_flag_zeroinit, 0, 0, 0)
 {
 }
 

@@ -461,7 +461,7 @@ inline char numpy_kindchar_of(const dynd::ndt::type &d)
     return 'b';
   case dynd::int_kind_id:
     return 'i';
-  case dynd::uint_kind:
+  case dynd::uint_kind_id:
     return 'u';
   case dynd::float_kind_id:
     return 'f';

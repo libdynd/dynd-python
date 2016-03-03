@@ -1,7 +1,7 @@
 from cpython.object cimport PyObject
 
 from ..cpp.array cimport array as _array
-from ..cpp.func.callable cimport callable as _callable
+from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport type as _type
 
 cdef api class array(object)[object dynd_nd_array_pywrapper,

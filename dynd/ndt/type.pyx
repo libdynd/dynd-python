@@ -26,14 +26,14 @@ from ..cpp.type cimport make_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
-from ..cpp.types.fixed_dim_kind_type cimport dynd_make_fixed_dim_kind_type
+from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
 from ..cpp.types.tuple_type cimport make_tuple as _make_tuple
 from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
-from ..cpp.func.callable cimport callable as _callable
+from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport make_type
 from ..cpp.complex cimport complex as dynd_complex
 

@@ -1,7 +1,7 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from ..cpp.func.callable cimport callable
-from ..cpp.func.callable_registry cimport callable_registry
+from ..cpp.callable cimport callable
+from ..cpp.callable_registry cimport callable_registry
 
 from ..config cimport translate_exception
 from .callable cimport dynd_nd_callable_from_cpp

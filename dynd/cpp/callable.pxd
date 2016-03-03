@@ -2,9 +2,9 @@ from libc.string cimport const_char
 from libcpp.pair cimport pair
 from libcpp cimport bool
 
-from ...config cimport translate_exception
-from ..array cimport array
-from ..type cimport type
+from ..config cimport translate_exception
+from .array cimport array
+from .type cimport type
 
 ctypedef const_char* const_charptr
 
@@ -21,4 +21,3 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
 
     callable make_callable 'dynd::nd::callable::make'[T](...) except +translate_exception
 
-    callable apply[T](T) except +translate_exception

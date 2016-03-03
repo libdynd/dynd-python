@@ -3,7 +3,7 @@ from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 
 from ..cpp.array cimport array as _array
-from ..cpp.func.callable cimport const_charptr
+from ..cpp.callable cimport const_charptr
 
 from ..config cimport translate_exception
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp

@@ -16,14 +16,13 @@ import numpy as _np
 from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
-from ..cpp.func.callable cimport callable as _callable
-from ..cpp.func.callable_registry cimport callable_registry
+from ..cpp.callable_registry cimport callable_registry
 from ..cpp.type cimport get_builtin_type_dynamic_array_properties, make_type
 from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *
 from ..cpp.view cimport view as _view
-from ..cpp.types.pyobject_type cimport pyobject_id
+from ..pyobject_type cimport pyobject_id
 
 from ..config cimport translate_exception
 from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type

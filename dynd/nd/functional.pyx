@@ -1,7 +1,7 @@
 from libc.stdint cimport intptr_t
 from libcpp.vector cimport vector
 
-from ..cpp.func.callable cimport callable as _callable
+from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport type as _type
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.func.elwise cimport elwise as _elwise

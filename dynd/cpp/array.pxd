@@ -5,7 +5,7 @@ from libcpp.map cimport map
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from .type cimport type
-from .func.callable cimport callable
+from .callable cimport callable
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
 

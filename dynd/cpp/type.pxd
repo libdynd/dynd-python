@@ -6,7 +6,7 @@ from .types.type_id cimport *
 
 from ..config cimport translate_exception
 from .array cimport array
-from .func.callable cimport callable
+from .callable cimport callable
 
 cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
     cdef cppclass type:

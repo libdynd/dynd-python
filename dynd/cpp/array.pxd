@@ -5,7 +5,6 @@ from libcpp.map cimport map
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from .type cimport type
-from .callable cimport callable
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
 
@@ -30,8 +29,6 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         intptr_t get_dim_size() except +translate_exception
 
         array p(string)
-
-        map[string, callable] get_properties()
 
         char *data() const
         const char *cdata() const

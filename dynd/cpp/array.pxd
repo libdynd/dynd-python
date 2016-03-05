@@ -27,6 +27,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         type get_dtype(size_t)
         intptr_t get_ndim()
         intptr_t get_dim_size() except +translate_exception
+        intptr_t get_dim_size(intptr_t) except +translate_exception
 
         array p(string)
 
@@ -41,7 +42,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array eval() except +translate_exception
         array cast(type) except +translate_exception
         array ucast(type, ssize_t) except +translate_exception
-        
+
         # These should only be used with versions of Cython later than 0.23.
         # Otherwise the exception handler isn't properly applied and the
         # resulting uncaught C++ exceptions can crash the Python interpreter.

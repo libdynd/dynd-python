@@ -6,6 +6,7 @@ from libc.stdint cimport (intptr_t, int8_t, int16_t, int32_t, int64_t,
 from libcpp.map cimport map
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from libcpp.pair cimport pair
 from libcpp cimport bool as cpp_bool
 
 import datetime
@@ -35,6 +36,8 @@ from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
 from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport make_type
+from ..cpp.type cimport type as dynd_ndt_type
+from ..cpp.array cimport array as dynd_nd_array
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
@@ -228,13 +231,11 @@ cdef class type(object):
         if self.v.is_null():
             raise AttributeError(name)
 
-        cdef _callable p
-        cdef map[string, _callable] properties = self.v.get_properties()
-        p = properties[name]
-        if (not p.is_null()):
-            return dynd_nd_array_from_cpp(p(self.v))
+        cdef pair[dynd_ndt_type, const char*] p = self.v.get_properties()[name]
+        if p.first.is_null():
+            raise AttributeError(name)
 
-        raise AttributeError(name)
+        return dynd_nd_array_from_cpp(dynd_nd_array.from_type_property(p))
 
     def __str__(self):
         return str(<char *>_type_str(self.v).c_str())

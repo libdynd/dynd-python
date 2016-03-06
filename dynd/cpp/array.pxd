@@ -4,7 +4,7 @@ from libcpp cimport bool
 from libcpp.map cimport map
 from libcpp.string cimport string
 from libcpp.vector cimport vector
-from .type cimport type
+from .type cimport type, property_t
 
 cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
 
@@ -35,6 +35,9 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         const char *cdata() const
 
         array view_scalars(type&) except +translate_exception
+
+        @staticmethod
+        array from_type_property(const property_t &) except +translate_exception
 
         bool is_null()
 

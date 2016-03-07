@@ -29,7 +29,7 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         intptr_t get_dim_size() except +translate_exception
         intptr_t get_dim_size(intptr_t) except +translate_exception
 
-        array p(string)
+        array p(string) except +translate_exception
 
         char *data() const
         const char *cdata() const

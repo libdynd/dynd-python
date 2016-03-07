@@ -262,7 +262,10 @@ cdef class array(object):
             if (pair.first == <string> name):
                 return dynd_nd_array_from_cpp(pair.second(self.v))
 
-        return dynd_nd_array_from_cpp(self.v.p(name))
+        try:
+            return dynd_nd_array_from_cpp(self.v.p(name))
+        except ValueError:
+            raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if self.v.is_null():

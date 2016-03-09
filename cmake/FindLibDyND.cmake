@@ -20,10 +20,10 @@
 # distribute, sublicense, and/or sell copies of the Software, and to permit
 # persons to whom the Software is furnished to do so, subject to
 # the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -31,7 +31,7 @@
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
-# 
+#
 #============================================================================
 
 # Try to find a libdynd-config program
@@ -90,24 +90,8 @@ if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
         "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
 endif()
 
-# Get whether or not libdynd was built with cuda support
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-cuda"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_CUDA
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
-endif()
-# Verify that the value in LIBDYND_CUDA is either "ON" or "OFF"
-if(NOT ("${LIBDYND_CUDA}" STREQUAL "ON" OR "${LIBDYND_CUDA}" STREQUAL "OFF"))
-    message(FATAL_ERROR "Unrecognized cuda option returned from libdynd-config.")
-endif()
-
 find_package_message(LIBDYND
     "Found LibDyND: version \"${LIBDYND_VERSION}\",  ${LIBDYND_LIBRARIES}"
     "${LIBDYND_INCLUDE_DIRS}${LIBDYND_LIBRARIES}${LIBDYND_VERSION}")
 
 set(NUMPY_FOUND TRUE)
-

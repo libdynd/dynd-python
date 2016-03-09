@@ -34,7 +34,6 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GetGitRevisionDescriptionDyND)
 
-find_package(CUDA 6.5)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibsNew REQUIRED)
 find_package(NumPy REQUIRED)
@@ -55,22 +54,10 @@ endif()
 
 if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
-    if(LIBDYND_CUDA)
-        option(DYND_CUDA
-            "Use a libdynd built with CUDA. If DYND_INSTALL_LIB is ON, this defaults to the DYND_CUDA option used when building libdynd. Otherwise it defaults to OFF."
-            ON)
-    else()
-        option(DYND_CUDA
-            "Use a libdynd built with CUDA. If DYND_INSTALL_LIB is ON, this defaults to the DYND_CUDA option used when building libdynd. Otherwise it defaults to OFF."
-            OFF)
-    endif()
 else()
     set(DYND_SHARED_LIB ON)
     # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
-    option(DYND_CUDA
-        "Use a libdynd built with CUDA. If DYND_INSTALL_LIB is ON, this defaults to the DYND_CUDA option used building that library. Otherwise it defaults to OFF."
-        OFF)
 
     if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/array.hpp")
         message(FATAL_ERROR
@@ -155,14 +142,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/ndt
     ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-if(DYND_CUDA)
-    include_directories(${CUDA_INCLUDE_DIRS})
-    add_definitions(-DDYND_CUDA)
-    set(DYND_CUDA_01 1)
-else()
-    set(DYND_CUDA_01 0)
-endif()
 
 foreach(pyx_api_file dynd/nd/array.pyx dynd/nd/callable.pyx dynd/ndt/type.pyx)
     set_source_files_properties(${pyx_api_file} PROPERTIES CYTHON_API 1)

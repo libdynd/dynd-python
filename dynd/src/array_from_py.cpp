@@ -18,6 +18,7 @@
 #include <dynd/types/substitute_shape.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
+#include <dynd/option.hpp>
 
 #include "array_from_py.hpp"
 #include "array_from_py_typededuction.hpp"
@@ -183,8 +184,7 @@ inline void convert_one_pyscalar_option(const ndt::type &tp,
                                         PyObject *obj)
 {
   if (obj == Py_None) {
-    tp.extended<ndt::option_type>()->assign_na(arrmeta, out,
-                                               &eval::default_eval_context);
+    nd::old_assign_na(tp, arrmeta, out);
   }
   else {
     throw std::runtime_error("unable to convert to option value");

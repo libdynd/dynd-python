@@ -16,52 +16,52 @@ using namespace dynd;
 
 
 // Unpack and convert a single element to a PyObject.
-template <typename T>
-inline std::enable_if_t<std::is_signed<T>::value && std::numeric_limits<T>::max() <= INT64_MAX, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_signed<T>::value && std::numeric_limits<T>::max() <= INT64_MAX, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     return PyLong_FromLongLong(*reinterpret_cast<const T *>(data));
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_unsigned<T>::value && std::numeric_limits<T>::max() <= UINT64_MAX, PyObject *>
+template <typename T, std::enable_if_t<std::is_unsigned<T>::value && std::numeric_limits<T>::max() <= UINT64_MAX, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     return PyLong_FromUnsignedLongLong(*reinterpret_cast<const T *>(data));
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, bool1>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, bool1>::value, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     return PyBool_FromLong(*reinterpret_cast<const T *>(data));
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, float64>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, float64>::value, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     return PyFloat_FromDouble(*reinterpret_cast<const T *>(data));
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, complex128>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, complex128>::value, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     complex128 c = *reinterpret_cast<const T *>(data);
     return PyComplex_FromDoubles(c.real(), c.imag());
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, std::string>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, std::string>::value, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     const std::string &s = *reinterpret_cast<const T *>(data);
     return PyUnicode_FromString(s.data());
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, ndt::type>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, ndt::type>::value, int> = 0>
+inline PyObject *
 unpack_single(const char *data)
 {
     return pydynd::type_from_cpp(*reinterpret_cast<const T *>(data));
@@ -69,50 +69,50 @@ unpack_single(const char *data)
 
 
 // Convert a single element to a PyObject.
-template <typename T>
-inline std::enable_if_t<std::is_signed<T>::value && std::numeric_limits<T>::max() <= INT64_MAX, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_signed<T>::value && std::numeric_limits<T>::max() <= INT64_MAX, int> = 0>
+inline PyObject *
 convert_single(T value)
 {
     return PyLong_FromLongLong(value);
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_unsigned<T>::value && std::numeric_limits<T>::max() <= UINT64_MAX, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_unsigned<T>::value && std::numeric_limits<T>::max() <= UINT64_MAX, int> = 0>
+inline PyObject *
 convert_single(T value)
 {
     return PyLong_FromUnsignedLongLong(value);
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, bool1>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, bool1>::value, int> = 0>
+inline PyObject *
 convert_single(T value)
 {
     return PyBool_FromLong(value);
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, float64>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, float64>::value, int> = 0>
+inline PyObject *
 convert_single(T value)
 {
     return PyFloat_FromDouble(value);
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, complex128>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, complex128>::value, int> = 0>
+inline PyObject *
 convert_single(T value)
 {
     return PyComplex_FromDoubles(value.real(), value.imag());
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, std::string>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, std::string>::value, int> = 0>
+inline PyObject *
 convert_single(const T &value)
 {
     return PyUnicode_FromString(value.data());
 }
 
-template <typename T>
-inline std::enable_if_t<std::is_same<T, ndt::type>::value, PyObject *>
+template <typename T, typename std::enable_if_t<std::is_same<T, ndt::type>::value, int> = 0>
+inline PyObject *
 convert_single(const T &value)
 {
     return pydynd::type_from_cpp(value);

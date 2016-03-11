@@ -57,7 +57,7 @@ dynd::nd::callable &pydynd::callable_to_cpp_ref(PyObject *o)
 
 PyTypeObject *pydynd::get_callable_pytypeobject()
 {
-  // Check whether import has occured by checking a different pointer.
+  // Check whether import has occurred by checking a different pointer.
   // For some reason the PyTypeObject in the api header is defined as
   // a macro that already dereferences the pointer.
   if (dynd_nd_callable_to_ptr == NULL) {

@@ -599,7 +599,7 @@ def dshape_of(array a):
     a : dynd array
         The array whose type is requested.
     """
-    return str(<char *>dynd_format_datashape(a.v).c_str())
+    return str(<char *>dynd_format_datashape(a.v.get_type()).c_str())
 
 def ndim_of(array a):
     """

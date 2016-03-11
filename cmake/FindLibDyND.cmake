@@ -3,10 +3,12 @@
 # and installed.
 #
 #  LIBDYND_FOUND               - was LibDyND found
+#  LIBDYND_LIBRARIES           - full paths for the LibDyND libraries
+#  LIBDYND_LIBRARY_DIR         - the directory containing the libdynd libraries
+#  LIBDYND_LIBRARY_NAMES       - the names of the libdynd libraries
+#  LIBDYND_INCLUDE_DIR         - path to the LibDyND include files
+#  LIBDYND_ROOT_DIR            - directory containing LIBDYND_LIBRARY_DIR and LIBDYND_INCLUDE_DIR
 #  LIBDYND_VERSION             - the version of LibDyND found as a string
-#  LIBDYND_LIBRARIES           - path to the LibDyND library
-#  LIBDYND_INCLUDE_DIRS        - path to the LibDyND include files
-#  LIBDYND_CUDA                - if LibDyND was built with cuda support
 
 #============================================================================
 # Copyright 2013 Continuum Analytics, Inc.
@@ -48,50 +50,74 @@ else()
     find_program(_LIBDYND_CONFIG "libdynd-config")
 endif()
 if("${_LIBDYND_CONFIG}" STREQUAL "")
+
     if(LibDyND_FIND_REQUIRED)
-        message(FATAL_ERROR
-            "Failed to find libdynd-config program")
+        message(FATAL_ERROR "Failed to find libdynd-config program")
     endif()
-    set(LIBDYND_FOUND FALSE)
+    set(LIBDYND_FOUND False)
     return()
+
+else()
+
+    # Get the libraries to link against.
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libnames"
+                    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+                    OUTPUT_VARIABLE LIBDYND_LIBRARY_NAMES
+                    ERROR_VARIABLE _DYND_ERROR_VALUE
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR "Error getting dynd library names:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libdir"
+                    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+                    OUTPUT_VARIABLE LIBDYND_LIBRARY_DIR
+                    ERROR_VARIABLE _DYND_ERROR_VALUE
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR "Error getting dynd library directory:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    # Construct DYND_LIBRARIES from the names and directory given.
+    if(WIN32)
+        string(REPLACE "\\" "/" LIBDYND_LIBRARY_DIR ${LIBDYND_LIBRARY_DIR})
+    endif()
+    set(LIBDYND_LIBRARIES "")
+    foreach(_lib ${LIBDYND_LIBRARY_NAMES})
+        LIST(APPEND LIBDYND_LIBRARIES "${LIBDYND_LIBRARY_DIR}/${_lib}")
+    endforeach()
+
+    # Get the include directory
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-includedir"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_INCLUDE_DIR
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR "Error getting dynd include directory:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    # Get the root directory
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-rootdir"
+        RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+        OUTPUT_VARIABLE LIBDYND_ROOT_DIR
+        ERROR_VARIABLE _DYND_ERROR_VALUE
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR "Error getting dynd root directory:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    # Get the version
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-version"
+                    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
+                    OUTPUT_VARIABLE LIBDYND_VERSION
+                    ERROR_VARIABLE _DYND_ERROR_VALUE
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
+        message(FATAL_ERROR "Error getting dynd version:\n${_DYND_ERROR_VALUE}")
+    endif()
+
+    find_package_message(LIBDYND "Found LibDyND: version \"${LIBDYND_VERSION}\"" "${LIBDYND_ROOT_DIR}.")
+
+    set(LIBDYND_FOUND True)
 endif()
-
-
-# Get the version
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-version"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_VERSION
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
-endif()
-
-# Get the library to link against
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libpath"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_LIBRARIES
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
-endif()
-
-# Get the include directory
-execute_process(COMMAND "${_LIBDYND_CONFIG}" "-includedir"
-    RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-    OUTPUT_VARIABLE LIBDYND_INCLUDE_DIRS
-    ERROR_VARIABLE _DYND_ERROR_VALUE
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-    message(FATAL_ERROR
-        "Error getting additional properties of libdynd:\n${_DYND_ERROR_VALUE}")
-endif()
-
-find_package_message(LIBDYND
-    "Found LibDyND: version \"${LIBDYND_VERSION}\",  ${LIBDYND_LIBRARIES}"
-    "${LIBDYND_INCLUDE_DIRS}${LIBDYND_LIBRARIES}${LIBDYND_VERSION}")
-
-set(NUMPY_FOUND TRUE)

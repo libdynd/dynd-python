@@ -8,6 +8,7 @@
 #include <Python.h>
 
 #include <dynd/type_registry.hpp>
+#include <type_traits>
 
 #include "pyobject_type.hpp"
 

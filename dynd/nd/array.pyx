@@ -18,7 +18,7 @@ from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
 from ..cpp.callable_registry cimport callable_registry
 from ..cpp.type cimport make_type
-from ..cpp.types.categorical_type cimport dynd_make_categorical_type
+# from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *
 from ..cpp.view cimport view as _view
@@ -64,9 +64,6 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
 cdef extern from "array_from_py.hpp" namespace "pydynd":
     void init_array_from_py() except *
 
-cdef extern from "array_from_py_typededuction.hpp" namespace 'pydynd':
-    void init_array_from_py_typededuction() except *
-
 cdef extern from 'numpy_interop.hpp' namespace 'pydynd':
     # Have Cython use an integer to represent the bool argument.
     # It will convert implicitly to bool at the C++ level.
@@ -87,7 +84,6 @@ _builtin_type = type
 # Initialize ctypes C level interop data
 numpy_interop_init()
 init_array_from_py()
-init_array_from_py_typededuction()
 
 cdef class array(object):
     """

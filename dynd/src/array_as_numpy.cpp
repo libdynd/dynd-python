@@ -16,7 +16,6 @@
 #include "utility_functions.hpp"
 #include "assign.hpp"
 #include "types/pyobject_type.hpp"
-#include "conversions.hpp"
 
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>

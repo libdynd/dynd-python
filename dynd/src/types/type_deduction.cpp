@@ -15,21 +15,14 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "array_from_py_typededuction.hpp"
-#include "array_functions.hpp"
 #include "numpy_interop.hpp"
-#include "type_functions.hpp"
-#include "utility_functions.hpp"
+#include "types/type_functions.hpp"
+#include "types/type_deduction.hpp"
+//#include "utility_functions.hpp"
 
 using namespace std;
 using namespace dynd;
 using namespace pydynd;
-
-void pydynd::init_array_from_py_typededuction()
-{
-  // Initialize the pydatetime API
-  PyDateTime_IMPORT;
-}
 
 size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
 {

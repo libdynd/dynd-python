@@ -10,7 +10,6 @@
 
 #include <dynd/types/type_id.hpp>
 
-#include "array_from_py_typededuction.hpp"
 #include "visibility.hpp"
 
 #include <dynd/array.hpp>
@@ -35,24 +34,6 @@ PYDYND_API dynd::nd::array array_from_py(PyObject *obj, uint32_t access_flags,
 
 PYDYND_API dynd::ndt::type xtype_for_prefix(PyObject *obj);
 
-inline dynd::ndt::type xarray_from_pylist(PyObject *obj)
-{
-  // TODO: Add ability to specify access flags (e.g. immutable)
-  // Do a pass through all the data to deduce its type and shape
-  std::vector<intptr_t> shape;
-  dynd::ndt::type tp(dynd::void_id);
-  Py_ssize_t size = PyList_GET_SIZE(obj);
-  shape.push_back(size);
-  for (Py_ssize_t i = 0; i < size; ++i) {
-    deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
-  }
-
-  if (tp.get_id() == dynd::void_id) {
-    tp = dynd::ndt::type(dynd::int32_id);
-  }
-
-  return dynd::ndt::make_type(shape.size(), shape.data(), tp);
-}
 
 void init_array_from_py();
 

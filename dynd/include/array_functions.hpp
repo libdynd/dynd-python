@@ -26,10 +26,10 @@
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
 #include "array_from_py.hpp"
-#include "conversions.hpp"
-#include "type_functions.hpp"
-#include "types/pyobject_type.hpp"
+#include "array_conversions.hpp"
 #include "utility_functions.hpp"
+#include "types/type_functions.hpp"
+#include "types/pyobject_type.hpp"
 #include "visibility.hpp"
 
 namespace pydynd {

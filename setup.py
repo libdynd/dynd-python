@@ -102,17 +102,14 @@ class cmake_build_ext(build_ext):
 
     import glob, shutil
 
-    if sys.platform != 'win32':
-        if install_lib_option.split('=')[1] == 'OFF':
-            name, = glob.glob('libraries/libdynd/libdynd.*')
+    if install_lib_option.split('=')[1] == 'OFF':
+        if sys.platform != 'win32':
+            names = glob.glob('libraries/libdynd/libdy*.*')
+        else:
+            names = glob.glob('libraries/libdynd/%s/libdy*.*' % build_type)
+        for name in names:
             short_name = split(name)[1]
             shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
-    else:
-        if install_lib_option.split('=')[1] == 'OFF':
-            names = glob.glob('libraries/libdynd/%s/libdynd.*' % build_type)
-            for name in names:
-                short_name = split(name)[1]
-                shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
 
     # Move the built C-extension to the place expected by the Python build
     self._found_names = []

@@ -3,6 +3,8 @@
 // BSD 2-Clause License, see LICENSE.txt
 //
 
+#pragma once
+
 #include <Python.h>
 
 #include <dynd/type_registry.hpp>

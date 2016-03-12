@@ -195,5 +195,3 @@ PyObject *from_type_property(const std::pair<ndt::type, const char *> &pair)
   }
 }
 
-
-

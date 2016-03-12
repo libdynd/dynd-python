@@ -8,6 +8,7 @@ if os.name == 'nt':
     try:
         # The default dll search order should give precedence to copies of
         # libdynd in the same directory as this file.
+        cdll.LoadLibrary('libdyndt.dll')
         cdll.LoadLibrary('libdynd.dll')
     except OSError:
         # Try to load it from the Program Files directories where libdynd

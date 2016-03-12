@@ -14,143 +14,134 @@
 
 using namespace dynd;
 
-
 // Unpack and convert a single element to a PyObject.
-template <typename T, typename std::enable_if_t<std::is_signed<T>::value && std::numeric_limits<T>::max() <= INT64_MAX, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+template <typename T,
+          typename std::enable_if<
+              std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) <= sizeof(long long), int>::type = 0>
+inline PyObject *unpack_single(const char *data)
 {
-    return PyLong_FromLongLong(*reinterpret_cast<const T *>(data));
+  return PyLong_FromLongLong(*reinterpret_cast<const T *>(data));
 }
 
-template <typename T, std::enable_if_t<std::is_unsigned<T>::value && std::numeric_limits<T>::max() <= UINT64_MAX, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value &&
+                                                    sizeof(T) <= sizeof(unsigned long long),
+                                                int> = 0>
+inline PyObject *unpack_single(const char *data)
 {
-    return PyLong_FromUnsignedLongLong(*reinterpret_cast<const T *>(data));
+  return PyLong_FromUnsignedLongLong(*reinterpret_cast<const T *>(data));
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, bool1>::value, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+inline PyObject *unpack_single(const char *data)
 {
-    return PyBool_FromLong(*reinterpret_cast<const T *>(data));
+  return PyBool_FromLong(*reinterpret_cast<const T *>(data));
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, float64>::value, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+inline PyObject *unpack_single(const char *data)
 {
-    return PyFloat_FromDouble(*reinterpret_cast<const T *>(data));
+  return PyFloat_FromDouble(*reinterpret_cast<const T *>(data));
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, complex128>::value, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+inline PyObject *unpack_single(const char *data)
 {
-    complex128 c = *reinterpret_cast<const T *>(data);
-    return PyComplex_FromDoubles(c.real(), c.imag());
+  complex128 c = *reinterpret_cast<const T *>(data);
+  return PyComplex_FromDoubles(c.real(), c.imag());
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, std::string>::value, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+inline PyObject *unpack_single(const char *data)
 {
-    const std::string &s = *reinterpret_cast<const T *>(data);
-    return PyUnicode_FromString(s.data());
+  const std::string &s = *reinterpret_cast<const T *>(data);
+  return PyUnicode_FromString(s.data());
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, ndt::type>::value, int> = 0>
-inline PyObject *
-unpack_single(const char *data)
+inline PyObject *unpack_single(const char *data)
 {
-    return pydynd::type_from_cpp(*reinterpret_cast<const T *>(data));
+  return pydynd::type_from_cpp(*reinterpret_cast<const T *>(data));
 }
-
 
 // Convert a single element to a PyObject.
-template <typename T, typename std::enable_if_t<std::is_signed<T>::value && std::numeric_limits<T>::max() <= INT64_MAX, int> = 0>
-inline PyObject *
-convert_single(T value)
+template <typename T,
+          typename std::enable_if_t<
+              std::is_integral<T>::value && std::is_signed<T>::value && sizeof(T) <= sizeof(long long), int> = 0>
+inline PyObject *convert_single(T value)
 {
-    return PyLong_FromLongLong(value);
+  return PyLong_FromLongLong(value);
 }
 
-template <typename T, typename std::enable_if_t<std::is_unsigned<T>::value && std::numeric_limits<T>::max() <= UINT64_MAX, int> = 0>
-inline PyObject *
-convert_single(T value)
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value &&
+                                                    sizeof(T) <= sizeof(unsigned long long),
+                                                int> = 0>
+inline PyObject *convert_single(T value)
 {
-    return PyLong_FromUnsignedLongLong(value);
+  return PyLong_FromUnsignedLongLong(value);
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, bool1>::value, int> = 0>
-inline PyObject *
-convert_single(T value)
+inline PyObject *convert_single(T value)
 {
-    return PyBool_FromLong(value);
+  return PyBool_FromLong(value);
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, float64>::value, int> = 0>
-inline PyObject *
-convert_single(T value)
+inline PyObject *convert_single(T value)
 {
-    return PyFloat_FromDouble(value);
+  return PyFloat_FromDouble(value);
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, complex128>::value, int> = 0>
-inline PyObject *
-convert_single(T value)
+inline PyObject *convert_single(T value)
 {
-    return PyComplex_FromDoubles(value.real(), value.imag());
+  return PyComplex_FromDoubles(value.real(), value.imag());
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, std::string>::value, int> = 0>
-inline PyObject *
-convert_single(const T &value)
+inline PyObject *convert_single(const T &value)
 {
-    return PyUnicode_FromString(value.data());
+  return PyUnicode_FromString(value.data());
 }
 
 template <typename T, typename std::enable_if_t<std::is_same<T, ndt::type>::value, int> = 0>
-inline PyObject *
-convert_single(const T &value)
+inline PyObject *convert_single(const T &value)
 {
-    return pydynd::type_from_cpp(value);
+  return pydynd::type_from_cpp(value);
 }
-
 
 template <typename T>
 PyObject *unpack_vector(const char *data)
 {
-    auto &vec = *reinterpret_cast<const std::vector<T> *>(data);
-    PyObject *lst, *item;
+  auto &vec = *reinterpret_cast<const std::vector<T> *>(data);
+  PyObject *lst, *item;
 
-    lst = PyList_New(vec.size());
-    if (lst == NULL) {
-        return NULL;
+  lst = PyList_New(vec.size());
+  if (lst == NULL) {
+    return NULL;
+  }
+
+  for (size_t i = 0; i < vec.size(); ++i) {
+    item = convert_single<T>(vec[i]);
+    if (item == NULL) {
+      Py_DECREF(lst);
+      return NULL;
     }
+    PyList_SET_ITEM(lst, i, item);
+  }
 
-    for (size_t i = 0; i < vec.size(); ++i) {
-        item = convert_single<T>(vec[i]);
-        if (item == NULL) {
-            Py_DECREF(lst);
-            return NULL;
-        }
-        PyList_SET_ITEM(lst, i, item);
-    }
-
-    return lst;
+  return lst;
 }
 
 template <typename T>
 inline PyObject *unpack(bool is_vector, const char *data)
 {
-    if (is_vector) {
-        return unpack_vector<T>(data);
-    }
-    else {
-        return unpack_single<T>(data);
-    }
+  if (is_vector) {
+    return unpack_vector<T>(data);
+  }
+  else {
+    return unpack_single<T>(data);
+  }
 }
 
 PyObject *from_type_property(const std::pair<ndt::type, const char *> &pair)

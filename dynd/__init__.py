@@ -8,6 +8,7 @@ if os.name == 'nt':
     try:
         # The default dll search order should give precedence to copies of
         # libdynd in the same directory as this file.
+        cdll.LoadLibrary('libdyndt.dll')
         cdll.LoadLibrary('libdynd.dll')
     except OSError:
         # Try to load it from the Program Files directories where libdynd
@@ -35,18 +36,14 @@ if os.name == 'nt':
             prog_files = os.environ.get('ProgramFiles')
             if prog_files is None:
                 raise RuntimeError(err_str.format('ProgramFiles'))
-            libdynd_path = os.path.join(prog_files, 'libdynd', 'lib',
-                                        'libdynd.dll')
-            if os.path.isfile(libdynd_path):
-                cdll.LoadLibrary(libdynd_path)
         else:
             prog_files = os.environ.get('ProgramFiles(x86)')
             if prog_files is None:
                 raise RuntimeError(err_str.format('ProgramFiles(x86)'))
-            libdynd_path = os.path.join(prog_files, 'libdynd', 'lib',
-                                        'libdynd.dll')
-            if os.path.isfile(libdynd_path):
-                cdll.LoadLibrary(libdynd_path)
+        dynd_lib_dir = os.path.join(prog_files, 'libdynd', 'lib')
+        if os.path.isdir(dynd_lib_dir):
+            cdll.LoadLibrary(os.path.join(dynd_lib_dir, 'libdyndt.dll'))
+            cdll.LoadLibrary(os.path.join(dynd_lib_dir, 'libdynd.dll'))
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \

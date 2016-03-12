@@ -72,7 +72,7 @@ else()
     # Include libdynd in the build
     add_subdirectory(libraries/libdynd)
 
-    set(LIBDYND_INCLUDE_DIRS
+    set(LIBDYND_INCLUDE_DIR
         "libraries/libdynd/include"
         "${CMAKE_CURRENT_BINARY_DIR}/libraries/libdynd/include")
 endif()
@@ -136,7 +136,7 @@ endif()
 include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
-    ${LIBDYND_INCLUDE_DIRS}
+    ${LIBDYND_INCLUDE_DIR}
     dynd/include
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/nd
     ${CMAKE_CURRENT_BINARY_DIR}/dynd/ndt
@@ -204,7 +204,7 @@ foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.cal
     if(DYND_INSTALL_LIB)
         target_link_libraries(${module} "${LIBDYND_LIBRARIES}")
     else()
-        target_link_libraries(${module} libdynd)
+        target_link_libraries(${module} libdynd libdyndt)
         if(UNIX)
             # Make sure libdynd is on the rpath.
             # On Windows, the dll is loaded dynamically via the logic in

@@ -13,11 +13,6 @@
 #include <dynd/string_encodings.hpp>
 #include <dynd/type.hpp>
 
-#include "type_conversions.hpp"
-#include "numpy_interop.hpp"
-#include "visibility.hpp"
-
-#include <dynd/shape_tools.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
@@ -26,6 +21,9 @@
 #include <dynd/types/type_type.hpp>
 
 #include "utility_functions.hpp"
+#include "type_conversions.hpp"
+#include "visibility.hpp"
+
 
 // Python's datetime C API
 #include "datetime.h"

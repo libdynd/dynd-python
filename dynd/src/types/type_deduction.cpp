@@ -15,10 +15,8 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "numpy_interop.hpp"
 #include "types/type_functions.hpp"
 #include "types/type_deduction.hpp"
-//#include "utility_functions.hpp"
 
 using namespace std;
 using namespace dynd;

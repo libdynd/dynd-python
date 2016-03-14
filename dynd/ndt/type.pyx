@@ -76,7 +76,6 @@ cdef extern from 'types/type_functions.hpp' namespace 'pydynd':
 cdef extern from "types/type_unpack.hpp":
     object from_type_property(const pair[_type, const char *] &) except +translate_exception
 
-import numpy as _np
 
 builtin_tuple = tuple
 

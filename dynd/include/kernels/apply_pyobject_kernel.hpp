@@ -4,7 +4,7 @@
 #include <dynd/func/assignment.hpp>
 
 #include "array_conversions.hpp"
-#include "types/type_functions.hpp"
+#include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 
 struct apply_pyobject_kernel

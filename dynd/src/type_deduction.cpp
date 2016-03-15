@@ -15,8 +15,8 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "types/type_functions.hpp"
-#include "types/type_deduction.hpp"
+#include "type_functions.hpp"
+#include "type_deduction.hpp"
 
 using namespace std;
 using namespace dynd;

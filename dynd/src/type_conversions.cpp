@@ -1,5 +1,5 @@
-#include "types/type_functions.hpp"
-#include "types/type_deduction.hpp"
+#include "type_functions.hpp"
+#include "type_deduction.hpp"
 #include "type_api.h"
 
 dynd::ndt::type &pydynd::type_to_cpp_ref(PyObject *o)

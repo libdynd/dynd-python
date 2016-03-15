@@ -55,10 +55,10 @@ cdef extern from "numpy_interop.hpp":
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     _type _type_from_numpy_dtype(PyArray_Descr*)
 
-cdef extern from "types/type_conversions.hpp" namespace 'pydynd':
+cdef extern from "type_conversions.hpp" namespace 'pydynd':
     _type ndt_type_from_pylist(object) except +translate_exception
 
-cdef extern from 'types/type_functions.hpp' namespace 'pydynd':
+cdef extern from 'type_functions.hpp' namespace 'pydynd':
     object _type_get_shape(_type&) except +translate_exception
     object _type_get_id(_type&) except +translate_exception
     string _type_str(_type &)
@@ -73,7 +73,7 @@ cdef extern from 'types/type_functions.hpp' namespace 'pydynd':
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
     void init_type_functions()
 
-cdef extern from "types/type_unpack.hpp":
+cdef extern from "type_unpack.hpp":
     object from_type_property(const pair[_type, const char *] &) except +translate_exception
 
 

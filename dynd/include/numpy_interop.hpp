@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "utility_functions.hpp"
-#include "types/type_functions.hpp"
+#include "type_functions.hpp"
 
 // Define this to 1 or 0 depending on whether numpy interop
 // should be compiled in.

@@ -17,8 +17,8 @@
 #include "array_functions.hpp"
 #include "array_conversions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
-#include "types/type_functions.hpp"
-#include "types/type_deduction.hpp"
+#include "type_functions.hpp"
+#include "type_deduction.hpp"
 #include "types/pyobject_type.hpp"
 
 using namespace dynd;

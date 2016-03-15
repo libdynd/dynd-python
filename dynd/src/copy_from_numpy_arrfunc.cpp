@@ -17,8 +17,8 @@
 #include <dynd/types/struct_type.hpp>
 
 #include "kernels/copy_from_numpy_kernel.hpp"
-#include "types/type_functions.hpp"
-#include "types/type_deduction.hpp"
+#include "type_functions.hpp"
+#include "type_deduction.hpp"
 #include "types/pyobject_type.hpp"
 
 using namespace std;

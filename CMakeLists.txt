@@ -163,23 +163,23 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/init.cpp
                   dynd/src/functional.cpp
                   dynd/src/numpy_interop.cpp
-                  dynd/src/types/type_conversions.cpp
-                  dynd/src/types/type_deduction.cpp
+                  dynd/src/type_conversions.cpp
+                  dynd/src/type_deduction.cpp
                   dynd/src/types/pyobject_type.cpp
                   )
 
 cython_add_module(dynd.config dynd.config_pyx True
                   dynd/include/exception_translation.hpp
                   dynd/src/array_conversions.cpp
-                  dynd/src/types/type_conversions.cpp
-                  dynd/src/types/type_deduction.cpp
+                  dynd/src/type_conversions.cpp
+                  dynd/src/type_deduction.cpp
                   ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
                   )
 
 foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True
                       # Additional C++ source files:
-                      dynd/src/types/type_conversions.cpp
+                      dynd/src/type_conversions.cpp
                       dynd/src/array_conversions.cpp)
 endforeach(module)
 

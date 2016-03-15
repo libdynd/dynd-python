@@ -11,7 +11,7 @@
 
 #include <dynd/type_registry.hpp>
 
-#include "pyobject_type.hpp"
+#include "types/pyobject_type.hpp"
 
 using namespace dynd;
 

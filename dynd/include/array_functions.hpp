@@ -28,7 +28,7 @@
 #include "array_from_py.hpp"
 #include "array_conversions.hpp"
 #include "utility_functions.hpp"
-#include "types/type_functions.hpp"
+#include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 #include "visibility.hpp"
 

@@ -59,8 +59,12 @@ void pydynd::nd::copy_from_numpy_kernel::instantiate(
     // If there is no object type in the numpy type, get the dynd equivalent
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
-    dynd::make_assignment_kernel(ckb, dst_tp, dst_arrmeta, src_view_tp, NULL,
-                                 kernreq, &dynd::eval::default_eval_context);
+    dynd::nd::array error_mode = dynd::assign_error_fractional;
+    dynd::nd::assign::get()->instantiate(
+        dynd::nd::assign::get()->static_data(), NULL, ckb, dst_tp, dst_arrmeta,
+        1, &src_view_tp, NULL, kernreq, 1, &error_mode,
+        std::map<std::string, dynd::ndt::type>());
+
     return;
   }
   else if (PyDataType_ISOBJECT(dtype)) {

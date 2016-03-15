@@ -893,9 +893,9 @@ struct assign_from_pyobject_kernel<struct_id, tuple_id>
 // TODO: Could instantiate the dst_tp -> dst_tp assignment
 //       as part of the ckernel instead of dynamically
 template <>
-struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
+struct assign_from_pyobject_kernel<fixed_dim_id, fixed_dim_kind_id>
     : dynd::nd::base_strided_kernel<
-          assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>, 1> {
+          assign_from_pyobject_kernel<fixed_dim_id, fixed_dim_kind_id>, 1> {
   intptr_t m_dim_size, m_stride;
   dynd::ndt::type m_dst_tp;
   const char *m_dst_arrmeta;
@@ -1002,9 +1002,12 @@ struct assign_from_pyobject_kernel<fixed_dim_id, dim_kind_id>
       self = ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
-      dynd::make_assignment_kernel(ckb, el_tp, el_arrmeta, el_tp, el_arrmeta,
-                                   dynd::kernel_request_strided,
-                                   &dynd::eval::default_eval_context);
+      nd::array error_mode = assign_error_fractional;
+      nd::assign::get()->instantiate(
+          nd::assign::get()->static_data(), NULL, ckb, el_tp, el_arrmeta, 1,
+          &el_tp, &el_arrmeta, dynd::kernel_request_strided, 1, &error_mode,
+          std::map<std::string, ndt::type>());
+
       return;
     }
 
@@ -1145,9 +1148,11 @@ struct assign_from_pyobject_kernel<var_dim_id, dim_kind_id>
     self = ckb->get_at<assign_from_pyobject_kernel>(root_ckb_offset);
     self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
     // dst to dst ckernel, for broadcasting case
-    dynd::make_assignment_kernel(ckb, el_tp, el_arrmeta, el_tp, el_arrmeta,
-                                 dynd::kernel_request_strided,
-                                 &dynd::eval::default_eval_context);
+    nd::array error_mode = assign_error_fractional;
+    nd::assign::get()->instantiate(nd::assign::get()->static_data(), NULL, ckb,
+                                   el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
+                                   dynd::kernel_request_strided, 1, &error_mode,
+                                   std::map<std::string, ndt::type>());
   }
 };
 

@@ -796,9 +796,9 @@ struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::fixed_dim_id, dim_kind_id>
+struct assign_to_pyobject_kernel<dynd::fixed_dim_id, fixed_dim_kind_id>
     : dynd::nd::base_strided_kernel<
-          assign_to_pyobject_kernel<dynd::fixed_dim_id, dim_kind_id>, 1> {
+          assign_to_pyobject_kernel<dynd::fixed_dim_id, fixed_dim_kind_id>, 1> {
   intptr_t dim_size, stride;
 
   assign_to_pyobject_kernel(intptr_t dim_size, intptr_t stride)

@@ -2,6 +2,7 @@ import sys
 import unittest
 from dynd import nd, ndt
 
+"""
 class TestFields(unittest.TestCase):
     def test_simple(self):
         a = nd.array([
@@ -91,6 +92,7 @@ class TestFields(unittest.TestCase):
                 (5, 6, 'def', 'ghi')],
                 type='3 * {x: int32, y: int32, z: string, w: string}')
         self.assertRaises(RuntimeError, nd.fields, a, 'y', 'v')
+"""
 
 if __name__ == '__main__':
     unittest.main()

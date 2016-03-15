@@ -67,9 +67,11 @@ struct assign_to_pyarrayobject_kernel
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       dynd::ndt::type dst_view_tp =
           pydynd::_type_from_numpy_dtype(dtype, dst_alignment);
-      dynd::make_assignment_kernel(ckb, dst_view_tp, NULL, src_tp[0],
-                                   src_arrmeta[0], kernreq,
-                                   &dynd::eval::default_eval_context);
+      nd::array error_mode = assign_error_fractional;
+      nd::assign::get()->instantiate(nd::assign::get()->static_data(), NULL,
+                                     ckb, dst_view_tp, NULL, 1, src_tp,
+                                     src_arrmeta, kernreq, 1, &error_mode,
+                                     std::map<std::string, ndt::type>());
       return;
     }
 

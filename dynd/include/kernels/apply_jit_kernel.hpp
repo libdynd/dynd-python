@@ -3,9 +3,9 @@
 #include <dynd/kernels/base_kernel.hpp>
 #include <array_functions.hpp>
 #include <utility_functions.hpp>
-#include <type_functions.hpp>
 
-#include "conversions.hpp"
+#include "type_functions.hpp"
+#include "array_conversions.hpp"
 
 namespace pydynd {
 namespace nd {

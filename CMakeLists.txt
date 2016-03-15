@@ -157,25 +157,32 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/array_as_pep3118.cpp
                   dynd/src/array_as_numpy.cpp
                   dynd/src/array_from_py.cpp
-                  dynd/src/array_from_py_typededuction.cpp
                   dynd/src/assign.cpp
-                  dynd/src/conversions.cpp
+                  dynd/src/array_conversions.cpp
                   dynd/src/copy_from_numpy_arrfunc.cpp
                   dynd/src/init.cpp
                   dynd/src/functional.cpp
                   dynd/src/numpy_interop.cpp
+                  dynd/src/type_conversions.cpp
+                  dynd/src/type_deduction.cpp
                   dynd/src/types/pyobject_type.cpp
                   )
 
 cython_add_module(dynd.config dynd.config_pyx True
                   dynd/include/exception_translation.hpp
-                  dynd/src/conversions.cpp
+                  dynd/src/array_conversions.cpp
+                  dynd/src/type_conversions.cpp
+                  dynd/src/type_deduction.cpp
                   ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
                   )
 
 foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
-    cython_add_module(${module} ${module}_pyx True dynd/src/conversions.cpp)
+    cython_add_module(${module} ${module}_pyx True
+                      # Additional C++ source files:
+                      dynd/src/type_conversions.cpp
+                      dynd/src/array_conversions.cpp)
 endforeach(module)
+
 
 # Run a postprocess script to work around some Cython bugs
 # that haven't been fixed in the latest release.

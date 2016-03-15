@@ -23,9 +23,8 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_id,
                                   callable_id, string_id, bytes_id,
                                   date_id, datetime_id, time_id,
                                   type_id)
-from ..cpp.type cimport make_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
-from ..cpp.types.categorical_type cimport dynd_make_categorical_type
+# from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
 from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
@@ -34,10 +33,7 @@ from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
-from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport make_type
-from ..cpp.type cimport type as dynd_ndt_type
-from ..cpp.array cimport array as dynd_nd_array
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
@@ -59,8 +55,8 @@ cdef extern from "numpy_interop.hpp":
 cdef extern from "numpy_interop.hpp" namespace "pydynd":
     _type _type_from_numpy_dtype(PyArray_Descr*)
 
-cdef extern from "array_from_py.hpp" namespace 'pydynd':
-    _type xarray_from_pylist(object) except +translate_exception
+cdef extern from "type_conversions.hpp" namespace 'pydynd':
+    _type ndt_type_from_pylist(object) except +translate_exception
 
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     object _type_get_shape(_type&) except +translate_exception
@@ -77,7 +73,9 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
     void init_type_functions()
 
-import numpy as _np
+cdef extern from "type_unpack.hpp":
+    object from_type_property(const pair[_type, const char *] &) except +translate_exception
+
 
 builtin_tuple = tuple
 
@@ -231,11 +229,14 @@ cdef class type(object):
         if self.v.is_null():
             raise AttributeError(name)
 
-        cdef pair[dynd_ndt_type, const char*] p = self.v.get_properties()[name]
+        cdef pair[_type, const char *] p = self.v.get_properties()[name]
         if p.first.is_null():
             raise AttributeError(name)
 
-        return dynd_nd_array_from_cpp(dynd_nd_array.from_type_property(p))
+        try:
+            return from_type_property(p)
+        except RuntimeError:
+            raise AttributeError(name)
 
     def __str__(self):
         return str(<char *>_type_str(self.v).c_str())
@@ -377,8 +378,6 @@ cdef _type as_cpp_type(object o) except *:
         return _type(<string>o)
     elif _builtin_type(o) is int or _builtin_type(o) is long:
         return _type(<type_id_t>(<int>o))
-    elif _builtin_type(o) is array:
-        return dynd_nd_array_to_cpp(<array>o).as[_type]()
     elif _is_numpy_dtype(<PyObject*>o):
         return _type_from_numpy_dtype(<PyArray_Descr*>o)
     elif issubclass(o, _ctypes_base_type):
@@ -392,6 +391,8 @@ cpdef type astype(object o):
         return o
     return dynd_ndt_type_from_cpp(as_cpp_type(o))
 
+# Disabled until dynd_make_categorical_type takes a std::vector<T>
+'''
 def make_categorical(values):
     """
     ndt.make_categorical(values)
@@ -416,6 +417,7 @@ def make_categorical(values):
     cdef type result = type()
     result.v = dynd_make_categorical_type(array(values).v)
     return result
+'''
 
 def make_fixed_bytes(intptr_t data_size, intptr_t data_alignment=1):
     """
@@ -710,7 +712,7 @@ cdef _type cpp_type_for(object obj) except *:
     if _builtin_type(obj) is builtin_tuple:
         obj = list(obj)
     if _builtin_type(obj) is list:
-        return xarray_from_pylist(obj)
+        return ndt_type_from_pylist(obj)
     tp = cpp_type_from_typeobject(_builtin_type(obj))
     return tp
 
@@ -718,6 +720,4 @@ def type_for(obj):
     return dynd_ndt_type_from_cpp(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
-from ..nd.array cimport (dynd_nd_array_to_cpp, dynd_nd_array_from_cpp,
-                         as_cpp_array, _numpy_dtype_from__type, _is_numpy_dtype,
-                         _xtype_for_prefix)
+from ..nd.array cimport (_numpy_dtype_from__type, _is_numpy_dtype, _xtype_for_prefix)

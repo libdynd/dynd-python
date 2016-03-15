@@ -2,19 +2,16 @@
 // Copyright (C) 2011-15 DyND Developers
 // BSD 2-Clause License, see LICENSE.txt
 //
-
-#ifndef _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_
-#define _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_
+#pragma once
 
 #include <Python.h>
 
-#include <dynd/array.hpp>
 #include <dynd/type.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/type_id.hpp>
 
-#include "conversions.hpp"
+#include "type_conversions.hpp"
 
 namespace pydynd {
 
@@ -168,5 +165,3 @@ bool broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj);
 void init_array_from_py_typededuction();
 
 } // namespace pydynd
-
-#endif // _DYND__ARRAY_FROM_PY_TYPEDEDUCTION_HPP_

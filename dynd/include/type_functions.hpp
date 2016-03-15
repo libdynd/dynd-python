@@ -13,22 +13,21 @@
 #include <dynd/string_encodings.hpp>
 #include <dynd/type.hpp>
 
-#include "conversions.hpp"
-#include "numpy_interop.hpp"
-#include "utility_functions.hpp"
-#include "visibility.hpp"
-
-#include <dynd/shape_tools.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/fixed_dim_type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
-//#include <dynd/types/pointer_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/type_type.hpp>
 
+#include "utility_functions.hpp"
+#include "type_conversions.hpp"
+#include "visibility.hpp"
+
+
 // Python's datetime C API
 #include "datetime.h"
+
 
 namespace pydynd {
 
@@ -58,9 +57,6 @@ inline PyObject *_type_get_shape(const dynd::ndt::type &d)
     return PyTuple_New(0);
   }
 }
-
-inline dynd::ndt::type
-dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
 
 inline dynd::string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
 {
@@ -143,9 +139,9 @@ inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
   return dynd::ndt::fixed_string_type::make(size, encoding);
 }
 
-inline dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj)
+inline dynd::ndt::type dynd_make_string_type(PyObject *DYND_UNUSED(encoding_obj))
 {
-  dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
+  // dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
   return dynd::ndt::make_type<dynd::ndt::string_type>();
 }
@@ -153,6 +149,18 @@ inline dynd::ndt::type dynd_make_string_type(PyObject *encoding_obj)
 inline dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type &target_tp)
 {
   return dynd::ndt::pointer_type::make(target_tp);
+}
+
+inline void
+pyobject_as_vector__type(PyObject *list_of_types,
+                         std::vector<dynd::ndt::type> &vector_of__types)
+{
+  Py_ssize_t size = PySequence_Size(list_of_types);
+  vector_of__types.resize(size);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    pyobject_ownref item(PySequence_GetItem(list_of_types, i));
+    vector_of__types[i] = dynd_ndt_as_cpp_type(item.get());
+  }
 }
 
 inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types,

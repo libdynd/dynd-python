@@ -6,11 +6,9 @@
 #include <Python.h>
 #include <datetime.h>
 
-#include "array_from_py_typededuction.hpp"
 #include "array_functions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "numpy_interop.hpp"
-#include "type_functions.hpp"
 #include "utility_functions.hpp"
 
 #include <dynd/func/elwise.hpp>
@@ -19,6 +17,8 @@
 #include <dynd/types/struct_type.hpp>
 
 #include "kernels/copy_from_numpy_kernel.hpp"
+#include "type_functions.hpp"
+#include "type_deduction.hpp"
 #include "types/pyobject_type.hpp"
 
 using namespace std;

@@ -14,11 +14,11 @@
 #include <dynd/types/categorical_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "array_from_py_typededuction.hpp"
 #include "array_functions.hpp"
-#include "conversions.hpp"
+#include "array_conversions.hpp"
 #include "copy_from_numpy_arrfunc.hpp"
 #include "type_functions.hpp"
+#include "type_deduction.hpp"
 #include "types/pyobject_type.hpp"
 
 using namespace dynd;

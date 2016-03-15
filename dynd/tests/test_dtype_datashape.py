@@ -35,7 +35,7 @@ class TestDTypeDataShape(unittest.TestCase):
     def test_struct(self):
         # Tests of struct datashape
         dt = ndt.type('{x: 3 * int32, y: string}')
-        self.assertEqual(nd.as_py(dt.field_names), ['x', 'y'])
+        self.assertEqual(dt.field_names, ['x', 'y'])
 
     """
     ToDo: Fix this.

@@ -3,6 +3,7 @@
 #include <dynd/kernels/base_kernel.hpp>
 #include <dynd/func/assignment.hpp>
 
+#include "array_conversions.hpp"
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 

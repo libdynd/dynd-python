@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "utility_functions.hpp"
+#include "type_functions.hpp"
 
 // Define this to 1 or 0 depending on whether numpy interop
 // should be compiled in.
@@ -48,6 +49,7 @@
 #include <dynd/array.hpp>
 #include <dynd/type.hpp>
 #include <dynd/types/fixed_string_type.hpp>
+#include <dynd/types/struct_type.hpp>
 
 #include <numpy/ndarrayobject.h>
 #include <numpy/ufuncobject.h>
@@ -537,7 +539,5 @@ typedef struct {
 
 } // namespace pydynd
 #endif // !DYND_NUMPY_INTEROP
-
-#include "type_functions.hpp"
 
 #endif // _DYND__NUMPY_INTEROP_HPP_

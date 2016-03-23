@@ -126,9 +126,11 @@ def reduction(child):
 
     return dynd_nd_callable_from_cpp(_reduction((<callable> child).v))
 
+"""
 def multidispatch(type tp, iterable = None):
     cdef vector[_callable] v
     if iterable is not None:
         for c in iterable:
             v.push_back(dynd_nd_callable_to_cpp(c))
     return dynd_nd_callable_from_cpp(_multidispatch(as_cpp_type(tp), v.begin(), v.end()))
+"""

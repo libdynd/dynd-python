@@ -1,5 +1,6 @@
 from libc.stdint cimport intptr_t
 from libcpp.vector cimport vector
+from cpython cimport PyObject
 
 from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport type as _type
@@ -19,11 +20,14 @@ cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
     _callable _multidispatch 'dynd::nd::functional::multidispatch'[T](_type, T, T) \
         except +translate_exception
 
-cdef extern from "kernels/apply_jit_kernel.hpp" namespace "pydynd::nd::functional":
+cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd':
+    _callable _make_callable 'dynd::nd::make_callable'[T](_type, object, ...) except +translate_exception
+
+cdef extern from "callables/apply_jit_callable.hpp" namespace "pydynd::nd::functional":
     _callable _apply_jit "pydynd::nd::functional::apply_jit"(const _type &tp, intptr_t)
 
-    cdef cppclass jit_dispatcher:
-        jit_dispatcher(object, object (*)(object, intptr_t, const _type *))
+    cdef cppclass apply_jit_dispatch_callable:
+        apply_jit_dispatch_callable(object, object (*)(object, intptr_t, const _type *))
 
 def _import_numba():
     try:
@@ -104,8 +108,8 @@ def apply(func = None, jit = _import_numba(), *args, **kwds):
     def make(type tp, func):
         if jit:
             import numba
-            return dynd_nd_callable_from_cpp(_dispatch((<type> tp).v,
-                jit_dispatcher(numba.jit(func, *args, **kwds), _jit)))
+            return dynd_nd_callable_from_cpp(_make_callable[apply_jit_dispatch_callable]((<type> tp).v,
+                <object> numba.jit(func, *args, **kwds), _jit))
 
         return dynd_nd_callable_from_cpp(_apply(tp.v, func))
 

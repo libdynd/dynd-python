@@ -32,6 +32,7 @@ class TestApply(unittest.TestCase):
         self.assertEqual(0, f(0))
         self.assertEqual(1, f(1))
 
+    """
     def test_numba(self):
         try:
             import numba
@@ -51,6 +52,7 @@ class TestApply(unittest.TestCase):
 
         self.assertEqual(f.type, ndt.callable(ndt.scalar, ndt.scalar))
         self.assertEqual(0, f(0))
+    """
 
 class TestElwise(unittest.TestCase):
     def test_unary(self):

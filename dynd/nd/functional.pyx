@@ -35,7 +35,7 @@ def _import_numba():
     except ImportError:
         return False
 
-    return True
+    return False
 
 cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     from llvmlite import ir

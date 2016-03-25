@@ -11,7 +11,7 @@
 
 #include "assign.hpp"
 #include "callables/assign_from_pyobject_callable.hpp"
-#include "kernels/assign_to_pyarrayobject_kernel.hpp"
+#include "callables/assign_to_pyarrayobject_callable.hpp"
 #include "callables/assign_to_pyobject_callable.hpp"
 
 using namespace std;
@@ -39,7 +39,7 @@ PYDYND_API void assign_init()
 
 nd::callable assign_to_pyarrayobject::make()
 {
-  return nd::functional::elwise(nd::callable::make<assign_to_pyarrayobject_kernel>());
+  return nd::functional::elwise(nd::make_callable<assign_to_pyarrayobject_callable>());
 }
 
 nd::callable &assign_to_pyarrayobject::get()

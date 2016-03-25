@@ -13,10 +13,10 @@ class assign_to_pyarrayobject_callable : public dynd::nd::base_callable {
 public:
   assign_to_pyarrayobject_callable() : base_callable(dynd::ndt::type("(Any) -> void")) {}
 
-  void instantiate(char *static_data, char *data, dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
-                   const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
-                   const char *const *src_arrmeta, dynd::kernel_request_t kernreq, intptr_t nkwd,
-                   const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
+  void instantiate(char *data, dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+                   intptr_t nsrc, const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+                   dynd::kernel_request_t kernreq, intptr_t nkwd, const dynd::nd::array *kwds,
+                   const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     PyObject *dst_obj = *reinterpret_cast<PyObject *const *>(dst_arrmeta);
     uintptr_t dst_alignment = reinterpret_cast<const uintptr_t *>(dst_arrmeta)[1];
@@ -28,15 +28,14 @@ public:
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       dynd::ndt::type dst_view_tp = pydynd::_type_from_numpy_dtype(dtype, dst_alignment);
       nd::array error_mode = assign_error_fractional;
-      nd::assign::get()->instantiate(nd::assign::get()->static_data(), NULL, ckb, dst_view_tp, NULL, 1, src_tp,
-                                     src_arrmeta, kernreq, 1, &error_mode, std::map<std::string, ndt::type>());
+      nd::assign::get()->instantiate(NULL, ckb, dst_view_tp, NULL, 1, src_tp, src_arrmeta, kernreq, 1, &error_mode,
+                                     std::map<std::string, ndt::type>());
       return;
     }
 
     if (PyDataType_ISOBJECT(dtype)) {
-      dynd::nd::assign::get()->instantiate(dynd::nd::assign::get()->static_data(), NULL, ckb,
-                                           dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp, src_arrmeta,
-                                           kernreq, 0, NULL, tp_vars);
+      dynd::nd::assign::get()->instantiate(NULL, ckb, dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
+                                           src_arrmeta, kernreq, 0, NULL, tp_vars);
       return;
     }
 

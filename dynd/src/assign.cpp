@@ -10,9 +10,9 @@
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
 
 #include "assign.hpp"
-#include "kernels/assign_from_pyobject_kernel.hpp"
+#include "callables/assign_from_pyobject_callable.hpp"
 #include "kernels/assign_to_pyarrayobject_kernel.hpp"
-#include "kernels/assign_to_pyobject_kernel.hpp"
+#include "callables/assign_to_pyobject_callable.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -27,10 +27,10 @@ PYDYND_API void assign_init()
   PyDateTime_IMPORT;
 
   nd::callable &assign = nd::assign::get();
-  for (const auto &pair : nd::callable::make_all<assign_from_pyobject_kernel, type_ids>()) {
+  for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_from_pyobject_callable, type_ids>()) {
     assign.overload(pair.first, {ndt::make_type<pyobject_type>()}, pair.second);
   }
-  for (const auto &pair : nd::callable::make_all<assign_to_pyobject_kernel, type_ids>()) {
+  for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_to_pyobject_callable, type_ids>()) {
     assign.overload(ndt::make_type<pyobject_type>(), {ndt::type(pair.first)}, pair.second);
   }
 }

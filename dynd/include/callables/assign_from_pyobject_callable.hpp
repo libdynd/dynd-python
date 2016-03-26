@@ -108,9 +108,8 @@ namespace nd {
       ckb_offset = ckb->size();
       ckb->get_at<assign_from_pyobject_kernel<option_id>>(root_ckb_offset)->copy_value_offset =
           ckb_offset - root_ckb_offset;
-      dynd::nd::assign::get()->instantiate(NULL, ckb, dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
-                                           dst_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single, nkwd,
-                                           kwds, tp_vars);
+      dynd::nd::assign->instantiate(NULL, ckb, dst_tp.extended<dynd::ndt::option_type>()->get_value_type(), dst_arrmeta,
+                                    nsrc, src_tp, src_arrmeta, dynd::kernel_request_single, nkwd, kwds, tp_vars);
       ckb_offset = ckb->size();
     }
   };
@@ -147,8 +146,8 @@ namespace nd {
         self = ckb->get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-        dynd::nd::assign::get()->instantiate(NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
-                                             dynd::kernel_request_single, nkwd, kwds, tp_vars);
+        dynd::nd::assign->instantiate(NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
+                                      dynd::kernel_request_single, nkwd, kwds, tp_vars);
         ckb_offset = ckb->size();
       }
     }
@@ -187,8 +186,8 @@ namespace nd {
         self = ckb->get_at<assign_from_pyobject_kernel<struct_id>>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-        dynd::nd::assign::get()->instantiate(NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
-                                             dynd::kernel_request_single, nkwd, kwds, tp_vars);
+        dynd::nd::assign->instantiate(NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
+                                      dynd::kernel_request_single, nkwd, kwds, tp_vars);
         ckb_offset = ckb->size();
       }
     }
@@ -222,16 +221,15 @@ namespace nd {
         self->m_dst_tp = dst_tp;
         self->m_dst_arrmeta = dst_arrmeta;
         // from pyobject ckernel
-        dynd::nd::assign::get()->instantiate(NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
-                                             dynd::kernel_request_strided, nkwd, kwds, tp_vars);
+        dynd::nd::assign->instantiate(NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
+                                      dynd::kernel_request_strided, nkwd, kwds, tp_vars);
         ckb_offset = ckb->size();
         self = ckb->get_at<assign_from_pyobject_kernel<fixed_dim_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
         dynd::nd::array error_mode = assign_error_fractional;
-        dynd::nd::assign::get()->instantiate(NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
-                                             dynd::kernel_request_strided, 1, &error_mode,
-                                             std::map<std::string, ndt::type>());
+        dynd::nd::assign->instantiate(NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
+                                      dynd::kernel_request_strided, 1, &error_mode, std::map<std::string, ndt::type>());
 
         return;
       }
@@ -267,16 +265,15 @@ namespace nd {
       self->m_dst_arrmeta = dst_arrmeta;
       dynd::ndt::type el_tp = dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
       const char *el_arrmeta = dst_arrmeta + sizeof(dynd::ndt::var_dim_type::metadata_type);
-      dynd::nd::assign::get()->instantiate(NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
-                                           dynd::kernel_request_strided, nkwd, kwds, tp_vars);
+      dynd::nd::assign->instantiate(NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
+                                    dynd::kernel_request_strided, nkwd, kwds, tp_vars);
       ckb_offset = ckb->size();
       self = ckb->get_at<assign_from_pyobject_kernel<var_dim_id>>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
       dynd::nd::array error_mode = assign_error_fractional;
-      dynd::nd::assign::get()->instantiate(NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
-                                           dynd::kernel_request_strided, 1, &error_mode,
-                                           std::map<std::string, ndt::type>());
+      dynd::nd::assign->instantiate(NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta, dynd::kernel_request_strided,
+                                    1, &error_mode, std::map<std::string, ndt::type>());
     }
   };
 

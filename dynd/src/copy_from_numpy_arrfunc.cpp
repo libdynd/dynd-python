@@ -145,7 +145,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(char *DYND_UNUSED(data), 
 }
 
 dynd::nd::callable pydynd::nd::copy_from_numpy =
-    dynd::nd::functional::elwise(dynd::nd::make_callable<copy_from_numpy_callable>());
+    dynd::nd::functional::elwise(dynd::nd::make_callable<pydynd::nd::copy_from_numpy_callable>());
 
 void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char *dst_arrmeta, char *dst_data,
                                        PyArrayObject *src_arr, const dynd::eval::eval_context *ectx)

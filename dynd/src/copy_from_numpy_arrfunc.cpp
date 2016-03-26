@@ -57,13 +57,13 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(char *DYND_UNUSED(data), 
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
     dynd::nd::array error_mode = dynd::assign_error_fractional;
-    dynd::nd::assign::get()->instantiate(NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1, &error_mode,
-                                         std::map<std::string, dynd::ndt::type>());
+    dynd::nd::assign->instantiate(NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1, &error_mode,
+                                  std::map<std::string, dynd::ndt::type>());
 
     return;
   }
   else if (PyDataType_ISOBJECT(dtype)) {
-    dynd::nd::base_callable *af = dynd::nd::assign::get().get();
+    dynd::nd::base_callable *af = dynd::nd::assign.get();
     dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
     af->instantiate(NULL, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds, tp_vars);
     return;
@@ -144,18 +144,8 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(char *DYND_UNUSED(data), 
   }
 }
 
-dynd::nd::callable pydynd::nd::copy_from_numpy::make()
-{
-  return dynd::nd::functional::elwise(dynd::nd::make_callable<copy_from_numpy_callable>());
-}
-
-dynd::nd::callable &pydynd::nd::copy_from_numpy::get()
-{
-  static dynd::nd::callable self = pydynd::nd::copy_from_numpy::make();
-  return self;
-}
-
-struct pydynd::nd::copy_from_numpy pydynd::nd::copy_from_numpy;
+dynd::nd::callable pydynd::nd::copy_from_numpy =
+    dynd::nd::functional::elwise(dynd::nd::make_callable<copy_from_numpy_callable>());
 
 void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char *dst_arrmeta, char *dst_data,
                                        PyArrayObject *src_arr, const dynd::eval::eval_context *ectx)
@@ -191,8 +181,8 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char
   char *src_data = reinterpret_cast<char *>(PyArray_DATA(src_arr));
   const char *kwd_names[1] = {"broadcast"};
   dynd::nd::array kwd_values[1] = {true};
-  pydynd::nd::copy_from_numpy::get()->call(tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp,
-                                           &src_am, &src_data, 1, kwd_values, std::map<std::string, dynd::ndt::type>());
+  pydynd::nd::copy_from_numpy->call(tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp, &src_am,
+                                    &src_data, 1, kwd_values, std::map<std::string, dynd::ndt::type>());
 
   tmp_dst.get()->tp = dynd::ndt::type();
 }

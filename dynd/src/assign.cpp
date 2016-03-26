@@ -26,29 +26,17 @@ PYDYND_API void assign_init()
 
   PyDateTime_IMPORT;
 
-  nd::callable &assign = nd::assign::get();
   for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_from_pyobject_callable, type_ids>()) {
-    assign.overload(pair.first, {ndt::make_type<pyobject_type>()}, pair.second);
+    nd::assign.overload(pair.first, {ndt::make_type<pyobject_type>()}, pair.second);
   }
   for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_to_pyobject_callable, type_ids>()) {
-    assign.overload(ndt::make_type<pyobject_type>(), {ndt::type(pair.first)}, pair.second);
+    nd::assign.overload(ndt::make_type<pyobject_type>(), {ndt::type(pair.first)}, pair.second);
   }
 }
 
 #if DYND_NUMPY_INTEROP
 
-nd::callable assign_to_pyarrayobject::make()
-{
-  return nd::functional::elwise(nd::make_callable<assign_to_pyarrayobject_callable>());
-}
-
-nd::callable &assign_to_pyarrayobject::get()
-{
-  static nd::callable self = assign_to_pyarrayobject::make();
-  return self;
-}
-
-struct assign_to_pyarrayobject assign_to_pyarrayobject;
+nd::callable assign_to_pyarrayobject = nd::functional::elwise(nd::make_callable<assign_to_pyarrayobject_callable>());
 
 void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp, const char *src_arrmeta,
                          const char *src_data)
@@ -83,9 +71,8 @@ void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp, 
   }
   tmp_dst.get()->data = (char *)PyArray_DATA(dst_arr);
   char *src_data_nonconst = const_cast<char *>(src_data);
-  assign_to_pyarrayobject::get()->call(tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp,
-                                       &src_arrmeta, &src_data_nonconst, 1, NULL,
-                                       std::map<std::string, dynd::ndt::type>());
+  assign_to_pyarrayobject->call(tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp, &src_arrmeta,
+                                &src_data_nonconst, 1, NULL, std::map<std::string, dynd::ndt::type>());
 }
 
 #endif // DYND_NUMPY_INTEROP

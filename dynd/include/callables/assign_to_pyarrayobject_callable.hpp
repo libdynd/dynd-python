@@ -28,14 +28,14 @@ public:
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       dynd::ndt::type dst_view_tp = pydynd::_type_from_numpy_dtype(dtype, dst_alignment);
       nd::array error_mode = assign_error_fractional;
-      nd::assign::get()->instantiate(NULL, ckb, dst_view_tp, NULL, 1, src_tp, src_arrmeta, kernreq, 1, &error_mode,
-                                     std::map<std::string, ndt::type>());
+      nd::assign->instantiate(NULL, ckb, dst_view_tp, NULL, 1, src_tp, src_arrmeta, kernreq, 1, &error_mode,
+                              std::map<std::string, ndt::type>());
       return;
     }
 
     if (PyDataType_ISOBJECT(dtype)) {
-      dynd::nd::assign::get()->instantiate(NULL, ckb, dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
-                                           src_arrmeta, kernreq, 0, NULL, tp_vars);
+      dynd::nd::assign->instantiate(NULL, ckb, dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp, src_arrmeta,
+                                    kernreq, 0, NULL, tp_vars);
       return;
     }
 

@@ -38,8 +38,8 @@ namespace nd {
         copy(src_arrmeta, src_arrmeta + nsrc, self->m_src_arrmeta.begin());
 
         dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-        dynd::nd::assign::get()->instantiate(nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
-                                             dynd::kernel_request_single, 0, nullptr, tp_vars);
+        dynd::nd::assign->instantiate(nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
+                                      dynd::kernel_request_single, 0, nullptr, tp_vars);
       }
     };
 

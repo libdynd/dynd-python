@@ -103,9 +103,8 @@ namespace nd {
       intptr_t root_ckb_offset = ckb->size();
       ckb->emplace_back<assign_from_pyobject_kernel<option_id>>(kernreq, dst_tp, dst_arrmeta);
       intptr_t ckb_offset = ckb->size();
-      dynd::nd::callable assign_na = dynd::nd::assign_na::get();
-      assign_na.get()->instantiate(NULL, ckb, dst_tp, dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single, nkwd,
-                                   kwds, tp_vars);
+      dynd::nd::assign_na->instantiate(NULL, ckb, dst_tp, dst_arrmeta, nsrc, NULL, NULL, dynd::kernel_request_single,
+                                       nkwd, kwds, tp_vars);
       ckb_offset = ckb->size();
       ckb->get_at<assign_from_pyobject_kernel<option_id>>(root_ckb_offset)->copy_value_offset =
           ckb_offset - root_ckb_offset;

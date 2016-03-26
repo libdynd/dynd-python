@@ -122,9 +122,8 @@ namespace nd {
       ckb->emplace_back<assign_to_pyobject_kernel<option_id>>(kernreq);
       assign_to_pyobject_kernel<option_id> *self_ck =
           ckb->get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
-      dynd::nd::callable &is_na = dynd::nd::is_na::get();
-      is_na.get()->instantiate(NULL, ckb, dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
-                               dynd::kernel_request_single, 0, NULL, tp_vars);
+      dynd::nd::is_na->instantiate(NULL, ckb, dynd::ndt::make_type<dynd::bool1>(), NULL, nsrc, src_tp, src_arrmeta,
+                                   dynd::kernel_request_single, 0, NULL, tp_vars);
       self_ck = ckb->get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
       self_ck->m_assign_value_offset = ckb->size() - root_ckb_offset;
       dynd::ndt::type src_value_tp = src_tp[0].extended<dynd::ndt::option_type>()->get_value_type();

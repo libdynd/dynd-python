@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dynd/kernels/base_kernel.hpp>
-#include <dynd/func/assignment.hpp>
+#include <dynd/assignment.hpp>
 
 #include "array_conversions.hpp"
 #include "type_functions.hpp"

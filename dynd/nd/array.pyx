@@ -16,7 +16,7 @@ import numpy as _np
 from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
-from ..cpp.callable_registry cimport callable_registry
+from ..cpp.callable cimport callables
 from ..cpp.type cimport make_type
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
@@ -245,7 +245,7 @@ cdef class array(object):
         result = dict(array.__dict__)
         result.update(object.__dict__)
 
-        for pair in callable_registry:
+        for pair in callables():
             result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
 
         return result.keys()
@@ -254,7 +254,7 @@ cdef class array(object):
         if self.v.is_null():
             raise AttributeError(name)
 
-        for pair in callable_registry:
+        for pair in callables():
             if (pair.first == <string> name):
                 return dynd_nd_array_from_cpp(pair.second(self.v))
 

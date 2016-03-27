@@ -1,6 +1,8 @@
 from libc.string cimport const_char
 from libcpp.pair cimport pair
 from libcpp cimport bool
+from libcpp.map cimport map
+from libcpp.string cimport string
 
 from ..config cimport translate_exception
 from .array cimport array
@@ -21,3 +23,4 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
 
     callable make_callable 'dynd::nd::callable::make'[T](...) except +translate_exception
 
+    map[string, callable] callables()

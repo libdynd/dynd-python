@@ -5,8 +5,8 @@ from cpython cimport PyObject
 from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport type as _type
 from ..cpp.types.callable_type cimport make_callable
-from ..cpp.func.elwise cimport elwise as _elwise
-from ..cpp.func.reduction cimport reduction as _reduction
+from ..cpp.functional cimport elwise as _elwise
+from ..cpp.functional cimport reduction as _reduction
 from ..cpp.array cimport array as _array
 
 from ..config cimport translate_exception

@@ -2,6 +2,8 @@
 
 #include "kernels/apply_jit_kernel.hpp"
 
+#include <dynd/callables/base_dispatch_callable.hpp>
+
 namespace pydynd {
 namespace nd {
   namespace functional {

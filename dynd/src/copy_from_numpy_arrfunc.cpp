@@ -11,7 +11,7 @@
 #include "numpy_interop.hpp"
 #include "utility_functions.hpp"
 
-#include <dynd/func/elwise.hpp>
+#include <dynd/functional.hpp>
 #include <dynd/kernels/assignment_kernels.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
 #include <dynd/types/struct_type.hpp>

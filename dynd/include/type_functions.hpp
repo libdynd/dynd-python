@@ -139,10 +139,8 @@ inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
   return dynd::ndt::fixed_string_type::make(size, encoding);
 }
 
-inline dynd::ndt::type dynd_make_string_type(PyObject *DYND_UNUSED(encoding_obj))
+inline dynd::ndt::type dynd_make_string_type()
 {
-  // dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
-
   return dynd::ndt::make_type<dynd::ndt::string_type>();
 }
 

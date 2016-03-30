@@ -7,10 +7,11 @@ namespace pydynd {
 namespace nd {
 
   template <type_id_t Arg0ID>
-  class assign_to_pyobject_callable : public dynd::nd::base_instantiable_callable<assign_to_pyobject_kernel<Arg0ID>> {
+  class assign_to_pyobject_callable
+      : public dynd::nd::default_instantiable_callable<assign_to_pyobject_kernel<Arg0ID>> {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_instantiable_callable<assign_to_pyobject_kernel<Arg0ID>>(
+        : dynd::nd::default_instantiable_callable<assign_to_pyobject_kernel<Arg0ID>>(
               dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(Arg0ID)}))
     {
     }

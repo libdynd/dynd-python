@@ -8,10 +8,10 @@ namespace nd {
 
   template <type_id_t ResID>
   class assign_from_pyobject_callable
-      : public dynd::nd::base_instantiable_callable<assign_from_pyobject_kernel<ResID>> {
+      : public dynd::nd::default_instantiable_callable<assign_from_pyobject_kernel<ResID>> {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_instantiable_callable<assign_from_pyobject_kernel<ResID>>(
+        : dynd::nd::default_instantiable_callable<assign_from_pyobject_kernel<ResID>>(
               dynd::ndt::callable_type::make(ResID, {dynd::ndt::make_type<pyobject_type>()}))
     {
     }

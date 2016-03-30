@@ -65,7 +65,7 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     string _type_repr(_type &)
 
     _type dynd_make_fixed_string_type(int, object) except +translate_exception
-    _type dynd_make_string_type(object) except +translate_exception
+    _type dynd_make_string_type() except +translate_exception
     _type dynd_make_pointer_type(_type&) except +translate_exception
     _type dynd_make_struct_type(object, object) except +translate_exception
     _type dynd_make_cstruct_type(object, object) except +translate_exception
@@ -491,27 +491,18 @@ def make_fixed_string(int size, encoding=None):
     result.v = dynd_make_fixed_string_type(size, encoding)
     return result
 
-def make_string(encoding=None):
+def make_string():
     """
-    ndt.make_string(encoding='utf_8')
-    Constructs a variable-sized string dynd type
-    with the specified encoding.
-    Parameters
-    ----------
-    encoding : string, optional
-        The encoding used for storing unicode code points. Supported
-        values are 'ascii', 'utf_8', 'utf_16', 'utf_32', 'ucs_2'.
-        Default: 'utf_8'.
+    ndt.make_string()
+    Constructs a variable-sized string dynd type with uft-8 encoding.
     Examples
     --------
     >>> from dynd import nd, ndt
     >>> ndt.make_string()
     ndt.string
-    >>> ndt.make_string('utf_16')
-    ndt.type("string['utf16']")
     """
     cdef type result = type()
-    result.v = dynd_make_string_type(encoding)
+    result.v = dynd_make_string_type()
     return result
 
 def make_struct(field_types, field_names):

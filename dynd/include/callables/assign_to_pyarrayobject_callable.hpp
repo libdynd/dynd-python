@@ -13,6 +13,14 @@ class assign_to_pyarrayobject_callable : public dynd::nd::base_callable {
 public:
   assign_to_pyarrayobject_callable() : base_callable(dynd::ndt::type("(Any) -> void")) {}
 
+  const dynd::ndt::type &resolve(dynd::nd::call_graph &DYND_UNUSED(cg), const dynd::ndt::type &dst_tp,
+                                 size_t DYND_UNUSED(nsrc), const dynd::ndt::type *DYND_UNUSED(src_tp),
+                                 size_t DYND_UNUSED(nkwd), const dynd::nd::array *DYND_UNUSED(kwds),
+                                 const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+  {
+    return dst_tp;
+  }
+
   void instantiate(char *data, dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
                    intptr_t nsrc, const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
                    dynd::kernel_request_t kernreq, intptr_t nkwd, const dynd::nd::array *kwds,

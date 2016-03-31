@@ -44,5 +44,19 @@ class TestUnicode(unittest.TestCase):
 #        a = nd.array(128, type=ndt.uint8).view_scalars("fixed_string[1,'A']")
 #        self.assertRaises(UnicodeDecodeError, a.cast("string").eval)
 
+class TestEncodings(unittest.TestCase):
+
+    encodings = ["ascii", "utf8", "utf16", "utf32", "ucs2"]
+
+    def test_string_encoding(self):
+        t = ndt.type("string")
+        self.assertEqual(t.encoding, "utf8")
+
+    def test_fixed_string_encoding(self):
+        for x in self.encodings:
+            t = ndt.type("fixed_string[10, '%s']" % x)
+            self.assertEqual(t.encoding, x)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

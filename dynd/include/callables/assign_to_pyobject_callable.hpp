@@ -26,10 +26,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -55,10 +56,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -98,10 +100,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -141,10 +144,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -178,10 +182,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -222,10 +227,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -275,10 +281,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;
@@ -314,10 +321,11 @@ namespace nd {
     {
     }
 
-    const dynd::ndt::type &resolve(dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                                   const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                                   const dynd::nd::array *DYND_UNUSED(kwds),
-                                   const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+    ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), dynd::nd::call_graph &cg,
+                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
+                      const dynd::nd::array *DYND_UNUSED(kwds),
+                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
       cg.emplace_back(this);
       return dst_tp;

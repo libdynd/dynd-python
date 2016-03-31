@@ -38,13 +38,6 @@ inline std::string _type_str(const dynd::ndt::type &d)
   return ss.str();
 }
 
-inline std::string _type_repr(const dynd::ndt::type &d)
-{
-  std::stringstream ss;
-  ss << "ndt.type('" << d << "')";
-  return ss.str();
-}
-
 inline PyObject *_type_get_shape(const dynd::ndt::type &d)
 {
   size_t ndim = d.get_ndim();

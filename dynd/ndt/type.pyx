@@ -62,7 +62,6 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     object _type_get_shape(_type&) except +translate_exception
     object _type_get_id(_type&) except +translate_exception
     string _type_str(_type &)
-    string _type_repr(_type &)
 
     _type dynd_make_fixed_string_type(int, object) except +translate_exception
     _type dynd_make_string_type() except +translate_exception
@@ -242,7 +241,7 @@ cdef class type(object):
         return str(<char *>_type_str(self.v).c_str())
 
     def __repr__(self):
-        return str(<char *>_type_repr(self.v).c_str())
+        return "ndt.type(" + repr(str(self)) + ")"
 
     def __richcmp__(lhs, rhs, int op):
         if op == Py_EQ:

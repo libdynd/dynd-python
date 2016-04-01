@@ -34,11 +34,12 @@ struct strided_of_numpy_arrmeta {
 
 } // anonymous namespace
 
-void pydynd::nd::copy_from_numpy_callable::instantiate(char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb,
-                                                       const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
-                                                       intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
-                                                       const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
-                                                       intptr_t nkwd, const dynd::nd::array *kwds,
+void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *DYND_UNUSED(data),
+                                                       dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
+                                                       const char *dst_arrmeta, intptr_t DYND_UNUSED(nsrc),
+                                                       const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+                                                       dynd::kernel_request_t kernreq, intptr_t nkwd,
+                                                       const dynd::nd::array *kwds,
                                                        const std::map<std::string, dynd::ndt::type> &tp_vars)
 {
   if (src_tp[0].get_id() != dynd::void_id) {
@@ -57,7 +58,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(char *DYND_UNUSED(data), 
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
     dynd::nd::array error_mode = dynd::assign_error_fractional;
-    dynd::nd::assign->instantiate(NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1, &error_mode,
+    dynd::nd::assign->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1, &error_mode,
                                   std::map<std::string, dynd::ndt::type>());
 
     return;
@@ -65,7 +66,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(char *DYND_UNUSED(data), 
   else if (PyDataType_ISOBJECT(dtype)) {
     dynd::nd::base_callable *af = dynd::nd::assign.get();
     dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-    af->instantiate(NULL, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds, tp_vars);
+    af->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds, tp_vars);
     return;
   }
   else if (PyDataType_HASFIELDS(dtype)) {

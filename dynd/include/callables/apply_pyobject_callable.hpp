@@ -15,8 +15,8 @@ namespace nd {
         Py_INCREF(func);
       }
 
-      dynd::ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), char *DYND_UNUSED(data), dynd::nd::call_graph &cg,
-                              const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
+      dynd::ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), char *DYND_UNUSED(data),
+                              dynd::nd::call_graph &cg, const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
                               const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
                               const dynd::nd::array *DYND_UNUSED(kwds),
                               const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
@@ -25,10 +25,11 @@ namespace nd {
         return dst_tp;
       }
 
-      void instantiate(char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
-                       const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
-                       const char *const *src_arrmeta, dynd::kernel_request_t kernreq, intptr_t nkwd,
-                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
+      void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb,
+                       const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
+                       const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
+                       intptr_t nkwd, const dynd::nd::array *kwds,
+                       const std::map<std::string, dynd::ndt::type> &tp_vars)
       {
         pydynd::PyGILState_RAII pgs;
 
@@ -48,7 +49,7 @@ namespace nd {
         copy(src_arrmeta, src_arrmeta + nsrc, self->m_src_arrmeta.begin());
 
         dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-        dynd::nd::assign->instantiate(nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
+        dynd::nd::assign->instantiate(nullptr, nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
                                       dynd::kernel_request_single, 0, nullptr, tp_vars);
       }
     };

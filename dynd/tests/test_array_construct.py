@@ -116,22 +116,6 @@ class TestTypedArrayConstructors(unittest.TestCase):
         self.assertEqual(a.shape, (3,4))
         self.assertEqual(nd.as_py(a), [[value]*4]*3)
         # Constructor of a struct type
-        a = cons(3, '{x: int32, y: int32}')
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a),
-                    ndt.type('3 * {x: int32, y: int32}'))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a),
-                    [{'x': value, 'y': value}]*3)
-        # Constructor of a struct type
-        a = cons(3, ndt.make_struct([ndt.int32]*2, ['x', 'y']))
-        self.assertEqual(a.access_flags, 'readwrite')
-        self.assertEqual(nd.type_of(a),
-                    ndt.make_fixed_dim(3,
-                        ndt.make_struct([ndt.int32]*2, ['x', 'y'])))
-        self.assertEqual(a.shape, (3,))
-        self.assertEqual(nd.as_py(a),
-                    [{'x': value, 'y': value}]*3)
 
     def test_zeros(self):
         self.check_constructor(nd.zeros, 0)

@@ -58,8 +58,8 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
     dynd::nd::array error_mode = dynd::assign_error_fractional;
-    dynd::nd::assign->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1, &error_mode,
-                                  std::map<std::string, dynd::ndt::type>());
+    dynd::nd::assign->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1,
+                                  &error_mode, std::map<std::string, dynd::ndt::type>());
 
     return;
   }
@@ -131,11 +131,25 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND
     // Todo: Remove this line
     dynd::nd::callable af = dynd::nd::make_callable<copy_from_numpy_callable>();
 
-    make_tuple_unary_op_ckernel(af.get(), af.get_type(), ckb, field_count,
-                                dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta),
-                                dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types_raw(),
-                                dst_fields_arrmeta.get(), &field_offsets[0], &src_fields_tp[0], &src_fields_arrmeta[0],
-                                kernreq);
+    const std::vector<dynd::ndt::type> &dst_fields_tp = dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types();
+    const uintptr_t *dst_data_offsets = dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta);
+
+    intptr_t self_offset = ckb->size();
+    ckb->emplace_back<dynd::nd::tuple_unary_op_ck>(kernreq);
+    dynd::nd::tuple_unary_op_ck *self = ckb->get_at<dynd::nd::tuple_unary_op_ck>(self_offset);
+    self->m_fields.resize(field_count);
+    for (intptr_t i = 0; i < field_count; ++i) {
+      self = ckb->get_at<dynd::nd::tuple_unary_op_ck>(self_offset);
+      dynd::nd::tuple_unary_op_item &field = self->m_fields[i];
+      field.child_kernel_offset = ckb->size() - self_offset;
+      field.dst_data_offset = dst_data_offsets[i];
+      field.src_data_offset = field_offsets[i];
+      dynd::nd::array error_mode = dynd::ndt::traits<dynd::assign_error_mode>::na();
+      af->instantiate(NULL, NULL, ckb, dst_fields_tp[i], dst_fields_arrmeta[i], 1, &src_fields_tp[i],
+                      &src_fields_arrmeta[i], dynd::kernel_request_single, 1, &error_mode,
+                      std::map<std::string, dynd::ndt::type>());
+    }
+
     return;
   }
   else {

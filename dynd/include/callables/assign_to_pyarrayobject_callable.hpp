@@ -116,10 +116,24 @@ public:
       // Todo: Remove this
       dynd::nd::callable af = dynd::nd::make_callable<assign_to_pyarrayobject_callable>();
 
-      make_tuple_unary_op_ckernel(
-          af.get(), af.get_type(), ckb, field_count, &field_offsets[0], &dst_fields_tp[0], &dst_fields_arrmeta[0],
-          src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(src_arrmeta[0]),
-          src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types_raw(), src_fields_arrmeta.get(), kernreq);
+      const std::vector<ndt::type> &src_field_tp = src_tp[0].extended<dynd::ndt::tuple_type>()->get_field_types();
+      const uintptr_t *src_data_offsets = src_tp[0].extended<dynd::ndt::tuple_type>()->get_data_offsets(src_arrmeta[0]);
+
+      intptr_t self_offset = ckb->size();
+      ckb->emplace_back<nd::tuple_unary_op_ck>(kernreq);
+      nd::tuple_unary_op_ck *self = ckb->get_at<nd::tuple_unary_op_ck>(self_offset);
+      self->m_fields.resize(field_count);
+      for (intptr_t i = 0; i < field_count; ++i) {
+        self = ckb->get_at<nd::tuple_unary_op_ck>(self_offset);
+        nd::tuple_unary_op_item &field = self->m_fields[i];
+        field.child_kernel_offset = ckb->size() - self_offset;
+        field.dst_data_offset = field_offsets[i];
+        field.src_data_offset = src_data_offsets[i];
+        nd::array error_mode = ndt::traits<assign_error_mode>::na();
+        af->instantiate(NULL, NULL, ckb, dst_fields_tp[i], dst_fields_arrmeta[i], 1, &src_field_tp[i],
+                        &src_fields_arrmeta[i], kernel_request_single, 1, &error_mode,
+                        std::map<std::string, ndt::type>());
+      }
       return;
     }
     else {

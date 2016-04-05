@@ -35,6 +35,7 @@ namespace nd {
       return dst_tp;
     }
 
+/*
     void instantiate(dynd::nd::call_node *&DYND_UNUSED(node), char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &DYND_UNUSED(dst_tp), const char *DYND_UNUSED(dst_arrmeta),
                      intptr_t DYND_UNUSED(nsrc), const dynd::ndt::type *src_tp,
@@ -45,6 +46,7 @@ namespace nd {
       ckb->emplace_back<assign_to_pyobject_kernel<fixed_bytes_id>>(
           kernreq, src_tp[0].extended<dynd::ndt::fixed_bytes_type>()->get_data_size());
     }
+*/
   };
 
   template <>
@@ -63,33 +65,25 @@ namespace nd {
     {
       switch (src_tp[0].extended<dynd::ndt::base_string_type>()->get_encoding()) {
       case dynd::string_encoding_ascii:
-        cg.push_back([](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                        const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-          ckb->emplace_back<::detail::string_ascii_assign_kernel>(kernreq);
-          node = next(node);
-        });
+        cg.emplace_back(
+            [](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta, size_t nsrc,
+               const char *const *src_arrmeta) { kb.emplace_back<::detail::string_ascii_assign_kernel>(kernreq); });
         break;
       case dynd::string_encoding_utf_8:
-        cg.push_back([](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                        const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-          ckb->emplace_back<::detail::string_utf8_assign_kernel>(kernreq);
-          node = next(node);
-        });
+        cg.emplace_back(
+            [](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta, size_t nsrc,
+               const char *const *src_arrmeta) { kb.emplace_back<::detail::string_utf8_assign_kernel>(kernreq); });
         break;
       case dynd::string_encoding_ucs_2:
       case dynd::string_encoding_utf_16:
-        cg.push_back([](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                        const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-          ckb->emplace_back<::detail::string_utf16_assign_kernel>(kernreq);
-          node = next(node);
-        });
+        cg.emplace_back(
+            [](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta, size_t nsrc,
+               const char *const *src_arrmeta) { kb.emplace_back<::detail::string_utf16_assign_kernel>(kernreq); });
         break;
       case dynd::string_encoding_utf_32:
-        cg.push_back([](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                        const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-          ckb->emplace_back<::detail::string_utf32_assign_kernel>(kernreq);
-          node = next(node);
-        });
+        cg.emplace_back(
+            [](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta, size_t nsrc,
+               const char *const *src_arrmeta) { kb.emplace_back<::detail::string_utf32_assign_kernel>(kernreq); });
         break;
       default:
         throw std::runtime_error("no string_assign_kernel");
@@ -116,36 +110,32 @@ namespace nd {
       size_t src0_data_size = src_tp[0].get_data_size();
       switch (src_tp[0].extended<dynd::ndt::base_string_type>()->get_encoding()) {
       case dynd::string_encoding_ascii:
-        cg.push_back([src0_data_size](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb,
-                                      dynd::kernel_request_t kernreq, const char *DYND_UNUSED(dst_arrmeta),
-                                      size_t DYND_UNUSED(nsrc), const char *const *DYND_UNUSED(src_arrmeta)) {
-          ckb->emplace_back<::detail::fixed_string_ascii_assign_kernel>(kernreq, src0_data_size);
-          node = next(node);
+        cg.emplace_back([src0_data_size](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq,
+                                         const char *DYND_UNUSED(dst_arrmeta), size_t DYND_UNUSED(nsrc),
+                                         const char *const *DYND_UNUSED(src_arrmeta)) {
+          kb.emplace_back<::detail::fixed_string_ascii_assign_kernel>(kernreq, src0_data_size);
         });
         break;
       case dynd::string_encoding_utf_8:
-        cg.push_back([src0_data_size](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb,
-                                      dynd::kernel_request_t kernreq, const char *DYND_UNUSED(dst_arrmeta),
-                                      size_t DYND_UNUSED(nsrc), const char *const *DYND_UNUSED(src_arrmeta)) {
-          ckb->emplace_back<::detail::fixed_string_utf8_assign_kernel>(kernreq, src0_data_size);
-          node = next(node);
+        cg.emplace_back([src0_data_size](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq,
+                                         const char *DYND_UNUSED(dst_arrmeta), size_t DYND_UNUSED(nsrc),
+                                         const char *const *DYND_UNUSED(src_arrmeta)) {
+          kb.emplace_back<::detail::fixed_string_utf8_assign_kernel>(kernreq, src0_data_size);
         });
         break;
       case dynd::string_encoding_ucs_2:
       case dynd::string_encoding_utf_16:
-        cg.push_back([src0_data_size](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb,
-                                      dynd::kernel_request_t kernreq, const char *DYND_UNUSED(dst_arrmeta),
-                                      size_t DYND_UNUSED(nsrc), const char *const *DYND_UNUSED(src_arrmeta)) {
-          ckb->emplace_back<::detail::fixed_string_utf16_assign_kernel>(kernreq, src0_data_size);
-          node = next(node);
+        cg.emplace_back([src0_data_size](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq,
+                                         const char *DYND_UNUSED(dst_arrmeta), size_t DYND_UNUSED(nsrc),
+                                         const char *const *DYND_UNUSED(src_arrmeta)) {
+          kb.emplace_back<::detail::fixed_string_utf16_assign_kernel>(kernreq, src0_data_size);
         });
         break;
       case dynd::string_encoding_utf_32:
-        cg.push_back([src0_data_size](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb,
-                                      dynd::kernel_request_t kernreq, const char *DYND_UNUSED(dst_arrmeta),
-                                      size_t DYND_UNUSED(nsrc), const char *const *DYND_UNUSED(src_arrmeta)) {
-          ckb->emplace_back<::detail::fixed_string_utf32_assign_kernel>(kernreq, src0_data_size);
-          node = next(node);
+        cg.emplace_back([src0_data_size](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq,
+                                         const char *DYND_UNUSED(dst_arrmeta), size_t DYND_UNUSED(nsrc),
+                                         const char *const *DYND_UNUSED(src_arrmeta)) {
+          kb.emplace_back<::detail::fixed_string_utf32_assign_kernel>(kernreq, src0_data_size);
         });
         break;
       default:
@@ -171,17 +161,19 @@ namespace nd {
                       const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
       dynd::ndt::type src_value_tp = src_tp[0].extended<dynd::ndt::option_type>()->get_value_type();
-      cg.push_back([](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                      const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-        intptr_t root_ckb_offset = ckb->size();
-        ckb->emplace_back<assign_to_pyobject_kernel<option_id>>(kernreq);
-        node = next(node);
+      cg.emplace_back([](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
+                         size_t nsrc, const char *const *src_arrmeta) {
+        intptr_t root_ckb_offset = kb.size();
+        kb.emplace_back<assign_to_pyobject_kernel<option_id>>(kernreq);
+
         assign_to_pyobject_kernel<option_id> *self_ck =
-            ckb->get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
-        node->instantiate(node, ckb, dynd::kernel_request_single, nullptr, nsrc, src_arrmeta);
-        self_ck = ckb->get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
-        self_ck->m_assign_value_offset = ckb->size() - root_ckb_offset;
-        node->instantiate(node, ckb, dynd::kernel_request_single, dst_arrmeta, nsrc, src_arrmeta);
+            kb.get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
+        kb(dynd::kernel_request_single, nullptr, nsrc, src_arrmeta);
+
+        self_ck = kb.get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
+        self_ck->m_assign_value_offset = kb.size() - root_ckb_offset;
+
+        kb(dynd::kernel_request_single, dst_arrmeta, nsrc, src_arrmeta);
       });
 
       dynd::nd::is_na->resolve(this, nullptr, cg, dynd::ndt::make_type<dynd::bool1>(), nsrc, src_tp, 0, nullptr,
@@ -191,6 +183,7 @@ namespace nd {
       return dst_tp;
     }
 
+/*
     void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -208,6 +201,7 @@ namespace nd {
       dynd::nd::assign->instantiate(node, NULL, ckb, dst_tp, dst_arrmeta, nsrc, &src_value_tp, src_arrmeta,
                                     dynd::kernel_request_single, 0, NULL, tp_vars);
     }
+*/
   };
 
   template <>
@@ -228,6 +222,7 @@ namespace nd {
       return dst_tp;
     }
 
+/*
     void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -252,6 +247,7 @@ namespace nd {
         ckb_offset = ckb->size();
       }
     }
+*/
   };
 
   template <>
@@ -276,20 +272,19 @@ namespace nd {
           src_tp[0].extended<dynd::ndt::struct_type>()->get_arrmeta_offsets();
 
       ndt::type src0_tp = src_tp[0];
-      cg.push_back([src0_tp, arrmeta_offsets, field_count](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb,
-                                                           dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                                                           size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([src0_tp, arrmeta_offsets, field_count](dynd::nd::kernel_builder &kb,
+                                                              dynd::kernel_request_t kernreq, const char *dst_arrmeta,
+                                                              size_t nsrc, const char *const *src_arrmeta) {
         std::cout << "assign_to_pyobject_callable<struct_id>::instantiate" << std::endl;
 
-        intptr_t ckb_offset = ckb->size();
+        intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
-        ckb->emplace_back<assign_to_pyobject_kernel<struct_id>>(kernreq);
-        node = next(node);
+        kb.emplace_back<assign_to_pyobject_kernel<struct_id>>(kernreq);
 
         assign_to_pyobject_kernel<struct_id> *self_ck =
-            ckb->get_at<assign_to_pyobject_kernel<struct_id>>(root_ckb_offset);
+            kb.get_at<assign_to_pyobject_kernel<struct_id>>(root_ckb_offset);
 
-        ckb_offset = ckb->size();
+        ckb_offset = kb.size();
         self_ck->m_src_tp = src0_tp;
         self_ck->m_src_arrmeta = src_arrmeta[0];
         self_ck->m_field_names.reset(PyTuple_New(field_count));
@@ -302,12 +297,12 @@ namespace nd {
         self_ck->m_copy_el_offsets.resize(field_count);
 
         for (intptr_t i = 0; i < field_count; ++i) {
-          ckb->reserve(ckb_offset);
-          self_ck = ckb->get_at<assign_to_pyobject_kernel<struct_id>>(root_ckb_offset);
+          kb.reserve(ckb_offset);
+          self_ck = kb.get_at<assign_to_pyobject_kernel<struct_id>>(root_ckb_offset);
           self_ck->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
           const char *field_arrmeta = src_arrmeta[0] + arrmeta_offsets[i];
-          node->instantiate(node, ckb, dynd::kernel_request_single, dst_arrmeta, nsrc, &field_arrmeta);
-          ckb_offset = ckb->size();
+          kb(dynd::kernel_request_single, dst_arrmeta, nsrc, &field_arrmeta);
+          ckb_offset = kb.size();
         }
 
       });
@@ -319,6 +314,7 @@ namespace nd {
       return dst_tp;
     }
 
+/*
     void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -352,6 +348,7 @@ namespace nd {
         ckb_offset = ckb->size();
       }
     }
+*/
   };
 
   template <>
@@ -370,17 +367,16 @@ namespace nd {
       std::cout << "assign_to_pyobject_callable<fixed_dim_id>::resolve" << std::endl;
       std::cout << "src_tp[0] = " << src_tp[0] << std::endl;
 
-      cg.push_back([](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                      const char *dst_arrmeta, size_t DYND_UNUSED(nsrc), const char *const *src_arrmeta) {
+      cg.emplace_back([](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
+                         size_t DYND_UNUSED(nsrc), const char *const *src_arrmeta) {
         std::cout << "assign_to_pyobject_callable<fixed_dim_id>::instantiate" << std::endl;
 
         const char *src_element_arrmeta[1] = {src_arrmeta[0] + sizeof(size_stride_t)};
-        ckb->emplace_back<assign_to_pyobject_kernel<fixed_dim_id>>(
+        kb.emplace_back<assign_to_pyobject_kernel<fixed_dim_id>>(
             kernreq, reinterpret_cast<const size_stride_t *>(src_arrmeta[0])->dim_size,
             reinterpret_cast<const size_stride_t *>(src_arrmeta[0])->stride);
-        node = next(node);
 
-        node->instantiate(node, ckb, dynd::kernel_request_strided, dst_arrmeta, 1, src_element_arrmeta);
+        kb(dynd::kernel_request_strided, dst_arrmeta, 1, src_element_arrmeta);
       });
 
       dynd::ndt::type src_element_tp[1] = {src_tp[0].extended<ndt::fixed_dim_type>()->get_element_type()};
@@ -389,6 +385,7 @@ namespace nd {
       return dst_tp;
     }
 
+/*
     void instantiate(dynd::nd::call_node *node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -408,6 +405,7 @@ namespace nd {
 
       throw std::runtime_error("cannot process as strided");
     }
+*/
   };
 
   template <>
@@ -426,19 +424,18 @@ namespace nd {
       std::cout << "assign_to_pyobject<var_dim_id>::resolve" << std::endl;
 
       dynd::ndt::type el_tp = src_tp[0].extended<dynd::ndt::var_dim_type>()->get_element_type();
-      cg.push_back([el_tp](dynd::nd::call_node *&node, dynd::nd::kernel_builder *ckb, dynd::kernel_request_t kernreq,
-                           const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([el_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
+                              size_t nsrc, const char *const *src_arrmeta) {
         std::cout << "assign_to_pyobject<var_dim_id>::instantiate" << std::endl;
 
-        intptr_t ckb_offset = ckb->size();
-        ckb->emplace_back<assign_to_pyobject_kernel<var_dim_id>>(
+        intptr_t ckb_offset = kb.size();
+        kb.emplace_back<assign_to_pyobject_kernel<var_dim_id>>(
             kernreq, reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(src_arrmeta[0])->offset,
             reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(src_arrmeta[0])->stride);
-        node = next(node);
 
-        ckb_offset = ckb->size();
+        ckb_offset = kb.size();
         const char *el_arrmeta = src_arrmeta[0] + sizeof(dynd::ndt::var_dim_type::metadata_type);
-        node->instantiate(node, ckb, dynd::kernel_request_strided, dst_arrmeta, nsrc, &el_arrmeta);
+        kb(dynd::kernel_request_strided, dst_arrmeta, nsrc, &el_arrmeta);
       });
 
       dynd::nd::assign->resolve(this, nullptr, cg, dst_tp, nsrc, &el_tp, nkwd, kwds, tp_vars);
@@ -446,6 +443,7 @@ namespace nd {
       return dst_tp;
     }
 
+/*
     void instantiate(dynd::nd::call_node *node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -461,6 +459,7 @@ namespace nd {
       dynd::nd::assign->instantiate(node, data, ckb, dst_tp, dst_arrmeta, nsrc, &el_tp, &el_arrmeta,
                                     dynd::kernel_request_strided, nkwd, kwds, tp_vars);
     }
+*/
   };
 
 } // namespace pydynd::nd

@@ -18,7 +18,7 @@ namespace nd {
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars);

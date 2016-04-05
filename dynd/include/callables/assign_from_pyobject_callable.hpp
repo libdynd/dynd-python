@@ -31,11 +31,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -59,11 +58,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -86,11 +84,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -114,11 +111,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -141,11 +137,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -153,12 +148,12 @@ namespace nd {
       intptr_t root_ckb_offset = ckb->size();
       ckb->emplace_back<assign_from_pyobject_kernel<option_id>>(kernreq, dst_tp, dst_arrmeta);
       intptr_t ckb_offset = ckb->size();
-      dynd::nd::assign_na->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, nsrc, NULL, NULL,
+      dynd::nd::assign_na->instantiate(node, NULL, ckb, dst_tp, dst_arrmeta, nsrc, NULL, NULL,
                                        dynd::kernel_request_single, nkwd, kwds, tp_vars);
       ckb_offset = ckb->size();
       ckb->get_at<assign_from_pyobject_kernel<option_id>>(root_ckb_offset)->copy_value_offset =
           ckb_offset - root_ckb_offset;
-      dynd::nd::assign->instantiate(nullptr, NULL, ckb, dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
+      dynd::nd::assign->instantiate(node, NULL, ckb, dst_tp.extended<dynd::ndt::option_type>()->get_value_type(),
                                     dst_arrmeta, nsrc, src_tp, src_arrmeta, dynd::kernel_request_single, nkwd, kwds,
                                     tp_vars);
       ckb_offset = ckb->size();
@@ -179,11 +174,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -207,7 +201,7 @@ namespace nd {
         self = ckb->get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-        dynd::nd::assign->instantiate(nullptr, NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
+        dynd::nd::assign->instantiate(node, NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
                                       dynd::kernel_request_single, nkwd, kwds, tp_vars);
         ckb_offset = ckb->size();
       }
@@ -228,11 +222,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -257,7 +250,7 @@ namespace nd {
         self = ckb->get_at<assign_from_pyobject_kernel<struct_id>>(root_ckb_offset);
         self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
         const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-        dynd::nd::assign->instantiate(nullptr, NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
+        dynd::nd::assign->instantiate(node, NULL, ckb, field_types[i], field_arrmeta, nsrc, src_tp, src_arrmeta,
                                       dynd::kernel_request_single, nkwd, kwds, tp_vars);
         ckb_offset = ckb->size();
       }
@@ -278,11 +271,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -302,14 +294,14 @@ namespace nd {
         self->m_dst_tp = dst_tp;
         self->m_dst_arrmeta = dst_arrmeta;
         // from pyobject ckernel
-        dynd::nd::assign->instantiate(nullptr, NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
+        dynd::nd::assign->instantiate(node, NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
                                       dynd::kernel_request_strided, nkwd, kwds, tp_vars);
         ckb_offset = ckb->size();
         self = ckb->get_at<assign_from_pyobject_kernel<fixed_dim_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
         dynd::nd::array error_mode = assign_error_fractional;
-        dynd::nd::assign->instantiate(nullptr, NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
+        dynd::nd::assign->instantiate(node, NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
                                       dynd::kernel_request_strided, 1, &error_mode, std::map<std::string, ndt::type>());
 
         return;
@@ -333,11 +325,10 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back(this);
       return dst_tp;
     }
 
-    void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
+    void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb,
                      const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                      const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                      intptr_t nkwd, const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
@@ -356,14 +347,14 @@ namespace nd {
       self->m_dst_arrmeta = dst_arrmeta;
       dynd::ndt::type el_tp = dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
       const char *el_arrmeta = dst_arrmeta + sizeof(dynd::ndt::var_dim_type::metadata_type);
-      dynd::nd::assign->instantiate(nullptr, NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
+      dynd::nd::assign->instantiate(node, NULL, ckb, el_tp, el_arrmeta, nsrc, src_tp, src_arrmeta,
                                     dynd::kernel_request_strided, nkwd, kwds, tp_vars);
       ckb_offset = ckb->size();
       self = ckb->get_at<assign_from_pyobject_kernel<var_dim_id>>(root_ckb_offset);
       self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
       // dst to dst ckernel, for broadcasting case
       dynd::nd::array error_mode = assign_error_fractional;
-      dynd::nd::assign->instantiate(nullptr, NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
+      dynd::nd::assign->instantiate(node, NULL, ckb, el_tp, el_arrmeta, 1, &el_tp, &el_arrmeta,
                                     dynd::kernel_request_strided, 1, &error_mode, std::map<std::string, ndt::type>());
     }
   };

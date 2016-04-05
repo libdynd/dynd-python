@@ -34,7 +34,7 @@ struct strided_of_numpy_arrmeta {
 
 } // anonymous namespace
 
-void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *DYND_UNUSED(data),
+void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *&node, char *DYND_UNUSED(data),
                                                        dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
                                                        const char *dst_arrmeta, intptr_t DYND_UNUSED(nsrc),
                                                        const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
@@ -58,7 +58,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND
     // type and use it to do the copying
     dynd::ndt::type src_view_tp = _type_from_numpy_dtype(dtype, src_alignment);
     dynd::nd::array error_mode = dynd::assign_error_fractional;
-    dynd::nd::assign->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1,
+    dynd::nd::assign->instantiate(node, NULL, ckb, dst_tp, dst_arrmeta, 1, &src_view_tp, NULL, kernreq, 1,
                                   &error_mode, std::map<std::string, dynd::ndt::type>());
 
     return;
@@ -66,7 +66,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND
   else if (PyDataType_ISOBJECT(dtype)) {
     dynd::nd::base_callable *af = dynd::nd::assign.get();
     dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-    af->instantiate(nullptr, NULL, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds, tp_vars);
+    af->instantiate(node, NULL, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, NULL, kernreq, nkwd, kwds, tp_vars);
     return;
   }
   else if (PyDataType_HASFIELDS(dtype)) {
@@ -145,7 +145,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *DYND
       field.dst_data_offset = dst_data_offsets[i];
       field.src_data_offset = field_offsets[i];
       dynd::nd::array error_mode = dynd::ndt::traits<dynd::assign_error_mode>::na();
-      af->instantiate(NULL, NULL, ckb, dst_fields_tp[i], dst_fields_arrmeta[i], 1, &src_fields_tp[i],
+      af->instantiate(node, NULL, ckb, dst_fields_tp[i], dst_fields_arrmeta[i], 1, &src_fields_tp[i],
                       &src_fields_arrmeta[i], dynd::kernel_request_single, 1, &error_mode,
                       std::map<std::string, dynd::ndt::type>());
     }

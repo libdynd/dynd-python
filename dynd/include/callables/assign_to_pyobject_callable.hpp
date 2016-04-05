@@ -264,8 +264,6 @@ namespace nd {
                       size_t DYND_UNUSED(nkwd), const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << "assign_to_pyobject_callable<struct_id>::resolve" << std::endl;
-
       intptr_t field_count = src_tp[0].extended<dynd::ndt::struct_type>()->get_field_count();
       const dynd::ndt::type *field_types = src_tp[0].extended<dynd::ndt::struct_type>()->get_field_types_raw();
       const std::vector<uintptr_t> &arrmeta_offsets =
@@ -275,8 +273,6 @@ namespace nd {
       cg.emplace_back([src0_tp, arrmeta_offsets, field_count](dynd::nd::kernel_builder &kb,
                                                               dynd::kernel_request_t kernreq, const char *dst_arrmeta,
                                                               size_t nsrc, const char *const *src_arrmeta) {
-        std::cout << "assign_to_pyobject_callable<struct_id>::instantiate" << std::endl;
-
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
         kb.emplace_back<assign_to_pyobject_kernel<struct_id>>(kernreq);
@@ -293,7 +289,6 @@ namespace nd {
           pydynd::pyobject_ownref name(PyUnicode_DecodeUTF8(rawname.begin(), rawname.end() - rawname.begin(), NULL));
           PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
         }
-        std::cout << "here" << std::endl;
         self_ck->m_copy_el_offsets.resize(field_count);
 
         for (intptr_t i = 0; i < field_count; ++i) {
@@ -364,13 +359,8 @@ namespace nd {
                       const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << "assign_to_pyobject_callable<fixed_dim_id>::resolve" << std::endl;
-      std::cout << "src_tp[0] = " << src_tp[0] << std::endl;
-
       cg.emplace_back([](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
                          size_t DYND_UNUSED(nsrc), const char *const *src_arrmeta) {
-        std::cout << "assign_to_pyobject_callable<fixed_dim_id>::instantiate" << std::endl;
-
         const char *src_element_arrmeta[1] = {src_arrmeta[0] + sizeof(size_stride_t)};
         kb.emplace_back<assign_to_pyobject_kernel<fixed_dim_id>>(
             kernreq, reinterpret_cast<const size_stride_t *>(src_arrmeta[0])->dim_size,
@@ -421,13 +411,9 @@ namespace nd {
                       const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << "assign_to_pyobject<var_dim_id>::resolve" << std::endl;
-
       dynd::ndt::type el_tp = src_tp[0].extended<dynd::ndt::var_dim_type>()->get_element_type();
       cg.emplace_back([el_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
                               size_t nsrc, const char *const *src_arrmeta) {
-        std::cout << "assign_to_pyobject<var_dim_id>::instantiate" << std::endl;
-
         intptr_t ckb_offset = kb.size();
         kb.emplace_back<assign_to_pyobject_kernel<var_dim_id>>(
             kernreq, reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(src_arrmeta[0])->offset,

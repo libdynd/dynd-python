@@ -378,7 +378,6 @@ struct assign_from_pyobject_kernel<string_id, string_kind_id>
 
   void single(char *dst, char *const *src)
   {
-    std::cout << "assign_from_pyobject_kernel<string_id>" << std::endl;
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
     char *pybytes_data = NULL;
@@ -709,8 +708,6 @@ struct assign_from_pyobject_kernel<fixed_dim_id, fixed_dim_kind_id>
 
   void single(char *dst, char *const *src)
   {
-    std::cout << "assign_from_pyobject_kernel<fixed_dim_id>" << std::endl;
-
     PyObject *src_obj = *reinterpret_cast<PyObject *const *>(src[0]);
 
     if (PyObject_TypeCheck(src_obj, pydynd::get_array_pytypeobject())) {

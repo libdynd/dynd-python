@@ -3,6 +3,8 @@
 #include <dynd/callables/base_callable.hpp>
 #include "kernels/assign_from_pyobject_kernel.hpp"
 
+using namespace dynd;
+
 namespace pydynd {
 namespace nd {
 
@@ -108,14 +110,8 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      std::cout << "assign_from_pyobject_callable<fixed_string_id>::resolve" << std::endl;
-      std::cout << "dst_tp = " << dst_tp << std::endl;
-
       cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
                                size_t DYND_UNUSED(nsrc), const char *const *DYND_UNUSED(src_arrmeta)) {
-        std::cout << "assign_from_pyobject_callable<fixed_string_id>::instantiate" << std::endl;
-        std::cout << "dst_tp = " << dst_tp << std::endl;
-
         kb.emplace_back<assign_from_pyobject_kernel<fixed_string_id>>(kernreq, dst_tp, dst_arrmeta);
       });
 
@@ -189,12 +185,39 @@ namespace nd {
     }
 
     ndt::type resolve(dynd::nd::base_callable *DYND_UNUSED(caller), char *DYND_UNUSED(data), dynd::nd::call_graph &cg,
-                      const dynd::ndt::type &dst_tp, size_t DYND_UNUSED(nsrc),
-                      const dynd::ndt::type *DYND_UNUSED(src_tp), size_t DYND_UNUSED(nkwd),
-                      const dynd::nd::array *DYND_UNUSED(kwds),
-                      const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
+                      const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
+                      const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << " assign_from_pyobject_callable<tuple_id>::resolve" << std::endl;
+      intptr_t field_count = dst_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
+      const std::vector<dynd::ndt::type> &field_types = dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types();
+
+      const std::vector<uintptr_t> &arrmeta_offsets = dst_tp.extended<dynd::ndt::tuple_type>()->get_arrmeta_offsets();
+
+      cg.emplace_back([arrmeta_offsets, dst_tp, field_count](dynd::nd::kernel_builder &kb,
+                                                             dynd::kernel_request_t kernreq, const char *dst_arrmeta,
+                                                             size_t nsrc, const char *const *src_arrmeta) {
+        intptr_t ckb_offset = kb.size();
+        intptr_t root_ckb_offset = ckb_offset;
+        kb.emplace_back<assign_from_pyobject_kernel<tuple_id>>(kernreq);
+        assign_from_pyobject_kernel<tuple_id> *self = kb.get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
+        ckb_offset = kb.size();
+        self->m_dst_tp = dst_tp;
+        self->m_dst_arrmeta = dst_arrmeta;
+        self->m_dim_broadcast = false;
+        self->m_copy_el_offsets.resize(field_count);
+        for (intptr_t i = 0; i < field_count; ++i) {
+          kb.reserve(ckb_offset);
+          self = kb.get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
+          self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
+          const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
+          kb(dynd::kernel_request_single, field_arrmeta, nsrc, src_arrmeta);
+          ckb_offset = kb.size();
+        }
+      });
+
+      for (intptr_t i = 0; i < field_count; ++i) {
+        dynd::nd::assign->resolve(this, nullptr, cg, field_types[i], nsrc, src_tp, nkwd, kwds, tp_vars);
+      }
 
       return dst_tp;
     }
@@ -246,9 +269,6 @@ namespace nd {
                       const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << " assign_from_pyobject_callable<struct_id>::resolve" << std::endl;
-      std::cout << "dst_tp = " << dst_tp << std::endl;
-
       bool dim_broadcast = false;
       intptr_t field_count = dst_tp.extended<dynd::ndt::struct_type>()->get_field_count();
       const dynd::ndt::type *field_types = dst_tp.extended<dynd::ndt::struct_type>()->get_field_types_raw();
@@ -257,8 +277,6 @@ namespace nd {
       cg.emplace_back([arrmeta_offsets, dim_broadcast, field_count,
                        dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
                                size_t nsrc, const char *const *src_arrmeta) {
-        std::cout << " assign_from_pyobject_callable<struct_id>::instantiate" << std::endl;
-
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
 
@@ -337,15 +355,10 @@ namespace nd {
                       const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << " assign_from_pyobject_callable<fixed_dim_id>::resolve" << std::endl;
-      std::cout << "dst_tp = " << dst_tp << std::endl;
-
       dynd::ndt::type el_tp = dst_tp.extended<ndt::fixed_dim_type>()->get_element_type();
 
       cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
                                size_t nsrc, const char *const *src_arrmeta) {
-        std::cout << " assign_from_pyobject_callable<fixed_dim_id>::instantiate" << std::endl;
-
         const char *el_arrmeta = dst_arrmeta + sizeof(size_stride_t);
         intptr_t dim_size = reinterpret_cast<const size_stride_t *>(dst_arrmeta)->dim_size;
         intptr_t stride = reinterpret_cast<const size_stride_t *>(dst_arrmeta)->stride;
@@ -368,16 +381,17 @@ namespace nd {
         self = kb.get_at<assign_from_pyobject_kernel<fixed_dim_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
-        dynd::nd::array error_mode = assign_error_fractional;
-        kb(dynd::kernel_request_strided, el_arrmeta, 1, &el_arrmeta);
+        //        dynd::nd::array error_mode = assign_error_fractional;
+        //      kb(dynd::kernel_request_strided, el_arrmeta, 1, &el_arrmeta);
+        //    std::cout << "after second" << std::endl;
       });
 
       // from pyobject ckernel
       dynd::nd::assign->resolve(this, nullptr, cg, el_tp, nsrc, src_tp, nkwd, kwds, tp_vars);
       // dst to dst ckernel, for broadcasting case
-      dynd::nd::array error_mode = assign_error_fractional;
-      dynd::nd::assign->resolve(this, nullptr, cg, el_tp, 1, &el_tp, 1, &error_mode,
-                                std::map<std::string, ndt::type>());
+      //      dynd::nd::array error_mode = assign_error_fractional;
+      //    dynd::nd::assign->resolve(this, nullptr, cg, el_tp, 1, &el_tp, 1, &error_mode,
+      //                            std::map<std::string, ndt::type>());
 
       return dst_tp;
     }
@@ -395,8 +409,6 @@ namespace nd {
                       const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      std::cout << " assign_from_pyobject_callable<var_dim_id>::resolve" << std::endl;
-
       bool dim_broadcast = false;
 
       dynd::ndt::type el_tp = dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
@@ -420,14 +432,14 @@ namespace nd {
         self = kb.get_at<assign_from_pyobject_kernel<var_dim_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
-        dynd::nd::array error_mode = assign_error_fractional;
-        kb(dynd::kernel_request_strided, el_arrmeta, 1, &el_arrmeta);
+        //        dynd::nd::array error_mode = assign_error_fractional;
+        //      kb(dynd::kernel_request_strided, el_arrmeta, 1, &el_arrmeta);
       });
 
       dynd::nd::assign->resolve(this, nullptr, cg, el_tp, nsrc, src_tp, nkwd, kwds, tp_vars);
 
-      dynd::nd::array error_mode = assign_error_fractional;
-      dynd::nd::assign->resolve(this, nullptr, cg, el_tp, 1, &el_tp, 1, &error_mode, tp_vars);
+      //      dynd::nd::array error_mode = assign_error_fractional;
+      //  dynd::nd::assign->resolve(this, nullptr, cg, el_tp, 1, &el_tp, 1, &error_mode, tp_vars);
 
       return dst_tp;
     }

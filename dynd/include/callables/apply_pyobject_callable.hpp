@@ -21,11 +21,10 @@ namespace nd {
                               const dynd::nd::array *DYND_UNUSED(kwds),
                               const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
       {
-        cg.emplace_back(this);
         return dst_tp;
       }
 
-      void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb,
+      void instantiate(dynd::nd::call_node *&node, char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb,
                        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                        const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
                        intptr_t nkwd, const dynd::nd::array *kwds,
@@ -49,7 +48,7 @@ namespace nd {
         copy(src_arrmeta, src_arrmeta + nsrc, self->m_src_arrmeta.begin());
 
         dynd::ndt::type child_src_tp = dynd::ndt::make_type<pyobject_type>();
-        dynd::nd::assign->instantiate(nullptr, nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
+        dynd::nd::assign->instantiate(node, nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
                                       dynd::kernel_request_single, 0, nullptr, tp_vars);
       }
     };

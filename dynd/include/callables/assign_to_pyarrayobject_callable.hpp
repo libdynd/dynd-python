@@ -22,8 +22,8 @@ public:
     return dst_tp;
   }
 
-  void instantiate(dynd::nd::call_node *DYND_UNUSED(node), char *data, dynd::nd::kernel_builder *ckb,
-                   const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
+  void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
+                   const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
                    const char *const *src_arrmeta, dynd::kernel_request_t kernreq, intptr_t nkwd,
                    const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
@@ -37,13 +37,13 @@ public:
     if (!PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
       dynd::ndt::type dst_view_tp = pydynd::_type_from_numpy_dtype(dtype, dst_alignment);
       nd::array error_mode = assign_error_fractional;
-      nd::assign->instantiate(nullptr, NULL, ckb, dst_view_tp, NULL, 1, src_tp, src_arrmeta, kernreq, 1, &error_mode,
+      nd::assign->instantiate(node, NULL, ckb, dst_view_tp, NULL, 1, src_tp, src_arrmeta, kernreq, 1, &error_mode,
                               std::map<std::string, ndt::type>());
       return;
     }
 
     if (PyDataType_ISOBJECT(dtype)) {
-      dynd::nd::assign->instantiate(nullptr, NULL, ckb, dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
+      dynd::nd::assign->instantiate(node, NULL, ckb, dynd::ndt::make_type<pyobject_type>(), NULL, nsrc, src_tp,
                                     src_arrmeta, kernreq, 0, NULL, tp_vars);
       return;
     }
@@ -130,7 +130,7 @@ public:
         field.dst_data_offset = field_offsets[i];
         field.src_data_offset = src_data_offsets[i];
         nd::array error_mode = ndt::traits<assign_error_mode>::na();
-        af->instantiate(NULL, NULL, ckb, dst_fields_tp[i], dst_fields_arrmeta[i], 1, &src_field_tp[i],
+        af->instantiate(node, NULL, ckb, dst_fields_tp[i], dst_fields_arrmeta[i], 1, &src_field_tp[i],
                         &src_fields_arrmeta[i], kernel_request_single, 1, &error_mode,
                         std::map<std::string, ndt::type>());
       }

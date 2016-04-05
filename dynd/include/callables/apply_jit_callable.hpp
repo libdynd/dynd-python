@@ -27,7 +27,6 @@ namespace nd {
                               const dynd::nd::array *DYND_UNUSED(kwds),
                               const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
       {
-        cg.emplace_back(this);
         return dst_tp;
       }
 

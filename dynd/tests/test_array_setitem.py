@@ -2,6 +2,7 @@ import sys
 import unittest
 from dynd import nd, ndt
 
+@unittest.skip('Test disabled since callables were reworked')
 class TestArraySetItem(unittest.TestCase):
 
     def test_strided_dim(self):

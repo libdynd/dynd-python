@@ -34,6 +34,7 @@ struct strided_of_numpy_arrmeta {
 
 } // anonymous namespace
 
+/*
 void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *&node, char *DYND_UNUSED(data),
                                                        dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
                                                        const char *dst_arrmeta, intptr_t DYND_UNUSED(nsrc),
@@ -158,6 +159,7 @@ void pydynd::nd::copy_from_numpy_callable::instantiate(dynd::nd::call_node *&nod
     throw invalid_argument(ss.str());
   }
 }
+*/
 
 dynd::nd::callable pydynd::nd::copy_from_numpy =
     dynd::nd::functional::elwise(dynd::nd::make_callable<pydynd::nd::copy_from_numpy_callable>());

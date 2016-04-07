@@ -22,10 +22,11 @@ public:
     return dst_tp;
   }
 
-  void instantiate(dynd::nd::call_node *&node, char *data, dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp,
-                   const char *dst_arrmeta, intptr_t nsrc, const dynd::ndt::type *src_tp,
-                   const char *const *src_arrmeta, dynd::kernel_request_t kernreq, intptr_t nkwd,
-                   const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
+/*
+  void instantiate(char *data, dynd::nd::kernel_builder *ckb, const dynd::ndt::type &dst_tp, const char *dst_arrmeta,
+                   intptr_t nsrc, const dynd::ndt::type *src_tp, const char *const *src_arrmeta,
+                   dynd::kernel_request_t kernreq, intptr_t nkwd, const dynd::nd::array *kwds,
+                   const std::map<std::string, dynd::ndt::type> &tp_vars)
   {
     PyObject *dst_obj = *reinterpret_cast<PyObject *const *>(dst_arrmeta);
     uintptr_t dst_alignment = reinterpret_cast<const uintptr_t *>(dst_arrmeta)[1];
@@ -143,4 +144,5 @@ public:
       throw std::invalid_argument(ss.str());
     }
   }
+*/
 };

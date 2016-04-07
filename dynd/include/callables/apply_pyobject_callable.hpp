@@ -24,6 +24,7 @@ namespace nd {
         return dst_tp;
       }
 
+/*
       void instantiate(dynd::nd::call_node *&node, char *DYND_UNUSED(data), dynd::nd::kernel_builder *ckb,
                        const dynd::ndt::type &dst_tp, const char *dst_arrmeta, intptr_t nsrc,
                        const dynd::ndt::type *src_tp, const char *const *src_arrmeta, dynd::kernel_request_t kernreq,
@@ -51,6 +52,7 @@ namespace nd {
         dynd::nd::assign->instantiate(node, nullptr, ckb, dst_tp, dst_arrmeta, 1, &child_src_tp, nullptr,
                                       dynd::kernel_request_single, 0, nullptr, tp_vars);
       }
+*/
     };
 
   } // namespace pydynd::nd::functional

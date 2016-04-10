@@ -324,7 +324,7 @@ inline void array_setitem(const dynd::nd::array &n, PyObject *subscript,
 /**
  * Implementation of nd.range().
  */
-inline dynd::nd::array array_range(PyObject *start, PyObject *stop,
+inline dynd::nd::array array_old_range(PyObject *start, PyObject *stop,
                                    PyObject *step, PyObject *dt)
 {
   dynd::nd::array start_nd, stop_nd, step_nd;
@@ -362,14 +362,14 @@ inline dynd::nd::array array_range(PyObject *start, PyObject *stop,
         "nd::range should only be called with scalar parameters");
   }
 
-  return dynd::nd::range(dt_nd, start_nd.cdata(), stop_nd.cdata(),
+  return dynd::nd::old_range(dt_nd, start_nd.cdata(), stop_nd.cdata(),
                          step_nd.cdata());
 }
 
 /**
  * Implementation of nd.linspace().
  */
-inline dynd::nd::array array_linspace(PyObject *start, PyObject *stop,
+inline dynd::nd::array array_old_linspace(PyObject *start, PyObject *stop,
                                       PyObject *count, PyObject *dt)
 {
   dynd::nd::array start_nd, stop_nd;
@@ -377,10 +377,10 @@ inline dynd::nd::array array_linspace(PyObject *start, PyObject *stop,
   start_nd = array_from_py(start, 0, false);
   stop_nd = array_from_py(stop, 0, false);
   if (dt == Py_None) {
-    return dynd::nd::linspace(start_nd, stop_nd, count_val);
+    return dynd::nd::old_linspace(start_nd, stop_nd, count_val);
   }
   else {
-    return dynd::nd::linspace(start_nd, stop_nd, count_val,
+    return dynd::nd::old_linspace(start_nd, stop_nd, count_val,
                               dynd_ndt_as_cpp_type(dt));
   }
 }

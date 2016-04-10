@@ -41,8 +41,8 @@ cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_setitem(_array&, object, object) except +translate_exception
     object array_nonzero(_array&) except +translate_exception
 
-    _array array_range(object, object, object, object) except +translate_exception
-    _array array_linspace(object, object, object, object) except +translate_exception
+    _array array_old_range(object, object, object, object) except +translate_exception
+    _array array_old_linspace(object, object, object, object) except +translate_exception
 
     bint array_is_c_contiguous(_array&) except +translate_exception
     bint array_is_f_contiguous(_array&) except +translate_exception
@@ -873,10 +873,10 @@ def empty(*args, **kwargs):
         return dynd_nd_array_from_cpp(ret)
     raise TypeError('nd.empty() expected at least 1 positional argument, got 0')
 
-def range(start=None, stop=None, step=None, dtype=None):
+def old_range(start=None, stop=None, step=None, dtype=None):
     """
-    nd.range(stop, dtype=None)
-    nd.range(start, stop, step=None, dtype=None)
+    nd.old_range(stop, dtype=None)
+    nd.old_range(start, stop, step=None, dtype=None)
     Constructs a dynd array representing a stepped range of values.
     This function assumes that (stop-start)/step is approximately
     an integer, so as to be able to produce reasonable values with
@@ -898,16 +898,16 @@ def range(start=None, stop=None, step=None, dtype=None):
     # Move the first argument to 'stop' if stop isn't specified
     if stop is None:
         if start is not None:
-            result.v = array_range(None, start, step, dtype)
+            result.v = array_old_range(None, start, step, dtype)
         else:
             raise ValueError("No value provided for 'stop'")
     else:
-        result.v = array_range(start, stop, step, dtype)
+        result.v = array_old_range(start, stop, step, dtype)
     return result
 
-def linspace(start, stop, count=50, dtype=None):
+def old_linspace(start, stop, count=50, dtype=None):
     """
-    nd.linspace(start, stop, count=50, dtype=None)
+    nd.old_linspace(start, stop, count=50, dtype=None)
     Constructs a specified count of values interpolating a range.
     Parameters
     ----------
@@ -922,7 +922,7 @@ def linspace(start, stop, count=50, dtype=None):
         is of this type.
     """
     cdef array result = array()
-    result.v = array_linspace(start, stop, count, dtype)
+    result.v = array_old_linspace(start, stop, count, dtype)
     return result
 
 def parse_json(tp, json, ectx=None):

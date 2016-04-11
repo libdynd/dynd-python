@@ -24,10 +24,8 @@
 #include "type_conversions.hpp"
 #include "visibility.hpp"
 
-
 // Python's datetime C API
 #include "datetime.h"
-
 
 namespace pydynd {
 
@@ -124,27 +122,21 @@ inline dynd::string_encoding_t encoding_from_pyobject(PyObject *encoding_obj)
   }
 }
 
-inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size,
-                                                   PyObject *encoding_obj)
+inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size, PyObject *encoding_obj)
 {
   dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
   return dynd::ndt::fixed_string_type::make(size, encoding);
 }
 
-inline dynd::ndt::type dynd_make_string_type()
-{
-  return dynd::ndt::make_type<dynd::ndt::string_type>();
-}
+inline dynd::ndt::type dynd_make_string_type() { return dynd::ndt::make_type<dynd::ndt::string_type>(); }
 
 inline dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type &target_tp)
 {
   return dynd::ndt::pointer_type::make(target_tp);
 }
 
-inline void
-pyobject_as_vector__type(PyObject *list_of_types,
-                         std::vector<dynd::ndt::type> &vector_of__types)
+inline void pyobject_as_vector__type(PyObject *list_of_types, std::vector<dynd::ndt::type> &vector_of__types)
 {
   Py_ssize_t size = PySequence_Size(list_of_types);
   vector_of__types.resize(size);
@@ -154,8 +146,7 @@ pyobject_as_vector__type(PyObject *list_of_types,
   }
 }
 
-inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
-                                             PyObject *field_names)
+inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names)
 {
   std::vector<dynd::ndt::type> field_types_vec;
   std::vector<std::string> field_names_vec;
@@ -168,11 +159,10 @@ inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types,
     ss << field_names_vec.size();
     throw std::invalid_argument(ss.str());
   }
-  return dynd::ndt::struct_type::make(field_names_vec, field_types_vec);
+  return dynd::ndt::make_type<dynd::ndt::struct_type>(field_names_vec, field_types_vec);
 }
 
-inline dynd::ndt::type
-dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp)
+inline dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp)
 {
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);

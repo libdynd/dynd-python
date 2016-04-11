@@ -211,7 +211,7 @@ inline dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
   }
 
   // Make a cstruct if possible, struct otherwise
-  return dynd::ndt::struct_type::make(field_names, field_types);
+  return dynd::ndt::make_type<dynd::ndt::struct_type>(field_names, field_types);
 }
 
 // Forward declare this now. Include type_functions.hpp at the end.

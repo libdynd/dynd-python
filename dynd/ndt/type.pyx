@@ -29,7 +29,7 @@ from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_by
 from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
 from ..cpp.types.tuple_type cimport tuple_type
-from ..cpp.types.struct_type cimport make_struct as _make_struct
+from ..cpp.types.struct_type cimport struct_type
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
@@ -618,14 +618,18 @@ def struct(**kwds):
     # TODO: Use something other than dynd arrays to pass these arguments.
     #       See the comment in the tuple function for details.
     cdef vector[_type] _kwds
+    cdef vector[string] _names
 
     if kwds:
         for kwd in kwds.values():
             _kwds.push_back(as_cpp_type(kwd))
 
-        return dynd_ndt_type_from_cpp(_make_struct(kwds.keys(), _kwds))
+        for name in kwds.keys():
+            _names.push_back(name)
 
-    return dynd_ndt_type_from_cpp(_make_struct())
+        return dynd_ndt_type_from_cpp(make_type[struct_type](_names, _kwds))
+
+    return dynd_ndt_type_from_cpp(make_type[struct_type]())
 
 #class fixed_dim(__builtins__.type):
 #    def __call__(self, size_or_element_tp, element_tp = None):

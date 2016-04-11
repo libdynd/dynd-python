@@ -28,7 +28,7 @@ from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_dat
 from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
 from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
-from ..cpp.types.tuple_type cimport make_tuple as _make_tuple
+from ..cpp.types.tuple_type cimport tuple_type
 from ..cpp.types.struct_type cimport make_struct as _make_struct
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
@@ -607,9 +607,9 @@ def tuple(*args):
         for arg in args:
             _args.push_back(as_cpp_type(arg))
 
-        return dynd_ndt_type_from_cpp(_make_tuple(_args))
+        return dynd_ndt_type_from_cpp(make_type[tuple_type](_args))
 
-    return dynd_ndt_type_from_cpp(_make_tuple())
+    return dynd_ndt_type_from_cpp(make_type[tuple_type]())
 
 from libcpp.string cimport string
 

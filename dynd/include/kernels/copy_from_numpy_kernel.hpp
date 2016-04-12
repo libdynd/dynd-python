@@ -112,7 +112,7 @@ namespace nd {
 
           const std::vector<dynd::ndt::type> &dst_fields_tp =
               dst_tp.extended<dynd::ndt::tuple_type>()->get_field_types();
-          const uintptr_t *dst_data_offsets = dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(dst_arrmeta);
+          const uintptr_t *dst_data_offsets = reinterpret_cast<const uintptr_t *>(dst_arrmeta);
 
           intptr_t self_offset = kb.size();
           kb.emplace_back<dynd::nd::tuple_unary_op_ck>(kernreq);

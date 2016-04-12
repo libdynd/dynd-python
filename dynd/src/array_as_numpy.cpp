@@ -372,7 +372,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype,
       return;
     }
     const ndt::struct_type *bs = dt.extended<ndt::struct_type>();
-    const uintptr_t *offsets = bs->get_data_offsets(arrmeta);
+    const uintptr_t *offsets = reinterpret_cast<const uintptr_t *>(arrmeta);
     size_t field_count = bs->get_field_count();
 
     pyobject_ownref names_obj(PyList_New(field_count));

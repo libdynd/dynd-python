@@ -541,7 +541,7 @@ struct assign_from_pyobject_kernel<tuple_id, scalar_kind_id>
     // TODO: PEP 3118 support here
 
     intptr_t field_count = m_dst_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
-    const uintptr_t *field_offsets = m_dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(m_dst_arrmeta);
+    const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(m_dst_arrmeta);
 
     // Get the input as an array of PyObject *
     pydynd::pyobject_ownref src_fast;
@@ -613,7 +613,7 @@ struct assign_from_pyobject_kernel<struct_id, tuple_id>
     // TODO: PEP 3118 support here
 
     intptr_t field_count = m_dst_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
-    const uintptr_t *field_offsets = m_dst_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(m_dst_arrmeta);
+    const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(m_dst_arrmeta);
 
     if (PyDict_Check(src_obj)) {
       // Keep track of which fields we've seen

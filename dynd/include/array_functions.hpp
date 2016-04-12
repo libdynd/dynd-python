@@ -429,7 +429,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
   // Then create the arrmeta for the new struct
   const size_t *arrmeta_offsets = bsd->get_arrmeta_offsets_raw();
   const size_t *result_arrmeta_offsets = rudt_bsd->get_arrmeta_offsets_raw();
-  const size_t *data_offsets = bsd->get_data_offsets(src_arrmeta);
+  const uintptr_t *data_offsets = reinterpret_cast<const uintptr_t *>(src_arrmeta);
   size_t *result_data_offsets = reinterpret_cast<size_t *>(dst_arrmeta);
   for (size_t i = 0; i != selected_fields.size(); ++i) {
     const dynd::ndt::type &dt = selected__types[i];

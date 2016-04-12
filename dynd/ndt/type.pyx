@@ -607,7 +607,7 @@ def tuple(*args):
         for arg in args:
             _args.push_back(as_cpp_type(arg))
 
-        return dynd_ndt_type_from_cpp(make_type[tuple_type](_args))
+        return dynd_ndt_type_from_cpp(make_type[tuple_type](_args.size(), _args.data()))
 
     return dynd_ndt_type_from_cpp(make_type[tuple_type]())
 

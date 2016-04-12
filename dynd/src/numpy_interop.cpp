@@ -287,7 +287,7 @@ PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp,
     }
     const dynd::ndt::struct_type *stp = tp.extended<dynd::ndt::struct_type>();
     const uintptr_t *arrmeta_offsets = stp->get_arrmeta_offsets_raw();
-    const uintptr_t *offsets = stp->get_data_offsets(arrmeta);
+    const uintptr_t *offsets = reinterpret_cast<const uintptr_t *>(arrmeta);
     size_t field_count = stp->get_field_count();
     size_t max_numpy_alignment = 1;
 

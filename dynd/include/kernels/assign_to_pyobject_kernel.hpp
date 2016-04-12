@@ -428,7 +428,7 @@ struct assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
     intptr_t field_count = src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
-    const uintptr_t *field_offsets = src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(src_arrmeta);
+    const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(src_arrmeta);
     pydynd::pyobject_ownref tup(PyTuple_New(field_count));
     for (intptr_t i = 0; i < field_count; ++i) {
       nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
@@ -466,7 +466,7 @@ struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
     intptr_t field_count = m_src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
-    const uintptr_t *field_offsets = m_src_tp.extended<dynd::ndt::tuple_type>()->get_data_offsets(m_src_arrmeta);
+    const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(m_src_arrmeta);
     pydynd::pyobject_ownref dct(PyDict_New());
     for (intptr_t i = 0; i < field_count; ++i) {
       dynd::nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);

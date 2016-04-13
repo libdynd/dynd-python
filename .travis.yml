@@ -40,7 +40,7 @@ matrix:
     compiler: gcc
     install:
       # Use the version of numpy that comes preinstalled.
-      - travis_retry pip install --install-option="--no-cython-compile" Cython==0.23
+      - travis_retry pip install --install-option="--no-cython-compile" Cython==0.24
       - python -c "from __future__ import print_function; import numpy; print(numpy.__version__)"
       - mkdir libraries
       - pushd libraries

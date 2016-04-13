@@ -11,8 +11,8 @@ clang 3.4 and later have been tested.
 2. Get the prerequisites.
   * CMake >= 2.8.11
   * Python 2.7, 3.4, or 3.5
-  * Cython >= 0.23
-  * NumPy >= 1.71
+  * Cython >= 0.24
+  * NumPy >= 1.7.1
   * git (for cloning the github repositories)
   * Nose (Only for generating xunit .xml output when running tests)
 
@@ -63,7 +63,7 @@ In some development environments, such as MSVC or XCode, you may prefer
 to develop libdynd and dynd-python together in one project. This is
 supported by including libdynd in the "libraries/libdynd" subdirectory
 of dynd-python, and running cmake with "-DDYND_INSTALL_LIB=OFF".
-For example, to set this up on Windows with MSVC 2013, do:
+For example, to set this up on Windows with MSVC 2015, do:
 
   ```
   D:\>git clone https://github.com/libdynd/dynd-python

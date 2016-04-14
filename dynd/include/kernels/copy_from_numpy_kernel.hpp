@@ -16,8 +16,8 @@ namespace nd {
                             const dynd::ndt::type *src_tp, size_t nkwd, const dynd::nd::array *kwds,
                             const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      cg.emplace_back([=](dynd::nd::kernel_builder &kb, kernel_request_t kernreq, const char *dst_arrmeta, size_t nsrc,
-                          const char *const *src_arrmeta) {
+      cg.emplace_back([=](dynd::nd::kernel_builder &kb, kernel_request_t kernreq, char *DYND_UNUSED(data),
+                          const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         if (src_tp[0].get_id() != dynd::void_id) {
           std::stringstream ss;
           ss << "Cannot instantiate dynd::nd::callable copy_from_numpy with "

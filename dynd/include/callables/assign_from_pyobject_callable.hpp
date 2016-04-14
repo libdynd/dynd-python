@@ -63,8 +63,8 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                               size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+                               const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         kb.emplace_back<assign_from_pyobject_kernel<fixed_bytes_id>>(kernreq, dst_tp, dst_arrmeta);
       });
 
@@ -86,8 +86,8 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                               size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+                               const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         kb.emplace_back<assign_from_pyobject_kernel<string_id>>(kernreq, dst_tp, dst_arrmeta);
       });
 
@@ -110,8 +110,9 @@ namespace nd {
                       const dynd::nd::array *DYND_UNUSED(kwds),
                       const std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars))
     {
-      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                               size_t DYND_UNUSED(nsrc), const char *const *DYND_UNUSED(src_arrmeta)) {
+      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+                               const char *dst_arrmeta, size_t DYND_UNUSED(nsrc),
+                               const char *const *DYND_UNUSED(src_arrmeta)) {
         kb.emplace_back<assign_from_pyobject_kernel<fixed_string_id>>(kernreq, dst_tp, dst_arrmeta);
       });
 
@@ -131,17 +132,17 @@ namespace nd {
                       const dynd::ndt::type &dst_tp, size_t nsrc, const dynd::ndt::type *src_tp, size_t nkwd,
                       const dynd::nd::array *kwds, const std::map<std::string, dynd::ndt::type> &tp_vars)
     {
-      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                               size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+                               const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         intptr_t root_ckb_offset = kb.size();
         kb.emplace_back<assign_from_pyobject_kernel<option_id>>(kernreq, dst_tp, dst_arrmeta);
         intptr_t ckb_offset = kb.size();
-        kb(dynd::kernel_request_single, dst_arrmeta, nsrc, nullptr);
+        kb(dynd::kernel_request_single, nullptr, dst_arrmeta, nsrc, nullptr);
 
         ckb_offset = kb.size();
         kb.get_at<assign_from_pyobject_kernel<option_id>>(root_ckb_offset)->copy_value_offset =
             ckb_offset - root_ckb_offset;
-        kb(dynd::kernel_request_single, dst_arrmeta, nsrc, src_arrmeta);
+        kb(dynd::kernel_request_single, nullptr, dst_arrmeta, nsrc, src_arrmeta);
 
         ckb_offset = kb.size();
       });
@@ -193,9 +194,9 @@ namespace nd {
 
       const std::vector<uintptr_t> &arrmeta_offsets = dst_tp.extended<dynd::ndt::tuple_type>()->get_arrmeta_offsets();
 
-      cg.emplace_back([arrmeta_offsets, dst_tp, field_count](dynd::nd::kernel_builder &kb,
-                                                             dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                                                             size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([arrmeta_offsets, dst_tp, field_count](
+          dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+          const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
         kb.emplace_back<assign_from_pyobject_kernel<tuple_id>>(kernreq);
@@ -210,7 +211,7 @@ namespace nd {
           self = kb.get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
           self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
           const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-          kb(dynd::kernel_request_single, field_arrmeta, nsrc, src_arrmeta);
+          kb(dynd::kernel_request_single,nullptr,  field_arrmeta, nsrc, src_arrmeta);
           ckb_offset = kb.size();
         }
       });
@@ -275,8 +276,8 @@ namespace nd {
       const std::vector<uintptr_t> &arrmeta_offsets = dst_tp.extended<dynd::ndt::struct_type>()->get_arrmeta_offsets();
 
       cg.emplace_back([arrmeta_offsets, dim_broadcast, field_count,
-                       dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                               size_t nsrc, const char *const *src_arrmeta) {
+                       dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+                               const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
 
@@ -296,7 +297,7 @@ namespace nd {
           self = kb.get_at<assign_from_pyobject_kernel<struct_id>>(root_ckb_offset);
           self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
           const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
-          kb(dynd::kernel_request_single, field_arrmeta, nsrc, src_arrmeta);
+          kb(dynd::kernel_request_single, nullptr, field_arrmeta, nsrc, src_arrmeta);
           ckb_offset = kb.size();
         }
       });
@@ -357,8 +358,8 @@ namespace nd {
     {
       dynd::ndt::type el_tp = dst_tp.extended<ndt::fixed_dim_type>()->get_element_type();
 
-      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, const char *dst_arrmeta,
-                               size_t nsrc, const char *const *src_arrmeta) {
+      cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
+                               const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         const char *el_arrmeta = dst_arrmeta + sizeof(size_stride_t);
         intptr_t dim_size = reinterpret_cast<const size_stride_t *>(dst_arrmeta)->dim_size;
         intptr_t stride = reinterpret_cast<const size_stride_t *>(dst_arrmeta)->stride;
@@ -375,7 +376,7 @@ namespace nd {
         self->m_dst_tp = dst_tp;
         self->m_dst_arrmeta = dst_arrmeta;
         // from pyobject ckernel
-        kb(dynd::kernel_request_strided, el_arrmeta, nsrc, src_arrmeta);
+        kb(dynd::kernel_request_strided,nullptr,  el_arrmeta, nsrc, src_arrmeta);
 
         ckb_offset = kb.size();
         self = kb.get_at<assign_from_pyobject_kernel<fixed_dim_id>>(root_ckb_offset);
@@ -414,7 +415,8 @@ namespace nd {
       dynd::ndt::type el_tp = dst_tp.extended<dynd::ndt::var_dim_type>()->get_element_type();
 
       cg.emplace_back([dst_tp, el_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq,
-                                      const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
+                                      char *DYND_UNUSED(data), const char *dst_arrmeta, size_t nsrc,
+                                      const char *const *src_arrmeta) {
         intptr_t ckb_offset = kb.size();
 
         intptr_t root_ckb_offset = ckb_offset;
@@ -427,7 +429,7 @@ namespace nd {
         self->m_dst_tp = dst_tp;
         self->m_dst_arrmeta = dst_arrmeta;
         const char *el_arrmeta = dst_arrmeta + sizeof(dynd::ndt::var_dim_type::metadata_type);
-        kb(dynd::kernel_request_strided, el_arrmeta, nsrc, src_arrmeta);
+        kb(dynd::kernel_request_strided, nullptr, el_arrmeta, nsrc, src_arrmeta);
         ckb_offset = kb.size();
         self = kb.get_at<assign_from_pyobject_kernel<var_dim_id>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;

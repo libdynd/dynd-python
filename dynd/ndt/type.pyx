@@ -27,9 +27,9 @@ from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_dat
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
 from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
-from ..cpp.types.var_dim_type cimport dynd_make_var_dim_type
 from ..cpp.types.tuple_type cimport tuple_type
 from ..cpp.types.struct_type cimport struct_type
+from ..cpp.types.var_dim_type cimport var_dim_type as _var_dim_type
 from ..cpp.types.callable_type cimport make_callable
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
@@ -572,7 +572,7 @@ def make_var_dim(element_tp):
     ndt.type("var * float32")
     """
     cdef type result = type()
-    result.v = dynd_make_var_dim_type(type(element_tp).v)
+    result.v = make_type[_var_dim_type](as_cpp_type(element_tp))
     return result
 
 bool = type(bool_id)

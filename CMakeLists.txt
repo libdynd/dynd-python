@@ -29,6 +29,13 @@ if(UNIX)
 endif()
 ################################################
 
+# When this is enabled, the cmake build assumes it is in the directory
+# <dynd-python>/build-dev and copies all binaries to the necessary
+# place for in-place development of the Python bindings to work.
+option(DYND_PYTHON_INPLACE_BUILD
+       "Enabled via `python setup.py develop`"
+       OFF)
+
 # For the Git SHA1/version code
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
@@ -52,6 +59,23 @@ if (NUMPY_VERSION_DECIMAL LESS 10500)
         "DyND-Python requires NumPy >= 1.5")
 endif()
 
+# Helper function for controlling the output directory in in-place build
+# mode. By setting the per-target properties, this works on all platforms.
+function(set_target_library_output_dir target dir)
+    set_target_properties(${target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG ${dir}
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${dir})
+    set_target_properties(${target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${dir}
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${dir})
+    set_target_properties(${target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${dir}
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${dir})
+    set_target_properties(${target} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE ${dir}
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${dir})
+endfunction()
+
 if (DYND_INSTALL_LIB)
     find_package(LibDyND REQUIRED)
 else()
@@ -69,12 +93,19 @@ else()
             "See BUILD_INSTALL.md for more details.")
     endif()
 
+    if (DYND_PYTHON_INPLACE_BUILD)
+        # Build the libdynd.so/.dll directly to the in-place Python bindings
+        set(DYND_OVERRIDE_TARGET_DIR "${PROJECT_SOURCE_DIR}/dynd"
+            CACHE PATH "Override target dir for develop mode" FORCE)
+    endif()
+
     # Include libdynd in the build
     add_subdirectory(libraries/libdynd)
 
     set(LIBDYND_INCLUDE_DIR
         "libraries/libdynd/include"
         "${CMAKE_CURRENT_BINARY_DIR}/libraries/libdynd/include")
+
 endif()
 
 # Get the git revision
@@ -167,6 +198,9 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/type_deduction.cpp
                   dynd/src/types/pyobject_type.cpp
                   )
+if (DYND_PYTHON_INPLACE_BUILD)
+    set_target_library_output_dir(dynd.nd.array "${PROJECT_SOURCE_DIR}/dynd/nd")
+endif()
 
 cython_add_module(dynd.config dynd.config_pyx True
                   dynd/include/exception_translation.hpp
@@ -175,6 +209,9 @@ cython_add_module(dynd.config dynd.config_pyx True
                   dynd/src/type_deduction.cpp
                   ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
                   )
+if (DYND_PYTHON_INPLACE_BUILD)
+    set_target_library_output_dir(dynd.config "${PROJECT_SOURCE_DIR}/dynd")
+endif()
 
 foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True
@@ -182,6 +219,13 @@ foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional d
                       dynd/src/type_conversions.cpp
                       dynd/src/array_conversions.cpp)
 endforeach(module)
+if (DYND_PYTHON_INPLACE_BUILD)
+    set_target_library_output_dir(dynd.ndt.type "${PROJECT_SOURCE_DIR}/dynd/ndt")
+    set_target_library_output_dir(dynd.ndt.json "${PROJECT_SOURCE_DIR}/dynd/ndt")
+    set_target_library_output_dir(dynd.nd.callable "${PROJECT_SOURCE_DIR}/dynd/nd")
+    set_target_library_output_dir(dynd.nd.functional "${PROJECT_SOURCE_DIR}/dynd/nd")
+    set_target_library_output_dir(dynd.nd.registry "${PROJECT_SOURCE_DIR}/dynd/nd")
+endif()
 
 
 # Run a postprocess script to work around some Cython bugs

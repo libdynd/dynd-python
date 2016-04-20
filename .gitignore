@@ -3,6 +3,7 @@
 .DS_Store
 bld.bat
 build
+build-dev
 dist
 dynd.egg-info
 build_cuda

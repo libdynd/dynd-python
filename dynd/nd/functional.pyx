@@ -4,10 +4,11 @@ from cpython cimport PyObject
 
 from ..cpp.callable cimport callable as _callable
 from ..cpp.type cimport type as _type
-from ..cpp.types.callable_type cimport make_callable
+from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.functional cimport elwise as _elwise
 from ..cpp.functional cimport reduction as _reduction
 from ..cpp.array cimport array as _array
+from ..cpp.type cimport make_type
 
 from ..config cimport translate_exception
 from .array cimport _functional_apply as _apply
@@ -100,7 +101,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     for i in range(nsrc):
         src_tp_copy.push_back(src_tp[i])
 
-    return dynd_nd_callable_from_cpp(_apply_jit(make_callable(dst_tp, src_tp_copy),
+    return dynd_nd_callable_from_cpp(_apply_jit(make_type[_callable_type](dst_tp, src_tp_copy),
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):

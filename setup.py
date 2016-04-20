@@ -77,10 +77,18 @@ class cmake_build_ext(build_ext):
     # If libdynd is checked out into the libraries subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
-    if os.path.isfile(os.path.join(source,
-                          'libraries/libdynd/include/dynd/array.hpp')):
+    libdynd_in_tree = os.path.isfile(
+            os.path.join(source, 'libraries/libdynd/include/dynd/array.hpp'))
+    if libdynd_in_tree:
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
+
+    # If the build is done inplace, require libdynd be included in the build
+    if self.inplace:
+        if not libdynd_in_tree:
+            raise RuntimeError('For an in-tree build like "python setup.py develop",'
+                               ' libdynd must be checked out in the'
+                               ' dynd-python/libraries subdirectory')
 
     extra_cmake_args = shlex.split(self.extra_cmake_args)
     cmake_command = ['cmake'] + extra_cmake_args + [pyexe_option,

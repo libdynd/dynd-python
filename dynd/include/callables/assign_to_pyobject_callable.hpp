@@ -1,7 +1,7 @@
 #pragma once
 
-#include <dynd/callables/base_callable.hpp>
 #include "kernels/assign_to_pyobject_kernel.hpp"
+#include <dynd/callables/base_callable.hpp>
 
 namespace pydynd {
 namespace nd {
@@ -12,7 +12,8 @@ namespace nd {
   public:
     assign_to_pyobject_callable()
         : dynd::nd::default_instantiable_callable<assign_to_pyobject_kernel<Arg0ID>>(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(Arg0ID)}))
+              dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                             {dynd::ndt::type(Arg0ID)}))
     {
     }
   };
@@ -21,8 +22,8 @@ namespace nd {
   class assign_to_pyobject_callable<fixed_bytes_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(fixed_bytes_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(fixed_bytes_id)}))
     {
     }
 
@@ -54,8 +55,8 @@ namespace nd {
   class assign_to_pyobject_callable<string_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(string_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(string_id)}))
     {
     }
 
@@ -102,8 +103,8 @@ namespace nd {
   class assign_to_pyobject_callable<fixed_string_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(fixed_string_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(fixed_string_id)}))
     {
     }
 
@@ -155,8 +156,8 @@ namespace nd {
   class assign_to_pyobject_callable<option_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(option_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(option_id)}))
     {
     }
 
@@ -178,7 +179,7 @@ namespace nd {
         self_ck = kb.get_at<assign_to_pyobject_kernel<option_id>>(root_ckb_offset);
         self_ck->m_assign_value_offset = kb.size() - root_ckb_offset;
 
-        kb(dynd::kernel_request_single,nullptr,  dst_arrmeta, nsrc, src_arrmeta);
+        kb(dynd::kernel_request_single, nullptr, dst_arrmeta, nsrc, src_arrmeta);
       });
 
       dynd::nd::is_na->resolve(this, nullptr, cg, dynd::ndt::make_type<dynd::bool1>(), nsrc, src_tp, 0, nullptr,
@@ -214,8 +215,8 @@ namespace nd {
   class assign_to_pyobject_callable<tuple_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(tuple_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(tuple_id)}))
     {
     }
 
@@ -262,8 +263,8 @@ namespace nd {
   class assign_to_pyobject_callable<struct_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(struct_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(struct_id)}))
     {
     }
 
@@ -359,8 +360,8 @@ namespace nd {
   class assign_to_pyobject_callable<fixed_dim_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(fixed_dim_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(fixed_dim_id)}))
     {
     }
 
@@ -412,8 +413,8 @@ namespace nd {
   class assign_to_pyobject_callable<var_dim_id> : public dynd::nd::base_callable {
   public:
     assign_to_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::callable_type::make(dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::type(var_dim_id)}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(dynd::ndt::make_type<pyobject_type>(),
+                                                                                 {dynd::ndt::type(var_dim_id)}))
     {
     }
 

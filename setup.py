@@ -7,6 +7,7 @@ import os, sys
 from os import chdir, getcwd
 from os.path import abspath, dirname, split
 import shlex
+from subprocess import check_output
 
 import re
 
@@ -50,14 +51,19 @@ class cmake_build_ext(build_ext):
     source = dirname(abspath(__file__))
 
     # The staging directory for the module being built
-    build_temp = os.path.join(os.getcwd(), self.build_temp)
-    build_lib = os.path.join(os.getcwd(), self.build_lib)
+    if self.inplace:
+        # In `python setup.py develop` mode, always build C++ code
+        # in the 'build-dev' dir.
+        build_temp = os.path.join(os.getcwd(), 'build-dev')
+    else:
+        build_temp = os.path.join(os.getcwd(), self.build_temp)
+        build_lib = os.path.join(os.getcwd(), self.build_lib)
 
     # Change to the build directory
     saved_cwd = getcwd()
-    if not os.path.isdir(self.build_temp):
-        self.mkpath(self.build_temp)
-    chdir(self.build_temp)
+    if not os.path.isdir(build_temp):
+        self.mkpath(build_temp)
+    chdir(build_temp)
 
     # Detect if we built elsewhere
     if os.path.isfile('CMakeCache.txt'):
@@ -72,19 +78,32 @@ class cmake_build_ext(build_ext):
     install_lib_option = '-DDYND_INSTALL_LIB=ON'
     static_lib_option = ''
     build_tests_option = ''
+    inplace_build_option = ''
 
     # If libdynd is checked out into the libraries subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
-    if os.path.isfile(os.path.join(source,
-                          'libraries/libdynd/include/dynd/array.hpp')):
+    libdynd_in_tree = os.path.isfile(
+            os.path.join(source, 'libraries/libdynd/include/dynd/array.hpp'))
+    if libdynd_in_tree:
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
+
+    # If the build is done inplace, require libdynd be included in the build
+    if self.inplace:
+        if not libdynd_in_tree:
+            raise RuntimeError('For an in-tree build like "python setup.py develop",'
+                               ' libdynd must be checked out in the'
+                               ' dynd-python/libraries subdirectory')
+        # This option causes the cmake config to copy the binaries into the
+        # tree every time they are built
+        inplace_build_option = '-DDYND_PYTHON_INPLACE_BUILD=ON'
+
 
     extra_cmake_args = shlex.split(self.extra_cmake_args)
     cmake_command = ['cmake'] + extra_cmake_args + [pyexe_option,
                      install_lib_option, build_tests_option,
-                     static_lib_option]
+                     inplace_build_option, static_lib_option]
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
@@ -102,32 +121,33 @@ class cmake_build_ext(build_ext):
 
     import glob, shutil
 
-    if install_lib_option.split('=')[1] == 'OFF':
-        if sys.platform != 'win32':
-            names = glob.glob('libraries/libdynd/libdy*.*')
-        else:
-            names = glob.glob('libraries/libdynd/%s/libdy*.*' % build_type)
-        for name in names:
-            short_name = split(name)[1]
-            shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
+    if not self.inplace:
+        if install_lib_option.split('=')[1] == 'OFF':
+            if sys.platform != 'win32':
+                names = glob.glob('libraries/libdynd/libdy*.*')
+            else:
+                names = glob.glob('libraries/libdynd/%s/libdy*.*' % build_type)
+            for name in names:
+                short_name = split(name)[1]
+                shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
 
-    # Move the built C-extension to the place expected by the Python build
-    self._found_names = []
-    for name in self.get_expected_names():
-        built_path = self.get_ext_built(name)
-        print(os.getcwd())
-        if os.path.exists(built_path):
-            ext_path = os.path.join(build_lib, self.get_ext_path(name))
-            if os.path.exists(ext_path):
-                os.remove(ext_path)
-            self.mkpath(os.path.dirname(ext_path))
-            print('Moving built DyND C-extension', built_path,
-                  'to build path', ext_path)
-            shutil.move(self.get_ext_built(name), ext_path)
-            self._found_names.append(name)
-        else:
-            raise RuntimeError('DyND C-extension failed to build:',
-                               os.path.abspath(built_path))
+        # Move the built C-extension to the place expected by the Python build
+        self._found_names = []
+        for name in self.get_expected_names():
+            built_path = self.get_ext_built(name)
+            print(os.getcwd())
+            if os.path.exists(built_path):
+                ext_path = os.path.join(build_lib, self.get_ext_path(name))
+                if os.path.exists(ext_path):
+                    os.remove(ext_path)
+                self.mkpath(os.path.dirname(ext_path))
+                print('Moving built DyND C-extension', built_path,
+                      'to build path', ext_path)
+                shutil.move(self.get_ext_built(name), ext_path)
+                self._found_names.append(name)
+            else:
+                raise RuntimeError('DyND C-extension failed to build:',
+                                   os.path.abspath(built_path))
 
     chdir(saved_cwd)
 
@@ -143,16 +163,10 @@ class cmake_build_ext(build_ext):
     # Just the C extensions
     return [self.get_ext_path(name) for name in self.get_names()]
 
-if sys.version_info >= (2, 7):
-    from subprocess import check_output
-else:
-    def check_output(args):
-        import subprocess
-        return subprocess.Popen(args, stdout = subprocess.PIPE).communicate()[0]
 
 # Get the version number to use from git
 ver = check_output(['git', 'describe', '--dirty',
-                               '--always', '--match', 'v*']).decode('ascii').strip('\n')
+                    '--always', '--match', 'v*']).decode('ascii').strip('\n')
 
 # Same processing as in __init__.py
 if '.' in ver:

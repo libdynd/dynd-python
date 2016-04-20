@@ -30,7 +30,7 @@ from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.tuple_type cimport tuple_type
 from ..cpp.types.struct_type cimport struct_type
 from ..cpp.types.var_dim_type cimport var_dim_type as _var_dim_type
-from ..cpp.types.callable_type cimport make_callable
+from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport make as make_bytes_type
 from ..cpp.type cimport make_type
@@ -653,7 +653,7 @@ def callable(ret_or_func, *args, **kwds):
                 args.append(func.__annotations__[name])
             except (AttributeError, KeyError):
                 args.append(type('Scalar'))
-    return dynd_ndt_type_from_cpp(make_callable(as_cpp_type(ret),
+    return dynd_ndt_type_from_cpp(make_type[_callable_type](as_cpp_type(ret),
                as_cpp_type(tuple(*args)), as_cpp_type(struct(**kwds))))
 
 """

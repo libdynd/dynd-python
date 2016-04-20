@@ -93,12 +93,6 @@ else()
             "See BUILD_INSTALL.md for more details.")
     endif()
 
-    if (DYND_PYTHON_INPLACE_BUILD)
-        # Build the libdynd.so/.dll directly to the in-place Python bindings
-        set(DYND_OVERRIDE_TARGET_DIR "${PROJECT_SOURCE_DIR}/dynd"
-            CACHE PATH "Override target dir for develop mode" FORCE)
-    endif()
-
     # Include libdynd in the build
     add_subdirectory(libraries/libdynd)
 
@@ -106,6 +100,11 @@ else()
         "libraries/libdynd/include"
         "${CMAKE_CURRENT_BINARY_DIR}/libraries/libdynd/include")
 
+    if (DYND_PYTHON_INPLACE_BUILD)
+        # Build the libdynd.so/.dll directly to the in-place Python bindings
+        set_target_library_output_dir(libdynd "${PROJECT_SOURCE_DIR}/dynd")
+        set_target_library_output_dir(libdyndt "${PROJECT_SOURCE_DIR}/dynd")
+    endif()
 endif()
 
 # Get the git revision

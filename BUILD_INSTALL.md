@@ -22,9 +22,9 @@ clang 3.4 and later have been tested.
 should work equivalently on Windows and Unix-like operating systems.
 
   ```
-  ~ $ git clone https://github.com/libdynd/libdynd
+  ~ $ git clone --recursive https://github.com/libdynd/libdynd
   Cloning into libdynd...
-  ~ $ git clone https://github.com/libdynd/dynd-python
+  ~ $ git clone --recursive https://github.com/libdynd/dynd-python
   Cloning into dynd-python...
   ```
 

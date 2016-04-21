@@ -16,6 +16,37 @@ clang 3.4 and later have been tested.
   * git (for cloning the github repositories)
   * Nose (Only for generating xunit .xml output when running tests)
 
+BUILD FOR DEVELOPMENT
+---------------------
+
+Development of DyND should be done using the build configuration combining
+libdynd and the DyND Python bindings in a single combined build in a
+development mode. With this configuration, a single build will update both
+libdynd and dynd-python in a way that both the C++ and Python tests can
+be run with no further installation steps.
+
+This combined build configuration works both with make-style builds and
+MSVC solution files. The following instructions are the same for both
+Windows and Linux/OS X, but on a unix platform run `make` instead of
+loading the `dynd-python.sln` file at the end.
+
+  ```
+  C:\>git clone --recursive https://github.com/libdynd/dynd-python
+  Cloning into 'dynd-python'...
+  <...>
+  C:\>cd dynd-python
+  C:\dynd-python>git clone --recursive https://github.com/libdynd/libdynd
+  Cloning into 'libdynd'...
+  <...>
+  C:\dynd-python>python setup.py develop
+  <...>
+  C:\dynd-python>cd build-dev
+  C:\dynd-python\build-dev>start dynd-python.sln
+  ```
+
+BUILD FOR INSTALLATION
+----------------
+
 3. Get the source code.
 
   Check out the dynd-python and libdynd source code. The following commands
@@ -56,29 +87,6 @@ to the cmake command.
 `-DPYTHON_PACKAGE_INSTALL_PREFIX=<site-pkg-dir>`
 to the cmake command.
 
-COMBINED BUILDS
-===============
-
-In some development environments, such as MSVC or XCode, you may prefer
-to develop libdynd and dynd-python together in one project. This is
-supported by including libdynd in the "libdynd" subdirectory
-of dynd-python, and running cmake with "-DDYND_INSTALL_LIB=OFF".
-For example, to set this up on Windows with MSVC 2015, do:
-
-  ```
-  D:\>git clone https://github.com/libdynd/dynd-python
-  Cloning into 'dynd-python'...
-  <...>
-
-  D:\>cd dynd-python
-
-  D:\dynd-python>git clone https://github.com/libdynd/libdynd
-  Cloning into 'libdynd'...
-  <...>
-
-  D:\dynd-python>python setup.py install
-
-  ```
 
 ALTERNATIVE COMPILERS
 =====================

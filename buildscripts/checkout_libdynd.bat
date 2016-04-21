@@ -1,5 +1,2 @@
-rd /q /s libraries
-mkdir libraries
-pushd libraries
+rd /q /s libdynd
 git clone https://github.com/libdynd/libdynd.git
-popd

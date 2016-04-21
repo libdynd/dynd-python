@@ -80,11 +80,11 @@ class cmake_build_ext(build_ext):
     build_tests_option = ''
     inplace_build_option = ''
 
-    # If libdynd is checked out into the libraries subdir,
+    # If libdynd is checked out into the libdynd subdir,
     # we want to build libdynd as part of dynd-python, not
     # separately like the default does.
     libdynd_in_tree = os.path.isfile(
-            os.path.join(source, 'libraries/libdynd/include/dynd/array.hpp'))
+            os.path.join(source, 'libdynd/include/dynd/array.hpp'))
     if libdynd_in_tree:
         install_lib_option = '-DDYND_INSTALL_LIB=OFF'
         build_tests_option = '-DDYND_BUILD_TESTS=OFF'
@@ -92,9 +92,10 @@ class cmake_build_ext(build_ext):
     # If the build is done inplace, require libdynd be included in the build
     if self.inplace:
         if not libdynd_in_tree:
-            raise RuntimeError('For an in-tree build like "python setup.py develop",'
+            raise RuntimeError('For an in-tree build with'
+                               ' "python setup.py develop",'
                                ' libdynd must be checked out in the'
-                               ' dynd-python/libraries subdirectory')
+                               ' dynd-python subdirectory')
         # This option causes the cmake config to copy the binaries into the
         # tree every time they are built
         inplace_build_option = '-DDYND_PYTHON_INPLACE_BUILD=ON'
@@ -124,9 +125,9 @@ class cmake_build_ext(build_ext):
     if not self.inplace:
         if install_lib_option.split('=')[1] == 'OFF':
             if sys.platform != 'win32':
-                names = glob.glob('libraries/libdynd/libdy*.*')
+                names = glob.glob('libdynd/libdy*.*')
             else:
-                names = glob.glob('libraries/libdynd/%s/libdy*.*' % build_type)
+                names = glob.glob('libdynd/%s/libdy*.*' % build_type)
             for name in names:
                 short_name = split(name)[1]
                 shutil.move(name, os.path.join(build_lib, 'dynd', short_name))

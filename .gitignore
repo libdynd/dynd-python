@@ -7,7 +7,7 @@ build-dev
 dist
 dynd.egg-info
 build_cuda
-libraries/libdynd
+libdynd
 CMakeCache.txt
 CMakeFiles
 Makefile

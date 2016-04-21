@@ -15,7 +15,7 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 #
 # -DDYND_INSTALL_LIB=ON/OFF, Use a libdynd which has been built and
 #   installed separately. To build with this option off, libdynd
-#   must be checked out into the libraries/libdynd subdirectory.
+#   must be checked out into the libdynd subdirectory.
 option(DYND_INSTALL_LIB
     "Use a libdynd built and installed somewhere."
     ON)
@@ -83,22 +83,22 @@ else()
     # USE_RELATIVE_RPATH is inherited from this cmakelists, so need to set it here
     option(DYND_BUILD_TESTS "Build the googletest unit tests for libdynd." ON)
 
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libraries/libdynd/include/dynd/array.hpp")
+    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/libdynd/include/dynd/array.hpp")
         message(FATAL_ERROR
-            "The libdynd C++ library must be placed in libraries/libdynd."
+            "The libdynd C++ library must be placed in libdynd."
             "Remove any temporary CMake"
             "files, then if you're using git, run"
             "'git clone git@github.com:libdynd/libdynd.git'"
-            "from the libraries directory."
+            "from the dynd-python directory."
             "See BUILD_INSTALL.md for more details.")
     endif()
 
     # Include libdynd in the build
-    add_subdirectory(libraries/libdynd)
+    add_subdirectory(libdynd)
 
     set(LIBDYND_INCLUDE_DIR
-        "libraries/libdynd/include"
-        "${CMAKE_CURRENT_BINARY_DIR}/libraries/libdynd/include")
+        "libdynd/include"
+        "${CMAKE_CURRENT_BINARY_DIR}/libdynd/include")
 
     if (DYND_PYTHON_INPLACE_BUILD)
         # Build the libdynd.so/.dll directly to the in-place Python bindings

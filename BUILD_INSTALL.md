@@ -61,7 +61,7 @@ COMBINED BUILDS
 
 In some development environments, such as MSVC or XCode, you may prefer
 to develop libdynd and dynd-python together in one project. This is
-supported by including libdynd in the "libraries/libdynd" subdirectory
+supported by including libdynd in the "libdynd" subdirectory
 of dynd-python, and running cmake with "-DDYND_INSTALL_LIB=OFF".
 For example, to set this up on Windows with MSVC 2015, do:
 
@@ -72,15 +72,9 @@ For example, to set this up on Windows with MSVC 2015, do:
 
   D:\>cd dynd-python
 
-  D:\dynd-python>mkdir libraries
-
-  D:\dynd-python>cd libraries
-
-  D:\dynd-python\libraries>git clone https://github.com/libdynd/libdynd
+  D:\dynd-python>git clone https://github.com/libdynd/libdynd
   Cloning into 'libdynd'...
   <...>
-
-  D:\dynd-python\libraries>cd ..
 
   D:\dynd-python>python setup.py install
 

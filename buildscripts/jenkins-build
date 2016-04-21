@@ -47,14 +47,11 @@ fi
 # Remove the build subdirectory from last time
 rm -rf build
 
-# Get libdynd into the libraries subdirectory
+# Get libdynd
 # TODO: Build libdynd in a separate jenkins project,
 #       and use its build artifact here.
-rm -rf libraries
-mkdir libraries
-pushd libraries
+rm -rf libdynd
 git clone https://github.com/libdynd/libdynd.git
-popd
 
 # Make sure binstar is installed in the main environment
 echo Updating binstar...

@@ -44,6 +44,8 @@ class cmake_build_ext(build_ext):
     self.extra_cmake_args = ''
 
   def run(self):
+    global build_type
+
     # We don't call the origin build_ext, instead ignore that
     # default behavior and call cmake for DyND's one C-extension.
 
@@ -101,6 +103,9 @@ class cmake_build_ext(build_ext):
         # This option causes the cmake config to copy the binaries into the
         # tree every time they are built
         inplace_build_option = '-DDYND_PYTHON_INPLACE_BUILD=ON'
+        # Enable debug info
+        if build_type == 'Release':
+            build_type = 'RelWithDebInfo'
 
 
     extra_cmake_args = shlex.split(self.extra_cmake_args)

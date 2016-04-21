@@ -96,6 +96,8 @@ class cmake_build_ext(build_ext):
                                ' "python setup.py develop",'
                                ' libdynd must be checked out in the'
                                ' dynd-python subdirectory')
+        # Definitely want the tests in 'develop' mode
+        build_tests_option = '-DDYND_BUILD_TESTS=ON'
         # This option causes the cmake config to copy the binaries into the
         # tree every time they are built
         inplace_build_option = '-DDYND_PYTHON_INPLACE_BUILD=ON'

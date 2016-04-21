@@ -42,10 +42,7 @@ matrix:
       # Use the version of numpy that comes preinstalled.
       - travis_retry pip install --install-option="--no-cython-compile" Cython==0.24
       - python -c "from __future__ import print_function; import numpy; print(numpy.__version__)"
-      - mkdir libraries
-      - pushd libraries
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
-      - popd
       - python setup.py install
   - language: objective-c
     os: osx

@@ -2,15 +2,20 @@ import os
 if os.name == 'nt':
     # Manually load dlls before loading the extension modules.
     # This is handled via rpaths on Unix based systems.
-    from ctypes import cdll
+    import ctypes
     import os.path
-    # If libdynd.dll is already on the path, use it.
-    try:
-        # The default dll search order should give precedence to copies of
-        # libdynd in the same directory as this file.
-        cdll.LoadLibrary('libdyndt.dll')
-        cdll.LoadLibrary('libdynd.dll')
-    except OSError:
+    def load_dynd_dll(rootpath):
+        try:
+            ctypes.cdll.LoadLibrary(os.path.join(rootpath, 'libdyndt.dll'))
+            ctypes.cdll.LoadLibrary(os.path.join(rootpath, 'libdynd.dll'))
+            return True;
+        except OSError:
+            return False;
+    # If libdynd.dll has been placed in the dynd-python installation, use that
+    loaded = load_dynd_dll(os.path.dirname(__file__))
+    # Next, try the default DLL search path
+    loaded = loaded or load_dynd_dll('')
+    if not loaded:
         # Try to load it from the Program Files directories where libdynd
         # installs by default. This matches the search path for libdynd used
         # in the CMake build for dynd-python.
@@ -42,8 +47,8 @@ if os.name == 'nt':
                 raise RuntimeError(err_str.format('ProgramFiles(x86)'))
         dynd_lib_dir = os.path.join(prog_files, 'libdynd', 'lib')
         if os.path.isdir(dynd_lib_dir):
-            cdll.LoadLibrary(os.path.join(dynd_lib_dir, 'libdyndt.dll'))
-            cdll.LoadLibrary(os.path.join(dynd_lib_dir, 'libdynd.dll'))
+            loaded = load_dynd_dll(dynd_lib_dir)
+            raise ctypes.WinError(126, 'Could not load libdynd.dll or libdyndt.dll')
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \

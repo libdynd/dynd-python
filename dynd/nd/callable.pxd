@@ -8,4 +8,4 @@ cdef api _callable dynd_nd_callable_to_cpp(callable) except *
 # Provide an API for returning as a pointer since Cython can't handle
 # returning references yet.
 cdef api _callable *dynd_nd_callable_to_ptr(callable) except *
-cdef api callable dynd_nd_callable_from_cpp(const _callable &)
+cdef api callable wrap(const _callable &)

@@ -10,6 +10,10 @@ from .type cimport type
 
 ctypedef const_char* const_charptr
 
+cdef extern from '<sstream>' namespace 'std':
+    cdef cppclass stringstream:
+        string str() const
+
 cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
     cdef cppclass callable:
         callable()
@@ -24,3 +28,5 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
     callable make_callable 'dynd::nd::callable::make'[T](...) except +translate_exception
 
     map[string, callable] callables()
+
+    stringstream &operator<<(callable f)

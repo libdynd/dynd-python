@@ -12,7 +12,7 @@ from ..cpp.type cimport make_type
 
 from ..config cimport translate_exception
 from .array cimport _functional_apply as _apply
-from .callable cimport callable, dynd_nd_callable_from_cpp, dynd_nd_callable_to_cpp
+from .callable cimport callable, wrap, dynd_nd_callable_to_cpp
 from ..ndt.type cimport type, as_numba_type, from_numba_type, as_cpp_type
 
 cdef extern from 'dynd/functional.hpp' namespace 'dynd::nd::functional':
@@ -101,7 +101,7 @@ cdef public object _jit(object func, intptr_t nsrc, const _type *src_tp):
     for i in range(nsrc):
         src_tp_copy.push_back(src_tp[i])
 
-    return dynd_nd_callable_from_cpp(_apply_jit(make_type[_callable_type](dst_tp, src_tp_copy),
+    return wrap(_apply_jit(make_type[_callable_type](dst_tp, src_tp_copy),
             library.get_pointer_to_function('single')))
 
 def apply(func = None, jit = _import_numba(), *args, **kwds):
@@ -109,10 +109,10 @@ def apply(func = None, jit = _import_numba(), *args, **kwds):
     def make(type tp, func):
         if jit:
             import numba
-            return dynd_nd_callable_from_cpp(_make_callable[apply_jit_dispatch_callable]((<type> tp).v,
+            return wrap(_make_callable[apply_jit_dispatch_callable]((<type> tp).v,
                 <object> numba.jit(func, *args, **kwds), _jit))
 
-        return dynd_nd_callable_from_cpp(_apply(tp.v, func))
+        return wrap(_apply(tp.v, func))
 
     if func is None:
         return lambda func: make(ndt.callable(func), func)
@@ -123,13 +123,13 @@ def elwise(func):
     if not isinstance(func, callable):
         func = apply(func)
 
-    return dynd_nd_callable_from_cpp(_elwise((<callable> func).v))
+    return wrap(_elwise((<callable> func).v))
 
 def reduction(child):
     if not isinstance(child, callable):
         child = apply(child)
 
-    return dynd_nd_callable_from_cpp(_reduction((<callable> child).v))
+    return wrap(_reduction((<callable> child).v))
 
 """
 def multidispatch(type tp, iterable = None):
@@ -137,5 +137,5 @@ def multidispatch(type tp, iterable = None):
     if iterable is not None:
         for c in iterable:
             v.push_back(dynd_nd_callable_to_cpp(c))
-    return dynd_nd_callable_from_cpp(_multidispatch(as_cpp_type(tp), v.begin(), v.end()))
+    return wrap(_multidispatch(as_cpp_type(tp), v.begin(), v.end()))
 """

@@ -51,8 +51,7 @@ dynd::nd::callable &pydynd::callable_to_cpp_ref(PyObject *o)
       throw std::exception();
     }
   }
-  return *dynd_nd_callable_to_ptr(
-      reinterpret_cast<dynd_nd_callable_pywrapper *>(o));
+  return *dynd_nd_callable_to_ptr(reinterpret_cast<dynd_nd_callable_pywrapper *>(o));
 }
 
 PyTypeObject *pydynd::get_callable_pytypeobject()
@@ -72,12 +71,12 @@ PyTypeObject *pydynd::get_callable_pytypeobject()
 
 PyObject *pydynd::callable_from_cpp(const dynd::nd::callable &c)
 {
-  if (dynd_nd_callable_from_cpp == NULL) {
+  if (wrap == NULL) {
     import_dynd__nd__callable();
     // Propagate any exceptions (e.g. an import error) back to Python.
     if (PyErr_Occurred()) {
       throw std::exception();
     }
   }
-  return reinterpret_cast<PyObject *>(dynd_nd_callable_from_cpp(c));
+  return reinterpret_cast<PyObject *>(wrap(c));
 }

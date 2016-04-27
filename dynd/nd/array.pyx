@@ -246,7 +246,7 @@ cdef class array(object):
         result.update(object.__dict__)
 
         for pair in callables():
-            result[pair.first] = dynd_nd_callable_from_cpp(pair.second)
+            result[pair.first] = wrap(pair.second)
 
         return result.keys()
 
@@ -1033,7 +1033,7 @@ def fields(array struct_array, *fields_list):
     result.v = nd_fields(struct_array.v, fields_list)
     return result
 
-from .callable cimport dynd_nd_callable_from_cpp
+from .callable cimport wrap
 
 # These are functions exported by the numpy interop stuff that are needed in
 # other modules. These are only here until we put together a better way of

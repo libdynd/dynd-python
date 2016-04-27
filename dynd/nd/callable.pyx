@@ -3,9 +3,9 @@ from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 
 from ..cpp.array cimport array as _array
-from ..cpp.callable cimport const_charptr
 
 from ..config cimport translate_exception
+from ..cpp.callable cimport const_charptr, stringstream
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp
 
 cdef extern from *:
@@ -73,6 +73,12 @@ cdef class callable(object):
                    nargs, cpp_args.data(), nkwargs, cpp_kwargs.data()))
         return a
 
+    def __repr__(self):
+        cdef stringstream ss
+        ss << self.v
+
+        return ss.str()
+
 cdef _callable dynd_nd_callable_to_cpp(callable c) except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
@@ -90,7 +96,7 @@ cdef _callable *dynd_nd_callable_to_ptr(callable c) except *:
     return &(c.v)
 
 # returns a Python object, so no exception specifier is needed.
-cdef callable dynd_nd_callable_from_cpp(const _callable &c):
+cdef callable wrap(const _callable &c):
     cdef callable cl = callable.__new__(callable)
     cl.v = c
     return cl

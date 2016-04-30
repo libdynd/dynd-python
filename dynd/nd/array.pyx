@@ -543,6 +543,7 @@ cpdef array asarray(object obj):
     return dynd_nd_array_from_cpp(as_cpp_array(obj))
 
 from dynd.nd.callable cimport callable
+from cython.operator cimport dereference
 
 def type_of(a):
     """
@@ -565,7 +566,7 @@ def type_of(a):
     if isinstance(a, array):
         result.v = (<array> a).v.get_type()
     elif isinstance(a, callable):
-        result.v = (<callable> a).v.get_array_type()
+        result.v = dereference((<callable> a).v).get_type()
 
     return result
 

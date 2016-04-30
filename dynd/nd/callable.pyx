@@ -4,6 +4,8 @@ from libcpp.pair cimport pair
 
 from ..cpp.array cimport array as _array
 
+from cython.operator cimport dereference
+
 from ..config cimport translate_exception
 from ..cpp.callable cimport const_charptr, stringstream
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp
@@ -50,7 +52,7 @@ cdef class callable(object):
 
     property type:
         def __get__(self):
-            return wrap(self.v.get_array_type())
+            return wrap(dereference(self.v).get_type())
 
     def __call__(callable self, *args, **kwargs):
         cdef size_t nargs = len(args), nkwargs = len(kwargs)

@@ -14,15 +14,21 @@ cdef extern from '<sstream>' namespace 'std':
     cdef cppclass stringstream:
         string str() const
 
+cdef extern from 'dynd/callables/base_callable.hpp' namespace 'dynd::nd' nogil:
+    cdef cppclass base_callable:
+        type get_type()
+
 cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
     cdef cppclass callable:
         callable()
 
-        type get_array_type()
+        base_callable *get()
 
         bool is_null()
 
         array call(size_t, array *, size_t, pair[const_charptr, array] *) except +translate_exception
+
+        base_callable &operator*() const
         array operator()(...) except +translate_exception
 
     callable make_callable 'dynd::nd::callable::make'[T](...) except +translate_exception

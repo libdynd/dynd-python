@@ -36,4 +36,3 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
         type_id_t get_base_id() const
 
     type make_type[T]() except +translate_exception
-

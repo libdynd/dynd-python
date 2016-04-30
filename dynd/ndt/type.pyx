@@ -305,7 +305,7 @@ cdef _type *dynd_ndt_type_to_ptr(type t) except *:
     return &(t.v)
 
 # returns a Python object, so no exception specifier is needed.
-cdef type dynd_ndt_type_from_cpp(const _type &t):
+cdef type wrap(const _type &t):
     cdef type tp = type.__new__(type)
     tp.v = t
     return tp
@@ -388,7 +388,7 @@ cdef _type as_cpp_type(object o) except *:
 cpdef type astype(object o):
     if _builtin_type(o) is type:
         return o
-    return dynd_ndt_type_from_cpp(as_cpp_type(o))
+    return wrap(as_cpp_type(o))
 
 # Disabled until dynd_make_categorical_type takes a std::vector<T>
 '''
@@ -607,9 +607,9 @@ def tuple(*args):
         for arg in args:
             _args.push_back(as_cpp_type(arg))
 
-        return dynd_ndt_type_from_cpp(make_type[tuple_type](_args.size(), _args.data()))
+        return wrap(make_type[tuple_type](_args.size(), _args.data()))
 
-    return dynd_ndt_type_from_cpp(make_type[tuple_type]())
+    return wrap(make_type[tuple_type]())
 
 from libcpp.string cimport string
 
@@ -627,9 +627,9 @@ def struct(**kwds):
         for name in kwds.keys():
             _names.push_back(name)
 
-        return dynd_ndt_type_from_cpp(make_type[struct_type](_names, _kwds))
+        return wrap(make_type[struct_type](_names, _kwds))
 
-    return dynd_ndt_type_from_cpp(make_type[struct_type]())
+    return wrap(make_type[struct_type]())
 
 #class fixed_dim(__builtins__.type):
 #    def __call__(self, size_or_element_tp, element_tp = None):
@@ -653,7 +653,7 @@ def callable(ret_or_func, *args, **kwds):
                 args.append(func.__annotations__[name])
             except (AttributeError, KeyError):
                 args.append(type('Scalar'))
-    return dynd_ndt_type_from_cpp(make_type[_callable_type](as_cpp_type(ret),
+    return wrap(make_type[_callable_type](as_cpp_type(ret),
                as_cpp_type(tuple(*args)), as_cpp_type(struct(**kwds))))
 
 """
@@ -711,7 +711,7 @@ cdef _type cpp_type_for(object obj) except *:
     return tp
 
 def type_for(obj):
-    return dynd_ndt_type_from_cpp(cpp_type_for(obj))
+    return wrap(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
 from ..nd.array cimport (_numpy_dtype_from__type, _is_numpy_dtype, _xtype_for_prefix)

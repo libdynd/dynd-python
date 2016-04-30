@@ -6,7 +6,7 @@ cdef api class type(object)[object dynd_ndt_type_pywrapper,
 
 cdef api _type dynd_ndt_type_to_cpp(type) except *
 cdef api _type *dynd_ndt_type_to_ptr(type) except *
-cdef api type dynd_ndt_type_from_cpp(const _type&)
+cdef api type wrap(const _type&)
 cdef api _type as_cpp_type(object o) except *
 cpdef type astype(object o)
 

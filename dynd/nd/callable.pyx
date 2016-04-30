@@ -50,7 +50,7 @@ cdef class callable(object):
 
     property type:
         def __get__(self):
-            return dynd_ndt_type_from_cpp(self.v.get_array_type())
+            return wrap(self.v.get_array_type())
 
     def __call__(callable self, *args, **kwargs):
         cdef size_t nargs = len(args), nkwargs = len(kwargs)
@@ -101,4 +101,4 @@ cdef callable wrap(const _callable &c):
     cl.v = c
     return cl
 
-from ..ndt.type cimport dynd_ndt_type_from_cpp
+from ..ndt.type cimport wrap

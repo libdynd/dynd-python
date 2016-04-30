@@ -56,7 +56,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
   void call(dynd::nd::array *dst, const dynd::nd::array *src)
   {
     const dynd::ndt::callable_type *fpt = m_proto.extended<dynd::ndt::callable_type>();
-    intptr_t nsrc = fpt->get_npos();
+    intptr_t nsrc = fpt->get_narg();
 
     std::vector<char *> src_data(nsrc);
     for (int i = 0; i < nsrc; ++i) {
@@ -69,7 +69,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
   void single(char *dst, char *const *src)
   {
     const dynd::ndt::callable_type *fpt = m_proto.extended<dynd::ndt::callable_type>();
-    intptr_t nsrc = fpt->get_npos();
+    intptr_t nsrc = fpt->get_narg();
     const dynd::ndt::type &dst_tp = fpt->get_return_type();
     const std::vector<dynd::ndt::type> &src_tp = fpt->get_argument_types();
     // First set up the parameters in a tuple
@@ -103,7 +103,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
   void strided(char *dst, intptr_t dst_stride, char *const *src, const intptr_t *src_stride, size_t count)
   {
     const dynd::ndt::callable_type *fpt = m_proto.extended<dynd::ndt::callable_type>();
-    intptr_t nsrc = fpt->get_npos();
+    intptr_t nsrc = fpt->get_narg();
     const dynd::ndt::type &dst_tp = fpt->get_return_type();
     const std::vector<dynd::ndt::type> &src_tp = fpt->get_argument_types();
     // First set up the parameters in a tuple

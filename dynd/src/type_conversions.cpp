@@ -31,14 +31,14 @@ PyTypeObject *pydynd::get_type_pytypeobject()
 
 PyObject *pydynd::type_from_cpp(const dynd::ndt::type &t)
 {
-  if (dynd_ndt_type_from_cpp == NULL) {
+  if (wrap == NULL) {
     import_dynd__ndt__type();
     // Propagate any exceptions (e.g. an import error) back to Python.
     if (PyErr_Occurred()) {
       throw std::exception();
     }
   }
-  return reinterpret_cast<PyObject *>(dynd_ndt_type_from_cpp(t));
+  return reinterpret_cast<PyObject *>(wrap(t));
 }
 
 dynd::ndt::type pydynd::dynd_ndt_as_cpp_type(PyObject *o)
@@ -83,4 +83,3 @@ dynd::ndt::type pydynd::ndt_type_from_pylist(PyObject *obj)
 
   return dynd::ndt::make_type(shape.size(), shape.data(), tp);
 }
-

@@ -14,7 +14,7 @@ from libcpp.vector cimport vector
 import numpy as _np
 
 from ..cpp.array cimport (groupby as dynd_groupby, empty as cpp_empty,
-                          dtyped_zeros, dtyped_ones, dtyped_empty)
+                          dtyped_zeros, dtyped_ones, dtyped_empty, array_and)
 from ..cpp.callable cimport callables
 from ..cpp.arithmetic cimport pow
 from ..cpp.type cimport make_type
@@ -336,6 +336,15 @@ cdef class array(object):
     def __setitem__(self, x, y):
         array_setitem(self.v, x, y)
 
+    def __pos__(self):
+        return dynd_nd_array_from_cpp(+as_cpp_array(self))
+
+    def __neg__(self):
+        return dynd_nd_array_from_cpp(-as_cpp_array(self))
+
+    def __invert__(self):
+        return dynd_nd_array_from_cpp(~as_cpp_array(self))
+
     def __add__(lhs, rhs):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) + as_cpp_array(rhs))
@@ -352,17 +361,40 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) / as_cpp_array(rhs))
 
-    def __pow__(lhs, rhs, mod_base=None):
+    def __truediv__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) / as_cpp_array(rhs))
+
+    def __mod__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) % as_cpp_array(rhs))
+
+    def __and__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            array_and(as_cpp_array(lhs), as_cpp_array(rhs)))
+
+    def __or__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) | as_cpp_array(rhs))
+
+    def __xor__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) ^ as_cpp_array(rhs))
+
+    def __lshift__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) << as_cpp_array(rhs))
+
+    def __rshift__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) >> as_cpp_array(rhs))
+
+    def __pow__(lhs, rhs, mod_base):
         if mod_base is not None:
             raise ValueError("Support for exponentiation modulo a "
                              "given value is not currently implemented.")
         return dynd_nd_array_from_cpp(pow(
             as_cpp_array(lhs), as_cpp_array(rhs)))
-
-    def __truediv__(lhs, rhs):
-        return dynd_nd_array_from_cpp(array_divide(
-            dynd_nd_array_to_cpp(asarray(lhs)),
-            dynd_nd_array_to_cpp(asarray(rhs))))
 
     def __richcmp__(a0, a1, int op):
         if op == Py_LT:

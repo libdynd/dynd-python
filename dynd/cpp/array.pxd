@@ -49,6 +49,8 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         # These should only be used with versions of Cython later than 0.23.
         # Otherwise the exception handler isn't properly applied and the
         # resulting uncaught C++ exceptions can crash the Python interpreter.
+        array operator+() except +translate_exception
+        array operator-() except +translate_exception
         array operator<(array&) except +translate_exception
         array operator<=(array&) except +translate_exception
         array operator==(array&) except +translate_exception
@@ -59,7 +61,20 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array operator-(array&) except +translate_exception
         array operator*(array&) except +translate_exception
         array operator/(array&) except +translate_exception
+        array operator%(array&) except +translate_exception
+        array operator!() except +translate_exception
+        array operator~() except +translate_exception
+        # can't use this form of operator& because cython mistakes
+        # it for an overload for the unary operator&.
+        # Use array_and instead.
+        #array operator&(array&) except +translate_exception
+        array operator|(array&) except +translate_exception
+        array operator^(array&) except +translate_exception
+        array operator<<(array&) except +translate_exception
+        array operator>>(array&) except +translate_exception
         array operator()(...) except +translate_exception
+
+    array array_and "operator&"(array&, array&) except +translate_exception
 
     array empty(type &tp) except +translate_exception
 

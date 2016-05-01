@@ -25,14 +25,14 @@ from ..cpp.types.type_id cimport (type_id_t, uninitialized_id,
                                   type_id)
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
-from ..cpp.types.fixed_bytes_type cimport make_fixed_bytes as dynd_make_fixed_bytes_type
 from ..cpp.types.base_fixed_dim_type cimport dynd_make_fixed_dim_kind_type
 from ..cpp.types.tuple_type cimport tuple_type
 from ..cpp.types.struct_type cimport struct_type
 from ..cpp.types.var_dim_type cimport var_dim_type as _var_dim_type
 from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.types.string_type cimport string_type
-from ..cpp.types.bytes_type cimport make as make_bytes_type
+from ..cpp.types.bytes_type cimport bytes_type
+from ..cpp.types.fixed_bytes_type cimport fixed_bytes_type
 from ..cpp.type cimport make_type
 from ..cpp.complex cimport complex as dynd_complex
 
@@ -360,9 +360,9 @@ cdef _type cpp_type_from_typeobject(object o) except *:
     elif o is str or o is unicode:
         return make_type[string_type]()
     elif o is bytes:
-        return make_bytes_type()
+        return make_type[bytes_type]()
     elif o is bytearray:
-        return make_bytes_type()
+        return make_type[bytes_type]()
     elif issubclass(o, _np.generic):
         return cpp_type_from_numpy_type(o)
     raise ValueError("Cannot make ndt.type from {}.".format(o))
@@ -438,7 +438,7 @@ def make_fixed_bytes(intptr_t data_size, intptr_t data_alignment=1):
     ndt.type("bytes[6, align=2]")
     """
     cdef type result = type()
-    result.v = dynd_make_fixed_bytes_type(data_size, data_alignment)
+    result.v = make_type[fixed_bytes_type](data_size, data_alignment)
     return result
 
 def make_fixed_dim(shape, element_tp):

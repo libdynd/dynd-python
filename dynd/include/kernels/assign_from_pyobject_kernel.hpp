@@ -353,7 +353,7 @@ struct assign_from_pyobject_kernel<bytes_id, bytes_kind_id>
       throw std::invalid_argument(ss.str());
     }
 
-    dynd::ndt::type bytes_tp = dynd::ndt::bytes_type::make(1);
+    dynd::ndt::type bytes_tp = dynd::ndt::make_type<dynd::ndt::bytes_type>(1);
     dynd::string bytes_d(pybytes_data, pybytes_len);
 
     pydynd::nd::typed_data_assign(dst_tp, dst_arrmeta, dst, bytes_tp, NULL, reinterpret_cast<const char *>(&bytes_d));

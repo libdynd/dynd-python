@@ -1,5 +1,9 @@
 *.pyc
 *.swp
+*.pyd
+*.pdb
+*.ilk
+*.dll
 .DS_Store
 bld.bat
 build

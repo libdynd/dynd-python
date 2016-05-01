@@ -126,14 +126,14 @@ inline dynd::ndt::type dynd_make_fixed_string_type(intptr_t size, PyObject *enco
 {
   dynd::string_encoding_t encoding = encoding_from_pyobject(encoding_obj);
 
-  return dynd::ndt::fixed_string_type::make(size, encoding);
+  return dynd::ndt::make_type<dynd::ndt::fixed_string_type>(size, encoding);
 }
 
 inline dynd::ndt::type dynd_make_string_type() { return dynd::ndt::make_type<dynd::ndt::string_type>(); }
 
 inline dynd::ndt::type dynd_make_pointer_type(const dynd::ndt::type &target_tp)
 {
-  return dynd::ndt::pointer_type::make(target_tp);
+  return dynd::ndt::make_type<dynd::ndt::pointer_type>(target_tp);
 }
 
 inline void pyobject_as_vector__type(PyObject *list_of_types, std::vector<dynd::ndt::type> &vector_of__types)

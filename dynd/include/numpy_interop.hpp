@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "utility_functions.hpp"
 #include "type_functions.hpp"
+#include "utility_functions.hpp"
 
 // Define this to 1 or 0 depending on whether numpy interop
 // should be compiled in.
@@ -125,8 +125,7 @@ inline dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num)
     return dynd::ndt::make_type<dynd::complex<double>>();
   default: {
     std::stringstream ss;
-    ss << "Cannot convert numpy type num " << numpy_type_num
-       << " to a dynd type";
+    ss << "Cannot convert numpy type num " << numpy_type_num << " to a dynd type";
     throw dynd::type_error(ss.str());
   }
   }
@@ -144,15 +143,12 @@ inline dynd::ndt::type _type_from_numpy_type_num(int numpy_type_num)
  */
 // This doesn't rely on any static initialization from numpy,
 // so it should be fine to inline.
-inline void
-extract_fields_from_numpy_struct(PyArray_Descr *d,
-                                 std::vector<PyArray_Descr *> &out_field_dtypes,
-                                 std::vector<std::string> &out_field_names,
-                                 std::vector<size_t> &out_field_offsets)
+inline void extract_fields_from_numpy_struct(PyArray_Descr *d, std::vector<PyArray_Descr *> &out_field_dtypes,
+                                             std::vector<std::string> &out_field_names,
+                                             std::vector<size_t> &out_field_offsets)
 {
   if (!PyDataType_HASFIELDS(d)) {
-    throw dynd::type_error(
-        "Tried to treat a non-structured NumPy dtype as a structure");
+    throw dynd::type_error("Tried to treat a non-structured NumPy dtype as a structure");
   }
 
   PyObject *names = d->names;
@@ -173,18 +169,15 @@ extract_fields_from_numpy_struct(PyArray_Descr *d,
   }
 }
 
-inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
-                                              size_t data_alignment = 0);
+inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment = 0);
 
-inline dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
-                                                          size_t data_alignment)
+inline dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d, size_t data_alignment)
 {
   std::vector<PyArray_Descr *> field_dtypes;
   std::vector<std::string> field_names;
   std::vector<size_t> field_offsets;
 
-  pydynd::extract_fields_from_numpy_struct(d, field_dtypes, field_names,
-                                           field_offsets);
+  pydynd::extract_fields_from_numpy_struct(d, field_dtypes, field_names, field_offsets);
 
   std::vector<dynd::ndt::type> field_types;
 
@@ -201,11 +194,9 @@ inline dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
   for (size_t i = 0; i < field_dtypes.size(); ++i) {
     PyArray_Descr *fld_dtype = field_dtypes[i];
     size_t offset = field_offsets[i];
-    field_types.push_back(
-        pydynd::_type_from_numpy_dtype(fld_dtype, data_alignment));
+    field_types.push_back(pydynd::_type_from_numpy_dtype(fld_dtype, data_alignment));
     // If the field isn't aligned enough, turn it into an unaligned type
-    if (!dynd::offset_is_aligned(offset | data_alignment,
-                                 field_types.back().get_data_alignment())) {
+    if (!dynd::offset_is_aligned(offset | data_alignment, field_types.back().get_data_alignment())) {
       throw std::runtime_error("field isn't unaligned");
     }
   }
@@ -215,8 +206,7 @@ inline dynd::ndt::type make_struct_type_from_numpy_struct(PyArray_Descr *d,
 }
 
 // Forward declare this now. Include type_functions.hpp at the end.
-inline dynd::ndt::type
-dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
+inline dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
 
 /**
  * Converts a numpy dtype to a dynd type. Use the data_alignment
@@ -230,8 +220,7 @@ dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt::type &element_tp);
  *
  * \returns  The dynd equivalent of the numpy dtype.
  */
-inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
-                                              size_t data_alignment)
+inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d, size_t data_alignment)
 {
   dynd::ndt::type dt;
 
@@ -287,12 +276,10 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
     dt = dynd::ndt::make_type<dynd::complex<double>>();
     break;
   case NPY_STRING:
-    dt = dynd::ndt::fixed_string_type::make(d->elsize,
-                                            dynd::string_encoding_ascii);
+    dt = dynd::ndt::make_type<dynd::ndt::fixed_string_type>(d->elsize, dynd::string_encoding_ascii);
     break;
   case NPY_UNICODE:
-    dt = dynd::ndt::fixed_string_type::make(d->elsize / 4,
-                                            dynd::string_encoding_utf_32);
+    dt = dynd::ndt::make_type<dynd::ndt::fixed_string_type>(d->elsize / 4, dynd::string_encoding_utf_32);
     break;
   case NPY_VOID:
     dt = make_struct_type_from_numpy_struct(d, data_alignment);
@@ -308,8 +295,7 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
           if (PyDict_Check(type_dict)) {
             PyObject *type = PyDict_GetItemString(type_dict, "type");
 #if PY_VERSION_HEX < 0x03000000
-            if (type == (PyObject *)&PyString_Type ||
-                type == (PyObject *)&PyUnicode_Type) {
+            if (type == (PyObject *)&PyString_Type || type == (PyObject *)&PyUnicode_Type) {
 #else
             if (type == (PyObject *)&PyUnicode_Type) {
 #endif
@@ -326,8 +312,7 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
     if (d->metadata != NULL && PyDict_Check(d->metadata)) {
       PyObject *type = PyDict_GetItemString(d->metadata, "vlen");
 #if PY_VERSION_HEX < 0x03000000
-      if (type == (PyObject *)&PyString_Type ||
-          type == (PyObject *)&PyUnicode_Type) {
+      if (type == (PyObject *)&PyString_Type || type == (PyObject *)&PyUnicode_Type) {
 #else
       if (type == (PyObject *)&PyUnicode_Type) {
 #endif
@@ -341,9 +326,7 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
     // Get the dtype info through the CPython API, slower
     // but lets NumPy's datetime API change without issue.
     pyobject_ownref mod(PyImport_ImportModule("numpy"));
-    pyobject_ownref dd(PyObject_CallMethod(mod.get(),
-                                           const_cast<char *>("datetime_data"),
-                                           const_cast<char *>("O"), d));
+    pyobject_ownref dd(PyObject_CallMethod(mod.get(), const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
     PyObject *unit = PyTuple_GetItem(dd.get(), 0);
     if (unit == NULL) {
       throw std::runtime_error("");
@@ -385,8 +368,7 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d,
  * \param d  The numpy dtype passed to _type_from_numpy_dtype.
  * \param arrmeta  A pointer to the arrmeta to populate.
  */
-void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &tp, PyArray_Descr *d,
-                                   char *arrmeta);
+void fill_arrmeta_from_numpy_dtype(const dynd::ndt::type &tp, PyArray_Descr *d, char *arrmeta);
 
 /**
  * Converts a dynd type to a numpy dtype.
@@ -402,8 +384,7 @@ PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp);
  * \param tp  The dynd type to convert.
  * \param arrmeta  The arrmeta for the dynd type.
  */
-PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp,
-                                                 const char *arrmeta);
+PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp, const char *arrmeta);
 
 /**
  * Converts a pytypeobject for a n`umpy scalar
@@ -411,8 +392,7 @@ PYDYND_API PyArray_Descr *numpy_dtype_from__type(const dynd::ndt::type &tp,
  *
  * Returns 0 on success, -1 if it didn't match.
  */
-PYDYND_API int _type_from_numpy_scalar_typeobject(PyTypeObject *obj,
-                                                  dynd::ndt::type &out_tp);
+PYDYND_API int _type_from_numpy_scalar_typeobject(PyTypeObject *obj, dynd::ndt::type &out_tp);
 
 /**
  * Gets the dynd type of a numpy scalar object
@@ -426,20 +406,15 @@ dynd::ndt::type _type_of_numpy_scalar(PyObject *obj);
  * \param access_flags  The requested access flags (0 for default).
  * \param always_copy  If true, produce a copy instead of a view.
  */
-dynd::nd::array PYDYND_API array_from_numpy_array(PyArrayObject *obj,
-                                                  uint32_t access_flags,
-                                                  bool always_copy);
+dynd::nd::array PYDYND_API array_from_numpy_array(PyArrayObject *obj, uint32_t access_flags, bool always_copy);
 
 dynd::ndt::type PYDYND_API array_from_numpy_array2(PyArrayObject *obj);
 
 // Convenience wrapper for use in Cython where the type has already been
 // checked.
-inline dynd::nd::array array_from_numpy_array_cast(PyObject *obj,
-                                                   uint32_t access_flags,
-                                                   bool always_copy)
+inline dynd::nd::array array_from_numpy_array_cast(PyObject *obj, uint32_t access_flags, bool always_copy)
 {
-  return array_from_numpy_array(reinterpret_cast<PyArrayObject *>(obj),
-                                access_flags, always_copy);
+  return array_from_numpy_array(reinterpret_cast<PyArrayObject *>(obj), access_flags, always_copy);
 }
 
 /**
@@ -471,8 +446,7 @@ inline char numpy_kindchar_of(const dynd::ndt::type &d)
     return 'c';
   case dynd::string_kind_id:
     if (d.get_id() == dynd::fixed_string_id) {
-      const dynd::ndt::base_string_type *esd =
-          d.extended<dynd::ndt::base_string_type>();
+      const dynd::ndt::base_string_type *esd = d.extended<dynd::ndt::base_string_type>();
       switch (esd->get_encoding()) {
       case dynd::string_encoding_ascii:
         return 'S';

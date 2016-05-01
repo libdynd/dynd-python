@@ -17,6 +17,7 @@ from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
                           array_multiply, array_divide, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
 from ..cpp.callable cimport callables
+from ..cpp.arithmetic cimport pow
 from ..cpp.type cimport make_type
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
@@ -355,6 +356,13 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(array_divide(
             dynd_nd_array_to_cpp(asarray(lhs)),
             dynd_nd_array_to_cpp(asarray(rhs))))
+
+    def __pow__(lhs, rhs, mod_base=None):
+        if mod_base is not None:
+            raise ValueError("Support for exponentiation modulo a "
+                             "given value is not currently implemented.")
+        return dynd_nd_array_from_cpp(pow(
+            as_cpp_array(lhs), as_cpp_array(rhs)))
 
     def __truediv__(lhs, rhs):
         return dynd_nd_array_from_cpp(array_divide(

@@ -48,7 +48,9 @@ if os.name == 'nt':
         dynd_lib_dir = os.path.join(prog_files, 'libdynd', 'lib')
         if os.path.isdir(dynd_lib_dir):
             loaded = load_dynd_dll(dynd_lib_dir)
-            raise ctypes.WinError(126, 'Could not load libdynd.dll or libdyndt.dll')
+            if not loaded:
+                raise ctypes.WinError(126, 'Could not load libdynd.dll '
+                                           'or libdyndt.dll')
 
 from .config import _dynd_version_string as __libdynd_version__, \
                 _dynd_python_version_string as __version__, \

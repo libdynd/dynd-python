@@ -49,6 +49,8 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         # These should only be used with versions of Cython later than 0.23.
         # Otherwise the exception handler isn't properly applied and the
         # resulting uncaught C++ exceptions can crash the Python interpreter.
+        array operator+() except +translate_exception
+        array operator-() except +translate_exception
         array operator<(array&) except +translate_exception
         array operator<=(array&) except +translate_exception
         array operator==(array&) except +translate_exception
@@ -59,17 +61,22 @@ cdef extern from 'dynd/array.hpp' namespace 'dynd::nd' nogil:
         array operator-(array&) except +translate_exception
         array operator*(array&) except +translate_exception
         array operator/(array&) except +translate_exception
+        array operator%(array&) except +translate_exception
+        array operator!() except +translate_exception
+        array operator~() except +translate_exception
+        # can't use this form of operator& because cython mistakes
+        # it for an overload for the unary operator&.
+        # Use array_and instead.
+        #array operator&(array&) except +translate_exception
+        array operator|(array&) except +translate_exception
+        array operator^(array&) except +translate_exception
+        array operator<<(array&) except +translate_exception
+        array operator>>(array&) except +translate_exception
         array operator()(...) except +translate_exception
 
-    array empty(type &tp) except +translate_exception
+    array array_and "operator&"(array&, array&) except +translate_exception
 
-    # These should be usable with Cython's operator overloading syntax, but
-    # the exception handling doesn't work for overloaded operators in Cython
-    # versions before 0.24, so, for now, this will have to do.
-    array array_add "operator+"(array&, array&) except +translate_exception
-    array array_subtract "operator-"(array&, array&) except +translate_exception
-    array array_multiply "operator*"(array&, array&) except +translate_exception
-    array array_divide "operator/"(array&, array&) except +translate_exception
+    array empty(type &tp) except +translate_exception
 
     array dtyped_zeros(ssize_t, ssize_t*, type&) except +translate_exception
     array dtyped_ones(ssize_t, ssize_t*, type&) except +translate_exception

@@ -13,8 +13,7 @@ from cython.operator import dereference
 from libcpp.vector cimport vector
 import numpy as _np
 
-from ..cpp.array cimport (groupby as dynd_groupby, array_add, array_subtract,
-                          array_multiply, array_divide, empty as cpp_empty,
+from ..cpp.array cimport (groupby as dynd_groupby, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty)
 from ..cpp.callable cimport callables
 from ..cpp.arithmetic cimport pow
@@ -338,24 +337,20 @@ cdef class array(object):
         array_setitem(self.v, x, y)
 
     def __add__(lhs, rhs):
-        return dynd_nd_array_from_cpp(array_add(
-            dynd_nd_array_to_cpp(asarray(lhs)),
-            dynd_nd_array_to_cpp(asarray(rhs))))
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) + as_cpp_array(rhs))
 
     def __sub__(lhs, rhs):
-        return dynd_nd_array_from_cpp(array_subtract(
-            dynd_nd_array_to_cpp(asarray(lhs)),
-            dynd_nd_array_to_cpp(asarray(rhs))))
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) - as_cpp_array(rhs))
 
     def __mul__(lhs, rhs):
-        return dynd_nd_array_from_cpp(array_multiply(
-            dynd_nd_array_to_cpp(asarray(lhs)),
-            dynd_nd_array_to_cpp(asarray(rhs))))
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) * as_cpp_array(rhs))
 
     def __div__(lhs, rhs):
-        return dynd_nd_array_from_cpp(array_divide(
-            dynd_nd_array_to_cpp(asarray(lhs)),
-            dynd_nd_array_to_cpp(asarray(rhs))))
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) / as_cpp_array(rhs))
 
     def __pow__(lhs, rhs, mod_base=None):
         if mod_base is not None:

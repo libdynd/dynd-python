@@ -349,7 +349,15 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) + as_cpp_array(rhs))
 
+    def __radd__(rhs, lhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) + as_cpp_array(rhs))
+
     def __sub__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) - as_cpp_array(rhs))
+
+    def __rsub__(rhs, lhs):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) - as_cpp_array(rhs))
 
@@ -357,7 +365,15 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) * as_cpp_array(rhs))
 
+    def __rmul__(rhs, lhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) * as_cpp_array(rhs))
+
     def __div__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) / as_cpp_array(rhs))
+
+    def __rdiv__(rhs, lhs):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) / as_cpp_array(rhs))
 
@@ -365,7 +381,15 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) / as_cpp_array(rhs))
 
+    def __rtruediv__(rhs, lhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) / as_cpp_array(rhs))
+
     def __mod__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) % as_cpp_array(rhs))
+
+    def __rmod__(rhs, lhs):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) % as_cpp_array(rhs))
 
@@ -373,7 +397,15 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             array_and(as_cpp_array(lhs), as_cpp_array(rhs)))
 
+    def __rand__(rhs, lhs):
+        return dynd_nd_array_from_cpp(
+            array_and(as_cpp_array(lhs), as_cpp_array(rhs)))
+
     def __or__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) | as_cpp_array(rhs))
+
+    def __ror__(rhs, lhs):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) | as_cpp_array(rhs))
 
@@ -381,7 +413,15 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) ^ as_cpp_array(rhs))
 
+    def __rxor__(rhs, lhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) ^ as_cpp_array(rhs))
+
     def __lshift__(lhs, rhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) << as_cpp_array(rhs))
+
+    def __rlshift__(rhs, lhs):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) << as_cpp_array(rhs))
 
@@ -389,10 +429,18 @@ cdef class array(object):
         return dynd_nd_array_from_cpp(
             as_cpp_array(lhs) >> as_cpp_array(rhs))
 
+    def __rrshift__(rhs, lhs):
+        return dynd_nd_array_from_cpp(
+            as_cpp_array(lhs) >> as_cpp_array(rhs))
+
     def __pow__(lhs, rhs, mod_base):
         if mod_base is not None:
             raise ValueError("Support for exponentiation modulo a "
                              "given value is not currently implemented.")
+        return dynd_nd_array_from_cpp(pow(
+            as_cpp_array(lhs), as_cpp_array(rhs)))
+
+    def __rpow__(rhs, lhs):
         return dynd_nd_array_from_cpp(pow(
             as_cpp_array(lhs), as_cpp_array(rhs)))
 

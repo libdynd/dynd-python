@@ -33,6 +33,14 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
 
     callable make_callable 'dynd::nd::callable::make'[T](...) except +translate_exception
 
-    map[string, callable] callables()
-
     stringstream &operator<<(callable f)
+
+    cdef cppclass reg_entry:
+        const callable &value() const
+
+        bool is_namespace() const
+
+        map[string, reg_entry].iterator begin()
+        map[string, reg_entry].iterator end()
+
+    reg_entry &root()

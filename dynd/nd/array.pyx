@@ -15,9 +15,9 @@ import numpy as _np
 
 from ..cpp.array cimport (groupby as dynd_groupby, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty, array_and)
-from ..cpp.callable cimport callables
 from ..cpp.arithmetic cimport pow
 from ..cpp.type cimport make_type
+from ..cpp.callable cimport root
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *
@@ -245,8 +245,8 @@ cdef class array(object):
         result = dict(array.__dict__)
         result.update(object.__dict__)
 
-        for pair in callables():
-            result[pair.first] = wrap(pair.second)
+        for pair in root():
+            result[pair.first] = wrap(pair.second.value())
 
         return result.keys()
 
@@ -254,9 +254,9 @@ cdef class array(object):
         if self.v.is_null():
             raise AttributeError(name)
 
-        for pair in callables():
+        for pair in root():
             if (pair.first == <string> name):
-                return dynd_nd_array_from_cpp(pair.second(self.v))
+                return dynd_nd_array_from_cpp(pair.second.value()(self.v))
 
         try:
             return dynd_nd_array_from_cpp(self.v.p(name))

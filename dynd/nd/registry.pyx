@@ -1,7 +1,8 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from ..cpp.callable cimport callable
-from ..cpp.callable cimport callables
+import imp
+
+from ..cpp.callable cimport callable, root, reg_entry
 
 from ..config cimport translate_exception
 from .callable cimport wrap
@@ -9,6 +10,14 @@ from .array cimport _registry_assign_init as assign_init
 
 assign_init()
 
-def get_published_callables():
-    for f in callables():
-        yield f.first, wrap(f.second)
+cdef _publish_callables(mod, reg_entry entry):
+    for pair in entry:
+        if (pair.second.is_namespace()):
+            new_mod = imp.new_module(pair.first)
+            _publish_callables(new_mod, pair.second)
+            setattr(mod, pair.first, new_mod)
+        else:
+            setattr(mod, pair.first, wrap(pair.second.value()))
+
+def publish_callables(mod):
+    return _publish_callables(mod, root())

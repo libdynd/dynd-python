@@ -1,3 +1,5 @@
+import sys
+
 from dynd.config import *
 
 from .array import array, asarray, type_of, dshape_of, as_py, view, \
@@ -8,7 +10,7 @@ from .callable import callable
 inf = float('inf')
 nan = float('nan')
 
-from .registry import get_published_callables
+from .registry import publish_callables
 from . import functional
 
 ## This is a hack until we fix the Cython compiler issues
@@ -17,5 +19,4 @@ from . import functional
 #    def parse(tp, obj):
 #        return _parse(tp, obj)
 
-for key, value in get_published_callables():
-    globals()[key] = value
+publish_callables(sys.modules[__name__])

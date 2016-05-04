@@ -1,8 +1,12 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
 import imp
+import sys
 
-from ..cpp.callable cimport callable, get, reg_entry
+from cython.operator cimport dereference
+
+from ..cpp.callable cimport callable, get, reg_entry, observe
+from ..cpp.config cimport load
 
 from ..config cimport translate_exception
 from .callable cimport wrap
@@ -21,3 +25,12 @@ cdef _publish_callables(mod, reg_entry entry):
 
 def publish_callables(mod):
     return _publish_callables(mod, get())
+
+cdef void observer(const char *name, reg_entry *entry) with gil:
+    from . import __name__
+    mod = sys.modules[__name__]
+
+    if entry.is_namespace():
+        _publish_callables(mod, dereference(entry))
+
+observe(&observer)

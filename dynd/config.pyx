@@ -36,3 +36,6 @@ class BroadcastError(Exception):
 # Used in exception translation header.
 # It is forward-declared there and then set when this module is initialized.
 DyND_BroadcastException = <PyObject*>BroadcastError
+
+def load(name):
+    _load(name)

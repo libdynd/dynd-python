@@ -1,3 +1,5 @@
+from .cpp.config cimport load as _load
+
 cdef:
     void translate_exception()
 

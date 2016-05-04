@@ -43,4 +43,4 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
         map[string, reg_entry].iterator begin()
         map[string, reg_entry].iterator end()
 
-    reg_entry &root()
+    reg_entry &get()

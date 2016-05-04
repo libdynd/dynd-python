@@ -2,7 +2,7 @@
 
 import imp
 
-from ..cpp.callable cimport callable, root, reg_entry
+from ..cpp.callable cimport callable, get, reg_entry
 
 from ..config cimport translate_exception
 from .callable cimport wrap
@@ -20,4 +20,4 @@ cdef _publish_callables(mod, reg_entry entry):
             setattr(mod, pair.first, wrap(pair.second.value()))
 
 def publish_callables(mod):
-    return _publish_callables(mod, root())
+    return _publish_callables(mod, get())

@@ -142,7 +142,7 @@ function( compile_pyx _name _pyx_target_name _module_name _directories _pyx_file
   set_source_files_properties( ${_generated_files} PROPERTIES GENERATED TRUE )
 
   set(_cython_command ${CYTHON_EXECUTABLE} ${_cxx_arg}
-  ${_annotate_arg} ${_no_docstrings_arg} ${_cython_debug_arg} ${CYTHON_FLAGS}
+  ${_annotate_arg} ${_no_docstrings_arg} ${_cython_debug_arg} ${CYTHON_FLAGS} --timestamps
   --output-file "${CMAKE_CURRENT_BINARY_DIR}/${_directories}/${_module_name}.${_extension}" ${_pyx_location})
   string(REPLACE ";" " " _cython_comment "${_cython_command}")
 

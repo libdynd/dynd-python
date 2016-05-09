@@ -5,7 +5,7 @@ from setuptools import setup, Extension
 
 import os, sys
 from os import chdir, getcwd
-from os.path import abspath, dirname, split
+from os.path import abspath, dirname, split, samefile
 import shlex
 from subprocess import check_output
 
@@ -73,7 +73,7 @@ class cmake_build_ext(build_ext):
         cachedir = re.search('CMAKE_CACHEFILE_DIR:INTERNAL=(.*)', cachefile.read()).group(1)
         cachefile.close()
 
-        if (cachedir != build_temp):
+        if not samefile(cachedir, build_temp):
             return
 
     pyexe_option = '-DPYTHON_EXECUTABLE=%s' % sys.executable

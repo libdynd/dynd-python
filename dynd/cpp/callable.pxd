@@ -3,6 +3,7 @@ from libcpp.pair cimport pair
 from libcpp cimport bool
 from libcpp.map cimport map
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 
 from ..config cimport translate_exception
 from .array cimport array
@@ -17,6 +18,10 @@ cdef extern from '<sstream>' namespace 'std':
 cdef extern from 'dynd/callables/base_callable.hpp' namespace 'dynd::nd' nogil:
     cdef cppclass base_callable:
         type get_type()
+
+        const type &get_ret_type() const
+        const vector[type] &get_arg_types() const
+        const vector[pair[type, string]] &get_kwd_types() const
 
 cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
     cdef cppclass callable:

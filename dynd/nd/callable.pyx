@@ -1,6 +1,7 @@
 from libc.string cimport const_char
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
+from libcpp.string cimport string
 
 from ..cpp.array cimport array as _array
 
@@ -9,6 +10,7 @@ from cython.operator cimport dereference
 from ..config cimport translate_exception
 from ..cpp.callable cimport const_charptr, stringstream
 from .array cimport as_cpp_array, dynd_nd_array_from_cpp
+from ..cpp.type cimport type as _type
 
 cdef extern from *:
     # Hack to allow compile-time resolution of the Python version.
@@ -53,6 +55,20 @@ cdef class callable(object):
     property type:
         def __get__(self):
             return wrap(dereference(self.v).get_type())
+
+    property return_type:
+        def __get__(self):
+            return wrap(dereference(self.v).get_ret_type())
+
+    property arg_types:
+        def __get__(self):
+            cdef vector[_type] args = dereference(self.v).get_arg_types()
+            return [wrap(arg) for arg in args]
+
+    property kwd_types:
+        def __get__(self):
+            cdef vector[pair[_type, string]] kwds = dereference(self.v).get_kwd_types()
+            return [(wrap(kwd.first), kwd.second) for kwd in kwds]
 
     def __call__(callable self, *args, **kwargs):
         cdef size_t nargs = len(args), nkwargs = len(kwargs)

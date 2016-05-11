@@ -182,7 +182,6 @@ set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
 cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   # Additional C++ source files:
-                  dynd/include/do_import_array.hpp
                   dynd/include/numpy_interop.hpp
                   dynd/src/array_as_pep3118.cpp
                   dynd/src/array_as_numpy.cpp

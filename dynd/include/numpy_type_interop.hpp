@@ -379,8 +379,36 @@ inline char numpy_kindchar_of(const dynd::ndt::type &d)
 // numpy importing in client modules. Wraps PyArray_DescrCheck.
 PYDYND_API bool is_numpy_dtype(PyObject *o);
 
-} // namespace pydynd
+// get_alignment_of is needed by both numpy_type_interop.cpp
+// and numpy_interop.cpp. It's not intended to be a public facing interface.
+inline size_t get_alignment_of(uintptr_t align_bits)
+{
+  size_t alignment = 1;
+  // Loop 4 times, maximum alignment of 16
+  for (int i = 0; i < 4; ++i) {
+    if ((align_bits & alignment) == 0) {
+      alignment <<= 1;
+    }
+    else {
+      return alignment;
+    }
+  }
+  return alignment;
+}
 
-#include "type_functions.hpp"
+inline size_t get_alignment_of(PyArrayObject *obj)
+{
+  // Get the alignment of the data
+  uintptr_t align_bits = reinterpret_cast<uintptr_t>(PyArray_DATA(obj));
+  int ndim = PyArray_NDIM(obj);
+  intptr_t *strides = PyArray_STRIDES(obj);
+  for (int idim = 0; idim < ndim; ++idim) {
+    align_bits |= (uintptr_t)strides[idim];
+  }
+
+  return get_alignment_of(align_bits);
+}
+
+} // namespace pydynd
 
 #endif

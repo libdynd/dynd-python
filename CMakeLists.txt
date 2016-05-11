@@ -208,7 +208,17 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/types/pyobject_type.cpp
                   )
 
-foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+cython_add_module(dynd.ndt.type dynd.ndt.type_pyx True
+                  # Additional C++ source files:
+                  dynd/include/numpy_interop_defines.hpp
+                  dynd/include/numpy_type_interop.hpp
+                  dynd/src/init.cpp
+                  dynd/src/numpy_type_interop.cpp
+                  dynd/src/type_conversions.cpp
+                  dynd/src/type_deduction.cpp
+                  )
+
+foreach(module dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True
                       # Additional C++ source files:
                       dynd/src/type_conversions.cpp

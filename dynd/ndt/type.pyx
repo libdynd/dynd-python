@@ -75,10 +75,22 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 cdef extern from "type_unpack.hpp":
     object from_type_property(const pair[_type, const char *] &) except +translate_exception
 
+cdef extern from "numpy_type_interop.hpp":
+    ctypedef struct PyArray_Descr
+
+cdef extern from "numpy_type_interop.hpp" namespace "pydynd":
+    PyArray_Descr *numpy_dtype_from__type(const _type &tp) except +translate_exception
+    # Technically returns a bool.
+    # Rely on an implicit cast to convert it to a bint for Cython.
+    bint is_numpy_dtype(PyObject*)
+
+cdef extern from 'init.hpp' namespace 'pydynd':
+    void numpy_interop_init() except *
 
 builtin_tuple = tuple
 
 init_type_functions()
+numpy_interop_init()
 _builtin_type = __builtins__.type
 _builtin_bool = __builtins__.bool
 
@@ -108,6 +120,9 @@ type_ids['COMPLEX64'] = complex_float32_id
 type_ids['COMPLEX128'] = complex_float64_id
 type_ids['VOID'] = void_id
 type_ids['CALLABLE'] = callable_id
+
+cdef object _numpy_dtype_from__type(const _type &tp):
+    return <object> numpy_dtype_from__type(tp)
 
 cdef class type(object):
     """
@@ -377,7 +392,7 @@ cdef _type as_cpp_type(object o) except *:
         return _type(<string>o)
     elif _builtin_type(o) is int or _builtin_type(o) is long:
         return _type(<type_id_t>(<int>o))
-    elif _is_numpy_dtype(<PyObject*>o):
+    elif is_numpy_dtype(<PyObject*>o):
         return _type_from_numpy_dtype(<PyArray_Descr*>o)
     elif issubclass(o, _ctypes_base_type):
         raise ValueError("Conversion from ctypes type to DyND type not currently supported.")
@@ -714,4 +729,4 @@ def type_for(obj):
     return wrap(cpp_type_for(obj))
 
 # Avoid circular import issues by importing these last.
-from ..nd.array cimport (_numpy_dtype_from__type, _is_numpy_dtype, _xtype_for_prefix)
+from ..nd.array cimport _xtype_for_prefix

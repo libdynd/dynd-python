@@ -81,7 +81,7 @@ ctypedef cpp_complex[double] cpp_complex_double
 # in scope due to argument naming.
 _builtin_type = type
 
-# Initialize ctypes C level interop data
+# Initialize C level static interop data
 numpy_interop_init()
 init_array_from_py()
 
@@ -1134,21 +1134,6 @@ cdef extern from 'assign.hpp':
 
 cdef void _registry_assign_init() except *:
     assign_init()
-
-cdef extern from "numpy_interop.hpp":
-    ctypedef struct PyArray_Descr
-
-cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    PyArray_Descr *numpy_dtype_from__type(const _type &tp) except +translate_exception
-    # Technically returns a bool.
-    # Rely on an implicit cast to convert it to a bint for Cython.
-    bint is_numpy_dtype(PyObject*)
-
-cdef object _numpy_dtype_from__type(const _type &tp):
-    return <object> numpy_dtype_from__type(tp)
-
-cdef bint _is_numpy_dtype(PyObject *o) except *:
-    return is_numpy_dtype(o)
 
 cdef extern from "array_from_py.hpp" namespace 'pydynd':
     _type xtype_for_prefix(object) except +translate_exception

@@ -17,6 +17,4 @@ cdef api array dynd_nd_array_from_cpp(_array)
 
 cdef _callable _functional_apply(_type t, object o) except *
 cdef void _registry_assign_init() except *
-cdef object _numpy_dtype_from__type(const _type &tp)
-cdef bint _is_numpy_dtype(PyObject *o) except *
 cdef _type _xtype_for_prefix(object o) except *

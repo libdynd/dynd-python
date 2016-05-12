@@ -59,14 +59,14 @@ if("${_LIBDYND_CONFIG}" STREQUAL "")
 
 else()
 
-    # Get the ndt library to link against.
-    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libndtname"
+    # Get the dyndt library to link against.
+    execute_process(COMMAND "${_LIBDYND_CONFIG}" "-libdyndtname"
                     RESULT_VARIABLE _DYND_SEARCH_SUCCESS
-                    OUTPUT_VARIABLE LIBNDT_NAME
+                    OUTPUT_VARIABLE LIBDYNDT_NAME
                     ERROR_VARIABLE _DYND_ERROR_VALUE
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(NOT _DYND_SEARCH_SUCCESS MATCHES 0)
-        message(FATAL_ERROR "Error getting ndt library name:\n${_DYND_ERROR_VALUE}")
+        message(FATAL_ERROR "Error getting dyndt library name:\n${_DYND_ERROR_VALUE}")
     endif()
 
     # Get the libraries to link against.
@@ -93,7 +93,7 @@ else()
         string(REPLACE "\\" "/" LIBDYND_LIBRARY_DIR ${LIBDYND_LIBRARY_DIR})
     endif()
 
-    set(LIBNDT_LIBRARY "${LIBDYND_LIBRARY_DIR}/${LIBNDT_NAME}")
+    set(LIBDYNDT_LIBRARY "${LIBDYND_LIBRARY_DIR}/${LIBDYNDT_NAME}")
 
     set(LIBDYND_LIBRARIES "")
     foreach(_lib ${LIBDYND_LIBRARY_NAMES})

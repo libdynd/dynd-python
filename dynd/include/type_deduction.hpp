@@ -44,9 +44,7 @@ enum shape_deduction_t {
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.
  */
-inline void deduce_pylist_shape_and_dtype(PyObject *obj,
-                                          std::vector<intptr_t> &shape,
-                                          dynd::ndt::type &tp,
+inline void deduce_pylist_shape_and_dtype(PyObject *obj, std::vector<intptr_t> &shape, dynd::ndt::type &tp,
                                           size_t current_axis)
 {
   if (PyList_Check(obj)) {
@@ -56,9 +54,8 @@ inline void deduce_pylist_shape_and_dtype(PyObject *obj,
         shape.push_back(size);
       }
       else {
-        throw std::runtime_error(
-            "dynd array doesn't support dimensions "
-            "which are sometimes scalars and sometimes arrays");
+        throw std::runtime_error("dynd array doesn't support dimensions "
+                                 "which are sometimes scalars and sometimes arrays");
       }
     }
     else {
@@ -69,8 +66,7 @@ inline void deduce_pylist_shape_and_dtype(PyObject *obj,
     }
 
     for (Py_ssize_t i = 0; i < size; ++i) {
-      deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp,
-                                    current_axis + 1);
+      deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, current_axis + 1);
       // Propagate uninitialized_id as a signal an
       // undeducable object was encountered
       if (tp.get_id() == dynd::uninitialized_id) {
@@ -137,8 +133,7 @@ void deduce_pyseq_shape(PyObject *obj, size_t ndim, intptr_t *shape);
  * \param current_axis  The index of the axis within the shape corresponding
  *                      to the object.
  */
-void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type &tp,
-                                    std::vector<intptr_t> &shape,
+void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type &tp, std::vector<intptr_t> &shape,
                                     bool initial_pass, size_t current_axis);
 
 /**
@@ -151,9 +146,7 @@ void deduce_pyseq_shape_using_dtype(PyObject *obj, const dynd::ndt::type &tp,
  *    "3 * {x: {a: int32}, y: int32}" -> 2
  *    "3 * {x: {a: int32}, y: {a: int32, b: int32}}" -> 3
  */
-size_t
-get_nonragged_dim_count(const dynd::ndt::type &tp,
-                        size_t max_count = std::numeric_limits<size_t>::max());
+size_t get_nonragged_dim_count(const dynd::ndt::type &tp, size_t max_count = std::numeric_limits<size_t>::max());
 
 /**
  * Analyzes the Python object against the dynd type to heuristically
@@ -163,5 +156,7 @@ get_nonragged_dim_count(const dynd::ndt::type &tp,
 bool broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj);
 
 void init_array_from_py_typededuction();
+
+PYDYND_API dynd::ndt::type xtype_for_prefix(PyObject *obj);
 
 } // namespace pydynd

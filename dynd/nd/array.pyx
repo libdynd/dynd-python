@@ -1134,9 +1134,3 @@ cdef extern from 'assign.hpp':
 
 cdef void _registry_assign_init() except *:
     assign_init()
-
-cdef extern from "array_from_py.hpp" namespace 'pydynd':
-    _type xtype_for_prefix(object) except +translate_exception
-
-cdef _type _xtype_for_prefix(object o) except *:
-    return xtype_for_prefix(o)

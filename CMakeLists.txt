@@ -212,6 +212,7 @@ cython_add_module(dynd.ndt.type dynd.ndt.type_pyx True
                   # Additional C++ source files:
                   dynd/include/numpy_interop_defines.hpp
                   dynd/include/numpy_type_interop.hpp
+                  dynd/src/array_conversions.cpp
                   dynd/src/init.cpp
                   dynd/src/numpy_type_interop.cpp
                   dynd/src/type_conversions.cpp

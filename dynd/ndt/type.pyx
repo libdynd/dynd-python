@@ -84,6 +84,9 @@ cdef extern from "numpy_type_interop.hpp" namespace "pydynd":
     # Rely on an implicit cast to convert it to a bint for Cython.
     bint is_numpy_dtype(PyObject*)
 
+cdef extern from "type_deduction.hpp" namespace 'pydynd':
+    _type xtype_for_prefix(object) except +translate_exception
+
 cdef extern from 'init.hpp' namespace 'pydynd':
     void numpy_interop_init() except *
 
@@ -715,7 +718,7 @@ cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
 cdef _type cpp_type_for(object obj) except *:
-    cdef _type tp = _xtype_for_prefix(obj)
+    cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null() and not isinstance(obj, _np.integer)):
         return tp
     if _builtin_type(obj) is builtin_tuple:
@@ -727,6 +730,3 @@ cdef _type cpp_type_for(object obj) except *:
 
 def type_for(obj):
     return wrap(cpp_type_for(obj))
-
-# Avoid circular import issues by importing these last.
-from ..nd.array cimport _xtype_for_prefix

@@ -15,8 +15,9 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "type_functions.hpp"
+#include "array_conversions.hpp"
 #include "type_deduction.hpp"
+#include "type_functions.hpp"
 
 using namespace std;
 using namespace dynd;
@@ -36,10 +37,8 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
     }
     else {
       return min(max_count,
-                 1 + get_nonragged_dim_count(
-                         static_cast<const ndt::base_dim_type *>(tp.extended())
-                             ->get_element_type(),
-                         max_count - 1));
+                 1 + get_nonragged_dim_count(static_cast<const ndt::base_dim_type *>(tp.extended())->get_element_type(),
+                                             max_count - 1));
     }
   }
 
@@ -53,8 +52,7 @@ size_t pydynd::get_nonragged_dim_count(const ndt::type &tp, size_t max_count)
       auto bsd = tp.extended<ndt::tuple_type>();
       size_t field_count = bsd->get_field_count();
       for (size_t i = 0; i != field_count; ++i) {
-        size_t candidate =
-            1 + get_nonragged_dim_count(bsd->get_field_type(i), max_count - 1);
+        size_t candidate = 1 + get_nonragged_dim_count(bsd->get_field_type(i), max_count - 1);
         if (candidate < max_count) {
           max_count = candidate;
           if (max_count <= 1) {
@@ -120,13 +118,10 @@ void pydynd::deduce_pyseq_shape(PyObject *obj, size_t ndim, intptr_t *shape)
   }
 }
 
-void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
-                                            std::vector<intptr_t> &shape,
-                                            bool initial_pass,
-                                            size_t current_axis)
+void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp, std::vector<intptr_t> &shape,
+                                            bool initial_pass, size_t current_axis)
 {
-  bool is_sequence = (PySequence_Check(obj) != 0 && !PyUnicode_Check(obj) &&
-                      !PyDict_Check(obj));
+  bool is_sequence = (PySequence_Check(obj) != 0 && !PyUnicode_Check(obj) && !PyDict_Check(obj));
 #if PY_VERSION_HEX < 0x03000000
   is_sequence = is_sequence && !PyString_Check(obj);
 #endif
@@ -151,9 +146,8 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
         shape.push_back(pydynd_shape_deduction_ragged);
       }
       else {
-        throw runtime_error(
-            "dynd array doesn't support dimensions"
-            " which are sometimes scalars and sometimes arrays");
+        throw runtime_error("dynd array doesn't support dimensions"
+                            " which are sometimes scalars and sometimes arrays");
       }
     }
     else {
@@ -165,8 +159,7 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
 
     for (Py_ssize_t i = 0; i < size; ++i) {
       pyobject_ownref item(PySequence_GetItem(obj, i));
-      deduce_pyseq_shape_using_dtype(item.get(), tp, shape,
-                                     i == 0 && initial_pass, current_axis + 1);
+      deduce_pyseq_shape_using_dtype(item.get(), tp, shape, i == 0 && initial_pass, current_axis + 1);
     }
   }
   else {
@@ -183,9 +176,8 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp,
         shape[current_axis] = pydynd_shape_deduction_ragged;
       }
       else {
-        throw runtime_error(
-            "dynd array doesn't support dimensions"
-            " which are sometimes scalars and sometimes arrays");
+        throw runtime_error("dynd array doesn't support dimensions"
+                            " which are sometimes scalars and sometimes arrays");
       }
     }
   }
@@ -209,8 +201,7 @@ static intptr_t get_leading_dim_count(const dynd::ndt::type &tp)
       return 1;
     }
     else {
-      return 1 + get_leading_dim_count(
-                     tp.extended<ndt::tuple_type>()->get_field_type(0));
+      return 1 + get_leading_dim_count(tp.extended<ndt::tuple_type>()->get_field_type(0));
     }
   }
   else {
@@ -271,4 +262,54 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
   }
 
   return (get_leading_dim_count(tp) > obj_ndim);
+}
+
+dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
+{
+  // If it's a Cython w_array
+  if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
+    return pydynd::array_to_cpp_ref(obj).get_type();
+  }
+
+#if DYND_NUMPY_INTEROP
+  if (PyArray_Check(obj)) {
+    return array_from_numpy_array2((PyArrayObject *)obj);
+  }
+
+#endif // DYND_NUMPY_INTEROP
+  if (PyBool_Check(obj)) {
+    return ndt::make_type<bool>();
+  }
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
+    long value = PyInt_AS_LONG(obj);
+#if SIZEOF_LONG > SIZEOF_INT
+    // Use a 32-bit int if it fits.
+    if (value >= INT_MIN && value <= INT_MAX) {
+      return ndt::make_type<int>();
+    }
+    else {
+      return ndt::make_type<long>();
+    }
+#else
+    return ndt::make_type<long>();
+#endif
+  }
+#endif // PY_VERSION_HEX < 0x03000000
+  if (PyLong_Check(obj)) {
+    PY_LONG_LONG value = PyLong_AsLongLong(obj);
+    if (value == -1 && PyErr_Occurred()) {
+      throw runtime_error("error converting int value");
+    }
+
+    // Use a 32-bit int if it fits.
+    if (value >= INT_MIN && value <= INT_MAX) {
+      return ndt::make_type<int>();
+    }
+    else {
+      return ndt::make_type<PY_LONG_LONG>();
+    }
+  }
+
+  return dynd::ndt::type();
 }

@@ -565,21 +565,26 @@ cdef class array(object):
         result.v = self.v.view_scalars(_py_type(dtp).v)
         return result
 
-cdef _array dynd_nd_array_to_cpp(array a) except *:
+cdef _array dynd_nd_array_to_cpp(array a) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if a is None:
+    if a is not None:
+        return a.v
+    with gil:
         raise TypeError("Cannot extract DyND C++ array from None.")
+
+cdef _array dynd_nd_array_to_cpp_unsafe(array a) nogil:
     return a.v
 
-cdef _array *dynd_nd_array_to_ptr(array a) except *:
+cdef _array *dynd_nd_array_to_ptr(array a) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if a is None:
+    if a is not None:
+        return &(a.v)
+    with gil:
         raise TypeError("Cannot extract DyND C++ array from None.")
-    return &(a.v)
 
 # returns a Python object, so no exception specifier is needed.
 cdef array dynd_nd_array_from_cpp(_array a):
@@ -587,8 +592,8 @@ cdef array dynd_nd_array_from_cpp(_array a):
     arr.v = a
     return arr
 
-cdef _type _type_from_pyarr_wrapper(PyObject *a):
-    return dynd_nd_array_to_cpp(<array>a).get_type()
+cdef _type _type_from_pyarr_wrapper(PyObject *a) nogil:
+    return dynd_nd_array_to_cpp_unsafe(<array>a).get_type()
 
 _register_nd_array_type_deduction(<PyTypeObject*>array, &_type_from_pyarr_wrapper)
 

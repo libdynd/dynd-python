@@ -97,21 +97,23 @@ cdef class callable(object):
 
         return ss.str()
 
-cdef _callable dynd_nd_callable_to_cpp(callable c) except *:
+cdef _callable dynd_nd_callable_to_cpp(callable c) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if c is None:
+    if c is not None:
+        return c.v
+    with gil:
         raise TypeError("Cannot extract DyND C++ callable from None.")
-    return c.v
 
-cdef _callable *dynd_nd_callable_to_ptr(callable c) except *:
+cdef _callable *dynd_nd_callable_to_ptr(callable c) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if c is None:
+    if c is not None:
+        return &(c.v)
+    with gil:
         raise TypeError("Cannot extract DyND C++ callable from None.")
-    return &(c.v)
 
 # returns a Python object, so no exception specifier is needed.
 cdef callable wrap(const _callable &c):

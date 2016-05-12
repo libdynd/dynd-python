@@ -3,7 +3,7 @@
 _builtin_type = type
 
 from cpython.object cimport (Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT,
-                             PyObject_TypeCheck)
+                             PyObject_TypeCheck, PyTypeObject)
 from cpython.buffer cimport PyObject_CheckBuffer
 from libcpp.string cimport string
 from libcpp.map cimport map
@@ -25,8 +25,8 @@ from ..cpp.view cimport view as _view
 from ..pyobject_type cimport pyobject_id
 
 from ..config cimport translate_exception
-from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type
-from ..ndt.type cimport cpp_type_for
+from ..ndt.type cimport (type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type,
+                         cpp_type_for, _register_nd_array_type_deduction)
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
@@ -586,6 +586,11 @@ cdef array dynd_nd_array_from_cpp(_array a):
     cdef array arr = array.__new__(array)
     arr.v = a
     return arr
+
+cdef _type _type_from_pyarr_wrapper(PyObject *a):
+    return dynd_nd_array_to_cpp(<array>a).get_type()
+
+_register_nd_array_type_deduction(<PyTypeObject*>array, &_type_from_pyarr_wrapper)
 
 cdef _array as_cpp_array(object obj) except *:
     """

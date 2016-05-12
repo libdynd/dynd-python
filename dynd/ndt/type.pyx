@@ -1,6 +1,6 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from cpython.object cimport Py_EQ, Py_NE, PyObject
+from cpython.object cimport Py_EQ, Py_NE, PyObject, PyTypeObject
 from libc.stdint cimport (intptr_t, int8_t, int16_t, int32_t, int64_t,
                           uint8_t, uint16_t, uint32_t, uint64_t)
 from libcpp.map cimport map
@@ -85,6 +85,7 @@ cdef extern from "numpy_type_interop.hpp" namespace "pydynd":
     bint is_numpy_dtype(PyObject*)
 
 cdef extern from "type_deduction.hpp" namespace 'pydynd':
+    void register_nd_array_type_deduction(PyTypeObject *array_type, _type (*get_type)(PyObject *))
     _type xtype_for_prefix(object) except +translate_exception
 
 cdef extern from 'init.hpp' namespace 'pydynd':
@@ -126,6 +127,9 @@ type_ids['CALLABLE'] = callable_id
 
 cdef object _numpy_dtype_from__type(const _type &tp):
     return <object> numpy_dtype_from__type(tp)
+
+cdef void _register_nd_array_type_deduction(PyTypeObject *array_type, _type (*get_type)(PyObject *)):
+    register_nd_array_type_deduction(array_type, get_type)
 
 cdef class type(object):
     """

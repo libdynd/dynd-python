@@ -157,6 +157,8 @@ bool broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj);
 
 void init_array_from_py_typededuction();
 
+void register_nd_array_type_deduction(PyTypeObject *, dynd::ndt::type (*)(PyObject *));
+
 PYDYND_API dynd::ndt::type xtype_for_prefix(PyObject *obj);
 
 } // namespace pydynd

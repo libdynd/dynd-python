@@ -15,7 +15,6 @@
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
 
-#include "array_conversions.hpp"
 #include "type_deduction.hpp"
 #include "type_functions.hpp"
 
@@ -264,11 +263,22 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
   return (get_leading_dim_count(tp) > obj_ndim);
 }
 
+static PyTypeObject *array_pytypeobject = nullptr;
+static dynd::ndt::type (*type_from_pyarray)(PyObject *) = nullptr;
+
+void pydynd::register_nd_array_type_deduction(PyTypeObject *array_type, dynd::ndt::type (*get_type)(PyObject *))
+{
+  array_pytypeobject = array_type;
+  type_from_pyarray = get_type;
+}
+
 dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
 {
   // If it's a Cython w_array
-  if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
-    return pydynd::array_to_cpp_ref(obj).get_type();
+  if (array_pytypeobject != nullptr) {
+    if (PyObject_TypeCheck(obj, array_pytypeobject)) {
+      return type_from_pyarray(obj);
+    }
   }
 
 #if DYND_NUMPY_INTEROP

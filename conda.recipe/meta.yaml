@@ -26,9 +26,9 @@ requirements:
     - libdynd
 
 # Test separately to avoid unsatisfiable package dependencies bug on Win32.
-#test:
-#  commands:
-#    - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
+test:
+  commands:
+    - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
 
 about:
   home: http://libdynd.org

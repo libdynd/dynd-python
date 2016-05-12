@@ -11,5 +11,4 @@ elif [ `uname` == Darwin ]; then
 fi
 
 cd ..
-$PYTHON setup.py build_ext --extra-cmake-args=$EXTRA_CMAKE_ARGS || exit 1
-$PYTHON setup.py install || exit 1
+$PYTHON setup.py build_ext --extra-cmake-args=$EXTRA_CMAKE_ARGS install || exit 1

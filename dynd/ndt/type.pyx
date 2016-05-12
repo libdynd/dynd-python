@@ -599,7 +599,7 @@ def tuple(*args):
 
     if args:
         # TODO: Use a different interface that doesn't involve nd.array.
-        # This should basicaly just go through and call as_cpp_type
+        # This should basically just go through and call as_cpp_type
         # on each argument and make a vector or array of C++ types
         # that can then be used to create a tuple type.
         # Constructing an array from the list is really

@@ -44,6 +44,10 @@ matrix:
       - python -c "from __future__ import print_function; import numpy; print(numpy.__version__)"
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
       - python setup.py install
+    script:
+      - pushd ..
+      - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
+      - popd
   - language: objective-c
     os: osx
     compiler: clang
@@ -63,7 +67,7 @@ matrix:
     addons:
     before_install:
 
-install:
+script:
   - wget https://repo.continuum.io/miniconda/Miniconda${Miniconda_ver}-latest-${Miniconda_OS}-x86_64.sh
   - bash Miniconda${Miniconda_ver}-latest-${Miniconda_OS}-x86_64.sh -b
   - export PATH=$HOME/miniconda${Miniconda_ver}/bin:$PATH
@@ -72,11 +76,6 @@ install:
   - conda build conda.recipe --channel dynd/channel/dev
   - conda install --yes numpy libdynd --channel dynd/channel/dev
   - conda install $(conda build --output conda.recipe | grep bz2)
-
-script:
-  - pushd ..
-  - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
-  - popd
 
 after_success:
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi

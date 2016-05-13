@@ -1,6 +1,6 @@
 # cython: c_string_type=str, c_string_encoding=ascii
 
-from cpython.object cimport Py_EQ, Py_NE, PyObject
+from cpython.object cimport Py_EQ, Py_NE, PyObject, PyTypeObject
 from libc.stdint cimport (intptr_t, int8_t, int16_t, int32_t, int64_t,
                           uint8_t, uint16_t, uint32_t, uint64_t)
 from libcpp.map cimport map
@@ -75,10 +75,26 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
 cdef extern from "type_unpack.hpp":
     object from_type_property(const pair[_type, const char *] &) except +translate_exception
 
+cdef extern from "numpy_type_interop.hpp":
+    ctypedef struct PyArray_Descr
+
+cdef extern from "numpy_type_interop.hpp" namespace "pydynd":
+    PyArray_Descr *numpy_dtype_from__type(const _type &tp) except +translate_exception
+    # Technically returns a bool.
+    # Rely on an implicit cast to convert it to a bint for Cython.
+    bint is_numpy_dtype(PyObject*)
+
+cdef extern from "type_deduction.hpp" namespace 'pydynd':
+    void register_nd_array_type_deduction(PyTypeObject *array_type, _type (*get_type)(PyObject *))
+    _type xtype_for_prefix(object) except +translate_exception
+
+cdef extern from 'init.hpp' namespace 'pydynd':
+    void numpy_interop_init() except *
 
 builtin_tuple = tuple
 
 init_type_functions()
+numpy_interop_init()
 _builtin_type = __builtins__.type
 _builtin_bool = __builtins__.bool
 
@@ -108,6 +124,12 @@ type_ids['COMPLEX64'] = complex_float32_id
 type_ids['COMPLEX128'] = complex_float64_id
 type_ids['VOID'] = void_id
 type_ids['CALLABLE'] = callable_id
+
+cdef object _numpy_dtype_from__type(const _type &tp):
+    return <object> numpy_dtype_from__type(tp)
+
+cdef void _register_nd_array_type_deduction(PyTypeObject *array_type, _type (*get_type)(PyObject *)):
+    register_nd_array_type_deduction(array_type, get_type)
 
 cdef class type(object):
     """
@@ -288,21 +310,23 @@ cdef class type(object):
         """
         return self.v.match(type(rhs).v)
 
-cdef _type dynd_ndt_type_to_cpp(type t) except *:
+cdef _type dynd_ndt_type_to_cpp(type t) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if t is None:
+    if t is not None:
+        return t.v
+    with gil:
         raise TypeError("Cannot extract DyND C++ type from None.")
-    return t.v
 
-cdef _type *dynd_ndt_type_to_ptr(type t) except *:
+cdef _type *dynd_ndt_type_to_ptr(type t) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if t is None:
+    if t is not None:
+        return &(t.v)
+    with gil:
         raise TypeError("Cannot extract DyND C++ type from None.")
-    return &(t.v)
 
 # returns a Python object, so no exception specifier is needed.
 cdef type wrap(const _type &t):
@@ -377,7 +401,7 @@ cdef _type as_cpp_type(object o) except *:
         return _type(<string>o)
     elif _builtin_type(o) is int or _builtin_type(o) is long:
         return _type(<type_id_t>(<int>o))
-    elif _is_numpy_dtype(<PyObject*>o):
+    elif is_numpy_dtype(<PyObject*>o):
         return _type_from_numpy_dtype(<PyArray_Descr*>o)
     elif issubclass(o, _ctypes_base_type):
         raise ValueError("Conversion from ctypes type to DyND type not currently supported.")
@@ -700,7 +724,7 @@ cdef _type from_numba_type(tp):
     return _type(<type_id_t> _from_numba_type[tp])
 
 cdef _type cpp_type_for(object obj) except *:
-    cdef _type tp = _xtype_for_prefix(obj)
+    cdef _type tp = xtype_for_prefix(obj)
     if (not tp.is_null() and not isinstance(obj, _np.integer)):
         return tp
     if _builtin_type(obj) is builtin_tuple:
@@ -712,6 +736,3 @@ cdef _type cpp_type_for(object obj) except *:
 
 def type_for(obj):
     return wrap(cpp_type_for(obj))
-
-# Avoid circular import issues by importing these last.
-from ..nd.array cimport (_numpy_dtype_from__type, _is_numpy_dtype, _xtype_for_prefix)

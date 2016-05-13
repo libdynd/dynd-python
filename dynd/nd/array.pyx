@@ -3,7 +3,7 @@
 _builtin_type = type
 
 from cpython.object cimport (Py_LT, Py_LE, Py_EQ, Py_NE, Py_GE, Py_GT,
-                             PyObject_TypeCheck)
+                             PyObject_TypeCheck, PyTypeObject)
 from cpython.buffer cimport PyObject_CheckBuffer
 from libcpp.string cimport string
 from libcpp.map cimport map
@@ -25,8 +25,8 @@ from ..cpp.view cimport view as _view
 from ..pyobject_type cimport pyobject_id
 
 from ..config cimport translate_exception
-from ..ndt.type cimport type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type
-from ..ndt.type cimport cpp_type_for
+from ..ndt.type cimport (type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type,
+                         cpp_type_for, _register_nd_array_type_deduction)
 
 cdef extern from 'array_functions.hpp' namespace 'pydynd':
     void array_init_from_pyobject(_array&, object, object, bint, object) except +translate_exception
@@ -81,7 +81,7 @@ ctypedef cpp_complex[double] cpp_complex_double
 # in scope due to argument naming.
 _builtin_type = type
 
-# Initialize ctypes C level interop data
+# Initialize C level static interop data
 numpy_interop_init()
 init_array_from_py()
 
@@ -565,27 +565,37 @@ cdef class array(object):
         result.v = self.v.view_scalars(_py_type(dtp).v)
         return result
 
-cdef _array dynd_nd_array_to_cpp(array a) except *:
+cdef _array dynd_nd_array_to_cpp(array a) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if a is None:
+    if a is not None:
+        return a.v
+    with gil:
         raise TypeError("Cannot extract DyND C++ array from None.")
+
+cdef _array dynd_nd_array_to_cpp_unsafe(array a) nogil:
     return a.v
 
-cdef _array *dynd_nd_array_to_ptr(array a) except *:
+cdef _array *dynd_nd_array_to_ptr(array a) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
     # since the self parameter is guaranteed to never be None.
-    if a is None:
+    if a is not None:
+        return &(a.v)
+    with gil:
         raise TypeError("Cannot extract DyND C++ array from None.")
-    return &(a.v)
 
 # returns a Python object, so no exception specifier is needed.
 cdef array dynd_nd_array_from_cpp(_array a):
     cdef array arr = array.__new__(array)
     arr.v = a
     return arr
+
+cdef _type _type_from_pyarr_wrapper(PyObject *a) nogil:
+    return dynd_nd_array_to_cpp_unsafe(<array>a).get_type()
+
+_register_nd_array_type_deduction(<PyTypeObject*>array, &_type_from_pyarr_wrapper)
 
 cdef _array as_cpp_array(object obj) except *:
     """
@@ -1134,24 +1144,3 @@ cdef extern from 'assign.hpp':
 
 cdef void _registry_assign_init() except *:
     assign_init()
-
-cdef extern from "numpy_interop.hpp":
-    ctypedef struct PyArray_Descr
-
-cdef extern from "numpy_interop.hpp" namespace "pydynd":
-    PyArray_Descr *numpy_dtype_from__type(const _type &tp) except +translate_exception
-    # Technically returns a bool.
-    # Rely on an implicit cast to convert it to a bint for Cython.
-    bint is_numpy_dtype(PyObject*)
-
-cdef object _numpy_dtype_from__type(const _type &tp):
-    return <object> numpy_dtype_from__type(tp)
-
-cdef bint _is_numpy_dtype(PyObject *o) except *:
-    return is_numpy_dtype(o)
-
-cdef extern from "array_from_py.hpp" namespace 'pydynd':
-    _type xtype_for_prefix(object) except +translate_exception
-
-cdef _type _xtype_for_prefix(object o) except *:
-    return xtype_for_prefix(o)

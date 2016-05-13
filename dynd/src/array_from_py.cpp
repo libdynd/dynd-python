@@ -10,6 +10,7 @@
 #include <dynd/exceptions.hpp>
 #include <dynd/memblock/external_memory_block.hpp>
 #include <dynd/memblock/pod_memory_block.hpp>
+#include <dynd/option.hpp>
 #include <dynd/type_promotion.hpp>
 #include <dynd/types/bytes_type.hpp>
 #include <dynd/types/option_type.hpp>
@@ -18,14 +19,13 @@
 #include <dynd/types/substitute_shape.hpp>
 #include <dynd/types/type_type.hpp>
 #include <dynd/types/var_dim_type.hpp>
-#include <dynd/option.hpp>
 
+#include "array_conversions.hpp"
 #include "array_from_py.hpp"
 #include "array_functions.hpp"
-#include "array_conversions.hpp"
 #include "numpy_interop.hpp"
-#include "type_functions.hpp"
 #include "type_deduction.hpp"
+#include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 #include "utility_functions.hpp"
 
@@ -39,18 +39,14 @@ void pydynd::init_array_from_py()
   PyDateTime_IMPORT;
 }
 
-typedef void (*convert_one_pyscalar_function_t)(const ndt::type &tp,
-                                                const char *arrmeta, char *out,
-                                                PyObject *obj);
+typedef void (*convert_one_pyscalar_function_t)(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj);
 
-inline void convert_one_pyscalar_bool(const ndt::type &tp, const char *arrmeta,
-                                      char *out, PyObject *obj)
+inline void convert_one_pyscalar_bool(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   *out = (PyObject_IsTrue(obj) != 0);
 }
 
-inline void convert_one_pyscalar_int32(const ndt::type &tp, const char *arrmeta,
-                                       char *out, PyObject *obj)
+inline void convert_one_pyscalar_int32(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
 #if PY_VERSION_HEX >= 0x03000000
   int32_t value = static_cast<int32_t>(PyLong_AsLong(obj));
@@ -63,8 +59,7 @@ inline void convert_one_pyscalar_int32(const ndt::type &tp, const char *arrmeta,
   *reinterpret_cast<int32_t *>(out) = value;
 }
 
-inline void convert_one_pyscalar_int64(const ndt::type &tp, const char *arrmeta,
-                                       char *out, PyObject *obj)
+inline void convert_one_pyscalar_int64(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   int64_t value = PyLong_AsLongLong(obj);
   if (value == -1 && PyErr_Occurred()) {
@@ -73,9 +68,7 @@ inline void convert_one_pyscalar_int64(const ndt::type &tp, const char *arrmeta,
   *reinterpret_cast<int64_t *>(out) = value;
 }
 
-inline void convert_one_pyscalar_float32(const ndt::type &tp,
-                                         const char *arrmeta, char *out,
-                                         PyObject *obj)
+inline void convert_one_pyscalar_float32(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   double value = PyFloat_AsDouble(obj);
   if (value == -1 && PyErr_Occurred()) {
@@ -84,9 +77,7 @@ inline void convert_one_pyscalar_float32(const ndt::type &tp,
   *reinterpret_cast<float *>(out) = static_cast<float>(value);
 }
 
-inline void convert_one_pyscalar_float64(const ndt::type &tp,
-                                         const char *arrmeta, char *out,
-                                         PyObject *obj)
+inline void convert_one_pyscalar_float64(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   double value = PyFloat_AsDouble(obj);
   if (value == -1 && PyErr_Occurred()) {
@@ -95,21 +86,17 @@ inline void convert_one_pyscalar_float64(const ndt::type &tp,
   *reinterpret_cast<double *>(out) = value;
 }
 
-inline void convert_one_pyscalar_cdouble(const ndt::type &tp,
-                                         const char *arrmeta, char *out,
-                                         PyObject *obj)
+inline void convert_one_pyscalar_cdouble(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   double value_real = PyComplex_RealAsDouble(obj);
   double value_imag = PyComplex_ImagAsDouble(obj);
   if ((value_real == -1 || value_imag == -1) && PyErr_Occurred()) {
     throw std::exception();
   }
-  *reinterpret_cast<dynd::complex<double> *>(out) =
-      dynd::complex<double>(value_real, value_imag);
+  *reinterpret_cast<dynd::complex<double> *>(out) = dynd::complex<double>(value_real, value_imag);
 }
 
-inline void convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta,
-                                       char *out, PyObject *obj)
+inline void convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   dynd::bytes *out_asp = reinterpret_cast<dynd::bytes *>(out);
   char *data = NULL;
@@ -132,9 +119,7 @@ inline void convert_one_pyscalar_bytes(const ndt::type &tp, const char *arrmeta,
   }
 }
 
-inline void convert_one_pyscalar_ustring(const ndt::type &tp,
-                                         const char *arrmeta, char *out,
-                                         PyObject *obj)
+inline void convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   dynd::string *out_usp = reinterpret_cast<dynd::string *>(out);
   if (PyUnicode_Check(obj)) {
@@ -159,8 +144,7 @@ inline void convert_one_pyscalar_ustring(const ndt::type &tp,
     for (Py_ssize_t i = 0; i < len; ++i) {
       // Only let valid ascii get through
       if ((unsigned char)data[i] >= 128) {
-        throw string_decode_error(data + i, data + i + 1,
-                                  string_encoding_ascii);
+        throw string_decode_error(data + i, data + i + 1, string_encoding_ascii);
       }
       out_usp->begin()[i] = data[i];
     }
@@ -171,17 +155,14 @@ inline void convert_one_pyscalar_ustring(const ndt::type &tp,
   }
 }
 
-inline void convert_one_pyscalar__type(const ndt::type &DYND_UNUSED(tp),
-                                       const char *DYND_UNUSED(arrmeta),
-                                       char *out, PyObject *obj)
+inline void convert_one_pyscalar__type(const ndt::type &DYND_UNUSED(tp), const char *DYND_UNUSED(arrmeta), char *out,
+                                       PyObject *obj)
 {
   ndt::type obj_as_tp = dynd_ndt_cpp_type_for(obj);
   obj_as_tp.swap(*reinterpret_cast<ndt::type *>(out));
 }
 
-inline void convert_one_pyscalar_option(const ndt::type &tp,
-                                        const char *arrmeta, char *out,
-                                        PyObject *obj)
+inline void convert_one_pyscalar_option(const ndt::type &tp, const char *arrmeta, char *out, PyObject *obj)
 {
   if (obj == Py_None) {
     nd::old_assign_na(tp, arrmeta, out);
@@ -192,8 +173,7 @@ inline void convert_one_pyscalar_option(const ndt::type &tp,
 }
 
 template <convert_one_pyscalar_function_t ConvertOneFn>
-static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
-                                   char *data, PyObject *obj,
+static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta, char *data, PyObject *obj,
                                    const intptr_t *shape, size_t current_axis)
 {
   if (shape[current_axis] == 0) {
@@ -205,8 +185,7 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
   ndt::type element_tp = tp.at_single(0, &element_arrmeta);
   if (shape[current_axis] >= 0) {
     // Fixed-sized dimension
-    const fixed_dim_type_arrmeta *md =
-        reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
+    const fixed_dim_type_arrmeta *md = reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
     intptr_t stride = md->stride;
     if (element_tp.is_scalar()) {
       for (Py_ssize_t i = 0; i < size; ++i) {
@@ -217,8 +196,7 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
     }
     else {
       for (Py_ssize_t i = 0; i < size; ++i) {
-        fill_array_from_pylist<ConvertOneFn>(element_tp, element_arrmeta, data,
-                                             PyList_GET_ITEM(obj, i), shape,
+        fill_array_from_pylist<ConvertOneFn>(element_tp, element_arrmeta, data, PyList_GET_ITEM(obj, i), shape,
                                              current_axis + 1);
         data += stride;
       }
@@ -226,11 +204,9 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
   }
   else {
     // Variable-sized dimension
-    const ndt::var_dim_type::metadata_type *md =
-        reinterpret_cast<const ndt::var_dim_type::metadata_type *>(arrmeta);
+    const ndt::var_dim_type::metadata_type *md = reinterpret_cast<const ndt::var_dim_type::metadata_type *>(arrmeta);
     intptr_t stride = md->stride;
-    ndt::var_dim_type::data_type *out =
-        reinterpret_cast<ndt::var_dim_type::data_type *>(data);
+    ndt::var_dim_type::data_type *out = reinterpret_cast<ndt::var_dim_type::data_type *>(data);
     char *out_end = NULL;
 
     out->begin = md->blockref->alloc(size);
@@ -246,9 +222,8 @@ static void fill_array_from_pylist(const ndt::type &tp, const char *arrmeta,
     }
     else {
       for (Py_ssize_t i = 0; i < size; ++i) {
-        fill_array_from_pylist<ConvertOneFn>(
-            element_tp, element_arrmeta, element_data, PyList_GET_ITEM(obj, i),
-            shape, current_axis + 1);
+        fill_array_from_pylist<ConvertOneFn>(element_tp, element_arrmeta, element_data, PyList_GET_ITEM(obj, i), shape,
+                                             current_axis + 1);
         element_data += stride;
       }
     }
@@ -273,87 +248,72 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
   }
 
   // Create the array
-  nd::array result =
-      pydynd::make_strided_array(tp, (int)shape.size(), &shape[0]);
+  nd::array result = pydynd::make_strided_array(tp, (int)shape.size(), &shape[0]);
 
   // Populate the array with data
   switch (tp.get_id()) {
   case bool_id:
-    fill_array_from_pylist<convert_one_pyscalar_bool>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_bool>(result.get_type(), result.get()->metadata(), result.data(), obj,
+                                                      &shape[0], 0);
     break;
   case int32_id:
-    fill_array_from_pylist<convert_one_pyscalar_int32>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_int32>(result.get_type(), result.get()->metadata(), result.data(), obj,
+                                                       &shape[0], 0);
     break;
   case int64_id:
-    fill_array_from_pylist<convert_one_pyscalar_int64>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_int64>(result.get_type(), result.get()->metadata(), result.data(), obj,
+                                                       &shape[0], 0);
     break;
   case float32_id:
-    fill_array_from_pylist<convert_one_pyscalar_float32>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_float32>(result.get_type(), result.get()->metadata(), result.data(),
+                                                         obj, &shape[0], 0);
     break;
   case float64_id:
-    fill_array_from_pylist<convert_one_pyscalar_float64>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_float64>(result.get_type(), result.get()->metadata(), result.data(),
+                                                         obj, &shape[0], 0);
     break;
   case complex_float64_id:
-    fill_array_from_pylist<convert_one_pyscalar_cdouble>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_cdouble>(result.get_type(), result.get()->metadata(), result.data(),
+                                                         obj, &shape[0], 0);
     break;
   case bytes_id:
-    fill_array_from_pylist<convert_one_pyscalar_bytes>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_bytes>(result.get_type(), result.get()->metadata(), result.data(), obj,
+                                                       &shape[0], 0);
     break;
   case string_id: {
     const ndt::base_string_type *ext = tp.extended<ndt::base_string_type>();
     if (ext->get_encoding() == string_encoding_utf_8) {
-      fill_array_from_pylist<convert_one_pyscalar_ustring>(
-          result.get_type(), result.get()->metadata(), result.data(), obj,
-          &shape[0], 0);
+      fill_array_from_pylist<convert_one_pyscalar_ustring>(result.get_type(), result.get()->metadata(), result.data(),
+                                                           obj, &shape[0], 0);
     }
     else {
       stringstream ss;
-      ss << "Internal error: deduced type from Python list, " << tp
-         << ", doesn't have a dynd array conversion";
+      ss << "Internal error: deduced type from Python list, " << tp << ", doesn't have a dynd array conversion";
       throw runtime_error(ss.str());
     }
     break;
   }
   case type_id: {
-    fill_array_from_pylist<convert_one_pyscalar__type>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar__type>(result.get_type(), result.get()->metadata(), result.data(), obj,
+                                                       &shape[0], 0);
     break;
   }
   case option_id: {
-    fill_array_from_pylist<convert_one_pyscalar_option>(
-        result.get_type(), result.get()->metadata(), result.data(), obj,
-        &shape[0], 0);
+    fill_array_from_pylist<convert_one_pyscalar_option>(result.get_type(), result.get()->metadata(), result.data(), obj,
+                                                        &shape[0], 0);
     break;
   }
   default: {
     stringstream ss;
-    ss << "Deduced type from Python list, " << tp
-       << ", doesn't have a dynd array conversion function yet";
+    ss << "Deduced type from Python list, " << tp << ", doesn't have a dynd array conversion function yet";
     throw runtime_error(ss.str());
   }
   }
-  result.get_type().extended()->arrmeta_finalize_buffers(
-      result.get()->metadata());
+  result.get_type().extended()->arrmeta_finalize_buffers(result.get()->metadata());
   return result;
 }
 
-dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
-                                      bool always_copy)
+dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool always_copy)
 {
   // If it's a Cython w_array
   if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
@@ -364,13 +324,10 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     else {
       if (access_flags != 0) {
         uint32_t raf = result.get_access_flags();
-        if ((access_flags & nd::immutable_access_flag) &&
-            !(raf & nd::immutable_access_flag)) {
-          throw runtime_error(
-              "cannot view a non-immutable dynd array as immutable");
+        if ((access_flags & nd::immutable_access_flag) && !(raf & nd::immutable_access_flag)) {
+          throw runtime_error("cannot view a non-immutable dynd array as immutable");
         }
-        if ((access_flags & nd::write_access_flag) &&
-            !(raf & nd::write_access_flag)) {
+        if ((access_flags & nd::write_access_flag) && !(raf & nd::write_access_flag)) {
           throw runtime_error("cannot view a readonly dynd array as readwrite");
         }
       }
@@ -380,8 +337,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
 
 #if DYND_NUMPY_INTEROP
   if (PyArray_Check(obj)) {
-    return array_from_numpy_array((PyArrayObject *)obj, access_flags,
-                                  always_copy);
+    return array_from_numpy_array((PyArrayObject *)obj, access_flags, always_copy);
   }
   else if (PyArray_IsScalar(obj, Generic)) {
     return array_from_numpy_scalar(obj, access_flags);
@@ -427,8 +383,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     result = nd::array(PyFloat_AS_DOUBLE(obj));
   }
   else if (PyComplex_Check(obj)) {
-    result = nd::array(dynd::complex<double>(PyComplex_RealAsDouble(obj),
-                                             PyComplex_ImagAsDouble(obj)));
+    result = nd::array(dynd::complex<double>(PyComplex_RealAsDouble(obj), PyComplex_ImagAsDouble(obj)));
 #if PY_VERSION_HEX < 0x03000000
   }
   else if (PyString_Check(obj)) {
@@ -441,8 +396,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     for (Py_ssize_t i = 0; i < len; ++i) {
       // Only let valid ascii get through
       if ((unsigned char)data[i] >= 128) {
-        throw string_decode_error(data + i, data + i + 1,
-                                  string_encoding_ascii);
+        throw string_decode_error(data + i, data + i + 1, string_encoding_ascii);
       }
     }
     result = nd::empty(ndt::make_type<ndt::string_type>());
@@ -467,8 +421,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
         return result;
       }
       else {
-        throw runtime_error(
-            "cannot create a writable view of a python bytes object");
+        throw runtime_error("cannot create a writable view of a python bytes object");
       }
     }
 
@@ -481,16 +434,14 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     // Python bytes are immutable, so simply use the existing memory with an
     // external memory
     Py_INCREF(obj);
-    intrusive_ptr<memory_block_data> bytesref = make_external_memory_block(
-        reinterpret_cast<void *>(obj), &py_decref_function);
+    intrusive_ptr<memory_block_data> bytesref =
+        make_external_memory_block(reinterpret_cast<void *>(obj), &py_decref_function);
     char *data_ptr;
-    result =
-        nd::array(reinterpret_cast<dynd::array_preamble *>(
-                      make_array_memory_block(d.extended()->get_arrmeta_size(),
-                                              d.get_data_size(),
-                                              d.get_data_alignment(), &data_ptr)
-                          .get()),
-                  true);
+    result = nd::array(reinterpret_cast<dynd::array_preamble *>(
+                           make_array_memory_block(d.extended()->get_arrmeta_size(), d.get_data_size(),
+                                                   d.get_data_alignment(), &data_ptr)
+                               .get()),
+                       true);
     result.get()->data = data_ptr;
     result.get()->owner = NULL;
     result.get()->tp = d;
@@ -544,54 +495,4 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
   }
 
   return result;
-}
-
-dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
-{
-  // If it's a Cython w_array
-  if (PyObject_TypeCheck(obj, get_array_pytypeobject())) {
-    return pydynd::array_to_cpp_ref(obj).get_type();
-  }
-
-#if DYND_NUMPY_INTEROP
-  if (PyArray_Check(obj)) {
-    return array_from_numpy_array2((PyArrayObject *)obj);
-  }
-
-#endif // DYND_NUMPY_INTEROP
-  if (PyBool_Check(obj)) {
-    return ndt::make_type<bool>();
-  }
-#if PY_VERSION_HEX < 0x03000000
-  if (PyInt_Check(obj)) {
-    long value = PyInt_AS_LONG(obj);
-#if SIZEOF_LONG > SIZEOF_INT
-    // Use a 32-bit int if it fits.
-    if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::make_type<int>();
-    }
-    else {
-      return ndt::make_type<long>();
-    }
-#else
-    return ndt::make_type<long>();
-#endif
-  }
-#endif // PY_VERSION_HEX < 0x03000000
-  if (PyLong_Check(obj)) {
-    PY_LONG_LONG value = PyLong_AsLongLong(obj);
-    if (value == -1 && PyErr_Occurred()) {
-      throw runtime_error("error converting int value");
-    }
-
-    // Use a 32-bit int if it fits.
-    if (value >= INT_MIN && value <= INT_MAX) {
-      return ndt::make_type<int>();
-    }
-    else {
-      return ndt::make_type<PY_LONG_LONG>();
-    }
-  }
-
-  return dynd::ndt::type();
 }

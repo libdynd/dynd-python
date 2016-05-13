@@ -180,10 +180,19 @@ endforeach(pyx_api_file)
 
 set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
+cython_add_module(dynd.config dynd.config_pyx True
+                  dynd/include/exception_translation.hpp
+                  dynd/src/array_conversions.cpp
+                  dynd/src/type_conversions.cpp
+                  dynd/src/type_deduction.cpp
+                  ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
+                  )
+
 cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   # Additional C++ source files:
-                  dynd/include/do_import_array.hpp
                   dynd/include/numpy_interop.hpp
+                  dynd/include/numpy_interop_defines.hpp
+                  dynd/include/numpy_type_interop.hpp
                   dynd/src/array_as_pep3118.cpp
                   dynd/src/array_as_numpy.cpp
                   dynd/src/array_from_py.cpp
@@ -193,37 +202,36 @@ cython_add_module(dynd.nd.array dynd.nd.array_pyx True
                   dynd/src/init.cpp
                   dynd/src/functional.cpp
                   dynd/src/numpy_interop.cpp
+                  dynd/src/numpy_type_interop.cpp
                   dynd/src/type_conversions.cpp
                   dynd/src/type_deduction.cpp
                   dynd/src/types/pyobject_type.cpp
                   )
-if (DYND_PYTHON_INPLACE_BUILD)
-    set_target_library_output_dir(dynd.nd.array "${PROJECT_SOURCE_DIR}/dynd/nd")
-endif()
 
-cython_add_module(dynd.config dynd.config_pyx True
-                  dynd/include/exception_translation.hpp
-                  dynd/src/array_conversions.cpp
+cython_add_module(dynd.ndt.type dynd.ndt.type_pyx True
+                  # Additional C++ source files:
+                  dynd/include/numpy_interop_defines.hpp
+                  dynd/include/numpy_type_interop.hpp
+                  dynd/src/init.cpp
+                  dynd/src/numpy_type_interop.cpp
                   dynd/src/type_conversions.cpp
                   dynd/src/type_deduction.cpp
-                  ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
                   )
-if (DYND_PYTHON_INPLACE_BUILD)
-    set_target_library_output_dir(dynd.config "${PROJECT_SOURCE_DIR}/dynd")
-endif()
 
-foreach(module dynd.ndt.type dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+foreach(module dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True
                       # Additional C++ source files:
                       dynd/src/type_conversions.cpp
                       dynd/src/array_conversions.cpp)
 endforeach(module)
 if (DYND_PYTHON_INPLACE_BUILD)
-    set_target_library_output_dir(dynd.ndt.type "${PROJECT_SOURCE_DIR}/dynd/ndt")
-    set_target_library_output_dir(dynd.ndt.json "${PROJECT_SOURCE_DIR}/dynd/ndt")
+    set_target_library_output_dir(dynd.config "${PROJECT_SOURCE_DIR}/dynd")
+    set_target_library_output_dir(dynd.nd.array "${PROJECT_SOURCE_DIR}/dynd/nd")
     set_target_library_output_dir(dynd.nd.callable "${PROJECT_SOURCE_DIR}/dynd/nd")
     set_target_library_output_dir(dynd.nd.functional "${PROJECT_SOURCE_DIR}/dynd/nd")
     set_target_library_output_dir(dynd.nd.registry "${PROJECT_SOURCE_DIR}/dynd/nd")
+    set_target_library_output_dir(dynd.ndt.type "${PROJECT_SOURCE_DIR}/dynd/ndt")
+    set_target_library_output_dir(dynd.ndt.json "${PROJECT_SOURCE_DIR}/dynd/ndt")
 endif()
 
 

@@ -4,7 +4,7 @@
 //
 
 #define NUMPY_IMPORT_ARRAY
-#include "numpy_interop.hpp"
+#include "numpy_interop_defines.hpp"
 
 #include "assign.hpp"
 #include "init.hpp"

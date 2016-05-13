@@ -17,8 +17,8 @@
 #include <dynd/types/struct_type.hpp>
 
 #include "kernels/copy_from_numpy_kernel.hpp"
-#include "type_functions.hpp"
 #include "type_deduction.hpp"
+#include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
 
 using namespace std;
@@ -187,8 +187,8 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char
 
   // TODO: This is a hack, need a proper way to pass this dst param
   dynd::nd::array tmp_dst(
-      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(dst_tp.get_arrmeta_size()).get()), true);
-  tmp_dst.get()->tp = dst_tp;
+      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(dst_tp, dst_tp.get_arrmeta_size()).get()),
+      true);
   tmp_dst.get()->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get()->metadata(), dst_arrmeta,
@@ -200,8 +200,6 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char
   dynd::nd::array kwd_values[1] = {true};
   pydynd::nd::copy_from_numpy->call(tmp_dst.get_type(), tmp_dst.get()->metadata(), tmp_dst.data(), 1, &src_tp, &src_am,
                                     &src_data, 1, kwd_values, std::map<std::string, dynd::ndt::type>());
-
-  tmp_dst.get()->tp = dynd::ndt::type();
 }
 
 #endif // DYND_NUMPY_INTEROP

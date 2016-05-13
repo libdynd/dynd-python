@@ -63,8 +63,7 @@ void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp, 
   // TODO: This is a hack, need a proper way to pass this dst param
   intptr_t tmp_dst_arrmeta_size = dst_ndim * sizeof(dynd::fixed_dim_type_arrmeta) + sizeof(copy_to_numpy_arrmeta);
   dynd::nd::array tmp_dst(
-      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(tmp_dst_arrmeta_size).get()), true);
-  tmp_dst.get()->tp = dst_tp;
+      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(dst_tp, tmp_dst_arrmeta_size).get()), true);
   tmp_dst.get()->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     memcpy(tmp_dst.get()->metadata(), dst_am, tmp_dst_arrmeta_size);

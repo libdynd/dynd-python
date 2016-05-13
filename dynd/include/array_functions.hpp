@@ -25,11 +25,11 @@
 
 #include "array_as_numpy.hpp"
 #include "array_as_pep3118.hpp"
-#include "array_from_py.hpp"
 #include "array_conversions.hpp"
-#include "utility_functions.hpp"
+#include "array_from_py.hpp"
 #include "type_functions.hpp"
 #include "types/pyobject_type.hpp"
+#include "utility_functions.hpp"
 #include "visibility.hpp"
 
 namespace pydynd {
@@ -52,13 +52,13 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   dynd::intrusive_ptr<dynd::memory_block_data> result;
   char *data_ptr = NULL;
   if (array_tp.get_base_id() == dynd::memory_id) {
-    result = dynd::make_array_memory_block(array_tp.get_arrmeta_size());
+    result = dynd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size());
     array_tp.extended<dynd::ndt::base_memory_type>()->data_alloc(&data_ptr, data_size);
   }
   else {
     // Allocate the array arrmeta and data in one memory block
-    result =
-        dynd::make_array_memory_block(array_tp.get_arrmeta_size(), data_size, array_tp.get_data_alignment(), &data_ptr);
+    result = dynd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size(), data_size,
+                                           array_tp.get_data_alignment(), &data_ptr);
   }
 
   if (array_tp.get_flags() & dynd::type_flag_zeroinit) {
@@ -72,7 +72,6 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
 
   // Fill in the preamble arrmeta
   dynd::array_preamble *ndo = reinterpret_cast<dynd::array_preamble *>(result.get());
-  ndo->tp = array_tp;
   ndo->data = data_ptr;
   ndo->owner = NULL;
   ndo->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
@@ -396,8 +395,8 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
 
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
-  dynd::nd::array result(reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(arrmeta_size).get()),
-                         true);
+  dynd::nd::array result(
+      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(result_tp, arrmeta_size).get()), true);
 
   // Clone the data pointer
   result.get()->data = n.get()->data;
@@ -409,8 +408,6 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
   // Copy the flags
   result.get()->flags = n.get()->flags;
 
-  // Set the type and transform the arrmeta
-  result.get()->tp = result_tp;
   // First copy all the array data type arrmeta
   dynd::ndt::type tmp_dt = result_tp;
   char *dst_arrmeta = result.get()->metadata();

@@ -77,8 +77,8 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     for (intptr_t i = 0; i != nsrc; ++i) {
       dynd::ndt::type tp = src_tp[i];
       dynd::nd::array n(
-          reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(tp.get_arrmeta_size()).get()), true);
-      n.get()->tp = tp;
+          reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(tp, tp.get_arrmeta_size()).get()),
+          true);
       n.get()->flags = dynd::nd::read_access_flag;
       n.get()->data = const_cast<char *>(src[i]);
       if (src_tp[i].get_arrmeta_size() > 0) {
@@ -111,8 +111,8 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     for (intptr_t i = 0; i != nsrc; ++i) {
       dynd::ndt::type tp = src_tp[i];
       dynd::nd::array n(
-          reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(tp.get_arrmeta_size()).get()), true);
-      n.get()->tp = tp;
+          reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(tp, tp.get_arrmeta_size()).get()),
+          true);
       n.get()->flags = dynd::nd::read_access_flag;
       n.get()->data = const_cast<char *>(src[i]);
       if (src_tp[i].get_arrmeta_size() > 0) {

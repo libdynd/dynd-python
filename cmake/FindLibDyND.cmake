@@ -49,6 +49,7 @@ if(WIN32)
 else()
     find_program(_LIBDYND_CONFIG "libdynd-config")
 endif()
+
 if("${_LIBDYND_CONFIG}" STREQUAL "")
 
     if(LibDyND_FIND_REQUIRED)

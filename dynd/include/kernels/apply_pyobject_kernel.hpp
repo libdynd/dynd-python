@@ -1,7 +1,7 @@
 #pragma once
 
-#include <dynd/kernels/base_kernel.hpp>
 #include <dynd/assignment.hpp>
+#include <dynd/kernels/base_kernel.hpp>
 
 #include "array_conversions.hpp"
 #include "type_functions.hpp"
@@ -34,7 +34,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     // Verify that no reference to a temporary array was kept
     for (intptr_t i = 0; i != nsrc; ++i) {
       PyObject *item = PyTuple_GET_ITEM(args, i);
-      if (Py_REFCNT(item) != 1 || pydynd::array_to_cpp_ref(item).get()->m_use_count != 1) {
+      if (Py_REFCNT(item) != 1 || pydynd::array_to_cpp_ref(item)->get_use_count() != 1) {
         std::stringstream ss;
         ss << "Python callback function ";
         pydynd::pyobject_ownref pyfunc_repr(PyObject_Repr(m_pyfunc));

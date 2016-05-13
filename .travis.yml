@@ -71,7 +71,7 @@ install:
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
   - conda build conda.recipe --channel dynd/channel/dev
   - conda install --yes numpy libdynd --channel dynd/channel/dev
-  - conda install $(conda build --output conda.recipe)
+  - conda install $(conda build --output conda.recipe | grep bz2)
 
 script:
   - pushd ..

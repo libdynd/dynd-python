@@ -486,14 +486,13 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags,
     char *data_ptr;
     result =
         nd::array(reinterpret_cast<dynd::array_preamble *>(
-                      make_array_memory_block(d.extended()->get_arrmeta_size(),
+                      make_array_memory_block(d, d.extended()->get_arrmeta_size(),
                                               d.get_data_size(),
                                               d.get_data_alignment(), &data_ptr)
                           .get()),
                   true);
     result.get()->data = data_ptr;
     result.get()->owner = NULL;
-    result.get()->tp = d;
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
     // The arrmeta

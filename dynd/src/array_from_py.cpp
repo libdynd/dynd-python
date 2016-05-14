@@ -440,7 +440,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     result = nd::make_array_memory_block(d, d.extended()->get_arrmeta_size(), d.get_data_size(),
                                         d.get_data_alignment(), &data_ptr);
     result.get()->data = data_ptr;
-    result.get()->owner = nd::memory_block();
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
     // The arrmeta

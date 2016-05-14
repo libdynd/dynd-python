@@ -58,7 +58,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   else {
     // Allocate the array arrmeta and data in one memory block
     result = dynd::nd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size(), data_size,
-                                           array_tp.get_data_alignment(), &data_ptr);
+                                               array_tp.get_data_alignment(), &data_ptr);
   }
 
   if (array_tp.get_flags() & dynd::type_flag_zeroinit) {
@@ -416,8 +416,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
       throw std::runtime_error("nd.fields doesn't support dimensions with pointers yet");
     }
     const dynd::ndt::base_dim_type *budd = tmp_dt.extended<dynd::ndt::base_dim_type>();
-    size_t offset = budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta,
-                                                        dynd::intrusive_ptr<dynd::memory_block_data>(n.get(), true));
+    size_t offset = budd->arrmeta_copy_construct_onedim(dst_arrmeta, src_arrmeta, n);
     dst_arrmeta += offset;
     src_arrmeta += offset;
     tmp_dt = budd->get_element_type();
@@ -434,8 +433,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
     // Copy the arrmeta for this field
     if (dt.get_arrmeta_size() > 0) {
       dt.extended()->arrmeta_copy_construct(dst_arrmeta + result_arrmeta_offsets[i],
-                                            src_arrmeta + arrmeta_offsets[selected_index[i]],
-                                            dynd::intrusive_ptr<dynd::memory_block_data>(n.get(), true));
+                                            src_arrmeta + arrmeta_offsets[selected_index[i]], n);
     }
   }
 

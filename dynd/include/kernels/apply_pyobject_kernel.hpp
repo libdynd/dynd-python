@@ -80,8 +80,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       n.get()->flags = dynd::nd::read_access_flag;
       n.get()->data = const_cast<char *>(src[i]);
       if (src_tp[i].get_arrmeta_size() > 0) {
-        src_tp[i].extended()->arrmeta_copy_construct(n.get()->metadata(), m_src_arrmeta[i],
-                                                     dynd::intrusive_ptr<dynd::memory_block_data>());
+        src_tp[i].extended()->arrmeta_copy_construct(n.get()->metadata(), m_src_arrmeta[i], dynd::nd::memory_block());
       }
       PyTuple_SET_ITEM(args.get(), i, pydynd::array_from_cpp(std::move(n)));
     }
@@ -112,8 +111,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       n.get()->flags = dynd::nd::read_access_flag;
       n.get()->data = const_cast<char *>(src[i]);
       if (src_tp[i].get_arrmeta_size() > 0) {
-        src_tp[i].extended()->arrmeta_copy_construct(n.get()->metadata(), m_src_arrmeta[i],
-                                                     dynd::intrusive_ptr<dynd::memory_block_data>());
+        src_tp[i].extended()->arrmeta_copy_construct(n.get()->metadata(), m_src_arrmeta[i], dynd::nd::memory_block());
       }
       PyTuple_SET_ITEM(args.get(), i, pydynd::array_from_cpp(std::move(n)));
     }

@@ -22,7 +22,8 @@ PYDYND_API void assign_init()
   typedef type_id_sequence<bool_id, int8_id, int16_id, int32_id, int64_id, int128_id, uint8_id, uint16_id, uint32_id,
                            uint64_id, uint128_id, float16_id, float32_id, float64_id, complex_float32_id,
                            complex_float64_id, bytes_id, fixed_bytes_id, string_id, fixed_string_id, option_id, type_id,
-                           tuple_id, struct_id, fixed_dim_id, var_dim_id> type_ids;
+                           tuple_id, struct_id, fixed_dim_id, var_dim_id>
+      type_ids;
 
   PyDateTime_IMPORT;
 
@@ -62,8 +63,7 @@ void array_copy_to_numpy(PyArrayObject *dst_arr, const dynd::ndt::type &src_tp, 
 
   // TODO: This is a hack, need a proper way to pass this dst param
   intptr_t tmp_dst_arrmeta_size = dst_ndim * sizeof(dynd::fixed_dim_type_arrmeta) + sizeof(copy_to_numpy_arrmeta);
-  dynd::nd::array tmp_dst(
-      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(dst_tp, tmp_dst_arrmeta_size).get()), true);
+  dynd::nd::array tmp_dst = dynd::nd::make_array_memory_block(dst_tp, tmp_dst_arrmeta_size);
   tmp_dst.get()->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     memcpy(tmp_dst.get()->metadata(), dst_am, tmp_dst_arrmeta_size);

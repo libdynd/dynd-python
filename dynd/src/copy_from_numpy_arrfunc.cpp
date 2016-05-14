@@ -186,9 +186,7 @@ void pydynd::nd::array_copy_from_numpy(const dynd::ndt::type &dst_tp, const char
   src_am_holder.am.src_alignment = src_alignment;
 
   // TODO: This is a hack, need a proper way to pass this dst param
-  dynd::nd::array tmp_dst(
-      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(dst_tp, dst_tp.get_arrmeta_size()).get()),
-      true);
+  dynd::nd::array tmp_dst = dynd::nd::make_array_memory_block(dst_tp, dst_tp.get_arrmeta_size());
   tmp_dst.get()->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
   if (dst_tp.get_arrmeta_size() > 0) {
     dst_tp.extended()->arrmeta_copy_construct(tmp_dst.get()->metadata(), dst_arrmeta,

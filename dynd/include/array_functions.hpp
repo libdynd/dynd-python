@@ -49,7 +49,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
     data_size = array_tp.extended()->get_default_data_size();
   }
 
-  dynd::intrusive_ptr<dynd::memory_block_data> result;
+  dynd::nd::array result;
   char *data_ptr = NULL;
   if (array_tp.get_base_id() == dynd::memory_id) {
     result = dynd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size());
@@ -395,8 +395,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
 
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
-  dynd::nd::array result(
-      reinterpret_cast<dynd::array_preamble *>(dynd::make_array_memory_block(result_tp, arrmeta_size).get()), true);
+  dynd::nd::array result = dynd::make_array_memory_block(result_tp, arrmeta_size);
 
   // Clone the data pointer
   result.get()->data = n.get()->data;

@@ -5,9 +5,9 @@
 
 #include <Python.h>
 
-#include <dynd/types/struct_type.hpp>
-#include <dynd/types/fixed_string_type.hpp>
 #include <dynd/shape_tools.hpp>
+#include <dynd/types/fixed_string_type.hpp>
+#include <dynd/types/struct_type.hpp>
 
 #include "array_as_pep3118.hpp"
 #include "array_functions.hpp"
@@ -38,8 +38,7 @@ static void debug_print_getbuffer_flags(std::ostream &o, int flags)
     cout << "  PyBUF_INDIRECT\n";
 }
 
-static void debug_print_py_buffer(std::ostream &o, const Py_buffer *buffer,
-                                  int flags)
+static void debug_print_py_buffer(std::ostream &o, const Py_buffer *buffer, int flags)
 {
   cout << "PEP 3118 buffer info:\n";
   cout << "  buf: " << buffer->buf << "\n";
@@ -60,8 +59,8 @@ static void debug_print_py_buffer(std::ostream &o, const Py_buffer *buffer,
   cout << "  internal: " << buffer->internal << endl;
 }
 
-static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
-                                  const char *arrmeta, std::stringstream &o)
+static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp, const char *arrmeta,
+                                  std::stringstream &o)
 {
   switch (tp.get_id()) {
   case bool_id:
@@ -143,11 +142,9 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
       const ndt::fixed_dim_type *tdt = child_tp.extended<ndt::fixed_dim_type>();
       intptr_t dim_size = tdt->get_fixed_dim_size();
       o << dim_size;
-      if (child_tp.get_data_size() !=
-          tdt->get_element_type().get_data_size() * dim_size) {
+      if (child_tp.get_data_size() != tdt->get_element_type().get_data_size() * dim_size) {
         stringstream ss;
-        ss << "Cannot convert dynd type " << tp
-           << " into a PEP 3118 format because it is not C-order";
+        ss << "Cannot convert dynd type " << tp << " into a PEP 3118 format because it is not C-order";
         throw dynd::type_error(ss.str());
       }
       o << ")";
@@ -175,13 +172,11 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
         // DyND allows the order of fields in memory to differ from the logical
         // order, something not supported by PEP 3118
         stringstream ss;
-        ss << "Cannot convert dynd type " << tp
-           << " with out of order data layout into a PEP 3118 format string";
+        ss << "Cannot convert dynd type " << tp << " with out of order data layout into a PEP 3118 format string";
         throw type_error(ss.str());
       }
       // The field's type
-      append_pep3118_format(out_itemsize, tdt->get_field_type(i),
-                            arrmeta ? (arrmeta + arrmeta_offsets[i]) : NULL, o);
+      append_pep3118_format(out_itemsize, tdt->get_field_type(i), arrmeta ? (arrmeta + arrmeta_offsets[i]) : NULL, o);
       format_offset += out_itemsize;
       // Append the name
       o << ":" << tdt->get_field_name(i) << ":";
@@ -198,9 +193,7 @@ static void append_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp,
   throw dynd::type_error(ss.str());
 }
 
-std::string pydynd::make_pep3118_format(intptr_t &out_itemsize,
-                                        const ndt::type &tp,
-                                        const char *arrmeta)
+std::string pydynd::make_pep3118_format(intptr_t &out_itemsize, const ndt::type &tp, const char *arrmeta)
 {
   std::stringstream result;
   // Specify native alignment/storage if it's a builtin scalar type
@@ -211,9 +204,8 @@ std::string pydynd::make_pep3118_format(intptr_t &out_itemsize,
   return result.str();
 }
 
-static void array_getbuffer_pep3118_bytes(const ndt::type &tp,
-                                          const char *arrmeta, char *data,
-                                          Py_buffer *buffer, int flags)
+static void array_getbuffer_pep3118_bytes(const ndt::type &tp, const char *arrmeta, char *data, Py_buffer *buffer,
+                                          int flags)
 {
   buffer->itemsize = 1;
   if (flags & PyBUF_FORMAT) {
@@ -265,44 +257,36 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     ndt::type tp = n.get_type();
 
     // Check if a writable buffer is requested
-    if ((flags & PyBUF_WRITABLE) &&
-        !(n.get_access_flags() & nd::write_access_flag)) {
+    if ((flags & PyBUF_WRITABLE) && !(n.get_access_flags() & nd::write_access_flag)) {
       throw runtime_error("dynd array is not writable");
     }
     buffer->readonly = ((n.get_access_flags() & nd::write_access_flag) == 0);
-    buffer->buf = preamble->data;
+    buffer->buf = preamble->get_data();
 
-    if (tp.get_id() == bytes_id ||
-        tp.get_id() == fixed_bytes_id) {
-      array_getbuffer_pep3118_bytes(tp, n.get()->metadata(), n.get()->data,
-                                    buffer, flags);
+    if (tp.get_id() == bytes_id || tp.get_id() == fixed_bytes_id) {
+      array_getbuffer_pep3118_bytes(tp, n.get()->metadata(), n->get_data(), buffer, flags);
       return 0;
     }
 
     buffer->ndim = (int)tp.get_ndim();
     if (((flags & PyBUF_ND) != PyBUF_ND) && buffer->ndim > 1) {
       stringstream ss;
-      ss << "dynd type " << n.get_type()
-         << " is multidimensional, but PEP 3118 request is not ND";
+      ss << "dynd type " << n.get_type() << " is multidimensional, but PEP 3118 request is not ND";
       throw dynd::type_error(ss.str());
     }
 
     // Create the format, and allocate the dynamic memory but Py_buffer needs
     char *uniform_arrmeta = n.get()->metadata();
-    ndt::type uniform_tp =
-        tp.get_type_at_dimension(&uniform_arrmeta, buffer->ndim);
+    ndt::type uniform_tp = tp.get_type_at_dimension(&uniform_arrmeta, buffer->ndim);
     if ((flags & PyBUF_FORMAT) || uniform_tp.get_data_size() == 0) {
       // If the array data type doesn't have a fixed size, make_pep3118 fills
       // buffer->itemsize as a side effect
-      std::string format =
-          make_pep3118_format(buffer->itemsize, uniform_tp, uniform_arrmeta);
+      std::string format = make_pep3118_format(buffer->itemsize, uniform_tp, uniform_arrmeta);
       if (flags & PyBUF_FORMAT) {
-        buffer->internal =
-            malloc(2 * buffer->ndim * sizeof(intptr_t) + format.size() + 1);
+        buffer->internal = malloc(2 * buffer->ndim * sizeof(intptr_t) + format.size() + 1);
         buffer->shape = reinterpret_cast<Py_ssize_t *>(buffer->internal);
         buffer->strides = buffer->shape + buffer->ndim;
-        buffer->format =
-            reinterpret_cast<char *>(buffer->strides + buffer->ndim);
+        buffer->format = reinterpret_cast<char *>(buffer->strides + buffer->ndim);
         memcpy(buffer->format, format.c_str(), format.size() + 1);
       }
       else {
@@ -326,8 +310,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
       switch (tp.get_id()) {
       case fixed_dim_id: {
         const ndt::fixed_dim_type *tdt = tp.extended<ndt::fixed_dim_type>();
-        const fixed_dim_type_arrmeta *md =
-            reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
+        const fixed_dim_type_arrmeta *md = reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
         buffer->shape[i] = md->dim_size;
         buffer->strides[i] = md->stride;
         arrmeta += sizeof(fixed_dim_type_arrmeta);
@@ -336,8 +319,7 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
       }
       default: {
         stringstream ss;
-        ss << "Cannot get a strided view of dynd type " << n.get_type()
-           << " for PEP 3118 buffer";
+        ss << "Cannot get a strided view of dynd type " << n.get_type() << " for PEP 3118 buffer";
         throw runtime_error(ss.str());
       }
       }
@@ -350,26 +332,19 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
     }
 
     // Check that any contiguity requirements are satisfied
-    if ((flags & PyBUF_C_CONTIGUOUS) == PyBUF_C_CONTIGUOUS ||
-        (flags & PyBUF_STRIDES) != PyBUF_STRIDES) {
-      if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize,
-                                    buffer->shape, buffer->strides)) {
-        throw runtime_error(
-            "dynd array is not C-contiguous as requested for PEP 3118 buffer");
+    if ((flags & PyBUF_C_CONTIGUOUS) == PyBUF_C_CONTIGUOUS || (flags & PyBUF_STRIDES) != PyBUF_STRIDES) {
+      if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
+        throw runtime_error("dynd array is not C-contiguous as requested for PEP 3118 buffer");
       }
     }
     else if ((flags & PyBUF_F_CONTIGUOUS) == PyBUF_F_CONTIGUOUS) {
-      if (!strides_are_f_contiguous(buffer->ndim, buffer->itemsize,
-                                    buffer->shape, buffer->strides)) {
-        throw runtime_error(
-            "dynd array is not F-contiguous as requested for PEP 3118 buffer");
+      if (!strides_are_f_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
+        throw runtime_error("dynd array is not F-contiguous as requested for PEP 3118 buffer");
       }
     }
     else if ((flags & PyBUF_ANY_CONTIGUOUS) == PyBUF_ANY_CONTIGUOUS) {
-      if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize,
-                                    buffer->shape, buffer->strides) &&
-          !strides_are_f_contiguous(buffer->ndim, buffer->itemsize,
-                                    buffer->shape, buffer->strides)) {
+      if (!strides_are_c_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides) &&
+          !strides_are_f_contiguous(buffer->ndim, buffer->itemsize, buffer->shape, buffer->strides)) {
         throw runtime_error("dynd array is not C-contiguous nor F-contiguous "
                             "as requested for PEP 3118 buffer");
       }

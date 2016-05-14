@@ -52,7 +52,8 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   dynd::nd::array result;
   char *data_ptr = NULL;
   if (array_tp.get_base_id() == dynd::memory_id) {
-    result = dynd::nd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size());
+    result =
+        dynd::nd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size(), data_ptr, dynd::nd::memory_block());
     array_tp.extended<dynd::ndt::base_memory_type>()->data_alloc(&data_ptr, data_size);
   }
   else {
@@ -72,7 +73,6 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
 
   // Fill in the preamble arrmeta
   dynd::nd::array_preamble *ndo = reinterpret_cast<dynd::nd::array_preamble *>(result.get());
-  ndo->data = data_ptr;
   ndo->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
 
   if (!any_variable_dims) {
@@ -394,10 +394,8 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
 
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
-  dynd::nd::array result = dynd::nd::make_array_memory_block(result_tp, arrmeta_size, n->get_owner() ? n->get_owner() : n);
-
-  // Clone the data pointer
-  result.get()->data = n.get()->data;
+  dynd::nd::array result =
+      dynd::nd::make_array_memory_block(result_tp, arrmeta_size, n->get_data(), n->get_owner() ? n->get_owner() : n);
 
   // Copy the flags
   result.get()->flags = n.get()->flags;

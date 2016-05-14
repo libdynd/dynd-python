@@ -46,7 +46,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
         pydynd::array_to_cpp_ref(item).debug_print(ss);
         // Set all the args' data pointers to NULL as a precaution
         for (i = 0; i != nsrc; ++i) {
-          pydynd::array_to_cpp_ref(item).get()->data = NULL;
+          pydynd::array_to_cpp_ref(item).get()->set_data(NULL);
         }
         throw std::runtime_error(ss.str());
       }
@@ -76,9 +76,9 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     pydynd::pyobject_ownref args(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
       dynd::ndt::type tp = src_tp[i];
-      dynd::nd::array n = dynd::nd::make_array_memory_block(tp, tp.get_arrmeta_size());
+      dynd::nd::array n = dynd::nd::make_array_memory_block(tp, tp.get_arrmeta_size(), const_cast<char *>(src[i]),
+                                                            dynd::nd::memory_block());
       n.get()->flags = dynd::nd::read_access_flag;
-      n.get()->data = const_cast<char *>(src[i]);
       if (src_tp[i].get_arrmeta_size() > 0) {
         src_tp[i].extended()->arrmeta_copy_construct(n.get()->metadata(), m_src_arrmeta[i], dynd::nd::memory_block());
       }
@@ -107,9 +107,9 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     pydynd::pyobject_ownref args(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
       dynd::ndt::type tp = src_tp[i];
-      dynd::nd::array n = dynd::nd::make_array_memory_block(tp, tp.get_arrmeta_size());
+      dynd::nd::array n = dynd::nd::make_array_memory_block(tp, tp.get_arrmeta_size(), const_cast<char *>(src[i]),
+                                                            dynd::nd::memory_block());
       n.get()->flags = dynd::nd::read_access_flag;
-      n.get()->data = const_cast<char *>(src[i]);
       if (src_tp[i].get_arrmeta_size() > 0) {
         src_tp[i].extended()->arrmeta_copy_construct(n.get()->metadata(), m_src_arrmeta[i], dynd::nd::memory_block());
       }
@@ -132,7 +132,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       dst += dst_stride;
       for (intptr_t i = 0; i != nsrc; ++i) {
         const dynd::nd::array &n = pydynd::array_to_cpp_ref(PyTuple_GET_ITEM(args.get(), i));
-        n.get()->data += src_stride[i];
+        n->set_data(n->get_data() + src_stride[i]);
       }
     }
   }

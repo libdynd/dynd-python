@@ -145,7 +145,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
     dynd::nd::array result = dynd::nd::make_strided_array_from_data(
         d, PyArray_NDIM(obj), PyArray_DIMS(obj), PyArray_STRIDES(obj),
         dynd::nd::read_access_flag | (PyArray_ISWRITEABLE(obj) ? dynd::nd::write_access_flag : 0), PyArray_BYTES(obj),
-        std::move(memblock), &arrmeta);
+        dynd::nd::memory_block(std::move(memblock).get(), true), &arrmeta);
     if (d.get_id() == dynd::struct_id) {
       // If it's a struct, there's additional arrmeta that needs to be populated
       pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);

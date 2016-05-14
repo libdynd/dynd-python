@@ -123,10 +123,10 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
 
     // Get a shared pointer that tracks buffer ownership
     PyObject *base = PyArray_BASE(obj);
-    dynd::intrusive_ptr<dynd::memory_block_data> memblock;
+    dynd::nd::memory_block memblock;
     if (base == NULL || (PyArray_FLAGS(obj) & NPY_ARRAY_UPDATEIFCOPY) != 0) {
       Py_INCREF(obj);
-      memblock = dynd::make_external_memory_block(obj, py_decref_function);
+      memblock = dynd::nd::make_memory_block<dynd::nd::external_memory_block>(obj, py_decref_function);
     }
     else {
       if (PyObject_TypeCheck(base, pydynd::get_array_pytypeobject())) {
@@ -136,7 +136,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
       }
       else {
         Py_INCREF(base);
-        memblock = dynd::make_external_memory_block(base, py_decref_function);
+        memblock = dynd::nd::make_memory_block<dynd::nd::external_memory_block>(base, py_decref_function);
       }
     }
 

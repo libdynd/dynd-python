@@ -73,7 +73,6 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   // Fill in the preamble arrmeta
   dynd::nd::array_preamble *ndo = reinterpret_cast<dynd::nd::array_preamble *>(result.get());
   ndo->data = data_ptr;
-  ndo->owner = dynd::nd::memory_block();
   ndo->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
 
   if (!any_variable_dims) {
@@ -395,14 +394,10 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
 
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
-  dynd::nd::array result = dynd::nd::make_array_memory_block(result_tp, arrmeta_size);
+  dynd::nd::array result = dynd::nd::make_array_memory_block(result_tp, arrmeta_size, n->get_owner() ? n->get_owner() : n);
 
   // Clone the data pointer
   result.get()->data = n.get()->data;
-  result->owner = n->owner;
-  if (!result->owner) {
-    result->owner = n;
-  }
 
   // Copy the flags
   result.get()->flags = n.get()->flags;

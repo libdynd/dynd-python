@@ -362,10 +362,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
   dynd::nd::array result =
-      dynd::nd::make_array_memory_block(result_tp, arrmeta_size, n->get_data(), n->get_owner() ? n->get_owner() : n);
-
-  // Copy the flags
-  result.get()->flags = n.get()->flags;
+      dynd::nd::make_array(result_tp, n->get_data(), n->get_owner() ? n->get_owner() : n, n.get_flags());
 
   // First copy all the array data type arrmeta
   dynd::ndt::type tmp_dt = result_tp;

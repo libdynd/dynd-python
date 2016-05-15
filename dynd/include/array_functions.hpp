@@ -40,44 +40,11 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   bool any_variable_dims = false;
   dynd::ndt::type array_tp = dynd::ndt::make_type(ndim, shape, dtp, any_variable_dims);
 
-  // Determine the total data size
-  size_t data_size;
-  if (array_tp.is_builtin()) {
-    data_size = array_tp.get_data_size();
-  }
-  else {
-    data_size = array_tp.extended()->get_default_data_size();
-  }
-
-  dynd::nd::array result;
-  char *data_ptr = NULL;
-  if (array_tp.get_base_id() == dynd::memory_id) {
-    result =
-        dynd::nd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size(), data_ptr, dynd::nd::memory_block());
-    array_tp.extended<dynd::ndt::base_memory_type>()->data_alloc(&data_ptr, data_size);
-  }
-  else {
-    // Allocate the array arrmeta and data in one memory block
-    result = dynd::nd::make_array_memory_block(array_tp, array_tp.get_arrmeta_size(), data_size,
-                                               array_tp.get_data_alignment(), &data_ptr);
-  }
-
-  if (array_tp.get_flags() & dynd::type_flag_zeroinit) {
-    if (array_tp.get_base_id() == dynd::memory_id) {
-      array_tp.extended<dynd::ndt::base_memory_type>()->data_zeroinit(data_ptr, data_size);
-    }
-    else {
-      memset(data_ptr, 0, data_size);
-    }
-  }
-
-  // Fill in the preamble arrmeta
-  dynd::nd::array_preamble *ndo = reinterpret_cast<dynd::nd::array_preamble *>(result.get());
-  ndo->flags = dynd::nd::read_access_flag | dynd::nd::write_access_flag;
+  dynd::nd::array result = dynd::nd::make_array(array_tp);
 
   if (!any_variable_dims) {
     // Fill in the array arrmeta with strides and sizes
-    dynd::fixed_dim_type_arrmeta *meta = reinterpret_cast<dynd::fixed_dim_type_arrmeta *>(ndo + 1);
+    dynd::fixed_dim_type_arrmeta *meta = reinterpret_cast<dynd::fixed_dim_type_arrmeta *>(result->metadata());
     // Use the default construction to handle the uniform_tp's arrmeta
     intptr_t stride = dtp.get_data_size();
     if (stride == 0) {
@@ -95,11 +62,11 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   }
   else {
     // Fill in the array arrmeta with strides and sizes
-    char *meta = reinterpret_cast<char *>(ndo + 1);
-    ndo->tp->arrmeta_default_construct(meta, true);
+    char *meta = result->metadata();
+    result->tp->arrmeta_default_construct(meta, true);
   }
 
-  return dynd::nd::array(ndo, true);
+  return result;
 }
 
 inline dynd::nd::array pyobject_array() { return dynd::nd::empty(dynd::ndt::make_type<pyobject_type>()); }

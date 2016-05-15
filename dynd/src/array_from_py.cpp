@@ -436,14 +436,10 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     Py_INCREF(obj);
     nd::memory_block bytesref =
         nd::make_memory_block<nd::external_memory_block>(reinterpret_cast<void *>(obj), &py_decref_function);
-    char *data_ptr;
-    result = nd::make_array_memory_block(d, d.extended()->get_arrmeta_size(), d.get_data_size(),
-                                        d.get_data_alignment(), &data_ptr);
-    result->set_data(data_ptr);
+    result = nd::make_array(d);
     // The scalar consists of pointers to the byte string data
-    reinterpret_cast<dynd::string *>(data_ptr)->assign(data, len);
-    // The arrmeta
-    result.get()->flags = nd::immutable_access_flag | nd::read_access_flag;
+    reinterpret_cast<dynd::string *>(result.data())->assign(data, len);
+    result->flags = nd::immutable_access_flag | nd::read_access_flag;
     // Because this is a view into another object's memory, skip the later
     // processing
     return result;

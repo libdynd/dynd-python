@@ -108,13 +108,6 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
         PyArray_NDIM(obj), PyArray_SHAPE(obj), pydynd::_type_from_numpy_dtype(PyArray_DESCR(obj)).get_canonical_type());
     pydynd::nd::array_copy_from_numpy(result.get_type(), result.get()->metadata(), result.data(), obj,
                                       &dynd::eval::default_eval_context);
-    if (access_flags != 0) {
-      // Use the requested access flags
-      result.get()->set_flags(access_flags);
-    }
-    else {
-      result.get()->set_flags(dynd::nd::default_access_flags);
-    }
     return result;
   }
   else {
@@ -151,10 +144,6 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
       pydynd::fill_arrmeta_from_numpy_dtype(d, PyArray_DESCR(obj), arrmeta);
     }
 
-    if (access_flags != 0) {
-      // Use the requested access flags
-      result.get()->set_flags(access_flags);
-    }
     return result;
   }
 }
@@ -220,8 +209,6 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj, uint32_t access_f
     ss << " of type " << pydynd::pystring_as_string(obj_tp.get());
     throw dynd::type_error(ss.str());
   }
-
-  result.get()->set_flags(access_flags ? access_flags : dynd::nd::default_access_flags);
 
   return result;
 }

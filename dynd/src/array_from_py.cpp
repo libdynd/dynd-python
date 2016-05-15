@@ -417,7 +417,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
         }
         result = nd::empty(ndt::make_type<ndt::bytes_type>());
         reinterpret_cast<bytes *>(result.data())->assign(data, len);
-        result->set_flags(access_flags);
         return result;
       }
       else {
@@ -439,9 +438,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     result = nd::empty(d);
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(result.data())->assign(data, len);
-    result->set_flags(nd::immutable_access_flag | nd::read_access_flag);
-    // Because this is a view into another object's memory, skip the later
-    // processing
     return result;
 #endif
   }
@@ -477,12 +473,6 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     ss << pystring_as_string(pytpstr.get());
     ss << " into a dynd array";
     throw std::runtime_error(ss.str());
-  }
-
-  // If write access wasn't specified, we can flag it as
-  // immutable, because it's a newly allocated object.
-  if (access_flags != 0 && (access_flags & nd::write_access_flag) == 0) {
-    result.flag_as_immutable();
   }
 
   return result;

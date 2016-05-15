@@ -45,9 +45,6 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
         ss << "Python wrapper ref count: " << Py_REFCNT(item) << "\n";
         pydynd::array_to_cpp_ref(item).debug_print(ss);
         // Set all the args' data pointers to NULL as a precaution
-        for (i = 0; i != nsrc; ++i) {
-          pydynd::array_to_cpp_ref(item).get()->set_data(NULL);
-        }
         throw std::runtime_error(ss.str());
       }
     }
@@ -128,7 +125,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       dst += dst_stride;
       for (intptr_t i = 0; i != nsrc; ++i) {
         const dynd::nd::array &n = pydynd::array_to_cpp_ref(PyTuple_GET_ITEM(args.get(), i));
-        n->set_data(n->get_data() + src_stride[i]);
+//        n->set_data(n->get_data() + src_stride[i]);
       }
     }
   }

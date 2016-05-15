@@ -417,7 +417,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
         }
         result = nd::empty(ndt::make_type<ndt::bytes_type>());
         reinterpret_cast<bytes *>(result.data())->assign(data, len);
-        result.get()->flags = access_flags;
+        result->set_flags(access_flags);
         return result;
       }
       else {
@@ -436,10 +436,10 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     Py_INCREF(obj);
     nd::memory_block bytesref =
         nd::make_memory_block<nd::external_memory_block>(reinterpret_cast<void *>(obj), &py_decref_function);
-    result = nd::make_array(d);
+    result = nd::empty(d);
     // The scalar consists of pointers to the byte string data
     reinterpret_cast<dynd::string *>(result.data())->assign(data, len);
-    result->flags = nd::immutable_access_flag | nd::read_access_flag;
+    result->set_flags(nd::immutable_access_flag | nd::read_access_flag);
     // Because this is a view into another object's memory, skip the later
     // processing
     return result;

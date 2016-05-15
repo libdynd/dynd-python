@@ -110,10 +110,10 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
                                       &dynd::eval::default_eval_context);
     if (access_flags != 0) {
       // Use the requested access flags
-      result.get()->flags = access_flags;
+      result.get()->set_flags(access_flags);
     }
     else {
-      result.get()->flags = dynd::nd::default_access_flags;
+      result.get()->set_flags(dynd::nd::default_access_flags);
     }
     return result;
   }
@@ -153,7 +153,7 @@ dynd::nd::array pydynd::array_from_numpy_array(PyArrayObject *obj, uint32_t acce
 
     if (access_flags != 0) {
       // Use the requested access flags
-      result.get()->flags = access_flags;
+      result.get()->set_flags(access_flags);
     }
     return result;
   }
@@ -221,7 +221,7 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj, uint32_t access_f
     throw dynd::type_error(ss.str());
   }
 
-  result.get()->flags = access_flags ? access_flags : dynd::nd::default_access_flags;
+  result.get()->set_flags(access_flags ? access_flags : dynd::nd::default_access_flags);
 
   return result;
 }

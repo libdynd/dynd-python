@@ -40,7 +40,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   bool any_variable_dims = false;
   dynd::ndt::type array_tp = dynd::ndt::make_type(ndim, shape, dtp, any_variable_dims);
 
-  dynd::nd::array result = dynd::nd::make_array(array_tp);
+  dynd::nd::array result = dynd::nd::empty(array_tp);
 
   if (!any_variable_dims) {
     // Fill in the array arrmeta with strides and sizes
@@ -63,7 +63,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   else {
     // Fill in the array arrmeta with strides and sizes
     char *meta = result->metadata();
-    result->tp->arrmeta_default_construct(meta, true);
+    result->get_type()->arrmeta_default_construct(meta, true);
   }
 
   return result;

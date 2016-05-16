@@ -241,7 +241,41 @@ postprocess_cython( postprocess.py dynd.ndt.type_postprocess dynd.ndt.type_pyx d
 postprocess_cython( postprocess.py dynd.nd.array_postprocess dynd.nd.array_pyx dynd.nd.array)
 postprocess_cython( postprocess.py dynd.nd.callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
 
-foreach(module dynd.config dynd.ndt.type dynd.ndt.json dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+# Linker commands for the dynd.ndt module.
+foreach(module dynd.ndt.type dynd.ndt.json)
+    # Temporarily continue to define PYDYND_EXPORT to avoid inconsistent linkage warnings.
+    # This should be removed once the macros have been refactored to hide all symbols
+    # other than module initialization routines.
+    set_property(
+        TARGET ${module}
+        PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
+    )
+    if(DYND_INSTALL_LIB)
+        target_link_libraries(${module} "${LIBNDT_LIBRARY}")
+    else()
+        target_link_libraries(${module} libdyndt)
+        if(UNIX)
+            # Make sure libdyndt is on the rpath.
+            # On Windows, the dll is loaded dynamically via the logic in
+            # dynd/__init__.py
+            if(APPLE)
+                set(module_install_rpath "@loader_path")
+            else()
+                set(module_install_rpath "$ORIGIN")
+            endif()
+            string(REPLACE "." ";" module_directories "${module}")
+            list(LENGTH module_directories i)
+            while(${i} GREATER 2)
+                set(module_install_rpath "${module_install_rpath}/..")
+                math(EXPR i "${i} - 1" )
+            endwhile(${i} GREATER 2)
+            set_target_properties(${module} PROPERTIES INSTALL_RPATH ${module_install_rpath})
+        endif()
+    endif()
+endforeach(module)
+
+# Linker commands for the dynd.nd module.
+foreach(module dynd.config dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     # Temporarily continue to define PYDYND_EXPORT to avoid inconsistent linkage warnings.
     # This should be removed once the macros have been refactored to hide all symbols
     # other than module initialization routines.

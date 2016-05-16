@@ -218,12 +218,15 @@ cython_add_module(dynd.ndt.type dynd.ndt.type_pyx True
                   dynd/src/type_deduction.cpp
                   )
 
-foreach(module dynd.ndt.json dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+cython_add_module(dynd.ndt.json dynd.ndt.json_pyx True dynd/src/type_conversions.cpp)
+
+foreach(module dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     cython_add_module(${module} ${module}_pyx True
                       # Additional C++ source files:
                       dynd/src/type_conversions.cpp
                       dynd/src/array_conversions.cpp)
 endforeach(module)
+
 if (DYND_PYTHON_INPLACE_BUILD)
     set_target_library_output_dir(dynd.config "${PROJECT_SOURCE_DIR}/dynd")
     set_target_library_output_dir(dynd.nd.array "${PROJECT_SOURCE_DIR}/dynd/nd")

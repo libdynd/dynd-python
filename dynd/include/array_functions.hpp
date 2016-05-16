@@ -63,7 +63,7 @@ inline dynd::nd::array make_strided_array(const dynd::ndt::type &dtp, intptr_t n
   else {
     // Fill in the array arrmeta with strides and sizes
     char *meta = result->metadata();
-    result->get_type()->arrmeta_default_construct(meta, true);
+    result.get_type()->arrmeta_default_construct(meta, true);
   }
 
   return result;
@@ -362,7 +362,7 @@ inline dynd::nd::array nd_fields(const dynd::nd::array &n, PyObject *field_list)
   // Allocate the new memory block.
   size_t arrmeta_size = result_tp.get_arrmeta_size();
   dynd::nd::array result =
-      dynd::nd::make_array(result_tp, n->get_data(), n->get_owner() ? n->get_owner() : n, n.get_flags());
+      dynd::nd::make_array(result_tp, n->get_data(), n.get_owner() ? n.get_owner() : n, n.get_flags());
 
   // First copy all the array data type arrmeta
   dynd::ndt::type tmp_dt = result_tp;
@@ -403,7 +403,7 @@ inline const char *array_access_flags_string(const dynd::nd::array &n)
     PyErr_SetString(PyExc_AttributeError, "Cannot access attribute of null dynd array");
     throw std::exception();
   }
-  switch (n.get_access_flags()) {
+  switch (n.get_flags()) {
   case dynd::nd::read_access_flag | dynd::nd::immutable_access_flag:
     return "immutable";
   case dynd::nd::read_access_flag:

@@ -323,7 +323,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
     }
     else {
       if (access_flags != 0) {
-        uint32_t raf = result.get_flags();
+        uint64_t raf = result.get_flags();
         if ((access_flags & nd::immutable_access_flag) && !(raf & nd::immutable_access_flag)) {
           throw runtime_error("cannot view a non-immutable dynd array as immutable");
         }

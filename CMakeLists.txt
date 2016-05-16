@@ -251,7 +251,7 @@ foreach(module dynd.ndt.type dynd.ndt.json)
         PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
     )
     if(DYND_INSTALL_LIB)
-        target_link_libraries(${module} "${LIBNDT_LIBRARY}")
+        target_link_libraries(${module} "${LIBDYNDT_LIBRARY}")
     else()
         target_link_libraries(${module} libdyndt)
         if(UNIX)

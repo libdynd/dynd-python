@@ -253,14 +253,14 @@ int pydynd::array_getbuffer_pep3118(PyObject *ndo, Py_buffer *buffer, int flags)
       throw runtime_error("array_getbuffer_pep3118 called on a non-array");
     }
     nd::array &n = pydynd::array_to_cpp_ref(ndo);
-    nd::array_preamble *preamble = n.get();
+    const nd::array_preamble *preamble = n.get();
     ndt::type tp = n.get_type();
 
     // Check if a writable buffer is requested
-    if ((flags & PyBUF_WRITABLE) && !(n.get_access_flags() & nd::write_access_flag)) {
+    if ((flags & PyBUF_WRITABLE) && !(n.get_flags() & nd::write_access_flag)) {
       throw runtime_error("dynd array is not writable");
     }
-    buffer->readonly = ((n.get_access_flags() & nd::write_access_flag) == 0);
+    buffer->readonly = ((n.get_flags() & nd::write_access_flag) == 0);
     buffer->buf = preamble->get_data();
 
     if (tp.get_id() == bytes_id || tp.get_id() == fixed_bytes_id) {

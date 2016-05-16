@@ -20,6 +20,11 @@ requirements:
     - cython >=0.24
     - numpy
     - libdynd
+    # Needed for version tags, not necessary on CI systems since it's already there.
+    # Comment it out to avoid the unnecessary download.
+    #- git
+    # CMake is also needed in general but not necessary on CI systems
+    #- cmake
   run:
     - python
     - numpy

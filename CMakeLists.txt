@@ -182,9 +182,7 @@ set_source_files_properties(dynd/config.pyx PROPERTIES CYTHON_API 1)
 
 cython_add_module(dynd.config dynd.config_pyx True
                   dynd/include/exception_translation.hpp
-                  dynd/src/array_conversions.cpp
                   dynd/src/type_conversions.cpp
-                  dynd/src/type_deduction.cpp
                   ${CMAKE_CURRENT_BINARY_DIR}/dynd/src/git_version.cpp
                   )
 
@@ -245,7 +243,7 @@ postprocess_cython( postprocess.py dynd.nd.array_postprocess dynd.nd.array_pyx d
 postprocess_cython( postprocess.py dynd.nd.callable_postprocess dynd.nd.callable_pyx dynd.nd.callable)
 
 # Linker commands for the dynd.ndt module.
-foreach(module dynd.ndt.type dynd.ndt.json)
+foreach(module dynd.config dynd.ndt.type dynd.ndt.json)
     # Temporarily continue to define PYDYND_EXPORT to avoid inconsistent linkage warnings.
     # This should be removed once the macros have been refactored to hide all symbols
     # other than module initialization routines.
@@ -281,7 +279,7 @@ foreach(module dynd.ndt.type dynd.ndt.json)
 endforeach(module)
 
 # Linker commands for the dynd.nd module.
-foreach(module dynd.config dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
+foreach(module dynd.nd.array dynd.nd.callable dynd.nd.functional dynd.nd.registry)
     # Temporarily continue to define PYDYND_EXPORT to avoid inconsistent linkage warnings.
     # This should be removed once the macros have been refactored to hide all symbols
     # other than module initialization routines.

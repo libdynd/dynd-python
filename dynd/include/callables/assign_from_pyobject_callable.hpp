@@ -8,23 +8,24 @@ using namespace dynd;
 namespace pydynd {
 namespace nd {
 
-  template <type_id_t ResID>
+  template <typename ReturnType>
   class assign_from_pyobject_callable
-      : public dynd::nd::default_instantiable_callable<assign_from_pyobject_kernel<ResID>> {
+      : public dynd::nd::default_instantiable_callable<assign_from_pyobject_kernel<ReturnType>> {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::default_instantiable_callable<assign_from_pyobject_kernel<ResID>>(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(ResID, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::default_instantiable_callable<assign_from_pyobject_kernel<ReturnType>>(
+              dynd::ndt::make_type<dynd::ndt::callable_type>(ndt::make_type<ReturnType>(),
+                                                             {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
   };
 
   template <>
-  class assign_from_pyobject_callable<bytes_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<bytes> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(bytes_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<bytes>(), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -50,11 +51,11 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<fixed_bytes_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::fixed_bytes_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(fixed_bytes_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<ndt::fixed_bytes_kind_type>(), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -66,7 +67,7 @@ namespace nd {
     {
       cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
                                const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-        kb.emplace_back<assign_from_pyobject_kernel<fixed_bytes_id>>(kernreq, dst_tp, dst_arrmeta);
+        kb.emplace_back<assign_from_pyobject_kernel<ndt::fixed_bytes_type>>(kernreq, dst_tp, dst_arrmeta);
       });
 
       return dst_tp;
@@ -74,11 +75,11 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<string_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<string> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(string_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<string>(), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -90,7 +91,7 @@ namespace nd {
     {
       cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
                                const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
-        kb.emplace_back<assign_from_pyobject_kernel<string_id>>(kernreq, dst_tp, dst_arrmeta);
+        kb.emplace_back<assign_from_pyobject_kernel<dynd::string>>(kernreq, dst_tp, dst_arrmeta);
       });
 
       return dst_tp;
@@ -98,11 +99,11 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<fixed_string_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::fixed_string_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(fixed_string_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<ndt::fixed_string_kind_type>(), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -115,7 +116,7 @@ namespace nd {
       cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
                                const char *dst_arrmeta, size_t DYND_UNUSED(nsrc),
                                const char *const *DYND_UNUSED(src_arrmeta)) {
-        kb.emplace_back<assign_from_pyobject_kernel<fixed_string_id>>(kernreq, dst_tp, dst_arrmeta);
+        kb.emplace_back<assign_from_pyobject_kernel<dynd::ndt::fixed_string_type>>(kernreq, dst_tp, dst_arrmeta);
       });
 
       return dst_tp;
@@ -123,11 +124,12 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<option_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::option_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(option_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<ndt::option_type>(ndt::make_type<ndt::any_kind_type>()),
+              {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -138,12 +140,12 @@ namespace nd {
       cg.emplace_back([dst_tp](dynd::nd::kernel_builder &kb, dynd::kernel_request_t kernreq, char *DYND_UNUSED(data),
                                const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         intptr_t root_ckb_offset = kb.size();
-        kb.emplace_back<assign_from_pyobject_kernel<option_id>>(kernreq, dst_tp, dst_arrmeta);
+        kb.emplace_back<assign_from_pyobject_kernel<dynd::ndt::option_type>>(kernreq, dst_tp, dst_arrmeta);
         intptr_t ckb_offset = kb.size();
         kb(dynd::kernel_request_single, nullptr, dst_arrmeta, nsrc, nullptr);
 
         ckb_offset = kb.size();
-        kb.get_at<assign_from_pyobject_kernel<option_id>>(root_ckb_offset)->copy_value_offset =
+        kb.get_at<assign_from_pyobject_kernel<ndt::option_type>>(root_ckb_offset)->copy_value_offset =
             ckb_offset - root_ckb_offset;
         kb(dynd::kernel_request_single, nullptr, dst_arrmeta, nsrc, src_arrmeta);
 
@@ -181,11 +183,11 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<tuple_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::tuple_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(tuple_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<ndt::tuple_type>(), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -203,8 +205,9 @@ namespace nd {
           const char *dst_arrmeta, size_t nsrc, const char *const *src_arrmeta) {
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
-        kb.emplace_back<assign_from_pyobject_kernel<tuple_id>>(kernreq);
-        assign_from_pyobject_kernel<tuple_id> *self = kb.get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
+        kb.emplace_back<assign_from_pyobject_kernel<ndt::tuple_type>>(kernreq);
+        assign_from_pyobject_kernel<ndt::tuple_type> *self =
+            kb.get_at<assign_from_pyobject_kernel<ndt::tuple_type>>(root_ckb_offset);
         ckb_offset = kb.size();
         self->m_dst_tp = dst_tp;
         self->m_dst_arrmeta = dst_arrmeta;
@@ -212,7 +215,7 @@ namespace nd {
         self->m_copy_el_offsets.resize(field_count);
         for (intptr_t i = 0; i < field_count; ++i) {
           kb.reserve(ckb_offset);
-          self = kb.get_at<assign_from_pyobject_kernel<tuple_id>>(root_ckb_offset);
+          self = kb.get_at<assign_from_pyobject_kernel<ndt::tuple_type>>(root_ckb_offset);
           self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
           const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
           kb(dynd::kernel_request_single, nullptr, field_arrmeta, nsrc, src_arrmeta);
@@ -263,11 +266,11 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<struct_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::struct_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(struct_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<ndt::struct_type>(), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -286,10 +289,10 @@ namespace nd {
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
 
-        kb.emplace_back<assign_from_pyobject_kernel<struct_id>>(kernreq);
+        kb.emplace_back<assign_from_pyobject_kernel<ndt::struct_type>>(kernreq);
 
-        assign_from_pyobject_kernel<struct_id> *self =
-            kb.get_at<assign_from_pyobject_kernel<struct_id>>(root_ckb_offset);
+        assign_from_pyobject_kernel<ndt::struct_type> *self =
+            kb.get_at<assign_from_pyobject_kernel<ndt::struct_type>>(root_ckb_offset);
         ckb_offset = kb.size();
 
         self->m_dst_tp = dst_tp;
@@ -299,7 +302,7 @@ namespace nd {
 
         for (intptr_t i = 0; i < field_count; ++i) {
           kb.reserve(ckb_offset);
-          self = kb.get_at<assign_from_pyobject_kernel<struct_id>>(root_ckb_offset);
+          self = kb.get_at<assign_from_pyobject_kernel<ndt::struct_type>>(root_ckb_offset);
           self->m_copy_el_offsets[i] = ckb_offset - root_ckb_offset;
           const char *field_arrmeta = dst_arrmeta + arrmeta_offsets[i];
           kb(dynd::kernel_request_single, nullptr, field_arrmeta, nsrc, src_arrmeta);
@@ -350,11 +353,11 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<fixed_dim_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::fixed_dim_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(fixed_dim_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::type("Fixed * Any"), {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -372,10 +375,10 @@ namespace nd {
 
         intptr_t ckb_offset = kb.size();
         intptr_t root_ckb_offset = ckb_offset;
-        kb.emplace_back<assign_from_pyobject_kernel<fixed_dim_id>>(kernreq);
+        kb.emplace_back<assign_from_pyobject_kernel<ndt::fixed_dim_type>>(kernreq);
 
-        assign_from_pyobject_kernel<fixed_dim_id> *self =
-            kb.get_at<assign_from_pyobject_kernel<fixed_dim_id>>(root_ckb_offset);
+        assign_from_pyobject_kernel<ndt::fixed_dim_type> *self =
+            kb.get_at<assign_from_pyobject_kernel<ndt::fixed_dim_type>>(root_ckb_offset);
         ckb_offset = kb.size();
         self->m_dim_size = dim_size;
         self->m_stride = stride;
@@ -385,7 +388,7 @@ namespace nd {
         kb(dynd::kernel_request_strided, nullptr, el_arrmeta, nsrc, src_arrmeta);
 
         ckb_offset = kb.size();
-        self = kb.get_at<assign_from_pyobject_kernel<fixed_dim_id>>(root_ckb_offset);
+        self = kb.get_at<assign_from_pyobject_kernel<ndt::fixed_dim_type>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
         //        dynd::nd::array error_mode = assign_error_fractional;
@@ -405,11 +408,12 @@ namespace nd {
   };
 
   template <>
-  class assign_from_pyobject_callable<var_dim_id> : public dynd::nd::base_callable {
+  class assign_from_pyobject_callable<ndt::var_dim_type> : public dynd::nd::base_callable {
   public:
     assign_from_pyobject_callable()
-        : dynd::nd::base_callable(
-              dynd::ndt::make_type<dynd::ndt::callable_type>(var_dim_id, {dynd::ndt::make_type<pyobject_type>()}))
+        : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
+              ndt::make_type<ndt::var_dim_type>(ndt::make_type<ndt::any_kind_type>()),
+              {dynd::ndt::make_type<pyobject_type>()}))
     {
     }
 
@@ -427,9 +431,9 @@ namespace nd {
         intptr_t ckb_offset = kb.size();
 
         intptr_t root_ckb_offset = ckb_offset;
-        kb.emplace_back<assign_from_pyobject_kernel<var_dim_id>>(kernreq);
-        assign_from_pyobject_kernel<var_dim_id> *self =
-            kb.get_at<assign_from_pyobject_kernel<var_dim_id>>(root_ckb_offset);
+        kb.emplace_back<assign_from_pyobject_kernel<ndt::var_dim_type>>(kernreq);
+        assign_from_pyobject_kernel<ndt::var_dim_type> *self =
+            kb.get_at<assign_from_pyobject_kernel<ndt::var_dim_type>>(root_ckb_offset);
         ckb_offset = kb.size();
         self->m_offset = reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(dst_arrmeta)->offset;
         self->m_stride = reinterpret_cast<const dynd::ndt::var_dim_type::metadata_type *>(dst_arrmeta)->stride;
@@ -438,7 +442,7 @@ namespace nd {
         const char *el_arrmeta = dst_arrmeta + sizeof(dynd::ndt::var_dim_type::metadata_type);
         kb(dynd::kernel_request_strided, nullptr, el_arrmeta, nsrc, src_arrmeta);
         ckb_offset = kb.size();
-        self = kb.get_at<assign_from_pyobject_kernel<var_dim_id>>(root_ckb_offset);
+        self = kb.get_at<assign_from_pyobject_kernel<ndt::var_dim_type>>(root_ckb_offset);
         self->m_copy_dst_offset = ckb_offset - root_ckb_offset;
         // dst to dst ckernel, for broadcasting case
         //        dynd::nd::array error_mode = assign_error_fractional;

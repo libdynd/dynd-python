@@ -20,15 +20,21 @@ using namespace dynd;
 PYDYND_API void assign_init()
 {
   typedef type_id_sequence<bool_id, int8_id, int16_id, int32_id, int64_id, int128_id, uint8_id, uint16_id, uint32_id,
-                           uint64_id, uint128_id, float16_id, float32_id, float64_id, complex_float32_id,
-                           complex_float64_id, bytes_id, fixed_bytes_id, string_id, fixed_string_id, option_id, type_id,
-                           tuple_id, struct_id, fixed_dim_id, var_dim_id>
+                           uint64_id, uint128_id, float32_id, float64_id, complex_float32_id, complex_float64_id,
+                           bytes_id, fixed_bytes_id, string_id, fixed_string_id, option_id, type_id, tuple_id,
+                           struct_id, fixed_dim_id, var_dim_id>
       type_ids;
+
+  typedef type_sequence<bool, int8_t, int16_t, int32_t, int64_t, int128, uint8_t, uint16_t, uint32_t, uint64_t, uint128,
+                        float, double, dynd::complex<float>, dynd::complex<double>, bytes, ndt::fixed_bytes_type,
+                        dynd::string, ndt::fixed_string_type, ndt::option_type, ndt::type, ndt::tuple_type,
+                        ndt::struct_type, ndt::fixed_dim_type, ndt::var_dim_type>
+      types;
 
   PyDateTime_IMPORT;
 
-  for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_from_pyobject_callable, type_ids>()) {
-    nd::assign.overload(pair.first, {ndt::make_type<pyobject_type>()}, pair.second);
+  for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_from_pyobject_callable, types>()) {
+    nd::assign.overload(pair.first[0], {ndt::make_type<pyobject_type>()}, pair.second);
   }
   for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_to_pyobject_callable, type_ids>()) {
     nd::assign.overload(ndt::make_type<pyobject_type>(), {ndt::type(pair.first)}, pair.second);

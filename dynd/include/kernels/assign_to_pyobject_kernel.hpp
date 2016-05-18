@@ -9,14 +9,11 @@
 
 using namespace dynd;
 
-namespace detail {
-
-template <type_id_t Arg0ID, type_id_t Arg0BaseID>
+template <typename Arg0Type, typename Enable = void>
 struct assign_to_pyobject_kernel;
 
 template <>
-struct assign_to_pyobject_kernel<bool_id, bool_kind_id>
-    : nd::base_strided_kernel<assign_to_pyobject_kernel<bool_id, bool_kind_id>, 1> {
+struct assign_to_pyobject_kernel<bool> : nd::base_strided_kernel<assign_to_pyobject_kernel<bool>, 1> {
   void single(char *dst, char *const *src)
   {
     Py_XDECREF(*reinterpret_cast<PyObject **>(dst));
@@ -128,43 +125,43 @@ struct assign_int_kernel : dynd::nd::base_strided_kernel<assign_int_kernel<T>, 1
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::int8_id, int_kind_id> : assign_int_kernel<int8_t> {
+struct assign_to_pyobject_kernel<int8_t> : assign_int_kernel<int8_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::int16_id, int_kind_id> : assign_int_kernel<int16_t> {
+struct assign_to_pyobject_kernel<int16_t> : assign_int_kernel<int16_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::int32_id, int_kind_id> : assign_int_kernel<int32_t> {
+struct assign_to_pyobject_kernel<int32_t> : assign_int_kernel<int32_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::int64_id, int_kind_id> : assign_int_kernel<int64_t> {
+struct assign_to_pyobject_kernel<int64_t> : assign_int_kernel<int64_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::int128_id, int_kind_id> : assign_int_kernel<dynd::int128> {
+struct assign_to_pyobject_kernel<int128> : assign_int_kernel<dynd::int128> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::uint8_id, uint_kind_id> : assign_int_kernel<uint8_t> {
+struct assign_to_pyobject_kernel<uint8_t> : assign_int_kernel<uint8_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::uint16_id, uint_kind_id> : assign_int_kernel<uint16_t> {
+struct assign_to_pyobject_kernel<uint16_t> : assign_int_kernel<uint16_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::uint32_id, uint_kind_id> : assign_int_kernel<uint32_t> {
+struct assign_to_pyobject_kernel<uint32_t> : assign_int_kernel<uint32_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::uint64_id, uint_kind_id> : assign_int_kernel<uint64_t> {
+struct assign_to_pyobject_kernel<uint64_t> : assign_int_kernel<uint64_t> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::uint128_id, uint_kind_id> : assign_int_kernel<dynd::uint128> {
+struct assign_to_pyobject_kernel<uint128> : assign_int_kernel<dynd::uint128> {
 };
 
 template <typename T>
@@ -179,15 +176,11 @@ struct float_assign_kernel : dynd::nd::base_strided_kernel<float_assign_kernel<T
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::float16_id, float_kind_id> : float_assign_kernel<dynd::float16> {
+struct assign_to_pyobject_kernel<float> : float_assign_kernel<float> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::float32_id, float_kind_id> : float_assign_kernel<float> {
-};
-
-template <>
-struct assign_to_pyobject_kernel<dynd::float64_id, float_kind_id> : float_assign_kernel<double> {
+struct assign_to_pyobject_kernel<double> : float_assign_kernel<double> {
 };
 
 template <class T>
@@ -203,16 +196,16 @@ struct complex_float_assign_kernel : dynd::nd::base_strided_kernel<complex_float
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::complex_float32_id, complex_kind_id> : complex_float_assign_kernel<float> {
+struct assign_to_pyobject_kernel<dynd::complex<float>> : complex_float_assign_kernel<float> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::complex_float64_id, complex_kind_id> : complex_float_assign_kernel<double> {
+struct assign_to_pyobject_kernel<dynd::complex<double>> : complex_float_assign_kernel<double> {
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::bytes_id, bytes_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::bytes_id, bytes_kind_id>, 1> {
+struct assign_to_pyobject_kernel<dynd::bytes>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::bytes>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -224,8 +217,8 @@ struct assign_to_pyobject_kernel<dynd::bytes_id, bytes_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::fixed_bytes_id, bytes_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::fixed_bytes_id, bytes_kind_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::fixed_bytes_type>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::fixed_bytes_type>, 1> {
   intptr_t data_size;
 
   assign_to_pyobject_kernel(intptr_t data_size) : data_size(data_size) {}
@@ -240,8 +233,7 @@ struct assign_to_pyobject_kernel<dynd::fixed_bytes_id, bytes_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::char_id, scalar_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::char_id, scalar_kind_id>, 1> {
+struct assign_to_pyobject_kernel<char> : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<char>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -359,8 +351,8 @@ struct fixed_string_utf32_assign_kernel : dynd::nd::base_strided_kernel<fixed_st
 
 // TODO: Should make a more efficient strided kernel function
 template <>
-struct assign_to_pyobject_kernel<dynd::option_id, any_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::option_id, any_kind_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::option_type>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::option_type>, 1> {
   intptr_t m_assign_value_offset;
 
   ~assign_to_pyobject_kernel()
@@ -391,8 +383,7 @@ struct assign_to_pyobject_kernel<dynd::option_id, any_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::type_id, scalar_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::type_id, scalar_kind_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::type> : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::type>, 1> {
   void single(char *dst, char *const *src)
   {
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
@@ -405,8 +396,8 @@ struct assign_to_pyobject_kernel<dynd::type_id, scalar_kind_id>
 
 // TODO: Should make a more efficient strided kernel function
 template <>
-struct assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::tuple_type>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::tuple_type>, 1> {
   dynd::ndt::type src_tp;
   const char *src_arrmeta;
   std::vector<intptr_t> m_copy_el_offsets;
@@ -446,8 +437,8 @@ struct assign_to_pyobject_kernel<dynd::tuple_id, scalar_kind_id>
 
 // TODO: Should make a more efficient strided kernel function
 template <>
-struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::struct_id, tuple_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::struct_type>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::struct_type>, 1> {
   dynd::ndt::type m_src_tp;
   const char *m_src_arrmeta;
   std::vector<intptr_t> m_copy_el_offsets;
@@ -484,8 +475,8 @@ struct assign_to_pyobject_kernel<dynd::struct_id, tuple_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::fixed_dim_id, fixed_dim_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::fixed_dim_id, fixed_dim_kind_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::fixed_dim_type>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::fixed_dim_type>, 1> {
   intptr_t dim_size, stride;
 
   assign_to_pyobject_kernel(intptr_t dim_size, intptr_t stride) : dim_size(dim_size), stride(stride) {}
@@ -510,8 +501,8 @@ struct assign_to_pyobject_kernel<dynd::fixed_dim_id, fixed_dim_kind_id>
 };
 
 template <>
-struct assign_to_pyobject_kernel<dynd::var_dim_id, dim_kind_id>
-    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<dynd::var_dim_id, dim_kind_id>, 1> {
+struct assign_to_pyobject_kernel<ndt::var_dim_type>
+    : dynd::nd::base_strided_kernel<assign_to_pyobject_kernel<ndt::var_dim_type>, 1> {
   intptr_t offset, stride;
 
   assign_to_pyobject_kernel(intptr_t offset, intptr_t stride) : offset(offset), stride(stride) {}
@@ -536,8 +527,3 @@ struct assign_to_pyobject_kernel<dynd::var_dim_id, dim_kind_id>
     *dst_obj = lst.release();
   }
 };
-
-} // namespace detail
-
-template <type_id_t Arg0ID>
-using assign_to_pyobject_kernel = ::detail::assign_to_pyobject_kernel<Arg0ID, base_id_of<Arg0ID>::value>;

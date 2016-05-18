@@ -253,6 +253,9 @@ foreach(module dynd.ndt.type dynd.ndt.json)
         TARGET ${module}
         PROPERTY COMPILE_DEFINITIONS PYDYND_EXPORT
     )
+    # Make sure the api headers are all built and postprocessed
+    # before anything tries to build conversions.cpp
+    add_dependencies(${module} dynd.ndt.type_postprocess)
     if(DYND_INSTALL_LIB)
         target_link_libraries(${module} "${LIBDYNDT_LIBRARY}")
     else()

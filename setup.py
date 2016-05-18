@@ -20,6 +20,13 @@ if hasattr(sys, 'gettotalrefcount'):
 else:
     build_type = 'Release'
 
+# Get the number of CPUs.
+try:
+    import multiprocessing
+    cpu_count = multiprocessing.cpu_count()
+except:
+    cpu_count = 1
+
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"
   user_options = [('extra-cmake-args=', None, 'extra arguments for CMake')]
@@ -115,7 +122,7 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
-        self.spawn(['make'])
+        self.spawn(['make', '-j%d' % cpu_count])
     else:
         if "-G" not in self.extra_cmake_args:
             cmake_generator = 'Visual Studio 14 2015'

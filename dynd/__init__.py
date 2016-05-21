@@ -145,8 +145,8 @@ def test(verbosity=1, xunitfile=None, exit=False):
         # Add all 'tests' subdirectories to the options
         rootdir = os.path.dirname(__file__)
         for root, dirs, files in os.walk(rootdir):
-            if 'tests' in dirs:
-                testsdir = os.path.join(root, 'tests')
+            if 'test' in dirs:
+                testsdir = os.path.join(root, 'test')
                 argv.append(testsdir)
                 print('Test dir: %s' % testsdir[len(rootdir)+1:])
         # Ask nose to do its thing

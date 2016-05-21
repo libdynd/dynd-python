@@ -1,6 +1,5 @@
-import sys
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 
 class TestTypePatternMatch(unittest.TestCase):
     def test_simple(self):

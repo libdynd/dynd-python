@@ -1,5 +1,5 @@
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 
 class TestDimHelpers(unittest.TestCase):
     def test_create(self):

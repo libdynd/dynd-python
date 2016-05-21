@@ -1,5 +1,5 @@
 import unittest
-from dynd import nd, ndt
+from dynd import nd
 import sys
 
 @unittest.skip('Test disabled since translate_exception is not being applied properly')

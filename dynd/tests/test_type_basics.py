@@ -1,7 +1,5 @@
-import sys
-import ctypes
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 
 class TestTypeBasics(unittest.TestCase):
     def test_type_repr(self):

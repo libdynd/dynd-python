@@ -1,4 +1,3 @@
-import sys
 import unittest
 from pickle import loads, dumps
 from dynd import nd, ndt

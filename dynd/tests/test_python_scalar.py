@@ -1,7 +1,6 @@
 import sys
 import unittest
 from dynd import nd, ndt
-from datetime import date
 
 if sys.version_info >= (3, 0):
     unicode = str

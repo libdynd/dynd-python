@@ -1,6 +1,5 @@
 import sys
 import unittest
-from datetime import date
 from dynd import nd, ndt
 import numpy as np
 

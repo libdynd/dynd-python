@@ -1,6 +1,4 @@
-import sys
 import unittest
-from datetime import date, datetime
 from dynd import nd, ndt
 
 class TestPythonList(unittest.TestCase):

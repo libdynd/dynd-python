@@ -1,6 +1,5 @@
-import sys
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 import numpy as np
 
 class TestDTypeDataShape(unittest.TestCase):
@@ -36,14 +35,6 @@ class TestDTypeDataShape(unittest.TestCase):
         # Tests of struct datashape
         dt = ndt.type('{x: 3 * int32, y: string}')
         self.assertEqual(dt.field_names, ['x', 'y'])
-
-    """
-    ToDo: Fix this.
-    def test_var_dshape(self):
-        # Getting the dshape can see into leading var dims
-        a = nd.array([[[1], [2,3]]], type='var * var * var * int32')
-        self.assertEqual(nd.dshape_of(a), '1 * 2 * var * int32')
-    """
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -1,7 +1,7 @@
 import sys
 import ctypes
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 
 class TestType(unittest.TestCase):
     def test_tuple(self):
@@ -117,16 +117,6 @@ class TestDType(unittest.TestCase):
         self.assertEqual(ndt.complex_float64.data_size, 16)
         self.assertTrue(ndt.complex_float64.data_alignment in [4,8])
 
-    def test_complex_type_realimag(self):
-        a = nd.array(1 + 3j)
-        self.assertEqual(ndt.complex_float64, nd.type_of(a))
-        self.assertEqual(1, nd.as_py(a.real))
-        self.assertEqual(3, nd.as_py(a.imag))
-
-        a = nd.array([1 + 2j, 3 + 4j, 5 + 6j])
-        self.assertEqual(ndt.type('3 * complex[float64]'), nd.type_of(a))
-        self.assertEqual([1, 3, 5], nd.as_py(a.real))
-        self.assertEqual([2, 4, 6], nd.as_py(a.imag))
 
     def test_fixed_string_type_properties(self):
         d = ndt.make_fixed_string(10, 'ascii')
@@ -189,20 +179,6 @@ class TestDType(unittest.TestCase):
         # Alignment must divide into the data_size
         self.assertRaises(RuntimeError, ndt.make_fixed_bytes, 6, 4)
 
-    def test_type_type(self):
-        d = ndt.type('type')
-        self.assertEqual(str(d), 'type')
-
-        # Creating a dynd array out of a dtype
-        # results in it having the dtype 'dtype'
-        n = nd.array(d)
-        self.assertEqual(nd.type_of(n), d)
-
-        # Python float type converts to float64
-        n = nd.array(float)
-        self.assertEqual(nd.type_of(n), d)
-        self.assertEqual(nd.as_py(n), ndt.float64)
-
     def test_cstruct_type(self):
         self.assertFalse(ndt.type('{x: int32}') == ndt.type('{y: int32}'))
 
@@ -230,26 +206,6 @@ class TestDType(unittest.TestCase):
         self.assertEqual(tp.shape, (-1, 3, -1))
         tp = ndt.type('var * 3 * 2 * int32')
         self.assertEqual(tp.shape, (-1, 3, 2))
-
-    #def test_symbolic_type(self):
-    #    tp = ndt.type('(int, real) -> complex')
-    #    self.assertEqual(tp.type_id, 'callable')
-    #    self.assertEqual(nd.as_py(tp.pos_types), [ndt.int32, ndt.float64])
-#        self.assertEqual(tp.return_type, ndt.complex_float64)
-    #    tp = ndt.type('MyType')
-  #      self.assertEqual(tp.type_id, 'typevar')
- #       self.assertEqual(tp.name, 'MyType')
-    #    tp = ndt.type('MyDim * int')
-    #    self.assertEqual(tp.type_id, 'typevar_dim')
-   #     self.assertEqual(tp.name, 'MyDim')
-    #    self.assertEqual(tp.element_type, ndt.int32)
-    #    tp = ndt.type('... * int')
-    #    self.assertEqual(tp.type_id, 'ellipsis_dim')
-     #   self.assertEqual(tp.element_type, ndt.int32)
-    #    tp = ndt.type('MyEll... * int')
-    #    self.assertEqual(tp.type_id, 'ellipsis_dim')
-       # self.assertEqual(tp.name, 'MyEll')
-      #  self.assertEqual(tp.element_type, ndt.int32)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

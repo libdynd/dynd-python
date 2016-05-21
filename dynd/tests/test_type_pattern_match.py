@@ -20,4 +20,4 @@ class TestTypePatternMatch(unittest.TestCase):
         self.assertFalse(pat.match(ndt.type('(string, ?string, 4 * string, 10 * complex)')))
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

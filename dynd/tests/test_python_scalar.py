@@ -92,4 +92,4 @@ class TestPythonScalar(unittest.TestCase):
         self.assertRaises(ValueError, len, a)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

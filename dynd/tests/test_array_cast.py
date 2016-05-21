@@ -48,4 +48,4 @@ class TestNDObjectCast(unittest.TestCase):
         self.assertEqual(complex(a), 1.125e-20+3j)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

@@ -101,4 +101,4 @@ class TestLinspace(unittest.TestCase):
         self.assertRaises(RuntimeError, nd.old_linspace, 0j, 1j, dtype=ndt.float64)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

@@ -18,4 +18,5 @@ class TestTypeBasics(unittest.TestCase):
         for s in roundtrip:
             self.assertEqual(repr(ndt.type(s)), "ndt.type(" + repr(s) + ")")
 
-
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

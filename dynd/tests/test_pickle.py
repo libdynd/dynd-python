@@ -8,3 +8,6 @@ class TestPickle(unittest.TestCase):
         self.assertEqual(nd.array, loads(dumps(nd.array)))
         self.assertEqual(nd.callable, loads(dumps(nd.callable)))
         self.assertEqual(ndt.type, loads(dumps(ndt.type)))
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

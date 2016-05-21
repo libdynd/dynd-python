@@ -62,3 +62,6 @@ class TestArraySqueeze(unittest.TestCase):
         # Axis not an integer
         self.assertRaises(TypeError, nd.squeeze, a, axis=2.0)
         self.assertRaises(TypeError, nd.squeeze, a, axis=(0, 2.0+0j))
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

@@ -207,9 +207,10 @@ setup(
     url = 'http://libdynd.org',
     packages = [
         'dynd',
-        'dynd.nd',
         'dynd.ndt',
-        'dynd.tests',
+        'dynd.ndt.test',
+        'dynd.nd',
+        'dynd.nd.test',
     ],
     package_data = {'dynd': ['*.pxd', 'nd/*.pxd', 'ndt/*.pxd', 'include/*.hpp',
                              'include/kernels/*.hpp', 'cpp/*.pxd',

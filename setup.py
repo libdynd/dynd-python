@@ -22,7 +22,8 @@ else:
 
 class cmake_build_ext(build_ext):
   description = "Build the C-extension for dynd-python with CMake"
-  user_options = [('extra-cmake-args=', None, 'extra arguments for CMake')]
+  user_options = [('extra-cmake-args=', None, 'extra arguments for CMake'),
+                  ('parallel=', 'j', "number of parallel build jobs")]
 
   def get_ext_path(self, name):
     # Get the package directory from build_py
@@ -42,6 +43,7 @@ class cmake_build_ext(build_ext):
   def initialize_options(self):
     build_ext.initialize_options(self)
     self.extra_cmake_args = ''
+    self.parallel = None
 
   def run(self):
     global build_type
@@ -115,7 +117,10 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
-        self.spawn(['make'])
+        if self.parallel:
+            self.spawn(['make', '-j%d' % int(self.parallel)])
+        else:
+            self.spawn(['make'])
     else:
         if "-G" not in self.extra_cmake_args:
             cmake_generator = 'Visual Studio 14 2015'

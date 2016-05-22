@@ -1,7 +1,5 @@
-import sys
-import ctypes
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 
 class TestTypeBasics(unittest.TestCase):
     def test_type_repr(self):
@@ -18,4 +16,5 @@ class TestTypeBasics(unittest.TestCase):
         for s in roundtrip:
             self.assertEqual(repr(ndt.type(s)), "ndt.type(" + repr(s) + ")")
 
-
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

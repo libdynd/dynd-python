@@ -46,3 +46,6 @@ class TestArrayAsPy(unittest.TestCase):
             """)
         a = nd.array(data, type=tp)
         self.assertEqual(nd.as_py(a), data)
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

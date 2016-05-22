@@ -2,18 +2,17 @@ Running The Python Tests
 ========================
 
 The Python tests are written using Python's built in unittest module,
-and can either be run by executing the scripts or with nose. To run
-a test script directly, simply execute the test .py file:
+and can either be run by executing the scripts or with nose.  The two
+modules dynd.nd and dynd.ndt have separate tests. To run a test script
+directly, simply execute the test .py file.
 
-    D:\Develop\dynd-python>python dynd\tests\test_dtype.py
-    ...........
-    ----------------------------------------------------------------------
-    Ran 11 tests in 0.003s
+Examples:
 
-    OK
+    D:\Develop\dynd-python>python dynd\ndt\test\test_type_basics.py
+    D:\Develop\dynd-python>python dynd\nd\test\test_array_basics.py
 
-To execute the full test suite, run the following (not from the root project
-directory):
+To execute the full test suite for both modules, run the following
+(not from the root project directory):
 
     D:\Develop>python -c "import dynd; dynd.test()"
     Running unit tests for the DyND Python bindings

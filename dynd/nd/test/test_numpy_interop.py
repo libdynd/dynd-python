@@ -1,8 +1,6 @@
-import sys
 import unittest
 from dynd import nd, ndt
 import numpy as np
-from datetime import date, datetime
 from numpy.testing import *
 
 @unittest.skip('Test disabled since callables were reworked')
@@ -633,4 +631,4 @@ class TestNumpyScalarInterop(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

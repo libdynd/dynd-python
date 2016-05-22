@@ -1,5 +1,5 @@
 import unittest
-from dynd import nd, ndt
+from dynd import nd
 import sys
 
 @unittest.skip('Test disabled since translate_exception is not being applied properly')
@@ -40,3 +40,6 @@ class TestScalarConstructor(unittest.TestCase):
         # but should not fail silently.
         self.assertRaises(ValueError, a.__pow__, a, a)
         self.assertRaises(RuntimeError, a.__rpow__, b)
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

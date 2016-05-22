@@ -720,4 +720,4 @@ class TestOptionArrayConstruct(unittest.TestCase):
 #                                       (u'\uc548\ub155', u'\uc548\ub155')])
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

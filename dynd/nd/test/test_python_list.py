@@ -1,6 +1,4 @@
-import sys
 import unittest
-from datetime import date, datetime
 from dynd import nd, ndt
 
 class TestPythonList(unittest.TestCase):
@@ -72,4 +70,4 @@ class TestPythonList(unittest.TestCase):
     """
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

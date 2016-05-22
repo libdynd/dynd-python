@@ -104,7 +104,8 @@ def test(verbosity=1, xunitfile=None, exit=False):
     """
     import os, sys, subprocess
     import numpy
-    from .tests import get_tst_module
+    from .ndt.test import get_tst_module as ndt_test
+    from .nd.test import get_tst_module as nd_test
     import unittest
 
     print('Running unit tests for the DyND Python bindings')
@@ -120,9 +121,13 @@ def test(verbosity=1, xunitfile=None, exit=False):
     if xunitfile is None:
         # Run all the tests
         all_suites = []
-        for fn in os.listdir(os.path.join(os.path.dirname(__file__), 'tests')):
+        for fn in os.listdir(os.path.join(os.path.dirname(__file__), 'ndt/test')):
             if fn.startswith('test_') and fn.endswith('.py'):
-                tst = get_tst_module(fn[:-3])
+                tst = ndt_test(fn[:-3])
+                all_suites.append(unittest.defaultTestLoader.loadTestsFromModule(tst))
+        for fn in os.listdir(os.path.join(os.path.dirname(__file__), 'nd/test')):
+            if fn.startswith('test_') and fn.endswith('.py'):
+                tst = nd_test(fn[:-3])
                 all_suites.append(unittest.defaultTestLoader.loadTestsFromModule(tst))
         runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=verbosity)
         result = runner.run(unittest.TestSuite(all_suites))
@@ -140,8 +145,8 @@ def test(verbosity=1, xunitfile=None, exit=False):
         # Add all 'tests' subdirectories to the options
         rootdir = os.path.dirname(__file__)
         for root, dirs, files in os.walk(rootdir):
-            if 'tests' in dirs:
-                testsdir = os.path.join(root, 'tests')
+            if 'test' in dirs:
+                testsdir = os.path.join(root, 'test')
                 argv.append(testsdir)
                 print('Test dir: %s' % testsdir[len(rootdir)+1:])
         # Ask nose to do its thing

@@ -1,7 +1,6 @@
 import sys
 import unittest
 from dynd import nd, ndt
-from datetime import date
 
 if sys.version_info >= (3, 0):
     unicode = str
@@ -92,4 +91,4 @@ class TestPythonScalar(unittest.TestCase):
         self.assertRaises(ValueError, len, a)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

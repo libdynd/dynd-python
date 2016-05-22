@@ -25,4 +25,4 @@ class TestNumpyCompat(unittest.TestCase):
         self.assertEqual(a.dtype, ndt.int32)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

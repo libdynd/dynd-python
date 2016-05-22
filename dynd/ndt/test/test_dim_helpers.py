@@ -1,5 +1,5 @@
 import unittest
-from dynd import nd, ndt
+from dynd import ndt
 
 class TestDimHelpers(unittest.TestCase):
     def test_create(self):
@@ -34,3 +34,6 @@ class TestDimHelpers(unittest.TestCase):
         self.assertEqual(repr(ndt.var * ndt.fixed *
                               ndt.fixed[2] * ndt.fixed[3]),
                          'ndt.var * ndt.fixed * ndt.fixed[2] * ndt.fixed[3]')
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

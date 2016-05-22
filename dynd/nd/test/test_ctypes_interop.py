@@ -58,4 +58,4 @@ import ctypes
 #                ndt.type(POINT * 10))
 #
 #if __name__ == '__main__':
-#    unittest.main()
+#    unittest.main(verbosity=2)

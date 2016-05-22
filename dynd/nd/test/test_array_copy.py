@@ -1,6 +1,5 @@
 import sys
 import unittest
-from datetime import date
 from dynd import nd, ndt
 import numpy as np
 
@@ -241,4 +240,4 @@ class TestStringCopy(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)

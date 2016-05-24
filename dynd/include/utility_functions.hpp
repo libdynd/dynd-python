@@ -22,85 +22,279 @@ struct callable_type_data;
 
 namespace pydynd {
 
-/**
- * A container class for managing the local lifetime of
- * PyObject *.
- *
- * Throws an exception if the object passed into the constructor
- * is NULL.
- */
-class pyobject_ownref {
-  PyObject *m_obj;
+template <bool not_null = false>
+inline void incref(PyObject *) noexcept;
 
-  // Non-copyable
-  pyobject_ownref(const pyobject_ownref &);
-  pyobject_ownref &operator=(const pyobject_ownref &);
+template <>
+inline void incref<false>(PyObject *obj) noexcept
+{
+  Py_XINCREF(obj);
+}
+
+template <>
+inline void incref<true>(PyObject *obj) noexcept
+{
+  Py_INCREF(obj);
+}
+
+template <bool not_null>
+inline void decref(PyObject *) noexcept;
+
+template <>
+inline void decref<false>(PyObject *obj) noexcept
+{
+  Py_XDECREF(obj);
+}
+
+template <>
+inline void decref<true>(PyObject *obj) noexcept
+{
+  Py_DECREF(obj);
+}
+
+template <bool owns_ref, bool not_null>
+inline void incref_if_owned(PyObject *obj) noexcept;
+
+template <>
+inline void incref_if_owned<true, true>(PyObject *obj) noexcept
+{
+  Py_INCREF(obj);
+}
+
+template <>
+inline void incref_if_owned<true, false>(PyObject *obj) noexcept
+{
+  Py_XINCREF(obj);
+}
+
+template <>
+inline void incref_if_owned<false, true>(PyObject *obj) noexcept
+{
+}
+
+template <>
+inline void incref_if_owned<false, false>(PyObject *obj) noexcept
+{
+}
+
+template <bool owns_ref, bool not_null>
+inline void decref_if_owned(PyObject *obj) noexcept;
+
+template <>
+inline void decref_if_owned<true, true>(PyObject *obj) noexcept
+{
+  Py_DECREF(obj);
+}
+
+template <>
+inline void decref_if_owned<true, false>(PyObject *obj) noexcept
+{
+  Py_XDECREF(obj);
+}
+
+template <>
+inline void decref_if_owned<false, true>(PyObject *obj) noexcept
+{
+}
+
+template <>
+inline void decref_if_owned<false, false>(PyObject *obj) noexcept
+{
+}
+
+template <bool owns_ref = true, bool not_null = true>
+class py_ref {
+  PyObject *o;
 
 public:
-  inline pyobject_ownref() : m_obj(NULL) {}
-  inline explicit pyobject_ownref(PyObject *obj) : m_obj(obj)
-  {
-    if (obj == NULL) {
-      throw std::runtime_error("propagating a Python exception...");
-    }
-  }
+  // Explicit specializations for default constructor
+  // are defined after the class declaration.
+  // If the class is allowed to be null, it default-initializes to null.
+  // If the class is not allowed to be null, it default-initializes to None.
+  py_ref() noexcept;
 
-  inline pyobject_ownref(PyObject *obj, bool inc_ref) : m_obj(obj)
-  {
-    if (obj == NULL) {
-      throw std::runtime_error("propagating a Python exception...");
-    }
-    if (inc_ref) {
-      Py_INCREF(m_obj);
-    }
-  }
+  // First define an accessor to get the PyObject pointer from
+  // the wrapper class.
+  PyObject *get() noexcept { return o; }
 
-  inline ~pyobject_ownref() { Py_XDECREF(m_obj); }
+  // All copy and move constructors are defined as noexcept.
+  // If the conversion or move operation would move from a type
+  // that can be null to one that can not, the corresponding
+  // constructor is declared explicit.
 
-  inline PyObject **obj_addr() { return &m_obj; }
-
-  /**
-   * Resets the reference owned by this object to the one provided.
-   * This steals a reference to the input parameter, 'obj'.
-   *
-   * \param obj  The reference to replace the current one in this object.
+  /* If:
+   *    this type allows null,
+   * Or:
+   *   this type doesn't allow null
+   *   and the input type doesn't allow null,
+   * Then:
+   *    Allow implicit conversions from the other py_ref type to this type.
    */
-  inline void reset(PyObject *obj)
+  template <bool other_owns, bool other_not_null,
+            typename std::enable_if_t<!not_null || (not_null && other_not_null)> * = nullptr>
+  py_ref(const py_ref<other_owns, other_not_null> &other) noexcept
   {
-    if (obj == NULL) {
-      throw std::runtime_error("propagating a Python exception...");
+    o = other.o;
+    incref_if_owned<owns_ref, not_null>(o);
+  }
+
+  /* If:
+   *    this type doesn't allow null,
+   *    and the input type does,
+   * Then:
+   *    Require that conversions from the other py_ref type to this type be explcit.
+   */
+  template <bool other_owns, bool other_not_null, typename std::enable_if_t<not_null && !other_not_null> * = nullptr>
+  explicit py_ref(const py_ref<other_owns, other_not_null> &other) noexcept
+  {
+    o = other.o;
+    incref_if_owned<owns_ref, not_null>(o);
+  }
+
+  // Move constructors are really only useful for moving
+  // between types that own their references.
+  // Only define them for those cases.
+
+  /* If:
+   *    both this type and the input type own their reference,
+   *    and we are not moving from a type that allows null values to one that does not,
+   * Then:
+   *    a move operation can be implicitly performed.
+   */
+  template <bool other_not_null, typename std::enable_if_t<owns_ref && (other_not_null || !not_null)> * = nullptr>
+  py_ref(py_ref<true, other_not_null> &&other) noexcept
+  {
+    o = other.o;
+  }
+
+  /* If:
+   *    both this type and the input type own their reference,
+   *    and we are moving from a type that allows null values to one that does not,
+   * Then:
+   *    only an explicit move operation can be performed.
+   */
+  template <bool other_not_null, typename std::enable_if_t<owns_ref && !other_not_null && not_null> * = nullptr>
+  explicit py_ref(py_ref<true, other_not_null> &&other) noexcept
+  {
+    o = other.o;
+  }
+
+  /* When constructing from a PyObject*, the boolean value `consume_ref` must
+   * be passed to the constructor so it is clear whether or not to
+   * increment, decrement, or do nothing the reference when storing it in the
+   * desired smart pointer type. If you do not intend for the smart
+   * pointer to capture the reference that you own, you should
+   * specify `consume_ref` as false regardless of whether or not you
+   * own the reference represented in the PyObject* you pass in.
+   */
+  explicit py_ref(PyObject *obj, bool consume_ref) noexcept
+  {
+    o = obj;
+    if (consume_ref) {
+      decref_if_owned<!owns_ref, not_null>(o);
     }
-    Py_XDECREF(m_obj);
-    m_obj = obj;
+    else {
+      incref_if_owned<owns_ref, not_null>(o);
+    }
   }
 
-  /**
-   * Clears the owned reference to NULL.
+  ~py_ref() { decref_if_owned<owns_ref, not_null>(o); }
+
+  // For assignment operators, only allow assignment
+  // in cases where implicit conversions are also allowed.
+  // This forces explicit handling of cases that could
+  // need to have an exception raised.
+  // For that reason, these are all marked as noexcept.
+  // Assignment never comsumes a reference.
+
+  /* If:
+   *    this type allows null,
+   * Or:
+   *   this type doesn't allow null
+   *   and the input type doesn't allow null,
+   * Then:
+   *    Allow assignment from the other py_ref type to this type.
    */
-  inline void clear()
+  template <bool other_owns, bool other_not_null,
+            typename std::enable_if_t<!not_null || (not_null && other_not_null)> * = nullptr>
+  py_ref<owns_ref, not_null> operator=(const py_ref<other_owns, other_not_null> &other) noexcept
   {
-    Py_XDECREF(m_obj);
-    m_obj = NULL;
+    decref_if_owned<owns_ref, not_null>(o);
+    o = other.o;
+    incref_if_owned<owns_ref, not_null>(o);
   }
 
-  /** Returns a borrowed reference. */
-  inline PyObject *get() const { return m_obj; }
-
-  /** Returns a borrowed reference. */
-  inline operator PyObject *() { return m_obj; }
-
-  /**
-   * Returns the reference owned by this object,
-   * use it like "return obj.release()". After the
-   * call, this object contains NULL.
-   */
-  inline PyObject *release()
+  // Check if the wrapped pointer is null.
+  // Always return true if it is not null by definition.
+  bool is_null() noexcept
   {
-    PyObject *result = m_obj;
-    m_obj = NULL;
-    return result;
+    // This function will be a no-op returning true
+    // when not_null is false.
+    if (not_null || (o != nullptr)) {
+      return false;
+    }
+    return true;
   }
+
+  // A debug version of is_null with a purely dynamic check.
+  bool is_null_dbg() noexcept { return o != nullptr; }
 };
+
+// Default constructors for various cases.
+template <>
+inline py_ref<true, true>::py_ref() noexcept
+{
+  o = Py_None;
+  incref<true>(o);
+}
+
+template <>
+inline py_ref<true, false>::py_ref() noexcept
+{
+  o = nullptr;
+}
+
+template <>
+inline py_ref<false, true>::py_ref() noexcept
+{
+  o = Py_None;
+}
+
+template <>
+inline py_ref<false, false>::py_ref() noexcept
+{
+  o = nullptr;
+}
+
+// Convenience aliases for the templated smart pointer classes.
+// All the template arguments to py_ref have defaults,
+// so py_ref can already be used for pointers that
+// own their reference and cannot be null.
+// The following aliases fill in the other cases.
+
+using py_ref_with_null = py_ref<true, false>;
+
+using py_borref = py_ref<false, true>;
+
+using py_borref_with_null = py_ref<false, false>;
+
+// To help with the transition to the new classes.
+using pyobject_ownref = py_ref<true, false>;
+
+/* Check if a wrapped pointer is null.
+ * If it is not, return the pointer
+ * wrapped in the corresponding not_null wrapper type.
+ * If it is, raise an exception.
+ * This can be used to forward exceptions from Python.
+ */
+template <bool owns_ref, bool not_null>
+py_ref<owns_ref, true> check_null(py_ref<owns_ref, not_null> &o)
+{
+  if (o.is_null()) {
+    throw std::runtime_error("Unexpected null pointer.");
+  }
+  return reinterpret_cast<py_ref_tmpl<owns_ref, true>>(o);
+}
 
 class PyGILState_RAII {
   PyGILState_STATE m_gstate;
@@ -149,8 +343,7 @@ inline intptr_t pyobject_as_index(PyObject *index)
 #endif
   }
   else {
-    throw std::runtime_error(
-        "Value returned from PyNumber_Index is not an int or long");
+    throw std::runtime_error("Value returned from PyNumber_Index is not an int or long");
   }
   if (result == -1 && PyErr_Occurred()) {
     throw std::exception();
@@ -170,8 +363,7 @@ inline int pyobject_as_int_index(PyObject *index)
     throw std::exception();
   }
   if (((unsigned long)result & 0xffffffffu) != (unsigned long)result) {
-    throw std::overflow_error(
-        "overflow converting Python integer to 32-bit int");
+    throw std::overflow_error("overflow converting Python integer to 32-bit int");
   }
   return (int)result;
 }
@@ -248,8 +440,7 @@ inline std::string pyobject_repr(PyObject *obj)
   return pystring_as_string(src_repr.get());
 }
 
-inline void pyobject_as_vector_string(PyObject *list_string,
-                                      std::vector<std::string> &vector_string)
+inline void pyobject_as_vector_string(PyObject *list_string, std::vector<std::string> &vector_string)
 {
   Py_ssize_t size = PySequence_Size(list_string);
   vector_string.resize(size);
@@ -259,9 +450,7 @@ inline void pyobject_as_vector_string(PyObject *list_string,
   }
 }
 
-inline void pyobject_as_vector_intp(PyObject *list_index,
-                                    std::vector<intptr_t> &vector_intp,
-                                    bool allow_int)
+inline void pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t> &vector_intp, bool allow_int)
 {
   if (allow_int) {
     // If permitted, convert an int into a size-1 list
@@ -389,8 +578,7 @@ inline void mark_axis(PyObject *int_axis, int ndim, dynd::bool1 *reduce_axes)
  *
  * Returns the number of axes which were set.
  */
-inline int pyarg_axis_argument(PyObject *axis, int ndim,
-                               dynd::bool1 *reduce_axes)
+inline int pyarg_axis_argument(PyObject *axis, int ndim, dynd::bool1 *reduce_axes)
 {
   int axis_count = 0;
 

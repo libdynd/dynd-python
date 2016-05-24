@@ -124,7 +124,7 @@ inline void convert_one_pyscalar_ustring(const ndt::type &tp, const char *arrmet
   dynd::string *out_usp = reinterpret_cast<dynd::string *>(out);
   if (PyUnicode_Check(obj)) {
     // Get it as UTF8
-    pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
+    py_ref utf8 = capture_if_not_null(PyUnicode_AsUTF8String(obj));
     char *s = NULL;
     Py_ssize_t len = 0;
     if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
@@ -442,7 +442,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
 #endif
   }
   else if (PyUnicode_Check(obj)) {
-    pyobject_ownref utf8(PyUnicode_AsUTF8String(obj));
+    py_ref utf8 = capture_if_not_null(PyUnicode_AsUTF8String(obj));
     char *s = NULL;
     Py_ssize_t len = 0;
     if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
@@ -467,7 +467,7 @@ dynd::nd::array pydynd::array_from_py(PyObject *obj, uint32_t access_flags, bool
   }
 
   if (result.get() == NULL) {
-    pyobject_ownref pytpstr(PyObject_Str((PyObject *)Py_TYPE(obj)));
+    py_ref pytpstr = capture_if_not_null(PyObject_Str((PyObject *)Py_TYPE(obj)));
     stringstream ss;
     ss << "could not convert python object of type ";
     ss << pystring_as_string(pytpstr.get());

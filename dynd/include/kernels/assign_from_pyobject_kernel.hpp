@@ -126,13 +126,13 @@ void pyint_to_int(dynd::int128 *out, PyObject *obj)
   }
 #endif
   uint64_t lo = PyLong_AsUnsignedLongLongMask(obj);
-  pydynd::pyobject_ownref sixtyfour(PyLong_FromLong(64));
-  pydynd::pyobject_ownref value_shr1(PyNumber_Rshift(obj, sixtyfour.get()));
+  pydynd::py_ref sixtyfour = pydynd::capture_if_not_null(PyLong_FromLong(64));
+  pydynd::py_ref value_shr1 = pydynd::capture_if_not_null(PyNumber_Rshift(obj, sixtyfour.get()));
   uint64_t hi = PyLong_AsUnsignedLongLongMask(value_shr1.get());
   dynd::int128 result(hi, lo);
 
   // Shift right another 64 bits, and check that nothing is remaining
-  pydynd::pyobject_ownref value_shr2(PyNumber_Rshift(value_shr1.get(), sixtyfour.get()));
+  pydynd::py_ref value_shr2 = pydynd::capture_if_not_null(PyNumber_Rshift(value_shr1.get(), sixtyfour.get()));
   long remaining = PyLong_AsLong(value_shr2.get());
   if ((remaining != 0 || (remaining == 0 && result.is_negative())) &&
       (remaining != -1 || PyErr_Occurred() || (remaining == -1 && !result.is_negative()))) {
@@ -210,13 +210,13 @@ void pyint_to_int(dynd::uint128 *out, PyObject *obj)
   }
 #endif
   uint64_t lo = PyLong_AsUnsignedLongLongMask(obj);
-  pydynd::pyobject_ownref sixtyfour(PyLong_FromLong(64));
-  pydynd::pyobject_ownref value_shr1(PyNumber_Rshift(obj, sixtyfour.get()));
+  pydynd::py_ref sixtyfour = pydynd::capture_if_not_null(PyLong_FromLong(64));
+  pydynd::py_ref value_shr1 = pydynd::capture_if_not_null(PyNumber_Rshift(obj, sixtyfour.get()));
   uint64_t hi = PyLong_AsUnsignedLongLongMask(value_shr1.get());
   dynd::uint128 result(hi, lo);
 
   // Shift right another 64 bits, and check that nothing is remaining
-  pydynd::pyobject_ownref value_shr2(PyNumber_Rshift(value_shr1.get(), sixtyfour.get()));
+  pydynd::py_ref value_shr2 = pydynd::capture_if_not_null(PyNumber_Rshift(value_shr1.get(), sixtyfour.get()));
   long remaining = PyLong_AsLong(value_shr2.get());
   if (remaining != 0) {
     throw std::overflow_error("int is too big to fit in an uint128");
@@ -381,7 +381,7 @@ struct assign_from_pyobject_kernel<dynd::string>
     if (PyUnicode_Check(src_obj)) {
       // Go through UTF8 (was accessing the cpython unicode values directly
       // before, but on Python 3.3 OS X it didn't work correctly.)
-      pydynd::pyobject_ownref utf8(PyUnicode_AsUTF8String(src_obj));
+      pydynd::py_ref utf8 = pydynd::capture_if_not_null(PyUnicode_AsUTF8String(src_obj));
       char *s = NULL;
       Py_ssize_t len = 0;
       if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
@@ -465,7 +465,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::option_type>
     }
     else if (dst_tp.get_base_id() != dynd::string_kind_id && PyUnicode_Check(src_obj)) {
       // Copy from the string
-      pydynd::pyobject_ownref utf8(PyUnicode_AsUTF8String(src_obj));
+      pydynd::py_ref utf8 = pydynd::capture_if_not_null(PyUnicode_AsUTF8String(src_obj));
       char *s = NULL;
       Py_ssize_t len = 0;
       if (PyBytes_AsStringAndSize(utf8.get(), &s, &len) < 0) {
@@ -539,7 +539,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::tuple_type>
     const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(m_dst_arrmeta);
 
     // Get the input as an array of PyObject *
-    pydynd::pyobject_ownref src_fast;
+    pydynd::py_ref src_fast;
     char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
@@ -548,7 +548,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::tuple_type>
       src_dim_size = 1;
     }
     else {
-      src_fast.reset(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd tuple"));
+      src_fast = pydynd::capture_if_not_null(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd tuple"));
       child_src = reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
     }
@@ -652,7 +652,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::struct_type>
     }
     else {
       // Get the input as an array of PyObject *
-      pydynd::pyobject_ownref src_fast;
+      pydynd::py_ref src_fast;
       char *child_src;
       intptr_t child_stride = sizeof(PyObject *);
       intptr_t src_dim_size;
@@ -661,7 +661,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::struct_type>
         src_dim_size = 1;
       }
       else {
-        src_fast.reset(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd struct"));
+        src_fast = pydynd::capture_if_not_null(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd struct"));
         child_src = reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
         src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
       }
@@ -722,7 +722,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::fixed_dim_type>
     dynd::kernel_strided_t copy_el_fn = copy_el->get_function<dynd::kernel_strided_t>();
 
     // Get the input as an array of PyObject *
-    pydynd::pyobject_ownref src_fast;
+    pydynd::py_ref src_fast;
     char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
@@ -732,7 +732,8 @@ struct assign_from_pyobject_kernel<dynd::ndt::fixed_dim_type>
       src_dim_size = 1;
     }
     else {
-      src_fast.reset(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd dimension"));
+      src_fast =
+          pydynd::capture_if_not_null(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd dimension"));
       child_src = reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
     }
@@ -791,7 +792,7 @@ struct assign_from_pyobject_kernel<dynd::ndt::var_dim_type>
     dynd::kernel_strided_t copy_el_fn = copy_el->get_function<dynd::kernel_strided_t>();
 
     // Get the input as an array of PyObject *
-    pydynd::pyobject_ownref src_fast;
+    pydynd::py_ref src_fast;
     char *child_src;
     intptr_t child_stride = sizeof(PyObject *);
     intptr_t src_dim_size;
@@ -800,7 +801,8 @@ struct assign_from_pyobject_kernel<dynd::ndt::var_dim_type>
       src_dim_size = 1;
     }
     else {
-      src_fast.reset(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd dimension"));
+      src_fast =
+          pydynd::capture_if_not_null(PySequence_Fast(src_obj, "Require a sequence to copy to a dynd dimension"));
       child_src = reinterpret_cast<char *>(PySequence_Fast_ITEMS(src_fast.get()));
       src_dim_size = PySequence_Fast_GET_SIZE(src_fast.get());
     }

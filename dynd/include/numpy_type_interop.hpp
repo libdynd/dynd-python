@@ -233,7 +233,7 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d, size_t data_alig
       // Check for an h5py vlen string type (h5py 2.2 style)
       PyObject *vlen_tup = PyMapping_GetItemString(d->fields, "vlen");
       if (vlen_tup != NULL) {
-        pyobject_ownref vlen_tup_owner(vlen_tup);
+        py_ref vlen_tup_owner = capture_if_not_null(vlen_tup);
         if (PyTuple_Check(vlen_tup) && PyTuple_GET_SIZE(vlen_tup) == 3) {
           PyObject *type_dict = PyTuple_GET_ITEM(vlen_tup, 2);
           if (PyDict_Check(type_dict)) {
@@ -269,8 +269,9 @@ inline dynd::ndt::type _type_from_numpy_dtype(PyArray_Descr *d, size_t data_alig
   case NPY_DATETIME: {
     // Get the dtype info through the CPython API, slower
     // but lets NumPy's datetime API change without issue.
-    pyobject_ownref mod(PyImport_ImportModule("numpy"));
-    pyobject_ownref dd(PyObject_CallMethod(mod.get(), const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
+    py_ref mod = capture_if_not_null(PyImport_ImportModule("numpy"));
+    py_ref dd = capture_if_not_null(
+        PyObject_CallMethod(mod.get(), const_cast<char *>("datetime_data"), const_cast<char *>("O"), d));
     PyObject *unit = PyTuple_GetItem(dd.get(), 0);
     if (unit == NULL) {
       throw std::runtime_error("");

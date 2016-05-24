@@ -103,7 +103,7 @@ inline void decref_if_owned<false, false>(PyObject *obj) noexcept
 }
 
 template <bool owns_ref = true, bool not_null = true>
-class py_ref {
+class py_ref_tmpl {
   PyObject *o;
 
 public:
@@ -111,7 +111,7 @@ public:
   // are defined after the class declaration.
   // If the class is allowed to be null, it default-initializes to null.
   // If the class is not allowed to be null, it default-initializes to None.
-  py_ref() noexcept;
+  py_ref_tmpl() noexcept;
 
   // First define an accessor to get the PyObject pointer from
   // the wrapper class.
@@ -128,11 +128,11 @@ public:
    *   this type doesn't allow null
    *   and the input type doesn't allow null,
    * Then:
-   *    Allow implicit conversions from the other py_ref type to this type.
+   *    Allow implicit conversions from the other py_ref_tmpl type to this type.
    */
   template <bool other_owns, bool other_not_null,
             typename std::enable_if_t<!not_null || (not_null && other_not_null)> * = nullptr>
-  py_ref(const py_ref<other_owns, other_not_null> &other) noexcept
+  py_ref_tmpl(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
   {
     o = other.o;
     incref_if_owned<owns_ref, not_null>(o);
@@ -142,10 +142,10 @@ public:
    *    this type doesn't allow null,
    *    and the input type does,
    * Then:
-   *    Require that conversions from the other py_ref type to this type be explcit.
+   *    Require that conversions from the other py_ref_tmpl type to this type be explcit.
    */
   template <bool other_owns, bool other_not_null, typename std::enable_if_t<not_null && !other_not_null> * = nullptr>
-  explicit py_ref(const py_ref<other_owns, other_not_null> &other) noexcept
+  explicit py_ref_tmpl(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
   {
     o = other.o;
     incref_if_owned<owns_ref, not_null>(o);
@@ -162,7 +162,7 @@ public:
    *    a move operation can be implicitly performed.
    */
   template <bool other_not_null, typename std::enable_if_t<owns_ref && (other_not_null || !not_null)> * = nullptr>
-  py_ref(py_ref<true, other_not_null> &&other) noexcept
+  py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
   {
     o = other.o;
   }
@@ -174,7 +174,7 @@ public:
    *    only an explicit move operation can be performed.
    */
   template <bool other_not_null, typename std::enable_if_t<owns_ref && !other_not_null && not_null> * = nullptr>
-  explicit py_ref(py_ref<true, other_not_null> &&other) noexcept
+  explicit py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
   {
     o = other.o;
   }
@@ -187,7 +187,7 @@ public:
    * specify `consume_ref` as false regardless of whether or not you
    * own the reference represented in the PyObject* you pass in.
    */
-  explicit py_ref(PyObject *obj, bool consume_ref) noexcept
+  explicit py_ref_tmpl(PyObject *obj, bool consume_ref) noexcept
   {
     o = obj;
     if (consume_ref) {
@@ -198,7 +198,7 @@ public:
     }
   }
 
-  ~py_ref() { decref_if_owned<owns_ref, not_null>(o); }
+  ~py_ref_tmpl() { decref_if_owned<owns_ref, not_null>(o); }
 
   // For assignment operators, only allow assignment
   // in cases where implicit conversions are also allowed.
@@ -213,11 +213,11 @@ public:
    *   this type doesn't allow null
    *   and the input type doesn't allow null,
    * Then:
-   *    Allow assignment from the other py_ref type to this type.
+   *    Allow assignment from the other py_ref_tmpl type to this type.
    */
   template <bool other_owns, bool other_not_null,
             typename std::enable_if_t<!not_null || (not_null && other_not_null)> * = nullptr>
-  py_ref<owns_ref, not_null> operator=(const py_ref<other_owns, other_not_null> &other) noexcept
+  py_ref_tmpl<owns_ref, not_null> operator=(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
   {
     decref_if_owned<owns_ref, not_null>(o);
     o = other.o;
@@ -242,44 +242,42 @@ public:
 
 // Default constructors for various cases.
 template <>
-inline py_ref<true, true>::py_ref() noexcept
+inline py_ref_tmpl<true, true>::py_ref_tmpl() noexcept
 {
   o = Py_None;
   incref<true>(o);
 }
 
 template <>
-inline py_ref<true, false>::py_ref() noexcept
+inline py_ref_tmpl<true, false>::py_ref_tmpl() noexcept
 {
   o = nullptr;
 }
 
 template <>
-inline py_ref<false, true>::py_ref() noexcept
+inline py_ref_tmpl<false, true>::py_ref_tmpl() noexcept
 {
   o = Py_None;
 }
 
 template <>
-inline py_ref<false, false>::py_ref() noexcept
+inline py_ref_tmpl<false, false>::py_ref_tmpl() noexcept
 {
   o = nullptr;
 }
 
 // Convenience aliases for the templated smart pointer classes.
-// All the template arguments to py_ref have defaults,
-// so py_ref can already be used for pointers that
-// own their reference and cannot be null.
-// The following aliases fill in the other cases.
 
-using py_ref_with_null = py_ref<true, false>;
+using py_ref = py_ref_tmpl<true, true>;
 
-using py_borref = py_ref<false, true>;
+using py_ref_with_null = py_ref_tmpl<true, false>;
 
-using py_borref_with_null = py_ref<false, false>;
+using py_borref = py_ref_tmpl<false, true>;
+
+using py_borref_with_null = py_ref_tmpl<false, false>;
 
 // To help with the transition to the new classes.
-using pyobject_ownref = py_ref<true, false>;
+using pyobject_ownref = py_ref_tmpl<true, false>;
 
 /* Check if a wrapped pointer is null.
  * If it is not, return the pointer
@@ -288,12 +286,23 @@ using pyobject_ownref = py_ref<true, false>;
  * This can be used to forward exceptions from Python.
  */
 template <bool owns_ref, bool not_null>
-py_ref<owns_ref, true> check_null(py_ref<owns_ref, not_null> &o)
+py_ref_tmpl<owns_ref, true> check_null(py_ref_tmpl<owns_ref, not_null> &o)
 {
   if (o.is_null()) {
     throw std::runtime_error("Unexpected null pointer.");
   }
   return reinterpret_cast<py_ref_tmpl<owns_ref, true>>(o);
+}
+
+/* Capture a new reference if it is not null.
+ * Throw an exception if it is.
+ */
+inline py_ref capture_if_not_null(PyObject *o)
+{
+  if (o == nullptr) {
+    throw std::runtime_error("Unexpected null pouter.");
+  }
+  return py_ref(o, true);
 }
 
 class PyGILState_RAII {
@@ -332,7 +341,7 @@ inline void py_decref_function(void *obj)
 
 inline intptr_t pyobject_as_index(PyObject *index)
 {
-  pyobject_ownref start_obj(PyNumber_Index(index));
+  py_ref start_obj = capture_if_not_null(PyNumber_Index(index));
   intptr_t result;
   if (PyLong_Check(start_obj.get())) {
     result = PyLong_AsSsize_t(start_obj.get());
@@ -353,11 +362,11 @@ inline intptr_t pyobject_as_index(PyObject *index)
 
 inline int pyobject_as_int_index(PyObject *index)
 {
-  pyobject_ownref start_obj(PyNumber_Index(index));
+  py_ref start_obj = capture_if_not_null(PyNumber_Index(index));
 #if PY_VERSION_HEX >= 0x03000000
-  long result = PyLong_AsLong(start_obj);
+  long result = PyLong_AsLong(start_obj.get());
 #else
-  long result = PyInt_AsLong(start_obj);
+  long result = PyInt_AsLong(start_obj.get());
 #endif
   if (result == -1 && PyErr_Occurred()) {
     throw std::exception();
@@ -394,7 +403,7 @@ inline std::string pystring_as_string(PyObject *str)
   char *data = NULL;
   Py_ssize_t len = 0;
   if (PyUnicode_Check(str)) {
-    pyobject_ownref utf8(PyUnicode_AsUTF8String(str));
+    py_ref utf8 = capture_if_not_null(PyUnicode_AsUTF8String(str));
 
 #if PY_VERSION_HEX >= 0x03000000
     if (PyBytes_AsStringAndSize(utf8.get(), &data, &len) < 0) {
@@ -436,7 +445,7 @@ inline PyObject *pystring_from_string(const std::string &str)
 }
 inline std::string pyobject_repr(PyObject *obj)
 {
-  pyobject_ownref src_repr(PyObject_Repr(obj));
+  py_ref src_repr = capture_if_not_null(PyObject_Repr(obj));
   return pystring_as_string(src_repr.get());
 }
 
@@ -445,7 +454,7 @@ inline void pyobject_as_vector_string(PyObject *list_string, std::vector<std::st
   Py_ssize_t size = PySequence_Size(list_string);
   vector_string.resize(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
-    pyobject_ownref item(PySequence_GetItem(list_string, i));
+    py_ref item = capture_if_not_null(PySequence_GetItem(list_string, i));
     vector_string[i] = pystring_as_string(item.get());
   }
 }
@@ -495,7 +504,7 @@ inline void pyobject_as_vector_intp(PyObject *list_index, std::vector<intptr_t> 
   Py_ssize_t size = PySequence_Size(list_index);
   vector_intp.resize(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
-    pyobject_ownref item(PySequence_GetItem(list_index, i));
+    py_ref item = capture_if_not_null(PySequence_GetItem(list_index, i));
     vector_intp[i] = pyobject_as_index(item.get());
   }
 }
@@ -548,8 +557,8 @@ inline PyObject *intptr_array_as_tuple(size_t size, const intptr_t *values)
 // Helper function for pyarg_axis_argument.
 inline void mark_axis(PyObject *int_axis, int ndim, dynd::bool1 *reduce_axes)
 {
-  pyobject_ownref value_obj(PyNumber_Index(int_axis));
-  long value = PyLong_AsLong(value_obj);
+  py_ref value_obj = capture_if_not_null(PyNumber_Index(int_axis));
+  long value = PyLong_AsLong(value_obj.get());
   if (value == -1 && PyErr_Occurred()) {
     throw std::runtime_error("error getting integer for axis argument");
   }

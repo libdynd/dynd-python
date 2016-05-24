@@ -118,6 +118,7 @@ def test(verbosity=1, xunitfile=None, exit=False):
     print('LibDyND git sha1: %s' % __libdynd_git_sha1__)
     print('NumPy version: %s' % numpy.__version__)
     sys.stdout.flush()
+
     if xunitfile is None:
         s1 = dynd.ndt.test.discover()
         s2 = dynd.nd.test.discover()

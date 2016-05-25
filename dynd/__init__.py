@@ -6,9 +6,9 @@ except ImportError:
     import pkgutil
     __path__ = pkgutil.extend_path(__path__, __name__)
 
-try:
+try: # Only the import from dynd.ndt is expected to succeed.
     from .common import *
-except:
+except ImportError:
     pass
 
 __all__ = [

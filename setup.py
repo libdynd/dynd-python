@@ -182,7 +182,7 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
-        self.spawn(['make', '-j2'])
+        self.spawn(['make'])
     else:
         if "-G" not in self.extra_cmake_args:
             cmake_generator = 'Visual Studio 14 2015'

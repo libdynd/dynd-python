@@ -6,10 +6,77 @@ from setuptools import setup, Extension
 import os, sys
 from os import chdir, getcwd
 from os.path import abspath, dirname, split, samefile
-import shlex
+import shlex, glob
 from subprocess import check_output
 
 import re
+
+# Distribution target: 'all', 'ndt', 'nd'
+DIST_TARGET = 'all'
+class Target():
+  def __init__(self, target):
+    if target not in ['ndt', 'nd', 'all']:
+      raise ValueError("unknown distribution target: %s" % target)
+    self.target = target
+
+  def get_name(self):
+    if self.target == 'ndt':
+      return 'dynd.ndt'
+    elif self.target == 'nd':
+      return 'dynd.nd'
+    else:
+      return 'dynd'
+
+  def get_packages(self):
+    ndt = {'dynd', 'dynd.common', 'dynd.ndt', 'dynd.ndt.test'}
+    nd = {'dynd', 'dynd.nd', 'dynd.nd.test'}
+    if self.target == 'ndt':
+      return list(ndt)
+    elif self.target == 'nd':
+      return list(nd)
+    else:
+      return list(ndt | nd)
+
+  def get_package_data(self):
+    ndt = {'*.pxd', 'ndt/*.pxd', 'include/*.hpp', 'cpp/*.pxd',
+           'cpp/types/*.pxd'}
+    nd = {'*.pxd', 'nd/*.pxd', 'include/*.hpp', 'include/kernels/*.hpp',
+          'cpp/*.pxd', 'cpp/eval/*.pxd', 'cpp/func/*.pxd'}
+    if self.target == 'ndt':
+      return {'dynd.ndt': list(ndt)}
+    elif self.target == 'nd':
+      return {'dynd.nd': list(nd)}
+    else:
+      return {'dynd': list(ndt | nd)}
+
+  def get_extension_names(self):
+    ndt = ['config', os.path.join('ndt', 'type'),
+           os.path.join('ndt', 'json')]
+    nd = [os.path.join('nd', 'array'), os.path.join('nd', 'callable'),
+          os.path.join('nd', 'functional'), os.path.join('nd', 'registry')]
+    if self.target == 'ndt':
+      return ndt
+    elif self.target == 'nd':
+      return nd
+    else:
+      return ndt + nd
+
+  def get_library_names(self, build_type):
+    if sys.platform != 'win32':
+      ndt = glob.glob('libdynd/libdyndt.*')
+      nd = glob.glob('libdynd/libdynd.*')
+    else:
+      ndt = glob.glob('libdynd/%s/libdyndt.*' % build_type)
+      nd = glob.glob('libdynd/%s/libdynd.*' % build_type)
+    if self.target == 'ndt':
+      return ndt
+    elif self.target == 'nd':
+      return nd
+    else:
+      return ndt + nd
+
+target = Target(DIST_TARGET)
+
 
 # Check if we're running 64-bit Python
 is_64_bit = sys.maxsize > 2**32
@@ -115,7 +182,7 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
-        self.spawn(['make'])
+        self.spawn(['make', '-j2'])
     else:
         if "-G" not in self.extra_cmake_args:
             cmake_generator = 'Visual Studio 14 2015'
@@ -127,21 +194,17 @@ class cmake_build_ext(build_ext):
         # Do the build
         self.spawn(['cmake', '--build', '.', '--config', build_type])
 
-    import glob, shutil
+    import shutil
 
     if not self.inplace:
         if install_lib_option.split('=')[1] == 'OFF':
-            if sys.platform != 'win32':
-                names = glob.glob('libdynd/libdy*.*')
-            else:
-                names = glob.glob('libdynd/%s/libdy*.*' % build_type)
-            for name in names:
+            for name in target.get_library_names(build_type):
                 short_name = split(name)[1]
                 shutil.move(name, os.path.join(build_lib, 'dynd', short_name))
 
         # Move the built C-extension to the place expected by the Python build
         self._found_names = []
-        for name in self.get_expected_names():
+        for name in target.get_extension_names():
             built_path = self.get_ext_built(name)
             print(os.getcwd())
             if os.path.exists(built_path):
@@ -158,11 +221,6 @@ class cmake_build_ext(build_ext):
                                    os.path.abspath(built_path))
 
     chdir(saved_cwd)
-
-  def get_expected_names(self):
-    return ['config', os.path.join('ndt', 'type'), os.path.join('ndt', 'json'), \
-        os.path.join('nd', 'array'), os.path.join('nd', 'callable'), \
-        os.path.join('nd', 'functional'), os.path.join('nd', 'registry')]
 
   def get_names(self):
     return self._found_names
@@ -197,28 +255,21 @@ if '.' in ver:
     else:
         ver = '.'.join(vlst)
 
+
+
 setup(
-    name = 'dynd',
+    name = target.get_name(),
     description = 'Python exposure of DyND',
     version = ver,
     author = 'DyND Developers',
     author_email = 'libdynd-dev@googlegroups.com',
     license = 'BSD',
     url = 'http://libdynd.org',
-    packages = [
-        'dynd',
-        'dynd.ndt',
-        'dynd.ndt.test',
-        'dynd.nd',
-        'dynd.nd.test',
-    ],
-    package_data = {'dynd': ['*.pxd', 'nd/*.pxd', 'ndt/*.pxd', 'include/*.hpp',
-                             'include/kernels/*.hpp', 'cpp/*.pxd',
-                             'cpp/eval/*.pxd', 'cpp/func/*.pxd',
-                             'cpp/types/*.pxd']},
+    packages = target.get_packages(),
+    package_data = target.get_package_data(),
     # build_ext is overridden to call cmake, the Extension is just
     # needed so things like bdist_wheel understand what's going on.
-    ext_modules = [Extension('config', sources=[])],
+    ext_modules = [Extension(target.get_name(), sources=[])],
     # This includes both build and install requirements. Setuptools' setup_requires
     # option does not actually install things, so isn't actually helpful...
     install_requires=open('dev-requirements.txt').read().strip().split('\n'),

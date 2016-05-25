@@ -368,13 +368,13 @@ dynd::ndt::type pydynd::array_from_numpy_array2(PyArrayObject *obj)
   PyArray_Descr *dtype = PyArray_DESCR(obj);
 
   if (PyDataType_FLAGCHK(dtype, NPY_ITEM_HASOBJECT)) {
-    return dynd::ndt::make_fixed_dim(PyArray_NDIM(obj), PyArray_SHAPE(obj),
-                                     pydynd::_type_from_numpy_dtype(dtype).get_canonical_type());
+    return dynd::ndt::make_type(PyArray_NDIM(obj), PyArray_SHAPE(obj),
+                                pydynd::_type_from_numpy_dtype(dtype).get_canonical_type());
   }
   else {
     // Get the dtype of the array
     dynd::ndt::type d = pydynd::_type_from_numpy_dtype(PyArray_DESCR(obj), get_alignment_of(obj));
-    return dynd::ndt::make_fixed_dim(PyArray_NDIM(obj), PyArray_DIMS(obj), d);
+    return dynd::ndt::make_type(PyArray_NDIM(obj), PyArray_DIMS(obj), d);
   }
 }
 

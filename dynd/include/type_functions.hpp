@@ -20,8 +20,8 @@
 #include <dynd/types/struct_type.hpp>
 #include <dynd/types/type_type.hpp>
 
-#include "utility_functions.hpp"
 #include "type_conversions.hpp"
+#include "utility_functions.hpp"
 #include "visibility.hpp"
 
 // Python's datetime C API
@@ -166,7 +166,7 @@ inline dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt
 {
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
-  return dynd::ndt::make_fixed_dim(shape_vec.size(), &shape_vec[0], element_tp);
+  return dynd::ndt::make_type(shape_vec.size(), &shape_vec[0], element_tp);
 }
 
 inline void init_type_functions()

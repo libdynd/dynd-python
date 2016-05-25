@@ -66,7 +66,7 @@ def test(verbosity=1, xunitfile=None, exit=False):
     print('Running unit tests for the DyND Python bindings')
     print('Python version: %s' % sys.version)
     print('Python prefix: %s' % sys.prefix)
-    print('DyND-Python module: %s' % os.path.dirname(__file__))
+    print('DyND-Python module: %s' % os.path.dirname(os.path.dirname(__file__)))
     print('DyND-Python version: %s' % __version__)
     print('DyND-Python git sha1: %s' % __git_sha1__)
     print('LibDyND version: %s' % __libdynd_version__)

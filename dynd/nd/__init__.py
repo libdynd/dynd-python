@@ -1,4 +1,4 @@
-import dynd.ndt
+from .. import ndt # ensure that the module is loaded first
 import sys
 import os
 
@@ -77,4 +77,4 @@ publish_callables(sys.modules[__name__])
 
 del os
 del sys
-del dynd.ndt
+del ndt

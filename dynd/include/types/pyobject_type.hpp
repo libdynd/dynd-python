@@ -9,8 +9,6 @@
 
 #include <dynd/types/base_type.hpp>
 
-extern const dynd::type_id_t pyobject_id;
-
 class PYDYND_API pyobject_type : public dynd::ndt::base_type {
 public:
   pyobject_type(dynd::type_id_t new_id);
@@ -27,6 +25,11 @@ namespace ndt {
   template <>
   struct traits<PyObject *> {
     static type equivalent() { return make_type<pyobject_type>(); }
+  };
+
+  template <>
+  struct id_of<pyobject_type> {
+    static const type_id_t value;
   };
 
 } // namespace dynd::ndt

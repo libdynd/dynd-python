@@ -104,9 +104,9 @@ def test(verbosity=1, xunitfile=None, exit=False):
     """
     import os, sys, subprocess
     import numpy
-    from .ndt.test import get_tst_module as ndt_test
-    from .nd.test import get_tst_module as nd_test
     import unittest
+    import dynd.ndt.test
+    import dynd.nd.test
 
     print('Running unit tests for the DyND Python bindings')
     print('Python version: %s' % sys.version)
@@ -118,19 +118,12 @@ def test(verbosity=1, xunitfile=None, exit=False):
     print('LibDyND git sha1: %s' % __libdynd_git_sha1__)
     print('NumPy version: %s' % numpy.__version__)
     sys.stdout.flush()
+
     if xunitfile is None:
-        # Run all the tests
-        all_suites = []
-        for fn in os.listdir(os.path.join(os.path.dirname(__file__), 'ndt/test')):
-            if fn.startswith('test_') and fn.endswith('.py'):
-                tst = ndt_test(fn[:-3])
-                all_suites.append(unittest.defaultTestLoader.loadTestsFromModule(tst))
-        for fn in os.listdir(os.path.join(os.path.dirname(__file__), 'nd/test')):
-            if fn.startswith('test_') and fn.endswith('.py'):
-                tst = nd_test(fn[:-3])
-                all_suites.append(unittest.defaultTestLoader.loadTestsFromModule(tst))
+        s1 = dynd.ndt.test.discover()
+        s2 = dynd.nd.test.discover()
         runner = unittest.TextTestRunner(stream=sys.stdout, verbosity=verbosity)
-        result = runner.run(unittest.TestSuite(all_suites))
+        result = runner.run(unittest.TestSuite(s1 + s2))
         if exit:
             sys.exit(not result.wasSuccessful())
         else:

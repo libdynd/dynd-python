@@ -1,30 +1,27 @@
+import dynd.ndt
 import sys
-
 import os
+
 if os.name == 'nt':
     # Manually load dlls before loading the extension modules.
     # This is handled via rpaths on Unix based systems.
     import ctypes
     import os.path
-    import dynd.ndt
-    ndtdir = os.path.join(os.path.dirname(os.path.abspath(dynd.ndt.__file__)), '..')
-    nddir = os.path.join(os.path.dirname(__file__), '..')
-    def load_dynd_dll(ndtdir=ndtdir, nddir=nddir):
+    def load_dynd_dll(rootpath):
         try:
-            ctypes.cdll.LoadLibrary(os.path.join(ndtdir, 'libdyndt.dll'))
-            ctypes.cdll.LoadLibrary(os.path.join(nddir, 'libdynd.dll'))
+            ctypes.cdll.LoadLibrary(os.path.join(rootpath, 'libdynd.dll'))
             return True
         except OSError:
             return False
     # If libdynd.dll has been placed in the dynd-python installation, use that
-    loaded = load_dynd_dll()
+    nddir = os.path.dirname(os.path.dirname(__file__))
+    loaded = load_dynd_dll(nddir)
     # Next, try the default DLL search path
-    loaded = loaded or load_dynd_dll(ndtdir='', nddir='')
+    loaded = loaded or load_dynd_dll('')
     if not loaded:
         # Try to load it from the Program Files directories where libdynd
         # installs by default. This matches the search path for libdynd used
         # in the CMake build for dynd-python.
-        import sys
         is_64_bit = sys.maxsize > 2**32
         processor_arch = os.environ.get('PROCESSOR_ARCHITECTURE')
         err_str = ('Fallback search for libdynd.dll failed because the "{}" '
@@ -52,10 +49,9 @@ if os.name == 'nt':
                 raise RuntimeError(err_str.format('ProgramFiles(x86)'))
         dynd_lib_dir = os.path.join(prog_files, 'libdynd', 'lib')
         if os.path.isdir(dynd_lib_dir):
-            loaded = load_dynd_dll(ndtdir=dynd_lib_dir, nddir=dynd_lib_dir)
+            loaded = load_dynd_dll(dynd_lib_dir)
             if not loaded:
-                raise ctypes.WinError(126, 'Could not load libdynd.dll '
-                                           'or libdyndt.dll')
+                raise ctypes.WinError(126, 'Could not load libdynd.dll')
 
 
 from dynd.config import *
@@ -78,3 +74,7 @@ from . import functional
 #        return _parse(tp, obj)
 
 publish_callables(sys.modules[__name__])
+
+del os
+del sys
+del dynd.ndt

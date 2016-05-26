@@ -13,7 +13,7 @@ extern const dynd::type_id_t pyobject_id;
 
 class PYDYND_API pyobject_type : public dynd::ndt::base_type {
 public:
-  pyobject_type();
+  pyobject_type(dynd::type_id_t new_id);
 
   void print_type(std::ostream &o) const;
   void print_data(std::ostream &o, const char *arrmeta, const char *data) const;

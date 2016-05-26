@@ -1,26 +1,26 @@
+import sys
 import os
+
 if os.name == 'nt':
     # Manually load dlls before loading the extension modules.
     # This is handled via rpaths on Unix based systems.
     import ctypes
     import os.path
-    import dynd.ndt
-    ndtdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-    def load_dynd_dll(ndtdir=ndtdir):
+    def load_dynd_dll(rootpath):
         try:
-            ctypes.cdll.LoadLibrary(os.path.join(ndtdir, 'libdyndt.dll'))
+            ctypes.cdll.LoadLibrary(os.path.join(rootpath, 'libdyndt.dll'))
             return True
         except OSError:
             return False
-    # If libdynd.dll has been placed in the dynd-python installation, use that
-    loaded = load_dynd_dll()
+    # If libdyndt.dll has been placed in the dynd-python installation, use that
+    ndtdir = os.path.dirname(os.path.dirname(__file__))
+    loaded = load_dynd_dll(ndtdir)
     # Next, try the default DLL search path
-    loaded = loaded or load_dynd_dll(ndtdir='')
+    loaded = loaded or load_dynd_dll('')
     if not loaded:
         # Try to load it from the Program Files directories where libdynd
         # installs by default. This matches the search path for libdynd used
         # in the CMake build for dynd-python.
-        import sys
         is_64_bit = sys.maxsize > 2**32
         processor_arch = os.environ.get('PROCESSOR_ARCHITECTURE')
         err_str = ('Fallback search for libdyndt.dll failed because the "{}" '
@@ -48,7 +48,7 @@ if os.name == 'nt':
                 raise RuntimeError(err_str.format('ProgramFiles(x86)'))
         dynd_lib_dir = os.path.join(prog_files, 'libdynd', 'lib')
         if os.path.isdir(dynd_lib_dir):
-            loaded = load_dynd_dll(ndtdir=dynd_lib_dir)
+            loaded = load_dynd_dll(dynd_lib_dir)
             if not loaded:
                 raise ctypes.WinError(126, 'Could not load libdyndt.dll')
 
@@ -73,3 +73,6 @@ from .dim_helpers import *
 from . import dynd_ctypes as ctypes
 
 from . import json
+
+del os
+del sys

@@ -11,7 +11,27 @@ from subprocess import check_output
 
 import re
 
-# Distribution target: 'all', 'ndt', 'nd'
+#
+# DyND is a namespace package that contains the type module dynd.ndt and
+# the array/callables module dynd.nd. These are the supported install
+# methods together with the resulting directory hierarchies:
+#
+#   1) DIST_TARGET = 'all':
+#        dynd-x.y.z/dynd/ndt/*
+#        dynd-x.y.z/dynd/nd/*
+#
+#   2) DIST_TARGET = 'ndt':
+#        dynd.ndt-x.y.z/dynd/ndt/*
+#
+#   3) DIST_TARGET = 'nd':
+#        dynd.nd-x.y.z/dynd/nd/*
+#
+#      In this case also add dynd.ndt to requirements.txt.
+#
+# A single Python install should use either option 1) OR option 2) OR
+# option 2) followed by option 3).  All options require a clean build
+# directory. At the minimum build/, dist/ and dynd.egg* must be removed.
+#
 DIST_TARGET = 'all'
 class Target():
   def __init__(self, target):

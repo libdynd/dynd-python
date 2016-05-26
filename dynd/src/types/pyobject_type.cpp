@@ -11,11 +11,9 @@
 
 using namespace dynd;
 
-const type_id_t pyobject_id = new_id("pyobject", any_kind_id);
-
 pyobject_type::pyobject_type(type_id_t new_id)
-    : ndt::base_type(new_id, pyobject_id, sizeof(PyObject *), alignof(PyObject *), type_flag_none | type_flag_zeroinit,
-                     0, 0, 0)
+    : ndt::base_type(new_id, ndt::id_of<pyobject_type>::value, sizeof(PyObject *), alignof(PyObject *),
+                     type_flag_none | type_flag_zeroinit, 0, 0, 0)
 {
 }
 
@@ -33,3 +31,5 @@ void pyobject_type::print_data(std::ostream &o, const char *arrmeta, const char 
 #endif
   Py_DECREF(repr);
 }
+
+const type_id_t ndt::id_of<pyobject_type>::value = new_id("pyobject", any_kind_id);

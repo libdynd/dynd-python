@@ -323,3 +323,22 @@ dynd::ndt::type pydynd::xtype_for_prefix(PyObject *obj)
 
   return dynd::ndt::type();
 }
+
+dynd::ndt::type pydynd::ndt_type_from_pylist(PyObject *obj)
+{
+  // TODO: Add ability to specify access flags (e.g. immutable)
+  // Do a pass through all the data to deduce its type and shape
+  std::vector<intptr_t> shape;
+  dynd::ndt::type tp = dynd::ndt::make_type<void>();
+  Py_ssize_t size = PyList_GET_SIZE(obj);
+  shape.push_back(size);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    deduce_pylist_shape_and_dtype(PyList_GET_ITEM(obj, i), shape, tp, 1);
+  }
+
+  if (tp.get_id() == dynd::void_id) {
+    tp = dynd::ndt::make_type<int32_t>();
+  }
+
+  return dynd::ndt::make_type(shape.size(), shape.data(), tp);
+}

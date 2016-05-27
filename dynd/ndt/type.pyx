@@ -4,7 +4,7 @@ from cpython.object cimport Py_EQ, Py_NE, PyObject, PyTypeObject
 from libc.stdint cimport (intptr_t, int8_t, int16_t, int32_t, int64_t,
                           uint8_t, uint16_t, uint32_t, uint64_t)
 from libcpp.map cimport map
-from libcpp.string cimport string
+from libcpp.string cimport string as cpp_string
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 from libcpp cimport bool as cpp_bool
@@ -33,7 +33,7 @@ from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport bytes_type
 from ..cpp.types.fixed_bytes_type cimport fixed_bytes_type
-from ..cpp.type cimport make_type
+from ..cpp.type cimport make_type, _get_reg_info
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
@@ -61,7 +61,7 @@ cdef extern from "type_conversions.hpp" namespace 'pydynd':
 cdef extern from 'type_functions.hpp' namespace 'pydynd':
     object _type_get_shape(_type&) except +translate_exception
     object _type_get_id(_type&) except +translate_exception
-    string _type_str(_type &)
+    cpp_string _type_str(_type &)
 
     _type dynd_make_fixed_string_type(int, object) except +translate_exception
     _type dynd_make_string_type() except +translate_exception
@@ -97,11 +97,14 @@ init_type_functions()
 numpy_interop_init()
 _builtin_type = __builtins__.type
 _builtin_bool = __builtins__.bool
+_builtin_bytes = __builtins__.bytes
 
-__all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128', \
-    'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32', \
-    'float64', 'float128', 'complex_float32', 'complex_float64', 'void', \
-    'tuple', 'struct', 'callable', 'scalar', 'astype']
+__all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int128',
+    'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32',
+    'float64', 'float128', 'complex64', 'complex_float32',
+    'complex128', 'complex_float64', 'void', 'intptr', 'uintptr', 'string',
+    'bytes', 'tuple', 'struct', 'callable',
+    'scalar', 'astype']
 
 type_ids = {}
 type_ids['UNINITIALIZED'] = uninitialized_id
@@ -383,7 +386,7 @@ cdef _type cpp_type_from_typeobject(object o) except *:
         return make_type[dynd_complex[double]]()
     elif o is str or o is unicode:
         return make_type[string_type]()
-    elif o is bytes:
+    elif o is _builtin_bytes:
         return make_type[bytes_type]()
     elif o is bytearray:
         return make_type[bytes_type]()
@@ -398,12 +401,10 @@ cdef _type as_cpp_type(object o) except *:
         return dynd_ndt_type_to_cpp(<type>o)
     elif _builtin_type(o) is str or PyUnicode_Check(<PyObject*>o):
         # Use Cython's automatic conversion to c++ strings.
-        return _type(<string>o)
-    elif _builtin_type(o) is int or _builtin_type(o) is long:
-        return _type(<type_id_t>(<int>o))
+        return _type(<cpp_string>o)
     elif is_numpy_dtype(<PyObject*>o):
         return _type_from_numpy_dtype(<PyArray_Descr*>o)
-    elif issubclass(o, _ctypes_base_type):
+    elif _builtin_type(o) is _builtin_type and issubclass(o, _ctypes_base_type):
         raise ValueError("Conversion from ctypes type to DyND type not currently supported.")
     elif PyType_Check(<PyObject*>o):
         return cpp_type_from_typeobject(o)
@@ -596,24 +597,33 @@ def make_var_dim(element_tp):
     result.v = make_type[_var_dim_type](as_cpp_type(element_tp))
     return result
 
-bool = type(bool_id)
-int8 = type(int8_id)
-int16 = type(int16_id)
-int32 = type(int32_id)
-int64 = type(int64_id)
-int128 = type(int128_id)
-uint8 = type(uint8_id)
-uint16 = type(uint16_id)
-uint32 = type(uint32_id)
-uint64 = type(uint64_id)
-uint128 = type(uint128_id)
-float16 = type(float16_id)
-float32 = type(float32_id)
-float64 = type(float64_id)
-float128 = type(float128_id)
-complex_float32 = type(complex_float32_id)
-complex_float64 = type(complex_float64_id)
-void = type(void_id)
+bool = type('bool')
+int8 = type('int8')
+int16 = type('int16')
+int32 = type('int32')
+int64 = type('int64')
+int128 = type('int128')
+uint8 = type('uint8')
+uint16 = type('uint16')
+uint32 = type('uint32')
+uint64 = type('uint64')
+uint128 = type('uint128')
+float16 = type('float16')
+float32 = type('float32')
+float64 = type('float64')
+float128 = type('float128')
+# Until we have some sort of indexing scheme
+# for parameterized types exposed to Python,
+# we will have to use these aliases for complex types.
+complex64 = type('complex64')
+complex_float32 = complex64
+complex128 = type('complex128')
+complex_float64 = complex128
+void = type('void')
+intptr = type('intptr')
+uintptr = type('uintptr')
+string = type('string')
+bytes = type('bytes')
 
 def tuple(*args):
     cdef vector[_type] _args
@@ -632,14 +642,12 @@ def tuple(*args):
 
     return wrap(make_type[tuple_type]())
 
-from libcpp.string cimport string
-
 def struct(**kwds):
     # TODO: require an ordered dict here since struct types are ordered.
     # TODO: Use something other than dynd arrays to pass these arguments.
     #       See the comment in the tuple function for details.
     cdef vector[_type] _kwds
-    cdef vector[string] _names
+    cdef vector[cpp_string] _names
 
     if kwds:
         for kwd in kwds.values():
@@ -718,7 +726,8 @@ cdef as_numba_type(_type tp):
     return _to_numba_type[tp.get_id()]
 
 cdef _type from_numba_type(tp):
-    return _type(<type_id_t> _from_numba_type[tp])
+
+    return _get_reg_info((<type_id_t> _from_numba_type[tp])).tp
 
 cdef _type cpp_type_for(object obj) except *:
     cdef _type tp = xtype_for_prefix(obj)

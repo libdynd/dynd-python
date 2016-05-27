@@ -8,6 +8,7 @@
 
 #include <dynd/functional.hpp>
 #include <dynd/kernels/tuple_assignment_kernels.hpp>
+#include <dynd/type.hpp>
 
 #include "assign.hpp"
 #include "callables/assign_from_pyobject_callable.hpp"
@@ -26,12 +27,19 @@ PYDYND_API void assign_init()
       types;
 
   PyDateTime_IMPORT;
+  // TODO: There should be an interface that allows adding overloads
+  // based on type id rather than on actual type. The current interface
+  // makes for a lot of mapping back and forth between types and their
+  // corresponding type ids.
+  // For now, just use the infos vector from the type registry to map
+  // ids back to their corresponding types.
+  auto infos = ndt::detail::infos();
 
   for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_from_pyobject_callable, types>()) {
-    nd::assign.overload(pair.first[0], {ndt::make_type<pyobject_type>()}, pair.second);
+    nd::assign.overload(infos[pair.first[0]].tp, {ndt::make_type<pyobject_type>()}, pair.second);
   }
   for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_to_pyobject_callable, types>()) {
-    nd::assign.overload(ndt::make_type<pyobject_type>(), {ndt::type(pair.first[0])}, pair.second);
+    nd::assign.overload(ndt::make_type<pyobject_type>(), {infos[pair.first[0]].tp}, pair.second);
   }
 }
 

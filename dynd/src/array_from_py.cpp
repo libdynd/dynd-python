@@ -235,7 +235,7 @@ static dynd::nd::array array_from_pylist(PyObject *obj)
   // TODO: Add ability to specify access flags (e.g. immutable)
   // Do a pass through all the data to deduce its type and shape
   vector<intptr_t> shape;
-  ndt::type tp(void_id);
+  ndt::type tp = ndt::make_type<void>();
   Py_ssize_t size = PyList_GET_SIZE(obj);
   shape.push_back(size);
   for (Py_ssize_t i = 0; i < size; ++i) {

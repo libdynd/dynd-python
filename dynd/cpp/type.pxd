@@ -36,3 +36,13 @@ cdef extern from 'dynd/type.hpp' namespace 'dynd::ndt' nogil:
         type_id_t get_base_id() const
 
     type make_type[T]() except +translate_exception
+
+    cppclass reg_info_t:
+        type tp
+
+# Ideally we wouldn't use the detail namespace, but this is currently
+# needed to map a type id back to the corresponding type.
+cdef extern from "<dynd/type.hpp>" nogil:
+    # Function doesn't really exist.
+    # Use this to avoid Cython's odd handling of lvalue references
+    reg_info_t _get_reg_info "dynd::ndt::detail::infos().operator[]"(type_id_t) except +translate_exception

@@ -161,4 +161,6 @@ void register_nd_array_type_deduction(PyTypeObject *, dynd::ndt::type (*)(PyObje
 
 PYDYND_API dynd::ndt::type xtype_for_prefix(PyObject *obj);
 
+PYDYND_API dynd::ndt::type ndt_type_from_pylist(PyObject *);
+
 } // namespace pydynd

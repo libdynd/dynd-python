@@ -33,7 +33,7 @@ from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport bytes_type
 from ..cpp.types.fixed_bytes_type cimport fixed_bytes_type
-from ..cpp.type cimport make_type
+from ..cpp.type cimport make_type, _get_reg_info
 from ..cpp.complex cimport complex as dynd_complex
 
 from ..config cimport translate_exception
@@ -399,8 +399,6 @@ cdef _type as_cpp_type(object o) except *:
     elif _builtin_type(o) is str or PyUnicode_Check(<PyObject*>o):
         # Use Cython's automatic conversion to c++ strings.
         return _type(<string>o)
-    elif _builtin_type(o) is int or _builtin_type(o) is long:
-        return _type(<type_id_t>(<int>o))
     elif is_numpy_dtype(<PyObject*>o):
         return _type_from_numpy_dtype(<PyArray_Descr*>o)
     elif issubclass(o, _ctypes_base_type):
@@ -718,7 +716,8 @@ cdef as_numba_type(_type tp):
     return _to_numba_type[tp.get_id()]
 
 cdef _type from_numba_type(tp):
-    return _type(<type_id_t> _from_numba_type[tp])
+
+    return _get_reg_info((<type_id_t> _from_numba_type[tp])).tp
 
 cdef _type cpp_type_for(object obj) except *:
     cdef _type tp = xtype_for_prefix(obj)

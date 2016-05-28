@@ -6,24 +6,17 @@ except ImportError:
     import pkgutil
     __path__ = pkgutil.extend_path(__path__, __name__)
 
-try: # Only the import from dynd.ndt is expected to succeed.
+# The 'common' import is only supposed to work from the dynd.ndt sub-package.
+# If dynd.nd/dynd/__init__.py and dynd.ndt/dynd/__init__.py are the same file,
+# this ImportError must be ignored. The alternative is to ship two different
+# __init__.py files and remove the import from dynd.nd/dynd/__init__.py.
+try:
     from .common import *
 except ImportError:
     pass
 
 __all__ = [
-    '__libdynd_version__', '__version__', '__libdynd_git_sha1__', ' __git_sha1__',
+    '__libdynd_version__', '__version__', '__libdynd_git_sha1__', '__git_sha1__',
     'annotate', 'test', 'load'
 ]
-
-
-try: del common
-except: pass
-
-try: del pkgutil
-except: pass
-
-try: del pkg_resources
-except: pass
-
 

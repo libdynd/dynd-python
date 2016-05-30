@@ -10,6 +10,15 @@ import shlex, glob
 from subprocess import check_output
 
 import re
+import argparse
+
+# Pre-parse and remove the '--target' argument from sys.argv since we
+# need it here already.
+parser = argparse.ArgumentParser()
+parser.add_argument('--target', default='all')
+values, rest = parser.parse_known_args()
+DIST_TARGET = values.target
+sys.argv = sys.argv[:1] + rest
 
 #
 # DyND is a namespace package that contains the type module dynd.ndt and
@@ -32,11 +41,10 @@ import re
 # option 2) followed by option 3).  All options require a clean build
 # directory. At the minimum build/, dist/ and dynd.egg* must be removed.
 #
-DIST_TARGET = 'all'
 class Target():
   def __init__(self, target):
     if target not in ['ndt', 'nd', 'all']:
-      raise ValueError("unknown distribution target: %s" % target)
+      raise ValueError("unknown distribution target: '%s'" % target)
     self.target = target
 
   def get_name(self):

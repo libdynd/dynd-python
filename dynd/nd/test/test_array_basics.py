@@ -52,12 +52,12 @@ class TestBasics(unittest.TestCase):
         self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float64)))
         self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float32)))
         self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float64)))
+        """
         # strings
         self.assertFalse(bool(nd.array('')))
         self.assertFalse(bool(nd.array('', type = ndt.string)))
         self.assertTrue(bool(nd.array(' ')))
         self.assertTrue(bool(nd.array('test', type = ndt.string)))
-        """
 
     def test_nonzero_errors(self):
         # Non-scalars raise errors like NumPy, because their
@@ -133,8 +133,6 @@ class TestBasics(unittest.TestCase):
         self.assertRaises(OverflowError, nd.array, 0x10000000000000000, type = ndt.uint64)
     """
 
-    """
-    # UNCOMMENT ME
     def test_inf(self):
         # Validate nd.inf
         self.assertEqual(nd.inf * 2, nd.inf)
@@ -146,10 +144,7 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.float64)
         a = nd.array(nd.inf, type = ndt.float32)
         self.assertEqual(nd.as_py(a), nd.inf)
-    """
 
-    """
-    # UNCOMMENT ME
     def test_nan(self):
         # Validate nd.nan
         self.assertTrue(math.isnan(nd.nan))
@@ -163,7 +158,6 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.float64)
         a = nd.array(nd.nan, type = ndt.float32)
         self.assertTrue(math.isnan(nd.as_py(a)))
-    """
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

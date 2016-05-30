@@ -59,18 +59,13 @@ class TestBasics(unittest.TestCase):
         self.assertTrue(bool(nd.array('test', type = ndt.string)))
         """
 
-    """
-    # UNCOMMENT ME
     def test_nonzero_errors(self):
         # Non-scalars raise errors like NumPy, because their
         # truth value is ambiguous
         self.assertRaises(ValueError, bool, nd.array([0]))
         self.assertRaises(ValueError, bool, nd.array([1, 2, 3]))
         self.assertRaises(ValueError, bool, nd.array(['abc', 3], type='{x:string, y:int32}'))
-    """
 
-    """
-    # UNCOMMENT ME
     def test_iter(self):
         # Iteration of a 1D array
         a = nd.array([1, 2, 3])
@@ -78,10 +73,7 @@ class TestBasics(unittest.TestCase):
         # Iteration of a 2D array
         a = nd.array([[1, 2, 3], [4,5,6]])
         self.assertEqual([nd.as_py(x) for x in a], [[1, 2, 3], [4,5,6]])
-    """
 
-    """
-    # UNCOMMENT ME
     def test_iter_fixed_dim(self):
         # Iteration of a 1D array
         a = nd.array([1, 2, 3], type='3 * int64')
@@ -91,10 +83,7 @@ class TestBasics(unittest.TestCase):
         a = nd.array([[1, 2, 3], [4,5,6]], type='2 * 3 * int64')
         self.assertEqual(len(a), 2)
         self.assertEqual([nd.as_py(x) for x in a], [[1, 2, 3], [4,5,6]])
-    """
 
-    """
-    # UNCOMMENT ME
     def test_contiguous(self):
         # Scalar is contiguous
         a = nd.array(3)
@@ -125,7 +114,6 @@ class TestBasics(unittest.TestCase):
         a = nd.array([[1, 3, 5, 2], [1, 2, 3, 4]])[::-1, ::-1]
         self.assertFalse(nd.is_c_contiguous(a))
         self.assertFalse(nd.is_f_contiguous(a))
-    """
 
     """
     def test_uint_value_limits(self):

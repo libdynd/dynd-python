@@ -87,12 +87,8 @@ PYDYND_API void assign_init()
 
   PyDateTime_IMPORT;
 
-  for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_from_pyobject_callable, types>()) {
-    nd::assign.overload(type_for_id(pair.first[0]), {ndt::make_type<pyobject_type>()}, pair.second);
-  }
-  for (const auto &pair : nd::callable::make_all<pydynd::nd::assign_to_pyobject_callable, types>()) {
-    nd::assign.overload(ndt::make_type<pyobject_type>(), {type_for_id(pair.first[0])}, pair.second);
-  }
+  nd::assign.overload<pydynd::nd::assign_from_pyobject_callable, types>();
+  nd::assign.overload<pydynd::nd::assign_to_pyobject_callable, types>();
 }
 
 #if DYND_NUMPY_INTEROP

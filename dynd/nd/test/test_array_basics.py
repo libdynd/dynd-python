@@ -46,13 +46,11 @@ class TestBasics(unittest.TestCase):
         self.assertFalse(bool(nd.array(0.0, type=ndt.float64)))
         self.assertTrue(bool(nd.array(100.0, type=ndt.float32)))
         self.assertTrue(bool(nd.array(100.0, type=ndt.float64)))
-        """
         # complex values
-        self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float32)))
+#        self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float32))) ##### FIX ME
         self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float64)))
-        self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float32)))
+#        self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float32))) ###### FIX ME
         self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float64)))
-        """
         # strings
         self.assertFalse(bool(nd.array('')))
         self.assertFalse(bool(nd.array('', type = ndt.string)))

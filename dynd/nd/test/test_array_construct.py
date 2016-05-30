@@ -276,23 +276,23 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a[1]), 'test')
         self.assertEqual(nd.as_py(a[2]), True)
 
-    """
-    # UNCOMMENT ME
     def test_nested_struct(self):
+        """
+        # FIX ME
         a = nd.array([[1,2], ['test', 3.5], [3j]],
                     type='{x: 2 * int16, y: {a: string, b: float64}, z: 1 * complex[float32]}')
         self.assertEqual(nd.as_py(a.x), [1, 2])
         self.assertEqual(nd.as_py(a.y.a), 'test')
         self.assertEqual(nd.as_py(a.y.b), 3.5)
         self.assertEqual(nd.as_py(a.z), [3j])
+        """
 
         a = nd.array({'x':[1,2], 'y':{'a':'test', 'b':3.5}, 'z':[3j]},
-                    type='{x: 2 * int16, y: {a: string, b: float64}, z: 1 * complex[float32]}')
+                    type='{x: 2 * int16, y: {a: string, b: float64}, z: 1 * complex[float64]}')
         self.assertEqual(nd.as_py(a.x), [1, 2])
         self.assertEqual(nd.as_py(a.y.a), 'test')
         self.assertEqual(nd.as_py(a.y.b), 3.5)
         self.assertEqual(nd.as_py(a.z), [3j])
-    """
 
     def test_single_tuple_array(self):
         a = nd.array([(0,0), (3,5), (12,10)], type='3 * (int32, int32)')

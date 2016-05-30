@@ -27,7 +27,7 @@ from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_dat
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.tuple_type cimport tuple_type
 from ..cpp.types.struct_type cimport struct_type
-from ..cpp.types.base_fixed_dim_type cimport base_fixed_dim_type
+from ..cpp.types.base_fixed_dim_type cimport fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport var_dim_type as _var_dim_type
 from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.types.string_type cimport string_type
@@ -575,7 +575,7 @@ def make_fixed_dim_kind(element_tp):
     ndt.type("Fixed * Fixed * Fixed * int32")
     """
     cdef type result = type()
-    result.v = make_type[base_fixed_dim_type](type(element_tp).v)
+    result.v = make_type[fixed_dim_kind_type](type(element_tp).v)
     return result
 
 

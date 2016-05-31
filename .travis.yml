@@ -43,10 +43,14 @@ matrix:
       - travis_retry pip install --install-option="--no-cython-compile" Cython==0.24
       - python -c "from __future__ import print_function; import numpy; print(numpy.__version__)"
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
-      - python setup.py install
+      - python setup.py install --target=ndt
+      - rm -rf build dist dynd.ndt.egg-info
+      - echo dynd.ndt >> requirements.txt
+      - python setup.py install --target=nd
     script:
       - pushd ..
-      - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
+      - python -m dynd.ndt.test
+      - python -m dynd.nd.test
       - popd
   - language: objective-c
     os: osx
@@ -73,12 +77,17 @@ script:
   - export PATH=$HOME/miniconda${Miniconda_ver}/bin:$PATH
   - conda install --yes conda-build jinja2
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
-  - conda build conda.recipe --channel dynd/channel/dev
+  - conda build conda/ndt.recipe --channel dynd/channel/dev
+  - rm -rf build dist dynd.ndt.egg-info
+  - echo dynd.ndt >> requirements.txt
+  - conda build conda/nd.recipe --channel dynd/channel/dev
   - conda install --yes numpy libdynd --channel dynd/channel/dev
-  - conda install $(conda build --output conda.recipe | grep bz2)
+  - conda install $(conda build --output conda/ndt.recipe | grep bz2)
+  - conda install $(conda build --output conda/nd.recipe | grep bz2)
 
 after_success:
-  - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda.recipe) --user dynd --channel dev; fi
+  - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda/ndt.recipe) --user dynd --channel dev; fi
+  - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda/nd.recipe) --user dynd --channel dev; fi
 
 notifications:
   email: false

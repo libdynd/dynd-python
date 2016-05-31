@@ -1,13 +1,13 @@
 package:
-  name: dynd-python
+  name: dynd.nd
   version: 0.7.2
 
 build:
   number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}    # [unix]
   number: {{environ.get('APPVEYOR_BUILD_NUMBER', 0)}}  # [win]
   rpaths:
-    - lib                                                     # [unix]
-    - lib/python{{environ.get('PY_VER')}}/site-packages/dynd  # [unix]
+    - lib                                                        # [unix]
+    - lib/python{{environ.get('PY_VER')}}/site-packages/dynd.nd  # [unix]
   script_env:
     - CC [linux]
     - CXX [linux]
@@ -28,6 +28,7 @@ requirements:
   run:
     - python
     - numpy
+    - dynd.ndt
     - libdynd
 
 # Test separately to avoid unsatisfiable package dependencies bug on Win32.
@@ -35,7 +36,7 @@ test:
   requires:
     - numba
   commands:
-    - python -c "import dynd; dynd.test(verbosity=2, exit=True)"
+    - python -m dynd.nd.test
 
 about:
   home: http://libdynd.org

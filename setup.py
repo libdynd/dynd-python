@@ -16,8 +16,10 @@ import argparse
 # need it here already.
 parser = argparse.ArgumentParser()
 parser.add_argument('--target', default='all')
+parser.add_argument('-j', default=None)
 values, rest = parser.parse_known_args()
 DIST_TARGET = values.target
+PARALLEL = values.j
 sys.argv = sys.argv[:1] + rest
 
 #
@@ -210,7 +212,10 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
-        self.spawn(['make'])
+        if PARALLEL:
+            self.spawn(['make', '-j%d' % int(PARALLEL)])
+        else:
+            self.spawn(['make'])
     else:
         if "-G" not in self.extra_cmake_args:
             cmake_generator = 'Visual Studio 14 2015'

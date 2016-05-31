@@ -43,10 +43,10 @@ matrix:
       - travis_retry pip install --install-option="--no-cython-compile" Cython==0.24
       - python -c "from __future__ import print_function; import numpy; print(numpy.__version__)"
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
-      - python setup.py install --target=ndt
+      - python setup.py install --target=ndt -j2
       - rm -rf build dist dynd.ndt.egg-info
       - echo dynd.ndt >> requirements.txt
-      - python setup.py install --target=nd
+      - python setup.py install --target=nd -j2
     script:
       - pushd ..
       - python -m dynd.ndt.test

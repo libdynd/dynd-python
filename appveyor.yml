@@ -25,7 +25,7 @@ build_script:
   - conda install conda-build
   - ps: if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) { conda install anaconda-client }
   - conda build conda\ndt.recipe --channel dynd/channel/dev
-  - rd /q /s build dist dynd.ndt.egg-info
+  - rd /q /s build dynd.ndt.egg-info
   - conda build conda\nd.recipe --channel dynd/channel/dev
 
 on_success:

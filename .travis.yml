@@ -77,7 +77,7 @@ script:
   - conda install --yes conda-build jinja2
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
   - conda build conda/ndt.recipe --channel dynd/channel/dev
-  - rm -rf build dist dynd.ndt.egg-info
+  - rm -rf build dynd.ndt.egg-info
   - conda build conda/nd.recipe --channel dynd/channel/dev
   - conda install --yes numpy libdynd --channel dynd/channel/dev
   - conda install $(conda build --output conda/ndt.recipe | grep bz2)

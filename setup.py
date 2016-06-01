@@ -107,7 +107,7 @@ class Target():
 
   def get_requirements(self):
     reqs = open('dev-requirements.txt').read().strip().split('\n')
-    if self.target != 'ndt':
+    if self.target == 'nd':
       reqs.append('dynd.ndt')
     return reqs
 

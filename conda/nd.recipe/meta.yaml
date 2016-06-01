@@ -5,9 +5,6 @@ package:
 build:
   number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}    # [unix]
   number: {{environ.get('APPVEYOR_BUILD_NUMBER', 0)}}  # [win]
-  rpaths:
-    - lib                                                        # [unix]
-    - lib/python{{environ.get('PY_VER')}}/site-packages/dynd.nd  # [unix]
   script_env:
     - CC [linux]
     - CXX [linux]

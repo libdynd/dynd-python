@@ -45,7 +45,6 @@ matrix:
       - git clone --depth=1 https://github.com/libdynd/libdynd.git
       - python setup.py install --target=ndt -j2
       - rm -rf build dist dynd.ndt.egg-info
-      - echo dynd.ndt >> requirements.txt
       - python setup.py install --target=nd -j2
     script:
       - pushd ..
@@ -79,7 +78,6 @@ script:
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then conda install --yes anaconda-client; fi
   - conda build conda/ndt.recipe --channel dynd/channel/dev
   - rm -rf build dist dynd.ndt.egg-info
-  - echo dynd.ndt >> requirements.txt
   - conda build conda/nd.recipe --channel dynd/channel/dev
   - conda install --yes numpy libdynd --channel dynd/channel/dev
   - conda install $(conda build --output conda/ndt.recipe | grep bz2)

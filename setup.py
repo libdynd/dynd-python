@@ -105,8 +105,13 @@ class Target():
     else:
       return ndt + nd
 
-target = Target(DIST_TARGET)
+  def get_requirements(self):
+    reqs = open('dev-requirements.txt').read().strip().split('\n')
+    if self.target != 'ndt':
+      reqs.append('dynd.ndt')
+    return reqs
 
+target = Target(DIST_TARGET)
 
 # Check if we're running 64-bit Python
 is_64_bit = sys.maxsize > 2**32
@@ -305,7 +310,7 @@ setup(
     ext_modules = [Extension(target.get_name(), sources=[])],
     # This includes both build and install requirements. Setuptools' setup_requires
     # option does not actually install things, so isn't actually helpful...
-    install_requires=open('dev-requirements.txt').read().strip().split('\n'),
+    install_requires = target.get_requirements(),
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

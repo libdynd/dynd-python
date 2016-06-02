@@ -10,5 +10,5 @@ elif [ `uname` == Darwin ]; then
   EXTRA_CMAKE_ARGS=-DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
 fi
 
-cd ..
-$PYTHON setup.py build_ext --extra-cmake-args=$EXTRA_CMAKE_ARGS install || exit 1
+cd ../../
+$PYTHON setup.py build_ext --target=ndt --extra-cmake-args=$EXTRA_CMAKE_ARGS install --single-version-externally-managed --record=record.txt || exit 1

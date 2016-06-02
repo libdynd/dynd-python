@@ -16,8 +16,10 @@ import argparse
 # need it here already.
 parser = argparse.ArgumentParser()
 parser.add_argument('--target', default='all')
+parser.add_argument('-j', default=None)
 values, rest = parser.parse_known_args()
 DIST_TARGET = values.target
+PARALLEL = values.j
 sys.argv = sys.argv[:1] + rest
 
 #
@@ -103,8 +105,13 @@ class Target():
     else:
       return ndt + nd
 
-target = Target(DIST_TARGET)
+  def get_requirements(self):
+    reqs = open('dev-requirements.txt').read().strip().split('\n')
+    if self.target == 'nd':
+      reqs.append('dynd.ndt')
+    return reqs
 
+target = Target(DIST_TARGET)
 
 # Check if we're running 64-bit Python
 is_64_bit = sys.maxsize > 2**32
@@ -210,7 +217,10 @@ class cmake_build_ext(build_ext):
     if sys.platform != 'win32':
         cmake_command.append(source)
         self.spawn(cmake_command)
-        self.spawn(['make'])
+        if PARALLEL:
+            self.spawn(['make', '-j%d' % int(PARALLEL)])
+        else:
+            self.spawn(['make'])
     else:
         if "-G" not in self.extra_cmake_args:
             cmake_generator = 'Visual Studio 14 2015'
@@ -300,7 +310,7 @@ setup(
     ext_modules = [Extension(target.get_name(), sources=[])],
     # This includes both build and install requirements. Setuptools' setup_requires
     # option does not actually install things, so isn't actually helpful...
-    install_requires=open('dev-requirements.txt').read().strip().split('\n'),
+    install_requires = target.get_requirements(),
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

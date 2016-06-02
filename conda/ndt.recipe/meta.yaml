@@ -1,0 +1,39 @@
+package:
+  name: dynd.ndt
+  version: 0.7.2
+
+build:
+  number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}    # [unix]
+  number: {{environ.get('APPVEYOR_BUILD_NUMBER', 0)}}  # [win]
+  script_env:
+    - CC [linux]
+    - CXX [linux]
+
+requirements:
+  build:
+#    - cmake [unix]
+    - python
+    - setuptools
+    - cython >=0.24
+    - numpy
+    - libdynd
+    # Needed for version tags, not necessary on CI systems since it's already there.
+    # Comment it out to avoid the unnecessary download.
+    #- git
+    # CMake is also needed in general but not necessary on CI systems
+    #- cmake
+  run:
+    - python
+    - numpy
+    - libdynd
+
+# Test separately to avoid unsatisfiable package dependencies bug on Win32.
+test:
+  requires:
+    - numba
+  commands:
+    - python -m dynd.ndt.test
+
+about:
+  home: http://libdynd.org
+  license: BSD

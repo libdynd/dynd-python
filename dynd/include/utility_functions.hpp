@@ -144,7 +144,7 @@ public:
    * Then:
    *    Require that conversions from the other py_ref_tmpl type to this type be explcit.
    */
-  template <bool other_owns, bool other_not_null, typename std::enable_if_t<not_null && !other_not_null> * = nullptr>
+  template <bool other_owns, bool other_not_null, typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
   explicit py_ref_tmpl(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
   {
     o = other.o;
@@ -161,7 +161,7 @@ public:
    * Then:
    *    a move operation can be implicitly performed.
    */
-  template <bool other_not_null, typename std::enable_if_t<owns_ref && (other_not_null || !not_null)> * = nullptr>
+  template <bool other_not_null, typename std::enable_if_t<(other_not_null || !not_null) && owns_ref> * = nullptr>
   py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
   {
     o = other.o;
@@ -173,7 +173,7 @@ public:
    * Then:
    *    only an explicit move operation can be performed.
    */
-  template <bool other_not_null, typename std::enable_if_t<owns_ref && !other_not_null && not_null> * = nullptr>
+  template <bool other_not_null, typename std::enable_if_t<!other_not_null && not_null && owns_ref> * = nullptr>
   explicit py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
   {
     o = other.o;
@@ -216,7 +216,7 @@ public:
    *    Allow assignment from the other py_ref_tmpl type to this type.
    */
   template <bool other_owns, bool other_not_null,
-            typename std::enable_if_t<!not_null || (not_null && other_not_null)> * = nullptr>
+            typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
   py_ref_tmpl<owns_ref, not_null> operator=(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
   {
     decref_if_owned<owns_ref, not_null>(o);

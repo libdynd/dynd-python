@@ -33,4 +33,4 @@ void pyobject_type::print_data(std::ostream &o, const char *arrmeta, const char 
   Py_DECREF(repr);
 }
 
-const type_id_t ndt::id_of<pyobject_type>::value = new_id("pyobject");
+const type_id_t ndt::id_of<pyobject_type>::value = new_id("pyobject", any_kind_id);

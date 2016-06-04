@@ -16,6 +16,11 @@ public:
   void print_type(std::ostream &o) const;
   void print_data(std::ostream &o, const char *arrmeta, const char *data) const;
 
+  bool match(const dynd::ndt::type &candidate_tp, std::map<std::string, dynd::ndt::type> &DYND_UNUSED(tp_vars)) const
+  {
+    return candidate_tp.get_id() == m_id;
+  }
+
   bool operator==(const base_type &rhs) const;
 };
 

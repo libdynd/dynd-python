@@ -213,7 +213,7 @@ namespace nd {
   public:
     assign_to_pyobject_callable()
         : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
-              dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::make_type<ndt::tuple_type>()}))
+              dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::make_type<ndt::tuple_type>(true)}))
     {
     }
 
@@ -261,7 +261,7 @@ namespace nd {
   public:
     assign_to_pyobject_callable()
         : dynd::nd::base_callable(dynd::ndt::make_type<dynd::ndt::callable_type>(
-              dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::make_type<ndt::struct_type>()}))
+              dynd::ndt::make_type<pyobject_type>(), {dynd::ndt::make_type<ndt::struct_type>(true)}))
     {
     }
 

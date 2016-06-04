@@ -13,7 +13,7 @@
 using namespace dynd;
 
 pyobject_type::pyobject_type(type_id_t id)
-    : ndt::base_type(id, ndt::make_type<ndt::any_kind_type>(), sizeof(PyObject *), alignof(PyObject *),
+    : ndt::base_type(id, sizeof(PyObject *), alignof(PyObject *),
                      type_flag_none | type_flag_zeroinit, 0, 0, 0)
 {
 }

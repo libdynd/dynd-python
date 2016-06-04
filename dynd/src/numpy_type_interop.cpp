@@ -116,7 +116,7 @@ ttp->get_field_types_raw(), offsets.data());
                 py_ref name_str = capture_if_not_null(PyString_FromStringAndSize(
                     fname.begin, fname.end - fname.begin));
 #endif
-                PyList_SET_ITEM(names_obj.get(), i, name_str.get());
+                PyList_SET_ITEM(names_obj.get(), i, name_str.release());
             }
             py_ref formats_obj = capture_if_not_null(PyList_New(field_count));
             for (size_t i = 0; i < field_count; ++i) {
@@ -175,8 +175,8 @@ dtype because it is not C-order";
             py_ref shape_obj = capture_if_not_null(intptr_array_as_tuple((int)shape.size(),
 &shape[0]));
             py_ref tuple_obj = capture_if_not_null(PyTuple_New(2));
-            PyTuple_SET_ITEM(tuple_obj.get(), 0, dtype_obj.get());
-            PyTuple_SET_ITEM(tuple_obj.get(), 1, shape_obj.get());
+            PyTuple_SET_ITEM(tuple_obj.get(), 0, dtype_obj.release());
+            PyTuple_SET_ITEM(tuple_obj.get(), 1, shape_obj.release());
             PyArray_Descr *result = NULL;
             if (PyArray_DescrConverter(tuple_obj, &result) != NPY_SUCCEED) {
                 throw dynd::type_error("failed to convert dynd type into numpy
@@ -218,7 +218,7 @@ PyArray_Descr *pydynd::numpy_dtype_from__type(const dynd::ndt::type &tp, const c
 #else
       py_ref name_str = capture_if_not_null(PyString_FromStringAndSize(fname.begin(), fname.end() - fname.begin()));
 #endif
-      PyList_SET_ITEM(names_obj.get(), i, name_str.get());
+      PyList_SET_ITEM(names_obj.get(), i, name_str.release());
     }
 
     py_ref formats_obj = capture_if_not_null(PyList_New(field_count));

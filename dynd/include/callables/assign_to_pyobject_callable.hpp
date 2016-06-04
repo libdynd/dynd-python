@@ -294,7 +294,7 @@ namespace nd {
           const dynd::string &rawname = src0_tp.extended<dynd::ndt::struct_type>()->get_field_name(i);
           pydynd::py_ref name =
               capture_if_not_null(PyUnicode_DecodeUTF8(rawname.begin(), rawname.end() - rawname.begin(), NULL));
-          PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.get());
+          PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
         }
         self_ck->m_copy_el_offsets.resize(field_count);
 

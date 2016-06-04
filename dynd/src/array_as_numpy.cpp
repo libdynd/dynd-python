@@ -145,8 +145,8 @@ static void make_numpy_dtype_for_copy(py_ref *out_numpy_dtype, intptr_t ndim, co
       make_numpy_dtype_for_copy(&child_numpy_dtype, 0, element_tp, arrmeta);
       // Create the result numpy dtype
       py_ref tuple_obj = capture_if_not_null(PyTuple_New(2));
-      PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.get());
-      PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.get());
+      PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.release());
+      PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.release());
 
       PyArray_Descr *result = NULL;
       if (!PyArray_DescrConverter(tuple_obj.get(), &result)) {
@@ -170,7 +170,7 @@ static void make_numpy_dtype_for_copy(py_ref *out_numpy_dtype, intptr_t ndim, co
 #else
       py_ref name_str = capture_if_not_null(PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #endif
-      PyList_SET_ITEM(names_obj.get(), i, name_str.get());
+      PyList_SET_ITEM(names_obj.get(), i, name_str.release());
     }
 
     py_ref formats_obj = capture_if_not_null(PyList_New(field_count));
@@ -184,7 +184,7 @@ static void make_numpy_dtype_for_copy(py_ref *out_numpy_dtype, intptr_t ndim, co
       size_t field_size = ((PyArray_Descr *)field_numpy_dtype.get())->elsize;
       standard_offset = inc_to_alignment(standard_offset, field_alignment);
       standard_alignment = max(standard_alignment, field_alignment);
-      PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.get());
+      PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.release());
       PyList_SET_ITEM(offsets_obj.get(), i, PyLong_FromSize_t(standard_offset));
       standard_offset += field_size;
     }
@@ -333,8 +333,8 @@ static void as_numpy_analysis(py_ref *out_numpy_dtype, bool *out_requires_copy, 
         }
         // Create the result numpy dtype
         py_ref tuple_obj = capture_if_not_null(PyTuple_New(2));
-        PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.get());
-        PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.get());
+        PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.release());
+        PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.release());
 
         PyArray_Descr *result = NULL;
         if (!PyArray_DescrConverter(tuple_obj, &result)) {
@@ -367,7 +367,7 @@ static void as_numpy_analysis(py_ref *out_numpy_dtype, bool *out_requires_copy, 
 #else
       py_ref name_str = capture_if_not_null(PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #endif
-      PyList_SET_ITEM(names_obj.get(), i, name_str.get());
+      PyList_SET_ITEM(names_obj.get(), i, name_str.release());
     }
 
     py_ref formats_obj = capture_if_not_null(PyList_New(field_count));
@@ -380,7 +380,7 @@ static void as_numpy_analysis(py_ref *out_numpy_dtype, bool *out_requires_copy, 
         *out_numpy_dtype = py_ref(Py_None, false);
         return;
       }
-      PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.get());
+      PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.release());
     }
 
     py_ref offsets_obj = capture_if_not_null(PyList_New(field_count));
@@ -528,7 +528,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       throw dynd::type_error(ss.str());
     }
     }
-    return result.get();
+    return result.release();
   }
 
   if (a.get_type().get_id() == var_dim_id) {
@@ -571,17 +571,17 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     }
 
     // Create a new NumPy array, and copy from the dynd array
-    py_ref result = capture_if_not_null(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.get(),
+    py_ref result = capture_if_not_null(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(),
                                                              (int)ndim, shape.get(), strides.get(), NULL, 0, NULL));
     array_copy_to_numpy((PyArrayObject *)result.get(), a.get_type(), a.get()->metadata(), a.cdata());
 
     // Return the NumPy array
-    return result.get();
+    return result.release();
   }
   else {
     // Create a view directly to the dynd array
     py_ref result = capture_if_not_null(PyArray_NewFromDescr(
-        &PyArray_Type, (PyArray_Descr *)numpy_dtype.get(), (int)ndim, shape.get(), strides.get(),
+        &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim, shape.get(), strides.get(),
         const_cast<char *>(a.cdata()),
         ((a.get_flags() & nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
 
@@ -594,7 +594,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     PyArray_BASE(result.get()) = n_obj;
     Py_INCREF(n_obj);
 #endif
-    return result.get();
+    return result.release();
   }
 }
 

@@ -15,6 +15,9 @@
 
 #include "visibility.hpp"
 
+// if if_condition is true, then assert assert_condition.
+#define PYDYND_ASSERT_IF(if_condition, assert_condition) (assert((!(if_condition)) || (assert_condition)))
+
 namespace dynd {
 // Forward declaration
 struct callable_type_data;
@@ -34,6 +37,7 @@ inline void incref<false>(PyObject *obj) noexcept
 template <>
 inline void incref<true>(PyObject *obj) noexcept
 {
+  assert(obj != nullptr);
   Py_INCREF(obj);
 }
 
@@ -49,6 +53,7 @@ inline void decref<false>(PyObject *obj) noexcept
 template <>
 inline void decref<true>(PyObject *obj) noexcept
 {
+  assert(obj != nullptr);
   Py_DECREF(obj);
 }
 
@@ -58,6 +63,7 @@ inline void incref_if_owned(PyObject *obj) noexcept;
 template <>
 inline void incref_if_owned<true, true>(PyObject *obj) noexcept
 {
+  assert(obj != nullptr);
   Py_INCREF(obj);
 }
 
@@ -83,6 +89,7 @@ inline void decref_if_owned(PyObject *obj) noexcept;
 template <>
 inline void decref_if_owned<true, true>(PyObject *obj) noexcept
 {
+  assert(obj != nullptr);
   Py_DECREF(obj);
 }
 
@@ -107,20 +114,23 @@ class py_ref_tmpl {
   PyObject *o;
 
 public:
-  // Explicit specializations for default constructor
-  // are defined after the class declaration.
-  // If the class is allowed to be null, it default-initializes to null.
-  // If the class is not allowed to be null, it default-initializes to None.
-  py_ref_tmpl() noexcept;
+  // All versions default-initialize to null.
+  // This allows the smart pointer class to be moved from.
+  // Whether or not the class is allowed to be null only changes
+  // when zerochecks/exceptions may occur and when assertions are used.
+  py_ref_tmpl() noexcept : o(nullptr){};
 
   // First define an accessor to get the PyObject pointer from
   // the wrapper class.
-  PyObject *get() noexcept { return o; }
+  PyObject *get() noexcept
+  {
+    PYDYND_ASSERT_IF(not_null, o != nullptr);
+    return o;
+  }
 
-  // All copy and move constructors are defined as noexcept.
-  // If the conversion or move operation would move from a type
-  // that can be null to one that can not, the corresponding
-  // constructor is declared explicit.
+  // All copy and move constructors are designated implicit.
+  // Unless they convert between a null type to a not_null type,
+  // they are also declared noexcept.
 
   /* If:
    *    this type allows null,
@@ -128,55 +138,88 @@ public:
    *   this type doesn't allow null
    *   and the input type doesn't allow null,
    * Then:
-   *    Allow implicit conversions from the other py_ref_tmpl type to this type.
+   *    Conversions from the other py_ref_tmpl type to this type do not raise exceptions.
    */
-  template <bool other_owns, bool other_not_null,
-            typename std::enable_if_t<!not_null || (not_null && other_not_null)> * = nullptr>
-  py_ref_tmpl(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
+  template <bool other_owns_ref, bool other_not_null,
+            typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
+  py_ref_tmpl(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
   {
+    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
     o = other.o;
     incref_if_owned<owns_ref, not_null>(o);
   }
 
+  // Should this one be declared explicit since it can throw?
   /* If:
    *    this type doesn't allow null,
    *    and the input type does,
    * Then:
-   *    Require that conversions from the other py_ref_tmpl type to this type be explcit.
+   *    Allow implicit conversions from the input type to this type, but
+   *    raise an exception if the input is null.
    */
-  template <bool other_owns, bool other_not_null, typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  explicit py_ref_tmpl(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
+  template <bool other_owns_ref, bool other_not_null,
+            typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
+  py_ref_tmpl(const py_ref_tmpl<other_owns_ref, other_not_null> &other)
   {
-    o = other.o;
-    incref_if_owned<owns_ref, not_null>(o);
+    if (other.o != nullptr) {
+      o = other.o;
+      incref_if_owned<owns_ref, not_null>(o);
+    }
+    else {
+      throw std::invalid_argument("Cannot convert null valued pointer to non-null reference.");
+    }
   }
 
   // Move constructors are really only useful for moving
-  // between types that own their references.
+  // from types that own their references.
   // Only define them for those cases.
 
   /* If:
-   *    both this type and the input type own their reference,
+   *    the input type owns its reference,
    *    and we are not moving from a type that allows null values to one that does not,
    * Then:
-   *    a move operation can be implicitly performed.
+   *    a move operation is defined and will not raise an exception.
    */
-  template <bool other_not_null, typename std::enable_if_t<(other_not_null || !not_null) && owns_ref> * = nullptr>
+  template <bool other_not_null, typename std::enable_if_t<(other_not_null || !not_null)> * = nullptr>
   py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
   {
+    // If this type is a non-null type, the assigned value should not be null.
+    // If the other type is a non-null type, the provided value should not be null,
+    // unless it is being used uninitialized or after being moved from.
+    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // Use get to assert that other.o is not null if other_not_null is true.
     o = other.o;
+    other.o = nullptr;
+    // The other type owns its reference.
+    // If this one does not, decref the new pointer.
+    // If this type is a non-null type, the assigned value should not be null.
+    decref_if_owned<!owns_ref, not_null>(o);
+    // Make sure other can be destructed without decrefing
+    // this object's wrapped pointer.
   }
 
   /* If:
-   *    both this type and the input type own their reference,
+   *    the input type owns its reference,
    *    and we are moving from a type that allows null values to one that does not,
    * Then:
-   *    only an explicit move operation can be performed.
+   *    a move may be performed, but may also raise an exception.
    */
-  template <bool other_not_null, typename std::enable_if_t<!other_not_null && not_null && owns_ref> * = nullptr>
-  explicit py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
+  template <bool other_not_null, typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
+  py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other)
   {
-    o = other.o;
+    if (other.o != nullptr) {
+      o = other.o;
+      other.o = nullptr;
+      // The other type owns its reference.
+      // If this one does not, decref the new pointer.
+      // The assigned value is already known not be null.
+      decref_if_owned<!owns_ref, not_null>(o);
+      // Make sure other can be destructed without decrefing
+      // this object's wrapped pointer.
+    }
+    else {
+      throw std::invalid_argument("Cannot convert null valued pointer to non-null reference.");
+    }
   }
 
   /* When constructing from a PyObject*, the boolean value `consume_ref` must
@@ -198,7 +241,13 @@ public:
     }
   }
 
-  ~py_ref_tmpl() { decref_if_owned<owns_ref, not_null>(o); }
+  ~py_ref_tmpl()
+  {
+    // A smart pointer wrapping a PyObject* still needs to be safe to
+    // destruct after it has been moved from.
+    // Because of that, always zero check when doing the last decref.
+    decref_if_owned<owns_ref, false>(o);
+  }
 
   // For assignment operators, only allow assignment
   // in cases where implicit conversions are also allowed.
@@ -213,58 +262,106 @@ public:
    *   this type doesn't allow null
    *   and the input type doesn't allow null,
    * Then:
-   *    Allow assignment from the other py_ref_tmpl type to this type.
+   *    Assignment from the other py_ref_tmpl type to this type may not raise an exception.
    */
-  template <bool other_owns, bool other_not_null,
+  template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
-  py_ref_tmpl<owns_ref, not_null> operator=(const py_ref_tmpl<other_owns, other_not_null> &other) noexcept
+  py_ref_tmpl<owns_ref, not_null> &operator=(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
   {
-    decref_if_owned<owns_ref, not_null>(o);
+    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // Nullcheck when doing decref in case this object
+    // is uninitialized or has been moved from.
+    decref_if_owned<owns_ref, false>(o);
     o = other.o;
     incref_if_owned<owns_ref, not_null>(o);
+    return *this;
+  }
+
+  /* If:
+   *    this type does not allow null,
+   *    and the other type does,
+   * Then:
+   *    Assignment from the other py_ref_tmpl type to this type may raise an exception.
+   */
+  template <bool other_owns_ref, bool other_not_null,
+            typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
+  py_ref_tmpl<owns_ref, not_null> &operator=(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
+  {
+    if (other.o != nullptr) {
+      // Nullcheck when doing decref in case this object
+      // is uninitialized or has been moved from.
+      decref_if_owned<owns_ref, false>(o);
+      o = other.o;
+      incref_if_owned<owns_ref, not_null>(o);
+      return *this;
+    }
+    else {
+      throw std::invalid_argument("Cannot assign null valued pointer to non-null reference.");
+    }
+  }
+
+  // Same as previous two, except these assign from rvalues rather than lvalues.
+
+  /* If:
+   *    this type allows null,
+   * Or:
+   *   this type doesn't allow null
+   *   and the input type doesn't allow null,
+   * Then:
+   *    Assignment from the other py_ref_tmpl type to this type may not raise an exception.
+   */
+  template <bool other_owns_ref, bool other_not_null,
+            typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
+  py_ref_tmpl<owns_ref, not_null> &operator=(py_ref_tmpl<other_owns_ref, other_not_null> &&other) noexcept
+  {
+    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // Nullcheck when doing decref in case this object
+    // is uninitialized or has been moved from.
+    decref_if_owned<owns_ref, false>(o);
+    o = other.o;
+    other.o = nullptr;
+    incref_if_owned<owns_ref && !other_owns_ref, not_null>(o);
+    return *this;
+  }
+
+  /* If:
+   *    this type does not allow null,
+   *    and the other type does,
+   * Then:
+   *    Assignment from the other py_ref_tmpl type to this type may raise an exception.
+   */
+  template <bool other_owns_ref, bool other_not_null,
+            typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
+  py_ref_tmpl<owns_ref, not_null> &operator=(py_ref_tmpl<other_owns_ref, other_not_null> &&other) noexcept
+  {
+    if (other.o != nullptr) {
+      // Nullcheck when doing decref in case this object
+      // is uninitialized or has been moved from.
+      decref_if_owned<owns_ref, false>(o);
+      o = other.o;
+      other.o = nullptr;
+      incref_if_owned<owns_ref && !other_owns_ref, not_null>(o);
+      return *this;
+    }
+    else {
+      throw std::invalid_argument("Cannot assign null valued pointer to non-null reference.");
+    }
+  }
+
+  // Return an owned reference to the encapsulated PyObject as a raw pointer.
+  // Set the encapsulated pointer to NULL.
+  PyObject *release() noexcept
+  {
+    PYDYND_ASSERT_IF(not_null, o != nullptr);
+    auto ret = o;
+    o = nullptr;
+    incref_if_owned<!owns_ref, not_null>(ret);
+    return ret;
   }
 
   // Check if the wrapped pointer is null.
-  // Always return true if it is not null by definition.
-  bool is_null() noexcept
-  {
-    // This function will be a no-op returning true
-    // when not_null is false.
-    if (not_null || (o != nullptr)) {
-      return false;
-    }
-    return true;
-  }
-
-  // A debug version of is_null with a purely dynamic check.
-  bool is_null_dbg() noexcept { return o != nullptr; }
+  bool is_null() noexcept { return o != nullptr; }
 };
-
-// Default constructors for various cases.
-template <>
-inline py_ref_tmpl<true, true>::py_ref_tmpl() noexcept
-{
-  o = Py_None;
-  incref<true>(o);
-}
-
-template <>
-inline py_ref_tmpl<true, false>::py_ref_tmpl() noexcept
-{
-  o = nullptr;
-}
-
-template <>
-inline py_ref_tmpl<false, true>::py_ref_tmpl() noexcept
-{
-  o = Py_None;
-}
-
-template <>
-inline py_ref_tmpl<false, false>::py_ref_tmpl() noexcept
-{
-  o = nullptr;
-}
 
 // Convenience aliases for the templated smart pointer classes.
 
@@ -276,33 +373,17 @@ using py_borref = py_ref_tmpl<false, true>;
 
 using py_borref_with_null = py_ref_tmpl<false, false>;
 
-// To help with the transition to the new classes.
-using pyobject_ownref = py_ref_tmpl<true, false>;
-
-/* Check if a wrapped pointer is null.
- * If it is not, return the pointer
- * wrapped in the corresponding not_null wrapper type.
- * If it is, raise an exception.
- * This can be used to forward exceptions from Python.
- */
-template <bool owns_ref, bool not_null>
-py_ref_tmpl<owns_ref, true> check_null(py_ref_tmpl<owns_ref, not_null> &o)
-{
-  if (o.is_null()) {
-    throw std::runtime_error("Unexpected null pointer.");
-  }
-  return reinterpret_cast<py_ref_tmpl<owns_ref, true>>(o);
-}
-
 /* Capture a new reference if it is not null.
  * Throw an exception if it is.
  */
 inline py_ref capture_if_not_null(PyObject *o)
 {
   if (o == nullptr) {
-    throw std::runtime_error("Unexpected null pouter.");
+    throw std::runtime_error("Unexpected null pointer.");
   }
-  return py_ref(o, true);
+  auto p = py_ref(o, true);
+  return p;
+  // return py_ref(o, true);
 }
 
 class PyGILState_RAII {

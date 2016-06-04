@@ -431,7 +431,7 @@ struct assign_to_pyobject_kernel<ndt::tuple_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = tup.get();
+    *dst_obj = tup.release();
   }
 };
 
@@ -470,7 +470,7 @@ struct assign_to_pyobject_kernel<ndt::struct_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = dct.get();
+    *dst_obj = dct.release();
   }
 };
 
@@ -496,7 +496,7 @@ struct assign_to_pyobject_kernel<ndt::fixed_dim_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = lst.get();
+    *dst_obj = lst.release();
   }
 };
 
@@ -524,6 +524,6 @@ struct assign_to_pyobject_kernel<ndt::var_dim_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = lst.get();
+    *dst_obj = lst.release();
   }
 };

@@ -386,16 +386,32 @@ inline py_ref capture_if_not_null(PyObject *o)
   // return py_ref(o, true);
 }
 
-class PyGILState_RAII {
+// RAII class to acquire GIL.
+class with_gil {
   PyGILState_STATE m_gstate;
 
-  PyGILState_RAII(const PyGILState_RAII &);
-  PyGILState_RAII &operator=(const PyGILState_RAII &);
+  with_gil(const with_gil &) = delete;
+
+  with_gil &operator=(const with_gil &) = delete;
 
 public:
-  inline PyGILState_RAII() { m_gstate = PyGILState_Ensure(); }
+  inline with_gil() { m_gstate = PyGILState_Ensure(); }
 
-  inline ~PyGILState_RAII() { PyGILState_Release(m_gstate); }
+  inline ~with_gil() { PyGILState_Release(m_gstate); }
+};
+
+// RAII class to release GIL.
+class with_nogil {
+  PyThreadState *m_tstate;
+
+  with_nogil(const with_nogil &) = delete;
+
+  with_nogil &operator=(const with_nogil &) = delete;
+
+public:
+  inline with_nogil() { m_tstate = PyEval_SaveThread(); }
+
+  inline ~with_nogil() { PyEval_RestoreThread(m_tstate); }
 };
 
 /**

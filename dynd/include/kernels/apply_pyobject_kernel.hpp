@@ -22,7 +22,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
   ~apply_pyobject_kernel()
   {
     if (m_pyfunc != NULL) {
-      pydynd::PyGILState_RAII pgs;
+      pydynd::with_gil pgs;
       Py_DECREF(m_pyfunc);
       get_child()->destroy();
     }

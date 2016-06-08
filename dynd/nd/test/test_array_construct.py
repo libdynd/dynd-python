@@ -675,18 +675,18 @@ class TestDeduceDims(unittest.TestCase):
         self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
         self.assertEqual(nd.as_py(a), [])
 
-#class TestConstructErrors(unittest.TestCase):
-#    def test_bad_params(self):
-#        self.assertRaises(ValueError, nd.array, type='int32')
-#        self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')
-#        self.assertRaises(ValueError, nd.array, access='readwrite')
+class TestConstructErrors(unittest.TestCase):
+    def test_bad_params(self):
+        self.assertRaises(TypeError, nd.array, type='int32')
+        self.assertRaises(TypeError, nd.array, type='2 * 2 * int32')
 
-#    def test_dict_auto_detect(self):
-#        # Trigger failure in initial auto detect pass
-#        self.assertRaises(ValueError, nd.array, {'x' : 1})
-#        self.assertRaises(ValueError, nd.array, [{'x' : 1}])
-#        # Trigger failure in later type promotion
-#        self.assertRaises(ValueError, nd.array, [['a'], {'x' : 1}])
+    def test_dict_auto_detect(self):
+        # Trigger failure in initial auto detect pass
+        self.assertRaises(ValueError, nd.array, {'x' : 1})
+        self.assertRaises(ValueError, nd.array, [{'x' : 1}])
+        # Trigger failure in later type promotion
+        # TODO: fix
+        # self.assertRaises(ValueError, nd.array, [['a'], {'x' : 1}])
 
 class TestOptionArrayConstruct(unittest.TestCase):
     def check_scalars(self, type, input_expected):

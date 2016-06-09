@@ -404,6 +404,16 @@ public:
     return py_ref_t<true, not_null>(o, false);
   }
 
+  // Copy the current reference.
+  py_ref_t<owns_ref, not_null> copy() noexcept
+  {
+    // Assert that the wrapped pointer is not null if it shouldn't be.
+    PYDYND_ASSERT_IF(not_null, o != nullptr);
+    // Assert that the wrapped reference is actually valid if it isn't null.
+    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
+    return py_ref_t<owns_ref, not_null>(o, false);
+  }
+
   // Return a reference to the encapsulated PyObject as a raw pointer.
   // Set the encapsulated pointer to NULL.
   // If this is a type that owns its reference, an owned reference is returned.

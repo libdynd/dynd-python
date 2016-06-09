@@ -401,6 +401,17 @@ inline py_ref_tmpl<owns_ref, true> nullcheck(py_ref_tmpl<owns_ref, not_null> &&o
   return out;
 }
 
+/* Convert to a non-null reference.
+ * No nullcheck is used, except for an assertion in debug builds.
+ * This should be used when the pointer is already known to not be null.
+ */
+template <bool owns_ref, bool not_null>
+inline py_ref_tmpl<owns_ref, true> disallow_null(py_ref_tmpl<owns_ref, not_null> &&obj) noexcept
+{
+  assert(obj.get() != nullptr);
+  return py_ref_tmpl<owns_ref, true>(obj.release(), owns_ref);
+}
+
 // RAII class to acquire GIL.
 class with_gil {
   PyGILState_STATE m_gstate;

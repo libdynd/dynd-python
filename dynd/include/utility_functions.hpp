@@ -361,6 +361,8 @@ public:
 
   // Check if the wrapped pointer is null.
   bool is_null() noexcept { return o != nullptr; }
+
+  py_ref_tmpl<false, not_null> borrow() noexcept { return py_ref<false, not_null>(o, false); }
 };
 
 // Convenience aliases for the templated smart pointer classes.

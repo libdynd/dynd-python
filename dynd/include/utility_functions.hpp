@@ -124,7 +124,7 @@ inline void decref_if_owned<false, false>(PyObject *obj) noexcept
 }
 
 template <bool owns_ref = true, bool not_null = true>
-class py_ref_tmpl {
+class py_ref_t {
   PyObject *o;
 
 public:
@@ -132,7 +132,7 @@ public:
   // This allows the smart pointer class to be moved from.
   // Whether or not the class is allowed to be null only changes
   // when zerochecks/exceptions may occur and when assertions are used.
-  py_ref_tmpl() noexcept : o(nullptr){};
+  py_ref_t() noexcept : o(nullptr){};
 
   // First define an accessor to get the PyObject pointer from
   // the wrapper class.
@@ -151,11 +151,11 @@ public:
   /* If:
    *    This type allows null or the input type does not,
    * Then:
-   *    Conversions from the other py_ref_tmpl type to this type do not raise exceptions.
+   *    Conversions from the other py_ref_t type to this type do not raise exceptions.
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
-  py_ref_tmpl(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
+  py_ref_t(const py_ref_t<other_owns_ref, other_not_null> &other) noexcept
   {
     // If the input is not null, assert that it isn't.
     PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
@@ -175,7 +175,7 @@ public:
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  py_ref_tmpl(const py_ref_tmpl<other_owns_ref, other_not_null> &other)
+  py_ref_t(const py_ref_t<other_owns_ref, other_not_null> &other)
   {
     if (other.o != nullptr) {
       // Assert that the input reference is valid.
@@ -199,7 +199,7 @@ public:
    *    a move operation is defined and will not raise an exception.
    */
   template <bool other_not_null, typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
-  py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
+  py_ref_t(py_ref_t<true, other_not_null> &&other) noexcept
   {
     // If this type is a non-null type, the assigned value should not be null.
     // If the other type is a non-null type, the provided value should not be null,
@@ -227,7 +227,7 @@ public:
    *    a move may be performed, but may also raise an exception.
    */
   template <bool other_not_null, typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other)
+  py_ref_t(py_ref_t<true, other_not_null> &&other)
   {
     if (other.o != nullptr) {
       // Assert that the input reference is valid.
@@ -256,7 +256,7 @@ public:
    * specify `consume_ref` as false regardless of whether or not you
    * own the reference represented in the PyObject* you pass in.
    */
-  explicit py_ref_tmpl(PyObject *obj, bool consume_ref) noexcept
+  explicit py_ref_t(PyObject *obj, bool consume_ref) noexcept
   {
     o = obj;
     if (consume_ref) {
@@ -270,7 +270,7 @@ public:
     PYDYND_ASSERT_IF(obj != nullptr, Py_REFCNT(obj) > 0);
   }
 
-  ~py_ref_tmpl()
+  ~py_ref_t()
   {
     // A smart pointer wrapping a PyObject* still needs to be safe to
     // destruct after it has been moved from.
@@ -288,11 +288,11 @@ public:
   /* If:
    *    This type allows null or the input type does not,
    * Then:
-   *    Assignment from the other py_ref_tmpl type to this type may not raise an exception.
+   *    Assignment from the other py_ref_t type to this type may not raise an exception.
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
-  py_ref_tmpl<owns_ref, not_null> &operator=(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
+  py_ref_t<owns_ref, not_null> &operator=(const py_ref_t<other_owns_ref, other_not_null> &other) noexcept
   {
     // Assert that the input reference is not null if the input type does not allow nulls.
     PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
@@ -310,11 +310,11 @@ public:
    *    this type does not allow null,
    *    and the other type does,
    * Then:
-   *    Assignment from the other py_ref_tmpl type to this type may raise an exception.
+   *    Assignment from the other py_ref_t type to this type may raise an exception.
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  py_ref_tmpl<owns_ref, not_null> &operator=(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
+  py_ref_t<owns_ref, not_null> &operator=(const py_ref_t<other_owns_ref, other_not_null> &other) noexcept
   {
     if (other.o != nullptr) {
       // Assert that the input reference is valid.
@@ -339,11 +339,11 @@ public:
    *   this type doesn't allow null
    *   and the input type doesn't allow null,
    * Then:
-   *    Assignment from the other py_ref_tmpl type to this type may not raise an exception.
+   *    Assignment from the other py_ref_t type to this type may not raise an exception.
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
-  py_ref_tmpl<owns_ref, not_null> &operator=(py_ref_tmpl<other_owns_ref, other_not_null> &&other) noexcept
+  py_ref_t<owns_ref, not_null> &operator=(py_ref_t<other_owns_ref, other_not_null> &&other) noexcept
   {
     // If the input reference should not be null, assert that that is the case.
     PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
@@ -362,11 +362,11 @@ public:
    *    this type does not allow null,
    *    and the other type does,
    * Then:
-   *    Assignment from the other py_ref_tmpl type to this type may raise an exception.
+   *    Assignment from the other py_ref_t type to this type may raise an exception.
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  py_ref_tmpl<owns_ref, not_null> &operator=(py_ref_tmpl<other_owns_ref, other_not_null> &&other) noexcept
+  py_ref_t<owns_ref, not_null> &operator=(py_ref_t<other_owns_ref, other_not_null> &&other) noexcept
   {
     if (other.o != nullptr) {
       // Assert that the input reference is valid.
@@ -384,13 +384,13 @@ public:
     }
   }
 
-  py_ref_tmpl<false, not_null> borrow() noexcept { return py_ref<false, not_null>(o, false); }
+  py_ref_t<false, not_null> borrow() noexcept { return py_ref<false, not_null>(o, false); }
 
   // Return a reference to the encapsulated PyObject as a raw pointer.
   // Set the encapsulated pointer to NULL.
   // If this is a type that owns its reference, an owned reference is returned.
   // If this is a type that wraps a borrowed reference, a borrowed reference is returned.
-  static PyObject *release(py_ref_tmpl<owns_ref, not_null> &&ref) noexcept
+  static PyObject *release(py_ref_t<owns_ref, not_null> &&ref) noexcept
   {
     // If the contained reference should not be null, assert that it isn't.
     PYDYND_ASSERT_IF(not_null, ref.o != nullptr);
@@ -404,18 +404,18 @@ public:
 
 // Convenience aliases for the templated smart pointer classes.
 
-using py_ref = py_ref_tmpl<true, true>;
+using py_ref = py_ref_t<true, true>;
 
-using py_ref_with_null = py_ref_tmpl<true, false>;
+using py_ref_with_null = py_ref_t<true, false>;
 
-using py_borref = py_ref_tmpl<false, true>;
+using py_borref = py_ref_t<false, true>;
 
-using py_borref_with_null = py_ref_tmpl<false, false>;
+using py_borref_with_null = py_ref_t<false, false>;
 
 template <bool owns_ref, bool not_null>
-PyObject *release(py_ref_tmpl<owns_ref, not_null> &&ref)
+PyObject *release(py_ref_t<owns_ref, not_null> &&ref)
 {
-  return py_ref_tmpl<owns_ref, not_null>::release(std::forward<py_ref_tmpl<owns_ref, not_null>>(ref));
+  return py_ref_t<owns_ref, not_null>::release(std::forward<py_ref_t<owns_ref, not_null>>(ref));
 }
 
 /* Capture a new reference if it is not null.
@@ -435,10 +435,10 @@ inline py_ref capture_if_not_null(PyObject *o)
  * only checks for via an assert statement in debug builds.
  */
 template <bool owns_ref, bool not_null>
-inline py_ref_tmpl<owns_ref, true> nullcheck(py_ref_tmpl<owns_ref, not_null> &&obj) noexcept(not_null)
+inline py_ref_t<owns_ref, true> nullcheck(py_ref_t<owns_ref, not_null> &&obj) noexcept(not_null)
 {
   // Route this through the assignment operator since the semantics are the same.
-  py_ref_tmpl<owns_ref, true> out = obj;
+  py_ref_t<owns_ref, true> out = obj;
   return out;
 }
 
@@ -447,13 +447,13 @@ inline py_ref_tmpl<owns_ref, true> nullcheck(py_ref_tmpl<owns_ref, not_null> &&o
  * This should be used when the pointer is already known to not be null.
  */
 template <bool owns_ref, bool not_null>
-inline py_ref_tmpl<owns_ref, true> disallow_null(py_ref_tmpl<owns_ref, not_null> &&obj) noexcept
+inline py_ref_t<owns_ref, true> disallow_null(py_ref_t<owns_ref, not_null> &&obj) noexcept
 {
   // Assert that the wrapped pointer is actually not null.
   assert(obj.get() != nullptr);
   // Assert that the wrapped reference is valid if it is not null.
   PYDYND_ASSERT_IF(obj.get() != nullptr, Py_REFCNT(obj.get()) > 0);
-  return py_ref_tmpl<owns_ref, true>(obj.release(), owns_ref);
+  return py_ref_t<owns_ref, true>(obj.release(), owns_ref);
 }
 
 // RAII class to acquire GIL.

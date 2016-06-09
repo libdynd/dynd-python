@@ -387,14 +387,18 @@ public:
   // Return a wrapped borrowed reference to the wrapped reference.
   py_ref_t<false, not_null> borrow() noexcept
   {
+    // Assert that the wrapped pointer is not null if it shouldn't be.
+    PYDYND_ASSERT_IF(not_null, o != nullptr);
     // Assert that the wrapped reference is actually valid if it isn't null.
     PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
     return py_ref_t<false, not_null>(o, false);
   }
 
   // Return a wrapped owned reference referring to the currently wrapped reference.
-  py_ref_t<true, not_null> borrow() noexcept
+  py_ref_t<true, not_null> new_ownref() noexcept
   {
+    // Assert that the wrapped pointer is not null if it shouldn't be.
+    PYDYND_ASSERT_IF(not_null, o != nullptr);
     // Assert that the wrapped reference is actually valid if it isn't null.
     PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
     return py_ref_t<true, not_null>(o, false);

@@ -384,8 +384,10 @@ public:
     }
   }
 
-  // Return an owned reference to the encapsulated PyObject as a raw pointer.
+  // Return a reference to the encapsulated PyObject as a raw pointer.
   // Set the encapsulated pointer to NULL.
+  // If this is a type that owns its reference, an owned reference is returned.
+  // If this is a type that wraps a borrowed reference, a borrowed reference is returned.
   PyObject *release() noexcept
   {
     // If the contained reference should not be null, assert that it isn't.
@@ -394,7 +396,6 @@ public:
     PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
     auto ret = o;
     o = nullptr;
-    incref_if_owned<!owns_ref, not_null>(ret);
     return ret;
   }
 

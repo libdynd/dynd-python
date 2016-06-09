@@ -217,7 +217,7 @@ public:
     // If this type is a non-null type, the assigned value should not be null.
     decref_if_owned<!owns_ref, not_null>(o);
     // If the reference is not null, assert that it is still valid.
-    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0)
+    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
   }
 
   /* If:
@@ -384,22 +384,22 @@ public:
     }
   }
 
+  py_ref_tmpl<false, not_null> borrow() noexcept { return py_ref<false, not_null>(o, false); }
+
   // Return a reference to the encapsulated PyObject as a raw pointer.
   // Set the encapsulated pointer to NULL.
   // If this is a type that owns its reference, an owned reference is returned.
   // If this is a type that wraps a borrowed reference, a borrowed reference is returned.
-  PyObject *release() noexcept
+  static PyObject *release(py_ref_tmpl<owns_ref, not_null> &&ref) noexcept
   {
     // If the contained reference should not be null, assert that it isn't.
-    PYDYND_ASSERT_IF(not_null, o != nullptr);
+    PYDYND_ASSERT_IF(not_null, ref.o != nullptr);
     // If the contained reference is not null, assert that it is valid.
-    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
-    auto ret = o;
-    o = nullptr;
+    PYDYND_ASSERT_IF(ref.o != nullptr, Py_REFCNT(ref.o) > 0);
+    PyObject *ret = ref.o;
+    ref.o = nullptr;
     return ret;
   }
-
-  py_ref_tmpl<false, not_null> borrow() noexcept { return py_ref<false, not_null>(o, false); }
 };
 
 // Convenience aliases for the templated smart pointer classes.
@@ -411,6 +411,12 @@ using py_ref_with_null = py_ref_tmpl<true, false>;
 using py_borref = py_ref_tmpl<false, true>;
 
 using py_borref_with_null = py_ref_tmpl<false, false>;
+
+template <bool owns_ref, bool not_null>
+PyObject *release(py_ref_tmpl<owns_ref, not_null> &&ref)
+{
+  return py_ref_tmpl<owns_ref, not_null>::release(std::forward<py_ref_tmpl<owns_ref, not_null>>(ref));
+}
 
 /* Capture a new reference if it is not null.
  * Throw an exception if it is.

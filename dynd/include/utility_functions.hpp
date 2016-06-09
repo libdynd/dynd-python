@@ -47,6 +47,8 @@ inline void decref(PyObject *) noexcept;
 template <>
 inline void decref<false>(PyObject *obj) noexcept
 {
+  // Assert that the reference is valid if it is not null.
+  PYDYND_ASSERT_IF(obj != nullptr, Py_REFCNT(obj) > 0);
   Py_XDECREF(obj);
 }
 
@@ -54,6 +56,8 @@ template <>
 inline void decref<true>(PyObject *obj) noexcept
 {
   assert(obj != nullptr);
+  // Assert that the reference is valid.
+  assert(Py_REFCNT(obj) > 0);
   Py_DECREF(obj);
 }
 
@@ -90,23 +94,33 @@ template <>
 inline void decref_if_owned<true, true>(PyObject *obj) noexcept
 {
   assert(obj != nullptr);
+  // Assert that the reference is valid.
+  assert(Py_REFCNT(obj) > 0);
   Py_DECREF(obj);
 }
 
 template <>
 inline void decref_if_owned<true, false>(PyObject *obj) noexcept
 {
+  // Assert that the reference is valid if it is not null.
+  PYDYND_ASSERT_IF(obj != nullptr, Py_REFCNT(obj) > 0);
   Py_XDECREF(obj);
 }
 
+// This is a no-op in non-debug builds.
+// In debug builds, it asserts that the reference is actually valid.
 template <>
 inline void decref_if_owned<false, true>(PyObject *obj) noexcept
 {
+  assert(Py_REFCNT(obj) > 0);
 }
 
+// This is a no-op in non-debug builds.
+// In debug builds, it asserts that the reference is actually valid.
 template <>
 inline void decref_if_owned<false, false>(PyObject *obj) noexcept
 {
+  PYDYND_ASSERT_IF(obj != nullptr, Py_REFCNT(obj) > 0);
 }
 
 template <bool owns_ref = true, bool not_null = true>
@@ -125,6 +139,8 @@ public:
   PyObject *get() noexcept
   {
     PYDYND_ASSERT_IF(not_null, o != nullptr);
+    // Assert that the accessed reference is still valid.
+    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
     return o;
   }
 
@@ -133,18 +149,18 @@ public:
   // they are also declared noexcept.
 
   /* If:
-   *    this type allows null,
-   * Or:
-   *   this type doesn't allow null
-   *   and the input type doesn't allow null,
+   *    This type allows null or the input type does not,
    * Then:
    *    Conversions from the other py_ref_tmpl type to this type do not raise exceptions.
    */
   template <bool other_owns_ref, bool other_not_null,
-            typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
+            typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
   py_ref_tmpl(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
   {
-    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // If the input is not null, assert that it isn't.
+    PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
+    // Assert that the input reference is valid if it is not null.
+    PYDYND_ASSERT_IF(other.o != nullptr, Py_REFCNT(other.o) > 0);
     o = other.o;
     incref_if_owned<owns_ref, not_null>(o);
   }
@@ -162,6 +178,8 @@ public:
   py_ref_tmpl(const py_ref_tmpl<other_owns_ref, other_not_null> &other)
   {
     if (other.o != nullptr) {
+      // Assert that the input reference is valid.
+      assert(Py_REFCNT(other.o) > 0);
       o = other.o;
       incref_if_owned<owns_ref, not_null>(o);
     }
@@ -180,22 +198,26 @@ public:
    * Then:
    *    a move operation is defined and will not raise an exception.
    */
-  template <bool other_not_null, typename std::enable_if_t<(other_not_null || !not_null)> * = nullptr>
+  template <bool other_not_null, typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
   py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other) noexcept
   {
     // If this type is a non-null type, the assigned value should not be null.
     // If the other type is a non-null type, the provided value should not be null,
     // unless it is being used uninitialized or after being moved from.
     PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // If the reference is not null, assert that it is valid.
+    PYDYND_ASSERT_IF(other.o != nullptr, Py_REFCNT(other.o) > 0);
     // Use get to assert that other.o is not null if other_not_null is true.
     o = other.o;
+    // Make sure other can be destructed without decrefing
+    // this object's wrapped pointer.
     other.o = nullptr;
     // The other type owns its reference.
     // If this one does not, decref the new pointer.
     // If this type is a non-null type, the assigned value should not be null.
     decref_if_owned<!owns_ref, not_null>(o);
-    // Make sure other can be destructed without decrefing
-    // this object's wrapped pointer.
+    // If the reference is not null, assert that it is still valid.
+    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0)
   }
 
   /* If:
@@ -208,14 +230,18 @@ public:
   py_ref_tmpl(py_ref_tmpl<true, other_not_null> &&other)
   {
     if (other.o != nullptr) {
+      // Assert that the input reference is valid.
+      assert(Py_REFCNT(other.o) > 0);
       o = other.o;
+      // Make sure other can be destructed without decrefing
+      // this object's wrapped pointer.
       other.o = nullptr;
       // The other type owns its reference.
       // If this one does not, decref the new pointer.
       // The assigned value is already known not be null.
       decref_if_owned<!owns_ref, not_null>(o);
-      // Make sure other can be destructed without decrefing
-      // this object's wrapped pointer.
+      // Assert that the stored reference is still valid
+      assert(Py_REFCNT(o) > 0);
     }
     else {
       throw std::invalid_argument("Cannot convert null valued pointer to non-null reference.");
@@ -239,6 +265,9 @@ public:
     else {
       incref_if_owned<owns_ref, not_null>(o);
     }
+    // Regardless of whether or not a reference was consumed,
+    // assert that it is valid if it is not null.
+    PYDYND_ASSERT_IF(obj != nullptr, Py_REFCNT(obj) > 0);
   }
 
   ~py_ref_tmpl()
@@ -257,18 +286,18 @@ public:
   // Assignment never comsumes a reference.
 
   /* If:
-   *    this type allows null,
-   * Or:
-   *   this type doesn't allow null
-   *   and the input type doesn't allow null,
+   *    This type allows null or the input type does not,
    * Then:
    *    Assignment from the other py_ref_tmpl type to this type may not raise an exception.
    */
   template <bool other_owns_ref, bool other_not_null,
-            typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
+            typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
   py_ref_tmpl<owns_ref, not_null> &operator=(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
   {
-    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // Assert that the input reference is not null if the input type does not allow nulls.
+    PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
+    // Assert that the input reference is valid if it is not null.
+    PYDYND_ASSERT_IF(other.o != nullptr, Py_REFCNT(other.o) > 0);
     // Nullcheck when doing decref in case this object
     // is uninitialized or has been moved from.
     decref_if_owned<owns_ref, false>(o);
@@ -288,6 +317,8 @@ public:
   py_ref_tmpl<owns_ref, not_null> &operator=(const py_ref_tmpl<other_owns_ref, other_not_null> &other) noexcept
   {
     if (other.o != nullptr) {
+      // Assert that the input reference is valid.
+      assert(Py_REFCNT(other.o) > 0);
       // Nullcheck when doing decref in case this object
       // is uninitialized or has been moved from.
       decref_if_owned<owns_ref, false>(o);
@@ -311,10 +342,13 @@ public:
    *    Assignment from the other py_ref_tmpl type to this type may not raise an exception.
    */
   template <bool other_owns_ref, bool other_not_null,
-            typename std::enable_if_t<(other_not_null && not_null) || !not_null> * = nullptr>
+            typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
   py_ref_tmpl<owns_ref, not_null> &operator=(py_ref_tmpl<other_owns_ref, other_not_null> &&other) noexcept
   {
-    PYDYND_ASSERT_IF(not_null || other_not_null, other.o != nullptr);
+    // If the input reference should not be null, assert that that is the case.
+    PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
+    // If the input reference is not null, assert that it is valid.
+    PYDYND_ASSERT_IF(other.o != nullptr, Py_REFCNT(other.o) > 0);
     // Nullcheck when doing decref in case this object
     // is uninitialized or has been moved from.
     decref_if_owned<owns_ref, false>(o);
@@ -335,6 +369,8 @@ public:
   py_ref_tmpl<owns_ref, not_null> &operator=(py_ref_tmpl<other_owns_ref, other_not_null> &&other) noexcept
   {
     if (other.o != nullptr) {
+      // Assert that the input reference is valid.
+      assert(Py_REFCNT(other.o) > 0);
       // Nullcheck when doing decref in case this object
       // is uninitialized or has been moved from.
       decref_if_owned<owns_ref, false>(o);
@@ -352,15 +388,15 @@ public:
   // Set the encapsulated pointer to NULL.
   PyObject *release() noexcept
   {
+    // If the contained reference should not be null, assert that it isn't.
     PYDYND_ASSERT_IF(not_null, o != nullptr);
+    // If the contained reference is not null, assert that it is valid.
+    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
     auto ret = o;
     o = nullptr;
     incref_if_owned<!owns_ref, not_null>(ret);
     return ret;
   }
-
-  // Check if the wrapped pointer is null.
-  bool is_null() noexcept { return o != nullptr; }
 
   py_ref_tmpl<false, not_null> borrow() noexcept { return py_ref<false, not_null>(o, false); }
 };
@@ -383,9 +419,7 @@ inline py_ref capture_if_not_null(PyObject *o)
   if (o == nullptr) {
     throw std::runtime_error("Unexpected null pointer.");
   }
-  auto p = py_ref(o, true);
-  return p;
-  // return py_ref(o, true);
+  return py_ref(o, true);
 }
 
 /* Convert to a non-null reference.
@@ -408,7 +442,10 @@ inline py_ref_tmpl<owns_ref, true> nullcheck(py_ref_tmpl<owns_ref, not_null> &&o
 template <bool owns_ref, bool not_null>
 inline py_ref_tmpl<owns_ref, true> disallow_null(py_ref_tmpl<owns_ref, not_null> &&obj) noexcept
 {
+  // Assert that the wrapped pointer is actually not null.
   assert(obj.get() != nullptr);
+  // Assert that the wrapped reference is valid if it is not null.
+  PYDYND_ASSERT_IF(obj.get() != nullptr, Py_REFCNT(obj.get()) > 0);
   return py_ref_tmpl<owns_ref, true>(obj.release(), owns_ref);
 }
 

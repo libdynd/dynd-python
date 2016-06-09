@@ -388,6 +388,19 @@ inline py_ref capture_if_not_null(PyObject *o)
   // return py_ref(o, true);
 }
 
+/* Convert to a non-null reference.
+ * If the input type allows nulls, explicitly check for null and raise an exception.
+ * If the input type does not allow null, this function is marked as noexcept and
+ * only checks for via an assert statement in debug builds.
+ */
+template <bool owns_ref, bool not_null>
+inline py_ref_tmpl<owns_ref, true> nullcheck(py_ref_tmpl<owns_ref, not_null> &&obj) noexcept(not_null)
+{
+  // Route this through the assignment operator since the semantics are the same.
+  py_ref_tmpl<owns_ref, true> out = obj;
+  return out;
+}
+
 // RAII class to acquire GIL.
 class with_gil {
   PyGILState_STATE m_gstate;

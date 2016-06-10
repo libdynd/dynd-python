@@ -481,7 +481,7 @@ inline py_ref_t<owns_ref, true> disallow_null(py_ref_t<owns_ref, not_null> &&obj
   assert(obj.get() != nullptr);
   // Assert that the wrapped reference is valid if it is not null.
   PYDYND_ASSERT_IF(obj.get() != nullptr, Py_REFCNT(obj.get()) > 0);
-  return py_ref_t<owns_ref, true>(obj.release(), owns_ref);
+  return py_ref_t<owns_ref, true>(release(std::forward(obj)), owns_ref);
 }
 
 // RAII class to acquire GIL.

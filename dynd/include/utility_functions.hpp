@@ -258,6 +258,7 @@ public:
    */
   explicit py_ref_t(PyObject *obj, bool consume_ref) noexcept
   {
+    PYDYND_ASSERT_IF(not_null, obj != nullptr);
     o = obj;
     if (consume_ref) {
       decref_if_owned<!owns_ref, not_null>(o);
@@ -277,13 +278,6 @@ public:
     // Because of that, always zero check when doing the last decref.
     decref_if_owned<owns_ref, false>(o);
   }
-
-  // For assignment operators, only allow assignment
-  // in cases where implicit conversions are also allowed.
-  // This forces explicit handling of cases that could
-  // need to have an exception raised.
-  // For that reason, these are all marked as noexcept.
-  // Assignment never comsumes a reference.
 
   /* If:
    *    This type allows null or the input type does not,
@@ -314,7 +308,7 @@ public:
    */
   template <bool other_owns_ref, bool other_not_null,
             typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  py_ref_t<owns_ref, not_null> &operator=(const py_ref_t<other_owns_ref, other_not_null> &other) noexcept
+  py_ref_t<owns_ref, not_null> &operator=(const py_ref_t<other_owns_ref, other_not_null> &other)
   {
     if (other.o != nullptr) {
       // Assert that the input reference is valid.
@@ -332,6 +326,8 @@ public:
   }
 
   // Same as previous two, except these assign from rvalues rather than lvalues.
+  // Only allow move assignment if the input type owns its reference.
+  // Otherwise, the copy assignment operator is sufficient.
 
   /* If:
    *    this type allows null,
@@ -341,9 +337,8 @@ public:
    * Then:
    *    Assignment from the other py_ref_t type to this type may not raise an exception.
    */
-  template <bool other_owns_ref, bool other_not_null,
-            typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
-  py_ref_t<owns_ref, not_null> &operator=(py_ref_t<other_owns_ref, other_not_null> &&other) noexcept
+  template <bool other_not_null, typename std::enable_if_t<other_not_null || !not_null> * = nullptr>
+  py_ref_t<owns_ref, not_null> &operator=(py_ref_t<true, other_not_null> &&other) noexcept
   {
     // If the input reference should not be null, assert that that is the case.
     PYDYND_ASSERT_IF(other_not_null, other.o != nullptr);
@@ -354,7 +349,12 @@ public:
     decref_if_owned<owns_ref, false>(o);
     o = other.o;
     other.o = nullptr;
-    incref_if_owned<owns_ref && !other_owns_ref, not_null>(o);
+    // If type being assigned to does not hold its own reference,
+    // Decref the input reference.
+    decref_if_owned<!owns_ref, false>(o);
+    // Assert that, after possibly decrefing the input reference,
+    // that the stored reference is still valid.
+    PYDYND_ASSERT_IF(o != nullptr, Py_REFCNT(o) > 0);
     return *this;
   }
 
@@ -364,9 +364,8 @@ public:
    * Then:
    *    Assignment from the other py_ref_t type to this type may raise an exception.
    */
-  template <bool other_owns_ref, bool other_not_null,
-            typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
-  py_ref_t<owns_ref, not_null> &operator=(py_ref_t<other_owns_ref, other_not_null> &&other) noexcept
+  template <bool other_not_null, typename std::enable_if_t<!other_not_null && not_null> * = nullptr>
+  py_ref_t<owns_ref, not_null> &operator=(py_ref_t<true, other_not_null> &&other)
   {
     if (other.o != nullptr) {
       // Assert that the input reference is valid.
@@ -376,7 +375,12 @@ public:
       decref_if_owned<owns_ref, false>(o);
       o = other.o;
       other.o = nullptr;
-      incref_if_owned<owns_ref && !other_owns_ref, not_null>(o);
+      // If the type being assigned to does not own its own reference,
+      // decref the wrapped pointer.
+      decref_if_owned<!owns_ref, false>(o);
+      // Assert that the wrapped reference is still valid after
+      // any needed decrefs.
+      assert(Py_REFCNT(o) > 0);
       return *this;
     }
     else {

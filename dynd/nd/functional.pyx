@@ -125,11 +125,11 @@ def elwise(func):
 
     return wrap(_elwise((<callable> func).v))
 
-def reduction(child):
+def reduction(identity, child):
     if not isinstance(child, callable):
         child = apply(child)
 
-    return wrap(_reduction((<callable> child).v))
+    return wrap(_reduction((<callable> identity).v, (<callable> child).v))
 
 """
 def multidispatch(type tp, iterable = None):

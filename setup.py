@@ -5,12 +5,19 @@ from setuptools import setup, Extension
 
 import os, sys
 from os import chdir, getcwd
-from os.path import abspath, dirname, split, samefile
+from os.path import abspath, dirname, split
 import shlex, glob
 from subprocess import check_output
 
 import re
 import argparse
+
+if sys.platform == 'win32' and sys.version_info[0] < 3:
+    def samefile(path1, path2):
+        return (os.path.normcase(os.path.normpath(path1)) ==
+                os.path.normcase(os.path.normpath(path2)))
+else:
+    from os.path import samefile
 
 # Pre-parse and remove the '--target' argument from sys.argv since we
 # need it here already.

@@ -16,11 +16,13 @@ else:
 class TestCallable(unittest.TestCase):
     pass
 
+    """
     def test_creation(self):
         af = nd.empty('(float32) -> int32')
         self.assertTrue(ndt.type('Callable').match(nd.type_of(af)))
         # Test there is a string version of a NULL arrfunc
         self.assertTrue(str(af) != '')
+    """
 
 #    def test_arrfunc_constructor(self):
  #       af = nd.apply(lambda x, y : [x, y], '(int, int) -> {x:int, y:int}')

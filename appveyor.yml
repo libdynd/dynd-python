@@ -25,9 +25,9 @@ build_script:
   - conda update conda-env
   - conda install conda-build
   - ps: if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) { conda install anaconda-client }
-  - conda build conda\ndt.recipe --channel dynd/channel/dev
+  - conda build conda\ndt.recipe --channel dynd/channel/dev --channel dynd/channel/ci
   - rd /q /s build dynd.ndt.egg-info
-  - conda build conda\nd.recipe --channel dynd/channel/dev
+  - conda build conda\nd.recipe --channel dynd/channel/dev --channel dynd/channel/ci
 
 on_success:
   # Redirect output from stderr to stdout to avoid having the command for uploading

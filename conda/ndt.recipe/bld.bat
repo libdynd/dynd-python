@@ -1,5 +1,4 @@
-cd %RECIPE_DIR%
-cd ..\..\
+cd "%RECIPE_DIR%/../.."
 
 "%PYTHON%" setup.py install --target=ndt --single-version-externally-managed --record=record.txt || exit 1
 

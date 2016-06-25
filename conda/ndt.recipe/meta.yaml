@@ -1,6 +1,8 @@
+{% set version = "0.7.2" %}
+
 package:
   name: dynd.ndt
-  version: 0.7.2
+  version: {{ version }}
 
 build:
   number: {{environ.get('TRAVIS_BUILD_NUMBER', 0)}}    # [unix]
@@ -12,25 +14,28 @@ build:
 requirements:
   build:
 #    - cmake [unix]
-    - python
+    - python           # [unix]
+    - python >=3.5     # [win]
     - setuptools
     - cython >=0.24
-    - numpy
-    - libdynd
+    - numpy 1.11.0
+    - libdynd {{ version }}
     # Needed for version tags, not necessary on CI systems since it's already there.
     # Comment it out to avoid the unnecessary download.
     #- git
     # CMake is also needed in general but not necessary on CI systems
     #- cmake
   run:
-    - python
-    - numpy
-    - libdynd
+    - python          # [unix]
+    - python >=3.5    # [win]
+    - numpy >=1.11.0
+    - libdynd {{ version }}
+    - libgcc >=5.2    # [linux]
 
 # Test separately to avoid unsatisfiable package dependencies bug on Win32.
 test:
   requires:
-    - numba
+    - numba >=0.25.0
   commands:
     - python -m dynd.ndt.test
 

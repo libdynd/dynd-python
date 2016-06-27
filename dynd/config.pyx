@@ -15,10 +15,10 @@ cdef extern from 'git_version.hpp' namespace 'pydynd':
 # Expose the git hashes and version numbers of this build
 # NOTE: Cython generates code which is not const-correct, so
 #       have to cast it away.
-_dynd_version_string = str(<char *>dynd_version_string)
-_dynd_git_sha1 = str(<char *>dynd_git_sha1)
-_dynd_python_version_string = str(<char *>dynd_python_version_string)
-_dynd_python_git_sha1 = str(<char *>dynd_python_git_sha1)
+_dynd_version_string = bytes(<char *>dynd_version_string).decode('ascii')
+_dynd_git_sha1 = bytes(<char *>dynd_git_sha1).decode('ascii')
+_dynd_python_version_string = bytes(<char *>dynd_python_version_string).decode('ascii')
+_dynd_python_git_sha1 = bytes(<char *>dynd_python_git_sha1).decode('ascii')
 
 # Exceptions to convert from C++
 class BroadcastError(Exception):

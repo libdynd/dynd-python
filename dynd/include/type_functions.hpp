@@ -18,6 +18,7 @@
 #include <dynd/types/fixed_string_type.hpp>
 #include <dynd/types/string_type.hpp>
 #include <dynd/types/struct_type.hpp>
+#include <dynd/types/substitute_typevars.hpp>
 #include <dynd/types/type_type.hpp>
 
 #include "type_conversions.hpp"
@@ -146,6 +147,12 @@ inline void pyobject_as_vector__type(PyObject *list_of_types, std::vector<dynd::
   }
 }
 
+inline dynd::ndt::type dynd_make_tuple_type(PyObject *field_types) {
+  std::vector<dynd::ndt::type> field_types_vec;
+  pyobject_as_vector__type(field_types, field_types_vec);
+  return dynd::ndt::make_type<dynd::ndt::tuple_type>(field_types_vec);
+}
+
 inline dynd::ndt::type dynd_make_struct_type(PyObject *field_types, PyObject *field_names)
 {
   std::vector<dynd::ndt::type> field_types_vec;
@@ -167,6 +174,25 @@ inline dynd::ndt::type dynd_make_fixed_dim_type(PyObject *shape, const dynd::ndt
   std::vector<intptr_t> shape_vec;
   pyobject_as_vector_intp(shape, shape_vec, true);
   return dynd::ndt::make_type(shape_vec.size(), &shape_vec[0], element_tp);
+}
+
+inline void pyobject_as_typevar_map(PyObject *dict, std::map<std::string, dynd::ndt::type> &typevar_map) {
+  if (!PyDict_Check(dict))
+    throw std::invalid_argument("Require a dict for the type variable map");
+  PyObject *key, *value;
+  Py_ssize_t pos = 0;
+
+  while (PyDict_Next(dict, &pos, &key, &value)) {
+    std::string cppkey = pystring_as_string(key);
+    dynd::ndt::type cpptype = dynd_ndt_as_cpp_type(value);
+    typevar_map[cppkey] = cpptype;
+  }
+}
+
+inline dynd::ndt::type dynd_substitute_typevars(dynd::ndt::type &tp, PyObject *typevars) {
+  std::map<std::string, dynd::ndt::type> typevar_map;
+  pyobject_as_typevar_map(typevars, typevar_map);
+  return dynd::ndt::substitute(tp, typevar_map, false);
 }
 
 inline void init_type_functions()

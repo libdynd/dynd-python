@@ -547,7 +547,7 @@ def make_string():
     result.v = dynd_make_string_type()
     return result
 
-def make_tuple(field_types, field_names):
+def make_tuple(field_types):
     """
     ndt.make_tuple(field_types)
     Constructs a tuple dynd type, which has fields with a flexible

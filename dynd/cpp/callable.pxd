@@ -48,8 +48,9 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd' nogil:
 
         void observe(void (*)(const char *, reg_entry *))
 
+        reg_entry &get(const string &)
+
         map[string, reg_entry].iterator begin()
         map[string, reg_entry].iterator end()
 
-    reg_entry &root()
-    reg_entry &get(const string &, reg_entry &)
+    reg_entry &parent_registry()

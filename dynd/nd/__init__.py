@@ -18,10 +18,4 @@ nan = float('nan')
 from .registry import publish_callables
 from . import functional
 
-## This is a hack until we fix the Cython compiler issues
-#class json(object):
-#    @staticmethod
-#    def parse(tp, obj):
-#        return _parse(tp, obj)
-
 publish_callables(sys.modules['dynd'])

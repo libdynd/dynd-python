@@ -254,7 +254,7 @@ cdef class array(object):
         if self.v.is_null():
             raise AttributeError(name)
 
-        for pair in get2('nd', get()):
+        for pair in get2('nd', get2('dynd', get())):
             if (pair.first == <string> name):
                 return dynd_nd_array_from_cpp(pair.second.value()(self.v))
 

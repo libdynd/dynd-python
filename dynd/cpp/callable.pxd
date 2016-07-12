@@ -50,5 +50,6 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
 
 cdef extern from 'dynd/callable.hpp' namespace 'dynd' nogil:
     reg_entry &get()
+    reg_entry &get2 'dynd::get'(const string &, reg_entry &)
 
     void observe(void (*)(const char *, reg_entry *))

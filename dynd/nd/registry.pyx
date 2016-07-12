@@ -5,7 +5,7 @@ import sys
 
 from cython.operator cimport dereference
 
-from ..cpp.callable cimport callable, parent_registry, reg_entry
+from ..cpp.callable cimport callable, registered, registry_entry
 from ..cpp.config cimport load
 
 from ..config cimport translate_exception
@@ -14,7 +14,7 @@ from .array cimport _registry_assign_init as assign_init
 
 assign_init()
 
-cdef _publish_callables(mod, reg_entry entry):
+cdef _publish_callables(mod, registry_entry entry = registered()):
     for pair in entry:
         if (pair.second.is_namespace()):
             try:
@@ -27,13 +27,13 @@ cdef _publish_callables(mod, reg_entry entry):
             setattr(mod, pair.first, wrap(pair.second.value()))
 
 def publish_callables(mod):
-    return _publish_callables(mod, parent_registry())
+    return _publish_callables(mod, registered())
 
-cdef void observer(const char *name, reg_entry *entry) with gil:
+cdef void observer(const char *name, registry_entry *entry) with gil:
     from . import __name__
     mod = sys.modules[__name__]
 
     if entry.is_namespace():
         _publish_callables(mod, dereference(entry))
 
-parent_registry().observe(&observer)
+registered().observe(&observer)

@@ -41,16 +41,17 @@ cdef extern from 'dynd/callable.hpp' namespace 'dynd::nd' nogil:
     stringstream &operator<<(callable f)
 
 cdef extern from 'dynd/callable.hpp' namespace 'dynd' nogil:
-    cdef cppclass reg_entry:
+    cdef cppclass registry_entry:
         const callable &value() const
 
         bool is_namespace() const
 
-        void observe(void (*)(const char *, reg_entry *))
+        void observe(void (*)(const char *, registry_entry *))
 
-        reg_entry &get(const string &)
+        registry_entry &get(const string &)
 
-        map[string, reg_entry].iterator begin()
-        map[string, reg_entry].iterator end()
+        map[string, registry_entry].iterator begin()
+        map[string, registry_entry].iterator end()
 
-    reg_entry &parent_registry()
+    registry_entry &registered()
+    registry_entry &registered(const string &)

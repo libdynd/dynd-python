@@ -5,7 +5,7 @@ import sys
 
 from cython.operator cimport dereference
 
-from ..cpp.callable cimport callable, get, reg_entry, observe
+from ..cpp.callable cimport callable, root, reg_entry
 from ..cpp.config cimport load
 
 from ..config cimport translate_exception
@@ -27,7 +27,7 @@ cdef _publish_callables(mod, reg_entry entry):
             setattr(mod, pair.first, wrap(pair.second.value()))
 
 def publish_callables(mod):
-    return _publish_callables(mod, get())
+    return _publish_callables(mod, root())
 
 cdef void observer(const char *name, reg_entry *entry) with gil:
     from . import __name__
@@ -36,4 +36,4 @@ cdef void observer(const char *name, reg_entry *entry) with gil:
     if entry.is_namespace():
         _publish_callables(mod, dereference(entry))
 
-observe(&observer)
+root().observe(&observer)

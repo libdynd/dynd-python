@@ -19,4 +19,3 @@ __all__ = [
     '__libdynd_version__', '__version__', '__libdynd_git_sha1__', '__git_sha1__',
     'annotate', 'test', 'load'
 ]
-

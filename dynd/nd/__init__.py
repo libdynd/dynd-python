@@ -24,4 +24,4 @@ from . import functional
 #    def parse(tp, obj):
 #        return _parse(tp, obj)
 
-publish_callables(sys.modules[__name__])
+publish_callables(sys.modules['dynd'])

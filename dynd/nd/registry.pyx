@@ -17,7 +17,10 @@ assign_init()
 cdef _publish_callables(mod, reg_entry entry):
     for pair in entry:
         if (pair.second.is_namespace()):
-            new_mod = imp.new_module(pair.first)
+            try:
+                new_mod = sys.modules[mod.__name__ + '.' + pair.first]
+            except KeyError:
+                new_mod = imp.new_module(pair.first)
             _publish_callables(new_mod, pair.second)
             setattr(mod, pair.first, new_mod)
         else:

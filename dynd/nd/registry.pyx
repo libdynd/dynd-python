@@ -6,6 +6,7 @@ import sys
 from cython.operator cimport dereference
 
 from ..cpp.callable cimport callable, registered, registry_entry
+from ..cpp.registry cimport registered, registry_entry
 from ..cpp.config cimport load
 
 from ..config cimport translate_exception

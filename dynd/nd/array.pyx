@@ -17,7 +17,7 @@ from ..cpp.array cimport (groupby as dynd_groupby, empty as cpp_empty,
                           dtyped_zeros, dtyped_ones, dtyped_empty, array_and)
 from ..cpp.arithmetic cimport pow
 from ..cpp.type cimport make_type
-from ..cpp.callable cimport registered
+from ..cpp.registry cimport registered
 # from ..cpp.types.categorical_type cimport dynd_make_categorical_type
 from ..cpp.types.datashape_formatter cimport format_datashape as dynd_format_datashape
 from ..cpp.types.type_id cimport *

@@ -18,4 +18,4 @@ nan = float('nan')
 from .registry import publish_callables
 from . import functional
 
-publish_callables(sys.modules['dynd'])
+publish_callables()

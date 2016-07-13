@@ -14,9 +14,11 @@ cdef extern from 'dynd/registry.hpp' namespace 'dynd' nogil:
 
         bool is_namespace() const
 
-        void observe(void (*)(const char *, registry_entry *))
+        void observe(void (*)(registry_entry *, const char *, registry_entry *))
 
         registry_entry &get(const string &)
+
+        const string &path() const
 
         map[string, registry_entry].iterator begin()
         map[string, registry_entry].iterator end()

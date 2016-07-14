@@ -15,7 +15,4 @@ from .callable import callable
 inf = float('inf')
 nan = float('nan')
 
-from .registry import publish_callables
 from . import functional
-
-publish_callables()

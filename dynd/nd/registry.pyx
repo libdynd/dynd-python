@@ -15,26 +15,34 @@ from .array cimport _registry_assign_init as assign_init
 
 assign_init()
 
-cdef _publish_callables(mod, registry_entry entry = registered()):
-    for pair in entry:
-        if (pair.second.is_namespace()):
-            try:
-                new_mod = sys.modules[mod.__name__ + '.' + pair.first]
-            except KeyError:
-                new_mod = imp.new_module(pair.first)
-            _publish_callables(new_mod, pair.second)
-            setattr(mod, pair.first, new_mod)
-        else:
-            setattr(mod, pair.first, wrap(pair.second.value()))
+from libcpp.map cimport map
+from libcpp.pair cimport pair
+from libcpp.string cimport string
 
-def publish_callables(mod):
-    return _publish_callables(mod, registered())
+from cython.operator import preincrement
 
-cdef void observer(const char *name, registry_entry *entry) with gil:
-    from . import __name__
-    mod = sys.modules[__name__]
+cdef void add_one(registry_entry *parent_entry, const char *name, registry_entry *entry) with gil:
+    if (entry.is_namespace()):
+        try:
+            new_mod = sys.modules[entry.path()]
+        except KeyError:
+            new_mod = imp.new_module(entry.path())
+            sys.modules[entry.path()] = new_mod
+        _publish_callables(dereference(entry))
+        if (not parent_entry.path().empty()):
+            mod = sys.modules[parent_entry.path()]
+            setattr(mod, name, new_mod)
+    else:
+        mod = sys.modules[parent_entry.path()]
+        setattr(mod, name, wrap(entry.value()))
 
-    if entry.is_namespace():
-        _publish_callables(mod, dereference(entry))
+cdef _publish_callables(registry_entry &entry):
+    entry.observe(&add_one)
 
-registered().observe(&observer)
+    cdef map[string, registry_entry].iterator it = entry.begin()
+    while (it != entry.end()):
+        add_one(&entry, dereference(it).first.c_str(), &dereference(it).second)
+        preincrement(it)
+
+def publish_callables():
+    return _publish_callables(registered())

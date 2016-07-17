@@ -67,9 +67,11 @@ cdef extern from 'type_functions.hpp' namespace 'pydynd':
     _type dynd_make_string_type() except +translate_exception
     _type dynd_make_pointer_type(_type&) except +translate_exception
     _type dynd_make_struct_type(object, object) except +translate_exception
+    _type dynd_make_tuple_type(object) except +translate_exception
     _type dynd_make_cstruct_type(object, object) except +translate_exception
     _type dynd_make_fixed_dim_type(object, _type&) except +translate_exception
     _type dynd_make_cfixed_dim_type(object, _type&, object) except +translate_exception
+    _type dynd_substitute_typevars(_type&, object) except +translate_exception
     void init_type_functions()
 
 cdef extern from "type_unpack.hpp":
@@ -313,6 +315,22 @@ cdef class type(object):
         """
         return self.v.match(type(rhs).v)
 
+    def substitute(self, **rhs):
+        """
+        tp.substitute(TypeVar1=type1, TypeVar2=type2, ...)
+        Substitutes the type variables in ``tp``.
+        Examples
+        --------
+        >>> ndt.type('(T, T)').substitute(T=ndt.int32)
+        ndt.type('(int32, int32)')
+        >>> ndt.type('(S, T) -> T').substitute(S=ndt.float32, T=ndt.int32)
+        ndt.type('(float32, int32) -> int32')
+        """
+        cdef type result = type()
+        result.v = dynd_substitute_typevars(self.v, rhs)
+        return result
+
+
 cdef _type dynd_ndt_type_to_cpp(type t) nogil except *:
     # Once this becomes a method of the type wrapper class, this check and
     # its corresponding exception handler declaration are no longer necessary
@@ -527,6 +545,25 @@ def make_string():
     """
     cdef type result = type()
     result.v = dynd_make_string_type()
+    return result
+
+def make_tuple(field_types):
+    """
+    ndt.make_tuple(field_types)
+    Constructs a tuple dynd type, which has fields with a flexible
+    per-array layout.
+    Parameters
+    ----------
+    field_types : list of dynd types
+        A list of types, one for each field.
+    Examples
+    --------
+    >>> from dynd import nd, ndt
+    >>> ndt.make_tuple([ndt.int32, ndt.float64])
+    ndt.type("(int32, float64)")
+    """
+    cdef type result = type()
+    result.v = dynd_make_tuple_type(field_types)
     return result
 
 def make_struct(field_types, field_names):

@@ -32,7 +32,6 @@ requirements:
     - libdynd {{ version }}
     - libgcc >=5.2    # [linux]
 
-# Test separately to avoid unsatisfiable package dependencies bug on Win32.
 test:
   requires:
     - numba >=0.25.0

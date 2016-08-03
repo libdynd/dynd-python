@@ -79,9 +79,6 @@ script:
   - conda build conda/ndt.recipe --channel dynd/channel/dev
   - rm -rf build dynd.ndt.egg-info
   - conda build conda/nd.recipe --channel dynd/channel/dev
-  - conda install --yes numpy libdynd --channel dynd/channel/dev
-  - conda install $(conda build --output conda/ndt.recipe | grep bz2)
-  - conda install $(conda build --output conda/nd.recipe | grep bz2)
 
 after_success:
   - if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then anaconda --token $ANACONDA_TOKEN upload $(conda build --output conda/ndt.recipe) --user dynd --channel dev; fi

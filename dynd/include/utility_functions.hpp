@@ -123,6 +123,26 @@ inline void decref_if_owned<false, false>(PyObject *obj) noexcept
   PYDYND_ASSERT_IF(obj != nullptr, Py_REFCNT(obj) > 0);
 }
 
+/* A template that provides smart pointers with semantics that match
+ * all of the following:
+ *  - an owned reference to a Python object that cannot be null
+ *  - an owned reference to a Python object that may possibly be null
+ *  - a borrowed reference to a Python object that cannot be null
+ *  - a borrowed reference to a Python object that may possibly be null
+ * The resulting smart pointers can be used to create wrappers
+ * for existing functions that use the CPython API that effectively
+ * encode null-checking and reference counting semantics for a given
+ * function into its type signature.
+ * Implicit conversions are used to allow functions wrapped in this
+ * way to accept smart pointers of varied semantics. The implicit
+ * conversions take care of things like raising exceptions when a
+ * null valued pointer is converted to one that should not be null.
+ * These smart pointers are also designed to allow controlling
+ * the lifetime of a given smart pointer in a safe way.
+ * In debug mode, assertions are used wherever possible to
+ * make absolutely certain that a given reference is valid whenever
+ * it is moved from, copied, accessed, etc.
+ */
 template <bool owns_ref = true, bool not_null = true>
 class py_ref_t {
   PyObject *o;
@@ -132,6 +152,7 @@ public:
   // This allows the smart pointer class to be moved from.
   // Whether or not the class is allowed to be null only changes
   // when zerochecks/exceptions may occur and when assertions are used.
+  // The null state always represents an "empty" smart pointer.
   py_ref_t() noexcept : o(nullptr){};
 
   // First define an accessor to get the PyObject pointer from
@@ -145,8 +166,8 @@ public:
   }
 
   // All copy and move constructors are designated implicit.
-  // Unless they convert between a null type to a not_null type,
-  // they are also declared noexcept.
+  // They are also declared noexcept unless they convert
+  // from a possibly null type to a not_null type.
 
   /* If:
    *    This type allows null or the input type does not,
@@ -165,7 +186,6 @@ public:
     incref_if_owned<owns_ref, not_null>(o);
   }
 
-  // Should this one be declared explicit since it can throw?
   /* If:
    *    this type doesn't allow null,
    *    and the input type does,
@@ -191,6 +211,11 @@ public:
   // Move constructors are really only useful for moving
   // from types that own their references.
   // Only define them for those cases.
+
+  // Allow moving from an owned reference to a borrowed reference.
+  // Though this would do the same thing as a copy constructor in that case,
+  // it does make it possible to assert that the pointer is still valid
+  // after the decref to turn the owned reference into a borrowed reference.
 
   /* If:
    *    the input type owns its reference,
@@ -279,6 +304,10 @@ public:
     decref_if_owned<owns_ref, false>(o);
   }
 
+  // Assignment between wrapped references with different semantics is allowed.
+  // It will raise an exception if a null valued pointer is assigned to a
+  // pointer type that does not allow nulls.
+
   /* If:
    *    This type allows null or the input type does not,
    * Then:
@@ -328,6 +357,13 @@ public:
   // Same as previous two, except these assign from rvalues rather than lvalues.
   // Only allow move assignment if the input type owns its reference.
   // Otherwise, the copy assignment operator is sufficient.
+
+  // Move assignment from an owned reference to a borrowed reference is allowed
+  // primarily so that an assertion can be used to check that the reference is
+  // valid after decref is used to convert it to a borrowed reference.
+  // This is important because it can raise a meaningful assertion error whenever
+  // anyone tries to put a newly created reference into a pointer type
+  // designed to hold a borrowed reference.
 
   /* If:
    *    this type allows null,
@@ -444,6 +480,8 @@ using py_borref = py_ref_t<false, true>;
 
 using py_borref_with_null = py_ref_t<false, false>;
 
+// Convert a given smart pointer back to a raw pointer,
+// releasing its reference if it owns one.
 template <bool owns_ref, bool not_null>
 PyObject *release(py_ref_t<owns_ref, not_null> &&ref)
 {
@@ -452,6 +490,8 @@ PyObject *release(py_ref_t<owns_ref, not_null> &&ref)
 
 /* Capture a new reference if it is not null.
  * Throw an exception if it is.
+ * This is meant to be used to forward exceptions raised in Python API
+ * functions that are signaled via null return values.
  */
 inline py_ref capture_if_not_null(PyObject *o)
 {
@@ -476,7 +516,8 @@ inline py_ref_t<owns_ref, true> nullcheck(py_ref_t<owns_ref, not_null> &&obj) no
 
 /* Convert to a non-null reference.
  * No nullcheck is used, except for an assertion in debug builds.
- * This should be used when the pointer is already known to not be null.
+ * This should be used when the pointer is already known to not be null
+ * and the type does not yet reflect that.
  */
 template <bool owns_ref, bool not_null>
 inline py_ref_t<owns_ref, true> disallow_null(py_ref_t<owns_ref, not_null> &&obj) noexcept

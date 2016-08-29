@@ -29,7 +29,7 @@ from ..cpp.types.tuple_type cimport tuple_type
 from ..cpp.types.struct_type cimport struct_type
 from ..cpp.types.base_fixed_dim_type cimport fixed_dim_kind_type
 from ..cpp.types.var_dim_type cimport var_dim_type as _var_dim_type
-from ..cpp.types.callable_type cimport callable_type as _callable_type
+# from ..cpp.types.callable_type cimport callable_type as _callable_type
 from ..cpp.types.string_type cimport string_type
 from ..cpp.types.bytes_type cimport bytes_type
 from ..cpp.types.fixed_bytes_type cimport fixed_bytes_type
@@ -105,7 +105,7 @@ __all__ = ['type_ids', 'type', 'bool', 'int8', 'int16', 'int32', 'int64', 'int12
     'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'float16', 'float32',
     'float64', 'float128', 'complex64', 'complex_float32',
     'complex128', 'complex_float64', 'void', 'intptr', 'uintptr', 'string',
-    'bytes', 'tuple', 'struct', 'callable',
+    'bytes', 'tuple', 'struct', # 'callable',
     'scalar', 'astype']
 
 type_ids = {}
@@ -704,23 +704,23 @@ def struct(**kwds):
 #
 #        return make_fixed_dim(size_or_element_tp, (<type> element_tp).v)
 
-def callable(ret_or_func, *args, **kwds):
-    if isinstance(ret_or_func, type):
-        ret = ret_or_func
-    else:
-        func = ret_or_func
-        try:
-            ret = func.__annotations__['return']
-        except (AttributeError, KeyError):
-            ret = type('Scalar')
-        args = []
-        for name in func.__code__.co_varnames:
-            try:
-                args.append(func.__annotations__[name])
-            except (AttributeError, KeyError):
-                args.append(type('Scalar'))
-    return wrap(make_type[_callable_type](as_cpp_type(ret),
-               as_cpp_type(tuple(*args)), as_cpp_type(struct(**kwds))))
+#def callable(ret_or_func, *args, **kwds):
+#    if isinstance(ret_or_func, type):
+#        ret = ret_or_func
+#    else:
+#        func = ret_or_func
+#        try:
+#            ret = func.__annotations__['return']
+#        except (AttributeError, KeyError):
+#            ret = type('Scalar')
+#        args = []
+#        for name in func.__code__.co_varnames:
+#            try:
+#                args.append(func.__annotations__[name])
+#            except (AttributeError, KeyError):
+#                args.append(type('Scalar'))
+#    return wrap(make_type[_callable_type](as_cpp_type(ret),
+#               as_cpp_type(tuple(*args)), as_cpp_type(struct(**kwds))))
 
 """
 class struct_factory(__builtins__.type):

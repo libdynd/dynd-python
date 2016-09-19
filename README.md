@@ -29,31 +29,20 @@ http://continuum.io/downloads
 
 For trying the latest updates, there is also an automated
 build configured which tracks the latest git master. When
-all the tests pass, it uploads conda packages to the binstar
-channel "mwiebe". To get these versions, you can either use a
-.condarc file which includes "https://conda.binstar.org/mwiebe" in its
-channels list, or run the following command.
+all the tests pass, it uploads conda packages to the anaconda.org
+channel "dynd/channel/dev". To get these versions, you
+can run the following command.
 
 ```
-conda install -c https://conda.binstar.org/mwiebe dynd-python
+conda install dynd-python --channel dynd/channel/dev
 ```
 
-On windows, the .condarc file goes in the %USERPROFILE% directory.
-Here's an example .condarc file which includes the channel:
+It may work best to install development versions of DyND into an
+environment instead of the main Anaconda directory.
+You can do this with a command like:
 
 ```
-channels:
-  - https://conda.binstar.org/mwiebe
-  - http://repo.continuum.io/pkgs/free
-  - http://repo.continuum.io/pkgs/pro
-  - http://repo.continuum.io/pkgs/gpl
-```
-
-It may work best to install DyND into an environment instead of
-the main Anaconda directory. You can do this with a command like:
-
-```
-C:\>conda create -n dynd-env python=3.3 dynd-python numpy scipy ipython
+C:\>conda create -n dynd-env python=3.3 dynd-python --channel dynd/channel/dev
 ```
 
 Developing DyND

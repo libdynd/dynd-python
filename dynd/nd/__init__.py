@@ -12,7 +12,11 @@ from .array import array, asarray, type_of, dshape_of, as_py, view, \
     parse_json, squeeze, dtype_of, old_linspace, fields, ndim_of
 from .callable import callable
 
+from . import functional
+
+from .registry import propagate_all
+
+propagate_all()
+
 inf = float('inf')
 nan = float('nan')
-
-from . import functional

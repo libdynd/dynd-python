@@ -10,9 +10,6 @@ class TestType(unittest.TestCase):
     def test_struct(self):
         tp = ndt.struct(x = ndt.int32, y = ndt.float64)
 
-    def test_callable(self):
-        tp = ndt.callable(ndt.void, ndt.int32, ndt.float64, x = ndt.complex128)
-
 class TestTypeFor(unittest.TestCase):
     def test_bool(self):
         self.assertEqual(ndt.bool, ndt.type_for(True))
@@ -181,9 +178,6 @@ class TestDType(unittest.TestCase):
 
     def test_cstruct_type(self):
         self.assertFalse(ndt.type('{x: int32}') == ndt.type('{y: int32}'))
-
-    def test_callable_type(self):
-        tp = ndt.callable(ndt.int32, ndt.float64)
 
     def test_struct_type(self):
         tp = ndt.make_struct([ndt.int32, ndt.int64], ['x', 'y'])

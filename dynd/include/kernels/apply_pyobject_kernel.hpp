@@ -22,7 +22,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
   ~apply_pyobject_kernel()
   {
     if (m_pyfunc != NULL) {
-      pydynd::PyGILState_RAII pgs;
+      pydynd::with_gil pgs;
       Py_DECREF(m_pyfunc);
       get_child()->destroy();
     }
@@ -37,7 +37,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       if (Py_REFCNT(item) != 1 || pydynd::array_to_cpp_ref(item)->get_use_count() != 1) {
         std::stringstream ss;
         ss << "Python callback function ";
-        pydynd::pyobject_ownref pyfunc_repr(PyObject_Repr(m_pyfunc));
+        pydynd::py_ref pyfunc_repr = pydynd::capture_if_not_null(PyObject_Repr(m_pyfunc));
         ss << pydynd::pystring_as_string(pyfunc_repr.get());
         ss << ", called by dynd, held a reference to parameter ";
         ss << (i + 1) << " which contained temporary memory.";
@@ -70,7 +70,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     const dynd::ndt::type &dst_tp = fpt->get_return_type();
     const std::vector<dynd::ndt::type> &src_tp = fpt->get_argument_types();
     // First set up the parameters in a tuple
-    pydynd::pyobject_ownref args(PyTuple_New(nsrc));
+    pydynd::py_ref args = pydynd::capture_if_not_null(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
       dynd::ndt::type tp = src_tp[i];
       dynd::nd::array n = dynd::nd::make_array(tp, const_cast<char *>(src[i]), dynd::nd::read_access_flag);
@@ -80,12 +80,15 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       PyTuple_SET_ITEM(args.get(), i, pydynd::array_from_cpp(std::move(n)));
     }
     // Now call the function
-    pydynd::pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
-    // Copy the result into the destination memory
-    PyObject *child_obj = res.get();
-    char *child_src = reinterpret_cast<char *>(&child_obj);
-    get_child()->single(dst, &child_src);
-    res.clear();
+    PyObject *child_obj;
+    char *child_src;
+    { // This scope exists to limit the lifetime of py_ref res.
+      pydynd::py_ref res = pydynd::capture_if_not_null(PyObject_Call(m_pyfunc, args.get(), NULL));
+      // Copy the result into the destination memory
+      child_obj = res.get();
+      child_src = reinterpret_cast<char *>(&child_obj);
+      get_child()->single(dst, &child_src);
+    }
     // Validate that the call didn't hang onto the ephemeral data
     // pointers we used. This is done after the dst assignment, because
     // the function result may have contained a reference to an argument.
@@ -99,7 +102,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     const dynd::ndt::type &dst_tp = fpt->get_return_type();
     const std::vector<dynd::ndt::type> &src_tp = fpt->get_argument_types();
     // First set up the parameters in a tuple
-    pydynd::pyobject_ownref args(PyTuple_New(nsrc));
+    pydynd::py_ref args = pydynd::capture_if_not_null(PyTuple_New(nsrc));
     for (intptr_t i = 0; i != nsrc; ++i) {
       dynd::ndt::type tp = src_tp[i];
       dynd::nd::array n = dynd::nd::make_array(tp, const_cast<char *>(src[i]), dynd::nd::read_access_flag);
@@ -111,12 +114,15 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
     // Do the loop, reusing the args we created
     for (size_t j = 0; j != count; ++j) {
       // Call the function
-      pydynd::pyobject_ownref res(PyObject_Call(m_pyfunc, args.get(), NULL));
-      // Copy the result into the destination memory
-      PyObject *child_obj = res.get();
-      char *child_src = reinterpret_cast<char *>(&child_obj);
-      get_child()->single(dst, &child_src);
-      res.clear();
+      PyObject *child_obj;
+      char *child_src;
+      { // Scope to hold lifetime of py_ref res.
+        pydynd::py_ref res = pydynd::capture_if_not_null(PyObject_Call(m_pyfunc, args.get(), NULL));
+        // Copy the result into the destination memory
+        child_obj = res.get();
+        child_src = reinterpret_cast<char *>(&child_obj);
+        get_child()->single(dst, &child_src);
+      }
       // Validate that the call didn't hang onto the ephemeral data
       // pointers we used. This is done after the dst assignment, because
       // the function result may have contained a reference to an argument.
@@ -125,7 +131,7 @@ struct apply_pyobject_kernel : dynd::nd::base_strided_kernel<apply_pyobject_kern
       dst += dst_stride;
       for (intptr_t i = 0; i != nsrc; ++i) {
         const dynd::nd::array &n = pydynd::array_to_cpp_ref(PyTuple_GET_ITEM(args.get(), i));
-//        n->set_data(n->get_data() + src_stride[i]);
+        //        n->set_data(n->get_data() + src_stride[i]);
       }
     }
   }

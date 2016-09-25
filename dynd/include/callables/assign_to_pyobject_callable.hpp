@@ -289,11 +289,12 @@ namespace nd {
         ckb_offset = kb.size();
         self_ck->m_src_tp = src0_tp;
         self_ck->m_src_arrmeta = src_arrmeta[0];
-        self_ck->m_field_names.reset(PyTuple_New(field_count));
+        self_ck->m_field_names = capture_if_not_null(PyTuple_New(field_count));
         for (intptr_t i = 0; i < field_count; ++i) {
           const dynd::string &rawname = src0_tp.extended<dynd::ndt::struct_type>()->get_field_name(i);
-          pydynd::pyobject_ownref name(PyUnicode_DecodeUTF8(rawname.begin(), rawname.end() - rawname.begin(), NULL));
-          PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
+          pydynd::py_ref name =
+              capture_if_not_null(PyUnicode_DecodeUTF8(rawname.begin(), rawname.end() - rawname.begin(), NULL));
+          PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, pydynd::release(std::move(name)));
         }
         self_ck->m_copy_el_offsets.resize(field_count);
 
@@ -333,11 +334,12 @@ namespace nd {
           intptr_t field_count = src_tp[0].extended<dynd::ndt::struct_type>()->get_field_count();
           const dynd::ndt::type *field_types = src_tp[0].extended<dynd::ndt::struct_type>()->get_field_types_raw();
           const uintptr_t *arrmeta_offsets = src_tp[0].extended<dynd::ndt::struct_type>()->get_arrmeta_offsets_raw();
-          self_ck->m_field_names.reset(PyTuple_New(field_count));
+          self_ck->m_field_names = capture_if_not_null(PyTuple_New(field_count));
           for (intptr_t i = 0; i < field_count; ++i) {
             const dynd::string &rawname = src_tp[0].extended<dynd::ndt::struct_type>()->get_field_name(i);
-            pydynd::pyobject_ownref name(PyUnicode_DecodeUTF8(rawname.begin(), rawname.end() - rawname.begin(), NULL));
-            PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, name.release());
+            pydynd::py_ref name =
+                capture_if_not_null(PyUnicode_DecodeUTF8(rawname.begin(), rawname.end() - rawname.begin(), NULL));
+            PyTuple_SET_ITEM(self_ck->m_field_names.get(), i, pydynd::release(std::move(name)));
           }
           self_ck->m_copy_el_offsets.resize(field_count);
           for (intptr_t i = 0; i < field_count; ++i) {

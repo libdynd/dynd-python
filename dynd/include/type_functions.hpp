@@ -142,7 +142,7 @@ inline void pyobject_as_vector__type(PyObject *list_of_types, std::vector<dynd::
   Py_ssize_t size = PySequence_Size(list_of_types);
   vector_of__types.resize(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
-    pyobject_ownref item(PySequence_GetItem(list_of_types, i));
+    py_ref item = capture_if_not_null(PySequence_GetItem(list_of_types, i));
     vector_of__types[i] = dynd_ndt_as_cpp_type(item.get());
   }
 }

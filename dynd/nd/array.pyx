@@ -25,6 +25,7 @@ from ..cpp.view cimport view as _view
 from ..pyobject_type cimport pyobject_id
 
 from ..config cimport translate_exception
+from ..ndt import type as ndt_type
 from ..ndt.type cimport (type as _py_type, dynd_ndt_type_to_cpp, as_cpp_type,
                          cpp_type_for, _register_nd_array_type_deduction)
 
@@ -156,7 +157,6 @@ cdef class array(object):
             self.v = cpp_empty(dst_tp)
             self.v.assign(pyobject_array(value))
         else:
-            from ..ndt import type as ndt_type
             if (not isinstance(type, ndt_type)):
                 type = ndt_type(type)
             dst_tp = dynd_ndt_type_to_cpp(type)

@@ -199,12 +199,12 @@ dynd::nd::array pydynd::array_from_numpy_scalar(PyObject *obj, uint32_t access_f
     result = dynd::nd::array(dynd::complex<double>(val.real, val.imag));
   }
   else if (PyArray_IsScalar(obj, Void)) {
-    pyobject_ownref arr(PyArray_FromAny(obj, NULL, 0, 0, 0, NULL));
+    py_ref arr = capture_if_not_null(PyArray_FromAny(obj, NULL, 0, 0, 0, NULL));
     return array_from_numpy_array((PyArrayObject *)arr.get(), access_flags, true);
   }
   else {
     stringstream ss;
-    pyobject_ownref obj_tp(PyObject_Repr((PyObject *)Py_TYPE(obj)));
+    py_ref obj_tp = capture_if_not_null(PyObject_Repr((PyObject *)Py_TYPE(obj)));
     ss << "could not create a dynd array from the numpy scalar object";
     ss << " of type " << pydynd::pystring_as_string(obj_tp.get());
     throw dynd::type_error(ss.str());

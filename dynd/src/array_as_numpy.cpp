@@ -72,12 +72,11 @@ static int dynd_to_numpy_id(dynd::type_id_t id)
   }
 }
 
-static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t ndim, const ndt::type &dt,
-                                      const char *arrmeta)
+static void make_numpy_dtype_for_copy(py_ref *out_numpy_dtype, intptr_t ndim, const ndt::type &dt, const char *arrmeta)
 {
   // DyND builtin types
   if (dt.is_builtin()) {
-    out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(dynd_to_numpy_id(dt.get_id())));
+    *out_numpy_dtype = capture_if_not_null((PyObject *)PyArray_DescrFromType(dynd_to_numpy_id(dt.get_id())));
     return;
   }
 
@@ -89,19 +88,19 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t
     case string_encoding_ascii:
       result = PyArray_DescrNewFromType(NPY_STRING);
       result->elsize = (int)fsd->get_data_size();
-      out_numpy_dtype->reset((PyObject *)result);
+      *out_numpy_dtype = capture_if_not_null((PyObject *)result);
       return;
     case string_encoding_utf_32:
       result = PyArray_DescrNewFromType(NPY_UNICODE);
       result->elsize = (int)fsd->get_data_size();
-      out_numpy_dtype->reset((PyObject *)result);
+      *out_numpy_dtype = capture_if_not_null((PyObject *)result);
       return;
     default:
       // If it's not one of the encodings NumPy supports,
       // use Unicode
       result = PyArray_DescrNewFromType(NPY_UNICODE);
       result->elsize = (int)fsd->get_data_size() * 4 / string_encoding_char_size_table[fsd->get_encoding()];
-      out_numpy_dtype->reset((PyObject *)result);
+      *out_numpy_dtype = capture_if_not_null((PyObject *)result);
       return;
     }
     break;
@@ -111,7 +110,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t
     PyArray_Descr *dtype = PyArray_DescrNewFromType(NPY_OBJECT);
     // Add metadata to the string type being created so that
     // it can round-trip. This metadata is compatible with h5py.
-    out_numpy_dtype->reset((PyObject *)dtype);
+    *out_numpy_dtype = capture_if_not_null((PyObject *)dtype);
     if (dtype->metadata == NULL) {
       dtype->metadata = PyDict_New();
     }
@@ -129,7 +128,7 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t
       // If this isn't one of the array dimensions, it maps into
       // a numpy dtype with a shape
       // Build up the shape of the array for NumPy
-      pyobject_ownref shape(PyList_New(0));
+      py_ref shape = capture_if_not_null(PyList_New(0));
       ndt::type element_tp = dt;
       while (ndim > 0) {
         const fixed_dim_type_arrmeta *am = reinterpret_cast<const fixed_dim_type_arrmeta *>(arrmeta);
@@ -142,19 +141,19 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t
         }
       }
       // Get the numpy dtype of the element
-      pyobject_ownref child_numpy_dtype;
+      py_ref child_numpy_dtype;
       make_numpy_dtype_for_copy(&child_numpy_dtype, 0, element_tp, arrmeta);
       // Create the result numpy dtype
-      pyobject_ownref tuple_obj(PyTuple_New(2));
-      PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.release());
-      PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.release());
+      py_ref tuple_obj = capture_if_not_null(PyTuple_New(2));
+      PyTuple_SET_ITEM(tuple_obj.get(), 0, release(std::move(child_numpy_dtype)));
+      PyTuple_SET_ITEM(tuple_obj.get(), 1, release(std::move(shape)));
 
       PyArray_Descr *result = NULL;
-      if (!PyArray_DescrConverter(tuple_obj, &result)) {
+      if (!PyArray_DescrConverter(tuple_obj.get(), &result)) {
         throw dynd::type_error("failed to convert dynd type into numpy subarray dtype");
       }
       // Put the final numpy dtype reference in the output
-      out_numpy_dtype->reset((PyObject *)result);
+      *out_numpy_dtype = capture_if_not_null((PyObject *)result);
       return;
     }
     break;
@@ -163,49 +162,49 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t
     const ndt::struct_type *bs = dt.extended<ndt::struct_type>();
     size_t field_count = bs->get_field_count();
 
-    pyobject_ownref names_obj(PyList_New(field_count));
+    py_ref names_obj = capture_if_not_null(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
       const dynd::string &fn = bs->get_field_name(i);
 #if PY_VERSION_HEX >= 0x03000000
-      pyobject_ownref name_str(PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
+      py_ref name_str = capture_if_not_null(PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #else
-      pyobject_ownref name_str(PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
+      py_ref name_str = capture_if_not_null(PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #endif
-      PyList_SET_ITEM(names_obj.get(), i, name_str.release());
+      PyList_SET_ITEM(names_obj.get(), i, release(std::move(name_str)));
     }
 
-    pyobject_ownref formats_obj(PyList_New(field_count));
-    pyobject_ownref offsets_obj(PyList_New(field_count));
+    py_ref formats_obj = capture_if_not_null(PyList_New(field_count));
+    py_ref offsets_obj = capture_if_not_null(PyList_New(field_count));
     size_t standard_offset = 0, standard_alignment = 1;
     for (size_t i = 0; i < field_count; ++i) {
       // Get the numpy dtype of the element
-      pyobject_ownref field_numpy_dtype;
+      py_ref field_numpy_dtype;
       make_numpy_dtype_for_copy(&field_numpy_dtype, 0, bs->get_field_type(i), arrmeta);
       size_t field_alignment = ((PyArray_Descr *)field_numpy_dtype.get())->alignment;
       size_t field_size = ((PyArray_Descr *)field_numpy_dtype.get())->elsize;
       standard_offset = inc_to_alignment(standard_offset, field_alignment);
       standard_alignment = max(standard_alignment, field_alignment);
-      PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.release());
-      PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(standard_offset));
+      PyList_SET_ITEM(formats_obj.get(), i, release(std::move(field_numpy_dtype)));
+      PyList_SET_ITEM(offsets_obj.get(), i, PyLong_FromSize_t(standard_offset));
       standard_offset += field_size;
     }
     // Get the full element size
     standard_offset = inc_to_alignment(standard_offset, standard_alignment);
-    pyobject_ownref itemsize_obj(PyLong_FromSize_t(standard_offset));
+    py_ref itemsize_obj = capture_if_not_null(PyLong_FromSize_t(standard_offset));
 
-    pyobject_ownref dict_obj(PyDict_New());
-    PyDict_SetItemString(dict_obj, "names", names_obj);
-    PyDict_SetItemString(dict_obj, "formats", formats_obj);
-    PyDict_SetItemString(dict_obj, "offsets", offsets_obj);
-    PyDict_SetItemString(dict_obj, "itemsize", itemsize_obj);
+    py_ref dict_obj = capture_if_not_null(PyDict_New());
+    PyDict_SetItemString(dict_obj.get(), "names", names_obj.get());
+    PyDict_SetItemString(dict_obj.get(), "formats", formats_obj.get());
+    PyDict_SetItemString(dict_obj.get(), "offsets", offsets_obj.get());
+    PyDict_SetItemString(dict_obj.get(), "itemsize", itemsize_obj.get());
 
     PyArray_Descr *result = NULL;
-    if (!PyArray_DescrAlignConverter(dict_obj, &result)) {
+    if (!PyArray_DescrAlignConverter(dict_obj.get(), &result)) {
       stringstream ss;
       ss << "failed to convert dynd type " << dt << " into numpy dtype via dict";
       throw dynd::type_error(ss.str());
     }
-    out_numpy_dtype->reset((PyObject *)result);
+    *out_numpy_dtype = capture_if_not_null((PyObject *)result);
     return;
   }
   default: {
@@ -227,12 +226,12 @@ static void make_numpy_dtype_for_copy(pyobject_ownref *out_numpy_dtype, intptr_t
   throw dynd::type_error(ss.str());
 }
 
-static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requires_copy, intptr_t ndim,
-                              const ndt::type &dt, const char *arrmeta)
+static void as_numpy_analysis(py_ref *out_numpy_dtype, bool *out_requires_copy, intptr_t ndim, const ndt::type &dt,
+                              const char *arrmeta)
 {
   if (dt.is_builtin()) {
     // DyND builtin types
-    out_numpy_dtype->reset((PyObject *)PyArray_DescrFromType(dynd_to_numpy_id(dt.get_id())));
+    *out_numpy_dtype = capture_if_not_null((PyObject *)PyArray_DescrFromType(dynd_to_numpy_id(dt.get_id())));
     return;
   }
   switch (dt.get_id()) {
@@ -243,15 +242,15 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
     case string_encoding_ascii:
       result = PyArray_DescrNewFromType(NPY_STRING);
       result->elsize = (int)fsd->get_data_size();
-      out_numpy_dtype->reset((PyObject *)result);
+      *out_numpy_dtype = capture_if_not_null((PyObject *)result);
       return;
     case string_encoding_utf_32:
       result = PyArray_DescrNewFromType(NPY_UNICODE);
       result->elsize = (int)fsd->get_data_size();
-      out_numpy_dtype->reset((PyObject *)result);
+      *out_numpy_dtype = capture_if_not_null((PyObject *)result);
       return;
     default:
-      out_numpy_dtype->clear();
+      *out_numpy_dtype = py_ref(Py_None, false);
       *out_requires_copy = true;
       return;
     }
@@ -259,7 +258,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
   }
   case string_id: {
     // Convert to numpy object type, requires copy
-    out_numpy_dtype->clear();
+    *out_numpy_dtype = py_ref(Py_None, false);
     *out_requires_copy = true;
     return;
   }
@@ -275,7 +274,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
     else {
       // If this isn't one of the array dimensions, it maps into
       // a numpy dtype with a shape
-      out_numpy_dtype->clear();
+      *out_numpy_dtype = py_ref(Py_None, false);
       *out_requires_copy = true;
       return;
     }
@@ -295,7 +294,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
         // If this isn't one of the array dimensions, it maps into
         // a numpy dtype with a shape
         // Build up the shape of the array for NumPy
-        pyobject_ownref shape(PyList_New(0));
+        py_ref shape = capture_if_not_null(PyList_New(0));
         ndt::type element_tp = dt;
         while (ndim > 0) {
           size_t dim_size = 0;
@@ -306,7 +305,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
             if (cfd->get_data_size() != element_tp.get_data_size() * dim_size)
     {
               // If it's not C-order, a copy is required
-              out_numpy_dtype->clear();
+              *out_numpy_dtype = py_ref(Py_None, false);
               *out_requires_copy = true;
               return;
             }
@@ -323,19 +322,19 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
           }
         }
         // Get the numpy dtype of the element
-        pyobject_ownref child_numpy_dtype;
+        py_ref child_numpy_dtype;
         as_numpy_analysis(&child_numpy_dtype, out_requires_copy, 0,
     element_tp,
                           arrmeta);
         if (*out_requires_copy) {
           // If the child required a copy, stop right away
-          out_numpy_dtype->clear();
+          *out_numpy_dtype = py_ref(Py_None, false);
           return;
         }
         // Create the result numpy dtype
-        pyobject_ownref tuple_obj(PyTuple_New(2));
-        PyTuple_SET_ITEM(tuple_obj.get(), 0, child_numpy_dtype.release());
-        PyTuple_SET_ITEM(tuple_obj.get(), 1, shape.release());
+        py_ref tuple_obj = capture_if_not_null(PyTuple_New(2));
+        PyTuple_SET_ITEM(tuple_obj.get(), 0, release(std::move(child_numpy_dtype)));
+        PyTuple_SET_ITEM(tuple_obj.get(), 1, release(std::move(shape)));
 
         PyArray_Descr *result = NULL;
         if (!PyArray_DescrConverter(tuple_obj, &result)) {
@@ -343,7 +342,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
               "failed to convert dynd type into numpy subarray dtype");
         }
         // Put the final numpy dtype reference in the output
-        out_numpy_dtype->reset((PyObject *)result);
+        *out_numpy_dtype = capture_if_not_null((PyObject *)result);
         return;
       }
       break;
@@ -352,7 +351,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
   case struct_id: {
     if (dt.get_id() == struct_id && arrmeta == NULL) {
       // If it's a struct type with no arrmeta, a copy is required
-      out_numpy_dtype->clear();
+      *out_numpy_dtype = py_ref(Py_None, false);
       *out_requires_copy = true;
       return;
     }
@@ -360,51 +359,51 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
     const uintptr_t *offsets = reinterpret_cast<const uintptr_t *>(arrmeta);
     size_t field_count = bs->get_field_count();
 
-    pyobject_ownref names_obj(PyList_New(field_count));
+    py_ref names_obj = capture_if_not_null(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
       const dynd::string &fn = bs->get_field_name(i);
 #if PY_VERSION_HEX >= 0x03000000
-      pyobject_ownref name_str(PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
+      py_ref name_str = capture_if_not_null(PyUnicode_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #else
-      pyobject_ownref name_str(PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
+      py_ref name_str = capture_if_not_null(PyString_FromStringAndSize(fn.begin(), fn.end() - fn.begin()));
 #endif
-      PyList_SET_ITEM(names_obj.get(), i, name_str.release());
+      PyList_SET_ITEM(names_obj.get(), i, release(std::move(name_str)));
     }
 
-    pyobject_ownref formats_obj(PyList_New(field_count));
+    py_ref formats_obj = capture_if_not_null(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
       // Get the numpy dtype of the element
-      pyobject_ownref field_numpy_dtype;
+      py_ref field_numpy_dtype;
       as_numpy_analysis(&field_numpy_dtype, out_requires_copy, 0, bs->get_field_type(i), arrmeta);
       if (*out_requires_copy) {
         // If the field required a copy, stop right away
-        out_numpy_dtype->clear();
+        *out_numpy_dtype = py_ref(Py_None, false);
         return;
       }
-      PyList_SET_ITEM(formats_obj.get(), i, field_numpy_dtype.release());
+      PyList_SET_ITEM(formats_obj.get(), i, release(std::move(field_numpy_dtype)));
     }
 
-    pyobject_ownref offsets_obj(PyList_New(field_count));
+    py_ref offsets_obj = capture_if_not_null(PyList_New(field_count));
     for (size_t i = 0; i < field_count; ++i) {
-      PyList_SET_ITEM((PyObject *)offsets_obj, i, PyLong_FromSize_t(offsets[i]));
+      PyList_SET_ITEM(offsets_obj.get(), i, PyLong_FromSize_t(offsets[i]));
     }
 
-    pyobject_ownref dict_obj(PyDict_New());
-    PyDict_SetItemString(dict_obj, "names", names_obj);
-    PyDict_SetItemString(dict_obj, "formats", formats_obj);
-    PyDict_SetItemString(dict_obj, "offsets", offsets_obj);
+    py_ref dict_obj = capture_if_not_null(PyDict_New());
+    PyDict_SetItemString(dict_obj.get(), "names", names_obj.get());
+    PyDict_SetItemString(dict_obj.get(), "formats", formats_obj.get());
+    PyDict_SetItemString(dict_obj.get(), "offsets", offsets_obj.get());
     if (dt.get_data_size() > 0) {
-      pyobject_ownref itemsize_obj(PyLong_FromSize_t(dt.get_data_size()));
-      PyDict_SetItemString(dict_obj, "itemsize", itemsize_obj);
+      py_ref itemsize_obj = capture_if_not_null(PyLong_FromSize_t(dt.get_data_size()));
+      PyDict_SetItemString(dict_obj.get(), "itemsize", itemsize_obj.get());
     }
 
     PyArray_Descr *result = NULL;
-    if (!PyArray_DescrConverter(dict_obj, &result)) {
+    if (!PyArray_DescrConverter(dict_obj.get(), &result)) {
       stringstream ss;
       ss << "failed to convert dynd type " << dt << " into numpy dtype via dict";
       throw dynd::type_error(ss.str());
     }
-    out_numpy_dtype->reset((PyObject *)result);
+    *out_numpy_dtype = capture_if_not_null((PyObject *)result);
     return;
   }
   default: {
@@ -415,7 +414,7 @@ static void as_numpy_analysis(pyobject_ownref *out_numpy_dtype, bool *out_requir
   if (dt.get_base_id() == expr_kind_id) {
     // If none of the prior checks caught this expression,
     // a copy is required.
-    out_numpy_dtype->clear();
+    *out_numpy_dtype = py_ref(Py_None, false);
     *out_requires_copy = true;
     return;
   }
@@ -440,7 +439,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
 
   // If a copy is allowed, convert the builtin scalars to NumPy scalars
   if (allow_copy && a.get_type().is_scalar()) {
-    pyobject_ownref result;
+    py_ref result;
     switch (a.get_type().get_id()) {
     case uninitialized_id:
       throw runtime_error("cannot convert uninitialized dynd array to numpy");
@@ -449,60 +448,60 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     case bool_id:
       if (*a.cdata()) {
         Py_INCREF(PyArrayScalar_True);
-        result.reset(PyArrayScalar_True);
+        result = capture_if_not_null(PyArrayScalar_True);
       }
       else {
         Py_INCREF(PyArrayScalar_False);
-        result.reset(PyArrayScalar_False);
+        result = capture_if_not_null(PyArrayScalar_False);
       }
       break;
     case int8_id:
-      result.reset(PyArrayScalar_New(Int8));
+      result = capture_if_not_null(PyArrayScalar_New(Int8));
       PyArrayScalar_ASSIGN(result.get(), Int8, *reinterpret_cast<const int8_t *>(a.cdata()));
       break;
     case int16_id:
-      result.reset(PyArrayScalar_New(Int16));
+      result = capture_if_not_null(PyArrayScalar_New(Int16));
       PyArrayScalar_ASSIGN(result.get(), Int16, *reinterpret_cast<const int16_t *>(a.cdata()));
       break;
     case int32_id:
-      result.reset(PyArrayScalar_New(Int32));
+      result = capture_if_not_null(PyArrayScalar_New(Int32));
       PyArrayScalar_ASSIGN(result.get(), Int32, *reinterpret_cast<const int32_t *>(a.cdata()));
       break;
     case int64_id:
-      result.reset(PyArrayScalar_New(Int64));
+      result = capture_if_not_null(PyArrayScalar_New(Int64));
       PyArrayScalar_ASSIGN(result.get(), Int64, *reinterpret_cast<const int64_t *>(a.cdata()));
       break;
     case uint8_id:
-      result.reset(PyArrayScalar_New(UInt8));
+      result = capture_if_not_null(PyArrayScalar_New(UInt8));
       PyArrayScalar_ASSIGN(result.get(), UInt8, *reinterpret_cast<const uint8_t *>(a.cdata()));
       break;
     case uint16_id:
-      result.reset(PyArrayScalar_New(UInt16));
+      result = capture_if_not_null(PyArrayScalar_New(UInt16));
       PyArrayScalar_ASSIGN(result.get(), UInt16, *reinterpret_cast<const uint16_t *>(a.cdata()));
       break;
     case uint32_id:
-      result.reset(PyArrayScalar_New(UInt32));
+      result = capture_if_not_null(PyArrayScalar_New(UInt32));
       PyArrayScalar_ASSIGN(result.get(), UInt32, *reinterpret_cast<const uint32_t *>(a.cdata()));
       break;
     case uint64_id:
-      result.reset(PyArrayScalar_New(UInt64));
+      result = capture_if_not_null(PyArrayScalar_New(UInt64));
       PyArrayScalar_ASSIGN(result.get(), UInt64, *reinterpret_cast<const uint64_t *>(a.cdata()));
       break;
     case float32_id:
-      result.reset(PyArrayScalar_New(Float32));
+      result = capture_if_not_null(PyArrayScalar_New(Float32));
       PyArrayScalar_ASSIGN(result.get(), Float32, *reinterpret_cast<const float *>(a.cdata()));
       break;
     case float64_id:
-      result.reset(PyArrayScalar_New(Float64));
+      result = capture_if_not_null(PyArrayScalar_New(Float64));
       PyArrayScalar_ASSIGN(result.get(), Float64, *reinterpret_cast<const double *>(a.cdata()));
       break;
     case complex_float32_id:
-      result.reset(PyArrayScalar_New(Complex64));
+      result = capture_if_not_null(PyArrayScalar_New(Complex64));
       PyArrayScalar_VAL(result.get(), Complex64).real = reinterpret_cast<const float *>(a.cdata())[0];
       PyArrayScalar_VAL(result.get(), Complex64).imag = reinterpret_cast<const float *>(a.cdata())[1];
       break;
     case complex_float64_id:
-      result.reset(PyArrayScalar_New(Complex128));
+      result = capture_if_not_null(PyArrayScalar_New(Complex128));
       PyArrayScalar_VAL(result.get(), Complex128).real = reinterpret_cast<const double *>(a.cdata())[0];
       PyArrayScalar_VAL(result.get(), Complex128).imag = reinterpret_cast<const double *>(a.cdata())[1];
       break;
@@ -512,7 +511,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       // make copies of strings
       if (a.get_type().get_base_id() == expr_kind_id) {
         // If it's an expression kind
-        pyobject_ownref n_tmp(pydynd::array_from_cpp(a.eval()));
+        py_ref n_tmp = capture_if_not_null(pydynd::array_from_cpp(a.eval()));
         return array_as_numpy(n_tmp.get(), true);
       }
       else if (a.get_type().get_base_id() == string_kind_id) {
@@ -529,12 +528,12 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
       throw dynd::type_error(ss.str());
     }
     }
-    return result.release();
+    return release(std::move(result));
   }
 
   if (a.get_type().get_id() == var_dim_id) {
     // If it's a var_dim, view it as fixed then try again
-    pyobject_ownref n_tmp(pydynd::array_from_cpp(a.view(
+    py_ref n_tmp = capture_if_not_null(pydynd::array_from_cpp(a.view(
         ndt::make_fixed_dim(a.get_dim_size(), a.get_type().extended<ndt::base_dim_type>()->get_element_type()))));
     return array_as_numpy(n_tmp.get(), allow_copy);
   }
@@ -544,7 +543,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
   // Do a recursive analysis of the dynd array for how to
   // convert it to NumPy
   bool requires_copy = false;
-  pyobject_ownref numpy_dtype;
+  py_ref numpy_dtype;
   size_t ndim = a.get_ndim();
   dimvector shape(ndim), strides(ndim);
 
@@ -572,18 +571,19 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     }
 
     // Create a new NumPy array, and copy from the dynd array
-    pyobject_ownref result(PyArray_NewFromDescr(&PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim,
-                                                shape.get(), strides.get(), NULL, 0, NULL));
+    py_ref result = capture_if_not_null(
+        PyArray_NewFromDescr(&PyArray_Type, reinterpret_cast<PyArray_Descr *>(release(std::move(numpy_dtype))),
+                             (int)ndim, shape.get(), strides.get(), NULL, 0, NULL));
     array_copy_to_numpy((PyArrayObject *)result.get(), a.get_type(), a.get()->metadata(), a.cdata());
 
     // Return the NumPy array
-    return result.release();
+    return release(std::move(result));
   }
   else {
     // Create a view directly to the dynd array
-    pyobject_ownref result(PyArray_NewFromDescr(
-        &PyArray_Type, (PyArray_Descr *)numpy_dtype.release(), (int)ndim, shape.get(), strides.get(),
-        const_cast<char *>(a.cdata()),
+    py_ref result = capture_if_not_null(PyArray_NewFromDescr(
+        &PyArray_Type, reinterpret_cast<PyArray_Descr *>(release(std::move(numpy_dtype))), (int)ndim, shape.get(),
+        strides.get(), const_cast<char *>(a.cdata()),
         ((a.get_flags() & nd::write_access_flag) ? NPY_ARRAY_WRITEABLE : 0) | NPY_ARRAY_ALIGNED, NULL));
 
 #if NPY_API_VERSION >= 7 // At least NumPy 1.7
@@ -595,7 +595,7 @@ PyObject *pydynd::array_as_numpy(PyObject *a_obj, bool allow_copy)
     PyArray_BASE(result.get()) = n_obj;
     Py_INCREF(n_obj);
 #endif
-    return result.release();
+    return release(std::move(result));
   }
 }
 

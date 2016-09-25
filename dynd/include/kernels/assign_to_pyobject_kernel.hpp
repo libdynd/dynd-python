@@ -92,10 +92,10 @@ PyObject *pyint_from_int(const dynd::uint128 &val)
     return PyLong_FromUnsignedLongLong(val.m_lo);
   }
   // Use the pynumber methods to shift and or together the 64 bit parts
-  pydynd::pyobject_ownref hi(PyLong_FromUnsignedLongLong(val.m_hi));
-  pydynd::pyobject_ownref sixtyfour(PyLong_FromLong(64));
-  pydynd::pyobject_ownref hi_shifted(PyNumber_Lshift(hi.get(), sixtyfour));
-  pydynd::pyobject_ownref lo(PyLong_FromUnsignedLongLong(val.m_lo));
+  pydynd::py_ref hi = pydynd::capture_if_not_null(PyLong_FromUnsignedLongLong(val.m_hi));
+  pydynd::py_ref sixtyfour = pydynd::capture_if_not_null(PyLong_FromLong(64));
+  pydynd::py_ref hi_shifted = pydynd::capture_if_not_null(PyNumber_Lshift(hi.get(), sixtyfour.get()));
+  pydynd::py_ref lo = pydynd::capture_if_not_null(PyLong_FromUnsignedLongLong(val.m_lo));
   return PyNumber_Or(hi_shifted.get(), lo.get());
 }
 
@@ -105,7 +105,7 @@ PyObject *pyint_from_int(const dynd::int128 &val)
     if (val.m_hi == 0xffffffffffffffffULL && (val.m_hi & 0x8000000000000000ULL) != 0) {
       return PyLong_FromLongLong(static_cast<int64_t>(val.m_lo));
     }
-    pydynd::pyobject_ownref absval(pyint_from_int(static_cast<dynd::uint128>(-val)));
+    pydynd::py_ref absval = pydynd::capture_if_not_null(pyint_from_int(static_cast<dynd::uint128>(-val)));
     return PyNumber_Negative(absval.get());
   }
   else {
@@ -420,7 +420,7 @@ struct assign_to_pyobject_kernel<ndt::tuple_type>
     *dst_obj = NULL;
     intptr_t field_count = src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
     const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(src_arrmeta);
-    pydynd::pyobject_ownref tup(PyTuple_New(field_count));
+    pydynd::py_ref tup = pydynd::capture_if_not_null(PyTuple_New(field_count));
     for (intptr_t i = 0; i < field_count; ++i) {
       nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
       dynd::kernel_single_t copy_el_fn = copy_el->get_function<dynd::kernel_single_t>();
@@ -431,7 +431,7 @@ struct assign_to_pyobject_kernel<ndt::tuple_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = tup.release();
+    *dst_obj = pydynd::release(std::move(tup));
   }
 };
 
@@ -442,7 +442,7 @@ struct assign_to_pyobject_kernel<ndt::struct_type>
   dynd::ndt::type m_src_tp;
   const char *m_src_arrmeta;
   std::vector<intptr_t> m_copy_el_offsets;
-  pydynd::pyobject_ownref m_field_names;
+  pydynd::py_ref m_field_names;
 
   ~assign_to_pyobject_kernel()
   {
@@ -458,19 +458,19 @@ struct assign_to_pyobject_kernel<ndt::struct_type>
     *dst_obj = NULL;
     intptr_t field_count = m_src_tp.extended<dynd::ndt::tuple_type>()->get_field_count();
     const uintptr_t *field_offsets = reinterpret_cast<const uintptr_t *>(m_src_arrmeta);
-    pydynd::pyobject_ownref dct(PyDict_New());
+    pydynd::py_ref dct = pydynd::capture_if_not_null(PyDict_New());
     for (intptr_t i = 0; i < field_count; ++i) {
       dynd::nd::kernel_prefix *copy_el = get_child(m_copy_el_offsets[i]);
       dynd::kernel_single_t copy_el_fn = copy_el->get_function<dynd::kernel_single_t>();
       char *el_src = src[0] + field_offsets[i];
-      pydynd::pyobject_ownref el;
-      copy_el_fn(copy_el, reinterpret_cast<char *>(el.obj_addr()), &el_src);
+      pydynd::py_ref el;
+      copy_el_fn(copy_el, reinterpret_cast<char *>(&el), &el_src);
       PyDict_SetItem(dct.get(), PyTuple_GET_ITEM(m_field_names.get(), i), el.get());
     }
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = dct.release();
+    *dst_obj = pydynd::release(std::move(dct));
   }
 };
 
@@ -488,7 +488,7 @@ struct assign_to_pyobject_kernel<ndt::fixed_dim_type>
     PyObject **dst_obj = reinterpret_cast<PyObject **>(dst);
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
-    pydynd::pyobject_ownref lst(PyList_New(dim_size));
+    pydynd::py_ref lst = pydynd::capture_if_not_null(PyList_New(dim_size));
     nd::kernel_prefix *copy_el = get_child();
     dynd::kernel_strided_t copy_el_fn = copy_el->get_function<dynd::kernel_strided_t>();
     copy_el_fn(copy_el, reinterpret_cast<char *>(((PyListObject *)lst.get())->ob_item), sizeof(PyObject *), src,
@@ -496,7 +496,7 @@ struct assign_to_pyobject_kernel<ndt::fixed_dim_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = lst.release();
+    *dst_obj = pydynd::release(std::move(lst));
   }
 };
 
@@ -515,7 +515,7 @@ struct assign_to_pyobject_kernel<ndt::var_dim_type>
     Py_XDECREF(*dst_obj);
     *dst_obj = NULL;
     const dynd::ndt::var_dim_type::data_type *vd = reinterpret_cast<const dynd::ndt::var_dim_type::data_type *>(src[0]);
-    pydynd::pyobject_ownref lst(PyList_New(vd->size));
+    pydynd::py_ref lst = pydynd::capture_if_not_null(PyList_New(vd->size));
     dynd::nd::kernel_prefix *copy_el = get_child();
     dynd::kernel_strided_t copy_el_fn = copy_el->get_function<dynd::kernel_strided_t>();
     char *el_src = vd->begin + offset;
@@ -524,6 +524,6 @@ struct assign_to_pyobject_kernel<ndt::var_dim_type>
     if (PyErr_Occurred()) {
       throw std::exception();
     }
-    *dst_obj = lst.release();
+    *dst_obj = pydynd::release(std::move(lst));
   }
 };

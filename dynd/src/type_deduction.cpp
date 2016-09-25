@@ -89,7 +89,7 @@ void pydynd::deduce_pyseq_shape(PyObject *obj, size_t ndim, intptr_t *shape)
 
     if (ndim > 1) {
       for (Py_ssize_t i = 0; i < size; ++i) {
-        pyobject_ownref item(PySequence_GetItem(obj, i));
+        py_ref item = capture_if_not_null(PySequence_GetItem(obj, i));
         deduce_pyseq_shape(item.get(), ndim - 1, shape + 1);
       }
     }
@@ -157,7 +157,7 @@ void pydynd::deduce_pyseq_shape_using_dtype(PyObject *obj, const ndt::type &tp, 
     }
 
     for (Py_ssize_t i = 0; i < size; ++i) {
-      pyobject_ownref item(PySequence_GetItem(obj, i));
+      py_ref item = capture_if_not_null(PySequence_GetItem(obj, i));
       deduce_pyseq_shape_using_dtype(item.get(), tp, shape, i == 0 && initial_pass, current_axis + 1);
     }
   }
@@ -213,11 +213,13 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
   intptr_t obj_ndim = 0;
   // Estimate the number of dimensions in ``obj`` by repeatedly indexing
   // along zero
-  pyobject_ownref v(obj);
-  Py_INCREF(v);
+  py_ref v = capture_if_not_null(obj);
+  // incref the object since we just claimed there was a reference there to capture,
+  // even though this function really just takes a borrowed reference.
+  Py_INCREF(v.get());
   for (;;) {
     // Don't treat these types as sequences
-    if (PyDict_Check(v)) {
+    if (PyDict_Check(v.get())) {
       if (tp.get_dtype().get_id() == struct_id) {
         // If the object to assign to a dynd struct ends in a dict, apply
         // the dict as the struct's value
@@ -225,10 +227,10 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
       }
       break;
     }
-    else if (PyUnicode_Check(v) || PyBytes_Check(v)) {
+    else if (PyUnicode_Check(v.get()) || PyBytes_Check(v.get())) {
       break;
     }
-    PyObject *iter = PyObject_GetIter(v);
+    PyObject *iter = PyObject_GetIter(v.get());
     if (iter != NULL) {
       ++obj_ndim;
       if (iter == v.get()) {
@@ -238,7 +240,7 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
         return false;
       }
       else {
-        pyobject_ownref iter_owner(iter);
+        py_ref iter_owner = capture_if_not_null(iter);
         PyObject *item = PyIter_Next(iter);
         if (item == NULL) {
           if (PyErr_ExceptionMatches(PyExc_StopIteration)) {
@@ -250,7 +252,7 @@ bool pydynd::broadcast_as_scalar(const dynd::ndt::type &tp, PyObject *obj)
           }
         }
         else {
-          v.reset(item);
+          v = capture_if_not_null(item);
         }
       }
     }

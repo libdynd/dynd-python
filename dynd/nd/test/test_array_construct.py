@@ -277,15 +277,12 @@ class TestStructConstruct(unittest.TestCase):
         self.assertEqual(nd.as_py(a[2]), True)
 
     def test_nested_struct(self):
-        """
-        # FIX ME
         a = nd.array([[1,2], ['test', 3.5], [3j]],
                     type='{x: 2 * int16, y: {a: string, b: float64}, z: 1 * complex[float32]}')
         self.assertEqual(nd.as_py(a.x), [1, 2])
         self.assertEqual(nd.as_py(a.y.a), 'test')
         self.assertEqual(nd.as_py(a.y.b), 3.5)
         self.assertEqual(nd.as_py(a.z), [3j])
-        """
 
         a = nd.array({'x':[1,2], 'y':{'a':'test', 'b':3.5}, 'z':[3j]},
                     type='{x: 2 * int16, y: {a: string, b: float64}, z: 1 * complex[float64]}')
@@ -622,53 +619,50 @@ class TestStructConstruct(unittest.TestCase):
 #        self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
 #        self.assertEqual(nd.as_py(a), [2*x + 1 for x in range(7)])
 
-"""
 class TestDeduceDims(unittest.TestCase):
+    """
     def test_simplearr(self):
         val = [[[1, 2], [3, 4]], [[5, 6], [7, 8]],
                [[11, 12], [13, 14]], [[15, 16], [17, 18]]]
         # Deduce all the dims
-        a = nd.array(val, dtype=ndt.int16)
+        a = nd.array(val, type=ndt.int16)
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Specify some dims as fixed
-        a = nd.array(val, dtype='Fixed * int16')
+        a = nd.array(val, type='Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='Fixed * Fixed * int16')
+        a = nd.array(val, type='Fixed * Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='Fixed * Fixed * Fixed * int16')
+        a = nd.array(val, type='Fixed * Fixed * Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Specify some dims as fixed
-        a = nd.array(val, dtype='2 * int16')
+        a = nd.array(val, type='2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='2 * 2 * int16')
+        a = nd.array(val, type='2 * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='4 * 2 * 2 * int16')
+        a = nd.array(val, type='4 * 2 * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
         # Mix fixed, symbolic fixed, and var
-        a = nd.array(val, dtype='4 * var * Fixed * int16')
+        a = nd.array(val, type='4 * var * Fixed * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * var * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='var * 2 * int16')
+        a = nd.array(val, type='var * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * var * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
-        a = nd.array(val, dtype='Fixed * 2 * int16')
+        a = nd.array(val, type='Fixed * 2 * int16')
         self.assertEqual(nd.type_of(a), ndt.type('4 * 2 * 2 * int16'))
         self.assertEqual(nd.as_py(a), val)
+    """
 
     def test_empty(self):
-        # A fixed dimension of non-zero size gets pushed down
-        a = nd.array([], dtype='3 * int32')
-        self.assertEqual(nd.type_of(a), ndt.type('0 * 3 * int32'))
-        self.assertEqual(nd.as_py(a), [])
         # A fixed dimension of zero size gets absorbed
-        a = nd.array([], dtype='0 * int32')
+        a = nd.array([], type='0 * int32')
         self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
         self.assertEqual(nd.as_py(a), [])
         # A symbolic fixed dimension gets absorbed
@@ -677,23 +671,22 @@ class TestDeduceDims(unittest.TestCase):
 #        self.assertEqual(nd.type_of(a), ndt.type('0 * int32'))
  #       self.assertEqual(nd.as_py(a), [])
         # A var dimension gets absorbed
-        a = nd.array([], dtype='var * int32')
+        a = nd.array([], type='var * int32')
         self.assertEqual(nd.type_of(a), ndt.type('var * int32'))
         self.assertEqual(nd.as_py(a), [])
-"""
 
-#class TestConstructErrors(unittest.TestCase):
-#    def test_bad_params(self):
-#        self.assertRaises(ValueError, nd.array, type='int32')
-#        self.assertRaises(ValueError, nd.array, type='2 * 2 * int32')
-#        self.assertRaises(ValueError, nd.array, access='readwrite')
+class TestConstructErrors(unittest.TestCase):
+    def test_bad_params(self):
+        self.assertRaises(TypeError, nd.array, type='int32')
+        self.assertRaises(TypeError, nd.array, type='2 * 2 * int32')
 
-#    def test_dict_auto_detect(self):
-#        # Trigger failure in initial auto detect pass
-#        self.assertRaises(ValueError, nd.array, {'x' : 1})
-#        self.assertRaises(ValueError, nd.array, [{'x' : 1}])
-#        # Trigger failure in later type promotion
-#        self.assertRaises(ValueError, nd.array, [['a'], {'x' : 1}])
+    def test_dict_auto_detect(self):
+        # Trigger failure in initial auto detect pass
+        self.assertRaises(ValueError, nd.array, {'x' : 1})
+        self.assertRaises(ValueError, nd.array, [{'x' : 1}])
+        # Trigger failure in later type promotion
+        # TODO: fix
+        # self.assertRaises(ValueError, nd.array, [['a'], {'x' : 1}])
 
 class TestOptionArrayConstruct(unittest.TestCase):
     def check_scalars(self, type, input_expected):
@@ -704,11 +697,11 @@ class TestOptionArrayConstruct(unittest.TestCase):
             self.assertEqual(nd.as_py(a), expected)
 
     def test_scalar_option(self):
-#        self.check_scalars('?bool', [(None, None),
-#                                     ('', None),
-#                                     ('NA', None),
-#                                     (False, False),
-#                                     ('true', True)])
+        self.check_scalars('?bool', [(None, None),
+                                     #('', None),
+                                     #('NA', None),
+                                     (False, False),
+                                     ('true', True)])
         self.check_scalars('?int', [(None, None), ('', None), ('NA', None), (-10, -10), ('12354', 12354)])
         self.check_scalars('?real', [(None, None),
                                      ('', None),
@@ -717,10 +710,11 @@ class TestOptionArrayConstruct(unittest.TestCase):
                                      ('12354', 12354),
                                      (1.25, 1.25),
                                      ('125e20', 125e20)])
-#        self.check_scalars('?string', [(None, None),
-#                                       ('', ''),
-#                                       ('NA', 'NA'),
-#                                       (u'\uc548\ub155', u'\uc548\ub155')])
+        #self.check_scalars('?string', [(None, None),
+        #                               ('', ''),
+        #                               ('NA', 'NA'),
+        #                               (u'\uc548\ub155', u'\uc548\ub155')
+        #                               ])
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

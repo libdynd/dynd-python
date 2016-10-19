@@ -47,9 +47,9 @@ class TestBasics(unittest.TestCase):
         self.assertTrue(bool(nd.array(100.0, type=ndt.float32)))
         self.assertTrue(bool(nd.array(100.0, type=ndt.float64)))
         # complex values
-#        self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float32))) ##### FIX ME
+        self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float32)))
         self.assertFalse(bool(nd.array(0.0, type=ndt.complex_float64)))
-#        self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float32))) ###### FIX ME
+        self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float32)))
         self.assertTrue(bool(nd.array(100.0+10.0j, type=ndt.complex_float64)))
         # strings
         self.assertFalse(bool(nd.array('')))
@@ -113,7 +113,6 @@ class TestBasics(unittest.TestCase):
         self.assertFalse(nd.is_c_contiguous(a))
         self.assertFalse(nd.is_f_contiguous(a))
 
-    """
     def test_uint_value_limits(self):
         # Valid maximums
         a = nd.array(0xff, type = ndt.uint8)
@@ -129,7 +128,6 @@ class TestBasics(unittest.TestCase):
         self.assertRaises(OverflowError, nd.array, 0x10000, type = ndt.uint16)
         self.assertRaises(OverflowError, nd.array, 0x100000000, type = ndt.uint32)
         self.assertRaises(OverflowError, nd.array, 0x10000000000000000, type = ndt.uint64)
-    """
 
     def test_inf(self):
         # Validate nd.inf

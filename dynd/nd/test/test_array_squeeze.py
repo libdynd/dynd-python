@@ -18,9 +18,6 @@ class TestArraySqueeze(unittest.TestCase):
         self.assertEqual(a.shape, (3, 1))
         self.assertEqual(nd.squeeze(a).shape, (3,))
 
-    """
-    ToDo: Fix this.
-
     def test_squeeze_var(self):
         # Simple var case (squeeze can see into leading size-1 var dims)
         a = nd.array([[[1], [2,3]]], type='var * var * var * int32')
@@ -32,7 +29,6 @@ class TestArraySqueeze(unittest.TestCase):
         self.assertEqual(a.shape, (1, 2, -1, 1))
         self.assertEqual(nd.squeeze(a).shape, (2, -1))
         self.assertEqual(nd.as_py(nd.squeeze(a)), [[1], [2,3]])
-    """
 
     def test_squeeze_axis(self):
         a = nd.zeros(1, 3, 1, 2, 1, ndt.int32)

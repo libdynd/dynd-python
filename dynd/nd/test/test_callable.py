@@ -13,20 +13,15 @@ else:
     else:
         c_ssize_t = ctypes.c_int64
 
-class TestArrFunc(unittest.TestCase):
+class TestCallable(unittest.TestCase):
     pass
 
     """
     def test_creation(self):
         af = nd.empty('(float32) -> int32')
-        self.assertEqual(nd.type_of(af).type_id, 'arrfunc')
+        self.assertTrue(ndt.type('Callable').match(nd.type_of(af)))
         # Test there is a string version of a NULL arrfunc
         self.assertTrue(str(af) != '')
-        # Test there is a string version of an initialized arrfunc
-        af = _lowlevel.make_arrfunc_from_assignment(
-                    ndt.float32, ndt.int64, "nocheck")
-        self.assertTrue(str(af) != '')
-        self.assertEqual(nd.type_of(af), ndt.type("(int64) -> float32"))
     """
 
 #    def test_arrfunc_constructor(self):

@@ -1,5 +1,6 @@
 import unittest
-from dynd import ndt
+# import nd to make sure the types are propagated out of the registry.
+from dynd import ndt, nd
 
 class TestTypeBasics(unittest.TestCase):
     def test_type_repr(self):
